@@ -29,7 +29,7 @@
         corpName: ""
       });
       this.set({
-        recordedBy: ""
+        recordedBy: window.AppLaunchParams.loginUser.username
       });
       this.set({
         recordedDate: new Date().getTime()

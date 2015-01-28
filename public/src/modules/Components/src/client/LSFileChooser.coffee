@@ -26,6 +26,7 @@ class window.LSFileChooserController extends Backbone.View
 	listOfFileModels: []
 	currentNumberOfFiles : 0
 	requiresValidation: true
+	hideDelete: false #for hiding delete button after successful file upload
 	
 	initialize: ->
 		_.bindAll(@,
@@ -66,10 +67,15 @@ class window.LSFileChooserController extends Backbone.View
 			@maxFileSize = @options.maxFileSize
 		if @options.requiresValidation?
 			@requiresValidation = @options.requiresValidation
+		if @options.hideDelete?
+			@hideDelete = @options.hideDelete
+			console.log "hide delete"
+			console.log @hideDelete
 		@currentNumberOfFiles = 0
 
 	events:
 		#'click .bv_deleteFile': 'handleDeleteFileUIChanges'
+		'click .bv_deleteFile': 'handleFileValueChanged'
 		'click .bv_cancelFile': 'handleDeleteFileUIChanges'
 	
 	canAcceptAnotherFile: ->
@@ -85,7 +91,11 @@ class window.LSFileChooserController extends Backbone.View
 			if @canAcceptAnotherFile()
 				@$('.' + @.options.dropZoneClassId).hide()
 				@$('.bv_manualFileSelect').show()
-	
+
+	handleFileValueChanged: ->
+		console.log "handle file value changed"
+		@trigger 'fileDeleted'
+
 	handleDeleteFileUIChanges: ->
 		@$('.bv_manualFileSelect').show("slide")
 		@currentNumberOfFiles--
@@ -98,6 +108,9 @@ class window.LSFileChooserController extends Backbone.View
 
 	fileUploadComplete:(e, data) ->
 		self = @
+		# this is a work around for hiding the delete button after files are uploaded
+		unless @options.hideDelete
+			@$('.delete').show()
 		_.each(data.result, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)

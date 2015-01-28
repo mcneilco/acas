@@ -31,6 +31,13 @@
       ],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule parent',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'linker small molecule parent',
@@ -50,62 +57,21 @@
           kind: 'molecular weight',
           unitType: 'molecular weight',
           unitKind: 'g/mol'
+        }, {
+          key: 'structural file',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule parent',
+          type: 'fileValue',
+          kind: 'structural file'
         }
       ]
     };
 
     LinkerSmallMoleculeParent.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, mw, nameError, notebook;
+      var errors, mw;
+      console.log("validate parent");
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'parentName',
-          message: "Name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-          errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
-          });
-        }
-        if (attrs["completion date"] != null) {
-          cDate = attrs["completion date"].get('value');
-          if (cDate === void 0 || cDate === "") {
-            cDate = "fred";
-          }
-          if (isNaN(cDate)) {
-            errors.push({
-              attribute: 'completionDate',
-              message: "Date must be set"
-            });
-          }
-        }
-        if (attrs.notebook != null) {
-          notebook = attrs.notebook.get('value');
-          if (notebook === "" || notebook === void 0) {
-            errors.push({
-              attribute: 'notebook',
-              message: "Notebook must be set"
-            });
-          }
-        }
-      }
+      errors.push.apply(errors, LinkerSmallMoleculeParent.__super__.validate.call(this, attrs));
       if (attrs["molecular weight"] != null) {
         mw = attrs["molecular weight"].get('value');
         if (mw === "" || mw === void 0) {
@@ -121,6 +87,8 @@
           });
         }
       }
+      console.log("parent errors");
+      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -153,6 +121,13 @@
       defaultLabels: [],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule batch',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'linker small molecule batch',
@@ -208,6 +183,7 @@
 
     LinkerSmallMoleculeBatch.prototype.validate = function(attrs) {
       var errors, purity;
+      console.log("validate batch");
       errors = [];
       errors.push.apply(errors, LinkerSmallMoleculeBatch.__super__.validate.call(this, attrs));
       if (attrs.purity != null) {
@@ -227,6 +203,8 @@
           });
         }
       }
+      console.log("batch errors");
+      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -243,6 +221,8 @@
 
     function LinkerSmallMoleculeParentController() {
       this.updateModel = __bind(this.updateModel, this);
+      this.handleFileRemoved = __bind(this.handleFileRemoved, this);
+      this.handleFileUpload = __bind(this.handleFileUpload, this);
       this.render = __bind(this.render, this);
       return LinkerSmallMoleculeParentController.__super__.constructor.apply(this, arguments);
     }
@@ -275,10 +255,14 @@
     };
 
     LinkerSmallMoleculeParentController.prototype.setupStructuralFileController = function() {
-      this.structuralFileController = new AttachFileListController({
-        canRemoveAttachFileModel: false,
+      this.structuralFileController = new LSFileChooserController({
         el: this.$('.bv_structuralFile'),
-        collection: new AttachFileList()
+        formId: 'fieldBlah',
+        maxNumberOfFiles: 1,
+        requiresValidation: false,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
         return function() {
@@ -290,7 +274,22 @@
           return _this.trigger('amClean');
         };
       })(this));
-      return this.structuralFileController.render();
+      this.structuralFileController.render();
+      this.structuralFileController.on('fileUploader:uploadComplete', this.handleFileUpload);
+      return this.structuralFileController.on('fileDeleted', this.handleFileRemoved);
+    };
+
+    LinkerSmallMoleculeParentController.prototype.handleFileUpload = function(nameOnServer) {
+      console.log("file uploaded");
+      this.model.get("structural file").set("value", nameOnServer);
+      console.log(this.model);
+      return this.trigger('amDirty');
+    };
+
+    LinkerSmallMoleculeParentController.prototype.handleFileRemoved = function() {
+      console.log("file removed");
+      this.model.get("structural file").set("value", "");
+      return console.log(this.model);
     };
 
     LinkerSmallMoleculeParentController.prototype.updateModel = function() {

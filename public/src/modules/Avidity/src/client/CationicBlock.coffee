@@ -16,6 +16,13 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'cationic block parent'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'cationic block parent'
@@ -27,6 +34,12 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 			stateKind: 'cationic block parent'
 			type: 'stringValue'
 			kind: 'notebook'
+		,
+			key: 'structural file'
+			stateType: 'metadata'
+			stateKind: 'cationic block parent'
+			type: 'fileValue'
+			kind: 'structural file'
 		]
 
 
@@ -45,6 +58,13 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 		defaultLabels: [
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'cationic block batch'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'cationic block batch'
@@ -118,9 +138,7 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 					attribute: 'molecularWeight'
 					message: "Molecular weight must be a number"
 		if attrs.purity?
-			console.log "purity"
 			purity = attrs.purity.get('value')
-			console.log purity
 			if purity is "" or purity is undefined
 				errors.push
 					attribute: 'purity'
@@ -154,15 +172,32 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 		@setupStructuralFileController()
 
 	setupStructuralFileController: ->
-		@structuralFileController= new AttachFileListController
-			canRemoveAttachFileModel: false
+		@structuralFileController = new LSFileChooserController
 			el: @$('.bv_structuralFile')
-			collection: new AttachFileList()
+			formId: 'fieldBlah',
+			maxNumberOfFiles: 1,
+			requiresValidation: false
+			url: UtilityFunctions::getFileServiceURL()
+			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@structuralFileController.on 'amClean', =>
 			@trigger 'amClean'
 		@structuralFileController.render()
+		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
+		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+
+	handleFileUpload: (nameOnServer) =>
+		console.log "file uploaded"
+		@model.get("structural file").set("value", nameOnServer)
+		console.log @model
+		@trigger 'amDirty'
+
+	handleFileRemoved: =>
+		console.log "file removed"
+		@model.get("structural file").set("value", "")
+		console.log @model
 
 	updateModel: =>
 		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))

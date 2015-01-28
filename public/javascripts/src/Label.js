@@ -197,7 +197,9 @@
 
     Value.prototype.setValueType = function() {
       console.log("value changed, setting value type");
-      return this.set(this.get('lsType'), this.get('value'));
+      this.set(this.get('lsType'), this.get('value'));
+      this.set('recordedBy', window.AppLaunchParams.loginUser.username);
+      return this.set('recordedDate', new Date().getTime());
     };
 
     return Value;

@@ -31,6 +31,13 @@
       ],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'protein parent',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'protein parent',
@@ -42,6 +49,14 @@
           stateKind: 'protein parent',
           type: 'stringValue',
           kind: 'notebook'
+        }, {
+          key: 'molecular weight',
+          stateType: 'metadata',
+          stateKind: 'protein parent',
+          type: 'numericValue',
+          kind: 'molecular weight',
+          unitType: 'molecular weight',
+          unitKind: 'g/mol'
         }, {
           key: 'type',
           stateType: 'metadata',
@@ -62,55 +77,22 @@
     };
 
     ProteinParent.prototype.validate = function(attrs) {
-      var aaSeq, bestName, cDate, errors, nameError, notebook, type;
+      var errors, mw, type;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'parentName',
-          message: "Name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
+      errors.push.apply(errors, ProteinParent.__super__.validate.call(this, attrs));
+      if (attrs["molecular weight"] != null) {
+        mw = attrs["molecular weight"].get('value');
+        if (mw === "" || mw === void 0) {
           errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be set"
           });
         }
-        if (attrs["completion date"] != null) {
-          cDate = attrs["completion date"].get('value');
-          if (cDate === void 0 || cDate === "") {
-            cDate = "fred";
-          }
-          if (isNaN(cDate)) {
-            errors.push({
-              attribute: 'completionDate',
-              message: "Date must be set"
-            });
-          }
-        }
-        if (attrs.notebook != null) {
-          notebook = attrs.notebook.get('value');
-          if (notebook === "" || notebook === void 0) {
-            errors.push({
-              attribute: 'notebook',
-              message: "Notebook must be set"
-            });
-          }
+        if (isNaN(mw)) {
+          errors.push({
+            attribute: 'molecularWeight',
+            message: "Molecular weight must be a number"
+          });
         }
       }
       if (attrs.type != null) {
@@ -119,15 +101,6 @@
           errors.push({
             attribute: 'type',
             message: "Type must be set"
-          });
-        }
-      }
-      if (attrs["aa sequence"] != null) {
-        aaSeq = attrs["aa sequence"].get('value');
-        if (aaSeq === "" || aaSeq === void 0) {
-          errors.push({
-            attribute: 'sequence',
-            message: "Protein aa sequence must be set"
           });
         }
       }
@@ -163,6 +136,13 @@
       defaultLabels: [],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'protein batch',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'protein batch',
@@ -191,6 +171,14 @@
           type: 'stringValue',
           kind: 'source id'
         }, {
+          key: 'purity',
+          stateType: 'metadata',
+          stateKind: 'protein batch',
+          type: 'numericValue',
+          kind: 'purity',
+          unitType: 'percentage',
+          unitKind: '% purity'
+        }, {
           key: 'amount made',
           stateType: 'metadata',
           stateKind: 'inventory',
@@ -206,6 +194,32 @@
           kind: 'location'
         }
       ]
+    };
+
+    ProteinBatch.prototype.validate = function(attrs) {
+      var errors, purity;
+      errors = [];
+      errors.push.apply(errors, ProteinBatch.__super__.validate.call(this, attrs));
+      if (attrs.purity != null) {
+        purity = attrs.purity.get('value');
+        if (purity === "" || purity === void 0) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be set"
+          });
+        }
+        if (isNaN(purity)) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be a number"
+          });
+        }
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
     return ProteinBatch;
@@ -225,6 +239,7 @@
 
     ProteinParentController.prototype.events = function() {
       return _(ProteinParentController.__super__.events.call(this)).extend({
+        "keyup .bv_molecularWeight": "attributeChanged",
         "change .bv_type": "attributeChanged",
         "keyup .bv_sequence": "attributeChanged"
       });
@@ -245,6 +260,7 @@
         this.model = new ProteinParent();
       }
       ProteinParentController.__super__.render.call(this);
+      this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
       this.$('.bv_type').val(this.model.get('type').get('value'));
       this.$('.bv_sequence').val(this.model.get('aa sequence').get('value'));
       console.log("render model");
@@ -253,6 +269,7 @@
 
     ProteinParentController.prototype.updateModel = function() {
       this.model.get("protein name").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_parentName')));
+      this.model.get("molecular weight").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_molecularWeight'))));
       this.model.get("type").set("value", this.typeListController.getSelectedCode());
       this.model.get("aa sequence").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_sequence')));
       return ProteinParentController.__super__.updateModel.call(this);
@@ -282,9 +299,18 @@
     __extends(ProteinBatchController, _super);
 
     function ProteinBatchController() {
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return ProteinBatchController.__super__.constructor.apply(this, arguments);
     }
+
+    ProteinBatchController.prototype.additionalBatchAttributesTemplate = _.template($("#ProteinBatchView").html());
+
+    ProteinBatchController.prototype.events = function() {
+      return _(ProteinBatchController.__super__.events.call(this)).extend({
+        "keyup .bv_purity": "attributeChanged"
+      });
+    };
 
     ProteinBatchController.prototype.initialize = function() {
       if (this.model == null) {
@@ -300,7 +326,13 @@
         console.log("create new model");
         this.model = new ProteinBatch();
       }
-      return ProteinBatchController.__super__.render.call(this);
+      ProteinBatchController.__super__.render.call(this);
+      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+    };
+
+    ProteinBatchController.prototype.updateModel = function() {
+      this.model.get("purity").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_purity'))));
+      return ProteinBatchController.__super__.updateModel.call(this);
     };
 
     return ProteinBatchController;

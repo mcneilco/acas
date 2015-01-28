@@ -11,7 +11,7 @@
     }
 
     AbstractBaseComponentParent.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook;
+      var bestName, cDate, errors, nameError, notebook, scientist;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -34,11 +34,14 @@
         });
       }
       if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-          errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
-          });
+        if (attrs.scientist != null) {
+          scientist = attrs.scientist.get('value');
+          if (scientist === "" || scientist === "unassigned" || scientist === void 0) {
+            errors.push({
+              attribute: 'scientist',
+              message: "Scientist must be set"
+            });
+          }
         }
         if (attrs["completion date"] != null) {
           cDate = attrs["completion date"].get('value');
@@ -126,7 +129,7 @@
     }
 
     AbstractBaseComponentBatch.prototype.validate = function(attrs) {
-      var amountMade, cDate, errors, location, notebook, source;
+      var amountMade, cDate, errors, location, notebook, scientist, source;
       errors = [];
       if (_.isNaN(attrs.recordedDate)) {
         errors.push({
@@ -134,11 +137,14 @@
           message: "Recorded date must be set"
         });
       }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
+      if (attrs.scientist != null) {
+        scientist = attrs.scientist.get('value');
+        if (scientist === "" || scientist === "unassigned" || scientist === void 0) {
+          errors.push({
+            attribute: 'scientist',
+            message: "Scientist must be set"
+          });
+        }
       }
       if (attrs["completion date"] != null) {
         cDate = attrs["completion date"].get('value');
@@ -256,7 +262,7 @@
     AbstractBaseComponentParentController.prototype.events = function() {
       return {
         "keyup .bv_parentName": "attributeChanged",
-        "change .bv_recordedBy": "attributeChanged",
+        "change .bv_scientist": "attributeChanged",
         "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "keyup .bv_notebook": "attributeChanged",
@@ -276,7 +282,7 @@
       if (this.additionalParentAttributesTemplate != null) {
         this.$('.bv_additionalParentAttributes').html(this.additionalParentAttributesTemplate());
       }
-      return this.setupRecordedBySelect();
+      return this.setupScientistSelect();
     };
 
     AbstractBaseComponentParentController.prototype.render = function() {
@@ -288,7 +294,7 @@
       if (bestName != null) {
         this.$('.bv_parentName').val(bestName.get('labelText'));
       }
-      this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
+      this.$('.bv_scientist').val(this.model.get('scientist').get('value'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.get('completion date').get('value') != null) {
@@ -296,14 +302,14 @@
       }
       this.$('.bv_notebook').val(this.model.get('notebook').get('value'));
       if (this.model.isNew()) {
-        this.$('.bv_recordedBy').attr('disabled', 'disabled');
+        this.$('.bv_scientist').attr('disabled', 'disabled');
         this.$('.bv_completionDate').attr('disabled', 'disabled');
         this.$('.bv_notebook').attr('disabled', 'disabled');
         this.$('.bv_completionDateIcon').on("click", function() {
           return false;
         });
       } else {
-        this.$('.bv_recordedBy').removeAttr('disabled');
+        this.$('.bv_scientist').removeAttr('disabled');
         this.$('.bv_completionDate').removeAttr('disabled');
         this.$('.bv_notebook').removeAttr('disabled');
         this.$('.bv_completionDateIcon').on("click", function() {
@@ -345,23 +351,23 @@
       return this.componentPickerController.render();
     };
 
-    AbstractBaseComponentParentController.prototype.setupRecordedBySelect = function() {
+    AbstractBaseComponentParentController.prototype.setupScientistSelect = function() {
       var defaultOption;
       if (this.model.isNew()) {
         defaultOption = "Filled from first batch";
       } else {
         defaultOption = "Select Scientist";
       }
-      this.recordedByList = new PickListList();
-      this.recordedByList.url = "/api/authors";
-      return this.recordedByListController = new PickListSelectController({
-        el: this.$('.bv_recordedBy'),
-        collection: this.recordedByList,
+      this.scientistList = new PickListList();
+      this.scientistList.url = "/api/authors";
+      return this.scientistListController = new PickListSelectController({
+        el: this.$('.bv_scientist'),
+        collection: this.scientistList,
         insertFirstOption: new PickList({
           code: "unassigned",
           name: defaultOption
         }),
-        selectedCode: this.model.get('recordedBy')
+        selectedCode: this.model.get('scientist').get('value')
       });
     };
 
@@ -370,9 +376,7 @@
     };
 
     AbstractBaseComponentParentController.prototype.updateModel = function() {
-      this.model.set({
-        recordedBy: this.$('.bv_recordedBy').val()
-      });
+      this.model.get("scientist").set("value", this.scientistListController.getSelectedCode());
       this.model.get("notebook").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')));
       return this.model.get("completion date").set("value", UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))));
     };
@@ -402,6 +406,7 @@
     __extends(AbstractBaseComponentBatchController, _super);
 
     function AbstractBaseComponentBatchController() {
+      this.isValid = __bind(this.isValid, this);
       this.handleSaveBatch = __bind(this.handleSaveBatch, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
@@ -416,7 +421,7 @@
 
     AbstractBaseComponentBatchController.prototype.events = function() {
       return {
-        "change .bv_recordedBy": "attributeChanged",
+        "change .bv_scientist": "attributeChanged",
         "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "change .bv_source": "attributeChanged",
@@ -437,7 +442,7 @@
       if (this.additionalBatchAttributesTemplate != null) {
         this.$('.bv_additionalBatchAttributes').html(this.additionalBatchAttributesTemplate());
       }
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupSourceSelect();
       return this.setupAttachFileListController();
     };
@@ -445,7 +450,7 @@
     AbstractBaseComponentBatchController.prototype.render = function() {
       this.$('.bv_batchCode').val(this.model.get('codeName'));
       this.$('.bv_batchCode').html(this.model.get('codeName'));
-      this.$('.bv_recordedBy').val(this.model.get('recordedBy'));
+      this.$('.bv_scientist').val(this.model.get('scientist').get('value'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
       if (this.model.get('completion date').get('value') != null) {
@@ -476,17 +481,17 @@
       return this.$('.bv_saveBatchComplete').hide();
     };
 
-    AbstractBaseComponentBatchController.prototype.setupRecordedBySelect = function() {
-      this.recordedByList = new PickListList();
-      this.recordedByList.url = "/api/authors";
-      return this.recordedByListController = new PickListSelectController({
-        el: this.$('.bv_recordedBy'),
-        collection: this.recordedByList,
+    AbstractBaseComponentBatchController.prototype.setupScientistSelect = function() {
+      this.scientistList = new PickListList();
+      this.scientistList.url = "/api/authors";
+      return this.scientistListController = new PickListSelectController({
+        el: this.$('.bv_scientist'),
+        collection: this.scientistList,
         insertFirstOption: new PickList({
           code: "unassigned",
           name: "Select Scientist"
         }),
-        selectedCode: this.model.get('recordedBy')
+        selectedCode: this.model.get('scientist').get('value')
       });
     };
 
@@ -528,9 +533,10 @@
 
     AbstractBaseComponentBatchController.prototype.finishSetupAttachFileListController = function(attachFileList) {
       this.attachFileListController = new AttachFileListController({
-        canRemoveAttachFileModel: false,
+        autoAddAttachFileModel: false,
         el: this.$('.bv_attachFileList'),
-        collection: attachFileList
+        collection: attachFileList,
+        firstOptionName: "Select Method"
       });
       this.attachFileListController.on('amDirty', (function(_this) {
         return function() {
@@ -542,7 +548,8 @@
           return _this.trigger('amClean');
         };
       })(this));
-      return this.attachFileListController.render();
+      this.attachFileListController.render();
+      return console.log(this.attachFileListController);
     };
 
     AbstractBaseComponentBatchController.prototype.handleCompletionDateIconClicked = function() {
@@ -550,9 +557,7 @@
     };
 
     AbstractBaseComponentBatchController.prototype.updateModel = function() {
-      this.model.set({
-        recordedBy: this.$('.bv_recordedBy').val()
-      });
+      this.model.get("scientist").set("value", this.scientistListController.getSelectedCode());
       this.model.get("source").set("value", this.sourceListController.getSelectedCode());
       this.model.get("source id").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_sourceId')));
       this.model.get("notebook").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')));
@@ -575,6 +580,23 @@
       this.model.reformatBeforeSaving();
       this.$('.bv_savingBatch').show();
       return this.model.save();
+    };
+
+    AbstractBaseComponentBatchController.prototype.isValid = function() {
+      var validCheck;
+      validCheck = AbstractBaseComponentBatchController.__super__.isValid.call(this);
+      console.log("overwrite isValid");
+      if (this.attachFileListController != null) {
+        if (this.attachFileListController.isValid() === true) {
+          console.log("attach list controller is valid");
+          return validCheck;
+        } else {
+          console.log("attach list controller is invalid");
+          return false;
+        }
+      } else {
+        return validCheck;
+      }
     };
 
     return AbstractBaseComponentBatchController;
@@ -774,11 +796,11 @@
     };
 
     AbstractBaseComponentController.prototype.saveNewParentAttributes = function() {
-      var cDate, notebook, recordedBy;
-      recordedBy = this.batchSelectController.batchController.model.get('recordedBy');
+      var cDate, notebook, scientist;
+      scientist = this.batchSelectController.batchController.model.get('scientist').get('value');
       cDate = this.batchSelectController.batchController.model.get('completion date').get('value');
       notebook = this.batchSelectController.batchController.model.get('notebook').get('value');
-      this.parentController.model.set('recordedBy', recordedBy);
+      this.parentController.model.get('scientist').set('value', scientist);
       this.parentController.model.get('completion date').set('value', cDate);
       return this.parentController.model.get('notebook').set('value', notebook);
     };

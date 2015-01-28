@@ -106,6 +106,8 @@ class window.Value extends Backbone.Model
 	setValueType: ->
 		console.log "value changed, setting value type"
 		@.set @get('lsType'), @get('value')
+		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
+		@.set 'recordedDate', new Date().getTime()
 
 class window.ValueList extends Backbone.Collection
 	model: Value

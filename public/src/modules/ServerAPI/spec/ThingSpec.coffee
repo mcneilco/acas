@@ -76,8 +76,8 @@ describe 'Thing testing', ->
 				expect(@siRNA.get('lsType')).toEqual "thing"
 			it "should have a kind", ->
 				expect(@siRNA.get('lsKind')).toEqual "thing"
-			it "should have an empty scientist", ->
-				expect(@siRNA.get('recordedBy')).toEqual ""
+			it "should have the recordedBy set to the logged in user", ->
+				expect(@siRNA.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
 			it "should have a recordedDate set to now", ->
 				expect(new Date(@siRNA.get('recordedDate')).getHours()).toEqual new Date().getHours()
 			it 'Should have an empty short description with a space as an oracle work-around', ->
@@ -174,7 +174,7 @@ describe 'Thing testing', ->
 				expect(@testsiRNA.get('lsType')).toEqual "thing"
 			it "should have a kind", ->
 				expect(@testsiRNA.get('lsKind')).toEqual "siRNA"
-			it "should have a scientist set", ->
+			it "should have a recordedBy set", ->
 				expect(@testsiRNA.get('recordedBy')).toEqual "egao"
 			it "should have a recordedDate", ->
 				expect(@testsiRNA.get('recordedDate')).toEqual 1375889487000

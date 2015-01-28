@@ -31,6 +31,13 @@
       ],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'spacer parent',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'spacer parent',
@@ -50,62 +57,20 @@
           kind: 'molecular weight',
           unitType: 'molecular weight',
           unitKind: 'g/mol'
+        }, {
+          key: 'structural file',
+          stateType: 'metadata',
+          stateKind: 'spacer parent',
+          type: 'fileValue',
+          kind: 'structural file'
         }
       ]
     };
 
     SpacerParent.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, mw, nameError, notebook;
+      var errors, mw;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'parentName',
-          message: "Name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Recorded date must be set"
-        });
-      }
-      if (!this.isNew()) {
-        if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-          errors.push({
-            attribute: 'recordedBy',
-            message: "Scientist must be set"
-          });
-        }
-        if (attrs["completion date"] != null) {
-          cDate = attrs["completion date"].get('value');
-          if (cDate === void 0 || cDate === "") {
-            cDate = "fred";
-          }
-          if (isNaN(cDate)) {
-            errors.push({
-              attribute: 'completionDate',
-              message: "Date must be set"
-            });
-          }
-        }
-        if (attrs.notebook != null) {
-          notebook = attrs.notebook.get('value');
-          if (notebook === "" || notebook === void 0) {
-            errors.push({
-              attribute: 'notebook',
-              message: "Notebook must be set"
-            });
-          }
-        }
-      }
+      errors.push.apply(errors, SpacerParent.__super__.validate.call(this, attrs));
       if (attrs["molecular weight"] != null) {
         mw = attrs["molecular weight"].get('value');
         if (mw === "" || mw === void 0) {
@@ -153,6 +118,13 @@
       defaultLabels: [],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'spacer batch',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'spacer batch',
@@ -181,6 +153,14 @@
           type: 'stringValue',
           kind: 'source id'
         }, {
+          key: 'purity',
+          stateType: 'metadata',
+          stateKind: 'spacer batch',
+          type: 'numericValue',
+          kind: 'purity',
+          unitType: 'percentage',
+          unitKind: '% purity'
+        }, {
           key: 'amount made',
           stateType: 'metadata',
           stateKind: 'inventory',
@@ -198,6 +178,32 @@
       ]
     };
 
+    SpacerBatch.prototype.validate = function(attrs) {
+      var errors, purity;
+      errors = [];
+      errors.push.apply(errors, SpacerBatch.__super__.validate.call(this, attrs));
+      if (attrs.purity != null) {
+        purity = attrs.purity.get('value');
+        if (purity === "" || purity === void 0) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be set"
+          });
+        }
+        if (isNaN(purity)) {
+          errors.push({
+            attribute: 'purity',
+            message: "Purity must be a number"
+          });
+        }
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
     return SpacerBatch;
 
   })(AbstractBaseComponentBatch);
@@ -207,6 +213,8 @@
 
     function SpacerParentController() {
       this.updateModel = __bind(this.updateModel, this);
+      this.handleFileRemoved = __bind(this.handleFileRemoved, this);
+      this.handleFileUpload = __bind(this.handleFileUpload, this);
       this.render = __bind(this.render, this);
       return SpacerParentController.__super__.constructor.apply(this, arguments);
     }
@@ -233,7 +241,46 @@
         this.model = new SpacerParent();
       }
       SpacerParentController.__super__.render.call(this);
-      return this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
+      return this.setupStructuralFileController();
+    };
+
+    SpacerParentController.prototype.setupStructuralFileController = function() {
+      this.structuralFileController = new LSFileChooserController({
+        el: this.$('.bv_structuralFile'),
+        formId: 'fieldBlah',
+        maxNumberOfFiles: 1,
+        requiresValidation: false,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        hideDelete: false
+      });
+      this.structuralFileController.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      this.structuralFileController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.structuralFileController.render();
+      this.structuralFileController.on('fileUploader:uploadComplete', this.handleFileUpload);
+      return this.structuralFileController.on('fileDeleted', this.handleFileRemoved);
+    };
+
+    SpacerParentController.prototype.handleFileUpload = function(nameOnServer) {
+      console.log("file uploaded");
+      this.model.get("structural file").set("value", nameOnServer);
+      console.log(this.model);
+      return this.trigger('amDirty');
+    };
+
+    SpacerParentController.prototype.handleFileRemoved = function() {
+      console.log("file removed");
+      this.model.get("structural file").set("value", "");
+      return console.log(this.model);
     };
 
     SpacerParentController.prototype.updateModel = function() {
@@ -250,9 +297,18 @@
     __extends(SpacerBatchController, _super);
 
     function SpacerBatchController() {
+      this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return SpacerBatchController.__super__.constructor.apply(this, arguments);
     }
+
+    SpacerBatchController.prototype.additionalBatchAttributesTemplate = _.template($("#SpacerBatchView").html());
+
+    SpacerBatchController.prototype.events = function() {
+      return _(SpacerBatchController.__super__.events.call(this)).extend({
+        "keyup .bv_purity": "attributeChanged"
+      });
+    };
 
     SpacerBatchController.prototype.initialize = function() {
       if (this.model == null) {
@@ -268,7 +324,13 @@
         console.log("create new model");
         this.model = new SpacerBatch();
       }
-      return SpacerBatchController.__super__.render.call(this);
+      SpacerBatchController.__super__.render.call(this);
+      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+    };
+
+    SpacerBatchController.prototype.updateModel = function() {
+      this.model.get("purity").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_purity'))));
+      return SpacerBatchController.__super__.updateModel.call(this);
     };
 
     return SpacerBatchController;

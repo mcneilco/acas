@@ -17,8 +17,8 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@cbp.get('lsKind')).toEqual "cationic block"
-				it "should have an empty scientist", ->
-					expect(@cbp.get('recordedBy')).toEqual ""
+				it "should have the recordedBy set to the logged in user", ->
+					expect(@cbp.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
 				it "should have a recordedDate set to now", ->
 					expect(new Date(@cbp.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it "Should have a lsLabels with one label", ->
@@ -32,23 +32,20 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.get("lsStates").length).toEqual 1
 					expect(@cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual 1
 				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@cbp.get("scientist")).toBeDefined()
 					it "Should have a model attribute for completion date", ->
 						expect(@cbp.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@cbp.get("notebook")).toBeDefined()
+					it "Should have a model attribute for structural file", ->
+						expect(@cbp.get("structural file")).toBeDefined()
 			describe "model validation", ->
 				it "should be invalid when name is empty", ->
 					@cbp.get("cationic block name").set("labelText", "")
 					expect(@cbp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@cbp.validationError, (err) ->
 						err.attribute=='parentName'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should invalid when recorded date is empty", ->
-					@cbp.set recordedDate: new Date("").getTime()
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='recordedDate'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
@@ -62,7 +59,7 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@cbp.get('lsKind')).toEqual "cationic block"
-				it "should have a scientist set", ->
+				it "should have a recordedBy set", ->
 					expect(@cbp.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
 					expect(@cbp.get('recordedDate')).toEqual 1375141508000
@@ -76,10 +73,14 @@ describe 'Cationic Block testing', ->
 					expect(@cbp.get('lsStates')).toBeDefined()
 					expect(@cbp.get("lsStates").length).toEqual 1
 					expect(@cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual 1
+				it "Should have a scientist value", ->
+					expect(@cbp.get("scientist").get("value")).toEqual "john"
 				it "Should have a completion date value", ->
 					expect(@cbp.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@cbp.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a structural file value", ->
+					expect(@cbp.get("structural file").get("value")).toEqual "TestFile.mol"
 
 			describe "model validation", ->
 				beforeEach ->
@@ -101,10 +102,10 @@ describe 'Cationic Block testing', ->
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
-					@cbp.set recordedBy: ""
+					@cbp.get('scientist').set('value', "unassigned")
 					expect(@cbp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='recordedBy'
+						err.attribute=='scientist'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when completion date is empty", ->
@@ -133,8 +134,8 @@ describe 'Cationic Block testing', ->
 					expect(@cbb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
 					expect(@cbb.get('lsKind')).toEqual "cationic block"
-				it "should have an empty scientist", ->
-					expect(@cbb.get('recordedBy')).toEqual ""
+				it "should have a recordedBy set to logged in user", ->
+					expect(@cbb.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
 				it "should have a recordedDate set to now", ->
 					expect(new Date(@cbb.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				#				it "should have an analytical method file type", ->
@@ -142,6 +143,8 @@ describe 'Cationic Block testing', ->
 				#				it "should have an analytical method fileValue", ->
 				#					expect(@cbb.get('analyticalFileType')).toEqual "unassigned"
 				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@cbb.get("scientist")).toBeDefined()
 					it "Should have a model attribute for completion date", ->
 						expect(@cbb.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
@@ -172,7 +175,7 @@ describe 'Cationic Block testing', ->
 					expect(@cbb.get('lsType')).toEqual "batch"
 				it "should have a kind", ->
 					expect(@cbb.get('lsKind')).toEqual "cationic block"
-				it "should have a scientist set", ->
+				it "should have a recordedBy set", ->
 					expect(@cbb.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
 					expect(@cbb.get('recordedDate')).toEqual 1375141508000
@@ -181,6 +184,8 @@ describe 'Cationic Block testing', ->
 					expect(@cbb.get("lsStates").length).toEqual 2
 					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual 1
 					expect(@cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+				it "Should have a scientist value", ->
+					expect(@cbb.get("scientist").get("value")).toEqual "john"
 				it "Should have a completion date value", ->
 					expect(@cbb.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
@@ -211,10 +216,10 @@ describe 'Cationic Block testing', ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@cbb.set recordedBy: ""
+				@cbb.get('scientist').set('value', "unassigned")
 				expect(@cbb.isValid()).toBeFalsy()
 				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='recordedBy'
+					err.attribute=='scientist'
 				)
 			it "should be invalid when completion date is empty", ->
 				@cbb.get("completion date").set("value", new Date("").getTime())
@@ -295,11 +300,11 @@ describe 'Cationic Block testing', ->
 					expect(@cbpc.$('.bv_parentName').val()).toEqual "cMAP10"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@cbpc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						console.log @cbpc.$('.bv_recordedBy').val()
-						expect(@cbpc.$('.bv_recordedBy').val()).toEqual "jane"
+						console.log @cbpc.$('.bv_scientist').val()
+						expect(@cbpc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@cbpc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -312,12 +317,12 @@ describe 'Cationic Block testing', ->
 					expect(@cbpc.model.get('cationic block name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@cbpc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@cbpc.$('.bv_recordedBy').val('unassigned')
-						@cbpc.$('.bv_recordedBy').change()
-						expect(@cbpc.model.get('recordedBy')).toEqual "unassigned"
+						@cbpc.$('.bv_scientist').val('unassigned')
+						@cbpc.$('.bv_scientist').change()
+						expect(@cbpc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@cbpc.$('.bv_completionDate').keyup()
@@ -330,13 +335,13 @@ describe 'Cationic Block testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@cbpc.$('.bv_recordedBy option').length > 0
+						@cbpc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
 						@cbpc.$('.bv_parentName').val(" Updated entity name   ")
 						@cbpc.$('.bv_parentName').keyup()
-						@cbpc.$('.bv_recordedBy').val("bob")
-						@cbpc.$('.bv_recordedBy').change()
+						@cbpc.$('.bv_scientist').val("bob")
+						@cbpc.$('.bv_scientist').change()
 						@cbpc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@cbpc.$('.bv_completionDate').keyup()
 						@cbpc.$('.bv_notebook').val("my notebook")
@@ -365,11 +370,11 @@ describe 'Cationic Block testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@cbpc.$('.bv_recordedBy').val("")
-							@cbpc.$('.bv_recordedBy').change()
+							@cbpc.$('.bv_scientist').val("")
+							@cbpc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@cbpc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@cbpc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -412,10 +417,10 @@ describe 'Cationic Block testing', ->
 					expect(@cbbc.$('.bv_batchCode').val()).toEqual "CB000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@cbbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						expect(@cbbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@cbbc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@cbbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -439,12 +444,12 @@ describe 'Cationic Block testing', ->
 			describe "model updates", ->
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@cbbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val('unassigned')
-						@cbbc.$('.bv_recordedBy').change()
-						expect(@cbbc.model.get('recordedBy')).toEqual "unassigned"
+						@cbbc.$('.bv_scientist').val('unassigned')
+						@cbbc.$('.bv_scientist').change()
+						expect(@cbbc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@cbbc.$('.bv_completionDate').keyup()
@@ -485,11 +490,11 @@ describe 'Cationic Block testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@cbbc.$('.bv_recordedBy option').length > 0
+						@cbbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@cbbc.$('.bv_recordedBy').val("bob")
-						@cbbc.$('.bv_recordedBy').change()
+						@cbbc.$('.bv_scientist').val("bob")
+						@cbbc.$('.bv_scientist').change()
 						@cbbc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@cbbc.$('.bv_completionDate').keyup()
 						@cbbc.$('.bv_notebook').val("my notebook")
@@ -516,11 +521,11 @@ describe 'Cationic Block testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@cbbc.$('.bv_recordedBy').val("")
-							@cbbc.$('.bv_recordedBy').change()
+							@cbbc.$('.bv_scientist').val("")
+							@cbbc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@cbbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@cbbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 					it "should have the update button be disabled", ->
 						runs ->
 							expect(@cbbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
@@ -618,13 +623,13 @@ describe 'Cationic Block testing', ->
 					@cbbsc.$('.bv_batchList').val("CB000001-1")
 					@cbbsc.$('.bv_batchList').change()
 				waitsFor ->
-					@cbbsc.$('.bv_recordedBy option').length > 0
+					@cbbsc.$('.bv_scientist option').length > 0
 				, 1000
 				runs ->
 					waits(1000)
 				runs ->
 					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
-					expect(@cbbsc.$('.bv_recordedBy').val()).toEqual "jane"
+					expect(@cbbsc.$('.bv_scientist').val()).toEqual "john"
 
 	describe "Cationic Block Controller", ->
 		beforeEach ->
@@ -650,8 +655,8 @@ describe 'Cationic Block testing', ->
 					runs ->
 						@cbc.$('.bv_parentName').val(" Updated entity name   ")
 						@cbc.$('.bv_parentName').keyup()
-						@cbc.$('.bv_recordedBy').val("bob")
-						@cbc.$('.bv_recordedBy').change()
+						@cbc.$('.bv_scientist').val("bob")
+						@cbc.$('.bv_scientist').change()
 						@cbc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@cbc.$('.bv_completionDate').keyup()
 						@cbc.$('.bv_notebook').val("my notebook")
@@ -669,7 +674,7 @@ describe 'Cationic Block testing', ->
 						@cbc.$('.bv_location').val(" Hood 4")
 						@cbc.$('.bv_location').keyup()
 					waitsFor ->
-						@cbc.$('.bv_recordedBy option').length > 0
+						@cbc.$('.bv_scientist option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
@@ -677,7 +682,7 @@ describe 'Cationic Block testing', ->
 				it "should update the parent code", ->
 					runs ->
 						@cbc.$('.bv_save').click()
-					waits(1000)
+					waits(2000)
 					runs ->
 						expect(@cbc.$('.bv_parentCode').html()).toEqual "CB000001"
 				it "should update the batch code", ->

@@ -17,8 +17,8 @@ describe 'Protein testing', ->
 					expect(@pp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@pp.get('lsKind')).toEqual "protein"
-				it "should have an empty scientist", ->
-					expect(@pp.get('recordedBy')).toEqual ""
+				it "should have the recordedBy set to the logged in user", ->
+					expect(@pp.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
 				it "should have a recordedDate set to now", ->
 					expect(new Date(@pp.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it "Should have a lsLabels with one label", ->
@@ -32,10 +32,14 @@ describe 'Protein testing', ->
 					expect(@pp.get("lsStates").length).toEqual 1
 					expect(@pp.get("lsStates").getStatesByTypeAndKind("metadata", "protein parent").length).toEqual 1
 				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@pp.get("scientist")).toBeDefined()
 					it "Should have a model attribute for completion date", ->
 						expect(@pp.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@pp.get("notebook")).toBeDefined()
+					it "Should have a model attribute for molecular weight", ->
+						expect(@pp.get("molecular weight")).toBeDefined()
 					it "Should have a model attribute for type", ->
 						expect(@pp.get("type")).toBeDefined()
 					it "Should have a model attribute for aa sequence", ->
@@ -48,11 +52,11 @@ describe 'Protein testing', ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should invalid when recorded date is empty", ->
-					@pp.set recordedDate: new Date("").getTime()
+				it "should be invalid when molecular weight is not filled", ->
+					@pp.get("molecular weight").set("value", "")
 					expect(@pp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@pp.validationError, (err) ->
-						err.attribute=='recordedDate'
+						err.attribute=='molecularWeight'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when type is not selected", ->
@@ -60,13 +64,6 @@ describe 'Protein testing', ->
 					expect(@pp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@pp.validationError, (err) ->
 						err.attribute=='type'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when aa sequence is not filled", ->
-					@pp.get("aa sequence").set("value", "")
-					expect(@pp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@pp.validationError, (err) ->
-						err.attribute=='sequence'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 
@@ -80,7 +77,7 @@ describe 'Protein testing', ->
 					expect(@pp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@pp.get('lsKind')).toEqual "protein"
-				it "should have a scientist set", ->
+				it "should have a recordedBy set", ->
 					expect(@pp.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
 					expect(@pp.get('recordedDate')).toEqual 1375141508000
@@ -94,10 +91,14 @@ describe 'Protein testing', ->
 					expect(@pp.get('lsStates')).toBeDefined()
 					expect(@pp.get("lsStates").length).toEqual 1
 					expect(@pp.get("lsStates").getStatesByTypeAndKind("metadata", "protein parent").length).toEqual 1
+				it "Should have a scientist value", ->
+					expect(@pp.get("scientist").get("value")).toEqual "john"
 				it "Should have a completion date value", ->
 					expect(@pp.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@pp.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a molecular weight value", ->
+					expect(@pp.get("molecular weight").get("value")).toEqual 231
 				it "Should have a type value", ->
 					expect(@pp.get("type").get("value")).toEqual "fab"
 				it "Should have a sequence value", ->
@@ -123,10 +124,10 @@ describe 'Protein testing', ->
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
-					@pp.set recordedBy: ""
+					@pp.get('scientist').set('value', "unassigned")
 					expect(@pp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@pp.validationError, (err) ->
-						err.attribute=='recordedBy'
+						err.attribute=='scientist'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when completion date is empty", ->
@@ -143,6 +144,13 @@ describe 'Protein testing', ->
 						err.attribute=='notebook'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when molecular weight is empty", ->
+					@pp.get("molecular weight").set("value", "")
+					expect(@pp.isValid()).toBeFalsy()
+					filtErrors = _.filter(@pp.validationError, (err) ->
+						err.attribute=='molecularWeight'
+					)
+					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when type is not selected", ->
 					@pp.get("type").set("value", "")
 					expect(@pp.isValid()).toBeFalsy()
@@ -150,13 +158,140 @@ describe 'Protein testing', ->
 						err.attribute=='type'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when aa sequence is empty", ->
-					@pp.get("aa sequence").set("value", "")
-					expect(@pp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@pp.validationError, (err) ->
-						err.attribute=='sequence'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Protein Batch model testing", ->
+		describe "when loaded from new", ->
+			beforeEach ->
+				@pb= new ProteinBatch()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@pb).toBeDefined()
+				it "should have a type", ->
+					expect(@pb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@pb.get('lsKind')).toEqual "protein"
+				it "should have a recordedBy set to logged in user", ->
+					expect(@pb.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
+				it "should have a recordedDate set to now", ->
+					expect(new Date(@pb.get('recordedDate')).getHours()).toEqual new Date().getHours()
+				#				it "should have an analytical method file type", ->
+				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
+				#				it "should have an analytical method fileValue", ->
+				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
+				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@pb.get("scientist")).toBeDefined()
+					it "Should have a model attribute for completion date", ->
+						expect(@pb.get("completion date")).toBeDefined()
+					it "Should have a model attribute for notebook", ->
+						expect(@pb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@pb.get("source").get).toBeDefined()
+						expect(@pb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@pb.get("source id")).toBeDefined()
+					#					it "Should have a model attribute for analytical method file type", ->
+					#						expect(@pb.get("analytical file type")).toBeDefined()
+					it "Should have a model attribute for purity", ->
+						expect(@pb.get("purity")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@pb.get("amount made")).toBeDefined()
+					it "Should have a model attribute for location", ->
+						expect(@pb.get("location")).toBeDefined()
+
+		describe "When created from existing", ->
+			beforeEach ->
+				@pb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
+			describe "after initial load", ->
+				it "should be defined", ->
+					expect(@pb).toBeDefined()
+				it "should have a type", ->
+					expect(@pb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@pb.get('lsKind')).toEqual "protein"
+				it "Should have a scientist value", ->
+					expect(@pb.get("scientist").get("value")).toEqual "john"
+				it "should have a recordedDate set", ->
+					expect(@pb.get('recordedDate')).toEqual 1375141508000
+				it "Should have a lsStates with the states in defaultStates", ->
+					expect(@pb.get('lsStates')).toBeDefined()
+					expect(@pb.get("lsStates").length).toEqual 2
+					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "protein batch").length).toEqual 1
+					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+				it "Should have a completion date value", ->
+					expect(@pb.get("completion date").get("value")).toEqual 1342080000000
+				it "Should have a notebook value", ->
+					expect(@pb.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a source value", ->
+					expect(@pb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@pb.get("source id").get("value")).toEqual "12345"
+				it "Should have a purity value", ->
+					expect(@pb.get("purity").get("value")).toEqual 92
+				it "Should have an amount made value", ->
+					expect(@pb.get("amount made").get("value")).toEqual 2.3
+				it "Should have a location value", ->
+					expect(@pb.get("location").get("value")).toEqual "Cabinet 1"
+
+		describe "model validation", ->
+			beforeEach ->
+				@pb = new ProteinBatch window.proteinTestJSON.proteinBatch
+			it "should be valid when loaded from saved", ->
+				expect(@pb.isValid()).toBeTruthy()
+			it "should be invalid when recorded date is empty", ->
+				@pb.set recordedDate: new Date("").getTime()
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='recordedDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when scientist not selected", ->
+				@pb.get('scientist').set('value', "unassigned")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='scientist'
+				)
+			it "should be invalid when completion date is empty", ->
+				@pb.get("completion date").set("value", new Date("").getTime())
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='completionDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when notebook is empty", ->
+				@pb.get("notebook").set("value", "")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='notebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when source is not selected", ->
+				@pb.get("source").set("value", "unassigned")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='source'
+				)
+			it "should be invalid when purity is NaN", ->
+				@pb.get("purity").set("value", "fred")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='purity'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when amount made is NaN", ->
+				@pb.get("amount made").set("value", "fred")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='amountMade'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when location is empty", ->
+				@pb.get("location").set("value", "")
+				expect(@pb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pb.validationError, (err) ->
+					err.attribute=='location'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Protein Parent Controller testing", ->
 		describe "When instantiated from new", ->
@@ -187,11 +322,11 @@ describe 'Protein testing', ->
 					expect(@ppc.$('.bv_parentName').val()).toEqual "EGFR 31"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@ppc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						console.log @ppc.$('.bv_recordedBy').val()
-						expect(@ppc.$('.bv_recordedBy').val()).toEqual "jane"
+						console.log @ppc.$('.bv_scientist').val()
+						expect(@ppc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@ppc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -214,12 +349,12 @@ describe 'Protein testing', ->
 					expect(@ppc.model.get('protein name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@ppc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@ppc.$('.bv_recordedBy').val('unassigned')
-						@ppc.$('.bv_recordedBy').change()
-						expect(@ppc.model.get('recordedBy')).toEqual "unassigned"
+						@ppc.$('.bv_scientist').val('unassigned')
+						@ppc.$('.bv_scientist').change()
+						expect(@ppc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@ppc.$('.bv_completionDate').keyup()
@@ -243,13 +378,13 @@ describe 'Protein testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@ppc.$('.bv_recordedBy option').length > 0
+						@ppc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
 						@ppc.$('.bv_parentName').val(" Updated entity name   ")
 						@ppc.$('.bv_parentName').keyup()
-						@ppc.$('.bv_recordedBy').val("bob")
-						@ppc.$('.bv_recordedBy').change()
+						@ppc.$('.bv_scientist').val("bob")
+						@ppc.$('.bv_scientist').change()
 						@ppc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@ppc.$('.bv_completionDate').keyup()
 						@ppc.$('.bv_notebook').val("my notebook")
@@ -282,11 +417,11 @@ describe 'Protein testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@ppc.$('.bv_recordedBy').val("")
-							@ppc.$('.bv_recordedBy').change()
+							@ppc.$('.bv_scientist').val("")
+							@ppc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@ppc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@ppc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -311,135 +446,6 @@ describe 'Protein testing', ->
 					it "should show error on type field", ->
 						runs ->
 							expect(@ppc.$('.bv_group_type').hasClass('error')).toBeTruthy()
-				describe "when sequence not filled", ->
-					beforeEach ->
-						runs ->
-							@ppc.$('.bv_sequence').val("")
-							@ppc.$('.bv_sequence').keyup()
-					it "should show error on sequence field", ->
-						runs ->
-							expect(@ppc.$('.bv_group_sequence').hasClass('error')).toBeTruthy()
-
-	describe "Protein Batch model testing", ->
-		describe "when loaded from new", ->
-			beforeEach ->
-				@pb= new ProteinBatch()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@pb).toBeDefined()
-				it "should have a type", ->
-					expect(@pb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@pb.get('lsKind')).toEqual "protein"
-				it "should have an empty scientist", ->
-					expect(@pb.get('recordedBy')).toEqual ""
-				it "should have a recordedDate set to now", ->
-					expect(new Date(@pb.get('recordedDate')).getHours()).toEqual new Date().getHours()
-				#				it "should have an analytical method file type", ->
-				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
-				#				it "should have an analytical method fileValue", ->
-				#					expect(@pb.get('analyticalFileType')).toEqual "unassigned"
-				describe "model attributes for each value in defaultValues", ->
-					it "Should have a model attribute for completion date", ->
-						expect(@pb.get("completion date")).toBeDefined()
-					it "Should have a model attribute for notebook", ->
-						expect(@pb.get("notebook")).toBeDefined()
-					it "Should have a model attribute for source", ->
-						expect(@pb.get("source").get).toBeDefined()
-						expect(@pb.get("source").get('value')).toEqual "Avidity"
-					it "Should have a model attribute for source id", ->
-						expect(@pb.get("source id")).toBeDefined()
-					#					it "Should have a model attribute for analytical method file type", ->
-					#						expect(@pb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount made", ->
-						expect(@pb.get("amount made")).toBeDefined()
-					it "Should have a model attribute for location", ->
-						expect(@pb.get("location")).toBeDefined()
-
-		describe "When created from existing", ->
-			beforeEach ->
-				@pb = new ProteinBatch JSON.parse(JSON.stringify(window.proteinTestJSON.proteinBatch))
-			describe "after initial load", ->
-				it "should be defined", ->
-					expect(@pb).toBeDefined()
-				it "should have a type", ->
-					expect(@pb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@pb.get('lsKind')).toEqual "protein"
-				it "should have a scientist set", ->
-					expect(@pb.get('recordedBy')).toEqual "jane"
-				it "should have a recordedDate set", ->
-					expect(@pb.get('recordedDate')).toEqual 1375141508000
-				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@pb.get('lsStates')).toBeDefined()
-					expect(@pb.get("lsStates").length).toEqual 2
-					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "protein batch").length).toEqual 1
-					expect(@pb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
-				it "Should have a completion date value", ->
-					expect(@pb.get("completion date").get("value")).toEqual 1342080000000
-				it "Should have a notebook value", ->
-					expect(@pb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have a source value", ->
-					expect(@pb.get("source").get("value")).toEqual "Avidity"
-				it "Should have a source id", ->
-					expect(@pb.get("source id").get("value")).toEqual "12345"
-				it "Should have an amount made value", ->
-					expect(@pb.get("amount made").get("value")).toEqual 2.3
-				it "Should have a location value", ->
-					expect(@pb.get("location").get("value")).toEqual "Cabinet 1"
-
-		describe "model validation", ->
-			beforeEach ->
-				@pb = new ProteinBatch window.proteinTestJSON.proteinBatch
-			it "should be valid when loaded from saved", ->
-				expect(@pb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@pb.set recordedDate: new Date("").getTime()
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when scientist not selected", ->
-				@pb.set recordedBy: ""
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='recordedBy'
-				)
-			it "should be invalid when completion date is empty", ->
-				@pb.get("completion date").set("value", new Date("").getTime())
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='completionDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when notebook is empty", ->
-				@pb.get("notebook").set("value", "")
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='notebook'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when source is not selected", ->
-				@pb.get("source").set("value", "unassigned")
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='source'
-				)
-			it "should be invalid when amount made is NaN", ->
-				@pb.get("amount made").set("value", "fred")
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='amountMade'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when location is empty", ->
-				@pb.get("location").set("value", "")
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='location'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Protein Batch Controller testing", ->
 		describe "When instantiated from new", ->
@@ -466,10 +472,10 @@ describe 'Protein testing', ->
 					expect(@pbc.$('.bv_batchCode').val()).toEqual "PROT000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@pbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						expect(@pbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@pbc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@pbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -482,6 +488,8 @@ describe 'Protein testing', ->
 						expect(@pbc.$('.bv_source').val()).toEqual "Avidity"
 				it "should fill the source id field", ->
 					expect(@pbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the purity field", ->
+					expect(@pbc.$('.bv_purity').val()).toEqual "92"
 				it "should fill the amount made field", ->
 					expect(@pbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
@@ -489,12 +497,12 @@ describe 'Protein testing', ->
 			describe "model updates", ->
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@pbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@pbc.$('.bv_recordedBy').val('unassigned')
-						@pbc.$('.bv_recordedBy').change()
-						expect(@pbc.model.get('recordedBy')).toEqual "unassigned"
+						@pbc.$('.bv_scientist').val('unassigned')
+						@pbc.$('.bv_scientist').change()
+						expect(@pbc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@pbc.$('.bv_completionDate').keyup()
@@ -515,6 +523,10 @@ describe 'Protein testing', ->
 					@pbc.$('.bv_sourceId').val(" 252  ")
 					@pbc.$('.bv_sourceId').keyup()
 					expect(@pbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when purity is changed", ->
+					@pbc.$('.bv_purity').val(" 29  ")
+					@pbc.$('.bv_purity').keyup()
+					expect(@pbc.model.get('purity').get('value')).toEqual 29
 				it "should update model when amount made is changed", ->
 					@pbc.$('.bv_amountMade').val(" 12  ")
 					@pbc.$('.bv_amountMade').keyup()
@@ -527,11 +539,11 @@ describe 'Protein testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@pbc.$('.bv_recordedBy option').length > 0
+						@pbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@pbc.$('.bv_recordedBy').val("bob")
-						@pbc.$('.bv_recordedBy').change()
+						@pbc.$('.bv_scientist').val("bob")
+						@pbc.$('.bv_scientist').change()
 						@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@pbc.$('.bv_completionDate').keyup()
 						@pbc.$('.bv_notebook').val("my notebook")
@@ -540,6 +552,8 @@ describe 'Protein testing', ->
 						@pbc.$('.bv_source').change()
 						@pbc.$('.bv_sourceId').val(" 24")
 						@pbc.$('.bv_sourceId').keyup()
+						@pbc.$('.bv_purity').val(" 82")
+						@pbc.$('.bv_purity').keyup()
 						@pbc.$('.bv_amountMade').val(" 24")
 						@pbc.$('.bv_amountMade').keyup()
 						@pbc.$('.bv_location').val(" Hood 4")
@@ -554,11 +568,11 @@ describe 'Protein testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@pbc.$('.bv_recordedBy').val("")
-							@pbc.$('.bv_recordedBy').change()
+							@pbc.$('.bv_scientist').val("")
+							@pbc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 					it "should have the update button be disabled", ->
 						runs ->
 							expect(@pbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
@@ -589,6 +603,14 @@ describe 'Protein testing', ->
 					it "should have the update button be disabled", ->
 						runs ->
 							expect(@pbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when purity not filled", ->
+					beforeEach ->
+						runs ->
+							@pbc.$('.bv_purity').val("")
+							@pbc.$('.bv_purity').keyup()
+					it "should show error on purity  field", ->
+						runs ->
+							expect(@pbc.$('.bv_group_purity').hasClass('error')).toBeTruthy()
 				describe "when amount made not filled", ->
 					beforeEach ->
 						runs ->
@@ -640,13 +662,12 @@ describe 'Protein testing', ->
 					@pbsc.$('.bv_batchList').val("CB000001-1")
 					@pbsc.$('.bv_batchList').change()
 				waitsFor ->
-					@pbsc.$('.bv_recordedBy option').length > 0
+					@pbsc.$('.bv_scientist option').length > 0
 				, 1000
 				runs ->
 					waits(1000)
 				runs ->
 					expect(@pbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
-					expect(@pbsc.$('.bv_recordedBy').val()).toEqual "jane"
 
 	describe "Protein Controller", ->
 		beforeEach ->
@@ -672,12 +693,14 @@ describe 'Protein testing', ->
 					runs ->
 						@pc.$('.bv_parentName').val(" Updated entity name   ")
 						@pc.$('.bv_parentName').keyup()
-						@pc.$('.bv_recordedBy').val("bob")
-						@pc.$('.bv_recordedBy').change()
+						@pc.$('.bv_scientist').val("bob")
+						@pc.$('.bv_scientist').change()
 						@pc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@pc.$('.bv_completionDate').keyup()
 						@pc.$('.bv_notebook').val("my notebook")
 						@pc.$('.bv_notebook').keyup()
+						@pc.$('.bv_molecularWeight').val("192")
+						@pc.$('.bv_molecularWeight').keyup()
 						@pc.$('.bv_type').val(" mab")
 						@pc.$('.bv_type').change()
 						@pc.$('.bv_sequence').val(" AUC")
@@ -686,12 +709,14 @@ describe 'Protein testing', ->
 						@pc.$('.bv_source').change()
 						@pc.$('.bv_sourceId').val("12345")
 						@pc.$('.bv_sourceId').keyup()
+						@pc.$('.bv_purity').val(" 24")
+						@pc.$('.bv_purity').keyup()
 						@pc.$('.bv_amountMade').val(" 24")
 						@pc.$('.bv_amountMade').keyup()
 						@pc.$('.bv_location').val(" Hood 4")
 						@pc.$('.bv_location').keyup()
 					waitsFor ->
-						@pc.$('.bv_recordedBy option').length > 0
+						@pc.$('.bv_scientist option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->

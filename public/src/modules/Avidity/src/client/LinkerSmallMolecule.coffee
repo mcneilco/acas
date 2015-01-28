@@ -16,6 +16,13 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule parent'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'linker small molecule parent'
@@ -35,43 +42,18 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 			kind: 'molecular weight'
 			unitType: 'molecular weight'
 			unitKind: 'g/mol'
+		,
+			key: 'structural file'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule parent'
+			type: 'fileValue'
+			kind: 'structural file'
 		]
 
 	validate: (attrs) ->
+		console.log "validate parent"
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'parentName'
-				message: "Name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		#		unless attrs.codeName is undefined
-		unless @isNew()
-			if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-				errors.push
-					attribute: 'recordedBy'
-					message: "Scientist must be set"
-			if attrs["completion date"]?
-				cDate = attrs["completion date"].get('value')
-				if cDate is undefined or cDate is "" then cDate = "fred"
-				if isNaN(cDate)
-					errors.push
-						attribute: 'completionDate'
-						message: "Date must be set"
-			if attrs.notebook?
-				notebook = attrs.notebook.get('value')
-				if notebook is "" or notebook is undefined
-					errors.push
-						attribute: 'notebook'
-						message: "Notebook must be set"
+		errors.push super(attrs)...
 		if attrs["molecular weight"]?
 			mw = attrs["molecular weight"].get('value')
 			if mw is "" or mw is undefined
@@ -83,6 +65,8 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 					attribute: 'molecularWeight'
 					message: "Molecular weight must be a number"
 
+		console.log "parent errors"
+		console.log errors
 		if errors.length > 0
 			return errors
 		else
@@ -104,6 +88,13 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 		defaultLabels: [
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule batch'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'linker small molecule batch'
@@ -156,6 +147,7 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 		]
 
 	validate: (attrs) ->
+		console.log "validate batch"
 		errors = []
 		errors.push super(attrs)...
 		if attrs.purity?
@@ -171,7 +163,8 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 					attribute: 'purity'
 					message: "Purity must be a number"
 
-
+		console.log "batch errors"
+		console.log errors
 		if errors.length > 0
 			return errors
 		else
@@ -202,16 +195,32 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 		@
 
 	setupStructuralFileController: ->
-		@structuralFileController= new AttachFileListController
-			canRemoveAttachFileModel: false
+		@structuralFileController = new LSFileChooserController
 			el: @$('.bv_structuralFile')
-			collection: new AttachFileList()
+			formId: 'fieldBlah',
+			maxNumberOfFiles: 1,
+			requiresValidation: false
+			url: UtilityFunctions::getFileServiceURL()
+			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@structuralFileController.on 'amClean', =>
 			@trigger 'amClean'
 		@structuralFileController.render()
+		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
+		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
+	handleFileUpload: (nameOnServer) =>
+		console.log "file uploaded"
+		@model.get("structural file").set("value", nameOnServer)
+		console.log @model
+		@trigger 'amDirty'
+
+	handleFileRemoved: =>
+		console.log "file removed"
+		@model.get("structural file").set("value", "")
+		console.log @model
 
 	updateModel: =>
 		@model.get("linker small molecule name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))

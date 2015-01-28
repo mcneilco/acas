@@ -8,7 +8,7 @@ class window.Thing extends Backbone.Model
 		@set lsKind: "thing"
 #		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
 		@set corpName: "" #TODO: need this?
-		@set recordedBy: ""
+		@set recordedBy: window.AppLaunchParams.loginUser.username
 		@set recordedDate: new Date().getTime()
 		@set shortDescription: " "
 		@set lsLabels: new LabelList()

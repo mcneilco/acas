@@ -24,8 +24,8 @@
           it("should have a kind", function() {
             return expect(this.lsmp.get('lsKind')).toEqual("linker small molecule");
           });
-          it("should have an empty scientist", function() {
-            return expect(this.lsmp.get('recordedBy')).toEqual("");
+          it("should have the recordedBy set to the logged in user", function() {
+            return expect(this.lsmp.get('recordedBy')).toEqual(window.AppLaunchParams.loginUser.username);
           });
           it("should have a recordedDate set to now", function() {
             return expect(new Date(this.lsmp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -44,14 +44,20 @@
             return expect(this.lsmp.get("lsStates").getStatesByTypeAndKind("metadata", "linker small molecule parent").length).toEqual(1);
           });
           return describe("model attributes for each value in defaultValues", function() {
+            it("Should have a model attribute for scientist", function() {
+              return expect(this.lsmp.get("scientist")).toBeDefined();
+            });
             it("Should have a model attribute for completion date", function() {
               return expect(this.lsmp.get("completion date")).toBeDefined();
             });
             it("Should have a model attribute for notebook", function() {
               return expect(this.lsmp.get("notebook")).toBeDefined();
             });
-            return it("Should have a model attribute for molecular weight", function() {
+            it("Should have a model attribute for molecular weight", function() {
               return expect(this.lsmp.get("molecular weight")).toBeDefined();
+            });
+            return it("Should have a model attribute for structural file", function() {
+              return expect(this.lsmp.get("structural file")).toBeDefined();
             });
           });
         });
@@ -62,17 +68,6 @@
             expect(this.lsmp.isValid()).toBeFalsy();
             filtErrors = _.filter(this.lsmp.validationError, function(err) {
               return err.attribute === 'parentName';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
-          it("should invalid when recorded date is empty", function() {
-            var filtErrors;
-            this.lsmp.set({
-              recordedDate: new Date("").getTime()
-            });
-            expect(this.lsmp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.lsmp.validationError, function(err) {
-              return err.attribute === 'recordedDate';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -101,7 +96,7 @@
           it("should have a kind", function() {
             return expect(this.lsmp.get('lsKind')).toEqual("linker small molecule");
           });
-          it("should have a scientist set", function() {
+          it("should have a recordedBy set", function() {
             return expect(this.lsmp.get('recordedBy')).toEqual("jane");
           });
           it("should have a recordedDate set", function() {
@@ -120,14 +115,20 @@
             expect(this.lsmp.get("lsStates").length).toEqual(1);
             return expect(this.lsmp.get("lsStates").getStatesByTypeAndKind("metadata", "linker small molecule parent").length).toEqual(1);
           });
+          it("Should have a scientist value", function() {
+            return expect(this.lsmp.get("scientist").get("value")).toEqual("john");
+          });
           it("Should have a completion date value", function() {
             return expect(this.lsmp.get("completion date").get("value")).toEqual(1342080000000);
           });
           it("Should have a notebook value", function() {
             return expect(this.lsmp.get("notebook").get("value")).toEqual("Notebook 1");
           });
-          return it("Should have a molecular weight value", function() {
+          it("Should have a molecular weight value", function() {
             return expect(this.lsmp.get("molecular weight").get("value")).toEqual(231);
+          });
+          return it("Should have a structural file value", function() {
+            return expect(this.lsmp.get("structural file").get("value")).toEqual("TestFile.mol");
           });
         });
         return describe("model validation", function() {
@@ -159,12 +160,10 @@
           });
           it("should be invalid when scientist not selected", function() {
             var filtErrors;
-            this.lsmp.set({
-              recordedBy: ""
-            });
+            this.lsmp.get('scientist').set('value', "unassigned");
             expect(this.lsmp.isValid()).toBeFalsy();
             filtErrors = _.filter(this.lsmp.validationError, function(err) {
-              return err.attribute === 'recordedBy';
+              return err.attribute === 'scientist';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -198,203 +197,6 @@
         });
       });
     });
-    describe("Linker Small Molecule Parent Controller testing", function() {
-      describe("When instantiated from new", function() {
-        beforeEach(function() {
-          this.lsmp = new LinkerSmallMoleculeParent();
-          this.lsmpc = new LinkerSmallMoleculeParentController({
-            model: this.lsmp,
-            el: $('#fixture')
-          });
-          return this.lsmpc.render();
-        });
-        return describe("basic existence tests", function() {
-          it("should exist", function() {
-            return expect(this.lsmpc).toBeDefined();
-          });
-          it("should load the template", function() {
-            return expect(this.lsmpc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
-          });
-          return it("should load the additional parent attributes temlate", function() {
-            return expect(this.lsmpc.$('.bv_molecularWeight').length).toEqual(1);
-          });
-        });
-      });
-      return describe("When instantiated from existing", function() {
-        beforeEach(function() {
-          this.lsmp = new LinkerSmallMoleculeParent(JSON.parse(JSON.stringify(window.linkerSmallMoleculeTestJSON.linkerSmallMoleculeParent)));
-          this.lsmpc = new LinkerSmallMoleculeParentController({
-            model: this.lsmp,
-            el: $('#fixture')
-          });
-          return this.lsmpc.render();
-        });
-        describe("render existing parameters", function() {
-          it("should show the linker small molecule parent id", function() {
-            return expect(this.lsmpc.$('.bv_parentCode').val()).toEqual("LSM000001");
-          });
-          it("should fill the linker small molecule parent name", function() {
-            return expect(this.lsmpc.$('.bv_parentName').val()).toEqual("Ad");
-          });
-          it("should fill the scientist field", function() {
-            waitsFor(function() {
-              return this.lsmpc.$('.bv_recordedBy option').length > 0;
-            }, 1000);
-            return runs(function() {
-              console.log(this.lsmpc.$('.bv_recordedBy').val());
-              return expect(this.lsmpc.$('.bv_recordedBy').val()).toEqual("jane");
-            });
-          });
-          it("should fill the completion date field", function() {
-            return expect(this.lsmpc.$('.bv_completionDate').val()).toEqual("2012-07-12");
-          });
-          it("should fill the notebook field", function() {
-            return expect(this.lsmpc.$('.bv_notebook').val()).toEqual("Notebook 1");
-          });
-          return it("should fill the molecular weight field", function() {
-            return expect(this.lsmpc.$('.bv_molecularWeight').val()).toEqual("231");
-          });
-        });
-        describe("model updates", function() {
-          it("should update model when parent name is changed", function() {
-            this.lsmpc.$('.bv_parentName').val(" New name   ");
-            this.lsmpc.$('.bv_parentName').keyup();
-            return expect(this.lsmpc.model.get('linker small molecule name').get('labelText')).toEqual("New name");
-          });
-          it("should update model when the scientist is changed", function() {
-            waitsFor(function() {
-              return this.lsmpc.$('.bv_recordedBy option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.lsmpc.$('.bv_recordedBy').val('unassigned');
-              this.lsmpc.$('.bv_recordedBy').change();
-              return expect(this.lsmpc.model.get('recordedBy')).toEqual("unassigned");
-            });
-          });
-          it("should update model when completion date is changed", function() {
-            this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.lsmpc.$('.bv_completionDate').keyup();
-            return expect(this.lsmpc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
-          });
-          it("should update model when notebook is changed", function() {
-            this.lsmpc.$('.bv_notebook').val(" Updated notebook  ");
-            this.lsmpc.$('.bv_notebook').keyup();
-            return expect(this.lsmpc.model.get('notebook').get('value')).toEqual("Updated notebook");
-          });
-          return it("should update model when molecular weight is changed", function() {
-            this.lsmpc.$('.bv_molecularWeight').val(" 12  ");
-            this.lsmpc.$('.bv_molecularWeight').keyup();
-            return expect(this.lsmpc.model.get('molecular weight').get('value')).toEqual(12);
-          });
-        });
-        return describe("controller validation rules", function() {
-          beforeEach(function() {
-            waitsFor(function() {
-              return this.lsmpc.$('.bv_recordedBy option').length > 0;
-            }, 1000);
-            return runs(function() {
-              this.lsmpc.$('.bv_parentName').val(" Updated entity name   ");
-              this.lsmpc.$('.bv_parentName').keyup();
-              this.lsmpc.$('.bv_recordedBy').val("bob");
-              this.lsmpc.$('.bv_recordedBy').change();
-              this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
-              this.lsmpc.$('.bv_completionDate').keyup();
-              this.lsmpc.$('.bv_notebook').val("my notebook");
-              this.lsmpc.$('.bv_notebook').keyup();
-              this.lsmpc.$('.bv_molecularWeight').val(" 24");
-              return this.lsmpc.$('.bv_molecularWeight').keyup();
-            });
-          });
-          describe("form validation setup", function() {
-            it("should be valid if form fully filled out", function() {
-              return runs(function() {
-                return expect(this.lsmpc.isValid()).toBeTruthy();
-              });
-            });
-            return it("should have the update button be enabled", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toBeUndefined();
-              });
-            });
-          });
-          describe("when name field not filled in", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.lsmpc.$('.bv_parentName').val("");
-                return this.lsmpc.$('.bv_parentName').keyup();
-              });
-            });
-            it("should be invalid if name not filled in", function() {
-              return runs(function() {
-                return expect(this.lsmpc.isValid()).toBeFalsy();
-              });
-            });
-            it("should show error in name field", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_group_parentName').hasClass('error')).toBeTruthy();
-              });
-            });
-            return it("should have the update button be disabled", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toEqual('disabled');
-              });
-            });
-          });
-          describe("when scientist not selected", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.lsmpc.$('.bv_recordedBy').val("");
-                return this.lsmpc.$('.bv_recordedBy').change();
-              });
-            });
-            return it("should show error on scientist dropdown", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when date field not filled in", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.lsmpc.$('.bv_completionDate').val("");
-                return this.lsmpc.$('.bv_completionDate').keyup();
-              });
-            });
-            return it("should show error in date field", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          describe("when notebook not filled", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.lsmpc.$('.bv_notebook').val("");
-                return this.lsmpc.$('.bv_notebook').keyup();
-              });
-            });
-            return it("should show error on notebook field", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          return describe("when molecular weight not filled", function() {
-            beforeEach(function() {
-              return runs(function() {
-                this.lsmpc.$('.bv_molecularWeight').val("");
-                return this.lsmpc.$('.bv_molecularWeight').keyup();
-              });
-            });
-            return it("should show error on molecular weight field", function() {
-              return runs(function() {
-                return expect(this.lsmpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-        });
-      });
-    });
     describe("Linker Small Molecule Batch model testing", function() {
       describe("when loaded from new", function() {
         beforeEach(function() {
@@ -410,13 +212,16 @@
           it("should have a kind", function() {
             return expect(this.lsmb.get('lsKind')).toEqual("linker small molecule");
           });
-          it("should have an empty scientist", function() {
-            return expect(this.lsmb.get('recordedBy')).toEqual("");
+          it("should have a recordedBy set to logged in user", function() {
+            return expect(this.lsmb.get('recordedBy')).toEqual(window.AppLaunchParams.loginUser.username);
           });
           it("should have a recordedDate set to now", function() {
             return expect(new Date(this.lsmb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
           return describe("model attributes for each value in defaultValues", function() {
+            it("Should have a model attribute for scientist", function() {
+              return expect(this.lsmb.get("scientist")).toBeDefined();
+            });
             it("Should have a model attribute for completion date", function() {
               return expect(this.lsmb.get("completion date")).toBeDefined();
             });
@@ -468,6 +273,9 @@
             expect(this.lsmb.get("lsStates").getStatesByTypeAndKind("metadata", "linker small molecule batch").length).toEqual(1);
             return expect(this.lsmb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
           });
+          it("Should have a scientist value", function() {
+            return expect(this.lsmb.get("scientist").get("value")).toEqual("john");
+          });
           it("Should have a completion date value", function() {
             return expect(this.lsmb.get("completion date").get("value")).toEqual(1342080000000);
           });
@@ -511,12 +319,10 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.lsmb.set({
-            recordedBy: ""
-          });
+          this.lsmb.get('scientist').set('value', "unassigned");
           expect(this.lsmb.isValid()).toBeFalsy();
           return filtErrors = _.filter(this.lsmb.validationError, function(err) {
-            return err.attribute === 'recordedBy';
+            return err.attribute === 'scientist';
           });
         });
         it("should be invalid when completion date is empty", function() {
@@ -574,6 +380,203 @@
         });
       });
     });
+    describe("Linker Small Molecule Parent Controller testing", function() {
+      describe("When instantiated from new", function() {
+        beforeEach(function() {
+          this.lsmp = new LinkerSmallMoleculeParent();
+          this.lsmpc = new LinkerSmallMoleculeParentController({
+            model: this.lsmp,
+            el: $('#fixture')
+          });
+          return this.lsmpc.render();
+        });
+        return describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.lsmpc).toBeDefined();
+          });
+          it("should load the template", function() {
+            return expect(this.lsmpc.$('.bv_parentCode').html()).toEqual("Autofilled when saved");
+          });
+          return it("should load the additional parent attributes temlate", function() {
+            return expect(this.lsmpc.$('.bv_molecularWeight').length).toEqual(1);
+          });
+        });
+      });
+      return describe("When instantiated from existing", function() {
+        beforeEach(function() {
+          this.lsmp = new LinkerSmallMoleculeParent(JSON.parse(JSON.stringify(window.linkerSmallMoleculeTestJSON.linkerSmallMoleculeParent)));
+          this.lsmpc = new LinkerSmallMoleculeParentController({
+            model: this.lsmp,
+            el: $('#fixture')
+          });
+          return this.lsmpc.render();
+        });
+        describe("render existing parameters", function() {
+          it("should show the linker small molecule parent id", function() {
+            return expect(this.lsmpc.$('.bv_parentCode').val()).toEqual("LSM000001");
+          });
+          it("should fill the linker small molecule parent name", function() {
+            return expect(this.lsmpc.$('.bv_parentName').val()).toEqual("Ad");
+          });
+          it("should fill the scientist field", function() {
+            waitsFor(function() {
+              return this.lsmpc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              console.log(this.lsmpc.$('.bv_scientist').val());
+              return expect(this.lsmpc.$('.bv_scientist').val()).toEqual("john");
+            });
+          });
+          it("should fill the completion date field", function() {
+            return expect(this.lsmpc.$('.bv_completionDate').val()).toEqual("2012-07-12");
+          });
+          it("should fill the notebook field", function() {
+            return expect(this.lsmpc.$('.bv_notebook').val()).toEqual("Notebook 1");
+          });
+          return it("should fill the molecular weight field", function() {
+            return expect(this.lsmpc.$('.bv_molecularWeight').val()).toEqual("231");
+          });
+        });
+        describe("model updates", function() {
+          it("should update model when parent name is changed", function() {
+            this.lsmpc.$('.bv_parentName').val(" New name   ");
+            this.lsmpc.$('.bv_parentName').keyup();
+            return expect(this.lsmpc.model.get('linker small molecule name').get('labelText')).toEqual("New name");
+          });
+          it("should update model when the scientist is changed", function() {
+            waitsFor(function() {
+              return this.lsmpc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.lsmpc.$('.bv_scientist').val('unassigned');
+              this.lsmpc.$('.bv_scientist').change();
+              return expect(this.lsmpc.model.get('scientist').get('value')).toEqual("unassigned");
+            });
+          });
+          it("should update model when completion date is changed", function() {
+            this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
+            this.lsmpc.$('.bv_completionDate').keyup();
+            return expect(this.lsmpc.model.get('completion date').get('value')).toEqual(new Date(2013, 2, 16).getTime());
+          });
+          it("should update model when notebook is changed", function() {
+            this.lsmpc.$('.bv_notebook').val(" Updated notebook  ");
+            this.lsmpc.$('.bv_notebook').keyup();
+            return expect(this.lsmpc.model.get('notebook').get('value')).toEqual("Updated notebook");
+          });
+          return it("should update model when molecular weight is changed", function() {
+            this.lsmpc.$('.bv_molecularWeight').val(" 12  ");
+            this.lsmpc.$('.bv_molecularWeight').keyup();
+            return expect(this.lsmpc.model.get('molecular weight').get('value')).toEqual(12);
+          });
+        });
+        return describe("controller validation rules", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.lsmpc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.lsmpc.$('.bv_parentName').val(" Updated entity name   ");
+              this.lsmpc.$('.bv_parentName').keyup();
+              this.lsmpc.$('.bv_scientist').val("bob");
+              this.lsmpc.$('.bv_scientist').change();
+              this.lsmpc.$('.bv_completionDate').val(" 2013-3-16   ");
+              this.lsmpc.$('.bv_completionDate').keyup();
+              this.lsmpc.$('.bv_notebook').val("my notebook");
+              this.lsmpc.$('.bv_notebook').keyup();
+              this.lsmpc.$('.bv_molecularWeight').val(" 24");
+              return this.lsmpc.$('.bv_molecularWeight').keyup();
+            });
+          });
+          describe("form validation setup", function() {
+            it("should be valid if form fully filled out", function() {
+              return runs(function() {
+                return expect(this.lsmpc.isValid()).toBeTruthy();
+              });
+            });
+            return it("should have the update button be enabled", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toBeUndefined();
+              });
+            });
+          });
+          describe("when name field not filled in", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmpc.$('.bv_parentName').val("");
+                return this.lsmpc.$('.bv_parentName').keyup();
+              });
+            });
+            it("should be invalid if name not filled in", function() {
+              return runs(function() {
+                return expect(this.lsmpc.isValid()).toBeFalsy();
+              });
+            });
+            it("should show error in name field", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_group_parentName').hasClass('error')).toBeTruthy();
+              });
+            });
+            return it("should have the update button be disabled", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_updateParent').attr('disabled')).toEqual('disabled');
+              });
+            });
+          });
+          describe("when scientist not selected", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmpc.$('.bv_scientist').val("");
+                return this.lsmpc.$('.bv_scientist').change();
+              });
+            });
+            return it("should show error on scientist dropdown", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when date field not filled in", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmpc.$('.bv_completionDate').val("");
+                return this.lsmpc.$('.bv_completionDate').keyup();
+              });
+            });
+            return it("should show error in date field", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          describe("when notebook not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmpc.$('.bv_notebook').val("");
+                return this.lsmpc.$('.bv_notebook').keyup();
+              });
+            });
+            return it("should show error on notebook field", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+          return describe("when molecular weight not filled", function() {
+            beforeEach(function() {
+              return runs(function() {
+                this.lsmpc.$('.bv_molecularWeight').val("");
+                return this.lsmpc.$('.bv_molecularWeight').keyup();
+              });
+            });
+            return it("should show error on molecular weight field", function() {
+              return runs(function() {
+                return expect(this.lsmpc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy();
+              });
+            });
+          });
+        });
+      });
+    });
     describe("Linker Small Molecule Batch Controller testing", function() {
       describe("When instantiated from new", function() {
         beforeEach(function() {
@@ -608,10 +611,10 @@
           });
           it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.lsmbc.$('.bv_recordedBy option').length > 0;
+              return this.lsmbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.lsmbc.$('.bv_recordedBy').val()).toEqual("jane");
+              return expect(this.lsmbc.$('.bv_scientist').val()).toEqual("john");
             });
           });
           it("should fill the completion date field", function() {
@@ -644,12 +647,12 @@
         describe("model updates", function() {
           it("should update model when the scientist is changed", function() {
             waitsFor(function() {
-              return this.lsmbc.$('.bv_recordedBy option').length > 0;
+              return this.lsmbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.lsmbc.$('.bv_recordedBy').val('unassigned');
-              this.lsmbc.$('.bv_recordedBy').change();
-              return expect(this.lsmbc.model.get('recordedBy')).toEqual("unassigned");
+              this.lsmbc.$('.bv_scientist').val('unassigned');
+              this.lsmbc.$('.bv_scientist').change();
+              return expect(this.lsmbc.model.get('scientist').get('value')).toEqual("unassigned");
             });
           });
           it("should update model when completion date is changed", function() {
@@ -696,11 +699,11 @@
         return describe("controller validation rules", function() {
           beforeEach(function() {
             waitsFor(function() {
-              return this.lsmbc.$('.bv_recordedBy option').length > 0;
+              return this.lsmbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.lsmbc.$('.bv_recordedBy').val("bob");
-              this.lsmbc.$('.bv_recordedBy').change();
+              this.lsmbc.$('.bv_scientist').val("bob");
+              this.lsmbc.$('.bv_scientist').change();
               this.lsmbc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.lsmbc.$('.bv_completionDate').keyup();
               this.lsmbc.$('.bv_notebook').val("my notebook");
@@ -732,13 +735,13 @@
           describe("when scientist not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.lsmbc.$('.bv_recordedBy').val("");
-                return this.lsmbc.$('.bv_recordedBy').change();
+                this.lsmbc.$('.bv_scientist').val("");
+                return this.lsmbc.$('.bv_scientist').change();
               });
             });
             it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.lsmbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.lsmbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
             return it("should have the update button be disabled", function() {
@@ -878,14 +881,13 @@
             return this.lsmbsc.$('.bv_batchList').change();
           });
           waitsFor(function() {
-            return this.lsmbsc.$('.bv_recordedBy option').length > 0;
+            return this.lsmbsc.$('.bv_scientist option').length > 0;
           }, 1000);
           runs(function() {
             return waits(1000);
           });
           return runs(function() {
-            expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
-            return expect(this.lsmbsc.$('.bv_recordedBy').val()).toEqual("jane");
+            return expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
           });
         });
       });
@@ -923,8 +925,8 @@
             runs(function() {
               this.lsmc.$('.bv_parentName').val(" Updated entity name   ");
               this.lsmc.$('.bv_parentName').keyup();
-              this.lsmc.$('.bv_recordedBy').val("bob");
-              this.lsmc.$('.bv_recordedBy').change();
+              this.lsmc.$('.bv_scientist').val("bob");
+              this.lsmc.$('.bv_scientist').change();
               this.lsmc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.lsmc.$('.bv_completionDate').keyup();
               this.lsmc.$('.bv_notebook').val("my notebook");
@@ -943,7 +945,7 @@
               return this.lsmc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.lsmc.$('.bv_recordedBy option').length > 0;
+              return this.lsmc.$('.bv_scientist option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {

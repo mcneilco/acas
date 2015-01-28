@@ -65,6 +65,8 @@
 
     LSFileChooserController.prototype.requiresValidation = true;
 
+    LSFileChooserController.prototype.hideDelete = false;
+
     LSFileChooserController.prototype.initialize = function() {
       var self;
       _.bindAll(this, 'render', 'handleDragOverDocument', 'handleDragLeaveDocument', 'handleDeleteFileUIChanges', 'handleFileAddedEvent', 'fileUploadComplete', 'fileUploadFailed', 'canAcceptAnotherFile', 'filePassedServerValidation');
@@ -105,10 +107,16 @@
       if (this.options.requiresValidation != null) {
         this.requiresValidation = this.options.requiresValidation;
       }
+      if (this.options.hideDelete != null) {
+        this.hideDelete = this.options.hideDelete;
+        console.log("hide delete");
+        console.log(this.hideDelete);
+      }
       return this.currentNumberOfFiles = 0;
     };
 
     LSFileChooserController.prototype.events = {
+      'click .bv_deleteFile': 'handleFileValueChanged',
       'click .bv_cancelFile': 'handleDeleteFileUIChanges'
     };
 
@@ -132,6 +140,11 @@
       }
     };
 
+    LSFileChooserController.prototype.handleFileValueChanged = function() {
+      console.log("handle file value changed");
+      return this.trigger('fileDeleted');
+    };
+
     LSFileChooserController.prototype.handleDeleteFileUIChanges = function() {
       this.$('.bv_manualFileSelect').show("slide");
       this.currentNumberOfFiles--;
@@ -148,6 +161,9 @@
     LSFileChooserController.prototype.fileUploadComplete = function(e, data) {
       var self;
       self = this;
+      if (!this.options.hideDelete) {
+        this.$('.delete').show();
+      }
       _.each(data.result, function(result) {
         return self.listOfFileModels.push(new LSFileChooserModel({
           fileNameOnServer: result.name

@@ -89,8 +89,8 @@
         it("should have a kind", function() {
           return expect(this.siRNA.get('lsKind')).toEqual("thing");
         });
-        it("should have an empty scientist", function() {
-          return expect(this.siRNA.get('recordedBy')).toEqual("");
+        it("should have the recordedBy set to the logged in user", function() {
+          return expect(this.siRNA.get('recordedBy')).toEqual(window.AppLaunchParams.loginUser.username);
         });
         it("should have a recordedDate set to now", function() {
           return expect(new Date(this.siRNA.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -202,7 +202,7 @@
         it("should have a kind", function() {
           return expect(this.testsiRNA.get('lsKind')).toEqual("siRNA");
         });
-        it("should have a scientist set", function() {
+        it("should have a recordedBy set", function() {
           return expect(this.testsiRNA.get('recordedBy')).toEqual("egao");
         });
         it("should have a recordedDate", function() {

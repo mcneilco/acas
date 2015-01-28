@@ -31,6 +31,13 @@
       ],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'cationic block parent',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'cationic block parent',
@@ -42,6 +49,12 @@
           stateKind: 'cationic block parent',
           type: 'stringValue',
           kind: 'notebook'
+        }, {
+          key: 'structural file',
+          stateType: 'metadata',
+          stateKind: 'cationic block parent',
+          type: 'fileValue',
+          kind: 'structural file'
         }
       ]
     };
@@ -71,6 +84,13 @@
       defaultLabels: [],
       defaultValues: [
         {
+          key: 'scientist',
+          stateType: 'metadata',
+          stateKind: 'cationic block batch',
+          type: 'codeValue',
+          kind: 'scientist',
+          codeOrigin: window.conf.scientistCodeOrigin
+        }, {
           key: 'completion date',
           stateType: 'metadata',
           stateKind: 'cationic block batch',
@@ -152,9 +172,7 @@
         }
       }
       if (attrs.purity != null) {
-        console.log("purity");
         purity = attrs.purity.get('value');
-        console.log(purity);
         if (purity === "" || purity === void 0) {
           errors.push({
             attribute: 'purity',
@@ -184,6 +202,8 @@
 
     function CationicBlockParentController() {
       this.updateModel = __bind(this.updateModel, this);
+      this.handleFileRemoved = __bind(this.handleFileRemoved, this);
+      this.handleFileUpload = __bind(this.handleFileUpload, this);
       this.render = __bind(this.render, this);
       return CationicBlockParentController.__super__.constructor.apply(this, arguments);
     }
@@ -208,10 +228,14 @@
     };
 
     CationicBlockParentController.prototype.setupStructuralFileController = function() {
-      this.structuralFileController = new AttachFileListController({
-        canRemoveAttachFileModel: false,
+      this.structuralFileController = new LSFileChooserController({
         el: this.$('.bv_structuralFile'),
-        collection: new AttachFileList()
+        formId: 'fieldBlah',
+        maxNumberOfFiles: 1,
+        requiresValidation: false,
+        url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
         return function() {
@@ -223,7 +247,22 @@
           return _this.trigger('amClean');
         };
       })(this));
-      return this.structuralFileController.render();
+      this.structuralFileController.render();
+      this.structuralFileController.on('fileUploader:uploadComplete', this.handleFileUpload);
+      return this.structuralFileController.on('fileDeleted', this.handleFileRemoved);
+    };
+
+    CationicBlockParentController.prototype.handleFileUpload = function(nameOnServer) {
+      console.log("file uploaded");
+      this.model.get("structural file").set("value", nameOnServer);
+      console.log(this.model);
+      return this.trigger('amDirty');
+    };
+
+    CationicBlockParentController.prototype.handleFileRemoved = function() {
+      console.log("file removed");
+      this.model.get("structural file").set("value", "");
+      return console.log(this.model);
     };
 
     CationicBlockParentController.prototype.updateModel = function() {

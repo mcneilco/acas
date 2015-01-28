@@ -17,8 +17,8 @@ describe 'Spacer testing', ->
 					expect(@sp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@sp.get('lsKind')).toEqual "spacer"
-				it "should have an empty scientist", ->
-					expect(@sp.get('recordedBy')).toEqual ""
+				it "should have the recordedBy set to the logged in user", ->
+					expect(@sp.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
 				it "should have a recordedDate set to now", ->
 					expect(new Date(@sp.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it "Should have a lsLabels with one label", ->
@@ -32,25 +32,22 @@ describe 'Spacer testing', ->
 					expect(@sp.get("lsStates").length).toEqual 1
 					expect(@sp.get("lsStates").getStatesByTypeAndKind("metadata", "spacer parent").length).toEqual 1
 				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@sp.get("scientist")).toBeDefined()
 					it "Should have a model attribute for completion date", ->
 						expect(@sp.get("completion date")).toBeDefined()
 					it "Should have a model attribute for notebook", ->
 						expect(@sp.get("notebook")).toBeDefined()
 					it "Should have a model attribute for molecular weight", ->
 						expect(@sp.get("molecular weight")).toBeDefined()
+					it "Should have a model attribute for structural file", ->
+						expect(@sp.get("structural file")).toBeDefined()
 			describe "model validation", ->
 				it "should be invalid when name is empty", ->
 					@sp.get("spacer name").set("labelText", "")
 					expect(@sp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@sp.validationError, (err) ->
 						err.attribute=='parentName'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should invalid when recorded date is empty", ->
-					@sp.set recordedDate: new Date("").getTime()
-					expect(@sp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@sp.validationError, (err) ->
-						err.attribute=='recordedDate'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when molecular weight is NaN", ->
@@ -71,7 +68,7 @@ describe 'Spacer testing', ->
 					expect(@sp.get('lsType')).toEqual "parent"
 				it "should have a kind", ->
 					expect(@sp.get('lsKind')).toEqual "spacer"
-				it "should have a scientist set", ->
+				it "should have a recordedBy set", ->
 					expect(@sp.get('recordedBy')).toEqual "jane"
 				it "should have a recordedDate set", ->
 					expect(@sp.get('recordedDate')).toEqual 1375141508000
@@ -85,12 +82,16 @@ describe 'Spacer testing', ->
 					expect(@sp.get('lsStates')).toBeDefined()
 					expect(@sp.get("lsStates").length).toEqual 1
 					expect(@sp.get("lsStates").getStatesByTypeAndKind("metadata", "spacer parent").length).toEqual 1
+				it "Should have a scientist value", ->
+					expect(@sp.get("scientist").get("value")).toEqual "john"
 				it "Should have a completion date value", ->
 					expect(@sp.get("completion date").get("value")).toEqual 1342080000000
 				it "Should have a notebook value", ->
 					expect(@sp.get("notebook").get("value")).toEqual "Notebook 1"
 				it "Should have a molecular weight value", ->
 					expect(@sp.get("molecular weight").get("value")).toEqual 231
+				it "Should have a structural file value", ->
+					expect(@sp.get("structural file").get("value")).toEqual "TestFile.mol"
 
 			describe "model validation", ->
 				beforeEach ->
@@ -112,10 +113,10 @@ describe 'Spacer testing', ->
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
-					@sp.set recordedBy: ""
+					@sp.get('scientist').set('value', "unassigned")
 					expect(@sp.isValid()).toBeFalsy()
 					filtErrors = _.filter(@sp.validationError, (err) ->
-						err.attribute=='recordedBy'
+						err.attribute=='scientist'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when completion date is empty", ->
@@ -139,6 +140,143 @@ describe 'Spacer testing', ->
 						err.attribute=='molecularWeight'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Spacer Batch model testing", ->
+		describe "when loaded from new", ->
+			beforeEach ->
+				@sb= new SpacerBatch()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@sb).toBeDefined()
+				it "should have a type", ->
+					expect(@sb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@sb.get('lsKind')).toEqual "spacer"
+				it "should have a recordedBy set to logged in user", ->
+					expect(@sb.get('recordedBy')).toEqual window.AppLaunchParams.loginUser.username
+				it "should have a recordedDate set to now", ->
+					expect(new Date(@sb.get('recordedDate')).getHours()).toEqual new Date().getHours()
+				#				it "should have an analytical method file type", ->
+				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
+				#				it "should have an analytical method fileValue", ->
+				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
+				describe "model attributes for each value in defaultValues", ->
+					it "Should have a model attribute for scientist", ->
+						expect(@sb.get("scientist")).toBeDefined()
+					it "Should have a model attribute for completion date", ->
+						expect(@sb.get("completion date")).toBeDefined()
+					it "Should have a model attribute for notebook", ->
+						expect(@sb.get("notebook")).toBeDefined()
+					it "Should have a model attribute for source", ->
+						expect(@sb.get("source").get).toBeDefined()
+						expect(@sb.get("source").get('value')).toEqual "Avidity"
+					it "Should have a model attribute for source id", ->
+						expect(@sb.get("source id")).toBeDefined()
+
+					#					it "Should have a model attribute for analytical method file type", ->
+					#						expect(@sb.get("analytical file type")).toBeDefined()
+					it "Should have a model attribute for purity", ->
+						expect(@sb.get("purity")).toBeDefined()
+					it "Should have a model attribute for amount made", ->
+						expect(@sb.get("amount made")).toBeDefined()
+					it "Should have a model attribute for location", ->
+						expect(@sb.get("location")).toBeDefined()
+
+		describe "When created from existing", ->
+			beforeEach ->
+				@sb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
+			describe "after initial load", ->
+				it "should be defined", ->
+					expect(@sb).toBeDefined()
+				it "should have a type", ->
+					expect(@sb.get('lsType')).toEqual "batch"
+				it "should have a kind", ->
+					expect(@sb.get('lsKind')).toEqual "spacer"
+				it "should have a recordedBy set", ->
+					expect(@sb.get('recordedBy')).toEqual "jane"
+				it "should have a recordedDate set", ->
+					expect(@sb.get('recordedDate')).toEqual 1375141508000
+				it "Should have a lsStates with the states in defaultStates", ->
+					expect(@sb.get('lsStates')).toBeDefined()
+					expect(@sb.get("lsStates").length).toEqual 2
+					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual 1
+					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
+				it "Should have a scientist value", ->
+					expect(@sb.get("scientist").get("value")).toEqual "john"
+				it "Should have a completion date value", ->
+					expect(@sb.get("completion date").get("value")).toEqual 1342080000000
+				it "Should have a notebook value", ->
+					expect(@sb.get("notebook").get("value")).toEqual "Notebook 1"
+				it "Should have a source value", ->
+					expect(@sb.get("source").get("value")).toEqual "Avidity"
+				it "Should have a source id", ->
+					expect(@sb.get("source id").get("value")).toEqual "12345"
+				it "Should have a purity value", ->
+					expect(@sb.get("purity").get("value")).toEqual 92
+				it "Should have an amount made value", ->
+					expect(@sb.get("amount made").get("value")).toEqual 2.3
+				it "Should have a location value", ->
+					expect(@sb.get("location").get("value")).toEqual "Cabinet 1"
+
+		describe "model validation", ->
+			beforeEach ->
+				@sb = new SpacerBatch window.spacerTestJSON.spacerBatch
+			it "should be valid when loaded from saved", ->
+				expect(@sb.isValid()).toBeTruthy()
+			it "should be invalid when recorded date is empty", ->
+				@sb.set recordedDate: new Date("").getTime()
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='recordedDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when scientist not selected", ->
+				@sb.get('scientist').set('value', "unassigned")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='scientist'
+				)
+			it "should be invalid when completion date is empty", ->
+				@sb.get("completion date").set("value", new Date("").getTime())
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='completionDate'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when notebook is empty", ->
+				@sb.get("notebook").set("value", "")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='notebook'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when source is not selected", ->
+				@sb.get("source").set("value", "unassigned")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='source'
+				)
+			it "should be invalid when purity is NaN", ->
+				@sb.get("purity").set("value", "fred")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='purity'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when amount made is NaN", ->
+				@sb.get("amount made").set("value", "fred")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='amountMade'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when location is empty", ->
+				@sb.get("location").set("value", "")
+				expect(@sb.isValid()).toBeFalsy()
+				filtErrors = _.filter(@sb.validationError, (err) ->
+					err.attribute=='location'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Spacer Parent Controller testing", ->
 		describe "When instantiated from new", ->
@@ -169,11 +307,11 @@ describe 'Spacer testing', ->
 					expect(@spc.$('.bv_parentName').val()).toEqual "PEG10"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@spc.$('.bv_recordedBy option').length > 0
+						@spc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						console.log @spc.$('.bv_recordedBy').val()
-						expect(@spc.$('.bv_recordedBy').val()).toEqual "jane"
+						console.log @spc.$('.bv_scientist').val()
+						expect(@spc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@spc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -188,12 +326,12 @@ describe 'Spacer testing', ->
 					expect(@spc.model.get('spacer name').get('labelText')).toEqual "New name"
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@spc.$('.bv_recordedBy option').length > 0
+						@spc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@spc.$('.bv_recordedBy').val('unassigned')
-						@spc.$('.bv_recordedBy').change()
-						expect(@spc.model.get('recordedBy')).toEqual "unassigned"
+						@spc.$('.bv_scientist').val('unassigned')
+						@spc.$('.bv_scientist').change()
+						expect(@spc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@spc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@spc.$('.bv_completionDate').keyup()
@@ -210,13 +348,13 @@ describe 'Spacer testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@spc.$('.bv_recordedBy option').length > 0
+						@spc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
 						@spc.$('.bv_parentName').val(" Updated entity name   ")
 						@spc.$('.bv_parentName').keyup()
-						@spc.$('.bv_recordedBy').val("bob")
-						@spc.$('.bv_recordedBy').change()
+						@spc.$('.bv_scientist').val("bob")
+						@spc.$('.bv_scientist').change()
 						@spc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@spc.$('.bv_completionDate').keyup()
 						@spc.$('.bv_notebook').val("my notebook")
@@ -247,11 +385,11 @@ describe 'Spacer testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@spc.$('.bv_recordedBy').val("")
-							@spc.$('.bv_recordedBy').change()
+							@spc.$('.bv_scientist').val("")
+							@spc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@spc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@spc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
@@ -276,128 +414,6 @@ describe 'Spacer testing', ->
 					it "should show error on molecular weight field", ->
 						runs ->
 							expect(@spc.$('.bv_group_molecularWeight').hasClass('error')).toBeTruthy()
-
-	describe "Spacer Batch model testing", ->
-		describe "when loaded from new", ->
-			beforeEach ->
-				@sb= new SpacerBatch()
-			describe "Existence and Defaults", ->
-				it "should be defined", ->
-					expect(@sb).toBeDefined()
-				it "should have a type", ->
-					expect(@sb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@sb.get('lsKind')).toEqual "spacer"
-				it "should have an empty scientist", ->
-					expect(@sb.get('recordedBy')).toEqual ""
-				it "should have a recordedDate set to now", ->
-					expect(new Date(@sb.get('recordedDate')).getHours()).toEqual new Date().getHours()
-				#				it "should have an analytical method file type", ->
-				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
-				#				it "should have an analytical method fileValue", ->
-				#					expect(@sb.get('analyticalFileType')).toEqual "unassigned"
-				describe "model attributes for each value in defaultValues", ->
-					it "Should have a model attribute for completion date", ->
-						expect(@sb.get("completion date")).toBeDefined()
-					it "Should have a model attribute for notebook", ->
-						expect(@sb.get("notebook")).toBeDefined()
-					it "Should have a model attribute for source", ->
-						expect(@sb.get("source").get).toBeDefined()
-						expect(@sb.get("source").get('value')).toEqual "Avidity"
-					it "Should have a model attribute for source id", ->
-						expect(@sb.get("source id")).toBeDefined()
-
-					#					it "Should have a model attribute for analytical method file type", ->
-					#						expect(@sb.get("analytical file type")).toBeDefined()
-					it "Should have a model attribute for amount made", ->
-						expect(@sb.get("amount made")).toBeDefined()
-					it "Should have a model attribute for location", ->
-						expect(@sb.get("location")).toBeDefined()
-
-		describe "When created from existing", ->
-			beforeEach ->
-				@sb = new SpacerBatch JSON.parse(JSON.stringify(window.spacerTestJSON.spacerBatch))
-			describe "after initial load", ->
-				it "should be defined", ->
-					expect(@sb).toBeDefined()
-				it "should have a type", ->
-					expect(@sb.get('lsType')).toEqual "batch"
-				it "should have a kind", ->
-					expect(@sb.get('lsKind')).toEqual "spacer"
-				it "should have a scientist set", ->
-					expect(@sb.get('recordedBy')).toEqual "jane"
-				it "should have a recordedDate set", ->
-					expect(@sb.get('recordedDate')).toEqual 1375141508000
-				it "Should have a lsStates with the states in defaultStates", ->
-					expect(@sb.get('lsStates')).toBeDefined()
-					expect(@sb.get("lsStates").length).toEqual 2
-					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "spacer batch").length).toEqual 1
-					expect(@sb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual 1
-				it "Should have a completion date value", ->
-					expect(@sb.get("completion date").get("value")).toEqual 1342080000000
-				it "Should have a notebook value", ->
-					expect(@sb.get("notebook").get("value")).toEqual "Notebook 1"
-				it "Should have a source value", ->
-					expect(@sb.get("source").get("value")).toEqual "Avidity"
-				it "Should have a source id", ->
-					expect(@sb.get("source id").get("value")).toEqual "12345"
-				it "Should have an amount made value", ->
-					expect(@sb.get("amount made").get("value")).toEqual 2.3
-				it "Should have a location value", ->
-					expect(@sb.get("location").get("value")).toEqual "Cabinet 1"
-
-		describe "model validation", ->
-			beforeEach ->
-				@sb = new SpacerBatch window.spacerTestJSON.spacerBatch
-			it "should be valid when loaded from saved", ->
-				expect(@sb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@sb.set recordedDate: new Date("").getTime()
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when scientist not selected", ->
-				@sb.set recordedBy: ""
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='recordedBy'
-				)
-			it "should be invalid when completion date is empty", ->
-				@sb.get("completion date").set("value", new Date("").getTime())
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='completionDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when notebook is empty", ->
-				@sb.get("notebook").set("value", "")
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='notebook'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when source is not selected", ->
-				@sb.get("source").set("value", "unassigned")
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='source'
-				)
-			it "should be invalid when amount made is NaN", ->
-				@sb.get("amount made").set("value", "fred")
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='amountMade'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
-			it "should be invalid when location is empty", ->
-				@sb.get("location").set("value", "")
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='location'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Spacer Batch Controller testing", ->
 		describe "When instantiated from new", ->
@@ -424,10 +440,10 @@ describe 'Spacer testing', ->
 					expect(@sbc.$('.bv_batchCode').val()).toEqual "SP000001-1"
 				it "should fill the scientist field", ->
 					waitsFor ->
-						@sbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						expect(@sbc.$('.bv_recordedBy').val()).toEqual "jane"
+						expect(@sbc.$('.bv_scientist').val()).toEqual "john"
 				it "should fill the completion date field", ->
 					expect(@sbc.$('.bv_completionDate').val()).toEqual "2012-07-12"
 				it "should fill the notebook field", ->
@@ -440,6 +456,8 @@ describe 'Spacer testing', ->
 						expect(@sbc.$('.bv_source').val()).toEqual "Avidity"
 				it "should fill the source id field", ->
 					expect(@sbc.$('.bv_sourceId').val()).toEqual "12345"
+				it "should fill the purity field", ->
+					expect(@sbc.$('.bv_purity').val()).toEqual "92"
 				it "should fill the amountMade field", ->
 					expect(@sbc.$('.bv_amountMade').val()).toEqual "2.3"
 				it "should fill the location field", ->
@@ -447,12 +465,12 @@ describe 'Spacer testing', ->
 			describe "model updates", ->
 				it "should update model when the scientist is changed", ->
 					waitsFor ->
-						@sbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@sbc.$('.bv_recordedBy').val('unassigned')
-						@sbc.$('.bv_recordedBy').change()
-						expect(@sbc.model.get('recordedBy')).toEqual "unassigned"
+						@sbc.$('.bv_scientist').val('unassigned')
+						@sbc.$('.bv_scientist').change()
+						expect(@sbc.model.get('scientist').get('value')).toEqual "unassigned"
 				it "should update model when completion date is changed", ->
 					@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
 					@sbc.$('.bv_completionDate').keyup()
@@ -473,6 +491,10 @@ describe 'Spacer testing', ->
 					@sbc.$('.bv_sourceId').val(" 252  ")
 					@sbc.$('.bv_sourceId').keyup()
 					expect(@sbc.model.get('source id').get('value')).toEqual "252"
+				it "should update model when purity is changed", ->
+					@sbc.$('.bv_purity').val(" 29  ")
+					@sbc.$('.bv_purity').keyup()
+					expect(@sbc.model.get('purity').get('value')).toEqual 29
 				it "should update model when amount made is changed", ->
 					@sbc.$('.bv_amountMade').val(" 12  ")
 					@sbc.$('.bv_amountMade').keyup()
@@ -485,11 +507,11 @@ describe 'Spacer testing', ->
 			describe "controller validation rules", ->
 				beforeEach ->
 					waitsFor ->
-						@sbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_scientist option').length > 0
 					, 1000
 					runs ->
-						@sbc.$('.bv_recordedBy').val("bob")
-						@sbc.$('.bv_recordedBy').change()
+						@sbc.$('.bv_scientist').val("bob")
+						@sbc.$('.bv_scientist').change()
 						@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@sbc.$('.bv_completionDate').keyup()
 						@sbc.$('.bv_notebook').val("my notebook")
@@ -498,6 +520,8 @@ describe 'Spacer testing', ->
 						@sbc.$('.bv_source').change()
 						@sbc.$('.bv_sourceId').val(" 24")
 						@sbc.$('.bv_sourceId').keyup()
+						@sbc.$('.bv_purity').val(" 82")
+						@sbc.$('.bv_purity').keyup()
 						@sbc.$('.bv_amountMade').val(" 24")
 						@sbc.$('.bv_amountMade').keyup()
 						@sbc.$('.bv_location').val(" Hood 4")
@@ -512,11 +536,11 @@ describe 'Spacer testing', ->
 				describe "when scientist not selected", ->
 					beforeEach ->
 						runs ->
-							@sbc.$('.bv_recordedBy').val("")
-							@sbc.$('.bv_recordedBy').change()
+							@sbc.$('.bv_scientist').val("")
+							@sbc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@sbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@sbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 					it "should have the update button be disabled", ->
 						runs ->
 							expect(@sbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
@@ -547,6 +571,14 @@ describe 'Spacer testing', ->
 					it "should have the update button be disabled", ->
 						runs ->
 							expect(@sbc.$('.bv_saveBatch').attr('disabled')).toEqual 'disabled'
+				describe "when purity not filled", ->
+					beforeEach ->
+						runs ->
+							@sbc.$('.bv_purity').val("")
+							@sbc.$('.bv_purity').keyup()
+					it "should show error on purity  field", ->
+						runs ->
+							expect(@sbc.$('.bv_group_purity').hasClass('error')).toBeTruthy()
 				describe "when amount made not filled", ->
 					beforeEach ->
 						runs ->
@@ -598,13 +630,12 @@ describe 'Spacer testing', ->
 					@sbsc.$('.bv_batchList').val("CB000001-1")
 					@sbsc.$('.bv_batchList').change()
 				waitsFor ->
-					@sbsc.$('.bv_recordedBy option').length > 0
+					@sbsc.$('.bv_scientist option').length > 0
 				, 1000
 				runs ->
 					waits(1000)
 				runs ->
 					expect(@sbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
-					expect(@sbsc.$('.bv_recordedBy').val()).toEqual "jane"
 
 	describe "Spacer Controller", ->
 		beforeEach ->
@@ -630,8 +661,8 @@ describe 'Spacer testing', ->
 					runs ->
 						@sbc.$('.bv_parentName').val(" Updated entity name   ")
 						@sbc.$('.bv_parentName').keyup()
-						@sbc.$('.bv_recordedBy').val("bob")
-						@sbc.$('.bv_recordedBy').change()
+						@sbc.$('.bv_scientist').val("bob")
+						@sbc.$('.bv_scientist').change()
 						@sbc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@sbc.$('.bv_completionDate').keyup()
 						@sbc.$('.bv_notebook').val("my notebook")
@@ -642,12 +673,14 @@ describe 'Spacer testing', ->
 						@sbc.$('.bv_sourceId').keyup()
 						@sbc.$('.bv_molecularWeight').val(" 24")
 						@sbc.$('.bv_molecularWeight').keyup()
+						@sbc.$('.bv_purity').val(" 24")
+						@sbc.$('.bv_purity').keyup()
 						@sbc.$('.bv_amountMade').val(" 24")
 						@sbc.$('.bv_amountMade').keyup()
 						@sbc.$('.bv_location').val(" Hood 4")
 						@sbc.$('.bv_location').keyup()
 					waitsFor ->
-						@sbc.$('.bv_recordedBy option').length > 0
+						@sbc.$('.bv_scientist option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
@@ -655,7 +688,7 @@ describe 'Spacer testing', ->
 				it "should update the parent code", ->
 					runs ->
 						@sbc.$('.bv_save').click()
-					waits(1000)
+					waits(2000)
 					runs ->
 						expect(@sbc.$('.bv_parentCode').html()).toEqual "SP000001"
 				it "should update the batch code", ->

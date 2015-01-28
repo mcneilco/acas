@@ -35,6 +35,35 @@
           lsValues: [
             {
               clobValue: null,
+              codeOrigin: "ACAS authors",
+              codeValue: "john",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 32312,
+              ignored: false,
+              lsTransaction: {
+                comments: null,
+                id: 127,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "scientist",
+              valueOperator: null,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_scientist",
+              valueUnit: null,
+              version: 0
+            }, {
+              clobValue: null,
               codeValue: null,
               comments: null,
               dateValue: 1342080000000,
@@ -87,6 +116,34 @@
               valueOperator: null,
               lsType: "stringValue",
               lsTypeAndKind: "stringValue_notebook",
+              valueUnit: null,
+              version: 0
+            }, {
+              clobValue: null,
+              codeValue: null,
+              comments: null,
+              dateValue: null,
+              fileValue: "TestFile.mol",
+              id: 3125,
+              ignored: false,
+              lsTransaction: {
+                comments: null,
+                id: 127,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "structural file",
+              valueOperator: null,
+              lsType: "fileValue",
+              lsTypeAndKind: "fileValue_structural file",
               valueUnit: null,
               version: 0
             }, {
@@ -154,6 +211,35 @@
           lsTypeAndKind: "metadata_cationic block batch",
           lsValues: [
             {
+              clobValue: null,
+              codeOrigin: "ACAS authors",
+              codeValue: "john",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 32312,
+              ignored: false,
+              lsTransaction: {
+                comments: null,
+                id: 127,
+                recordedDate: 1363388477000,
+                version: 0
+              },
+              modifiedDate: null,
+              numericValue: null,
+              publicData: true,
+              recordedDate: 1363388477000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              urlValue: null,
+              lsKind: "scientist",
+              valueOperator: null,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_scientist",
+              valueUnit: null,
+              version: 0
+            }, {
               clobValue: null,
               codeValue: null,
               comments: null,

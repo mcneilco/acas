@@ -24,8 +24,8 @@
           it("should have a kind", function() {
             return expect(this.cbp.get('lsKind')).toEqual("cationic block");
           });
-          it("should have an empty scientist", function() {
-            return expect(this.cbp.get('recordedBy')).toEqual("");
+          it("should have the recordedBy set to the logged in user", function() {
+            return expect(this.cbp.get('recordedBy')).toEqual(window.AppLaunchParams.loginUser.username);
           });
           it("should have a recordedDate set to now", function() {
             return expect(new Date(this.cbp.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -44,32 +44,27 @@
             return expect(this.cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual(1);
           });
           return describe("model attributes for each value in defaultValues", function() {
+            it("Should have a model attribute for scientist", function() {
+              return expect(this.cbp.get("scientist")).toBeDefined();
+            });
             it("Should have a model attribute for completion date", function() {
               return expect(this.cbp.get("completion date")).toBeDefined();
             });
-            return it("Should have a model attribute for notebook", function() {
+            it("Should have a model attribute for notebook", function() {
               return expect(this.cbp.get("notebook")).toBeDefined();
+            });
+            return it("Should have a model attribute for structural file", function() {
+              return expect(this.cbp.get("structural file")).toBeDefined();
             });
           });
         });
         return describe("model validation", function() {
-          it("should be invalid when name is empty", function() {
+          return it("should be invalid when name is empty", function() {
             var filtErrors;
             this.cbp.get("cationic block name").set("labelText", "");
             expect(this.cbp.isValid()).toBeFalsy();
             filtErrors = _.filter(this.cbp.validationError, function(err) {
               return err.attribute === 'parentName';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
-          return it("should invalid when recorded date is empty", function() {
-            var filtErrors;
-            this.cbp.set({
-              recordedDate: new Date("").getTime()
-            });
-            expect(this.cbp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.cbp.validationError, function(err) {
-              return err.attribute === 'recordedDate';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -89,7 +84,7 @@
           it("should have a kind", function() {
             return expect(this.cbp.get('lsKind')).toEqual("cationic block");
           });
-          it("should have a scientist set", function() {
+          it("should have a recordedBy set", function() {
             return expect(this.cbp.get('recordedBy')).toEqual("jane");
           });
           it("should have a recordedDate set", function() {
@@ -108,11 +103,17 @@
             expect(this.cbp.get("lsStates").length).toEqual(1);
             return expect(this.cbp.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block parent").length).toEqual(1);
           });
+          it("Should have a scientist value", function() {
+            return expect(this.cbp.get("scientist").get("value")).toEqual("john");
+          });
           it("Should have a completion date value", function() {
             return expect(this.cbp.get("completion date").get("value")).toEqual(1342080000000);
           });
-          return it("Should have a notebook value", function() {
+          it("Should have a notebook value", function() {
             return expect(this.cbp.get("notebook").get("value")).toEqual("Notebook 1");
+          });
+          return it("Should have a structural file value", function() {
+            return expect(this.cbp.get("structural file").get("value")).toEqual("TestFile.mol");
           });
         });
         return describe("model validation", function() {
@@ -144,12 +145,10 @@
           });
           it("should be invalid when scientist not selected", function() {
             var filtErrors;
-            this.cbp.set({
-              recordedBy: ""
-            });
+            this.cbp.get('scientist').set('value', "unassigned");
             expect(this.cbp.isValid()).toBeFalsy();
             filtErrors = _.filter(this.cbp.validationError, function(err) {
-              return err.attribute === 'recordedBy';
+              return err.attribute === 'scientist';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -189,13 +188,16 @@
           it("should have a kind", function() {
             return expect(this.cbb.get('lsKind')).toEqual("cationic block");
           });
-          it("should have an empty scientist", function() {
-            return expect(this.cbb.get('recordedBy')).toEqual("");
+          it("should have a recordedBy set to logged in user", function() {
+            return expect(this.cbb.get('recordedBy')).toEqual(window.AppLaunchParams.loginUser.username);
           });
           it("should have a recordedDate set to now", function() {
             return expect(new Date(this.cbb.get('recordedDate')).getHours()).toEqual(new Date().getHours());
           });
           return describe("model attributes for each value in defaultValues", function() {
+            it("Should have a model attribute for scientist", function() {
+              return expect(this.cbb.get("scientist")).toBeDefined();
+            });
             it("Should have a model attribute for completion date", function() {
               return expect(this.cbb.get("completion date")).toBeDefined();
             });
@@ -238,7 +240,7 @@
           it("should have a kind", function() {
             return expect(this.cbb.get('lsKind')).toEqual("cationic block");
           });
-          it("should have a scientist set", function() {
+          it("should have a recordedBy set", function() {
             return expect(this.cbb.get('recordedBy')).toEqual("jane");
           });
           it("should have a recordedDate set", function() {
@@ -249,6 +251,9 @@
             expect(this.cbb.get("lsStates").length).toEqual(2);
             expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "cationic block batch").length).toEqual(1);
             return expect(this.cbb.get("lsStates").getStatesByTypeAndKind("metadata", "inventory").length).toEqual(1);
+          });
+          it("Should have a scientist value", function() {
+            return expect(this.cbb.get("scientist").get("value")).toEqual("john");
           });
           it("Should have a completion date value", function() {
             return expect(this.cbb.get("completion date").get("value")).toEqual(1342080000000);
@@ -296,12 +301,10 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.cbb.set({
-            recordedBy: ""
-          });
+          this.cbb.get('scientist').set('value', "unassigned");
           expect(this.cbb.isValid()).toBeFalsy();
           return filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'recordedBy';
+            return err.attribute === 'scientist';
           });
         });
         it("should be invalid when completion date is empty", function() {
@@ -408,11 +411,11 @@
           });
           it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.cbpc.$('.bv_recordedBy option').length > 0;
+              return this.cbpc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              console.log(this.cbpc.$('.bv_recordedBy').val());
-              return expect(this.cbpc.$('.bv_recordedBy').val()).toEqual("jane");
+              console.log(this.cbpc.$('.bv_scientist').val());
+              return expect(this.cbpc.$('.bv_scientist').val()).toEqual("john");
             });
           });
           it("should fill the completion date field", function() {
@@ -430,12 +433,12 @@
           });
           it("should update model when the scientist is changed", function() {
             waitsFor(function() {
-              return this.cbpc.$('.bv_recordedBy option').length > 0;
+              return this.cbpc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.cbpc.$('.bv_recordedBy').val('unassigned');
-              this.cbpc.$('.bv_recordedBy').change();
-              return expect(this.cbpc.model.get('recordedBy')).toEqual("unassigned");
+              this.cbpc.$('.bv_scientist').val('unassigned');
+              this.cbpc.$('.bv_scientist').change();
+              return expect(this.cbpc.model.get('scientist').get('value')).toEqual("unassigned");
             });
           });
           it("should update model when completion date is changed", function() {
@@ -452,13 +455,13 @@
         return describe("controller validation rules", function() {
           beforeEach(function() {
             waitsFor(function() {
-              return this.cbpc.$('.bv_recordedBy option').length > 0;
+              return this.cbpc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
               this.cbpc.$('.bv_parentName').val(" Updated entity name   ");
               this.cbpc.$('.bv_parentName').keyup();
-              this.cbpc.$('.bv_recordedBy').val("bob");
-              this.cbpc.$('.bv_recordedBy').change();
+              this.cbpc.$('.bv_scientist').val("bob");
+              this.cbpc.$('.bv_scientist').change();
               this.cbpc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.cbpc.$('.bv_completionDate').keyup();
               this.cbpc.$('.bv_notebook').val("my notebook");
@@ -503,13 +506,13 @@
           describe("when scientist not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbpc.$('.bv_recordedBy').val("");
-                return this.cbpc.$('.bv_recordedBy').change();
+                this.cbpc.$('.bv_scientist').val("");
+                return this.cbpc.$('.bv_scientist').change();
               });
             });
             return it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.cbpc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.cbpc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -576,10 +579,10 @@
           });
           it("should fill the scientist field", function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.cbbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.cbbc.$('.bv_recordedBy').val()).toEqual("jane");
+              return expect(this.cbbc.$('.bv_scientist').val()).toEqual("john");
             });
           });
           it("should fill the completion date field", function() {
@@ -615,12 +618,12 @@
         describe("model updates", function() {
           it("should update model when the scientist is changed", function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.cbbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.cbbc.$('.bv_recordedBy').val('unassigned');
-              this.cbbc.$('.bv_recordedBy').change();
-              return expect(this.cbbc.model.get('recordedBy')).toEqual("unassigned");
+              this.cbbc.$('.bv_scientist').val('unassigned');
+              this.cbbc.$('.bv_scientist').change();
+              return expect(this.cbbc.model.get('scientist').get('value')).toEqual("unassigned");
             });
           });
           it("should update model when completion date is changed", function() {
@@ -672,11 +675,11 @@
         return describe("controller validation rules", function() {
           beforeEach(function() {
             waitsFor(function() {
-              return this.cbbc.$('.bv_recordedBy option').length > 0;
+              return this.cbbc.$('.bv_scientist option').length > 0;
             }, 1000);
             return runs(function() {
-              this.cbbc.$('.bv_recordedBy').val("bob");
-              this.cbbc.$('.bv_recordedBy').change();
+              this.cbbc.$('.bv_scientist').val("bob");
+              this.cbbc.$('.bv_scientist').change();
               this.cbbc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.cbbc.$('.bv_completionDate').keyup();
               this.cbbc.$('.bv_notebook').val("my notebook");
@@ -710,13 +713,13 @@
           describe("when scientist not selected", function() {
             beforeEach(function() {
               return runs(function() {
-                this.cbbc.$('.bv_recordedBy').val("");
-                return this.cbbc.$('.bv_recordedBy').change();
+                this.cbbc.$('.bv_scientist').val("");
+                return this.cbbc.$('.bv_scientist').change();
               });
             });
             it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.cbbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.cbbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
             return it("should have the update button be disabled", function() {
@@ -869,14 +872,14 @@
             return this.cbbsc.$('.bv_batchList').change();
           });
           waitsFor(function() {
-            return this.cbbsc.$('.bv_recordedBy option').length > 0;
+            return this.cbbsc.$('.bv_scientist option').length > 0;
           }, 1000);
           runs(function() {
             return waits(1000);
           });
           return runs(function() {
             expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
-            return expect(this.cbbsc.$('.bv_recordedBy').val()).toEqual("jane");
+            return expect(this.cbbsc.$('.bv_scientist').val()).toEqual("john");
           });
         });
       });
@@ -914,8 +917,8 @@
             runs(function() {
               this.cbc.$('.bv_parentName').val(" Updated entity name   ");
               this.cbc.$('.bv_parentName').keyup();
-              this.cbc.$('.bv_recordedBy').val("bob");
-              this.cbc.$('.bv_recordedBy').change();
+              this.cbc.$('.bv_scientist').val("bob");
+              this.cbc.$('.bv_scientist').change();
               this.cbc.$('.bv_completionDate').val(" 2013-3-16   ");
               this.cbc.$('.bv_completionDate').keyup();
               this.cbc.$('.bv_notebook').val("my notebook");
@@ -934,7 +937,7 @@
               return this.cbc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.cbc.$('.bv_recordedBy option').length > 0;
+              return this.cbc.$('.bv_scientist option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {
@@ -946,7 +949,7 @@
             runs(function() {
               return this.cbc.$('.bv_save').click();
             });
-            waits(1000);
+            waits(2000);
             return runs(function() {
               return expect(this.cbc.$('.bv_parentCode').html()).toEqual("CB000001");
             });

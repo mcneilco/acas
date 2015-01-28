@@ -31,6 +31,34 @@
 			lsTypeAndKind: "metadata_protein parent"
 			lsValues: [
 				clobValue: null
+				codeOrigin: "ACAS authors"
+				codeValue: "john"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 32312
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "scientist"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_scientist"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: null
 				comments: null
 				dateValue: 1342080000000
@@ -81,6 +109,35 @@
 				valueOperator: null
 				lsType: "stringValue"
 				lsTypeAndKind: "stringValue_notebook"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 423
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 231
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "molecular weight"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_molecular weight"
+				unitKind: "g/mol"
+				unitType: "molecular weight"
 				valueUnit: null
 				version: 0
 			,
@@ -201,6 +258,34 @@
 			lsTypeAndKind: "metadata_protein batch"
 			lsValues: [
 				clobValue: null
+				codeOrigin: "ACAS authors"
+				codeValue: "john"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 32312
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "scientist"
+				valueOperator: null
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_scientist"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: null
 				comments: null
 				dateValue: 1342080000000
@@ -305,6 +390,35 @@
 				valueOperator: null
 				lsType: "stringValue"
 				lsTypeAndKind: "stringValue_source id"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 409
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 128
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: 92
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "purity"
+				valueOperator: null
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_purity"
+				unitKind: "% purity"
+				unitType: "percentage"
 				valueUnit: null
 				version: 0
 			]

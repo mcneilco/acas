@@ -18,10 +18,12 @@ class window.AbstractBaseComponentParent extends Thing
 				message: "Recorded date must be set"
 		#		unless attrs.codeName is undefined
 		unless @isNew()
-			if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-				errors.push
-					attribute: 'recordedBy'
-					message: "Scientist must be set"
+			if attrs.scientist?
+				scientist = attrs.scientist.get('value')
+				if scientist is "" or scientist is "unassigned" or scientist is undefined
+					errors.push
+						attribute: 'scientist'
+						message: "Scientist must be set"
 			if attrs["completion date"]?
 				cDate = attrs["completion date"].get('value')
 				if cDate is undefined or cDate is "" then cDate = "fred"
@@ -68,10 +70,12 @@ class window.AbstractBaseComponentBatch extends Thing
 			errors.push
 				attribute: 'recordedDate'
 				message: "Recorded date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
+		if attrs.scientist?
+			scientist = attrs.scientist.get('value')
+			if scientist is "" or scientist is "unassigned" or scientist is undefined
+				errors.push
+					attribute: 'scientist'
+					message: "Scientist must be set"
 		if attrs["completion date"]?
 			cDate = attrs["completion date"].get('value')
 			if cDate is undefined or cDate is "" then cDate = "fred"
@@ -133,7 +137,7 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 
 	events: ->
 		"keyup .bv_parentName": "attributeChanged"
-		"change .bv_recordedBy": "attributeChanged"
+		"change .bv_scientist": "attributeChanged"
 		"keyup .bv_completionDate": "attributeChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"keyup .bv_notebook": "attributeChanged"
@@ -162,7 +166,7 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 			@setupComponentPickerController()
 		if @additionalParentAttributesTemplate?
 			@$('.bv_additionalParentAttributes').html @additionalParentAttributesTemplate()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 
 
 	render: =>
@@ -172,21 +176,20 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_parentName').val bestName.get('labelText')
-		@$('.bv_recordedBy').val(@model.get('recordedBy'))
-#		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@$('.bv_scientist').val @model.get('scientist').get('value')
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.get('completion date').get('value')?
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.get('completion date').get('value'))
 		@$('.bv_notebook').val @model.get('notebook').get('value')
 		if @model.isNew()
-			@$('.bv_recordedBy').attr('disabled','disabled')
+			@$('.bv_scientist').attr('disabled','disabled')
 			@$('.bv_completionDate').attr('disabled','disabled')
 			@$('.bv_notebook').attr('disabled','disabled')
 			@$('.bv_completionDateIcon').on "click", ->
 				return false
 		else
-			@$('.bv_recordedBy').removeAttr('disabled')
+			@$('.bv_scientist').removeAttr('disabled')
 			@$('.bv_completionDate').removeAttr('disabled')
 			@$('.bv_notebook').removeAttr('disabled')
 			@$('.bv_completionDateIcon').on "click", ->
@@ -215,26 +218,26 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 			@trigger 'amClean'
 		@componentPickerController.render()
 
-	setupRecordedBySelect: ->
+	setupScientistSelect: ->
 		if @model.isNew()
 			defaultOption = "Filled from first batch"
 		else
 			defaultOption = "Select Scientist"
-		@recordedByList = new PickListList()
-		@recordedByList.url = "/api/authors"
-		@recordedByListController = new PickListSelectController
-			el: @$('.bv_recordedBy')
-			collection: @recordedByList
+		@scientistList = new PickListList()
+		@scientistList.url = "/api/authors"
+		@scientistListController = new PickListSelectController
+			el: @$('.bv_scientist')
+			collection: @scientistList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: defaultOption
-			selectedCode: @model.get('recordedBy')
+			selectedCode: @model.get('scientist').get('value')
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	updateModel: =>
-		@model.set recordedBy: @$('.bv_recordedBy').val()
+		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
 #		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_cationicBlockParentName'))
 		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
 		@model.get("completion date").set("value", UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate')))
@@ -258,7 +261,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 	template: _.template($("#AbstractBaseComponentBatchView").html())
 
 	events: ->
-		"change .bv_recordedBy": "attributeChanged"
+		"change .bv_scientist": "attributeChanged"
 		"keyup .bv_completionDate": "attributeChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"change .bv_source": "attributeChanged"
@@ -288,7 +291,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		$(@el).html @template()
 		if @additionalBatchAttributesTemplate?
 			@$('.bv_additionalBatchAttributes').html @additionalBatchAttributesTemplate()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupSourceSelect()
 		@setupAttachFileListController()
 
@@ -296,7 +299,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 	render: =>
 		@$('.bv_batchCode').val(@model.get('codeName'))
 		@$('.bv_batchCode').html(@model.get('codeName'))
-		@$('.bv_recordedBy').val(@model.get('recordedBy'))
+		@$('.bv_scientist').val(@model.get('scientist').get('value'))
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.get('completion date').get('value')?
@@ -324,16 +327,16 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		@trigger 'amDirty'
 		@$('.bv_saveBatchComplete').hide()
 
-	setupRecordedBySelect: ->
-		@recordedByList = new PickListList()
-		@recordedByList.url = "/api/authors"
-		@recordedByListController = new PickListSelectController
-			el: @$('.bv_recordedBy')
-			collection: @recordedByList
+	setupScientistSelect: ->
+		@scientistList = new PickListList()
+		@scientistList.url = "/api/authors"
+		@scientistListController = new PickListSelectController
+			el: @$('.bv_scientist')
+			collection: @scientistList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Scientist"
-			selectedCode: @model.get('recordedBy')
+			selectedCode: @model.get('scientist').get('value')
 
 	setupSourceSelect: ->
 		@sourceList = new PickListList()
@@ -365,20 +368,23 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 #		console.log attachFileList
 #		console.log "done getting afl"
 		@attachFileListController= new AttachFileListController
-			canRemoveAttachFileModel: false
+			autoAddAttachFileModel: false
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
+			firstOptionName: "Select Method"
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
+#		@attachFileListController.insertFirstOption.set name: "Select Method"
 		@attachFileListController.render()
+		console.log @attachFileListController
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	updateModel: =>
-		@model.set recordedBy: @$('.bv_recordedBy').val()
+		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
 		@model.get("source").set("value", @sourceListController.getSelectedCode())
 		@model.get("source id").set("value", UtilityFunctions::getTrimmedInput @$('.bv_sourceId'))
 		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
@@ -398,6 +404,19 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		@model.reformatBeforeSaving()
 		@$('.bv_savingBatch').show()
 		@model.save()
+
+	isValid: =>
+		validCheck = super()
+		console.log "overwrite isValid"
+		if @attachFileListController?
+			if @attachFileListController.isValid() is true
+				console.log "attach list controller is valid"
+				return validCheck
+			else
+				console.log "attach list controller is invalid"
+				return false
+		else
+			return validCheck
 
 class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	template: _.template($("#AbstractBaseComponentBatchSelectView").html())
@@ -529,9 +548,9 @@ class window.AbstractBaseComponentController extends Backbone.View
 		@batchSelectController.batchController.model.save()
 
 	saveNewParentAttributes: =>
-		recordedBy = @batchSelectController.batchController.model.get('recordedBy')
+		scientist = @batchSelectController.batchController.model.get('scientist').get('value')
 		cDate = @batchSelectController.batchController.model.get('completion date').get('value')
 		notebook = @batchSelectController.batchController.model.get('notebook').get('value')
-		@parentController.model.set 'recordedBy', recordedBy
+		@parentController.model.get('scientist').set('value', scientist)
 		@parentController.model.get('completion date').set('value', cDate)
 		@parentController.model.get('notebook').set('value', notebook)

@@ -20,6 +20,51 @@ select[disabled], input[disabled] {
     color: #919191;
 }
 
-.bv_structuralFile .bv_attachFileInfo .bv_group_fileType{
+/*.bv_structuralFile .bv_attachFileInfo .bv_group_fileType{*/
+    /*display: none;*/
+/*}*/
+
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td{
+    border-top-width:0px;
+    margin-bottom:100px;
+    padding-top:5px;
+}
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.name{
+    padding-left:0px;
+    /*width:330px;*/
+}
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.size{
+    display:none;
+}
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.delete{
+    padding-top:2px;
+    padding-right:0px;
+}
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.preview{
+    display:none;
+}
+
+.bv_structuralFile form.fileupload div.row.fileupload-buttonbar {
+    margin-left:0px;
+}
+
+.bv_structuralFile form.fileupload div.row.fileupload-buttonbar div.span7.bv_manualFileSelect{
+    padding-left:0px !important;
+}
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td{
+    border-top-width:0px;
+    margin-bottom:100px;
+    padding-top:5px;
+}
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.preview {
     display: none;
+}
+
+.bv_structuralFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.size{
+    display:none;
 }

@@ -16,6 +16,13 @@ class window.SpacerParent extends AbstractBaseComponentParent
 #			labelText: "" #gets created when createDefaultLabels is called
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'spacer parent'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'spacer parent'
@@ -35,43 +42,17 @@ class window.SpacerParent extends AbstractBaseComponentParent
 			kind: 'molecular weight'
 			unitType: 'molecular weight'
 			unitKind: 'g/mol'
+		,
+			key: 'structural file'
+			stateType: 'metadata'
+			stateKind: 'spacer parent'
+			type: 'fileValue'
+			kind: 'structural file'
 		]
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'parentName'
-				message: "Name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		#		unless attrs.codeName is undefined
-		unless @isNew()
-			if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-				errors.push
-					attribute: 'recordedBy'
-					message: "Scientist must be set"
-			if attrs["completion date"]?
-				cDate = attrs["completion date"].get('value')
-				if cDate is undefined or cDate is "" then cDate = "fred"
-				if isNaN(cDate)
-					errors.push
-						attribute: 'completionDate'
-						message: "Date must be set"
-			if attrs.notebook?
-				notebook = attrs.notebook.get('value')
-				if notebook is "" or notebook is undefined
-					errors.push
-						attribute: 'notebook'
-						message: "Notebook must be set"
+		errors.push super(attrs)...
 		if attrs["molecular weight"]?
 			mw = attrs["molecular weight"].get('value')
 			if mw is "" or mw is undefined
@@ -104,6 +85,13 @@ class window.SpacerBatch extends AbstractBaseComponentBatch
 		defaultLabels: [
 		]
 		defaultValues: [
+			key: 'scientist'
+			stateType: 'metadata'
+			stateKind: 'spacer batch'
+			type: 'codeValue'
+			kind: 'scientist'
+			codeOrigin: window.conf.scientistCodeOrigin
+		,
 			key: 'completion date'
 			stateType: 'metadata'
 			stateKind: 'spacer batch'
@@ -132,6 +120,14 @@ class window.SpacerBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'source id'
 		,
+			key: 'purity'
+			stateType: 'metadata'
+			stateKind: 'spacer batch'
+			type: 'numericValue'
+			kind: 'purity'
+			unitType: 'percentage'
+			unitKind: '% purity'
+		,
 			key: 'amount made'
 			stateType: 'metadata'
 			stateKind: 'inventory'
@@ -146,6 +142,26 @@ class window.SpacerBatch extends AbstractBaseComponentBatch
 			type: 'stringValue'
 			kind: 'location'
 		]
+
+	validate: (attrs) ->
+		errors = []
+		errors.push super(attrs)...
+		if attrs.purity?
+			purity = attrs.purity.get('value')
+			if purity is "" or purity is undefined
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be set"
+			if isNaN(purity)
+				errors.push
+					attribute: 'purity'
+					message: "Purity must be a number"
+
+
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 class window.SpacerParentController extends AbstractBaseComponentParentController
 	additionalParentAttributesTemplate: _.template($("#SpacerParentView").html())
@@ -168,6 +184,35 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 			@model = new SpacerParent()
 		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
+		@setupStructuralFileController()
+
+	setupStructuralFileController: ->
+		@structuralFileController = new LSFileChooserController
+			el: @$('.bv_structuralFile')
+			formId: 'fieldBlah',
+			maxNumberOfFiles: 1,
+			requiresValidation: false
+			url: UtilityFunctions::getFileServiceURL()
+			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			hideDelete: false
+		@structuralFileController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@structuralFileController.on 'amClean', =>
+			@trigger 'amClean'
+		@structuralFileController.render()
+		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
+		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
+
+	handleFileUpload: (nameOnServer) =>
+		console.log "file uploaded"
+		@model.get("structural file").set("value", nameOnServer)
+		console.log @model
+		@trigger 'amDirty'
+
+	handleFileRemoved: =>
+		console.log "file removed"
+		@model.get("structural file").set("value", "")
+		console.log @model
 
 	updateModel: =>
 		@model.get("spacer name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -176,6 +221,12 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 
 
 class window.SpacerBatchController extends AbstractBaseComponentBatchController
+	additionalBatchAttributesTemplate: _.template($("#SpacerBatchView").html())
+
+	events: ->
+		_(super()).extend(
+			"keyup .bv_purity": "attributeChanged"
+		)
 
 	initialize: ->
 		unless @model?
@@ -188,6 +239,11 @@ class window.SpacerBatchController extends AbstractBaseComponentBatchController
 		unless @model?
 			console.log "create new model"
 			@model = new SpacerBatch()
+		super()
+		@$('.bv_purity').val(@model.get('purity').get('value'))
+
+	updateModel: =>
+		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
 		super()
 
 class window.SpacerBatchSelectController extends AbstractBaseComponentBatchSelectController
