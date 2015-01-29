@@ -394,6 +394,7 @@
     };
 
     DoseResponseAnalysisController.prototype.setupCurveFitAnalysisParameterController = function() {
+      this.setupModelFitTypeSelect();
       this.parameterController = new DoseResponseAnalysisParametersController({
         el: this.$('.bv_analysisParameterForm'),
         model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters())
@@ -411,6 +412,21 @@
       this.parameterController.on('valid', this.paramsValid);
       this.parameterController.on('invalid', this.paramsInvalid);
       return this.parameterController.render();
+    };
+
+    DoseResponseAnalysisController.prototype.setupModelFitTypeSelect = function() {
+      console.log("setupmodelfit select");
+      this.modelFitTypeList = new PickListList();
+      this.modelFitTypeList.url = "/api/codetables/model fit/type";
+      return this.modelFitTypeListController = new PickListSelectController({
+        el: this.$('.bv_modelFitType'),
+        collection: this.modelFitTypeList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Model Fit Type"
+        }),
+        selectedCode: this.model.getModelFitType()
+      });
     };
 
     DoseResponseAnalysisController.prototype.paramsValid = function() {

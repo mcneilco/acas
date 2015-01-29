@@ -47,7 +47,8 @@
     DoseResponseFitController.prototype.template = _.template($("#DoseResponseFitView").html());
 
     DoseResponseFitController.prototype.events = {
-      "click .bv_fitModelButton": "launchFit"
+      "click .bv_fitModelButton": "launchFit",
+      "change .bv_modelFitType": "handleModelFitTypeChanged"
     };
 
     DoseResponseFitController.prototype.initialize = function() {
@@ -67,48 +68,75 @@
     };
 
     DoseResponseFitController.prototype.setupCurveFitAnalysisParameterController = function() {
-      var drap, drapType, drapcType;
       console.log('here i am');
+      return this.setupModelFitTypeSelect();
+    };
+
+    DoseResponseFitController.prototype.setupModelFitTypeSelect = function() {
+      console.log("setupmodelfit select");
+      this.modelFitTypeList = new PickListList();
+      this.modelFitTypeList.url = "/api/codetables/model fit/type";
+      return this.modelFitTypeListController = new PickListSelectController({
+        el: this.$('.bv_modelFitType'),
+        collection: this.modelFitTypeList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Model Fit Type"
+        })
+      });
+    };
+
+    DoseResponseFitController.prototype.handleModelFitTypeChanged = function() {
+      var drap, drapType, drapcType;
+      console.log("handleModelFitTypeChanged");
+      this.options.renderingHint = this.modelFitTypeListController.getSelectedCode();
+      console.log(this.options.renderingHint);
       drapType = (function() {
         switch (this.options.renderingHint) {
           case "4 parameter D-R":
             return DoseResponseAnalysisParameters;
           case "Ki Fit":
             return DoseResponseKiAnalysisParameters;
+          case "unassigned":
+            return "unassigned";
         }
       }).call(this);
       console.log(drapType);
-      if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
-        drap = new drapType(this.options.initialAnalysisParameters);
+      if (drapType === "unassigned") {
+        return this.$('.bv_analysisParameterForm').empty();
       } else {
-        drap = new drapType();
-      }
-      drapcType = (function() {
-        switch (this.options.renderingHint) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParametersController;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParametersController;
+        if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
+          drap = new drapType(this.options.initialAnalysisParameters);
+        } else {
+          drap = new drapType();
         }
-      }).call(this);
-      console.log(drapcType);
-      this.parameterController = new drapcType({
-        el: this.$('.bv_analysisParameterForm'),
-        model: drap
-      });
-      this.parameterController.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      this.parameterController.on('amClean', (function(_this) {
-        return function() {
-          return _this.trigger('amClean');
-        };
-      })(this));
-      this.parameterController.on('valid', this.paramsValid);
-      this.parameterController.on('invalid', this.paramsInvalid);
-      return this.parameterController.render();
+        drapcType = (function() {
+          switch (this.options.renderingHint) {
+            case "4 parameter D-R":
+              return DoseResponseAnalysisParametersController;
+            case "Ki Fit":
+              return DoseResponseKiAnalysisParametersController;
+          }
+        }).call(this);
+        console.log(drapcType);
+        this.parameterController = new drapcType({
+          el: this.$('.bv_analysisParameterForm'),
+          model: drap
+        });
+        this.parameterController.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
+        this.parameterController.on('amClean', (function(_this) {
+          return function() {
+            return _this.trigger('amClean');
+          };
+        })(this));
+        this.parameterController.on('valid', this.paramsValid);
+        this.parameterController.on('invalid', this.paramsInvalid);
+        return this.parameterController.render();
+      }
     };
 
     DoseResponseFitController.prototype.paramsValid = function() {

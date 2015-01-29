@@ -246,6 +246,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 				@parameterController.disableAllInputs()
 
 	setupCurveFitAnalysisParameterController: ->
+		@setupModelFitTypeSelect()
 		@parameterController = new DoseResponseAnalysisParametersController
 			el: @$('.bv_analysisParameterForm')
 			model: new DoseResponseAnalysisParameters	@model.getModelFitParameters()
@@ -256,6 +257,18 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@parameterController.on 'valid', @paramsValid
 		@parameterController.on 'invalid', @paramsInvalid
 		@parameterController.render()
+
+	setupModelFitTypeSelect: ->
+		console.log "setupmodelfit select"
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+			selectedCode: @model.getModelFitType()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')

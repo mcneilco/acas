@@ -101,7 +101,7 @@ class window.Experiment extends BaseEntity
 			if isNaN(cDate)
 				errors.push
 					attribute: 'completionDate'
-					message: "Assay completion date must be set"
+					meetsage: "Assay completion date must be set"
 
 		if errors.length > 0
 			return errors

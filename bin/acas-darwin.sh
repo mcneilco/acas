@@ -17,7 +17,7 @@ suAdd="-i"
 
 case $1 in
 start)
-        for dir in `find $ACAS_HOME/.. -maxdepth 1 -type l`
+        for dir in `find $ACAS_HOME/.. -maxdepth 1`
         do
 		if [ -e $dir/app.js ]; then
 			app=app.js

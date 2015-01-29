@@ -547,6 +547,26 @@
       return result;
     };
 
+    PrimaryScreenExperiment.prototype.getModelFitType = function() {
+      var type;
+      type = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type");
+      if (!type.has('codeValue')) {
+        type.set({
+          codeValue: ""
+        });
+        type.set({
+          codeType: "model fit"
+        });
+        type.set({
+          codeKind: "type"
+        });
+        type.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return type;
+    };
+
     return PrimaryScreenExperiment;
 
   })(Experiment);

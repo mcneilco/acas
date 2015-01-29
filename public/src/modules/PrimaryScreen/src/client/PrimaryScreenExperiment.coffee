@@ -330,6 +330,16 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		result
 
+	getModelFitType: ->
+		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
+		if !type.has('codeValue')
+			type.set codeValue: ""
+			type.set codeType: "model fit"
+			type.set codeKind: "type"
+			type.set codeOrigin: "ACAS DDICT"
+
+		type
+
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"

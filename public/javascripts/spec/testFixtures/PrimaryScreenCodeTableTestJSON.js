@@ -103,6 +103,20 @@
             ignored: false
           }
         ]
+      }, {
+        type: "model fit",
+        kind: "type",
+        codes: [
+          {
+            code: "4 parameter D-R",
+            name: "EC 50",
+            ignored: false
+          }, {
+            code: "Ki Fit",
+            name: "KI",
+            ignored: false
+          }
+        ]
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenCodeTableTestJSON = window.primaryScreenCodeTableTestJSON || {} : exports));

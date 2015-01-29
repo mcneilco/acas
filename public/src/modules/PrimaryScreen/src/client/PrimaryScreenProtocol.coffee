@@ -173,6 +173,15 @@ class window.PrimaryScreenProtocol extends Protocol
 	checkForNewPickListOptions: ->
 		@trigger "checkForNewPickListOptions"
 
+	getModelFitType: ->
+		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
+		if !type.has('codeValue')
+			type.set codeValue: ""
+			type.set codeType: "model fit"
+			type.set codeKind: "type"
+			type.set codeOrigin: "ACAS DDICT"
+
+		type
 
 class window.PrimaryScreenProtocolParametersController extends AbstractFormController
 	template: _.template($("#PrimaryScreenProtocolParametersView").html())

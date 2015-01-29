@@ -95,5 +95,18 @@
 					name: "None"
 					ignored: false
 				]
+		,
+			type: "model fit"
+			kind: "type"
+			codes:
+				[
+					code: "4 parameter D-R"
+					name: "EC 50"
+					ignored: false
+				,
+					code: "Ki Fit"
+					name: "KI"
+					ignored: false
+				]
 		]
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenCodeTableTestJSON = window.primaryScreenCodeTableTestJSON or {} else exports)
