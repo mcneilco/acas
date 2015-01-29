@@ -38,35 +38,9 @@ class window.DoseResponseFitController extends Backbone.View
 	setupCurveFitAnalysisParameterController: ()->
 		console.log 'here i am'
 		@setupModelFitTypeSelect()
-#		@$('.bv_modelFitType').on 'change', @handleModelFitTypeChanged
-#		drapType = switch @options.renderingHint
-#			when "4 parameter D-R" then DoseResponseAnalysisParameters
-#			when "Ki Fit" then DoseResponseKiAnalysisParameters
-#		console.log drapType
-#
-#		if @options? && @options.initialAnalysisParameters?
-#			drap = new drapType @options.initialAnalysisParameters
-#		else
-#			drap = new drapType()
-#
-#		drapcType = switch @options.renderingHint
-#			when "4 parameter D-R" then DoseResponseAnalysisParametersController
-#			when "Ki Fit" then DoseResponseKiAnalysisParametersController
-#		console.log drapcType
-#		@parameterController = new drapcType
-#			el: @$('.bv_analysisParameterForm')
-#			model: drap
-#
-#		@parameterController.on 'amDirty', =>
-#			@trigger 'amDirty'
-#		@parameterController.on 'amClean', =>
-#			@trigger 'amClean'
-#		@parameterController.on 'valid', @paramsValid
-#		@parameterController.on 'invalid', @paramsInvalid
-#		@parameterController.render()
-#
+		@$('.bv_fitModelButton').hide()
+
 	setupModelFitTypeSelect: ->
-		console.log "setupmodelfit select"
 		@modelFitTypeList = new PickListList()
 		@modelFitTypeList.url = "/api/codetables/model fit/type"
 		@modelFitTypeListController = new PickListSelectController
@@ -75,7 +49,6 @@ class window.DoseResponseFitController extends Backbone.View
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Model Fit Type"
-#			selectedCode: @model.getModelFitType()
 
 	handleModelFitTypeChanged: ->
 		console.log "handleModelFitTypeChanged"
@@ -88,8 +61,10 @@ class window.DoseResponseFitController extends Backbone.View
 		console.log drapType
 		if drapType is "unassigned"
 			@$('.bv_analysisParameterForm').empty()
+			@$('.bv_fitModelButton').hide()
 
 		else
+			@$('.bv_fitModelButton').show()
 			if @options? && @options.initialAnalysisParameters?
 				drap = new drapType @options.initialAnalysisParameters
 			else
@@ -126,6 +101,7 @@ class window.DoseResponseFitController extends Backbone.View
 			inputParameters: JSON.stringify @parameterController.model
 			user: window.AppLaunchParams.loginUserName
 			experimentCode: @options.experimentCode
+			modelFitType: @modelFitTypeListController.getSelectedCode()
 			testMode: false
 
 		$.ajax

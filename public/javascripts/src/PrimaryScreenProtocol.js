@@ -299,7 +299,7 @@
       type = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type");
       if (!type.has('codeValue')) {
         type.set({
-          codeValue: ""
+          codeValue: "unassigned"
         });
         type.set({
           codeType: "model fit"
@@ -673,6 +673,7 @@
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
       this.setupPrimaryScreenModelFitParametersController = __bind(this.setupPrimaryScreenModelFitParametersController, this);
+      this.test = __bind(this.test, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
@@ -772,7 +773,7 @@
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
-      this.setupPrimaryScreenModelFitParametersController();
+      this.setupPrimaryScreenModelFitTypeSelect();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
       this.$('.bv_save').hide();
@@ -836,10 +837,34 @@
       return this.primaryScreenAnalysisParametersController.render();
     };
 
+    AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitTypeSelect = function() {
+      this.modelFitTypeList = new PickListList();
+      this.modelFitTypeList.url = "/api/codetables/model fit/type";
+      this.modelFitTypeListController = new PickListSelectController({
+        el: this.$('.bv_modelFitType'),
+        collection: this.modelFitTypeList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Model Fit Type"
+        }),
+        selectedCode: this.model.getModelFitType()
+      });
+      return this.$('.bv_modelFitType').on('change', (function(_this) {
+        return function() {
+          return _this.test;
+        };
+      })(this));
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.test = function() {
+      return console.log("test");
+    };
+
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitParametersController = function() {
-      this.primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController({
-        model: new DoseResponseKiAnalysisParameters(this.model.getModelFitParameters()),
-        el: this.$('.bv_doseResponseAnalysisParameters')
+      console.log(this.model);
+      this.primaryScreenModelFitParametersController = new DoseResponseAnalysisController({
+        model: this.model,
+        el: this.$('.bv_analysisParameterForm')
       });
       this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {
         return function() {

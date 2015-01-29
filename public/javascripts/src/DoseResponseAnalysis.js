@@ -312,7 +312,8 @@
     DoseResponseAnalysisController.prototype.template = _.template($("#DoseResponseAnalysisView").html());
 
     DoseResponseAnalysisController.prototype.events = {
-      "click .bv_fitModelButton": "launchFit"
+      "click .bv_fitModelButton": "launchFit",
+      "change .bv_modelFitType": "handleModelFitTypeChanged"
     };
 
     DoseResponseAnalysisController.prototype.initialize = function() {
@@ -395,27 +396,10 @@
 
     DoseResponseAnalysisController.prototype.setupCurveFitAnalysisParameterController = function() {
       this.setupModelFitTypeSelect();
-      this.parameterController = new DoseResponseAnalysisParametersController({
-        el: this.$('.bv_analysisParameterForm'),
-        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters())
-      });
-      this.parameterController.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      this.parameterController.on('amClean', (function(_this) {
-        return function() {
-          return _this.trigger('amClean');
-        };
-      })(this));
-      this.parameterController.on('valid', this.paramsValid);
-      this.parameterController.on('invalid', this.paramsInvalid);
-      return this.parameterController.render();
+      return this.$('.bv_fitModelButton').hide();
     };
 
     DoseResponseAnalysisController.prototype.setupModelFitTypeSelect = function() {
-      console.log("setupmodelfit select");
       this.modelFitTypeList = new PickListList();
       this.modelFitTypeList.url = "/api/codetables/model fit/type";
       return this.modelFitTypeListController = new PickListSelectController({
@@ -427,6 +411,61 @@
         }),
         selectedCode: this.model.getModelFitType()
       });
+    };
+
+    DoseResponseAnalysisController.prototype.handleModelFitTypeChanged = function() {
+      var drap, drapType, drapcType;
+      console.log("handleModelFitTypeChanged");
+      this.options.renderingHint = this.modelFitTypeListController.getSelectedCode();
+      console.log(this.options.renderingHint);
+      drapType = (function() {
+        switch (this.options.renderingHint) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParameters;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParameters;
+          case "unassigned":
+            return "unassigned";
+        }
+      }).call(this);
+      console.log(drapType);
+      if (drapType === "unassigned") {
+        this.$('.bv_analysisParameterForm').empty();
+        return this.$('.bv_fitModelButton').hide();
+      } else {
+        this.$('.bv_fitModelButton').show();
+        if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
+          drap = new drapType(this.options.initialAnalysisParameters);
+        } else {
+          drap = new drapType(this.model.getModelFitParameters());
+        }
+        drapcType = (function() {
+          switch (this.options.renderingHint) {
+            case "4 parameter D-R":
+              return DoseResponseAnalysisParametersController;
+            case "Ki Fit":
+              return DoseResponseKiAnalysisParametersController;
+          }
+        }).call(this);
+        console.log(drapcType);
+        this.parameterController = new drapcType({
+          el: this.$('.bv_analysisParameterForm'),
+          model: drap
+        });
+        this.parameterController.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
+        this.parameterController.on('amClean', (function(_this) {
+          return function() {
+            return _this.trigger('amClean');
+          };
+        })(this));
+        this.parameterController.on('valid', this.paramsValid);
+        this.parameterController.on('invalid', this.paramsInvalid);
+        return this.parameterController.render();
+      }
     };
 
     DoseResponseAnalysisController.prototype.paramsValid = function() {
@@ -449,6 +488,7 @@
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.model.get('codeName'),
         renderingHint: this.model.get('renderingHint'),
+        modelFitType: this.modelFitTypeListController.getSelectedCode(),
         testMode: false
       };
       return $.ajax({

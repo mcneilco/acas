@@ -552,7 +552,7 @@
       type = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type");
       if (!type.has('codeValue')) {
         type.set({
-          codeValue: ""
+          codeValue: "unassigned"
         });
         type.set({
           codeType: "model fit"

@@ -333,7 +333,7 @@ class window.PrimaryScreenExperiment extends Experiment
 	getModelFitType: ->
 		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
 		if !type.has('codeValue')
-			type.set codeValue: ""
+			type.set codeValue: "unassigned"
 			type.set codeType: "model fit"
 			type.set codeKind: "type"
 			type.set codeOrigin: "ACAS DDICT"

@@ -176,7 +176,7 @@ class window.PrimaryScreenProtocol extends Protocol
 	getModelFitType: ->
 		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
 		if !type.has('codeValue')
-			type.set codeValue: ""
+			type.set codeValue: "unassigned"
 			type.set codeType: "model fit"
 			type.set codeKind: "type"
 			type.set codeOrigin: "ACAS DDICT"
@@ -504,7 +504,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
-		@setupPrimaryScreenModelFitParametersController()
+		@setupPrimaryScreenModelFitTypeSelect()
+#		@setupPrimaryScreenModelFitParametersController()
 
 		@errorOwnerName = 'PrimaryScreenProtocolModuleController'
 		@setBindings()
@@ -553,10 +554,29 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
 		@primaryScreenAnalysisParametersController.render()
 
+	setupPrimaryScreenModelFitTypeSelect: ->
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+			selectedCode: @model.getModelFitType()
+		@$('.bv_modelFitType').on 'change', => @test
+
+	test: =>
+		console.log "test"
+
 	setupPrimaryScreenModelFitParametersController: =>
-		@primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController
-			model: new DoseResponseKiAnalysisParameters @model.getModelFitParameters()
-			el: @$('.bv_doseResponseAnalysisParameters')
+		console.log @model
+		@primaryScreenModelFitParametersController = new DoseResponseAnalysisController
+			model: @model
+			el: @$('.bv_analysisParameterForm')
+#		@primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController
+#			model: new DoseResponseKiAnalysisParameters @model.getModelFitParameters()
+#			el: @$('.bv_doseResponseAnalysisParameters')
 		@primaryScreenModelFitParametersController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@primaryScreenModelFitParametersController.on 'amClean', =>

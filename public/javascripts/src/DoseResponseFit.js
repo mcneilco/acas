@@ -69,11 +69,11 @@
 
     DoseResponseFitController.prototype.setupCurveFitAnalysisParameterController = function() {
       console.log('here i am');
-      return this.setupModelFitTypeSelect();
+      this.setupModelFitTypeSelect();
+      return this.$('.bv_fitModelButton').hide();
     };
 
     DoseResponseFitController.prototype.setupModelFitTypeSelect = function() {
-      console.log("setupmodelfit select");
       this.modelFitTypeList = new PickListList();
       this.modelFitTypeList.url = "/api/codetables/model fit/type";
       return this.modelFitTypeListController = new PickListSelectController({
@@ -103,8 +103,10 @@
       }).call(this);
       console.log(drapType);
       if (drapType === "unassigned") {
-        return this.$('.bv_analysisParameterForm').empty();
+        this.$('.bv_analysisParameterForm').empty();
+        return this.$('.bv_fitModelButton').hide();
       } else {
+        this.$('.bv_fitModelButton').show();
         if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
           drap = new drapType(this.options.initialAnalysisParameters);
         } else {
@@ -157,6 +159,7 @@
         inputParameters: JSON.stringify(this.parameterController.model),
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.options.experimentCode,
+        modelFitType: this.modelFitTypeListController.getSelectedCode(),
         testMode: false
       };
       return $.ajax({
