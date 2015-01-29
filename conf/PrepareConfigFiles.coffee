@@ -179,7 +179,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
-		confs.push('Mutex default:/Users/bbolt/Documents/mcneilco/acas/bin')
+		confs.push('Mutex default:' + acasHome + '/bin')
 		confs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
 		confs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
