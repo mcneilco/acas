@@ -189,7 +189,7 @@
         this.modelFitController.undelegateEvents();
       }
       this.modelFitController = new DoseResponseFitController({
-        f: this.drdpc.getNewExperimentCode(),
+        experimentCode: this.drdpc.getNewExperimentCode(),
         el: this.$('.bv_doseResponseAnalysis')
       });
       this.modelFitController.on('amDirty', (function(_this) {

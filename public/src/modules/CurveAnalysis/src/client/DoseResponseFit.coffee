@@ -115,7 +115,7 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		if @modelFitController?
 			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
-			f: @drdpc.getNewExperimentCode()
+			experimentCode: @drdpc.getNewExperimentCode()
 			el: @$('.bv_doseResponseAnalysis')
 
 		@modelFitController.on 'amDirty', =>
