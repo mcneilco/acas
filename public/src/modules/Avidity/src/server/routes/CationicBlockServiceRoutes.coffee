@@ -1,9 +1,9 @@
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/cationicBlockParents/codeName/:code', loginRoutes.ensureAuthenticated, exports.cationicBlockParentByCodeName
+	app.get '/api/cationicBlockParents/:code', loginRoutes.ensureAuthenticated, exports.cationicBlockParentByCodeName
 	app.post '/api/cationicBlockParents', loginRoutes.ensureAuthenticated, exports.postCationicBlockParent
 	app.put '/api/cationicBlockParents/:id', loginRoutes.ensureAuthenticated, exports.putCationicBlockParent
-#	app.get '/api/batches/parentCodeName/:code', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
-	app.get '/api/batches/codeName/:code', loginRoutes.ensureAuthenticated, exports.batchesByCodeName
+	app.get '/api/batches/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
+	app.get '/api/cationicBlockBatches/:code', loginRoutes.ensureAuthenticated, exports.cationicBlockBatchesByCodeName
 	app.post '/api/cationicBlockBatches', loginRoutes.ensureAuthenticated, exports.postCationicBlockBatch
 	app.put '/api/cationicBlockBatches/:id', loginRoutes.ensureAuthenticated, exports.putCationicBlockBatch
 
@@ -12,7 +12,11 @@ exports.cationicBlockParentByCodeName = (req, resp) ->
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
-		resp.end JSON.stringify {error: "get parent by codename not implemented yet"}
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/parent/cationic block/"+req.params.code
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.postCationicBlockParent = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -20,14 +24,22 @@ exports.postCationicBlockParent = (req, resp) ->
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
-		resp.end JSON.stringify {error: "post cationic block parent not implemented yet"}
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/parent/cationic block/"
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.putCationicBlockParent = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
 	else
-		resp.end JSON.stringify {error: "put cationic block parent not implemented yet"}
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/parent/cationic block/"+req.params.code
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.batchesByParentCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -35,34 +47,40 @@ exports.batchesByParentCodeName = (req, resp) ->
 		console.log "batches by parent codeName test mode"
 		resp.end JSON.stringify cationicBlockServiceTestJSON.batchList
 	else
-		resp.end JSON.stringify {error: "get batches by parent codeName not implemented yet"}
-#		config = require '../conf/compiled/conf.js'
-#		baseurl = config.all.client.service.persistence.fullpath+"batches/parentCodename/"+req.params.code
-#		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-#		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/cationic block/getbatches/"+req.params.parentCode
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-
-exports.batchesByCodeName = (req, resp) ->
+exports.cationicBlockBatchesByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockBatch
 	else
-		resp.end JSON.stringify {error: "get batch by codeName not implemented yet"}
-#		config = require '../conf/compiled/conf.js'
-#		baseurl = config.all.client.service.persistence.fullpath+"batches/parentCodeName/"+req.params.code
-#		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-#		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/cationic block/"+req.params.code
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.postCationicBlockBatch = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockBatch
 	else
-		resp.end JSON.stringify {error: "post batch not implemented yet"}
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/cationic block/"
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.putCationicBlockBatch = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
 		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockBatch
 	else
-		resp.end JSON.stringify {error: "put batch not implemented yet"}
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/cationic block/"+req.params.code
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
