@@ -180,11 +180,82 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		else
 			@formTitle = @$(".bv_formTitle").html()
 
+class window.ModelFitTypeController extends Backbone.View
+	template: _.template($("#ModelFitTypeView").html())
+
+	events:
+		"change .bv_modelFitType": "handleModelFitTypeChanged"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@setupModelFitTypeSelect()
+		modelFitType = @model.getModelFitType().get('codeValue')
+		@setupParameterController(modelFitType)
+
+	setupModelFitTypeSelect: =>
+		modelFitType = @model.getModelFitType().get('codeValue')
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+			selectedCode: modelFitType
+
+	setupParameterController: (modelFitType) =>
+		drapType = switch modelFitType
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+			when "unassigned" then "unassigned"
+		if @parameterController?
+			@parameterController.undelegateEvents()
+		if drapType is "unassigned"
+			@$('.bv_analysisParameterForm').empty()
+			@parameterController = null
+			mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+			mfp.set clobValue: ""
+
+		else
+			if @model.getModelFitParameters() is {}
+				drap = new drapType()
+			else
+				drap = new drapType @model.getModelFitParameters()
+
+			drapcType = switch modelFitType
+				when "4 parameter D-R" then DoseResponseAnalysisParametersController
+				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			@parameterController = new drapcType
+				el: @$('.bv_analysisParameterForm')
+				model: drap
+			@trigger 'updateState'
+			@parameterController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@parameterController.on 'amClean', =>
+				@trigger 'amClean'
+			@parameterController.model.on 'change', =>
+				@trigger 'updateState'
+			@parameterController.render()
+
+	handleModelFitTypeChanged: =>
+		modelFitType = @$('.bv_modelFitType').val()
+		@setupParameterController(modelFitType)
+		@updateModel()
+		@modelFitTypeListController.trigger 'change'
+
+	updateModel: =>
+		@model.getModelFitType().set
+			codeValue: @modelFitTypeListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		@model.trigger 'change'
+
 class window.DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())
 	events:
 		"click .bv_fitModelButton": "launchFit"
-		"change .bv_modelFitType": "handleModelFitTypeChanged"
 
 	initialize: ->
 		@model.on "sync", @handleExperimentSaved
@@ -229,10 +300,9 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		unless @parameterontroller
-			@setupCurveFitAnalysisParameterController()
+		unless @parameterController
+			@setupModelFitTypeController()
 		@$('.bv_fitOptionWrapper').show()
-		@$('.bv_fitModelButton').show()
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 
@@ -240,62 +310,36 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	handleStatusChanged: =>
-		if @parameterController != null
+		if @parameterController != null and @parameterController != undefined
+			console.log "handle status changed"
 			if @model.isEditable()
 				@parameterController.enableAllInputs()
 			else
 				@parameterController.disableAllInputs()
 
-	setupCurveFitAnalysisParameterController: ->
-		@setupModelFitTypeSelect()
-		@$('.bv_fitModelButton').hide()
+	setupModelFitTypeController: ->
+		@modelFitTypeController = new ModelFitTypeController
+			model: @model
+			el: @$('.bv_analysisParameterForm')
+		@modelFitTypeController.render()
+		@parameterController = @modelFitTypeController.parameterController
+		@modelFitTypeController.modelFitTypeListController.on 'change', => @handleModelFitTypeChanged()
 
-	setupModelFitTypeSelect: ->
-		@modelFitTypeList = new PickListList()
-		@modelFitTypeList.url = "/api/codetables/model fit/type"
-		@modelFitTypeListController = new PickListSelectController
-			el: @$('.bv_modelFitType')
-			collection: @modelFitTypeList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Model Fit Type"
-			selectedCode: @model.getModelFitType()
-
-	handleModelFitTypeChanged: ->
-		console.log "handleModelFitTypeChanged"
-		@options.renderingHint = @modelFitTypeListController.getSelectedCode()
-		console.log @options.renderingHint
-		drapType = switch @options.renderingHint
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
-			when "unassigned" then "unassigned"
-		console.log drapType
-		if drapType is "unassigned"
-			@$('.bv_analysisParameterForm').empty()
+	handleModelFitTypeChanged: =>
+		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
+		if modelFitType is "unassigned"
 			@$('.bv_fitModelButton').hide()
-
+			if @modelFitTypeController.parameterController?
+				@modelFitTypeController.parameterController.undelegateEvents()
 		else
 			@$('.bv_fitModelButton').show()
-			if @options? && @options.initialAnalysisParameters?
-				drap = new drapType @options.initialAnalysisParameters
-			else
-				drap = new drapType @model.getModelFitParameters()
-
-			drapcType = switch @options.renderingHint
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
-			console.log drapcType
-			@parameterController = new drapcType
-				el: @$('.bv_analysisParameterForm')
-				model: drap
-
-			@parameterController.on 'amDirty', =>
-				@trigger 'amDirty'
-			@parameterController.on 'amClean', =>
-				@trigger 'amClean'
-			@parameterController.on 'valid', @paramsValid
-			@parameterController.on 'invalid', @paramsInvalid
-			@parameterController.render()
+			if @modelFitTypeController.parameterController?
+				@modelFitTypeController.parameterController.on 'valid', @paramsValid
+				@modelFitTypeController.parameterController.on 'invalid', @paramsInvalid
+				if @modelFitTypeController.parameterController.isValid() is true
+					@paramsValid()
+				else
+					@paramsInvalid()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')
@@ -313,7 +357,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			user: window.AppLaunchParams.loginUserName
 #			experimentCode: "fail"
 			experimentCode: @model.get('codeName')
-			renderingHint: @model.get('renderingHint') #TODO: need this still?
 			modelFitType: @modelFitTypeListController.getSelectedCode()
 			testMode: false
 

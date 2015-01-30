@@ -24,21 +24,12 @@ class window.DoseResponseFitController extends Backbone.View
 	initialize: ->
 		if !@options.experimentCode?
 			alert("DoseResponseFitController must be initialized with an experimentCode")
-		if !@options.renderingHint?
-			alert("DoseResponseFitController must be initialized with a renderingHint")
-
 
 	render: =>
 		@parameterController = null
 		$(@el).empty()
 		$(@el).html @template()
-		@setupCurveFitAnalysisParameterController()
-
-
-	setupCurveFitAnalysisParameterController: ()->
-		console.log 'here i am'
 		@setupModelFitTypeSelect()
-		@$('.bv_fitModelButton').hide()
 
 	setupModelFitTypeSelect: ->
 		@modelFitTypeList = new PickListList()
@@ -50,15 +41,11 @@ class window.DoseResponseFitController extends Backbone.View
 				code: "unassigned"
 				name: "Select Model Fit Type"
 
-	handleModelFitTypeChanged: ->
-		console.log "handleModelFitTypeChanged"
-		@options.renderingHint = @modelFitTypeListController.getSelectedCode()
-		console.log @options.renderingHint
-		drapType = switch @options.renderingHint
+	setupParameterController: (modelFitType) =>
+		drapType = switch modelFitType
 			when "4 parameter D-R" then DoseResponseAnalysisParameters
 			when "Ki Fit" then DoseResponseKiAnalysisParameters
 			when "unassigned" then "unassigned"
-		console.log drapType
 		if drapType is "unassigned"
 			@$('.bv_analysisParameterForm').empty()
 			@$('.bv_fitModelButton').hide()
@@ -70,10 +57,9 @@ class window.DoseResponseFitController extends Backbone.View
 			else
 				drap = new drapType()
 
-			drapcType = switch @options.renderingHint
+			drapcType = switch modelFitType
 				when "4 parameter D-R" then DoseResponseAnalysisParametersController
 				when "Ki Fit" then DoseResponseKiAnalysisParametersController
-			console.log drapcType
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')
 				model: drap
@@ -85,6 +71,15 @@ class window.DoseResponseFitController extends Backbone.View
 			@parameterController.on 'valid', @paramsValid
 			@parameterController.on 'invalid', @paramsInvalid
 			@parameterController.render()
+
+	handleModelFitTypeChanged: ->
+		modelFitType = @$('.bv_modelFitType').val()
+		@setupParameterController(modelFitType)
+		if @parameterController?
+			if @parameterController.isValid() is true
+				@paramsValid()
+			else
+				@paramsInvalid()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')
@@ -154,7 +149,6 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 			@modelFitController.undelegateEvents()
 		@modelFitController = new DoseResponseFitController
 			experimentCode: @drdpc.getNewExperimentCode()
-			renderingHint: '4 parameter D-R'
 			el: @$('.bv_doseResponseAnalysis')
 
 		@modelFitController.on 'amDirty', =>

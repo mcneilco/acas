@@ -109,7 +109,7 @@
         codes: [
           {
             code: "4 parameter D-R",
-            name: "EC 50",
+            name: "EC50",
             ignored: false
           }, {
             code: "Ki Fit",

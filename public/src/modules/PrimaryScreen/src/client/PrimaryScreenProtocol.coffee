@@ -504,8 +504,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
-		@setupPrimaryScreenModelFitTypeSelect()
-#		@setupPrimaryScreenModelFitParametersController()
+		@setupModelFitTypeController()
 
 		@errorOwnerName = 'PrimaryScreenProtocolModuleController'
 		@setBindings()
@@ -554,36 +553,16 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
 		@primaryScreenAnalysisParametersController.render()
 
-	setupPrimaryScreenModelFitTypeSelect: ->
-		@modelFitTypeList = new PickListList()
-		@modelFitTypeList.url = "/api/codetables/model fit/type"
-		@modelFitTypeListController = new PickListSelectController
-			el: @$('.bv_modelFitType')
-			collection: @modelFitTypeList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Model Fit Type"
-			selectedCode: @model.getModelFitType()
-		@$('.bv_modelFitType').on 'change', => @test
-
-	test: =>
-		console.log "test"
-
-	setupPrimaryScreenModelFitParametersController: =>
-		console.log @model
-		@primaryScreenModelFitParametersController = new DoseResponseAnalysisController
+	setupModelFitTypeController: ->
+		@modelFitTypeController = new ModelFitTypeController
 			model: @model
-			el: @$('.bv_analysisParameterForm')
-#		@primaryScreenModelFitParametersController = new DoseResponseKiAnalysisParametersController
-#			model: new DoseResponseKiAnalysisParameters @model.getModelFitParameters()
-#			el: @$('.bv_doseResponseAnalysisParameters')
-		@primaryScreenModelFitParametersController.on 'amDirty', =>
+			el: @$('.bv_doseResponseAnalysisParameters')
+		@modelFitTypeController.on 'amDirty', =>
 			@trigger 'amDirty'
-		@primaryScreenModelFitParametersController.on 'amClean', =>
+		@modelFitTypeController.on 'amClean', =>
 			@trigger 'amClean'
-		@primaryScreenModelFitParametersController.render()
-		@updateModelFitClobValue()
-		@primaryScreenModelFitParametersController.on 'updateState', @updateModelFitClobValue
+		@modelFitTypeController.render()
+		@modelFitTypeController.on 'updateState', @updateModelFitClobValue
 
 	updateAnalysisClobValue: =>
 		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
@@ -597,7 +576,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	updateModelFitClobValue: =>
 		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 		mfp.set
-			clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+			clobValue: JSON.stringify @modelFitTypeController.parameterController.model.attributes
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 
@@ -613,7 +592,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		if @model.isNew()
 			@$('.bv_updateModuleComplete').html "Save Complete"
 		else
-			@$('.bv_updateModuleComplete').html "c Complete"
+			@$('.bv_updateModuleComplete').html "Update Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 		@model.save()

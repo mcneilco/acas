@@ -55,6 +55,7 @@
 
     DoseResponseKiAnalysisParameters.prototype.validate = function(attrs) {
       var errors, limitType;
+      console.log("validate Ki analysis");
       errors = [];
       limitType = attrs.min.get('limitType');
       if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') === null)) {
@@ -70,13 +71,13 @@
           message: "Max threshold value must be set when limit type is pin or limit"
         });
       }
-      if (_.isNaN(attrs.kd.get('value')) || attrs.kd.get('value') === null) {
+      if (_.isNaN(attrs.kd.get('value')) || attrs.kd.get('value') === null || attrs.kd.get('value') === void 0) {
         errors.push({
           attribute: 'kd_value',
           message: "Kd threshold value must be set"
         });
       }
-      if (_.isNaN(attrs.ligandConc.get('value')) || attrs.ligandConc.get('value') === null) {
+      if (_.isNaN(attrs.ligandConc.get('value')) || attrs.ligandConc.get('value') === null || attrs.ligandConc.get('value') === void 0) {
         errors.push({
           attribute: 'ligandConc_value',
           message: "Ligand Conc. threshold value must be set"
@@ -88,6 +89,7 @@
           message: "Inactive threshold value must be set to a number"
         });
       }
+      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {

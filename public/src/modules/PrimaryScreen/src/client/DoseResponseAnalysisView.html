@@ -81,16 +81,15 @@
 </script>
 
 <script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_fitOptionWrapper">
-        <span class="control-group bv_group_modelFitType">
-            <select class="span6 bv_modelFitType" style="margin-right:10px;width:355px;"></select>
-        </span>
-        <div class="bv_analysisParameterForm"></div>
-    </div>
-
-    <div class="bv_group_modelFitStatus span8 hide" style="margin-left:0px;">
+    <div class="bv_group_modelFitStatus span8" style="margin-left:0px;">
         <div class="span9" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong>
             <span class="bv_modelFitStatus" style="font-weight: bold;"> Curves not fit</span>
+        </div>
+        <div class="bv_fitOptionWrapper">
+            <!--<span class="control-group bv_group_modelFitType">-->
+            <!--<select class="span6 bv_modelFitType" style="margin-right:10px;width:355px;"></select>-->
+            <!--</span>-->
+            <div class="bv_analysisParameterForm"></div>
         </div>
         <button class="btn btn-default offset6 bv_fitModelButton hide" type="button">Fit Data</button>
     </div>
@@ -101,4 +100,16 @@
             <div class="bv_modelFitResultsHTML"></div>
         </div>
     </div>
+</script>
+
+<script type="text/template" id="ModelFitTypeView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-horizontal" style="margin-bottom:20px;">
+        <span class="control-group bv_group_modelFitType">
+            <label class="control-label">Model Fit Type</label>
+            <div class="controls">
+                <select class="span6 bv_modelFitType" style="margin-right:10px;width:170px;"></select>
+            </div>
+        </span>
+    </div>
+    <div class=" bv_analysisParameterForm"></div>
 </script>

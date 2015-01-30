@@ -1319,6 +1319,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
+#	modelFitControllerName: "PrimaryScreenModelFitController"
 #	protocolFilter: "?protocolName=FLIPR"
 	protocolKindFilter: "?protocolKind=Bio Activity"
 	moduleLaunchName: "primary_screen_experiment"

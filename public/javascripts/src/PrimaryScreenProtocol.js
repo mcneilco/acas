@@ -672,8 +672,6 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
-      this.setupPrimaryScreenModelFitParametersController = __bind(this.setupPrimaryScreenModelFitParametersController, this);
-      this.test = __bind(this.test, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
@@ -773,7 +771,7 @@
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
-      this.setupPrimaryScreenModelFitTypeSelect();
+      this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
       this.$('.bv_save').hide();
@@ -837,48 +835,23 @@
       return this.primaryScreenAnalysisParametersController.render();
     };
 
-    AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitTypeSelect = function() {
-      this.modelFitTypeList = new PickListList();
-      this.modelFitTypeList.url = "/api/codetables/model fit/type";
-      this.modelFitTypeListController = new PickListSelectController({
-        el: this.$('.bv_modelFitType'),
-        collection: this.modelFitTypeList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select Model Fit Type"
-        }),
-        selectedCode: this.model.getModelFitType()
-      });
-      return this.$('.bv_modelFitType').on('change', (function(_this) {
-        return function() {
-          return _this.test;
-        };
-      })(this));
-    };
-
-    AbstractPrimaryScreenProtocolModuleController.prototype.test = function() {
-      return console.log("test");
-    };
-
-    AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitParametersController = function() {
-      console.log(this.model);
-      this.primaryScreenModelFitParametersController = new DoseResponseAnalysisController({
+    AbstractPrimaryScreenProtocolModuleController.prototype.setupModelFitTypeController = function() {
+      this.modelFitTypeController = new ModelFitTypeController({
         model: this.model,
-        el: this.$('.bv_analysisParameterForm')
+        el: this.$('.bv_doseResponseAnalysisParameters')
       });
-      this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {
+      this.modelFitTypeController.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.on('amClean', (function(_this) {
+      this.modelFitTypeController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.render();
-      this.updateModelFitClobValue();
-      return this.primaryScreenModelFitParametersController.on('updateState', this.updateModelFitClobValue);
+      this.modelFitTypeController.render();
+      return this.modelFitTypeController.on('updateState', this.updateModelFitClobValue);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
@@ -900,7 +873,7 @@
       var mfp;
       mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       return mfp.set({
-        clobValue: JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes),
+        clobValue: JSON.stringify(this.modelFitTypeController.parameterController.model.attributes),
         recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime()
       });
@@ -919,7 +892,7 @@
       if (this.model.isNew()) {
         this.$('.bv_updateModuleComplete').html("Save Complete");
       } else {
-        this.$('.bv_updateModuleComplete').html("c Complete");
+        this.$('.bv_updateModuleComplete').html("Update Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       return this.model.save();
