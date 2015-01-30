@@ -84,6 +84,11 @@
       } else {
         this.selectedCode = null;
       }
+      if (this.options.showIgnored != null) {
+        this.showIgnored = this.options.showIgnored;
+      } else {
+        this.showIgnored = false;
+      }
       if (this.options.insertFirstOption != null) {
         this.insertFirstOption = this.options.insertFirstOption;
       } else {
@@ -104,11 +109,23 @@
     };
 
     PickListSelectController.prototype.handleListReset = function() {
+      var newOption;
       if (this.insertFirstOption) {
         this.collection.add(this.insertFirstOption, {
           at: 0,
           silent: true
         });
+        if (!(this.selectedCode === this.insertFirstOption.get('code'))) {
+          if ((this.collection.where({
+            code: this.selectedCode
+          })).length === 0) {
+            newOption = new PickList({
+              code: this.selectedCode,
+              name: this.selectedCode
+            });
+            this.collection.add(newOption);
+          }
+        }
       }
       return this.render();
     };
@@ -131,7 +148,18 @@
     };
 
     PickListSelectController.prototype.addOne = function(enm) {
-      if (!enm.get('ignored')) {
+      var shouldRender;
+      shouldRender = this.showIgnored;
+      if (enm.get('ignored')) {
+        if (this.selectedCode != null) {
+          if (this.selectedCode === enm.get('code')) {
+            shouldRender = true;
+          }
+        }
+      } else {
+        shouldRender = true;
+      }
+      if (shouldRender) {
         return $(this.el).append(new PickListOptionController({
           model: enm
         }).render().el);

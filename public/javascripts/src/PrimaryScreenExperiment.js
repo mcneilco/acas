@@ -1158,7 +1158,7 @@
       console.log("beg of getPreferredBatchId");
       if (batchId === "") {
         this.model.get(control).set({
-          batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+          batchCode: ""
         });
         this.attributeChanged();
       } else {
@@ -1199,26 +1199,29 @@
         requestName = results.requestName;
         if (preferredName === requestName) {
           this.model.get(control).set({
-            batchCode: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_' + control + 'Batch'))
+            batchCode: preferredName
           });
-          this.attributeChanged();
           console.log("valid id");
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
+          return this.attributeChanged();
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
-          this.attributeChanged();
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
           console.log("invalid id");
+          return this.attributeChanged();
         } else {
-          console.log("alias");
+          console.log("alias, save full name");
+          this.model.get(control).set({
+            batchCode: preferredName
+          });
+          this.attributeChanged();
           this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
           this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
           this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
+          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
-        return this.attributeChanged();
       }
     };
 
@@ -1676,10 +1679,10 @@
       resultHTML = this.model.getAnalysisResultHTML().get('clobValue');
       if (this.dataAnalysisController != null) {
         this.dataAnalysisController.showFileUploadCompletePhase();
+        this.dataAnalysisController.disableAllInputs();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      this.$('.bv_htmlSummary').html(resultHTML);
-      return this.dataAnalysisController.disableAllInputs();
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
@@ -1695,10 +1698,10 @@
         this.dataAnalysisController.filePassedValidation = true;
         this.dataAnalysisController.showFileUploadPhase();
         this.dataAnalysisController.handleFormValid();
+        this.dataAnalysisController.disableAllInputs();
       }
       this.$('.bv_resultStatus').html(resultStatus);
-      this.$('.bv_htmlSummary').html(resultHTML);
-      return this.dataAnalysisController.disableAllInputs();
+      return this.$('.bv_htmlSummary').html(resultHTML);
     };
 
     PrimaryScreenAnalysisController.prototype.showUploadWrapper = function() {

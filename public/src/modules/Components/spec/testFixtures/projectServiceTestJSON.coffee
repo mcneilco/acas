@@ -15,6 +15,10 @@
 		code: "project3"
 		name: "Project 3"
 		ignored: false
+	,
+		code: "proj3ct4"
+		name: "proj3ct four"
+		ignored: true
 	]
 ) (if (typeof process is "undefined" or not process.versions) then window.projectServiceTestJSON = window.projectServiceTestJSON or {} else exports)
 
