@@ -730,7 +730,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	getPreferredBatchId: (batchId, control) ->
 		console.log "beg of getPreferredBatchId"
 		if batchId == ""
-			@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
+			@model.get(control).set batchCode: ""
 			@attributeChanged()
 			return
 		else
@@ -757,23 +757,23 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			preferredName = results.preferredName
 			requestName = results.requestName
 			if preferredName == requestName
-				@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
-				@attributeChanged()
+				@model.get(control).set batchCode: preferredName
 				console.log "valid id"
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-
+				@attributeChanged()
 			else if preferredName == ""
 				@model.get(control).set batchCode: "invalid"
-				@attributeChanged()
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
 				console.log "invalid id"
+				@attributeChanged()
 			else
-				console.log "alias"
+				console.log "alias, save full name"
+				@model.get(control).set batchCode: preferredName
+				@attributeChanged()
 				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
 				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
 				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
-			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -1099,9 +1099,9 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		resultHTML = @model.getAnalysisResultHTML().get('clobValue')
 		if @dataAnalysisController?
 			@dataAnalysisController.showFileUploadCompletePhase()
+			@dataAnalysisController.disableAllInputs()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
-		@dataAnalysisController.disableAllInputs()
 
 	showDryRunResults: (dryRunStatus) ->
 		if dryRunStatus is "complete"
@@ -1114,10 +1114,9 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@dataAnalysisController.filePassedValidation = true
 			@dataAnalysisController.showFileUploadPhase()
 			@dataAnalysisController.handleFormValid()
-
+			@dataAnalysisController.disableAllInputs()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
-		@dataAnalysisController.disableAllInputs()
 
 	showUploadWrapper: ->
 		resultStatus = "Upload Data and Analyze"
