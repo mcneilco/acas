@@ -1244,7 +1244,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
-			@modelFitController.primaryAnalysisCompleted()
+			@modelFitController.setReadyForFit()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()

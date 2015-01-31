@@ -476,6 +476,9 @@
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
+      console.log("test ready for fit");
+      console.log(this.model);
+      console.log(this.model.getAnalysisStatus().get('codeValue'));
       if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
         return this.setNotReadyForFit();
       } else {
@@ -484,27 +487,24 @@
     };
 
     DoseResponseAnalysisController.prototype.setNotReadyForFit = function() {
+      console.log("set not ready for fit");
       this.$('.bv_fitOptionWrapper').hide();
       this.$('.bv_resultsContainer').hide();
       return this.$('.bv_analyzeExperimentToFit').show();
     };
 
     DoseResponseAnalysisController.prototype.setReadyForFit = function() {
-      if (!this.parameterController) {
-        this.setupModelFitTypeController();
-      }
+      console.log("set ready for fit");
+      this.setupModelFitTypeController();
       this.$('.bv_fitOptionWrapper').show();
       this.$('.bv_analyzeExperimentToFit').hide();
       return this.handleStatusChanged();
     };
 
-    DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
-      return this.testReadyForFit();
-    };
-
     DoseResponseAnalysisController.prototype.handleStatusChanged = function() {
       if (this.parameterController !== null && this.parameterController !== void 0) {
         console.log("handle status changed");
+        console.log(this.parameterController);
         if (this.model.isEditable()) {
           return this.parameterController.enableAllInputs();
         } else {
@@ -514,17 +514,24 @@
     };
 
     DoseResponseAnalysisController.prototype.setupModelFitTypeController = function() {
+      var modelFitType;
       this.modelFitTypeController = new ModelFitTypeController({
         model: this.model,
         el: this.$('.bv_analysisParameterForm')
       });
       this.modelFitTypeController.render();
       this.parameterController = this.modelFitTypeController.parameterController;
-      return this.modelFitTypeController.modelFitTypeListController.on('change', (function(_this) {
+      this.modelFitTypeController.modelFitTypeListController.on('change', (function(_this) {
         return function() {
           return _this.handleModelFitTypeChanged();
         };
       })(this));
+      modelFitType = this.model.getModelFitType().get('codeValue');
+      if (modelFitType === "unassigned") {
+        return this.$('.bv_fitModelButton').hide();
+      } else {
+        return this.$('.bv_fitModelButton').show();
+      }
     };
 
     DoseResponseAnalysisController.prototype.handleModelFitTypeChanged = function() {
@@ -564,11 +571,15 @@
           return;
         }
       }
+      this.$('.bv_fitStatusDropDown').modal({
+        backdrop: "static"
+      });
+      this.$('.bv_fitStatusDropDown').modal("show");
       fitData = {
-        inputParameters: JSON.stringify(this.parameterController.model),
+        inputParameters: JSON.stringify(this.modelFitTypeController.parameterController.model),
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.model.get('codeName'),
-        modelFitType: this.modelFitTypeListController.getSelectedCode(),
+        modelFitType: this.modelFitTypeController.modelFitTypeListController.getSelectedCode(),
         testMode: false
       };
       return $.ajax({
@@ -579,7 +590,8 @@
         error: (function(_this) {
           return function(err) {
             alert('got ajax error');
-            return _this.serviceReturn = null;
+            _this.serviceReturn = null;
+            return _this.$('.bv_fitStatusDropDown').modal("hide");
           };
         })(this),
         dataType: 'json'
@@ -593,7 +605,8 @@
       }
       this.$('.bv_modelFitResultsHTML').html(json.results.htmlSummary);
       this.$('.bv_modelFitStatus').html(json.results.status);
-      return this.$('.bv_resultsContainer').show();
+      this.$('.bv_resultsContainer').show();
+      return this.$('.bv_fitStatusDropDown').modal("hide");
     };
 
     return DoseResponseAnalysisController;

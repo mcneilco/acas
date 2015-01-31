@@ -1897,7 +1897,7 @@
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
-          return _this.modelFitController.primaryAnalysisCompleted();
+          return _this.modelFitController.setReadyForFit();
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
