@@ -149,16 +149,6 @@ class window.PrimaryScreenProtocol extends Protocol
 		psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes)
 		errors.push psModelFitParametersErrors...
 
-		bestName = attrs.lsLabels.pickBestName()
-		errors.push super(attrs)...
-		if attrs.subclass?
-			cDate = @getCreationDate().get('dateValue')
-			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-			if isNaN(cDate)
-				errors.push
-					attribute: 'creationDate'
-					message: "Assay creation date must be set"
-
 		if errors.length > 0
 			return errors
 		else
