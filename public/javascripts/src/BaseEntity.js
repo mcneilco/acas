@@ -196,14 +196,14 @@
       }
       if (attrs.subclass != null) {
         notebook = this.getNotebook().get('stringValue');
-        if (notebook === "" || notebook === void 0) {
+        if (notebook === "" || notebook === void 0 || notebook === null) {
           errors.push({
             attribute: 'notebook',
             message: "Notebook must be set"
           });
         }
         scientist = this.getScientist().get('codeValue');
-        if (scientist === "unassigned" || scientist === void 0 || scientist === "") {
+        if (scientist === "unassigned" || scientist === void 0 || scientist === "" || scientist === null) {
           errors.push({
             attribute: 'scientist',
             message: "Scientist must be set"
