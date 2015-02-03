@@ -27,12 +27,12 @@ describe "Curve Curator Module testing", ->
 				expect(categories instanceof Backbone.Collection).toBeTruthy()
 		describe "getting curve by curveid", ->
 			it "should return a curve", ->
-				curve = @curveList.getCurveByID("AG-00344446_1680")
+				curve = @curveList.getCurveByID("AG-00440011_6863")
 				expect(curve instanceof Curve)
 		describe "getting curve index by curveid", ->
 			it "should return a curve", ->
-				curveIndex = @curveList.getIndexByCurveID("AG-00344446_1680")
-				expect(curveIndex).toEqual 8
+				curveIndex = @curveList.getIndexByCurveID("AG-00440011_6863")
+				expect(curveIndex).toEqual 15
 		describe "updating a curve summary", ->
 			it "should update curve summary", ->
 				originalCurve = @curveList.models[0]
@@ -59,10 +59,10 @@ describe "Curve Curator Module testing", ->
 		describe "updating flag user", ->
 			it "should update flag user", ->
 				originalCurve = @curveList.models[0]
-				flagUser = originalCurve.get 'flagUser' + " test"
-				@curveList.updateFlagUser(originalCurve.get('curveid'), flagUser)
+				userFlagStatus = originalCurve.get 'userFlagStatus' + " test"
+				@curveList.updateUserFlagStatus(originalCurve.get('curveid'), userFlagStatus)
 				updatedCurve = @curveList.models[0]
-				expect(updatedCurve.get 'flagUser').toEqual(flagUser)
+				expect(updatedCurve.get 'userFlagStatus').toEqual(userFlagStatus)
 
 
 	describe "CurveCurationSetModel testing", ->
@@ -111,35 +111,35 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.tagName).toEqual 'div'
 		describe "rendering thumbnail", ->
 			it "should have img src attribute set", ->
-				expect(@csc.$('.bv_thumbnail').attr('src')).toContain "AG-00344443_1680"
+				expect(@csc.$('.bv_thumbnail').attr('src')).toContain "AG-00439996_6863"
 			it "should show the compound code", ->
-				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
+				expect(@csc.$('.bv_compoundCode').html()).toEqual "CMPD-0000001-01A"
 		describe "selection", ->
 			it "should show selected when clicked", ->
 				@csc.$('.bv_flagUser').click()
 				@csc.$el.hasClass('selected')
 		describe "algorithm approved display", ->
 			it "should show not approved when algorithm flagged", ->
-				@csc.model.set flagAlgorithm: "no fit"
+				@csc.model.set algorithmFlagStatus: "no fit"
 				expect(@csc.$('.bv_fail')).toBeVisible()
 				expect(@csc.$('.bv_pass')).toBeHidden()
 			it "should show approved when algorithm not flagged ", ->
-				@csc.model.set flagAlgorithm: "NA"
+				@csc.model.set algorithmFlagStatus: ""
 				@csc.render()
 				expect(@csc.$('.bv_pass')).toBeVisible()
 				expect(@csc.$('.bv_fail')).toBeHidden()
 		describe "user flagged display", ->
 			it "should show thumbs up when user approved", ->
-				@csc.model.set flagUser: "approved"
+				@csc.model.set userFlagStatus: "approved"
 				expect(@csc.$('.bv_thumbsUp')).toBeVisible()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
 			it "should show thumbs down when not user approved", ->
-				@csc.model.set flagUser: "rejected"
+				@csc.model.set userFlagStatus: "rejected"
 				@csc.render()
 				expect(@csc.$('.bv_thumbsDown')).toBeVisible()
 				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
 			it "should hide thumbs up and thumbs down when no user input", ->
-				@csc.model.set flagUser: "NA"
+				@csc.model.set userFlagStatus: ""
 				@csc.render()
 				expect(@csc.$('.bv_thumbsUp')).toBeHidden()
 				expect(@csc.$('.bv_thumbsDown')).toBeHidden()
@@ -150,34 +150,34 @@ describe "Curve Curator Module testing", ->
 				expect(@csc.$('.bv_dropdown')).toBeVisible()
 			it "should update user flag when user selects reject dropdown menu item", ->
 				@csc.model.set
-					flagUser: 'NA'
+					userFlagStatus: ''
 				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userReject').click()
 				waitsFor =>
-					@csc.model.get('flagUser') == "rejected"
+					@csc.model.get('userFlagStatus') == "rejected"
 				, 200
 				runs =>
-					expect(@csc.model.get('flagUser')).toEqual("rejected")
+					expect(@csc.model.get('userFlagStatus')).toEqual("rejected")
 			it "should update user flag when user selects approve dropdown menu item", ->
 				@csc.model.set
-					flagUser: 'NA'
+					flagUser: ''
 				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userApprove').click()
 				waitsFor =>
-					@csc.model.get('flagUser') == "approved"
+					@csc.model.get('userFlagStatus') == "approved"
 				, 200
 				runs =>
-					expect(@csc.model.get('flagUser')).toEqual("approved")
+					expect(@csc.model.get('userFlagStatus')).toEqual("approved")
 			it "should update user flag when user selects NA dropdown menu item", ->
 				@csc.model.set
-					flagUser: 'approved'
+					userFlagStatus: 'approved'
 				@csc.$('.bv_flagUser').click()
 				@csc.$('.bv_userNA').click()
 				waitsFor =>
-					@csc.model.get('flagUser') == "NA"
+					@csc.model.get('userFlagStatus') == ""
 				, 200
 				runs =>
-					expect(@csc.model.get('flagUser')).toEqual("NA")
+					expect(@csc.model.get('userFlagStatus')).toEqual("")
 
 	describe "Curve Summary List Controller tests", ->
 		beforeEach ->
@@ -193,7 +193,7 @@ describe "Curve Curator Module testing", ->
 				expect(@cslc.$('.bv_curveSummaries').length).toEqual 1
 		describe "summary rendering", ->
 			it "should create summary divs", ->
-				expect(@cslc.$('.bv_curveSummary').length).toEqual 16
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 18
 		describe "user thumbnail selection", ->
 			beforeEach ->
 				@cslc.$('.bv_curveSummaries .bv_curveSummary .bv_group_thumbnail')[0].click()
@@ -208,21 +208,21 @@ describe "Curve Curator Module testing", ->
 		describe "filtering", ->
 			it "should only show Sigmoid when requested", ->
 				@cslc.filter 'sigmoid'
-				expect(@cslc.$('.bv_curveSummary').length).toEqual 10
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 12
 			it "should show all when requested", ->
 				@cslc.filter 'sigmoid'
 				@cslc.filter 'all'
-				expect(@cslc.$('.bv_curveSummary').length).toEqual 16
+				expect(@cslc.$('.bv_curveSummary').length).toEqual 18
 		describe "sorting", ->
 			it "should show the lowest EC50 when requested", ->
 				@cslc.sort 'EC50', true
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000009-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000008-01A"
 			it "should show the highest EC50 when requested", ->
 				@cslc.sort 'EC50', false
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000011-01A"
 			it "should show the first one when no sorting is requested", ->
 				@cslc.sort 'none'
-				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000007-01A"
+				expect(@cslc.$('.bv_curveSummary:eq(0) .bv_compoundCode').html()).toEqual "CMPD-0000001-01A"
 
 	describe "Dose Response Plot Controller tests", ->
 		beforeEach ->
@@ -279,17 +279,17 @@ describe "Curve Curator Module testing", ->
 					@reasonSelected?
 				,1000
 				runs =>
-					expect(@reasonSelected).toEqual 'outlier'
+					expect(@reasonSelected).toEqual 'knocked out'
 			it "should return a different value if the options is changed", ->
 				runs ->
-					@kpc.$('.bv_dataDictPicklist').val "crashout"
+					@kpc.$('.bv_dataDictPicklist').val "knocked out"
 					@kpc.$('.bv_doseResponseKnockoutPanelOKBtn').click()
 				,1000
 				waitsFor =>
 					@reasonSelected?
 				,1000
 				runs =>
-					expect(@reasonSelected).toEqual 'crashout'
+					expect(@reasonSelected).toEqual 'knocked out'
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->
@@ -399,7 +399,7 @@ describe "Curve Curator Module testing", ->
 						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
 						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_descending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000007-01A"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000011-01A"
 				it "should update sort when ascending/descending is changed", ->
 					runs ->
 						@ccc.$('.bv_sortBy').val 'EC50'
@@ -407,11 +407,11 @@ describe "Curve Curator Module testing", ->
 						@ccc.$('.bv_sortDirection_descending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_ascending').prop("checked", true)
 						@ccc.$('.bv_sortDirection_ascending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000009-01A"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000008-01A"
 						@ccc.$('.bv_sortDirection_descending').prop("checked", true)
 						@ccc.$('.bv_sortDirection_ascending').prop("checked", false)
 						@ccc.$('.bv_sortDirection_descending').click()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000007-01A"
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary .bv_compoundCode:eq(0)').html()).toEqual "CMPD-0000011-01A"
 				it "should add the 'none' option if no sortBy options are received from the server", ->
 					runs ->
 						@ccc.model.set sortOptions: new Backbone.Collection()
@@ -437,7 +437,7 @@ describe "Curve Curator Module testing", ->
 					runs ->
 						@ccc.$('.bv_filterBy').val 'sigmoid'
 						@ccc.$('.bv_filterBy').change()
-						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 10
+						expect(@ccc.$('.bv_curveSummaries .bv_curveSummary').length).toEqual 12
 			describe "When new thumbnail selected", ->
 				beforeEach ->
 					runs ->

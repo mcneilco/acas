@@ -97,6 +97,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 			includePoints = (selectedPoints) =>
 				selectedPoints.forEach (selectedPoint) =>
+					@points[selectedPoint.idx].algorithmFlagStatus = ""
 					@points[selectedPoint.idx].algorithmFlagObservation = ""
 					@points[selectedPoint.idx].algorithmFlagReason = ""
 					@points[selectedPoint.idx].algorithmFlagComment = ""
@@ -218,7 +219,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
 		if curve?
-			if curve.type == "LL.4"
+			if curve.type == "4 parameter D-R"
 				fct = (x) ->
 					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
 				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
@@ -232,6 +233,24 @@ class window.DoseResponsePlotController extends AbstractFormController
 					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
 #				Vertical Line
 					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+			if curve.type == "Ki Fit"
+				fct = (x) ->
+					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
+					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
+					#'max + (min-max)/(1+10^(log10(x)-log10(ki*(1+ligandConc/kd))))'
+					curve.max + (curve.min - curve.max) / (1 + Math.pow(10,(x-log10(curve.ki*(1 + curve.ligandConc/curve.kd)))))
+				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
+				if curve.reported_ki?
+					intersect = fct(log10(curve.reported_ki))
+					if curve.reported_operator?
+						color = '#ff0000'
+					else
+						color = '#808080'
+					#				Horizontal Line
+					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ki),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+					#				Vertical Line
+					brd.create('line',[[log10(curve.reported_ki),intersect],[log10(curve.reported_ki),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
@@ -314,12 +333,18 @@ class window.CurveDetail extends Backbone.Model
 		return "/api/curve/detail/" + @id
 	initialize: ->
 		@fixCompositeClasses()
+
 	fixCompositeClasses: =>
 		if @get('fitSettings') not instanceof DoseResponseAnalysisParameters
+			@get('fitSettings')
 			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
+
 	parse: (resp) =>
-		if resp.fitSettings not instanceof DoseResponseAnalysisParameters
-			resp.fitSettings = new DoseResponseAnalysisParameters(resp.fitSettings)
+		drapType = switch resp.renderingHint
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		if resp.fitSettings not instanceof drapType
+			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
 class window.CurveEditorController extends Backbone.View
@@ -334,8 +359,10 @@ class window.CurveEditorController extends Backbone.View
 		@$el.empty()
 		if @model?
 			@$el.html @template()
-
-			@drapc = new DoseResponseAnalysisParametersController
+			drapcType = switch @model.get('renderingHint')
+				when "4 parameter D-R" then DoseResponseAnalysisParametersController
+				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"

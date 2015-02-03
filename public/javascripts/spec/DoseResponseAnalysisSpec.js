@@ -518,8 +518,8 @@
           });
         });
         describe("display logic not ready to fit", function() {
-          it("should show model fit status not started becuase this is a new experiment", function() {
-            return expect(this.drac.$('.bv_modelFitStatus').html()).toEqual("not started");
+          it("should show model fit status Curves not fit becuase this is a new experiment", function() {
+            return expect(this.drac.$('.bv_modelFitStatus').html()).toEqual(" Curves not fit");
           });
           it("should not show model fit results becuase this is a new experiment", function() {
             expect(this.drac.$('.bv_modelFitResultsHTML').html()).toEqual("");
@@ -573,8 +573,8 @@
             });
             return expect(this.drac.$('.bv_max_limitType').attr('disabled')).toBeUndefined();
           });
-          return it("should show fit button as Fit Data since status is 'not started'", function() {
-            return expect(this.drac.$('.bv_fitModelButton').html()).toEqual("Fit Data");
+          return it("should show fit button as Re-Fit since status is ' Curves not fit'", function() {
+            return expect(this.drac.$('.bv_fitModelButton').html()).toEqual("Re-Fit");
           });
         });
         return describe("Form valid change handling", function() {

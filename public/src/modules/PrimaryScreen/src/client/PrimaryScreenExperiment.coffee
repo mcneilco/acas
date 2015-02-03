@@ -29,7 +29,7 @@ class window.TransformationRule extends Backbone.Model
 
 	validate: (attrs) ->
 		errors = []
-		if attrs.transformationRule is "unassigned"
+		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
 			errors.push
 				attribute: 'transformationRule'
 				message: "Transformation Rule must be assigned"
@@ -173,7 +173,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
-		if positiveControl is "" or positiveControl is undefined or positiveControl is "invalid"
+		if positiveControl is "" or positiveControl is undefined or positiveControl is "invalid" or positiveControl is null
 			errors.push
 				attribute: 'positiveControlBatch'
 				message: "A registered batch number must be provided."
@@ -184,7 +184,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				message: "Positive control conc must be set"
 
 		negativeControl = @get('negativeControl').get('batchCode')
-		if negativeControl is "" or negativeControl is undefined or negativeControl is "invalid"
+		if negativeControl is "" or negativeControl is undefined or negativeControl is "invalid" or negativeControl is null
 			errors.push
 				attribute: 'negativeControlBatch'
 				message: "A registered batch number must be provided."
@@ -196,7 +196,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
+		if (agonistControl !="" and agonistControl != undefined and agonistControl != null) or (agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null) # at least one of the agonist control fields is filled
 			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
 				errors.push
 					attribute: 'agonistControlBatch'
@@ -211,19 +211,19 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'vehicleControlBatch'
 				message: "A registered batch number must be provided."
 
-		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
+		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is null
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is ""
+		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is null
 			errors.push
 				attribute: 'aggregateBy'
 				message: "Aggregate By must be assigned"
-		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is ""
+		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is null
 			errors.push
 				attribute: 'aggregationMethod'
 				message: "Aggregation method must be assigned"
-		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
@@ -231,15 +231,15 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
 				errors.push
 					attribute: 'hitSDThreshold'
-					message: "SD threshold must be assigned"
+					message: "SD threshold must be a number"
 			if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
 				errors.push
 					attribute: 'hitEfficacyThreshold'
-					message: "Efficacy threshold must be assigned"
+					message: "Efficacy threshold must be a number"
 		if _.isNaN(attrs.assayVolume)
 			errors.push
 				attribute: 'assayVolume'
-				message: "Assay volume must be assigned"
+				message: "Assay volume must be a number"
 		if (attrs.assayVolume == "" or attrs.assayVolume == null) and (attrs.transferVolume != "" and attrs.transferVolume != null)
 				errors.push
 					attribute: 'assayVolume'
@@ -251,7 +251,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if attrs.volumeType == "transfer" and _.isNaN(attrs.transferVolume)
 			errors.push
 				attribute: 'transferVolume'
-				message: "Transfer volume must be assigned"
+				message: "Transfer volume must be a number"
 
 		if errors.length > 0
 			return errors
@@ -329,6 +329,16 @@ class window.PrimaryScreenExperiment extends Experiment
 			result.set clobValue: ""
 
 		result
+
+	getModelFitType: ->
+		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
+		if !type.has('codeValue')
+			type.set codeValue: "unassigned"
+			type.set codeType: "model fit"
+			type.set codeKind: "type"
+			type.set codeOrigin: "ACAS DDICT"
+
+		type
 
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
@@ -720,7 +730,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	getPreferredBatchId: (batchId, control) ->
 		console.log "beg of getPreferredBatchId"
 		if batchId == ""
-			@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
+			@model.get(control).set batchCode: ""
 			@attributeChanged()
 			return
 		else
@@ -747,23 +757,23 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			preferredName = results.preferredName
 			requestName = results.requestName
 			if preferredName == requestName
-				@model.get(control).set batchCode: UtilityFunctions::getTrimmedInput @$('.bv_'+control+'Batch')
-				@attributeChanged()
+				@model.get(control).set batchCode: preferredName
 				console.log "valid id"
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-
+				@attributeChanged()
 			else if preferredName == ""
 				@model.get(control).set batchCode: "invalid"
-				@attributeChanged()
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
 				console.log "invalid id"
+				@attributeChanged()
 			else
-				console.log "alias"
+				console.log "alias, save full name"
+				@model.get(control).set batchCode: preferredName
+				@attributeChanged()
 				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
 				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
 				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
-			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -1089,9 +1099,9 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		resultHTML = @model.getAnalysisResultHTML().get('clobValue')
 		if @dataAnalysisController?
 			@dataAnalysisController.showFileUploadCompletePhase()
+			@dataAnalysisController.disableAllInputs()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
-		@dataAnalysisController.disableAllInputs()
 
 	showDryRunResults: (dryRunStatus) ->
 		if dryRunStatus is "complete"
@@ -1104,10 +1114,9 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@dataAnalysisController.filePassedValidation = true
 			@dataAnalysisController.showFileUploadPhase()
 			@dataAnalysisController.handleFormValid()
-
+			@dataAnalysisController.disableAllInputs()
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
-		@dataAnalysisController.disableAllInputs()
 
 	showUploadWrapper: ->
 		resultStatus = "Upload Data and Analyze"
@@ -1235,7 +1244,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
-			@modelFitController.primaryAnalysisCompleted()
+			@modelFitController.setReadyForFit()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
@@ -1309,6 +1318,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
+#	modelFitControllerName: "PrimaryScreenModelFitController"
 #	protocolFilter: "?protocolName=FLIPR"
 	protocolKindFilter: "?protocolKind=Bio Activity"
 	moduleLaunchName: "primary_screen_experiment"

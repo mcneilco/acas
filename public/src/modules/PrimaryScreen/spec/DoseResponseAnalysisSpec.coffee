@@ -375,8 +375,8 @@ describe "Dose Response Analysis Module Testing", ->
 				it "Should load the template", ->
 					expect(@drac.$('.bv_modelFitStatus').length).toNotEqual 0
 			describe "display logic not ready to fit", ->
-				it "should show model fit status not started becuase this is a new experiment", ->
-					expect(@drac.$('.bv_modelFitStatus').html()).toEqual "not started"
+				it "should show model fit status Curves not fit becuase this is a new experiment", ->
+					expect(@drac.$('.bv_modelFitStatus').html()).toEqual " Curves not fit"
 				it "should not show model fit results becuase this is a new experiment", ->
 					expect(@drac.$('.bv_modelFitResultsHTML').html()).toEqual ""
 					expect(@drac.$('.bv_resultsContainer')).toBeHidden()
@@ -409,8 +409,8 @@ describe "Dose Response Analysis Module Testing", ->
 					@drac.model.getStatus().set codeValue: "finalized"
 					@drac.model.getStatus().set codeValue: "started"
 					expect(@drac.$('.bv_max_limitType').attr('disabled')).toBeUndefined()
-				it "should show fit button as Fit Data since status is 'not started'", ->
-					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Fit Data"
+				it "should show fit button as Re-Fit since status is ' Curves not fit'", ->
+					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Re-Fit"
 			describe "Form valid change handling", ->
 				it "should show button enabled since form loaded with valid values from test fixture", ->
 					expect(@drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined()

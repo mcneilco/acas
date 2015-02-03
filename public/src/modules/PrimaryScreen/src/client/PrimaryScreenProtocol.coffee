@@ -149,16 +149,6 @@ class window.PrimaryScreenProtocol extends Protocol
 		psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes)
 		errors.push psModelFitParametersErrors...
 
-		bestName = attrs.lsLabels.pickBestName()
-		errors.push super(attrs)...
-		if attrs.subclass?
-			cDate = @getCreationDate().get('dateValue')
-			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-			if isNaN(cDate)
-				errors.push
-					attribute: 'creationDate'
-					message: "Assay creation date must be set"
-
 		if errors.length > 0
 			return errors
 		else
@@ -173,6 +163,15 @@ class window.PrimaryScreenProtocol extends Protocol
 	checkForNewPickListOptions: ->
 		@trigger "checkForNewPickListOptions"
 
+	getModelFitType: ->
+		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
+		if !type.has('codeValue')
+			type.set codeValue: "unassigned"
+			type.set codeType: "model fit"
+			type.set codeKind: "type"
+			type.set codeOrigin: "ACAS DDICT"
+
+		type
 
 class window.PrimaryScreenProtocolParametersController extends AbstractFormController
 	template: _.template($("#PrimaryScreenProtocolParametersView").html())
@@ -495,7 +494,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
-		@setupPrimaryScreenModelFitParametersController()
+		@setupModelFitTypeController()
 
 		@errorOwnerName = 'PrimaryScreenProtocolModuleController'
 		@setBindings()
@@ -544,17 +543,16 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
 		@primaryScreenAnalysisParametersController.render()
 
-	setupPrimaryScreenModelFitParametersController: =>
-		@primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController
-			model: new DoseResponseAnalysisParameters @model.getModelFitParameters()
+	setupModelFitTypeController: ->
+		@modelFitTypeController = new ModelFitTypeController
+			model: @model
 			el: @$('.bv_doseResponseAnalysisParameters')
-		@primaryScreenModelFitParametersController.on 'amDirty', =>
+		@modelFitTypeController.on 'amDirty', =>
 			@trigger 'amDirty'
-		@primaryScreenModelFitParametersController.on 'amClean', =>
+		@modelFitTypeController.on 'amClean', =>
 			@trigger 'amClean'
-		@primaryScreenModelFitParametersController.render()
-		@updateModelFitClobValue()
-		@primaryScreenModelFitParametersController.on 'updateState', @updateModelFitClobValue
+		@modelFitTypeController.render()
+		@modelFitTypeController.on 'updateState', @updateModelFitClobValue
 
 	updateAnalysisClobValue: =>
 		if @primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') is Infinity
@@ -568,7 +566,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	updateModelFitClobValue: =>
 		mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 		mfp.set
-			clobValue: JSON.stringify @primaryScreenModelFitParametersController.model.attributes
+			clobValue: JSON.stringify @modelFitTypeController.parameterController.model.attributes
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 
@@ -584,7 +582,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		if @model.isNew()
 			@$('.bv_updateModuleComplete').html "Save Complete"
 		else
-			@$('.bv_updateModuleComplete').html "c Complete"
+			@$('.bv_updateModuleComplete').html "Update Complete"
 
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 		@model.save()

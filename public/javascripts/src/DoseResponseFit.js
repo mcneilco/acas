@@ -40,6 +40,7 @@
       this.launchFit = __bind(this.launchFit, this);
       this.paramsInvalid = __bind(this.paramsInvalid, this);
       this.paramsValid = __bind(this.paramsValid, this);
+      this.setupParameterController = __bind(this.setupParameterController, this);
       this.render = __bind(this.render, this);
       return DoseResponseFitController.__super__.constructor.apply(this, arguments);
     }
@@ -47,7 +48,8 @@
     DoseResponseFitController.prototype.template = _.template($("#DoseResponseFitView").html());
 
     DoseResponseFitController.prototype.events = {
-      "click .bv_fitModelButton": "launchFit"
+      "click .bv_fitModelButton": "launchFit",
+      "change .bv_modelFitType": "handleModelFitTypeChanged"
     };
 
     DoseResponseFitController.prototype.initialize = function() {
@@ -60,33 +62,83 @@
       this.parameterController = null;
       $(this.el).empty();
       $(this.el).html(this.template());
-      return this.setupCurveFitAnalysisParameterController();
+      return this.setupModelFitTypeSelect();
     };
 
-    DoseResponseFitController.prototype.setupCurveFitAnalysisParameterController = function() {
-      var drap;
-      if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
-        drap = new DoseResponseAnalysisParameters(this.options.initialAnalysisParameters);
-      } else {
-        drap = new DoseResponseAnalysisParameters();
-      }
-      this.parameterController = new DoseResponseAnalysisParametersController({
-        el: this.$('.bv_analysisParameterForm'),
-        model: drap
+    DoseResponseFitController.prototype.setupModelFitTypeSelect = function() {
+      this.modelFitTypeList = new PickListList();
+      this.modelFitTypeList.url = "/api/codetables/model fit/type";
+      return this.modelFitTypeListController = new PickListSelectController({
+        el: this.$('.bv_modelFitType'),
+        collection: this.modelFitTypeList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Model Fit Type"
+        })
       });
-      this.parameterController.on('amDirty', (function(_this) {
-        return function() {
-          return _this.trigger('amDirty');
-        };
-      })(this));
-      this.parameterController.on('amClean', (function(_this) {
-        return function() {
-          return _this.trigger('amClean');
-        };
-      })(this));
-      this.parameterController.on('valid', this.paramsValid);
-      this.parameterController.on('invalid', this.paramsInvalid);
-      return this.parameterController.render();
+    };
+
+    DoseResponseFitController.prototype.setupParameterController = function(modelFitType) {
+      var drap, drapType, drapcType;
+      drapType = (function() {
+        switch (modelFitType) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParameters;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParameters;
+          case "unassigned":
+            return "unassigned";
+        }
+      })();
+      if (drapType === "unassigned") {
+        this.$('.bv_analysisParameterForm').empty();
+        return this.$('.bv_fitModelButton').hide();
+      } else {
+        this.$('.bv_fitModelButton').show();
+        if ((this.options != null) && (this.options.initialAnalysisParameters != null)) {
+          drap = new drapType(this.options.initialAnalysisParameters);
+        } else {
+          drap = new drapType();
+        }
+        drapcType = (function() {
+          switch (modelFitType) {
+            case "4 parameter D-R":
+              return DoseResponseAnalysisParametersController;
+            case "Ki Fit":
+              return DoseResponseKiAnalysisParametersController;
+          }
+        })();
+        this.parameterController = new drapcType({
+          el: this.$('.bv_analysisParameterForm'),
+          model: drap
+        });
+        this.parameterController.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
+        this.parameterController.on('amClean', (function(_this) {
+          return function() {
+            return _this.trigger('amClean');
+          };
+        })(this));
+        this.parameterController.on('valid', this.paramsValid);
+        this.parameterController.on('invalid', this.paramsInvalid);
+        return this.parameterController.render();
+      }
+    };
+
+    DoseResponseFitController.prototype.handleModelFitTypeChanged = function() {
+      var modelFitType;
+      modelFitType = this.$('.bv_modelFitType').val();
+      this.setupParameterController(modelFitType);
+      if (this.parameterController != null) {
+        if (this.parameterController.isValid() === true) {
+          return this.paramsValid();
+        } else {
+          return this.paramsInvalid();
+        }
+      }
     };
 
     DoseResponseFitController.prototype.paramsValid = function() {
@@ -107,6 +159,7 @@
         inputParameters: JSON.stringify(this.parameterController.model),
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.options.experimentCode,
+        modelFitType: this.modelFitTypeListController.getSelectedCode(),
         testMode: false
       };
       return $.ajax({
@@ -189,7 +242,7 @@
         this.modelFitController.undelegateEvents();
       }
       this.modelFitController = new DoseResponseFitController({
-        f: this.drdpc.getNewExperimentCode(),
+        experimentCode: this.drdpc.getNewExperimentCode(),
         el: this.$('.bv_doseResponseAnalysis')
       });
       this.modelFitController.on('amDirty', (function(_this) {

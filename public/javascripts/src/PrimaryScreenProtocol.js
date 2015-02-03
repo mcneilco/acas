@@ -252,7 +252,7 @@
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
+      var errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
       errors = [];
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
@@ -263,20 +263,6 @@
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
-      bestName = attrs.lsLabels.pickBestName();
-      errors.push.apply(errors, PrimaryScreenProtocol.__super__.validate.call(this, attrs));
-      if (attrs.subclass != null) {
-        cDate = this.getCreationDate().get('dateValue');
-        if (cDate === void 0 || cDate === "" || cDate === null) {
-          cDate = "fred";
-        }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'creationDate',
-            message: "Assay creation date must be set"
-          });
-        }
-      }
       if (errors.length > 0) {
         return errors;
       } else {
@@ -292,6 +278,26 @@
 
     PrimaryScreenProtocol.prototype.checkForNewPickListOptions = function() {
       return this.trigger("checkForNewPickListOptions");
+    };
+
+    PrimaryScreenProtocol.prototype.getModelFitType = function() {
+      var type;
+      type = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type");
+      if (!type.has('codeValue')) {
+        type.set({
+          codeValue: "unassigned"
+        });
+        type.set({
+          codeType: "model fit"
+        });
+        type.set({
+          codeKind: "type"
+        });
+        type.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return type;
     };
 
     return PrimaryScreenProtocol;
@@ -652,7 +658,6 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
-      this.setupPrimaryScreenModelFitParametersController = __bind(this.setupPrimaryScreenModelFitParametersController, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
@@ -752,7 +757,7 @@
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
-      this.setupPrimaryScreenModelFitParametersController();
+      this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
       this.$('.bv_save').hide();
@@ -816,24 +821,23 @@
       return this.primaryScreenAnalysisParametersController.render();
     };
 
-    AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitParametersController = function() {
-      this.primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController({
-        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters()),
+    AbstractPrimaryScreenProtocolModuleController.prototype.setupModelFitTypeController = function() {
+      this.modelFitTypeController = new ModelFitTypeController({
+        model: this.model,
         el: this.$('.bv_doseResponseAnalysisParameters')
       });
-      this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {
+      this.modelFitTypeController.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.on('amClean', (function(_this) {
+      this.modelFitTypeController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.render();
-      this.updateModelFitClobValue();
-      return this.primaryScreenModelFitParametersController.on('updateState', this.updateModelFitClobValue);
+      this.modelFitTypeController.render();
+      return this.modelFitTypeController.on('updateState', this.updateModelFitClobValue);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
@@ -855,7 +859,7 @@
       var mfp;
       mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       return mfp.set({
-        clobValue: JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes),
+        clobValue: JSON.stringify(this.modelFitTypeController.parameterController.model.attributes),
         recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime()
       });
@@ -874,7 +878,7 @@
       if (this.model.isNew()) {
         this.$('.bv_updateModuleComplete').html("Save Complete");
       } else {
-        this.$('.bv_updateModuleComplete').html("c Complete");
+        this.$('.bv_updateModuleComplete').html("Update Complete");
       }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       return this.model.save();

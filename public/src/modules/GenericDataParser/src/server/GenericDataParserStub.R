@@ -27,6 +27,8 @@ parseGenericData <- function(request) {
 
 	if(dryRun=="false") {
 	    response$results$experimentCode = "EXPT-000001"
+	    #Only needs to be returned in the case that dose response analysis is run after (not during generic loads)
+	    response$results$renderingHint = "4 parameter D-R"
 	}
 
 	return( response)

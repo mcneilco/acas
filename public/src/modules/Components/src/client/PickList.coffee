@@ -33,10 +33,16 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@selectedCode = null
 
+		if @options.showIgnored?
+			@showIgnored = @options.showIgnored
+		else
+			@showIgnored = false
+
 		if @options.insertFirstOption?
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+
 
 		if @options.autoFetch?
 			@autoFetch = @options.autoFetch
@@ -55,7 +61,12 @@ class window.PickListSelectController extends Backbone.View
 			@collection.add @insertFirstOption,
 				at: 0
 				silent: true
-
+			unless (@selectedCode is @insertFirstOption.get('code'))
+				if (@collection.where({code: @selectedCode})).length is 0
+					newOption = new PickList
+						code: @selectedCode
+						name: @selectedCode
+					@collection.add newOption
 		@render()
 
 	render: =>
@@ -72,7 +83,15 @@ class window.PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		if !enm.get 'ignored'
+		shouldRender = @showIgnored
+		if enm.get 'ignored'
+			if @selectedCode?
+				if @selectedCode is enm.get 'code'
+					shouldRender = true
+		else
+			shouldRender = true
+
+		if shouldRender
 			$(@el).append new PickListOptionController(model: enm).render().el
 
 	setSelectedCode: (code) ->

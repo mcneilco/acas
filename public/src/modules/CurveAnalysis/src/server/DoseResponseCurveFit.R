@@ -16,5 +16,7 @@ fitDoseResponse <- function(request){
   user <- request$user
   testMode <- as.logical(request$testMode)
   myMessenger$capture_output(response <- api_doseResponse_experiment(simpleFitSettings, user, experimentCode, testMode))
+  modelFitType <- request$modelFitType
+  myMessenger$capture_output(response <- api_doseResponse_experiment(simpleFitSettings, modelFitType, user, experimentCode, testMode))
   return( response)
 }
