@@ -1682,12 +1682,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable <- resultTable[batchCode != "::"]
   
   # was "across plates"
-  if (parameters$aggregateBy == "compound batch concentration" || parameters$aggregateBy == "cmpd batch conc") {
-    groupBy <- c("batchCode", "wellType")
-  } else if (parameters$aggregateBy == "within plates") {
-    groupBy <- c("batchCode", "wellType", "assayBarcode")
-  } else {
-    warnUser("No valid aggregation selected. Using default aggregation.")
+  groupBy <- switch(parameters$aggregateBy,
+                    "entire assay" = c("batchCode", "wellType"),
+                    "cmpd plate" = c("batchCode", "wellType", "cmpdBarcode"),
+                    "assay plate" = c("batchCode", "wellType", "assayBarcode"),
+                    "none" = c("batchCode", "wellType", "assayBarcode", "well"),
+                    "cmpd batch conc" = c("batchCode", "wellType"),               # TODO: remove this line when done with old tests
+                    "compound batch concentration" = c("batchCode", "wellType"))  # TODO: remove this line when done with old tests
+  if (is.null(groupBy)) {
+    warnUser("No valid aggregation selected. Using no aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
   treatmentGroupBy <- c(groupBy, "cmpdConc")
