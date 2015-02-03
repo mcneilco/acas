@@ -1945,21 +1945,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    #experiment <<- experiment
-    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-      response <- getURL(
-        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
-        customrequest='DELETE',
-        httpheader=c('Content-Type'='application/json'),
-        postfields=toJSON(experiment))
-      if(response!="") {
-        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
-      }
-      return(response)
-    }
     
-    # TODO: bring this back in after roo route is completed
-    #deleteExperimentAnalysisGroups(experiment)
+    deleteAnalysisGroupsByExperiment(experiment)
     
     #     if (!useRdap) {
     if (FALSE) {
