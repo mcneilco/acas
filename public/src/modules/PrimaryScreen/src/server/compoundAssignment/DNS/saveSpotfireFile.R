@@ -48,7 +48,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
     experimentParam <- paste0("HTSExperimentCode=\\'", experiment$codeName, "\\'")
     fileParam <- paste0("HTSDataURL=\\'", 
                         gsub(":", "\\\\:", racas::applicationSettings$server.service.external.file.service.url), 
-                        finalLocation, "\\'")
+                        finalLocation, ".txt\\'")
     userLink <- paste0(spotfirePrefix, experimentParam, ";", fileParam, ";")
     fileLink <- paste0(racas::applicationSettings$server.service.external.file.service.url, finalLocation)
   } else {
