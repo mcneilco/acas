@@ -12,7 +12,7 @@ getLastDataRowNumber <- function(fileName, searchString, tempFilePath) {
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getLastDataRowNumber\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  rawLines <- readLines(fileName, warn = FALSE)
+  rawLines <- readLines(fileName, warn = FALSE, encoding = "latin1")
   dataRowNumber <- grep(searchString, rawLines)
   
   lastDataRowNumber <- c()

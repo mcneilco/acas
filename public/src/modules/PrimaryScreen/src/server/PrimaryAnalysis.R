@@ -1465,11 +1465,12 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
     }
   }
   
-  if(length(removeList) == 1) {
-    warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
-  } else if(length(removeList) > 1) {
-    warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
-  }
+  # No need to warn user when not using some of the data columns.
+  #   if(length(removeList) == 1) {
+  #     warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
+  #   } else if(length(removeList) > 1) {
+  #     warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
+  #   }
   return(inputDataTable)
 }
 
