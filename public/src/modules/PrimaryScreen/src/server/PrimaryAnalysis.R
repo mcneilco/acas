@@ -1465,11 +1465,12 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
     }
   }
   
-  if(length(removeList) == 1) {
-    warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
-  } else if(length(removeList) > 1) {
-    warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
-  }
+  # No need to warn user when not using some of the data columns.
+  #   if(length(removeList) == 1) {
+  #     warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
+  #   } else if(length(removeList) > 1) {
+  #     warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
+  #   }
   return(inputDataTable)
 }
 
@@ -1682,12 +1683,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable <- resultTable[batchCode != "::"]
   
   # was "across plates"
-  if (parameters$aggregateBy == "compound batch concentration" || parameters$aggregateBy == "cmpd batch conc") {
-    groupBy <- c("batchCode", "wellType")
-  } else if (parameters$aggregateBy == "within plates") {
-    groupBy <- c("batchCode", "wellType", "assayBarcode")
-  } else {
-    warnUser("No valid aggregation selected. Using default aggregation.")
+  groupBy <- switch(parameters$aggregateBy,
+                    "entire assay" = c("batchCode", "wellType"),
+                    "cmpd plate" = c("batchCode", "wellType", "cmpdBarcode"),
+                    "assay plate" = c("batchCode", "wellType", "assayBarcode"),
+                    "none" = c("batchCode", "wellType", "assayBarcode", "well"),
+                    "cmpd batch conc" = c("batchCode", "wellType"),               # TODO: remove this line when done with old tests
+                    "compound batch concentration" = c("batchCode", "wellType"))  # TODO: remove this line when done with old tests
+  if (is.null(groupBy)) {
+    warnUser("No valid aggregation selected. Using no aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
   treatmentGroupBy <- c(groupBy, "cmpdConc")
@@ -1945,21 +1949,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    #experiment <<- experiment
-    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-      response <- getURL(
-        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
-        customrequest='DELETE',
-        httpheader=c('Content-Type'='application/json'),
-        postfields=toJSON(experiment))
-      if(response!="") {
-        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
-      }
-      return(response)
-    }
     
-    # TODO: bring this back in after roo route is completed
-    #deleteExperimentAnalysisGroups(experiment)
+    deleteAnalysisGroupsByExperiment(experiment)
     
     #     if (!useRdap) {
     if (FALSE) {

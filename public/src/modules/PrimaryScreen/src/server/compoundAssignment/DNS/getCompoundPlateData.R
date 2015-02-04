@@ -41,8 +41,13 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
                           "where kp.barcode in ('", paste(barcodes, collapse = "','"), "') ",
                           "order by kp.barcode, kpw.wellref ")
                           
-    return(sqlQuery(queryString))
-  }  
+    return(sqlQuery(queryString = queryString, 
+                    host = racas::applicationSettings$server.service.external.inventory.database.host,
+                    port = racas::applicationSettings$server.service.external.inventory.database.port,
+                    sid = racas::applicationSettings$server.service.external.inventory.database.name,
+                    userName = racas::applicationSettings$server.service.external.inventory.database.username,
+                    userPassword = racas::applicationSettings$server.service.external.inventory.database.password))
+  }
   
   ##   cmpdBarcode plateType wellRef corporateName batchRef cmpdConc libraryID
   ## kp.barcode, dd_plateType.value as plateType, kpw.wellref, bp.corp_name, bb.batch_number, kwi.concvalue, kp.supplier
