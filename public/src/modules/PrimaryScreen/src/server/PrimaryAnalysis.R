@@ -1382,6 +1382,7 @@ getReadOrderTable <- function(readList) {
   # Output: readsTable (data.table)
   
   readsTable <- data.table(ldply(readList, data.frame))
+  readsTable[ , userReadOrder := 1:nrow(readsTable)]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
