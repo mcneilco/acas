@@ -116,12 +116,12 @@ class window.BaseEntity extends Backbone.Model
 				message: attrs.subclass+" date must be set"
 		if attrs.subclass?
 			notebook = @getNotebook().get('stringValue')
-			if notebook is "" or notebook is undefined
+			if notebook is "" or notebook is undefined or notebook is null
 				errors.push
 					attribute: 'notebook'
 					message: "Notebook must be set"
 			scientist = @getScientist().get('codeValue')
-			if scientist is "unassigned" or scientist is undefined or scientist is ""
+			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
 				errors.push
 					attribute: 'scientist'
 					message: "Scientist must be set"

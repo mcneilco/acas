@@ -63,7 +63,7 @@
     TransformationRule.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (attrs.transformationRule === "unassigned") {
+      if (attrs.transformationRule === "unassigned" || attrs.transformationRule === null) {
         errors.push({
           attribute: 'transformationRule',
           message: "Transformation Rule must be assigned"
@@ -304,7 +304,7 @@
       transformationErrors = this.get('transformationRuleList').validateCollection();
       errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
-      if (positiveControl === "" || positiveControl === void 0 || positiveControl === "invalid") {
+      if (positiveControl === "" || positiveControl === void 0 || positiveControl === "invalid" || positiveControl === null) {
         errors.push({
           attribute: 'positiveControlBatch',
           message: "A registered batch number must be provided."
@@ -318,7 +318,7 @@
         });
       }
       negativeControl = this.get('negativeControl').get('batchCode');
-      if (negativeControl === "" || negativeControl === void 0 || negativeControl === "invalid") {
+      if (negativeControl === "" || negativeControl === void 0 || negativeControl === "invalid" || negativeControl === null) {
         errors.push({
           attribute: 'negativeControlBatch',
           message: "A registered batch number must be provided."
@@ -333,7 +333,7 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if ((agonistControl !== "" && agonistControl !== void 0) || (agonistControlConc !== "" && agonistControlConc !== void 0)) {
+      if ((agonistControl !== "" && agonistControl !== void 0 && agonistControl !== null) || (agonistControlConc !== "" && agonistControlConc !== void 0 && agonistControlConc !== null)) {
         if (agonistControl === "" || agonistControl === void 0 || agonistControl === null || agonistControl === "invalid") {
           errors.push({
             attribute: 'agonistControlBatch',
@@ -354,25 +354,25 @@
           message: "A registered batch number must be provided."
         });
       }
-      if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === "") {
+      if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === null) {
         errors.push({
           attribute: 'signalDirectionRule',
           message: "Signal Direction Rule must be assigned"
         });
       }
-      if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === "") {
+      if (attrs.aggregateBy === "unassigned" || attrs.aggregateBy === null) {
         errors.push({
           attribute: 'aggregateBy',
           message: "Aggregate By must be assigned"
         });
       }
-      if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === "") {
+      if (attrs.aggregationMethod === "unassigned" || attrs.aggregationMethod === null) {
         errors.push({
           attribute: 'aggregationMethod',
           message: "Aggregation method must be assigned"
         });
       }
-      if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === "") {
+      if (attrs.normalizationRule === "unassigned" || attrs.normalizationRule === null) {
         errors.push({
           attribute: 'normalizationRule',
           message: "Normalization rule must be assigned"
@@ -382,20 +382,20 @@
         if (attrs.thresholdType === "sd" && _.isNaN(attrs.hitSDThreshold)) {
           errors.push({
             attribute: 'hitSDThreshold',
-            message: "SD threshold must be assigned"
+            message: "SD threshold must be a number"
           });
         }
         if (attrs.thresholdType === "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)) {
           errors.push({
             attribute: 'hitEfficacyThreshold',
-            message: "Efficacy threshold must be assigned"
+            message: "Efficacy threshold must be a number"
           });
         }
       }
       if (_.isNaN(attrs.assayVolume)) {
         errors.push({
           attribute: 'assayVolume',
-          message: "Assay volume must be assigned"
+          message: "Assay volume must be a number"
         });
       }
       if ((attrs.assayVolume === "" || attrs.assayVolume === null) && (attrs.transferVolume !== "" && attrs.transferVolume !== null)) {
@@ -413,7 +413,7 @@
       if (attrs.volumeType === "transfer" && _.isNaN(attrs.transferVolume)) {
         errors.push({
           attribute: 'transferVolume',
-          message: "Transfer volume must be assigned"
+          message: "Transfer volume must be a number"
         });
       }
       if (errors.length > 0) {
@@ -1897,7 +1897,7 @@
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
-          return _this.modelFitController.primaryAnalysisCompleted();
+          return _this.modelFitController.setReadyForFit();
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);

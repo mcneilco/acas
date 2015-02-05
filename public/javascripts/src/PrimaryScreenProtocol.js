@@ -252,7 +252,7 @@
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
+      var errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
       errors = [];
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
@@ -263,20 +263,6 @@
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
-      bestName = attrs.lsLabels.pickBestName();
-      errors.push.apply(errors, PrimaryScreenProtocol.__super__.validate.call(this, attrs));
-      if (attrs.subclass != null) {
-        cDate = this.getCreationDate().get('dateValue');
-        if (cDate === void 0 || cDate === "" || cDate === null) {
-          cDate = "fred";
-        }
-        if (isNaN(cDate)) {
-          errors.push({
-            attribute: 'creationDate',
-            message: "Assay creation date must be set"
-          });
-        }
-      }
       if (errors.length > 0) {
         return errors;
       } else {

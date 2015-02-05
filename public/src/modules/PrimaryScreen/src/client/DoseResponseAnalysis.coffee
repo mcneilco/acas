@@ -285,29 +285,35 @@ class window.DoseResponseAnalysisController extends Backbone.View
 					@$('.bv_resultsContainer').show()
 
 	testReadyForFit: =>
+		console.log "test ready for fit"
+		console.log @model
+		console.log @model.getAnalysisStatus().get('codeValue')
 		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
 		else
 			@setReadyForFit()
 
 	setNotReadyForFit: ->
+		console.log "set not ready for fit"
 		@$('.bv_fitOptionWrapper').hide()
 		@$('.bv_resultsContainer').hide()
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		unless @parameterController
-			@setupModelFitTypeController()
+		console.log "set ready for fit"
+		@setupModelFitTypeController()
 		@$('.bv_fitOptionWrapper').show()
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 
-	primaryAnalysisCompleted: ->
-		@testReadyForFit()
+#	primaryAnalysisCompleted: ->
+#		console.log "primary analysis completed"
+#		@testReadyForFit()
 
 	handleStatusChanged: =>
 		if @parameterController != null and @parameterController != undefined
 			console.log "handle status changed"
+			console.log @parameterController
 			if @model.isEditable()
 				@parameterController.enableAllInputs()
 			else
@@ -320,6 +326,11 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@modelFitTypeController.render()
 		@parameterController = @modelFitTypeController.parameterController
 		@modelFitTypeController.modelFitTypeListController.on 'change', => @handleModelFitTypeChanged()
+		modelFitType = @model.getModelFitType().get('codeValue')
+		if modelFitType is "unassigned"
+			@$('.bv_fitModelButton').hide()
+		else
+			@$('.bv_fitModelButton').show()
 
 	handleModelFitTypeChanged: =>
 		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
@@ -348,12 +359,16 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			if !confirm("Re-fitting the data will delete the previously fitted results")
 				return
 
+		@$('.bv_fitStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_fitStatusDropDown').modal "show"
+
 		fitData =
-			inputParameters: JSON.stringify @parameterController.model
+			inputParameters: JSON.stringify @modelFitTypeController.parameterController.model
 			user: window.AppLaunchParams.loginUserName
 #			experimentCode: "fail"
 			experimentCode: @model.get('codeName')
-			modelFitType: @modelFitTypeListController.getSelectedCode()
+			modelFitType: @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 			testMode: false
 
 		$.ajax
@@ -364,6 +379,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			error: (err) =>
 				alert 'got ajax error'
 				@serviceReturn = null
+				@$('.bv_fitStatusDropDown').modal("hide")
 			dataType: 'json'
 
 	fitReturnSuccess: (json) =>
@@ -373,5 +389,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
 		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
+		@$('.bv_fitStatusDropDown').modal("hide")
 
 

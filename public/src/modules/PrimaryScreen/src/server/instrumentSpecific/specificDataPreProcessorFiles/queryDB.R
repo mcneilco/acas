@@ -10,7 +10,7 @@
 # could expand to more robust racas version
 #######################################################################################
 
-sqlQuery <- function(queryString='sql query', host='***REMOVED***', port='1521', sid='ORADEV', ***REMOVED***, ***REMOVED***){
+sqlQuery <- function(queryString='sql query', host, port, sid, userName, userPassword){
   connectionInfo <- list(server.database.r.driver = racas::applicationSettings$server.database.r.driver,
                          server.database.host = host,
                          server.database.port = port,

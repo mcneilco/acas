@@ -15,7 +15,7 @@ getDataRowNumber <- function(fileName, searchString, tempFilePath) {
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getDataRowNumber\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  rawLines <- readLines(fileName, n = -1L, warn = FALSE, ok = TRUE)
+  rawLines <- readLines(fileName, n = -1L, warn = FALSE, ok = TRUE, encoding = "latin1")
   dataRowNumber <- grep(searchString, rawLines)
   
   return(dataRowNumber) 
