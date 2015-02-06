@@ -163,7 +163,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
                                  "Date" = validateDate, 
                                  "Number" = validateNumeric, 
                                  "Text" = validateCharacter,  
-                                 stopUser(paste("Internal Error: unrecognized class required by the loader:",expectedDataType))
+                                 stop(paste("Internal Error: unrecognized class required by the loader:",expectedDataType))
     )
     validatedData <- validationFunction(receivedValue)
     validatedMetaData[,column] <- validatedData
@@ -281,7 +281,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
-    if (batchId["preferredName"] == "") {
+    if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
       addError(paste0(mainCode, " '", batchId["requestName"], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
@@ -502,11 +502,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
     stopUser(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
-  tryCatch({
-    currentValueKindsList <- getAllValueKinds()
-  }, error = function(e) {
-    stopUser("Internal Error: Could not get current value kinds")
-  })
+  currentValueKindsList <- getAllValueKinds()  
+  
   if (length(currentValueKindsList)==0) stopUser("Setup error: valueKinds are missing")
   currentValueKinds <- sapply(currentValueKindsList, getElement, "kindName")
   matchingValueTypes <- sapply(currentValueKindsList, function(x) x$lsType$typeName)
@@ -2055,7 +2052,7 @@ saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
   
   ### Error checking
   if (!(entityID %in% names(entityData))) {
-    stopUser(paste0("Internal Error: Column ", entityID, " is not a missing from entityData"))
+    stop(paste0("Internal Error: Column ", entityID, " is missing from entityData"))
   }
   
   ### main code
@@ -2087,10 +2084,10 @@ saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
       lsTransaction=dfData$lsTransaction[1])
     upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data"))
+      stop(paste0("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data"))
     }
     if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stopUser(paste0("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data"))
+      stop(paste0("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data"))
     }
     entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
                                       version=dfData[[paste0(upperAcasEntity, "Version")]][1])
@@ -2104,7 +2101,7 @@ saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
   savedEntities <- saveAcasEntities(entities, paste0(acasEntity, "s"))
   
   if (length(savedEntities) != length(entities)) {
-    stopUser(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
+    stop(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
   }
   
   entityIds <- sapply(savedEntities, getElement, "id")
@@ -2520,34 +2517,34 @@ parseGenericData <- function(request) {
                         imagesFile=imagesFile,
                         errorEnv = errorEnv)))
   } else {
-    loadResult <- tryCatch.W.E(runMain(pathToGenericDataFormatExcelFile,
-                                       reportFilePath = reportFilePath,
-                                       dryRun = dryRun,
-                                       developmentMode = developmentMode,
-                                       configList=configList, 
-                                       testMode=testMode,
-                                       recordedBy=recordedBy,
-                                       imagesFile=imagesFile,
-                                       errorEnv = errorEnv))
+    loadResult <- tryCatchLog(runMain(pathToGenericDataFormatExcelFile,
+                                      reportFilePath = reportFilePath,
+                                      dryRun = dryRun,
+                                      developmentMode = developmentMode,
+                                      configList=configList, 
+                                      testMode=testMode,
+                                      recordedBy=recordedBy,
+                                      imagesFile=imagesFile,
+                                      errorEnv = errorEnv))
   }
   
   # If the output has class simpleError or is not a list, save it as an error
-  if (sum(class(loadResult$value)=="userStop") > 0) {
-    errorList <- c(errorList,list(loadResult$value$message))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="SQLException") > 0) {
-    errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         configList$server.database.host,configList$server.database.port, ":", 
-                                         as.character(loadResult$value), ". Please contact your system administrator.")))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="simpleError") > 0) {
-    errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
-                                          as.character(loadResult$value$message))))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
-    errorList <- c(errorList,list(as.character(loadResult$value)))
-    loadResult$value <- NULL
-  }
+#   if (sum(class(loadResult$value)=="userStop") > 0) {
+#     errorList <- c(errorList,list(loadResult$value$message))
+#     loadResult$value <- NULL
+#   } else if (sum(class(loadResult$value)=="SQLException") > 0) {
+#     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
+#                                          configList$server.database.host,configList$server.database.port, ":", 
+#                                          as.character(loadResult$value), ". Please contact your system administrator.")))
+#     loadResult$value <- NULL
+#   } else if (sum(class(loadResult$value)=="simpleError") > 0) {
+#     errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
+#                                           as.character(loadResult$value$message))))
+#     loadResult$value <- NULL
+#   } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
+#     errorList <- c(errorList,list(as.character(loadResult$value)))
+#     loadResult$value <- NULL
+#   }
   
   # Save warning messages but not the function call, which is only useful while programming
   # Paste "Internal Warning: " to the front of errors we didn't intend to throw
@@ -2640,15 +2637,15 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!(idColumn %in% names(entityData))) {
-    stopUser(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
+    stop(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
   }
   
   if (!(entityKind %in% racas::acasEntityHierarchyCamel)) {
-    stopUser("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
+    stop("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
   }
   
   if (!(entityID %in% names(entityData))) {
-    stopUser(paste0("Internal Error: ", entityID, " must be included in entityData"))
+    stop(paste0("Internal Error: ", entityID, " must be included in entityData"))
   }
   
   createExplicitLsState <- function(entityData, entityKind) {
@@ -2675,7 +2672,7 @@ saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   }
   
   if (!is.list(savedLsStates) || length(savedLsStates) != length(lsStates)) {
-    stopUser("Internal error: the roo server did not respond correctly to saving states")
+    stop("Internal error: the roo server did not respond correctly to saving states")
   }
   
   lsStateIds <- sapply(savedLsStates, getElement, "id")
@@ -2748,7 +2745,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   ### Error Checking
   requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
   if (any(!(requiredColumns %in% names(entityData)))) {
-    stopUser(paste0("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", ")))
+    stop(paste0("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", ")))
   }
   
   # Turns factors to character
@@ -2763,7 +2760,7 @@ saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE)
   } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
     entityData$dateValue <- as.character(NA)
   } else {
-    stopUser(paste0("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue)))
+    stop(paste0("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue)))
   }
   
   
