@@ -2317,41 +2317,37 @@ formatColumnNameChangeDT <- function(colDataTable) {
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam Fix
+  ##### TODO: Sam Fix for 1.5.1
+  
+  groupBy <- c(groupBy, "tempParentId")
+  
+  # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                   "activity", "normalizedActivity",
                   grep("^transformed_", names(batchDataTable), value=TRUE)
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
+  # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
+  # TODO: get numberOfReplicates
   
-  aggregateTreatmentData <- function(DT, meanTarget, sdTarget, parameters) {
-    # get means
-    outputMeans <- lapply(meanTarget, function(x) {
-      useAggregationMethod(as.numeric(DT[, x, with=FALSE][[1]]), parameters)
-    })
-    names(outputMeans) <- meanTarget
-    
-    # get SDs
-    outputSDs <- lapply(sdTarget, function(x) {
-      sd(as.numeric(DT[, x, with=FALSE][[1]]))
-    })
-    names(outputSDs) <- paste0("standardDeviation_", sdTarget)
-    
-    # TODO: get numberOfReplicates
-    
-    # Copy tempParentId to tempId, tempParentId should be only one unique number
-    tempId <- list(tempId = DT[1, tempParentId])
-    
-    return(c(outputMeans, outputSDs, tempId))
-  }
+  aggregationFunction <- switch(parameters$aggregationMethod,
+                                "mean" = mean,
+                                "median" = median,
+                                stopUser = stopUser("Internal error: Aggregation method not defined in system.")
+  )
+  aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = meanTarget]  
+  setnames(sds, meanTarget, paste0("standardDeviation_", meanTarget))
+  setkeyv(sds, groupBy)
+  setkeyv(aggregationResults, groupBy)
+  treatmentData <- sds[aggregationResults]
+  setnames(treatmentData, "tempParentId", "tempId")
   
-  treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget, parameters), 
-                                  by=groupBy] #concUnit,hasAgonist,?
   return(treatmentData)
 }
 getAnalysisGroupData <- function(treatmentGroupData) {
@@ -2359,30 +2355,20 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
   library(data.table)
   
-  # Replaces data with a curve id if there are more than 3 points
-  aggregateCurveData <- function(DT, newID, newTempId) {
-    if(length(unique(DT[, cmpdConc])) > 3) {
-      output <- DT[NA]
-      output[, tempId:=newTempId]
-      output[, curveId:=as.character(newID)]
-      output[, batchCode:=DT[1, batchCode]]
-      output[, renderingHint:="4 parameter D-R"]
-      return(output)
-    } else {
-      output <- copy(DT)
-      output[, tempId:=newTempId]
-      return(output)
-    }
-  }
-  
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[, renderingHint:=NA_character_]
-  analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, tempParentId), by=tempParentId]
-  analysisData[, tempParentId:=NULL]
+  preCurveData[ , doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
+  setkey(preCurveData, tempParentId)
+  curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
+  curveData[ , names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  curveData[, curveId := as.character(1:nrow(curveData))]
+  otherData <- preCurveData[doseResponse == FALSE]
+  analysisData <- rbind(curveData, otherData)
+  setnames(analysisData, "tempParentId", "tempId")
+  analysisData[ , doseResponse := NULL]  
   return(analysisData)
   
-  # TODO: bring hasAgonist back in, or put in a config
+  # TODO: bring hasAgonist back in (in 1.5.1), or put in a config
   
   #       if (parameters$aggregateReplicates == "across plates") {
   #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
