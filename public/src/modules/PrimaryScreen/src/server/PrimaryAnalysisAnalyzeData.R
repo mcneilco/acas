@@ -1,7 +1,6 @@
 # ROUTE: /experiment/primaryanalysis
 require(data.table)
 
-source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R")
 
 myMessenger <- Messenger$new()
 myMessenger$logger <- logger(logName = "com.acas.reanalysis", logToConsole = FALSE)
@@ -70,6 +69,7 @@ normalizeDataOriginal <- function() {
 
 normalizeData <- function() {
   setwd(racas::applicationSettings$appHome)
+  source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R")
   experimentCode <- POST$experimentCode
   flagFile <- getUploadedFilePath(FILES$file$name)
   file.copy(FILES$file$tmp_name, flagFile, overwrite = T)
@@ -101,7 +101,9 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   request$primaryAnalysisExperimentId <- experiment$id
   # This loses filename input, maybe add it back later, or just don't save over the old input file
   newPath <- tempfile("spotfireInput", getUploadedFilePath(""), ".zip")
-  download.file(getAcasFileLink(experimentFolderPath$fileValue), newPath)
+  fileInfo <- fromJSON(getURLcheckStatus(paste0(getAcasFileLink(experimentFolderPath$fileValue), "/metadata.json")))
+  file.copy(fileInfo[[1]]$dnsFile$path, newPath)
+  #download.file(getAcasFileLink(experimentFolderPath$fileValue), newPath)
   request$fileToParse <- basename(newPath)
   request$user <- experiment$recordedBy
   request$reportFile <- wellFlagFile

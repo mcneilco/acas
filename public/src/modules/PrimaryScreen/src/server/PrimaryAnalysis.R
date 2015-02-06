@@ -1382,6 +1382,7 @@ getReadOrderTable <- function(readList) {
   # Output: readsTable (data.table)
   
   readsTable <- data.table(ldply(readList, data.frame))
+  readsTable[ , userReadOrder := 1:nrow(readsTable)]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1951,6 +1952,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
     deleteAnalysisGroupsByExperiment(experiment)
+    deleteModelSettings(experiment)
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2452,6 +2454,20 @@ matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
   }
   stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
   return(stateKindVect)
+}
+deleteModelSettings <- function(experiment) {
+  metadataStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")
+  if (length(metadataStates) > 0) {
+    metadataState <- metadataStates[[1]]
+    valuesToDelete <- list()
+    paramValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit parameters")
+    typeValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit type")
+    statusValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit status")
+    htmlValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit result html")
+    
+    valuesToDelete <- c(paramValues, typeValues, statusValues, htmlValues)
+    lapply(valuesToDelete, deleteAcasEntity, acasCategory="experimentvalues")
+  }
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
