@@ -1563,6 +1563,20 @@ getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
   return(list(colDim=colDim, rowDim=rowDim))
   
 }
+removeNonCurves <- function(analysisData) {
+  # Removes non-curve analysis group data, leaving only enough information to create the 
+  # analysis groups without states and values so treatment groups can be created
+  doseRespData <- analysisData[stateKind == "dose response"]
+  singlePointData <- analysisData[stateKind != "dose response"]
+  clearThese <- setdiff(names(analysisData), c("tempId", "parentId"))
+  newColOrder <- c("tempId", "parentId", clearThese)
+  # Need to set up a data table keeping on the parentId of the singlePointData 
+  newSingle <- unique(singlePointData[,list(tempId, parentId)])
+  newSingle[, (clearThese):=NA]
+  setcolorder(newSingle, newColOrder)
+  setcolorder(doseRespData, newColOrder)
+  return(rbind(doseRespData, newSingle))
+}
 
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
@@ -1951,6 +1965,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
     
+    updateHtsFormat(parameters$htsFormat, experiment)
+    
     deleteAnalysisGroupsByExperiment(experiment)
     deleteModelSettings(experiment)
     
@@ -2016,8 +2032,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                               forceBatchCodeAdd = TRUE)
       analysisGroupDataLong[, parentId:=experimentId]
       
-      # Removes blank rows, be careful when Save HTS is checked, this will need to be updated
+      # Removes blank rows
       analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
+      if (parameters$htsFormat) {
+        analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
+      }
       
       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                   subjectData=subjectDataLong,
@@ -2111,16 +2130,11 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   # Uploads all the data to the server
   # 
   # Args:
-  #   metaData:               A data frame of the meta data
   #   lsTransaction:          An id of the transaction
-  #   calculatedResults:      A data frame of the calculated results (analysis group data)
-  #   treatmentGroupData:     A data frame of the treatment group data
-  #   rawResults:             A data frame of the raw results (subject group data)
-  #   xLabel:                 A string with the name of the variable that is in the 'x' column
-  #   yLabel:                 A string with the name of the variable that is in the 'y' column
-  #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
-  #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
-  #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #   analysisGroupData:      A data.table of the analysis group data
+  #   treatmentGroupData:     A data.table of the treatment group data
+  #   subjectData:            A data.table of the subject data
+  #   recordedBy:             The username of the current user
   #
   #   Returns:
   #     lsTransaction
@@ -2131,6 +2145,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
     valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
   ))
+  valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
   validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
   
   if(is.null(lsTransaction)) {
@@ -2141,6 +2156,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   # Not all of these will be filled
   analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
                                       analysisGroupData$stateKind)))
+  analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
   
   if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
     analysisGroupData$publicData <- TRUE
@@ -2468,6 +2484,12 @@ deleteModelSettings <- function(experiment) {
     valuesToDelete <- c(paramValues, typeValues, statusValues, htmlValues)
     lapply(valuesToDelete, deleteAcasEntity, acasCategory="experimentvalues")
   }
+}
+updateHtsFormat <- function (htsFormat, experiment) {
+  # Updates htsFormat to a standardized form of htsFormat, "true" or "false"
+  htsFormat <- ifelse(as.logical(htsFormat), "true", "false")
+  updateValueByTypeAndKind(htsFormat, "experiment", experiment$id, "metadata", "experiment metadata",
+                           "stringValue", "hts format")
 }
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else

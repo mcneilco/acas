@@ -178,7 +178,8 @@ curl -i -X POST -H "Content-Type: application/json" -H "Accept: application/json
 {kindName: "late peak", lsType:{id:1, version:0}},
 {kindName: "max time", lsType:{id:7, version:0}},
 {kindName: "has agonist", lsType:{id:1, version:0}},
-{kindName: "dryrun source file", lsType:{id:2, version:0}}
+{kindName: "dryrun source file", lsType:{id:2, version:0}},
+{kindName: "hts format", lsType:{id:1, version:0}}
 ]' http://localhost:8080/acas/valuekinds/jsonArray
 
 
