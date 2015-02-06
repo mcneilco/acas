@@ -112,6 +112,15 @@ renderCurve <- function(getParams) {
   fitData <- get_fit_data_curve_id(curveIds)
   data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
   
+  #Get Protocol Curve Display Min and Max for first curve in list
+  if(any(is.na(yMin),is.na(yMax))) {
+    protocol_display_values <- get_protocol_curve_display_min_and_max_by_curve_id(curveIds[[1]])    
+    plotWindow <- get_plot_window(fitData[1]$points[[1]])
+    recommendedDisplayWindow <- list(ymax = max(protocol_display_values$ymax,plotWindow[2], na.rm = TRUE), ymin = min(protocol_display_values$ymin,plotWindow[4], na.rm = TRUE))
+    if(is.na(yMin)) yMin <- recommendedDisplayWindow$ymin
+    if(is.na(yMax)) yMax <- recommendedDisplayWindow$ymax
+  }
+  
   #To be backwards compatable with hill slope example files
   hillSlopes <- which(!is.na(data$parameters$hillslope))
   if(length(hillSlopes) > 0  ) {

@@ -36,13 +36,13 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
       for(activity in activityColNames) {
         if(name == activity) {
           userInput[userReadName==name, ]$activityColName <- activity
-          userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",activity,"}")
+          userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",activity,"}")
           columnCount <- columnCount + 1
         }
       }
       if(columnCount == 0) {
         noMatch[[length(noMatch) + 1]] <- name
-        userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",name,"}")
+        userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
       } else if(columnCount > 1) {
         stopUser(paste0("Multiple activity columns found for read name: '", name, "'"))
       } 
@@ -56,7 +56,7 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
       if(!grepl("^R[0-9]+$", userInput[userReadName==name, ]$activityColName) && name != userInput[userReadName==name, ]$activityColName){
         overWrite[[length(overWrite) + 1]] <- userInput[userReadName==name, ]$activityColName
       }
-      userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadPosition, " {",name,"}")
+      userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
     }
   }
   

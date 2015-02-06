@@ -15,6 +15,7 @@ DROP VIEW p_api_analysis_group_results;
 DROP VIEW api_all_data;
 DROP VIEW batch_code_experiment_links;
 DROP VIEW api_protocol;
+DROP VIEW api_experiment_approved;
 DROP VIEW api_experiment;
 
 --create
@@ -51,7 +52,7 @@ AS
     MAX( CASE ev.ls_kind WHEN 'notebook' THEN ev.string_value ELSE null END ) AS notebook,
     MAX( CASE ev.ls_kind WHEN 'notebook page' THEN ev.string_value ELSE null END ) AS notebook_page,
     MAX( CASE ev.ls_kind WHEN 'project' THEN ev.code_value ELSE null END ) AS project,
-    MAX( CASE ev.ls_kind WHEN 'status' THEN ev.string_value ELSE null END ) AS status,
+    MAX( CASE ev.ls_kind WHEN 'experiment status' THEN ev.code_value ELSE null END ) AS status,
     MAX( CASE ev.ls_kind WHEN 'scientist' THEN ev.string_value ELSE null END ) AS scientist
   FROM experiment e
   JOIN experiment_label el
@@ -143,6 +144,10 @@ LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and
 WHERE ag.ignored = '0' and
 ags.ignored = '0' and
 agv.ignored = '0';
+
+CREATE OR REPLACE VIEW api_experiment_approved
+AS
+SELECT * from api_experiment where status is null or status = 'approved'
 
 CREATE OR REPLACE VIEW api_analysis_group_results AS 
 SELECT *
