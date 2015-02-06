@@ -2301,17 +2301,23 @@ formatColumnNameChangeDT <- function(colDataTable) {
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam Fix
+  ##### TODO: Sam Fix for 1.5.1
+  
+  groupBy <- c(groupBy, "tempParentId")
+  
+  # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                   "activity", "normalizedActivity",
                   grep("^transformed_", names(batchDataTable), value=TRUE)
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
+  # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
+  # TODO: get numberOfReplicates
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = mean,
@@ -2324,7 +2330,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   setkeyv(sds, groupBy)
   setkeyv(aggregationResults, groupBy)
   treatmentData <- sds[aggregationResults]
-  treatmentData[, tempId := 1:nrow(treatmentData)]
+  setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
 }
@@ -2342,10 +2348,11 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   curveData[, curveId := as.character(1:nrow(curveData))]
   otherData <- preCurveData[doseResponse == FALSE]
   analysisData <- rbind(curveData, otherData)
-  analysisData[ , c("tempParentId","doseResponse") := NULL]  
+  setnames(analysisData, "tempParentId", "tempId")
+  analysisData[ , doseResponse := NULL]  
   return(analysisData)
   
-  # TODO: bring hasAgonist back in, or put in a config
+  # TODO: bring hasAgonist back in (in 1.5.1), or put in a config
   
   #       if (parameters$aggregateReplicates == "across plates") {
   #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
