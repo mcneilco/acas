@@ -1366,10 +1366,6 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                      lsKind = "completion date",
                                                                      dateValue = as.numeric(format(as.Date(metaData$"Assay Date"[1]), "%s"))*1000,
                                                                      lsTransaction= lsTransaction)
-  experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
-                                                                     lsKind = "status",
-                                                                     stringValue = "Approved",
-                                                                     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
@@ -1378,6 +1374,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeOrigin = racas::applicationSettings$client.scientistCodeOrigin,
     codeType = "assay",
     codeKind = "scientist",
+    lsTransaction= lsTransaction)
+  experimentValues[[length(experimentValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "experiment status",
+    codeValue = "Approved",
+    codeType = "experiment",
+    codeKind = "status",
+    codeOrigin = "ACAS DDICT",
     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "codeValue",
                                                                      lsKind = "analysis status",
