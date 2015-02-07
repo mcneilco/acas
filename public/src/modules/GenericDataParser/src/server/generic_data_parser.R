@@ -1381,7 +1381,10 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "codeValue",
                                                                      lsKind = "analysis status",
-                                                                     stringValue = "running",
+                                                                     codeValue = "running",
+                                                                     codeType = "analysis",
+                                                                     codeKind = "status",
+                                                                     codeOrigin = "ACAS DDICT",
                                                                      lsTransaction= lsTransaction)
   experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "clobValue",
                                                                      lsKind = "analysis result html",
