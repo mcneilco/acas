@@ -2341,8 +2341,8 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                                 stopUser = stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
-  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = meanTarget]  
-  setnames(sds, meanTarget, paste0("standardDeviation_", meanTarget))
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget]  
+  setnames(sds, sdTarget, paste0("standardDeviation_", sdTarget))
   setkeyv(sds, groupBy)
   setkeyv(aggregationResults, groupBy)
   treatmentData <- sds[aggregationResults]
