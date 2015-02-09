@@ -1537,8 +1537,8 @@ autoFlagWells <- function(resultTable, parameters) {
     stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
   
-  resultTable[autoFlagType == "HIT", autoFlagObservation := paste0(">",hitThreshold)]
-  resultTable[autoFlagType == "HIT", autoFlagReason := paste0("Above ",thresholdType," threshold of ",hitThreshold,".")]
+  resultTable[autoFlagType == "HIT", autoFlagObservation := "hit"]
+  resultTable[autoFlagType == "HIT", autoFlagReason := "hit"]
   
   return(resultTable)
   
