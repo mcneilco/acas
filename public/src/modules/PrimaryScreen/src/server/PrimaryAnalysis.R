@@ -2357,15 +2357,16 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[ , doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
+  preCurveData[, doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
   setkey(preCurveData, tempParentId)
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
-  curveData[ , names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
   curveData[, curveId := as.character(1:nrow(curveData))]
   otherData <- preCurveData[doseResponse == FALSE]
   analysisData <- rbind(curveData, otherData)
+  analysisData[, tempId := NULL]
   setnames(analysisData, "tempParentId", "tempId")
-  analysisData[ , doseResponse := NULL]  
+  analysisData[, doseResponse := NULL]  
   return(analysisData)
   
   # TODO: bring hasAgonist back in (in 1.5.1), or put in a config
@@ -2458,18 +2459,15 @@ matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
   return(stateKindVect)
 }
 deleteModelSettings <- function(experiment) {
-  metadataStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")
-  if (length(metadataStates) > 0) {
-    metadataState <- metadataStates[[1]]
-    valuesToDelete <- list()
-    paramValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit parameters")
-    typeValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit type")
-    statusValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit status")
-    htmlValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit result html")
-    
-    valuesToDelete <- c(paramValues, typeValues, statusValues, htmlValues)
-    lapply(valuesToDelete, deleteAcasEntity, acasCategory="experimentvalues")
-  }
+  # Sets model fit settings back to their original values
+  # Not changing model fit type, should not be checked if "model fit status"
+  #   is "not started"
+  updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit status")
+  updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit parameters")
+  updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit result html")
 }
 updateHtsFormat <- function (htsFormat, experiment) {
   # Updates htsFormat to a standardized form of htsFormat, "true" or "false"
