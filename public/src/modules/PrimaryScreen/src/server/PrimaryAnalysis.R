@@ -82,7 +82,7 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Extract information from the flag file
   flagData <- parseWellFlagFile(flaggedWells, resultTable)
   
-  flagData <- changeColNameReadability(flagData, "humanToComputer")
+  flagData <- changeColNameReadability(flagData, "humanToComputer", parameters)
   
   # Ensure that the data is in the proper form
   validatedFlagData <- validateWellFlagData(flagData, resultTable)
@@ -1537,8 +1537,8 @@ autoFlagWells <- function(resultTable, parameters) {
     stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
   
-  resultTable[autoFlagType == "HIT", autoFlagObservation := paste0(">",hitThreshold)]
-  resultTable[autoFlagType == "HIT", autoFlagReason := paste0("Above ",thresholdType," threshold of ",hitThreshold,".")]
+  resultTable[autoFlagType == "HIT", autoFlagObservation := "hit"]
+  resultTable[autoFlagType == "HIT", autoFlagReason := "hit"]
   
   return(resultTable)
   
@@ -1950,7 +1950,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
-                                                   experiment, user)
+                                                   experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
     summaryInfo$info[[singleDryRunReport$title]] <- paste0(
@@ -2204,9 +2204,11 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   return (lsTransaction)
 }
 
-changeColNameReadability <- function(inputTable, readabilityChange) {
-  
-  colNameChangeTable <- getColNameChangeDataTables()[[readabilityChange]]
+changeColNameReadability <- function(inputTable, readabilityChange, parameters) {
+  # Changes column names of inputTable human-readable to non-spaced computer-readable
+  # inputTable: a data.table
+  # readabilityChange: "computerToHuman" or "humanToComputer"
+  colNameChangeTable <- getColNameChangeDataTables(parameters)[[readabilityChange]]
   
   colNameChangeTable <- selectColNamesToChange(colnames(inputTable), colNameChangeTable)
   
@@ -2236,7 +2238,7 @@ selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   return(colNameChangeTable)
 }
 
-getColNameChangeDataTables <- function() {
+getColNameChangeDataTables <- function(parameters) {
   
   colNameDataTable <- data.table(computerColNames = c("plateType",
                                                       "assayBarcode",
@@ -2281,7 +2283,7 @@ getColNameChangeDataTables <- function() {
                                                    "SD Score",
                                                    "Z' By Plate",
                                                    "Z'",
-                                                   "Activity",
+                                                   getActivityFullName(parameters),
                                                    "Normalized Activity",
                                                    "Flag Type",
                                                    "Flag Observation",
@@ -2295,7 +2297,12 @@ getColNameChangeDataTables <- function() {
   
   return(colNameDataTableList)
 }
-
+getActivityFullName <- function(parameters) {
+  # Gets a full activity name with read name and position included
+  rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
+  activityReadName <- rot[rot$activity, paste0("R", readPosition, " {", readName, "}")]
+  return(paste0("Activity - ", activityReadName))
+}
 formatColumnNameChangeDT <- function(colDataTable) {
   # Takes a data.table containing two columns: compColNames and humColNames. Returns a list containing two data tables. 
   # One will translate human to computer readable, the other will be computer to human readable. 
@@ -2341,8 +2348,8 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                                 stopUser = stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
-  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = meanTarget]  
-  setnames(sds, meanTarget, paste0("standardDeviation_", meanTarget))
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget]  
+  setnames(sds, sdTarget, paste0("standardDeviation_", sdTarget))
   setkeyv(sds, groupBy)
   setkeyv(aggregationResults, groupBy)
   treatmentData <- sds[aggregationResults]
@@ -2357,15 +2364,16 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[ , doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
+  preCurveData[, doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
   setkey(preCurveData, tempParentId)
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
-  curveData[ , names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
   curveData[, curveId := as.character(1:nrow(curveData))]
   otherData <- preCurveData[doseResponse == FALSE]
   analysisData <- rbind(curveData, otherData)
+  analysisData[, tempId := NULL]
   setnames(analysisData, "tempParentId", "tempId")
-  analysisData[ , doseResponse := NULL]  
+  analysisData[, doseResponse := NULL]  
   return(analysisData)
   
   # TODO: bring hasAgonist back in (in 1.5.1), or put in a config
@@ -2458,18 +2466,15 @@ matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
   return(stateKindVect)
 }
 deleteModelSettings <- function(experiment) {
-  metadataStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")
-  if (length(metadataStates) > 0) {
-    metadataState <- metadataStates[[1]]
-    valuesToDelete <- list()
-    paramValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit parameters")
-    typeValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit type")
-    statusValues <- getValuesByTypeAndKind(metadataState, "codeValue_model fit status")
-    htmlValues <- getValuesByTypeAndKind(metadataState, "clobValue_model fit result html")
-    
-    valuesToDelete <- c(paramValues, typeValues, statusValues, htmlValues)
-    lapply(valuesToDelete, deleteAcasEntity, acasCategory="experimentvalues")
-  }
+  # Sets model fit settings back to their original values
+  # Not changing model fit type, should not be checked if "model fit status"
+  #   is "not started"
+  updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit status")
+  updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit parameters")
+  updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit result html")
 }
 updateHtsFormat <- function (htsFormat, experiment) {
   # Updates htsFormat to a standardized form of htsFormat, "true" or "false"

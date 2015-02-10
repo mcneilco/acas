@@ -1,6 +1,19 @@
-saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
+saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
+  # Saves spotfire file with correct column names
   
-  inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman")
+  # Change well type names
+  translationList <- list(
+    test = "Compound Discrete (Tested Lot)", 
+    PC = paste0("Positive Control [", parameters$positiveControl$batchCode, " - ",
+                parameters$positiveControl$concentration, " ",
+                parameters$positiveControl$concentrationUnits, "]"),
+    NC = paste0("Negative Control [", parameters$negativeControl$batchCode, " - ",
+                parameters$negativeControl$concentration, " ",
+                parameters$negativeControl$concentrationUnits, "]"),
+    BLANK = "Blank")
+  inputTable[, wellType := unlist(translationList[wellType])]
+
+  inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
 
   newColNames <- colnames(inputTable)
   
@@ -12,7 +25,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, recordedBy) {
                        "Well", "Row", "Column", "Plate Order", "Well Type", "Corporate Name",
                        "Batch Number", "Corporate Batch Name", "Compound Concentration",
                        activityColNames,
-                       "Efficacy", "SD Score", "Z' By Plate", "Z'", "Activity", 
+                       "Efficacy", "SD Score", "Z' By Plate", "Z'", getActivityFullName(parameters), 
                        "Normalized Activity", "Flag Type", "Flag Observation", "Flag Reason",
                        "Flag Comment", "Auto Flag Type", "Auto Flag Observation",
                        "Auto Flag Reason")

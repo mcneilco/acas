@@ -6,7 +6,10 @@ parseGenericData <- function(request) {
 	reportFileName <- request[[2]]
 	cat (request[[2]])
 	dryRun <- request[[3]]
-#	dryRun <- request[[4]]
+	#	dryRun <- request[[4]]
+	if (grepl("unhandled_error", fileName, fixed = TRUE)) {
+	  stop("unhandled R error")
+	}
 	if (regexpr("with_error", fileName)>0)  {
 		hasError = TRUE
 		errorMessages <- c(errorMessages, list(list(errorLevel="error", message="Input file not found")))
