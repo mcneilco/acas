@@ -56,7 +56,7 @@
 <script type="text/template" id="CurveSummaryListView" xmlns="http://www.w3.org/1999/html">
     <div class="span4" style="margin-left:5px;width:300px;height:720px;">
         <div class="bv_curveEditorDirtyPanel"></div>
-        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:750px;margin-bottom:0;"></div>
+        <div class="bv_curveSummaries well well-small" style="background-color:#ffffff;width:275px;height:600px;margin-bottom:0;"></div>
     </div>
 </script>
 
@@ -76,7 +76,7 @@
 
 <script type="text/template" id="DoseResponsePlotView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="bv_plotWindow" style="height:338px;width:600px;">plot view</div>
+    <div class="bv_plotWindow" style="height:348px;width:600px;">plot view</div>
     <div class="bv_doseResponseKnockoutPanel"></div>
 </script>
 
@@ -106,50 +106,69 @@
 
     <div class="bv_curveFitParameters"></div>
 
-    <div class="span5" style="margin-left:0px">
-        <div class="span5" style="width:602px;">
-            <h5 style="margin-top:10px;">Model Fit Summary:</h5>
-            <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:430px;overflow:auto;margin-bottom:10px;"></div>
-        </div>
-    </div>
+    <div class="pull-right" style="width:370px;">
 
-    <div class="span2" style="margin-left:140px;">
-
-        <div class="span4 pull-left" style="">
-            <h5 style="margin-top:10px;">Reported Values:</h5>
+        <div class="span4 pull-left" style="margin-left:0;">
+            <h5 style="margin-top:0px;">Reported Values:</h5>
             <div class="well well-small bv_reportedValues" style="background-color:#ffffff;height:90px;overflow:auto;margin-bottom:10px;"></div>
         </div>
 
-        <div class="span4 pull-left" style="">
+        <div class="span4 pull-left" style="margin-left:0;">
             <h5 style="margin-top:0;">Parameter Std. Errors:</h5>
             <div class="well well-small bv_parameterStdErrors" style="background-color:#ffffff;height:110px;overflow:auto;margin-bottom:10px;"></div>
         </div>
 
-        <div class="span4 pull-left" style="">
+        <div class="span4 pull-left" style="margin-left:0;">
             <h5 style="margin-top:0;">Fit Metrics:</h5>
             <div class="well well-small bv_curveErrors" style="background-color:#ffffff;height:70px;overflow:auto;margin-bottom:10px;"></div>
+        </div>
+
+        <div class="span4" style="margin-left:0;">
+            <button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                Reject
+                <i class="icon-thumbs-down icon-white"></i>
+            </button>
+            <button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                Approve
+                <i class="icon-thumbs-up icon-white"></i>
+            </button>
+            <button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">
+                Reset
+                <i class="icon-refresh"></i>
+            </button>
+            <button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">
+                Save
+            </button>
+        </div>
+    </div>
+    </div>
+
+    <div class="span4 pull-left" style="margin-left:0px">
+        <div class="span5" style="width:602px;">
+            <h5 style="margin-top:10px;">Model Fit Summary:</h5>
+            <div class="well well-small bv_fitSummary" style="background-color:#ffffff;height:280px;overflow:auto;margin-bottom:10px;"></div>
         </div>
     </div>
 
     <div class="span5" style="margin-left:0px;">
-        <div class="span5" style="width:450px;margin-left:170px;">
-                        <button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                            Reject
-                            <i class="icon-thumbs-down icon-white"></i>
-                        </button>
-                        <button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                            Approve
-                            <i class="icon-thumbs-up icon-white"></i>
-                        </button>
-                        <button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">
-                            Reset
-                            <i class="icon-refresh"></i>
-                        </button>
-                        <button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">
-                            Save
-                        </button>
-                </div>
-            </div>
+        <!--<div class="span5" style="width:450px;margin-left:170px;">-->
+                        <!--<button class="btn btn-danger bv_reject" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
+                            <!--Reject-->
+                            <!--<i class="icon-thumbs-down icon-white"></i>-->
+                        <!--</button>-->
+                        <!--<button class="btn btn-success bv_approve" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
+                            <!--Approve-->
+                            <!--<i class="icon-thumbs-up icon-white"></i>-->
+                        <!--</button>-->
+                        <!--<button class="btn btn-default bv_reset" style="width:90px;padding-left:0;padding-right:0;" type="button">-->
+                            <!--Reset-->
+                            <!--<i class="icon-refresh"></i>-->
+                        <!--</button>-->
+                        <!--<button class="btn btn-primary bv_update" style="width:88px;padding-left:0;padding-right:0;"  type="button">-->
+                            <!--Save-->
+                        <!--</button>-->
+                <!--</div>-->
+            <!--</div>-->
     </div>
 
 
@@ -170,7 +189,7 @@
 </script>
 
 <script type="text/template" id="CurveCuratorView" xmlns="http://www.w3.org/1999/html">
-    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1315px;padding-top:10px;padding-bottom:0;">
+    <div class=" well well-small span12" style="background-color:#FFFFFF;width:1315px;height:750px;padding-top:10px;padding-bottom:0;">
 
         <div class="span3" style="margin-left:0;width:300px;">
             <div class="form-horizontal" style="margin-bottom:10px;">
