@@ -52,7 +52,8 @@ AS
     MAX( CASE ev.ls_kind WHEN 'notebook page' THEN ev.string_value ELSE null END ) AS notebook_page,
     MAX( CASE ev.ls_kind WHEN 'project' THEN ev.code_value ELSE null END ) AS project,
     MAX( CASE ev.ls_kind WHEN 'experiment status' THEN ev.code_value ELSE null END ) AS status,
-    MAX( CASE ev.ls_kind WHEN 'scientist' THEN ev.string_value ELSE null END ) AS scientist
+    MAX( CASE ev.ls_kind WHEN 'scientist' THEN ev.string_value ELSE null END ) AS scientist,
+    MAX( CASE ev.ls_kind WHEN 'hts format' THEN ev.string_value ELSE null END ) AS hts_format
   FROM experiment e
   JOIN experiment_label el
   ON e.id         =el.experiment_id
