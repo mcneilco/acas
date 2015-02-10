@@ -1950,7 +1950,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
-                                                   experiment, user)
+                                                   experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
     summaryInfo$info[[singleDryRunReport$title]] <- paste0(
@@ -2205,7 +2205,9 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
 }
 
 changeColNameReadability <- function(inputTable, readabilityChange) {
-  
+  # Changes column names of inputTable human-readable to non-spaced computer-readable
+  # inputTable: a data.table
+  # readabilityChange: "computerToHuman" or "humanToComputer"
   colNameChangeTable <- getColNameChangeDataTables()[[readabilityChange]]
   
   colNameChangeTable <- selectColNamesToChange(colnames(inputTable), colNameChangeTable)
