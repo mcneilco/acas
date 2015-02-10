@@ -82,7 +82,7 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   # Extract information from the flag file
   flagData <- parseWellFlagFile(flaggedWells, resultTable)
   
-  flagData <- changeColNameReadability(flagData, "humanToComputer")
+  flagData <- changeColNameReadability(flagData, "humanToComputer", parameters)
   
   # Ensure that the data is in the proper form
   validatedFlagData <- validateWellFlagData(flagData, resultTable)
@@ -2204,11 +2204,11 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   return (lsTransaction)
 }
 
-changeColNameReadability <- function(inputTable, readabilityChange) {
+changeColNameReadability <- function(inputTable, readabilityChange, parameters) {
   # Changes column names of inputTable human-readable to non-spaced computer-readable
   # inputTable: a data.table
   # readabilityChange: "computerToHuman" or "humanToComputer"
-  colNameChangeTable <- getColNameChangeDataTables()[[readabilityChange]]
+  colNameChangeTable <- getColNameChangeDataTables(parameters)[[readabilityChange]]
   
   colNameChangeTable <- selectColNamesToChange(colnames(inputTable), colNameChangeTable)
   
@@ -2238,7 +2238,7 @@ selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   return(colNameChangeTable)
 }
 
-getColNameChangeDataTables <- function() {
+getColNameChangeDataTables <- function(parameters) {
   
   colNameDataTable <- data.table(computerColNames = c("plateType",
                                                       "assayBarcode",
@@ -2283,7 +2283,7 @@ getColNameChangeDataTables <- function() {
                                                    "SD Score",
                                                    "Z' By Plate",
                                                    "Z'",
-                                                   "Activity",
+                                                   getActivityFullName(parameters),
                                                    "Normalized Activity",
                                                    "Flag Type",
                                                    "Flag Observation",
@@ -2297,7 +2297,12 @@ getColNameChangeDataTables <- function() {
   
   return(colNameDataTableList)
 }
-
+getActivityFullName <- function(parameters) {
+  # Gets a full activity name with read name and position included
+  rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
+  activityReadName <- rot[rot$activity, paste0("R", readPosition, " {", readName, "}")]
+  return(paste0("Activity - ", activityReadName))
+}
 formatColumnNameChangeDT <- function(colDataTable) {
   # Takes a data.table containing two columns: compColNames and humColNames. Returns a list containing two data tables. 
   # One will translate human to computer readable, the other will be computer to human readable. 

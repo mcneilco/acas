@@ -11,9 +11,9 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                 parameters$negativeControl$concentration, " ",
                 parameters$negativeControl$concentrationUnits, "]"),
     BLANK = "Blank")
-  inputTable[, wellType := translationList[wellType]]
+  inputTable[, wellType := unlist(translationList[wellType])]
 
-  inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman")
+  inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
 
   newColNames <- colnames(inputTable)
   
@@ -25,7 +25,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                        "Well", "Row", "Column", "Plate Order", "Well Type", "Corporate Name",
                        "Batch Number", "Corporate Batch Name", "Compound Concentration",
                        activityColNames,
-                       "Efficacy", "SD Score", "Z' By Plate", "Z'", "Activity", 
+                       "Efficacy", "SD Score", "Z' By Plate", "Z'", getActivityFullName(parameters), 
                        "Normalized Activity", "Flag Type", "Flag Observation", "Flag Reason",
                        "Flag Comment", "Auto Flag Type", "Auto Flag Observation",
                        "Auto Flag Reason")
