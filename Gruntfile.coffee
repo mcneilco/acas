@@ -119,7 +119,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee"]
+					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee","acas_custom/public_conf/serviceTests/*.coffee"]
 					dest: "acas_custom/javascripts/spec/test/"
 					ext: '.js'
 				]
