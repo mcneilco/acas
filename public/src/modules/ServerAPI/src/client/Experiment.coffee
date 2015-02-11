@@ -39,7 +39,7 @@ class window.Experiment extends BaseEntity
 				@trigger 'change'
 			resp
 
-	copyProtocolAttributes: (protocol) ->
+	copyProtocolAttributes: (protocol) =>
 		console.log "copy protocol attributes"
 		console.log @
 		#cache values I don't want to overwrite
@@ -76,8 +76,6 @@ class window.Experiment extends BaseEntity
 		@getProjectCode().set codeValue: project
 #		@getComments().set clobValue: protocol.getComments().get('clobValue')
 #		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
-		#TODO: after merging DNETRPLC-63 branch (with attach files to protocols/experiments feature and with getDetails instead of getDescription), need to uncomment code below and delete the code above:
-		#@getDetails().set clobValue: protocol.getDetails().get('clobValue')
 #		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"

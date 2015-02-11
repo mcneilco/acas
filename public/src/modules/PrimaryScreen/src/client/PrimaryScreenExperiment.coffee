@@ -1,13 +1,14 @@
 
 class window.PrimaryAnalysisRead extends Backbone.Model
 	defaults:
-		readPosition: null
+		readNumber: 1
+		readPosition: ""
 		readName: "unassigned"
 		activity: false
 
 	validate: (attrs) =>
 		errors = []
-		if _.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null
+		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null) and attrs.readName.indexOf("Calc:")==-1
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -313,6 +314,7 @@ class window.PrimaryScreenExperiment extends Experiment
 	getModelFitStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit status"
 		if !status.has('codeValue')
+			console.log "new model fit status value"
 			status.set codeValue: "not started"
 
 		status
@@ -334,13 +336,19 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		type
 
+	copyProtocolAttributes: (protocol) =>
+		modelFitStatus = @getModelFitStatus().get('codeValue')
+		console.log modelFitStatus
+		super(protocol)
+		@getModelFitStatus().set codeValue: modelFitStatus
+
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"
 	className: "form-inline"
 	events:
 		"change .bv_readPosition": "attributeChanged"
-		"change .bv_readName": "attributeChanged"
+		"change .bv_readName": "handleReadNameChanged"
 		"click .bv_activity": "attributeChanged"
 		"click .bv_delete": "clear"
 
@@ -354,7 +362,9 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		@$('.bv_readNumber').html('R'+@model.get('readNumber'))
 		@setUpReadNameSelect()
+		@hideReadPosition(@model.get('readName'))
 
 		@
 
@@ -369,6 +379,16 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 				name: "Select Read Name"
 			selectedCode: @model.get('readName')
 
+	hideReadPosition: (readName) ->
+		isCalculatedRead = readName.indexOf("Calc:") > -1
+		if isCalculatedRead is true
+			@$('.bv_readPosition').val('')
+			@$('.bv_readPosition').hide()
+			@$('.bv_readPositionHolder').show()
+		else
+			@$('.bv_readPosition').show()
+			@$('.bv_readPositionHolder').hide()
+
 	setUpReadPosition: (matchReadNameChecked) ->
 		if matchReadNameChecked
 			@$('.bv_readPosition').attr('disabled','disabled')
@@ -380,10 +400,16 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
 			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
-			readName: @readNameListController.getSelectedCode()
 			activity: activity
 		@model.triggerAmDirty()
 		@trigger 'updateState'
+
+	handleReadNameChanged: =>
+		readName = @readNameListController.getSelectedCode()
+		@hideReadPosition(readName)
+		@model.set
+			readName: readName
+		@attributeChanged()
 
 	clear: =>
 		@model.destroy()
@@ -434,11 +460,13 @@ class window.TransformationRuleController extends AbstractFormController
 class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
 	matchReadNameChecked: true
+	nextReadNumber: 1
 	events:
 		"click .bv_addReadButton": "addNewRead"
 
 	initialize: =>
 		@collection.on 'remove', @checkActivity
+		@collection.on 'remove', @renumberReads
 		@collection.on 'remove', => @collection.trigger 'change'
 
 
@@ -463,6 +491,9 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			newModel.triggerAmDirty()
 
 	addOneRead: (read) ->
+#		readNumber = 'R' +  @nextReadNumber.toString()
+		read.set readNumber: @nextReadNumber
+		@nextReadNumber++
 		parc = new PrimaryAnalysisReadController
 			model: read
 		@$('.bv_readInfo').append parc.render().el
@@ -481,6 +512,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
+		console.log "check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
@@ -491,6 +523,17 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 				@collection.at(index).set activity: true
 			index = index - 1
 
+	renumberReads: =>
+		console.log "renumber reads"
+		console.log @collection
+		@nextReadNumber = 1
+		index = 0
+		while index < @collection.length
+			readNumber = 'R'+@nextReadNumber.toString()
+			@collection.at(index).set readNumber: @nextReadNumber
+			@$('.bv_readNumber:eq('+index+')').html(readNumber)
+			index++
+			@nextReadNumber++
 
 class window.TransformationRuleListController extends AbstractFormController
 	template: _.template($("#TransformationRuleListView").html())

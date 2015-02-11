@@ -1,13 +1,16 @@
 ((exports) ->
 	exports.primaryAnalysisReads = [
+		readNumber: 1
 		readPosition: 11
 		readName: "none"
 		activity: true
 	,
+		readNumber: 2
 		readPosition: 12
 		readName: "fluorescence"
 		activity: false
 	,
+		readNumber: 3
 		readPosition:13
 		readName: "luminescence"
 		activity: false

@@ -13,7 +13,8 @@
     }
 
     PrimaryAnalysisRead.prototype.defaults = {
-      readPosition: null,
+      readNumber: 1,
+      readPosition: "",
       readName: "unassigned",
       activity: false
     };
@@ -21,7 +22,7 @@
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null) {
+      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null) && attrs.readName.indexOf("Calc:") === -1) {
         errors.push({
           attribute: 'readPosition',
           message: "Read position must be a number"
@@ -459,6 +460,7 @@
     __extends(PrimaryScreenExperiment, _super);
 
     function PrimaryScreenExperiment() {
+      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
       return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -518,6 +520,7 @@
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit status");
       if (!status.has('codeValue')) {
+        console.log("new model fit status value");
         status.set({
           codeValue: "not started"
         });
@@ -556,6 +559,16 @@
       return type;
     };
 
+    PrimaryScreenExperiment.prototype.copyProtocolAttributes = function(protocol) {
+      var modelFitStatus;
+      modelFitStatus = this.getModelFitStatus().get('codeValue');
+      console.log(modelFitStatus);
+      PrimaryScreenExperiment.__super__.copyProtocolAttributes.call(this, protocol);
+      return this.getModelFitStatus().set({
+        codeValue: modelFitStatus
+      });
+    };
+
     return PrimaryScreenExperiment;
 
   })(Experiment);
@@ -565,6 +578,7 @@
 
     function PrimaryAnalysisReadController() {
       this.clear = __bind(this.clear, this);
+      this.handleReadNameChanged = __bind(this.handleReadNameChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return PrimaryAnalysisReadController.__super__.constructor.apply(this, arguments);
@@ -578,7 +592,7 @@
 
     PrimaryAnalysisReadController.prototype.events = {
       "change .bv_readPosition": "attributeChanged",
-      "change .bv_readName": "attributeChanged",
+      "change .bv_readName": "handleReadNameChanged",
       "click .bv_activity": "attributeChanged",
       "click .bv_delete": "clear"
     };
@@ -592,7 +606,9 @@
     PrimaryAnalysisReadController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
+      this.$('.bv_readNumber').html('R' + this.model.get('readNumber'));
       this.setUpReadNameSelect();
+      this.hideReadPosition(this.model.get('readName'));
       return this;
     };
 
@@ -610,6 +626,19 @@
       });
     };
 
+    PrimaryAnalysisReadController.prototype.hideReadPosition = function(readName) {
+      var isCalculatedRead;
+      isCalculatedRead = readName.indexOf("Calc:") > -1;
+      if (isCalculatedRead === true) {
+        this.$('.bv_readPosition').val('');
+        this.$('.bv_readPosition').hide();
+        return this.$('.bv_readPositionHolder').show();
+      } else {
+        this.$('.bv_readPosition').show();
+        return this.$('.bv_readPositionHolder').hide();
+      }
+    };
+
     PrimaryAnalysisReadController.prototype.setUpReadPosition = function(matchReadNameChecked) {
       if (matchReadNameChecked) {
         return this.$('.bv_readPosition').attr('disabled', 'disabled');
@@ -623,11 +652,20 @@
       activity = this.$('.bv_activity').is(":checked");
       this.model.set({
         readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))),
-        readName: this.readNameListController.getSelectedCode(),
         activity: activity
       });
       this.model.triggerAmDirty();
       return this.trigger('updateState');
+    };
+
+    PrimaryAnalysisReadController.prototype.handleReadNameChanged = function() {
+      var readName;
+      readName = this.readNameListController.getSelectedCode();
+      this.hideReadPosition(readName);
+      this.model.set({
+        readName: readName
+      });
+      return this.attributeChanged();
     };
 
     PrimaryAnalysisReadController.prototype.clear = function() {
@@ -703,6 +741,7 @@
     __extends(PrimaryAnalysisReadListController, _super);
 
     function PrimaryAnalysisReadListController() {
+      this.renumberReads = __bind(this.renumberReads, this);
       this.checkActivity = __bind(this.checkActivity, this);
       this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
       this.addNewRead = __bind(this.addNewRead, this);
@@ -715,12 +754,15 @@
 
     PrimaryAnalysisReadListController.prototype.matchReadNameChecked = true;
 
+    PrimaryAnalysisReadListController.prototype.nextReadNumber = 1;
+
     PrimaryAnalysisReadListController.prototype.events = {
       "click .bv_addReadButton": "addNewRead"
     };
 
     PrimaryAnalysisReadListController.prototype.initialize = function() {
       this.collection.on('remove', this.checkActivity);
+      this.collection.on('remove', this.renumberReads);
       return this.collection.on('remove', (function(_this) {
         return function() {
           return _this.collection.trigger('change');
@@ -758,6 +800,10 @@
 
     PrimaryAnalysisReadListController.prototype.addOneRead = function(read) {
       var parc;
+      read.set({
+        readNumber: this.nextReadNumber
+      });
+      this.nextReadNumber++;
       parc = new PrimaryAnalysisReadController({
         model: read
       });
@@ -789,6 +835,7 @@
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
       var activitySet, index, _results;
+      console.log("check activity");
       index = this.collection.length - 1;
       activitySet = false;
       _results = [];
@@ -803,6 +850,25 @@
           });
         }
         _results.push(index = index - 1);
+      }
+      return _results;
+    };
+
+    PrimaryAnalysisReadListController.prototype.renumberReads = function() {
+      var index, readNumber, _results;
+      console.log("renumber reads");
+      console.log(this.collection);
+      this.nextReadNumber = 1;
+      index = 0;
+      _results = [];
+      while (index < this.collection.length) {
+        readNumber = 'R' + this.nextReadNumber.toString();
+        this.collection.at(index).set({
+          readNumber: this.nextReadNumber
+        });
+        this.$('.bv_readNumber:eq(' + index + ')').html(readNumber);
+        index++;
+        _results.push(this.nextReadNumber++);
       }
       return _results;
     };

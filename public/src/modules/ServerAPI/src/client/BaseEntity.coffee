@@ -343,6 +343,8 @@ class window.BaseEntityController extends AbstractFormController
 			recordedDate: new Date().getTime()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
+		console.log "handle status changed"
+		@model.trigger 'change'
 
 
 
@@ -368,13 +370,14 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger "noEditablePickLists"
 
 	handleSaveClicked: =>
-		@$('.bv_save').attr('disabled', 'disabled')
+		console.log "handle save clicked"
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()
 			@$('.bv_updateComplete').html "Save Complete"
 		else
 			@$('.bv_updateComplete').html "Update Complete"
+		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
 		@model.save()
 

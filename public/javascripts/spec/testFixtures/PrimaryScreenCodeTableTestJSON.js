@@ -98,6 +98,10 @@
             name: "Fluorescence",
             ignored: false
           }, {
+            code: "Calc: (maximum-minimum)/minimum",
+            name: "Calc: (maximum-minimum)/minimum",
+            ignored: false
+          }, {
             code: "none",
             name: "None",
             ignored: false

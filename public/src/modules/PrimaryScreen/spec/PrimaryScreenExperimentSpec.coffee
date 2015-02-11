@@ -15,7 +15,8 @@ describe "Primary Screen Experiment module testing", ->
 				it "should be defined", ->
 					expect(@par).toBeDefined()
 				it "should have defaults", ->
-					expect(@par.get('readPosition')).toBeNull()
+					expect(@par.get('readNumber')).toEqual 1
+					expect(@par.get('readPosition')).toEqual ""
 					expect(@par.get('readName')).toEqual "unassigned"
 					expect(@par.get('activity')).toBeFalsy()
 		describe "model validation tests", ->
@@ -23,12 +24,20 @@ describe "Primary Screen Experiment module testing", ->
 				@par = new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads[0]
 			it "should be valid as initialized", ->
 				expect(@par.isValid()).toBeTruthy()
-			it "should be invalid when read position is NaN", ->
+			it "should be invalid when read position is NaN and read name is not calculated", ->
 				@par.set readPosition: NaN
 				expect(@par.isValid()).toBeFalsy()
 				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readPosition'
 				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be valid when read position is '' and read name is a calculated read", ->
+				@par.set
+					readPosition: ''
+					readName: 'Calc: (maximum-minimum)/minimum'
+				expect(@par.isValid()).toBeTruthy()
+				filtErrors = _.filter @par.validationError, (err) ->
+					err.attribute=='readPosition'
+				expect(filtErrors.length).toEqual 0
 			it "should be invalid when read name is unassigned", ->
 				@par.set readName: "unassigned"
 				expect(@par.isValid()).toBeFalsy()
@@ -70,17 +79,20 @@ describe "Primary Screen Experiment module testing", ->
 			it "should have three reads", ->
 				expect(@parl.length).toEqual 3
 			it "should have the correct read info for the first read", ->
-				readtwo = @parl.at(0)
-				expect(readtwo.get('readPosition')).toEqual 11
-				expect(readtwo.get('readName')).toEqual "none"
-				expect(readtwo.get('activity')).toBeTruthy()
+				readone = @parl.at(0)
+				expect(readone.get('readNumber')).toEqual 1
+				expect(readone.get('readPosition')).toEqual 11
+				expect(readone.get('readName')).toEqual "none"
+				expect(readone.get('activity')).toBeTruthy()
 			it "should have the correct read info for the second read", ->
 				readtwo = @parl.at(1)
+				expect(readtwo.get('readNumber')).toEqual 2
 				expect(readtwo.get('readPosition')).toEqual 12
 				expect(readtwo.get('readName')).toEqual "fluorescence"
 				expect(readtwo.get('activity')).toBeFalsy()
 			it "should have the correct read info for the third read", ->
 				readthree = @parl.at(2)
+				expect(readthree.get('readNumber')).toEqual 3
 				expect(readthree.get('readPosition')).toEqual 13
 				expect(readthree.get('readName')).toEqual "luminescence"
 				expect(readthree.get('activity')).toBeFalsy()
@@ -427,6 +439,8 @@ describe "Primary Screen Experiment module testing", ->
 				it "should load a template", ->
 					expect(@parc.$('.bv_readName').length).toEqual 1
 			describe "render existing parameters", ->
+				it "should show read number", ->
+					expect(@parc.$('.bv_readNumber').html()).toEqual "R1"
 				it "should show read position", ->
 					expect(@parc.$('.bv_readPosition').val()).toEqual "11"
 				it "should show read name", ->
@@ -456,6 +470,17 @@ describe "Primary Screen Experiment module testing", ->
 					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads
 					el: $('#fixture')
 				@parc.render()
+			it "should hide the hide the read position if a calculated read is chosen", ->
+				waitsFor ->
+					@parc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					@parc.$('.bv_readName').val('Calc: (maximum-minimum)/minimum')
+					@parc.$('.bv_readName').change()
+					expect(@parc.model.get('readName')).toEqual "Calc: (maximum-minimum)/minimum"
+					expect(@parc.$('.bv_readPosition')).toBeHidden()
+					expect(@parc.$('.bv_readPositionHolder')).toBeVisible()
+
 
 	describe "TransformationRuleController", ->
 		describe "when instantiated", ->
@@ -532,6 +557,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(0)').html()).toEqual "R1"
 					expect(@parlc.$('.bv_readPosition:eq(0)').val()).toEqual "11"
 					expect(@parlc.$('.bv_readName:eq(0)').val()).toEqual "none"
 					expect(@parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual "checked"
@@ -540,6 +566,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(1)').html()).toEqual "R2"
 					expect(@parlc.$('.bv_readPosition:eq(1)').val()).toEqual "12"
 					expect(@parlc.$('.bv_readName:eq(1)').val()).toEqual "fluorescence"
 					expect(@parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined()
@@ -548,6 +575,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(2)').html()).toEqual "R3"
 					expect(@parlc.$('.bv_readPosition:eq(2)').val()).toEqual "13"
 					expect(@parlc.$('.bv_readName:eq(2)').val()).toEqual "luminescence"
 					expect(@parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined()

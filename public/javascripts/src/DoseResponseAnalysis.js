@@ -441,6 +441,7 @@
     };
 
     DoseResponseAnalysisController.prototype.initialize = function() {
+      console.log("init drac");
       this.model.on("sync", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.parameterController = null;
@@ -452,6 +453,7 @@
 
     DoseResponseAnalysisController.prototype.render = function() {
       var buttonText;
+      console.log("render drac");
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
       return this.$('.bv_fitModelButton').html(buttonText);
@@ -461,8 +463,8 @@
       var fitStatus, res, resultValue;
       fitStatus = this.model.getModelFitStatus().get('codeValue');
       this.$('.bv_modelFitStatus').html(fitStatus);
-      resultValue = this.model.getModelFitResultHTML();
       if (!!this.analyzedPreviously) {
+        resultValue = this.model.getModelFitResultHTML();
         if (resultValue !== null) {
           res = resultValue.get('clobValue');
           if (res === "") {
@@ -476,9 +478,6 @@
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
-      console.log("test ready for fit");
-      console.log(this.model);
-      console.log(this.model.getAnalysisStatus().get('codeValue'));
       if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
         return this.setNotReadyForFit();
       } else {

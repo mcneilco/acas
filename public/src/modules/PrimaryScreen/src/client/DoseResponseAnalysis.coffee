@@ -258,6 +258,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		"click .bv_fitModelButton": "launchFit"
 
 	initialize: ->
+		console.log "init drac"
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
@@ -267,6 +268,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	render: =>
+		console.log "render drac"
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText
@@ -274,8 +276,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 	showExistingResults: ->
 		fitStatus = @model.getModelFitStatus().get('codeValue')
 		@$('.bv_modelFitStatus').html(fitStatus)
-		resultValue = @model.getModelFitResultHTML()
-		unless not @analyzedPreviously #unless it has been analyzed previously
+		unless not @analyzedPreviously #unless it has not been analyzed previously
+			resultValue = @model.getModelFitResultHTML()
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
@@ -285,9 +287,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 					@$('.bv_resultsContainer').show()
 
 	testReadyForFit: =>
-		console.log "test ready for fit"
-		console.log @model
-		console.log @model.getAnalysisStatus().get('codeValue')
 		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
 		else

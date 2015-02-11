@@ -139,6 +139,7 @@ class window.PrimaryScreenProtocol extends Protocol
 
 	validate: (attrs) ->
 		errors = []
+		errors.push super(attrs)...
 		psProtocolParameters = @getPrimaryScreenProtocolParameters()
 		psProtocolParametersErrors = psProtocolParameters.validate()
 		errors.push psProtocolParametersErrors...

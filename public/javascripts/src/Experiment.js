@@ -8,6 +8,7 @@
 
     function Experiment() {
       this.duplicateEntity = __bind(this.duplicateEntity, this);
+      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
       this.parse = __bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }

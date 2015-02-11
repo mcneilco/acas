@@ -19,7 +19,8 @@
             return expect(this.par).toBeDefined();
           });
           return it("should have defaults", function() {
-            expect(this.par.get('readPosition')).toBeNull();
+            expect(this.par.get('readNumber')).toEqual(1);
+            expect(this.par.get('readPosition')).toEqual("");
             expect(this.par.get('readName')).toEqual("unassigned");
             return expect(this.par.get('activity')).toBeFalsy();
           });
@@ -32,7 +33,7 @@
         it("should be valid as initialized", function() {
           return expect(this.par.isValid()).toBeTruthy();
         });
-        it("should be invalid when read position is NaN", function() {
+        it("should be invalid when read position is NaN and read name is not calculated", function() {
           var filtErrors;
           this.par.set({
             readPosition: NaN
@@ -42,6 +43,18 @@
             return err.attribute === 'readPosition';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be valid when read position is '' and read name is a calculated read", function() {
+          var filtErrors;
+          this.par.set({
+            readPosition: '',
+            readName: 'Calc: (maximum-minimum)/minimum'
+          });
+          expect(this.par.isValid()).toBeTruthy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readPosition';
+          });
+          return expect(filtErrors.length).toEqual(0);
         });
         return it("should be invalid when read name is unassigned", function() {
           var filtErrors;
@@ -109,15 +122,17 @@
           return expect(this.parl.length).toEqual(3);
         });
         it("should have the correct read info for the first read", function() {
-          var readtwo;
-          readtwo = this.parl.at(0);
-          expect(readtwo.get('readPosition')).toEqual(11);
-          expect(readtwo.get('readName')).toEqual("none");
-          return expect(readtwo.get('activity')).toBeTruthy();
+          var readone;
+          readone = this.parl.at(0);
+          expect(readone.get('readNumber')).toEqual(1);
+          expect(readone.get('readPosition')).toEqual(11);
+          expect(readone.get('readName')).toEqual("none");
+          return expect(readone.get('activity')).toBeTruthy();
         });
         it("should have the correct read info for the second read", function() {
           var readtwo;
           readtwo = this.parl.at(1);
+          expect(readtwo.get('readNumber')).toEqual(2);
           expect(readtwo.get('readPosition')).toEqual(12);
           expect(readtwo.get('readName')).toEqual("fluorescence");
           return expect(readtwo.get('activity')).toBeFalsy();
@@ -125,6 +140,7 @@
         return it("should have the correct read info for the third read", function() {
           var readthree;
           readthree = this.parl.at(2);
+          expect(readthree.get('readNumber')).toEqual(3);
           expect(readthree.get('readPosition')).toEqual(13);
           expect(readthree.get('readName')).toEqual("luminescence");
           return expect(readthree.get('activity')).toBeFalsy();
@@ -714,6 +730,9 @@
           });
         });
         describe("render existing parameters", function() {
+          it("should show read number", function() {
+            return expect(this.parc.$('.bv_readNumber').html()).toEqual("R1");
+          });
           it("should show read position", function() {
             return expect(this.parc.$('.bv_readPosition').val()).toEqual("11");
           });
@@ -748,12 +767,24 @@
         });
       });
       return describe("validation testing", function() {
-        return beforeEach(function() {
+        beforeEach(function() {
           this.parc = new PrimaryAnalysisReadController({
             model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisReads),
             el: $('#fixture')
           });
           return this.parc.render();
+        });
+        return it("should hide the hide the read position if a calculated read is chosen", function() {
+          waitsFor(function() {
+            return this.parc.$('.bv_readName option').length > 0;
+          }, 1000);
+          return runs(function() {
+            this.parc.$('.bv_readName').val('Calc: (maximum-minimum)/minimum');
+            this.parc.$('.bv_readName').change();
+            expect(this.parc.model.get('readName')).toEqual("Calc: (maximum-minimum)/minimum");
+            expect(this.parc.$('.bv_readPosition')).toBeHidden();
+            return expect(this.parc.$('.bv_readPositionHolder')).toBeVisible();
+          });
         });
       });
     });
@@ -858,6 +889,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(0)').html()).toEqual("R1");
             expect(this.parlc.$('.bv_readPosition:eq(0)').val()).toEqual("11");
             expect(this.parlc.$('.bv_readName:eq(0)').val()).toEqual("none");
             return expect(this.parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual("checked");
@@ -868,6 +900,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(1)').html()).toEqual("R2");
             expect(this.parlc.$('.bv_readPosition:eq(1)').val()).toEqual("12");
             expect(this.parlc.$('.bv_readName:eq(1)').val()).toEqual("fluorescence");
             return expect(this.parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined();
@@ -878,6 +911,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(2)').html()).toEqual("R3");
             expect(this.parlc.$('.bv_readPosition:eq(2)').val()).toEqual("13");
             expect(this.parlc.$('.bv_readName:eq(2)').val()).toEqual("luminescence");
             return expect(this.parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined();

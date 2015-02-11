@@ -546,7 +546,9 @@
         recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime()
       });
-      return this.updateEditable();
+      this.updateEditable();
+      console.log("handle status changed");
+      return this.model.trigger('change');
     };
 
     BaseEntityController.prototype.updateEditable = function() {
@@ -576,7 +578,7 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
-      this.$('.bv_save').attr('disabled', 'disabled');
+      console.log("handle save clicked");
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
@@ -584,6 +586,7 @@
       } else {
         this.$('.bv_updateComplete').html("Update Complete");
       }
+      this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_saving').show();
       return this.model.save();
     };

@@ -135,10 +135,11 @@
     </div>
 
 
-    <span style="margin-left:6px;margin-bottom:5px;">Read Position</span>
+    <span style="margin-left:0px;margin-bottom:5px;">Read Number</span>
+    <span style="margin-left:7px;margin-bottom:5px;">Read Position</span>
     <span style="margin-left:90px;margin-bottom:5px;">Read Name</span>
     <span class="bv_group_matchReadName">
-            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:80px;">
+            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:52px;">
                 <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:10px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
             </span>
     </span>
@@ -257,13 +258,16 @@
 
 <script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="form-inline span10" style="margin-bottom:5px;margin-top:5px;">
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
 
+        <span class="control-group bv_group_readNumber">
+            <span class="bv_readNumber" style="margin-right: 15px;margin-left: 40px;width: 34px;"></span>
         <span class="control-group bv_group_readPosition">
-            <input class="span1 bv_readPosition" style="margin-right:10px;margin-left:20px;width:50px;" value="<%=readPosition%>" type="text">
+            <input class="span1 bv_readPosition" style="margin-right: 22px; margin-left: 35px; width: 50px;" value="<%=readPosition%>" type="text">
+            <span class="bv_readPositionHolder hide" style="margin-right: 0px; margin-left: 111px;"></span>
         </span>
         <span class="control-group bv_group_readName">
-            <select class="span6 bv_readName" style="margin-right:10px;width:355px;"></select>
+            <select class="span6 bv_readName" style="margin-right:15px;width:277px;"></select>
         </span>
         <span class="bv_group_activity">
             <label class="control-label radio" style="width:80px;padding-left:0;">

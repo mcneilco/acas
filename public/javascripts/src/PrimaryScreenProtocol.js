@@ -254,6 +254,7 @@
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
       var errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
       errors = [];
+      errors.push.apply(errors, PrimaryScreenProtocol.__super__.validate.call(this, attrs));
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
       errors.push.apply(errors, psProtocolParametersErrors);
