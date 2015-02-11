@@ -42,7 +42,7 @@
 
 source("public/src/conf/customFunctions.R")
 
-getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
+getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment, parameters) {
   # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
   #               well number, and if it's flagged. If NULL, the file did not exist,
   #               and no wells are flagged. Also may include information to flag analysis groups.
@@ -57,7 +57,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   }
 
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment, parameters)
   
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
@@ -71,7 +71,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   return(resultTable)
 }
 
-getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
+getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment, parameters) {
   # Reads the flagged wells from an input csv or Excel file
   # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #        resultTable, a data.table that must contain all of the barcodes and wells for the data set
@@ -1674,7 +1674,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ## User Well Flagging Here
   
   # user well flagging
-  resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment)
+  resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment, parameters)
   
   ## End User Well Flagging
   
