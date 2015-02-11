@@ -1296,7 +1296,10 @@
               version: 0
             }, {
               clobValue: null,
-              codeValue: null,
+              codeType: "analysis",
+              codeKind: "status",
+              codeOrigin: "ACAS DDICT",
+              codeValue: "not started",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -1317,7 +1320,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "not started",
+              stringValue: null,
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
@@ -2798,7 +2801,10 @@
               version: 0
             }, {
               clobValue: null,
-              codeValue: null,
+              codeType: "analysis",
+              codeKind: "status",
+              codeOrigin: "ACAS DDICT",
+              codeValue: "not started",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -2819,7 +2825,7 @@
               recordedBy: "smeyer",
               recordedDate: 1375889487000,
               sigFigs: null,
-              stringValue: "not started",
+              stringValue: null,
               uncertainty: null,
               uncertaintyType: null,
               unitKind: null,
@@ -2860,6 +2866,8 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "assay",
+              codeKind: "scientist",
               codeOrigin: "ACAS authors",
               codeValue: "jane",
               comments: null,
@@ -3353,6 +3361,8 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "assay",
+              codeKind: "scientist",
               codeOrigin: "ACAS authors",
               codeValue: "jane",
               comments: null,

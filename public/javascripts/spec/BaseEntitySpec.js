@@ -35,7 +35,10 @@
             return expect(this.bem.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.bem.getScientist().get('codeValue')).toEqual("unassigned");
+            expect(this.bem.getScientist().get('codeValue')).toEqual("unassigned");
+            expect(this.bem.getScientist().get('codeType')).toEqual("assay");
+            expect(this.bem.getScientist().get('codeKind')).toEqual("scientist");
+            return expect(this.bem.getScientist().get('codeOrigin')).toEqual("ACAS authors");
           });
           it('Should have the recordedBy set to the loginUser username', function() {
             return expect(this.bem.get('recordedBy')).toEqual("jmcneil");

@@ -208,7 +208,7 @@
             expect(this.psap.get('thresholdType')).toEqual(null);
             expect(this.psap.get('autoHitSelection')).toBeFalsy();
             expect(this.psap.get('htsFormat')).toBeFalsy();
-            expect(this.psap.get('matchReadName')).toBeTruthy();
+            expect(this.psap.get('matchReadName')).toBeFalsy();
             expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
             return expect(this.psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy();
           });
@@ -679,7 +679,10 @@
             return expect(this.pse2.getDryRunResultHTML().get('clobValue')).toEqual("");
           });
           it("should be able to get the analysis status", function() {
-            return expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
+            expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
+            expect(this.pse2.getAnalysisStatus().get('codeType')).toEqual("analysis");
+            expect(this.pse2.getAnalysisStatus().get('codeKind')).toEqual("status");
+            return expect(this.pse2.getAnalysisStatus().get('codeOrigin')).toEqual("ACAS DDICT");
           });
           it("should be able to get the analysis result html", function() {
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");

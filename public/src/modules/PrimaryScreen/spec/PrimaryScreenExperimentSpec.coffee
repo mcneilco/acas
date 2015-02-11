@@ -141,7 +141,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeFalsy()
-					expect(@psap.get('matchReadName')).toBeTruthy()
+					expect(@psap.get('matchReadName')).toBeFalsy()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
 					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 
@@ -404,6 +404,9 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@pse2.getDryRunResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the analysis status", ->
 					expect(@pse2.getAnalysisStatus().get('codeValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('codeType')).toEqual "analysis"
+					expect(@pse2.getAnalysisStatus().get('codeKind')).toEqual "status"
+					expect(@pse2.getAnalysisStatus().get('codeOrigin')).toEqual "ACAS DDICT"
 				it "should be able to get the analysis result html", ->
 					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the model fit status", ->

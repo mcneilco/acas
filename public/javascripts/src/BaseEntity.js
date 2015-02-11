@@ -71,7 +71,7 @@
       scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
       if (scientist.get('codeValue') === void 0) {
         scientist.set({
-          codeValue: re("unassigned")
+          codeValue: "unassigned"
         });
         scientist.set({
           codeType: "assay"

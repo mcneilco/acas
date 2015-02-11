@@ -35,7 +35,7 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		scientist = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "scientist"
 		if scientist.get('codeValue') is undefined
-			scientist.set codeValue:re "unassigned"
+			scientist.set codeValue: "unassigned"
 			scientist.set codeType: "assay"
 			scientist.set codeKind: "scientist"
 			scientist.set codeOrigin: window.conf.scientistCodeOrigin

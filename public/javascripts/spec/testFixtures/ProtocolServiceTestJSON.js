@@ -179,6 +179,8 @@
               version: 0
             }, {
               clobValue: null,
+              codeType: "assay",
+              codeKind: "scientist",
               codeOrigin: "ACAS authors",
               codeValue: "jane",
               comments: null,
