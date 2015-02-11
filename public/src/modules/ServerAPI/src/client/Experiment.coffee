@@ -123,7 +123,10 @@ class window.Experiment extends BaseEntity
 		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "analysis status"
 		#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
 		if status.get('codeValue') is undefined or status.get('codeValue') is ""
-			status.set codeValue: "created"
+			status.set codeValue: "not started"
+			status.set codeType: "analysis"
+			status.set codeKind: "status"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
 

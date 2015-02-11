@@ -120,7 +120,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
-		matchReadName: true
+		matchReadName: false
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
 		transformationRuleList: new TransformationRuleList()
 
@@ -302,12 +302,6 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		result
 
-	getAnalysisStatus: ->
-		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "analysis status"
-		if !status.has('codeValue')
-			status.set codeValue: "not started"
-
-		status
 
 	getAnalysisResultHTML: ->
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"

@@ -195,7 +195,16 @@
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "analysis status");
       if (status.get('codeValue') === void 0 || status.get('codeValue') === "") {
         status.set({
-          codeValue: "created"
+          codeValue: "not started"
+        });
+        status.set({
+          codeType: "analysis"
+        });
+        status.set({
+          codeKind: "status"
+        });
+        status.set({
+          codeOrigin: "ACAS DDICT"
         });
       }
       return status;

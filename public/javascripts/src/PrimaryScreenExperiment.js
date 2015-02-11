@@ -212,7 +212,7 @@
         volumeType: "dilution",
         htsFormat: false,
         autoHitSelection: false,
-        matchReadName: true,
+        matchReadName: false,
         primaryAnalysisReadList: new PrimaryAnalysisReadList(),
         transformationRuleList: new TransformationRuleList()
       };
@@ -501,17 +501,6 @@
         });
       }
       return result;
-    };
-
-    PrimaryScreenExperiment.prototype.getAnalysisStatus = function() {
-      var status;
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "analysis status");
-      if (!status.has('codeValue')) {
-        status.set({
-          codeValue: "not started"
-        });
-      }
-      return status;
     };
 
     PrimaryScreenExperiment.prototype.getAnalysisResultHTML = function() {

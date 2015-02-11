@@ -71,7 +71,13 @@
       scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
       if (scientist.get('codeValue') === void 0) {
         scientist.set({
-          codeValue: "unassigned"
+          codeValue: re("unassigned")
+        });
+        scientist.set({
+          codeType: "assay"
+        });
+        scientist.set({
+          codeKind: "scientist"
         });
         scientist.set({
           codeOrigin: window.conf.scientistCodeOrigin
