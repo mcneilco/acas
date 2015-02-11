@@ -2570,14 +2570,15 @@ parseGenericData <- function(request) {
   }
   
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
+  loadResult$errorList <- lapply(loadResult$errorList, getElement, "message")
+  loadResult$errorList <- c(loadResult$errorList, errorList)
+  hasError <- length(loadResult$errorList) > 0
   hasWarning <- length(loadResult$warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
+  for (singleError in loadResult$errorList) {
     errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
   }
   
