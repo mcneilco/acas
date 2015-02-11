@@ -40,7 +40,6 @@ exports.applicationScripts = [
 	"/javascripts/src/BatchListValidator.js",
 	"/javascripts/src/BulkLoadContainersFromSDF.js",
 	"/javascripts/src/BulkLoadSampleTransfers.js",
-	"/javascripts/src/ComponentsBrowser.js",
 	"/javascripts/src/CurveCurator.js",
 	"/javascripts/src/CurveCuratorAppController.js",
 	"/javascripts/src/DocForBatches.js",
