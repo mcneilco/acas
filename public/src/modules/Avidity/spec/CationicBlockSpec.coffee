@@ -94,13 +94,6 @@ describe 'Cationic Block testing', ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when recorded date is empty", ->
-					@cbp.set recordedDate: new Date("").getTime()
-					expect(@cbp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@cbp.validationError, (err) ->
-						err.attribute=='recordedDate'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
 					@cbp.get('scientist').set('value', "unassigned")
 					expect(@cbp.isValid()).toBeFalsy()
@@ -208,13 +201,6 @@ describe 'Cationic Block testing', ->
 				@cbb = new CationicBlockBatch window.cationicBlockTestJSON.cationicBlockBatch
 			it "should be valid when loaded from saved", ->
 				expect(@cbb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@cbb.set recordedDate: new Date("").getTime()
-				expect(@cbb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@cbb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
 				@cbb.get('scientist').set('value', "unassigned")
 				expect(@cbb.isValid()).toBeFalsy()
@@ -678,6 +664,8 @@ describe 'Cationic Block testing', ->
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
+#						console.log @cbc.model.validationError
+						console.log "here in test"
 						expect(@cbc.$('.bv_save').attr('disabled')).toBeUndefined()
 				it "should update the parent code", ->
 					runs ->

@@ -109,8 +109,6 @@
       }
       if (this.options.hideDelete != null) {
         this.hideDelete = this.options.hideDelete;
-        console.log("hide delete");
-        console.log(this.hideDelete);
       }
       return this.currentNumberOfFiles = 0;
     };

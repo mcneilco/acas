@@ -55,7 +55,7 @@ class window.AttachFileController extends AbstractFormController
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip']
+			allowedFileTypes: ['pdf']
 			hideDelete: @autoAddAttachFileModel
 		});
 		@lsFileChooser.render()
@@ -65,7 +65,7 @@ class window.AttachFileController extends AbstractFormController
 
 	setUpFileTypeSelect: ->
 		@fileTypeList = new PickListList()
-		@fileTypeList.url = "/api/dataDict/analytical method/file type"
+		@fileTypeList.url = "/api/codetables/analytical method/file type"
 		@fileTypeListController = new PickListSelectController
 			el: @$('.bv_fileType')
 			collection: @fileTypeList
@@ -139,6 +139,7 @@ class window.AttachFileListController extends Backbone.View
 		if @collection.length == 0
 			console.log "collection length is zero"
 			@uploadNewAttachFile()
+		@trigger 'renderComplete'
 		@
 
 	# For uploading new files

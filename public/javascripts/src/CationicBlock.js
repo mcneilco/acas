@@ -1,16 +1,19 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.CationicBlockParent = (function(_super) {
     __extends(CationicBlockParent, _super);
 
     function CationicBlockParent() {
+      this.duplicate = __bind(this.duplicate, this);
       return CationicBlockParent.__super__.constructor.apply(this, arguments);
     }
 
     CationicBlockParent.prototype.urlRoot = "/api/cationicBlockParents";
+
+    CationicBlockParent.prototype.className = "CationicBlockParent";
 
     CationicBlockParent.prototype.initialize = function() {
       this.set({
@@ -55,8 +58,22 @@
           stateKind: 'cationic block parent',
           type: 'fileValue',
           kind: 'structural file'
+        }, {
+          key: 'batch number',
+          stateType: 'metadata',
+          stateKind: 'cationic block parent',
+          type: 'numericValue',
+          kind: 'batch number',
+          value: 0
         }
       ]
+    };
+
+    CationicBlockParent.prototype.duplicate = function() {
+      var copiedThing;
+      copiedThing = CationicBlockParent.__super__.duplicate.call(this);
+      copiedThing.get("cationic block name").set("labelText", "");
+      return copiedThing;
     };
 
     return CationicBlockParent;
@@ -212,7 +229,6 @@
 
     CationicBlockParentController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new CationicBlockParent();
       }
       this.errorOwnerName = 'CationicBlockParentController';
@@ -223,8 +239,8 @@
       if (this.model == null) {
         this.model = new CationicBlockParent();
       }
-      CationicBlockParentController.__super__.render.call(this);
-      return this.setupStructuralFileController();
+      this.setupStructuralFileController();
+      return CationicBlockParentController.__super__.render.call(this);
     };
 
     CationicBlockParentController.prototype.setupStructuralFileController = function() {
@@ -234,7 +250,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
-        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        allowedFileTypes: ['sdf', 'mol'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
@@ -253,16 +269,12 @@
     };
 
     CationicBlockParentController.prototype.handleFileUpload = function(nameOnServer) {
-      console.log("file uploaded");
       this.model.get("structural file").set("value", nameOnServer);
-      console.log(this.model);
       return this.trigger('amDirty');
     };
 
     CationicBlockParentController.prototype.handleFileRemoved = function() {
-      console.log("file removed");
-      this.model.get("structural file").set("value", "");
-      return console.log(this.model);
+      return this.model.get("structural file").set("value", "");
     };
 
     CationicBlockParentController.prototype.updateModel = function() {
@@ -294,7 +306,6 @@
 
     CationicBlockBatchController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new CationicBlockBatch();
       }
       this.errorOwnerName = 'CationicBlockBatchController';
@@ -303,12 +314,11 @@
 
     CationicBlockBatchController.prototype.render = function() {
       if (this.model == null) {
-        console.log("create new model");
         this.model = new CationicBlockBatch();
       }
-      CationicBlockBatchController.__super__.render.call(this);
       this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
-      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      return CationicBlockBatchController.__super__.render.call(this);
     };
 
     CationicBlockBatchController.prototype.updateModel = function() {
@@ -326,54 +336,23 @@
 
     function CationicBlockBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return CationicBlockBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
-    CationicBlockBatchSelectController.prototype.setupBatchRegForm = function(batch) {
-      var model;
-      if (batch != null) {
-        console.log("batch exists");
-        model = batch;
-      } else {
-        console.log("batch doesn't exist");
-        model = new CationicBlockBatch();
+    CationicBlockBatchSelectController.prototype.setupBatchRegForm = function() {
+      if (this.batchModel === void 0 || this.batchModel === "new batch" || this.batchModel === null) {
+        this.batchModel = new CationicBlockBatch();
       }
-      this.batchController = new CationicBlockBatchController({
-        model: model,
-        el: this.$('.bv_batchRegForm')
-      });
       return CationicBlockBatchSelectController.__super__.setupBatchRegForm.call(this);
     };
 
     CationicBlockBatchSelectController.prototype.handleSelectedBatchChanged = function() {
-      var selectedBatch;
-      console.log("handle selected batch changed");
-      selectedBatch = this.batchListController.getSelectedCode();
-      if (selectedBatch === "new batch" || selectedBatch === null || selectedBatch === void 0) {
-        return this.setupBatchRegForm();
-      } else {
-        return $.ajax({
-          type: 'GET',
-          url: "/api/batches/codename/" + selectedBatch,
-          dataType: 'json',
-          error: function(err) {
-            alert('Could not get selected batch, creating new one');
-            return this.batchController.model = new CationicBlockBatch();
-          },
-          success: (function(_this) {
-            return function(json) {
-              var pb;
-              if (json.length === 0) {
-                return alert('Could not get selected batch, creating new one');
-              } else {
-                pb = new CationicBlockBatch(json);
-                pb.set(pb.parse(pb.attributes));
-                return _this.setupBatchRegForm(pb);
-              }
-            };
-          })(this)
-        });
-      }
+      this.batchCodeName = this.batchListController.getSelectedCode();
+      this.batchModel = this.batchList.findWhere({
+        codeName: this.batchCodeName
+      });
+      return this.setupBatchRegForm();
     };
 
     return CationicBlockBatchSelectController;
@@ -384,6 +363,8 @@
     __extends(CationicBlockController, _super);
 
     function CationicBlockController() {
+      this.setupBatchSelectController = __bind(this.setupBatchSelectController, this);
+      this.setupParentController = __bind(this.setupParentController, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       return CationicBlockController.__super__.constructor.apply(this, arguments);
     }
@@ -391,42 +372,49 @@
     CationicBlockController.prototype.moduleLaunchName = "cationic_block";
 
     CationicBlockController.prototype.initialize = function() {
+      var launchCode;
       if (this.model != null) {
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            launchCode = window.AppLaunchParams.moduleLaunchParams.code;
+            if (launchCode.indexOf("-") === -1) {
+              this.batchCodeName = "new batch";
+            } else {
+              this.batchCodeName = launchCode;
+              launchCode = launchCode.split("-")[0];
+            }
             return $.ajax({
               type: 'GET',
-              url: "/api/cationicBlockParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/cationicBlockParents/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');
-                console.log("ci 1");
                 return this.completeInitialization();
               },
               success: (function(_this) {
                 return function(json) {
                   var cbp;
                   if (json.length === 0) {
-                    console.log("ci 2");
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
                     cbp = new CationicBlockParent(json);
                     cbp.set(cbp.parse(cbp.attributes));
-                    _this.model = cbp;
-                    console.log("ci 3");
+                    if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                      _this.model = cbp.duplicate();
+                    } else {
+                      _this.model = cbp;
+                    }
                   }
                   return _this.completeInitialization();
                 };
               })(this)
             });
           } else {
-            console.log("ci 4");
             return this.completeInitialization();
           }
         } else {
-          console.log("ci 5");
           return this.completeInitialization();
         }
       }
@@ -441,11 +429,10 @@
     };
 
     CationicBlockController.prototype.setupParentController = function() {
-      console.log("set up cationic block parent controller");
-      console.log(this.model);
       this.parentController = new CationicBlockParentController({
         model: this.model,
-        el: this.$('.bv_parent')
+        el: this.$('.bv_parent'),
+        readOnly: this.readOnly
       });
       return CationicBlockController.__super__.setupParentController.call(this);
     };
@@ -453,7 +440,11 @@
     CationicBlockController.prototype.setupBatchSelectController = function() {
       this.batchSelectController = new CationicBlockBatchSelectController({
         el: this.$('.bv_batch'),
-        parentCodeName: this.model.get('codeName')
+        parentCodeName: this.model.get('codeName'),
+        batchCodeName: this.batchCodeName,
+        batchModel: this.batchModel,
+        readOnly: this.readOnly,
+        lsKind: "cationic block"
       });
       return CationicBlockController.__super__.setupBatchSelectController.call(this);
     };

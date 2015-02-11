@@ -7,6 +7,7 @@
     __extends(Thing, _super);
 
     function Thing() {
+      this.duplicate = __bind(this.duplicate, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
@@ -17,6 +18,8 @@
     }
 
     Thing.prototype.lsProperties = {};
+
+    Thing.prototype.className = "Thing";
 
     Thing.prototype.defaults = function() {
       this.set({
@@ -46,16 +49,12 @@
     };
 
     Thing.prototype.initialize = function() {
-      console.log("initialize");
-      console.log(this);
       return this.set(this.parse(this.attributes));
     };
 
     Thing.prototype.parse = function(resp) {
-      console.log("parse");
       if (resp != null) {
         if (resp.lsLabels != null) {
-          console.log("passed resp.labels?");
           if (!(resp.lsLabels instanceof LabelList)) {
             resp.lsLabels = new LabelList(resp.lsLabels);
           }
@@ -66,13 +65,8 @@
           })(this));
         }
         if (resp.lsStates != null) {
-          console.log("lsStates exists");
-          console.log(resp.lsStates);
           if (!(resp.lsStates instanceof StateList)) {
-            console.log("resp.lsStates = new StateList");
             resp.lsStates = new StateList(resp.lsStates);
-            console.log("new resp.lsStates");
-            console.log(resp.lsStates);
           }
           resp.lsStates.on('change', (function(_this) {
             return function() {
@@ -81,6 +75,7 @@
           })(this));
         }
       }
+      this.set(resp);
       this.createDefaultLabels();
       this.createDefaultStates();
       return resp;
@@ -108,33 +103,33 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dValue = _ref[_i];
         newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
-        if (dValue.unitKind != null) {
+        if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
           newValue.set({
             unitKind: dValue.unitKind
           });
         }
-        if (dValue.unitType != null) {
+        if ((dValue.unitType != null) && newValue.get('unitType') === void 0) {
           newValue.set({
             unitType: dValue.unitType
           });
         }
-        if (dValue.codeKind != null) {
+        if ((dValue.codeKind != null) && newValue.get('codeKind') === void 0) {
           newValue.set({
             codeKind: dValue.codeKind
           });
         }
-        if (dValue.codeType != null) {
+        if ((dValue.codeType != null) && newValue.get('codeType') === void 0) {
           newValue.set({
             codeType: dValue.codeType
           });
         }
-        if (dValue.codeOrigin != null) {
+        if ((dValue.codeOrigin != null) && newValue.get('codeOrigin') === void 0) {
           newValue.set({
             codeOrigin: dValue.codeOrigin
           });
         }
         this.set(dValue.key, newValue);
-        if (dValue.value != null) {
+        if ((dValue.value != null) && (newValue.get(dValue.type) === void 0)) {
           newValue.set(dValue.type, dValue.value);
         }
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
@@ -144,8 +139,6 @@
 
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
       var afm, analyticalFileValue, attachFileList, type, _i, _len;
-      console.log("get analytical files");
-      console.log(fileTypes);
       attachFileList = new AttachFileList();
       for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
         type = fileTypes[_i];
@@ -189,104 +182,55 @@
       return _results;
     };
 
+    Thing.prototype.duplicate = function() {
+      var copiedStates, copiedThing, origStates;
+      copiedThing = this.clone();
+      copiedThing.unset('lsStates');
+      copiedThing.unset('id');
+      copiedThing.unset('codeName');
+      copiedStates = new StateList();
+      origStates = this.get('lsStates');
+      origStates.each(function(st) {
+        var copiedState, copiedValues, origValues;
+        copiedState = new State(_.clone(st.attributes));
+        copiedState.unset('id');
+        copiedState.unset('lsTransactions');
+        copiedState.unset('lsValues');
+        copiedValues = new ValueList();
+        origValues = st.get('lsValues');
+        origValues.each(function(sv) {
+          var copiedVal;
+          copiedVal = new Value(sv.attributes);
+          copiedVal.unset('id');
+          copiedVal.unset('lsTransaction');
+          return copiedValues.add(copiedVal);
+        });
+        copiedState.set({
+          lsValues: copiedValues
+        });
+        return copiedStates.add(copiedState);
+      });
+      copiedThing.set({
+        lsStates: copiedStates,
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime(),
+        version: 0
+      });
+      copiedThing.get('notebook').set({
+        value: ""
+      });
+      copiedThing.get('scientist').set({
+        value: "unassigned"
+      });
+      copiedThing.get('completion date').set({
+        value: null
+      });
+      copiedThing.createDefaultLabels();
+      return copiedThing;
+    };
+
     return Thing;
 
   })(Backbone.Model);
-
-  window.BviditySiRNA = (function(_super) {
-    __extends(BviditySiRNA, _super);
-
-    function BviditySiRNA() {
-      return BviditySiRNA.__super__.constructor.apply(this, arguments);
-    }
-
-    BviditySiRNA.prototype.defaultLabels = [
-      {
-        key: 'somename',
-        type: 'name',
-        kind: 'name',
-        preferred: true,
-        labelText: ""
-      }, {
-        key: 'somecorpName',
-        type: 'name',
-        kind: 'corpName',
-        preferred: false,
-        labelText: ""
-      }, {
-        key: 'somebarcode',
-        type: 'barcode',
-        kind: 'barcode',
-        preferred: false,
-        labelText: ""
-      }
-    ];
-
-    BviditySiRNA.prototype.defaultValues = [
-      {
-        key: 'sequenceValue',
-        stateType: 'descriptors',
-        stateKind: 'unique attributes',
-        type: 'stringValue',
-        kind: 'sequence',
-        value: ""
-      }, {
-        key: 'massValue',
-        stateType: 'descriptors',
-        stateKind: 'other attributes',
-        type: 'numberValue',
-        kind: 'mass',
-        units: 'mg',
-        value: 42.34
-      }, {
-        key: 'analysisParameters',
-        stateType: 'meta',
-        stateKind: 'experoiment meta',
-        type: 'compositeObkectClob',
-        kind: 'AnalysisParameters'
-      }
-    ];
-
-    BviditySiRNA.prototype.defaultValueArrays = [
-      {
-        key: 'temperatureValueArray',
-        stateType: 'measurements',
-        stateKind: 'stateVsTime',
-        type: 'numberValue',
-        kind: 'temperature',
-        units: 'C',
-        value: null
-      }, {
-        key: 'timeValueArray',
-        stateType: 'measurements',
-        stateKind: 'stateVsTime',
-        type: 'dateValue',
-        kind: 'time',
-        value: null
-      }
-    ];
-
-    BviditySiRNA.prototype.defaults = function() {
-      var attrs;
-      attrs = BviditySiRNA.__super__.defaults.call(this);
-      attrs.shortDescription = "awesome";
-      return attrs;
-    };
-
-    BviditySiRNA.prototype.someMethod = function() {
-      this.get('corpName').set({
-        labelText: "fred"
-      });
-      this.set({
-        coprpName: "don't do this"
-      });
-      return this.get('massValue').set({
-        value: 42.0
-      });
-    };
-
-    return BviditySiRNA;
-
-  })(Thing);
 
 }).call(this);

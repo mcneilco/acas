@@ -11,11 +11,7 @@ class window.Label extends Backbone.Model
 		imageFile: null
 
 	changeLabelText: (options) ->
-		console.log "change label text"
-		console.log options
-		console.log @
 		@set labelText: options
-		console.log @
 
 class window.LabelList extends Backbone.Collection
 	model: Label
@@ -104,7 +100,6 @@ class window.Value extends Backbone.Model
 		@.on "change:value": @setValueType
 
 	setValueType: ->
-		console.log "value changed, setting value type"
 		@.set @get('lsType'), @get('value')
 		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
 		@.set 'recordedDate', new Date().getTime()

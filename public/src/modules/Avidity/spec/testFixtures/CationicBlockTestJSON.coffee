@@ -1,6 +1,7 @@
 ((exports) ->
 
 	exports.cationicBlockParent =
+		className: "CationicBlockParent"
 		codeName: "CB000001"
 		id: 1
 		ignored: false

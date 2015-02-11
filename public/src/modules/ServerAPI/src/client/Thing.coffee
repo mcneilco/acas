@@ -1,5 +1,6 @@
 class window.Thing extends Backbone.Model
 	lsProperties: {}
+	className: "Thing"
 #	urlRoot: "/api/things"
 
 	defaults: () =>
@@ -19,8 +20,6 @@ class window.Thing extends Backbone.Model
 		#return attrs
 
 	initialize: ->
-		console.log "initialize"
-		console.log @
 		@.set @parse(@.attributes)
 		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
 		#solution, save labels and values as base attributes. Only use new and fetch, don't use new, passing in attributes
@@ -29,25 +28,19 @@ class window.Thing extends Backbone.Model
 		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
 	parse: (resp) =>
-		console.log "parse"
 		if resp?
 			if resp.lsLabels?
-				console.log "passed resp.labels?"
 				if resp.lsLabels not instanceof LabelList
 					resp.lsLabels = new LabelList(resp.lsLabels)
 				resp.lsLabels.on 'change', =>
 					@trigger 'change'
 
 			if resp.lsStates?
-				console.log "lsStates exists"
-				console.log resp.lsStates
 				if resp.lsStates not instanceof StateList
-					console.log "resp.lsStates = new StateList"
 					resp.lsStates = new StateList(resp.lsStates)
-					console.log "new resp.lsStates"
-					console.log resp.lsStates
 				resp.lsStates.on 'change', =>
 					@trigger 'change'
+		@.set resp
 		@createDefaultLabels()
 		@createDefaultStates()
 
@@ -77,6 +70,7 @@ class window.Thing extends Backbone.Model
 		for dLabel in @lsProperties.defaultLabels
 			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 			@set dLabel.key, newLabel
+#			if newLabel.get('preferred') is undefined
 			newLabel.set preferred: dLabel.preferred
 
 
@@ -86,30 +80,29 @@ class window.Thing extends Backbone.Model
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
 
 			#setting unitType and unitKind in the state, if units are given
-			if dValue.unitKind?
+			if dValue.unitKind? and newValue.get('unitKind') is undefined
 				newValue.set unitKind: dValue.unitKind
-			if dValue.unitType?
+			if dValue.unitType? and newValue.get('unitType') is undefined
 				newValue.set unitType: dValue.unitType
-			if dValue.codeKind?
+			if dValue.codeKind? and newValue.get('codeKind') is undefined
 				newValue.set codeKind: dValue.codeKind
-			if dValue.codeType?
+			if dValue.codeType? and newValue.get('codeType') is undefined
 				newValue.set codeType: dValue.codeType
-			if dValue.codeOrigin?
+			if dValue.codeOrigin? and newValue.get('codeOrigin') is undefined
 				newValue.set codeOrigin: dValue.codeOrigin
 
 			#Setting dValue.key attribute in @ to point to the newValue
 			@set dValue.key, newValue
 
-			if dValue.value?
+			if dValue.value? and (newValue.get(dValue.type) is undefined)
 				newValue.set dValue.type, dValue.value
 			#setting top level model attribute's value to equal valueType's value
 			# (ie set "value" to equal value in "stringValue")
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
 
+
 	getAnalyticalFiles: (fileTypes) =>
-		console.log "get analytical files"
 		#get list of possible kinds of analytical files
-		console.log fileTypes
 		attachFileList = new AttachFileList()
 		for type in fileTypes
 			#get lsState metadata, [component] batch
@@ -142,155 +135,37 @@ class window.Thing extends Backbone.Model
 			else if !isNaN(i)
 				delete @attributes[i]
 
-# moved this example to ThingSpec.coffee
-#
-#class window.AviditySiRNA extends Thing
-#	className: "AviditySiRNA"
-#	lsProperties:
-#		defaultLabels: [
-#			key: 'name'
-#			type: 'name'
-#			kind: 'name'
-#			preferred: true
-#			labelText: ""
-#		,
-#			key: 'corpName'
-#			type: 'name'
-#			kind: 'corpName'
-#			preferred: false
-#			labelText: ""
-#		,
-#			key: 'barcode'
-#			type: 'barcode'
-#			kind: 'barcode'
-#			preferred: false
-#			labelText: ""
-#		]
-#		defaultValues: [
-#			key: 'sequenceValue'
-#			stateType: 'descriptors'
-#			stateKind: 'unique attributes'
-#			type: 'stringValue' #used to set the lsValue subclass of the object
-#			kind: 'sequence'
-#			value: ""
-#		,
-#			key: 'massValue'
-#			stateType: 'descriptors'
-#			stateKind: 'other attributes'
-#			type: 'numberValue'
-#			kind: 'mass'
-#			units: 'mg'
-#			value: 42.34
-#		,
-#			key: 'analysisParameters'
-#			stateType: 'meta'
-#			stateKind: 'experiment meta'
-#			type: 'compositeObjectClob'
-#			kind: 'AnalysisParameters'
-#		]
-#		defaultValueArrays: [
-#			key: 'temperatureValueArray'
-#			stateType: 'measurements'
-#			stateKind: 'stateVsTime'
-#			type: 'numberValue'
-#			kind: 'temperature'
-#			units: 'C'
-#			value: null
-#		,
-#			key: 'timeValueArray'
-#			stateType: 'measurements'
-#			stateKind: 'stateVsTime'
-#			type: 'dateValue'
-#			kind: 'time'
-#			value: null
-#		]
-#
-#	defaults: ->
-#		super()
-#		@set shortDescription: "awesome"
-#
-#		#retur attrs
-#
-#	#nitialize: ->
-#	#	super()
-#
-#	someMethod: ->
-#		@get('corpName').set labelText: "fred"
-#		@set coprpName: "don't do this"
-#
-#		@get('massValue').set value: 42.0
-#
-#		#<%= name.get 'labelText'%>
+	duplicate: =>
+		copiedThing = @.clone()
+#		copiedThing.unset 'lsLabels'
+		copiedThing.unset 'lsStates'
+		copiedThing.unset 'id'
+		copiedThing.unset 'codeName'
+		copiedStates = new StateList()
+		origStates = @get('lsStates')
+		origStates.each (st) ->
+			copiedState = new State(_.clone(st.attributes))
+			copiedState.unset 'id'
+			copiedState.unset 'lsTransactions'
+			copiedState.unset 'lsValues'
+			copiedValues = new ValueList()
+			origValues = st.get('lsValues')
+			origValues.each (sv) ->
+				copiedVal = new Value(sv.attributes)
+				copiedVal.unset 'id'
+				copiedVal.unset 'lsTransaction'
+				copiedValues.add(copiedVal)
+			copiedState.set lsValues: copiedValues
+			copiedStates.add(copiedState)
+		copiedThing.set
+#			lsLabels: new LabelList()
+			lsStates: copiedStates
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+			version: 0
+		copiedThing.get('notebook').set value: ""
+		copiedThing.get('scientist').set value: "unassigned"
+		copiedThing.get('completion date').set value: null
+		copiedThing.createDefaultLabels()
 
-class window.BviditySiRNA extends Thing
-	defaultLabels: [
-		key: 'somename'
-		type: 'name'
-		kind: 'name'
-		preferred: true
-		labelText: ""
-	,
-		key: 'somecorpName'
-		type: 'name'
-		kind: 'corpName'
-		preferred: false
-		labelText: ""
-	,
-		key: 'somebarcode'
-		type: 'barcode'
-		kind: 'barcode'
-		preferred: false
-		labelText: ""
-	]
-	defaultValues: [
-		key: 'sequenceValue'
-		stateType: 'descriptors'
-		stateKind: 'unique attributes'
-		type: 'stringValue' #used to set the lsValue subclass of the object
-		kind: 'sequence'
-		value: ""
-	,
-		key: 'massValue'
-		stateType: 'descriptors'
-		stateKind: 'other attributes'
-		type: 'numberValue'
-		kind: 'mass'
-		units: 'mg'
-		value: 42.34
-	,
-		key: 'analysisParameters'
-		stateType: 'meta'
-		stateKind: 'experoiment meta'
-		type: 'compositeObkectClob'
-		kind: 'AnalysisParameters'
-	]
-	defaultValueArrays: [
-		key: 'temperatureValueArray'
-		stateType: 'measurements'
-		stateKind: 'stateVsTime'
-		type: 'numberValue'
-		kind: 'temperature'
-		units: 'C'
-		value: null
-	,
-		key: 'timeValueArray'
-		stateType: 'measurements'
-		stateKind: 'stateVsTime'
-		type: 'dateValue'
-		kind: 'time'
-		value: null
-	]
-
-	defaults: ->
-		attrs = super()
-		attrs.shortDescription = "awesome"
-
-		return attrs
-
-	someMethod: ->
-		@get('corpName').set labelText: "fred"
-		@set coprpName: "don't do this"
-
-		@get('massValue').set value: 42.0
-
-#<%= name.get 'labelText'%>
+		copiedThing

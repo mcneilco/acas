@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
         type: "linker",
         kind: "type",

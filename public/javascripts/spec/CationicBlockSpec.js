@@ -132,17 +132,6 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when recorded date is empty", function() {
-            var filtErrors;
-            this.cbp.set({
-              recordedDate: new Date("").getTime()
-            });
-            expect(this.cbp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.cbp.validationError, function(err) {
-              return err.attribute === 'recordedDate';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
           it("should be invalid when scientist not selected", function() {
             var filtErrors;
             this.cbp.get('scientist').set('value', "unassigned");
@@ -287,17 +276,6 @@
         });
         it("should be valid when loaded from saved", function() {
           return expect(this.cbb.isValid()).toBeTruthy();
-        });
-        it("should be invalid when recorded date is empty", function() {
-          var filtErrors;
-          this.cbb.set({
-            recordedDate: new Date("").getTime()
-          });
-          expect(this.cbb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.cbb.validationError, function(err) {
-            return err.attribute === 'recordedDate';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
@@ -942,6 +920,7 @@
           });
           it("should have the save button be enabled", function() {
             return runs(function() {
+              console.log("here in test");
               return expect(this.cbc.$('.bv_save').attr('disabled')).toBeUndefined();
             });
           });

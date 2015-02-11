@@ -12,28 +12,23 @@ class window.AbstractBaseComponentParent extends Thing
 			errors.push
 				attribute: 'parentName'
 				message: "Name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
-		#		unless attrs.codeName is undefined
 		unless @isNew()
 			if attrs.scientist?
 				scientist = attrs.scientist.get('value')
-				if scientist is "" or scientist is "unassigned" or scientist is undefined
+				if scientist is "" or scientist is "unassigned" or scientist is undefined or scientist is null
 					errors.push
 						attribute: 'scientist'
 						message: "Scientist must be set"
 			if attrs["completion date"]?
 				cDate = attrs["completion date"].get('value')
-				if cDate is undefined or cDate is "" then cDate = "fred"
+				if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 				if isNaN(cDate)
 					errors.push
 						attribute: 'completionDate'
 						message: "Date must be set"
 			if attrs.notebook?
 				notebook = attrs.notebook.get('value')
-				if notebook is "" or notebook is undefined
+				if notebook is "" or notebook is undefined or notebook is null
 					errors.push
 						attribute: 'notebook'
 						message: "Notebook must be set"
@@ -62,42 +57,43 @@ class window.AbstractBaseComponentParent extends Thing
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
 
+	duplicate: =>
+		copiedThing = super()
+		copiedThing.get("batch number").set value: 0
+		copiedThing
+
 class window.AbstractBaseComponentBatch extends Thing
 
 	validate: (attrs) ->
 		errors = []
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Recorded date must be set"
 		if attrs.scientist?
 			scientist = attrs.scientist.get('value')
-			if scientist is "" or scientist is "unassigned" or scientist is undefined
+			if scientist is "" or scientist is "unassigned" or scientist is undefined or scientist is null
 				errors.push
 					attribute: 'scientist'
 					message: "Scientist must be set"
 		if attrs["completion date"]?
 			cDate = attrs["completion date"].get('value')
-			if cDate is undefined or cDate is "" then cDate = "fred"
+			if cDate is null or cDate is "" then cDate = "fred"
 			if isNaN(cDate)
 				errors.push
 					attribute: 'completionDate'
 					message: "Date must be set"
 		if attrs.source?
 			source = attrs.source.get('value')
-			if source is "unassigned" or source is "" or source is undefined
+			if source is "unassigned" or source is undefined or source is null
 				errors.push
 					attribute: 'source'
 					message: "Source must be set"
 		if attrs.notebook?
 			notebook = attrs.notebook.get('value')
-			if notebook is "" or notebook is undefined
+			if notebook is "" or notebook is undefined or notebook is null
 				errors.push
 					attribute: 'notebook'
 					message: "Notebook must be set"
 		if attrs["amount made"]?
 			amountMade = attrs["amount made"].get('value')
-			if amountMade is "" or amountMade is undefined or isNaN(amountMade)
+			if amountMade is "" or amountMade is undefined or isNaN(amountMade) or amountMade is null
 				errors.push
 					attribute: 'amountMade'
 					message: "Amount must be set"
@@ -107,7 +103,7 @@ class window.AbstractBaseComponentBatch extends Thing
 					message: "Amount must be a number"
 		if attrs.location?
 			location = attrs.location.get('value')
-			if location is "" or location is undefined
+			if location is "" or location is undefined or location is null
 				errors.push
 					attribute: 'location'
 					message: "Location must be set"
@@ -143,22 +139,14 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		"keyup .bv_notebook": "attributeChanged"
 		"click .bv_updateParent": "handleUpdateParent"
 
-	initialize: ->
+	initialize: =>
 		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		@listenTo @model, 'sync', @modelSaveCallback
-#		@model.on 'sync', =>
-#			console.log "sync in parent controller"
-#			@$('.bv_updateParent').show()
-#			@$('.bv_updateParent').attr('disabled', 'disabled')
-#			@$('.bv_updateParentComplete').show()
-#			@$('.bv_updatingParent').hide()
-#			@trigger 'amClean'
-#			@trigger 'parentSaved'
-#			@render()
 		@listenTo @model, 'change', @modelChangeCallback
-#		@model.on 'change', =>
-#			@trigger 'amDirty'
-#			@$('.bv_updateParentComplete').hide()
 		$(@el).empty()
 		$(@el).html @template()
 		if @componentPickerTemplate?
@@ -194,9 +182,11 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 			@$('.bv_notebook').removeAttr('disabled')
 			@$('.bv_completionDateIcon').on "click", ->
 				return true
+		if @readOnly is true
+			@displayInReadOnlyMode()
 		@
 
-	modelSaveCallback: (method, model) ->
+	modelSaveCallback: (method, model) =>
 		@$('.bv_updateParent').show()
 		@$('.bv_updateParent').attr('disabled', 'disabled')
 		@$('.bv_updateParentComplete').show()
@@ -204,8 +194,10 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		@trigger 'amClean'
 		@trigger 'parentSaved'
 		@render()
+		console.log "parent modelsavecallback"
+		console.log @model
 
-	modelChangeCallback: (method, model) ->
+	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@$('.bv_updateParentComplete').hide()
 
@@ -241,7 +233,6 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 #		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_cationicBlockParentName'))
 		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
 		@model.get("completion date").set("value", UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate')))
-#		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
 
 	validationError: =>
 		super()
@@ -251,11 +242,48 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		super()
 		@$('.bv_updateParent').removeAttr('disabled')
 
+	validateParentName: ->
+		@$('.bv_updateParent').attr('disabled', 'disabled')
+		lsKind = @model.get('lsKind')
+		console.log lsKind
+		name= [@model.get(lsKind+' name').get('labelText')]
+		$.ajax
+			type: 'POST'
+			url: "/api/validateName/"+lsKind
+			data:
+				requestName: name
+			success: (response) =>
+				@handleValidateReturn(response)
+			error: (err) =>
+				@serviceReturn = null
+			dataType: 'json'
+
+	handleValidateReturn: (validNewLabel) =>
+		if validNewLabel is true
+			@handleUpdateParent()
+		else
+			alert 'The requested parent name has already been registered. Please choose a new parent name.'
+
 	handleUpdateParent: =>
+		console.log "handle update parent"
+		console.log @model
 		@model.reformatBeforeSaving()
 		@$('.bv_updatingParent').show()
 		@$('.bv_updateParentComplete').html('Update Complete.')
+		@$('.bv_updateParent').attr('disabled', 'disabled')
 		@model.save()
+
+	displayInReadOnlyMode: =>
+		@$(".bv_updateParent").hide()
+		@$('button').attr 'disabled', 'disabled'
+		@$(".bv_completionDateIcon").addClass "uneditable-input"
+		@$(".bv_completionDateIcon").on "click", ->
+			return false
+		@disableAllInputs()
+
+	updateBatchNumber: =>
+		@model.fetch
+			success: console.log @model
 
 class window.AbstractBaseComponentBatchController extends AbstractFormController
 	template: _.template($("#AbstractBaseComponentBatchView").html())
@@ -273,20 +301,9 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 
 	initialize: ->
 		@setBindings()
+		@parentCodeName = @options.parentCodeName
 		@listenTo @model, 'sync', @modelSaveCallback
-#		@model.on 'sync', =>
-#			console.log "sync in batch controller"
-#			@$('.bv_saveBatch').show()
-#			@$('.bv_saveBatch').attr('disabled', 'disabled')
-#			@$('.bv_saveBatchComplete').show()
-#			@$('.bv_savingBatch').hide()
-#			@trigger 'amClean'
-#			@trigger 'firstBatchSaved'
-#			@render()
 		@listenTo @model, 'change', @modelChangeCallback
-#		@model.on 'change', =>
-#			@trigger 'amDirty'
-#			@$('.bv_saveBatchComplete').hide()
 		$(@el).empty()
 		$(@el).html @template()
 		if @additionalBatchAttributesTemplate?
@@ -311,19 +328,27 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		@$('.bv_notebook').val @model.get('notebook').get('value')
 		@$('.bv_amountMade').val(@model.get('amount made').get('value'))
 		@$('.bv_location').val(@model.get('location').get('value'))
-
+		if @model.isNew()
+			@$('.bv_saveBatch').html("Save Batch")
+		else
+			@$('.bv_saveBatch').html("Update Batch")
+#			@model.urlRoot = "/api/cationicBlockBatches/"+@parentCodeName
+		@trigger 'renderComplete'
+		if @parentCodeName is undefined
+			@$('.bv_saveBatch').hide()
+		else
+			@$('.bv_saveBatch').show()
 		@
 
-	modelSaveCallback: (method, model) ->
+	modelSaveCallback: (method, model) =>
 		@$('.bv_saveBatch').show()
 		@$('.bv_saveBatch').attr('disabled', 'disabled')
-		@$('.bv_saveBatchComplete').show()
 		@$('.bv_savingBatch').hide()
+		@render()
 		@trigger 'amClean'
 		@trigger 'batchSaved'
-		@render()
 
-	modelChangeCallback: (method, model) ->
+	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
 		@$('.bv_saveBatchComplete').hide()
 
@@ -340,7 +365,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 
 	setupSourceSelect: ->
 		@sourceList = new PickListList()
-		@sourceList.url = "/api/dataDict/component/source"
+		@sourceList.url = "/api/codetables/component/source"
 		@sourceListController = new PickListSelectController
 			el: @$('.bv_source')
 			collection: @sourceList
@@ -352,7 +377,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 	setupAttachFileListController: =>
 		$.ajax
 			type: 'GET'
-			url: "/api/dataDict/analytical method/file type"
+			url: "/api/codetables/analytical method/file type"
 			dataType: 'json'
 			error: (err) ->
 				alert 'Could not get list of analytical file types'
@@ -376,9 +401,10 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 			@trigger 'amDirty'
 		@attachFileListController.on 'amClean', =>
 			@trigger 'amClean'
+		@attachFileListController.on 'renderComplete', =>
+			@trigger 'renderComplete'
 #		@attachFileListController.insertFirstOption.set name: "Select Method"
 		@attachFileListController.render()
-		console.log @attachFileListController
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )
@@ -401,22 +427,33 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 		@$('.bv_saveBatch').removeAttr('disabled')
 
 	handleSaveBatch: =>
-		@model.reformatBeforeSaving()
 		@$('.bv_savingBatch').show()
+		@model.prepareToSave()
+		@model.reformatBeforeSaving()
+		if @model.isNew() is true
+			@model.urlRoot = @model.urlRoot+"/"+@parentCodeName
+		else
+			@model.urlRoot = @model.get('urlRoot')
+		@$('.bv_saveBatch').attr('disabled', 'disabled')
 		@model.save()
 
 	isValid: =>
 		validCheck = super()
-		console.log "overwrite isValid"
 		if @attachFileListController?
 			if @attachFileListController.isValid() is true
-				console.log "attach list controller is valid"
 				return validCheck
 			else
-				console.log "attach list controller is invalid"
 				return false
 		else
 			return validCheck
+
+	displayInReadOnlyMode: =>
+		@$(".bv_saveBatch").addClass "hide"
+		@$('button').attr 'disabled', 'disabled'
+		@$(".bv_completionDateIcon").addClass "uneditable-input"
+		@$(".bv_completionDateIcon").on "click", ->
+			return false
+		@disableAllInputs()
 
 class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	template: _.template($("#AbstractBaseComponentBatchSelectView").html())
@@ -424,34 +461,94 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	events: ->
 		"change .bv_batchList": "handleSelectedBatchChanged"
 
-	initialize: ->
+	initialize: =>
+		@parentCodeName = @options.parentCodeName
+		if @options.batchCodeName?
+			@batchCodeName = @options.batchCodeName
+		else
+			@batchCodeName = "new batch"
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template()
 		@setupBatchSelect()
-		@setupBatchRegForm()
-		@parentCodeName = @options.parentCodeName
 
-	setupBatchSelect: ->
+	setupBatchSelect: =>
+		unless @setupBatch?
+			@setupBatch = true
 		@batchList = new PickListList()
-		@batchList.url = "/api/batches/parentCodename/"+@parentCodeName
+		@batchList.url = "/api/batches/"+@options.lsKind+"/parentCodeName/"+@parentCodeName
+		$.ajax
+			type: 'GET'
+			url: @batchList.url
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get batch list'
+			success: (json) =>
+				console.log json
+				@batchList = new ComponentList json
+				@translateIntoPickListFormat()
+
+	translateIntoPickListFormat: =>
+		codes = new PickListList
+		@batchList.each (batch) =>
+			batchOption = new PickList
+				code: batch.get('codeName')
+				name: batch.get('codeName')
+				ignored: batch.get('ignored')
+			codes.add batchOption
+		@batchListOptions = codes
+		@finishBatchSetup()
+
+	finishBatchSetup: =>
 		@batchListController = new PickListSelectController
 			el: @$('.bv_batchList')
-			collection: @batchList
+			collection: @batchListOptions
 			insertFirstOption: new PickList
 				code: "new batch"
 				name: "Register New Batch"
-			selectedCode: "new batch"
+			selectedCode: @batchCodeName
+			autoFetch: false
+		@batchListController.render()
 
-	setupBatchRegForm: (batch) =>
+		if @setupBatch is true
+			if @batchModel is undefined
+				@handleSelectedBatchChanged()
+			else
+				@setupBatchRegForm()
+		else
+			@setupBatch = true
+
+	setupBatchRegForm: =>
+		lsKind = @batchModel.get('lsKind')
+		lsKind = lsKind.replace /(^|[^a-z0-9-])([a-z])/g, (m, m1, m2, p) -> m1 + m2.toUpperCase()
+		lsKind = lsKind.replace /\s/g, ''
+		if @batchController?
+			@batchController.undelegateEvents()
+		@batchController = new window[lsKind+"BatchController"]
+			model: @batchModel
+			el: @$('.bv_batchRegForm')
+			parentCodeName: @parentCodeName
+			readOnly: @readOnly
 		@batchController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@batchController.on 'amClean', =>
 			@trigger 'amClean'
 		@batchController.on 'batchSaved', =>
+			@batchCodeName = @batchController.model.get('codeName')
+			@batchModel = @batchController.model
+			@setupBatch = false #so that the batch controller does not re-render and remove the update batch successful message
 			@setupBatchSelect()
-			@batchListController.setSelectedCode(@batchController.model.get('codeName'))
+			@$('.bv_saveBatchComplete').show()
 			@trigger 'batchSaved'
+		@batchController.on 'renderComplete', =>
+			@checkDisplayMode()
 		@batchController.render()
+		if @setupBatch is false
+			@$('.bv_saveBatchComplete').show()
+			@setupBatch = true
 		@$('.bv_saveBatch').attr('disabled','disabled')
 		if @batchController.model.isNew()
 			@$('.bv_saveBatch').html("Save Batch")
@@ -463,15 +560,39 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 	checkIfFirstBatch: ->
 		@batchListController.collection.length==1
 
+	checkDisplayMode: =>
+		if @readOnly is true
+			@displayInReadOnlyMode()
+
+	displayInReadOnlyMode: =>
+		@$('.bv_batchList').attr 'disabled', 'disabled'
+		if @batchController?
+			@batchController.displayInReadOnlyMode()
+
 class window.AbstractBaseComponentController extends Backbone.View
 	template: _.template($("#AbstractBaseComponentView").html())
 
 	events: ->
-		"click .bv_save": "handleSaveClicked"
-
+#		"click .bv_save": "handleSaveClicked"
+		"click .bv_save": "validateParentName"
 
 	completeInitialization: =>
 		$(@el).html @template()
+		unless @batchCodeName?
+			if @options.batchCodeName?
+				@batchCodeName = @options.batchCodeName
+			else
+				@batchCodeName = "new batch"
+		unless @readOnly?
+			if @options.readOnly?
+				@readOnly = @options.readOnly
+			else
+				@readOnly = false
+		unless @batchModel?
+			if @options.batchModel?
+				@batchModel = @options.batchModel
+			else
+				@batchModel = null
 		@setupParentController()
 		@setupBatchSelectController()
 		#		if @parentController.model.get('codeName') is undefined
@@ -498,7 +619,7 @@ class window.AbstractBaseComponentController extends Backbone.View
 
 
 	handleParentSaved: ->
-		if @firstSave
+		if @firstSave is true
 			@$('.bv_saveParentComplete').show()
 			@firstSave = false
 		else
@@ -506,7 +627,7 @@ class window.AbstractBaseComponentController extends Backbone.View
 			@$('.bv_saveFirstBatchComplete').hide()
 #		@$('.bv_updateParentComplete').hide()
 
-	setupBatchSelectController: ->
+	setupBatchSelectController: =>
 #		@batchSelectController = new CationicBlockBatchSelectController
 #			el: @$('.bv_cationicBlockBatch')
 #			parentCodeName: @model.get('codeName')
@@ -517,14 +638,16 @@ class window.AbstractBaseComponentController extends Backbone.View
 			@trigger 'amClean'
 		@batchSelectController.on 'batchSaved', =>
 			@handleBatchSaved()
+			@parentController.updateBatchNumber()
 		@batchSelectController.render()
 
 	handleBatchSaved: =>
-		if @batchSelectController.checkIfFirstBatch()
+		if @batchSelectController.checkIfFirstBatch() is true
 			@$('.bv_saveFirstBatchComplete').show()
 		else
 			@$('.bv_saveFirstBatchComplete').hide()
-			@$('.bv_saveParent').hide()
+			@$('.bv_saveParentComplete').hide()
+		@$('.bv_saveBatch').show()
 		@$('.bv_saving').hide()
 #		@$('.bv_saveBatchComplete').hide()
 
@@ -534,18 +657,37 @@ class window.AbstractBaseComponentController extends Backbone.View
 		else
 			@$('.bv_save').attr('disabled', 'disabled')
 
-	handleSaveClicked: ->
+	validateParentName: ->
+		@$('.bv_save').attr('disabled', 'disabled')
+		lsKind = @model.get('lsKind')
+		name= [@model.get(lsKind+' name').get('labelText')]
+		$.ajax
+			type: 'POST'
+			url: "/api/validateName/"+lsKind
+			data:
+				requestName: name
+			success: (response) =>
+				@handleValidateReturn(response)
+			error: (err) =>
+				@serviceReturn = null
+			dataType: 'json'
+
+	handleValidateReturn: (validNewLabel) =>
+		console.log "handle validate return"
+		if validNewLabel is true
+			@handleSaveClicked()
+		else
+			alert 'The requested parent name has already been registered. Please choose a new parent name.'
+
+	handleSaveClicked: =>
+		console.log "handle save clicked"
 		@saveNewParentAttributes()
 		@parentController.model.prepareToSave()
-		@batchSelectController.batchController.model.prepareToSave()
 		@$('.bv_save').hide()
 		@$('.bv_saving').show()
 		@parentController.model.reformatBeforeSaving()
-		@batchSelectController.batchController.model.reformatBeforeSaving()
 		@$('.bv_updateParentComplete').html("Save Complete")
-		@$('.bv_saveBatch').html("Save Batch")
-		@parentController.model.save()
-		@batchSelectController.batchController.model.save()
+		@parentController.model.save @parentController.model.attributes, success: @saveFirstBatch
 
 	saveNewParentAttributes: =>
 		scientist = @batchSelectController.batchController.model.get('scientist').get('value')
@@ -554,3 +696,13 @@ class window.AbstractBaseComponentController extends Backbone.View
 		@parentController.model.get('scientist').set('value', scientist)
 		@parentController.model.get('completion date').set('value', cDate)
 		@parentController.model.get('notebook').set('value', notebook)
+
+	saveFirstBatch: (json) =>
+		@batchSelectController.batchController.model.prepareToSave()
+		@batchSelectController.batchController.model.reformatBeforeSaving()
+		@$('.bv_saveBatch').html("Save Batch")
+		batchDataToPost = @batchSelectController.batchController.model
+		@parentCodeName = @parentController.model.get('codeName')
+		@batchSelectController.parentCodeName = @parentCodeName
+		batchDataToPost.urlRoot = batchDataToPost.urlRoot + "/"+@parentCodeName
+		@batchSelectController.batchController.model.save()

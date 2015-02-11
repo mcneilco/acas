@@ -9,6 +9,7 @@
     if (config.all.client.require.login) {
       app.get('/', loginRoutes.ensureAuthenticated, exports.index);
       app.get('/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode);
+      app.get('/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode);
     } else {
 
     }
@@ -24,7 +25,18 @@
     var moduleLaunchParams;
     moduleLaunchParams = {
       moduleName: req.params.moduleName,
-      code: req.params.code
+      code: req.params.code,
+      copy: false
+    };
+    return exports.index(req, res, moduleLaunchParams);
+  };
+
+  exports.copyAndLaunchWithCode = function(req, res) {
+    var moduleLaunchParams;
+    moduleLaunchParams = {
+      moduleName: req.params.moduleName,
+      code: req.params.code,
+      copy: true
     };
     return exports.index(req, res, moduleLaunchParams);
   };

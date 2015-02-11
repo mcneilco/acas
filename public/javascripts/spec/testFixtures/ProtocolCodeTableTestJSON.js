@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
         type: "protocol metadata",
         kind: "protocol status",

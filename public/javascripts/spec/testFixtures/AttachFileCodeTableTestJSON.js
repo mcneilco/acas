@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
         type: "analytical method",
         kind: "file type",

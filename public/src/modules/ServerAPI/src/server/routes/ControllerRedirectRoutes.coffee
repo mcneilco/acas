@@ -58,7 +58,7 @@ exports.redirectToEditor = (req, resp) ->
 				json: true
 				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
 			, (error, response, body) =>
-				kind = response.body[0].lsKind
+				kind = response.body.lsKind
 				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 

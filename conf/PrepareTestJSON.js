@@ -29,7 +29,7 @@
   for (_j = 0, _len1 = allCodeTableFiles.length; _j < _len1; _j++) {
     fileName = allCodeTableFiles[_j];
     codeTableFile = require(fileName);
-    _ref = codeTableFile['dataDictValues'];
+    _ref = codeTableFile['codetableValues'];
     for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
       codeTable = _ref[_k];
       type = codeTable['type'];

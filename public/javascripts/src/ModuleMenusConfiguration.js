@@ -32,10 +32,12 @@
       mainControllerClassName: "SpacerController",
       autoLaunchName: "spacer"
     }, {
+      isHeader: true,
+      menuName: "Search and Edit"
+    }, {
       isHeader: false,
-      menuName: "Internalization Agent",
-      mainControllerClassName: "InternalizationAgentController",
-      autoLaunchName: "internalization_agent"
+      menuName: "Search Components",
+      mainControllerClassName: "ComponentBrowserController"
     }
   ];
 

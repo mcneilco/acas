@@ -1,6 +1,6 @@
 <script type="text/template" id="AbstractBaseComponentParentView" xmlns="http://www.w3.org/1999/html">
     <h5><span style="margin-left:20px;margin-top:30px;">Parent Registration</span></h5>
-    <div class="span10">
+    <!--<div class="span10">-->
         <div class="form-horizontal">
             <div class="control-group">
                 <label class="control-label">Parent ID</label>
@@ -41,19 +41,19 @@
 
             <div class="bv_additionalParentAttributes"></div>
 
-            <div>
-                <button type="button" class="btn bv_updateParent pull-right hide" style="margin-right:217px;">Update Parent</button>
+            <div class="control-group span9">
+                <button type="button" class="btn bv_updateParent pull-right hide" style="margin-right:119px;">Update Parent</button>
                 <div class="bv_updateParentComplete pull-right hide" style="margin-right:5px;padding-top:5px;color:#62c462;">Update Complete</div>
                 <div class="bv_updatingParent pull-right hide" style="margin-right:5px;padding-top:5px;color:red;">Saving...</div>
             </div>
         </div>
-    </div>
+    <!--</div>-->
 
 </script>
 
 <script type="text/template" id="AbstractBaseComponentBatchView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span10">
+    <!--<div class="span10">-->
         <div class="form-horizontal well" style="width:625px;padding-left:0px;padding-bottom:45px;">
             <div class="control-group">
                 <label class="control-label">Batch ID</label>
@@ -131,13 +131,13 @@
                 <div class="bv_savingBatch pull-right hide" style="margin-right:5px;padding-top:5px;color:red;">Saving...</div>
             </div>
         </div>
-    </div>
+    <!--</div>-->
 
 </script>
 
 <script type="text/template" id="AbstractBaseComponentBatchSelectView" xmlns="http://www.w3.org/1999/html">
-    <div class="span10">
-        <h5 style="margin-top:0px;margin-left:20px;">Batch Registration</h5>
+    <!--<div class="span10">-->
+        <h5><span class="span10" style="margin-left:20px;">Batch Registration</span></h5>
         <div class="form-horizontal" style="margin-left:27px;">
             <div class="control-group bv_group_batchList">
                 <label class="control-label">*Select Batch ID</label>
@@ -148,7 +148,7 @@
         </div>
         <div style="margin-bottom:10px;width:700px;height:1px;background-color:#eeeeee;"></div>
 
-    </div>
+    <!--</div>-->
     <div class="bv_batchRegForm" style="margin-left:27px;"></div>
 
     <!--<hr class="span8" style="margin-left: 50px;margin-right:50px;margin-top: 10px;margin-bottom:0px;width: 600px;"/>-->
@@ -157,7 +157,7 @@
 <script type="text/template" id="AbstractBaseComponentView" xmlns="http://www.w3.org/1999/html">
     <h4 class="bv_registrationTitle"></h4>
     <div class="bv_parent"></div>
-    <hr class="span10" style="margin-left:0px;margin-right:50px;margin-top:15px;margin-bottom:0px;" />
+    <hr class= "span10" style="margin-left:0px;margin-right:50px;margin-top:15px;margin-bottom:0px;" />
     <div class="bv_batch"></div>
 
     <!-- SAVE-->

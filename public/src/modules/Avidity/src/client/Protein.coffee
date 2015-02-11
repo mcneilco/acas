@@ -1,5 +1,6 @@
 class window.ProteinParent extends AbstractBaseComponentParent
 	urlRoot: "/api/proteinParents"
+	className: "ProteinParent"
 
 	initialize: ->
 		@.set
@@ -55,8 +56,21 @@ class window.ProteinParent extends AbstractBaseComponentParent
 			key: 'aa sequence'
 			stateType: 'metadata'
 			stateKind: 'protein parent'
-			type: 'stringValue'
+			type: 'clobValue'
 			kind: 'aa sequence'
+		,
+			key: 'target'
+			stateType: 'metadata'
+			stateKind: 'protein parent'
+			type: 'codeValue'
+			kind: 'target'
+		,
+			key: 'batch number'
+			stateType: 'metadata'
+			stateKind: 'protein parent'
+			type: 'numericValue'
+			kind: 'batch number'
+			value: 0
 		]
 
 	validate: (attrs) ->
@@ -84,6 +98,10 @@ class window.ProteinParent extends AbstractBaseComponentParent
 		else
 			return null
 
+	duplicate: =>
+		copiedThing = super()
+		copiedThing.get("protein name").set "labelText", ""
+		copiedThing
 
 class window.ProteinBatch extends AbstractBaseComponentBatch
 	urlRoot: "/api/proteinBatches"
@@ -186,38 +204,38 @@ class window.ProteinParentController extends AbstractBaseComponentParentControll
 			"keyup .bv_molecularWeight": "attributeChanged"
 			"change .bv_type": "attributeChanged"
 			"keyup .bv_sequence": "attributeChanged"
+			"change .bv_target": "attributeChanged"
 		)
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new ProteinParent()
 		@errorOwnerName = 'ProteinParentController'
 		super()
 		@setupType()
+		@setupTarget()
 			#TODO: add additional values
 
 	render: =>
 		unless @model?
 			@model = new ProteinParent()
-		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
 		@$('.bv_type').val(@model.get('type').get('value'))
 		@$('.bv_sequence').val(@model.get('aa sequence').get('value'))
-		console.log "render model"
-		console.log @model
+		@$('.bv_target').val(@model.get('target').get('value'))
+		super()
 
 	updateModel: =>
 		@model.get("protein name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
 		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
 		@model.get("type").set("value", @typeListController.getSelectedCode())
 		@model.get("aa sequence").set("value", UtilityFunctions::getTrimmedInput @$('.bv_sequence'))
+		@model.get("target").set("value", @targetListController.getSelectedCode())
 		super()
 
 	setupType: ->
-		console.log "setup type"
 		@typeList = new PickListList()
-		@typeList.url = "/api/dataDict/protein/type"
+		@typeList.url = "/api/codetables/protein/type"
 		@typeListController = new PickListSelectController
 			el: @$('.bv_type')
 			collection: @typeList
@@ -225,7 +243,17 @@ class window.ProteinParentController extends AbstractBaseComponentParentControll
 				code: "unassigned"
 				name: "Select type"
 			selectedCode: @model.get('type').get('value')
-		console.log @model.get('type').get('value')
+
+	setupTarget: ->
+		@targetList = new PickListList()
+		@targetList.url = "/api/codetables/protein/target"
+		@targetListController = new PickListSelectController
+			el: @$('.bv_target')
+			collection: @targetList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select target"
+			selectedCode: @model.get('target').get('value')
 
 class window.ProteinBatchController extends AbstractBaseComponentBatchController
 	additionalBatchAttributesTemplate: _.template($("#ProteinBatchView").html())
@@ -237,17 +265,15 @@ class window.ProteinBatchController extends AbstractBaseComponentBatchController
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new ProteinBatch()
 		@errorOwnerName = 'ProteinBatchController'
 		super()
 
 	render: =>
 		unless @model?
-			console.log "create new model"
 			@model = new ProteinBatch()
-		super()
 		@$('.bv_purity').val(@model.get('purity').get('value'))
+		super()
 
 	updateModel: =>
 		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
@@ -255,38 +281,15 @@ class window.ProteinBatchController extends AbstractBaseComponentBatchController
 
 class window.ProteinBatchSelectController extends AbstractBaseComponentBatchSelectController
 
-	setupBatchRegForm: (batch)->
-		if batch?
-			model = batch
-		else
-			model = new ProteinBatch()
-		@batchController = new ProteinBatchController
-			model: model
-			el: @$('.bv_batchRegForm')
+	setupBatchRegForm: =>
+		if @batchModel is undefined or @batchModel is "new batch" or @batchModel is null
+			@batchModel = new ProteinBatch()
 		super()
 
 	handleSelectedBatchChanged: =>
-		console.log "handle selected batch changed"
-		selectedBatch = @batchListController.getSelectedCode()
-		if selectedBatch is "new batch" or selectedBatch is null or selectedBatch is undefined
-			@setupBatchRegForm()
-		else
-			$.ajax
-				type: 'GET'
-				url: "/api/batches/codename/"+selectedBatch
-				dataType: 'json'
-				error: (err) ->
-					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new ProteinBatch()
-				success: (json) =>
-					if json.length == 0
-						alert 'Could not get selected batch, creating new one'
-					else
-						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new ProteinBatch json
-						pb = new ProteinBatch json
-						pb.set pb.parse(pb.attributes)
-						@setupBatchRegForm(pb)
+		@batchCodeName = @batchListController.getSelectedCode()
+		@batchModel = @batchList.findWhere {codeName:@batchCodeName}
+		@setupBatchRegForm()
 
 class window.ProteinController extends AbstractBaseComponentController
 	moduleLaunchName: "protein"
@@ -297,9 +300,15 @@ class window.ProteinController extends AbstractBaseComponentController
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+					if launchCode.indexOf("-") == -1
+						@batchCodeName = "new batch"
+					else
+						@batchCodeName = launchCode
+						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/proteinParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/proteinParents/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
@@ -309,10 +318,13 @@ class window.ProteinController extends AbstractBaseComponentController
 								alert 'Could not get parent for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								cbp = new CationicBlockParent json
-								cbp = new ProteinParent json[0]
-								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
+#								pp = new ProteinParent json
+								pp = new ProteinParent json
+								pp.set pp.parse(pp.attributes)
+								if window.AppLaunchParams.moduleLaunchParams.copy
+									@model = pp.duplicate()
+								else
+									@model = pp
 							@completeInitialization()
 				else
 					@completeInitialization()
@@ -325,17 +337,20 @@ class window.ProteinController extends AbstractBaseComponentController
 		super()
 		@$('.bv_registrationTitle').html("Protein Parent/Batch Registration")
 
-	setupParentController: ->
-		console.log "set up protein parent controller"
-		console.log @model
+	setupParentController: =>
 		@parentController = new ProteinParentController
 			model: @model
 			el: @$('.bv_parent')
+			readOnly: @readOnly
 		super()
 
-	setupBatchSelectController: ->
+	setupBatchSelectController: =>
 		@batchSelectController = new ProteinBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
+			batchCodeName: @batchCodeName
+			batchModel: @batchModel
+			readOnly: @readOnly
+			lsKind: "protein"
 		super()
 

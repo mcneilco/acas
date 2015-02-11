@@ -94,7 +94,7 @@
       } else {
         this.autoFetch = true;
       }
-      if (this.autoFetch) {
+      if (this.autoFetch === true) {
         return this.collection.fetch({
           success: this.handleListReset
         });
@@ -139,9 +139,14 @@
     };
 
     PickListSelectController.prototype.setSelectedCode = function(code) {
+      console.log("set selected code");
+      console.log(code);
       this.selectedCode = code;
       if (this.rendered) {
-        return $(this.el).val(this.selectedCode);
+        $(this.el).val(this.selectedCode);
+        return console.log("done");
+      } else {
+        return "not done";
       }
     };
 

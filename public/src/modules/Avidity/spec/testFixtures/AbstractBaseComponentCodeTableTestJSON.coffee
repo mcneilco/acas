@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
 			type: "component"
 			kind: "source"

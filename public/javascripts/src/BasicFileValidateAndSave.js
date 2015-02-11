@@ -191,6 +191,8 @@
         });
         this.$('.bv_saveStatusDropDown').modal("show");
         dataToPost = this.prepareDataToPost(false);
+        console.log("data to post");
+        console.log(dataToPost);
         return $.ajax({
           type: 'POST',
           url: this.fileProcessorURL,

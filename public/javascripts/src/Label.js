@@ -22,13 +22,9 @@
     };
 
     Label.prototype.changeLabelText = function(options) {
-      console.log("change label text");
-      console.log(options);
-      console.log(this);
-      this.set({
+      return this.set({
         labelText: options
       });
-      return console.log(this);
     };
 
     return Label;
@@ -196,7 +192,6 @@
     };
 
     Value.prototype.setValueType = function() {
-      console.log("value changed, setting value type");
       this.set(this.get('lsType'), this.get('value'));
       this.set('recordedBy', window.AppLaunchParams.loginUser.username);
       return this.set('recordedDate', new Date().getTime());

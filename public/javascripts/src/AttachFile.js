@@ -104,7 +104,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
-        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip'],
+        allowedFileTypes: ['pdf'],
         hideDelete: this.autoAddAttachFileModel
       });
       this.lsFileChooser.render();
@@ -115,7 +115,7 @@
 
     AttachFileController.prototype.setUpFileTypeSelect = function() {
       this.fileTypeList = new PickListList();
-      this.fileTypeList.url = "/api/dataDict/analytical method/file type";
+      this.fileTypeList.url = "/api/codetables/analytical method/file type";
       return this.fileTypeListController = new PickListSelectController({
         el: this.$('.bv_fileType'),
         collection: this.fileTypeList,
@@ -220,6 +220,7 @@
         console.log("collection length is zero");
         this.uploadNewAttachFile();
       }
+      this.trigger('renderComplete');
       return this;
     };
 

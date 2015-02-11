@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
 			type: "analytical method"
 			kind: "file type"

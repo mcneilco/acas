@@ -43,7 +43,7 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@autoFetch = true
 
-		if @autoFetch
+		if @autoFetch == true
 			@collection.fetch
 				success: @handleListReset
 		else
@@ -76,8 +76,15 @@ class window.PickListSelectController extends Backbone.View
 			$(@el).append new PickListOptionController(model: enm).render().el
 
 	setSelectedCode: (code) ->
+		console.log "set selected code"
+		console.log code
 		@selectedCode = code
-		$(@el).val @selectedCode  if @rendered
+#		$(@el).val @selectedCode  if @rendered
+		if @rendered
+			$(@el).val @selectedCode
+			console.log "done"
+		else
+			"not done"
 
 	getSelectedCode: ->
 		$(@el).val()

@@ -1,16 +1,19 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.LinkerSmallMoleculeParent = (function(_super) {
     __extends(LinkerSmallMoleculeParent, _super);
 
     function LinkerSmallMoleculeParent() {
+      this.duplicate = __bind(this.duplicate, this);
       return LinkerSmallMoleculeParent.__super__.constructor.apply(this, arguments);
     }
 
     LinkerSmallMoleculeParent.prototype.urlRoot = "/api/linkerSmallMoleculeParents";
+
+    LinkerSmallMoleculeParent.prototype.className = "LinkerSmallMoleculeParent";
 
     LinkerSmallMoleculeParent.prototype.initialize = function() {
       this.set({
@@ -63,13 +66,19 @@
           stateKind: 'linker small molecule parent',
           type: 'fileValue',
           kind: 'structural file'
+        }, {
+          key: 'batch number',
+          stateType: 'metadata',
+          stateKind: 'linker small molecule parent',
+          type: 'numericValue',
+          kind: 'batch number',
+          value: 0
         }
       ]
     };
 
     LinkerSmallMoleculeParent.prototype.validate = function(attrs) {
       var errors, mw;
-      console.log("validate parent");
       errors = [];
       errors.push.apply(errors, LinkerSmallMoleculeParent.__super__.validate.call(this, attrs));
       if (attrs["molecular weight"] != null) {
@@ -87,13 +96,18 @@
           });
         }
       }
-      console.log("parent errors");
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
         return null;
       }
+    };
+
+    LinkerSmallMoleculeParent.prototype.duplicate = function() {
+      var copiedThing;
+      copiedThing = LinkerSmallMoleculeParent.__super__.duplicate.call(this);
+      copiedThing.get("linker small molecule name").set("labelText", "");
+      return copiedThing;
     };
 
     return LinkerSmallMoleculeParent;
@@ -183,13 +197,10 @@
 
     LinkerSmallMoleculeBatch.prototype.validate = function(attrs) {
       var errors, purity;
-      console.log("validate batch");
       errors = [];
       errors.push.apply(errors, LinkerSmallMoleculeBatch.__super__.validate.call(this, attrs));
       if (attrs.purity != null) {
-        console.log("purity");
         purity = attrs.purity.get('value');
-        console.log(purity);
         if (purity === "" || purity === void 0) {
           errors.push({
             attribute: 'purity',
@@ -203,8 +214,6 @@
           });
         }
       }
-      console.log("batch errors");
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -237,7 +246,6 @@
 
     LinkerSmallMoleculeParentController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new LinkerSmallMoleculeParent();
       }
       this.errorOwnerName = 'LinkerSmallMoleculeParentController';
@@ -248,9 +256,9 @@
       if (this.model == null) {
         this.model = new LinkerSmallMoleculeParent();
       }
-      LinkerSmallMoleculeParentController.__super__.render.call(this);
       this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
       this.setupStructuralFileController();
+      LinkerSmallMoleculeParentController.__super__.render.call(this);
       return this;
     };
 
@@ -261,7 +269,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
-        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        allowedFileTypes: ['sdf', 'mol'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
@@ -280,16 +288,12 @@
     };
 
     LinkerSmallMoleculeParentController.prototype.handleFileUpload = function(nameOnServer) {
-      console.log("file uploaded");
       this.model.get("structural file").set("value", nameOnServer);
-      console.log(this.model);
       return this.trigger('amDirty');
     };
 
     LinkerSmallMoleculeParentController.prototype.handleFileRemoved = function() {
-      console.log("file removed");
-      this.model.get("structural file").set("value", "");
-      return console.log(this.model);
+      return this.model.get("structural file").set("value", "");
     };
 
     LinkerSmallMoleculeParentController.prototype.updateModel = function() {
@@ -321,7 +325,6 @@
 
     LinkerSmallMoleculeBatchController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new LinkerSmallMoleculeBatch();
       }
       this.errorOwnerName = 'LinkerSmallMoleculeBatchController';
@@ -330,11 +333,10 @@
 
     LinkerSmallMoleculeBatchController.prototype.render = function() {
       if (this.model == null) {
-        console.log("create new model");
         this.model = new LinkerSmallMoleculeBatch();
       }
-      LinkerSmallMoleculeBatchController.__super__.render.call(this);
-      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      return LinkerSmallMoleculeBatchController.__super__.render.call(this);
     };
 
     LinkerSmallMoleculeBatchController.prototype.updateModel = function() {
@@ -351,52 +353,23 @@
 
     function LinkerSmallMoleculeBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return LinkerSmallMoleculeBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
-    LinkerSmallMoleculeBatchSelectController.prototype.setupBatchRegForm = function(batch) {
-      var model;
-      if (batch != null) {
-        model = batch;
-      } else {
-        model = new LinkerSmallMoleculeBatch();
+    LinkerSmallMoleculeBatchSelectController.prototype.setupBatchRegForm = function() {
+      if (this.batchModel === void 0 || this.batchModel === "new batch" || this.batchModel === null) {
+        this.batchModel = new LinkerSmallMoleculeBatch();
       }
-      this.batchController = new LinkerSmallMoleculeBatchController({
-        model: model,
-        el: this.$('.bv_batchRegForm')
-      });
       return LinkerSmallMoleculeBatchSelectController.__super__.setupBatchRegForm.call(this);
     };
 
     LinkerSmallMoleculeBatchSelectController.prototype.handleSelectedBatchChanged = function() {
-      var selectedBatch;
-      console.log("handle selected batch changed");
-      selectedBatch = this.batchListController.getSelectedCode();
-      if (selectedBatch === "new batch" || selectedBatch === null || selectedBatch === void 0) {
-        return this.setupBatchRegForm();
-      } else {
-        return $.ajax({
-          type: 'GET',
-          url: "/api/batches/codename/" + selectedBatch,
-          dataType: 'json',
-          error: function(err) {
-            alert('Could not get selected batch, creating new one');
-            return this.batchController.model = new LinkerSmallMoleculeBatch();
-          },
-          success: (function(_this) {
-            return function(json) {
-              var pb;
-              if (json.length === 0) {
-                return alert('Could not get selected batch, creating new one');
-              } else {
-                pb = new LinkerSmallMoleculeBatch(json);
-                pb.set(pb.parse(pb.attributes));
-                return _this.setupBatchRegForm(pb);
-              }
-            };
-          })(this)
-        });
-      }
+      this.batchCodeName = this.batchListController.getSelectedCode();
+      this.batchModel = this.batchList.findWhere({
+        codeName: this.batchCodeName
+      });
+      return this.setupBatchRegForm();
     };
 
     return LinkerSmallMoleculeBatchSelectController;
@@ -407,6 +380,8 @@
     __extends(LinkerSmallMoleculeController, _super);
 
     function LinkerSmallMoleculeController() {
+      this.setupBatchSelectController = __bind(this.setupBatchSelectController, this);
+      this.setupParentController = __bind(this.setupParentController, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       return LinkerSmallMoleculeController.__super__.constructor.apply(this, arguments);
     }
@@ -414,14 +389,22 @@
     LinkerSmallMoleculeController.prototype.moduleLaunchName = "linker_small_molecule";
 
     LinkerSmallMoleculeController.prototype.initialize = function() {
+      var launchCode;
       if (this.model != null) {
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            launchCode = window.AppLaunchParams.moduleLaunchParams.code;
+            if (launchCode.indexOf("-") === -1) {
+              this.batchCodeName = "new batch";
+            } else {
+              this.batchCodeName = launchCode;
+              launchCode = launchCode.split("-")[0];
+            }
             return $.ajax({
               type: 'GET',
-              url: "/api/linkerSmallMoleculeParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/linkerSmallMoleculeParents/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');
@@ -435,7 +418,11 @@
                   } else {
                     lsmp = new LinkerSmallMoleculeParent(json);
                     lsmp.set(lsmp.parse(lsmp.attributes));
-                    _this.model = lsmp;
+                    if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                      _this.model = lsmp.duplicate();
+                    } else {
+                      _this.model = lsmp;
+                    }
                   }
                   return _this.completeInitialization();
                 };
@@ -459,11 +446,10 @@
     };
 
     LinkerSmallMoleculeController.prototype.setupParentController = function() {
-      console.log("set up linker small molecule parent controller");
-      console.log(this.model);
       this.parentController = new LinkerSmallMoleculeParentController({
         model: this.model,
-        el: this.$('.bv_parent')
+        el: this.$('.bv_parent'),
+        readOnly: this.readOnly
       });
       return LinkerSmallMoleculeController.__super__.setupParentController.call(this);
     };
@@ -471,7 +457,11 @@
     LinkerSmallMoleculeController.prototype.setupBatchSelectController = function() {
       this.batchSelectController = new LinkerSmallMoleculeBatchSelectController({
         el: this.$('.bv_batch'),
-        parentCodeName: this.model.get('codeName')
+        parentCodeName: this.model.get('codeName'),
+        batchCodeName: this.batchCodeName,
+        batchModel: this.batchModel,
+        readOnly: this.readOnly,
+        lsKind: "linker small molecule"
       });
       return LinkerSmallMoleculeController.__super__.setupBatchSelectController.call(this);
     };

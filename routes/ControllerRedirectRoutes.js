@@ -71,7 +71,7 @@
         }, (function(_this) {
           return function(error, response, body) {
             var deepLink, kind;
-            kind = response.body[0].lsKind;
+            kind = response.body.lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);
           };

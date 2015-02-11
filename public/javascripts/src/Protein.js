@@ -1,16 +1,19 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.ProteinParent = (function(_super) {
     __extends(ProteinParent, _super);
 
     function ProteinParent() {
+      this.duplicate = __bind(this.duplicate, this);
       return ProteinParent.__super__.constructor.apply(this, arguments);
     }
 
     ProteinParent.prototype.urlRoot = "/api/proteinParents";
+
+    ProteinParent.prototype.className = "ProteinParent";
 
     ProteinParent.prototype.initialize = function() {
       this.set({
@@ -70,8 +73,21 @@
           key: 'aa sequence',
           stateType: 'metadata',
           stateKind: 'protein parent',
-          type: 'stringValue',
+          type: 'clobValue',
           kind: 'aa sequence'
+        }, {
+          key: 'target',
+          stateType: 'metadata',
+          stateKind: 'protein parent',
+          type: 'codeValue',
+          kind: 'target'
+        }, {
+          key: 'batch number',
+          stateType: 'metadata',
+          stateKind: 'protein parent',
+          type: 'numericValue',
+          kind: 'batch number',
+          value: 0
         }
       ]
     };
@@ -109,6 +125,13 @@
       } else {
         return null;
       }
+    };
+
+    ProteinParent.prototype.duplicate = function() {
+      var copiedThing;
+      copiedThing = ProteinParent.__super__.duplicate.call(this);
+      copiedThing.get("protein name").set("labelText", "");
+      return copiedThing;
     };
 
     return ProteinParent;
@@ -241,30 +264,30 @@
       return _(ProteinParentController.__super__.events.call(this)).extend({
         "keyup .bv_molecularWeight": "attributeChanged",
         "change .bv_type": "attributeChanged",
-        "keyup .bv_sequence": "attributeChanged"
+        "keyup .bv_sequence": "attributeChanged",
+        "change .bv_target": "attributeChanged"
       });
     };
 
     ProteinParentController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new ProteinParent();
       }
       this.errorOwnerName = 'ProteinParentController';
       ProteinParentController.__super__.initialize.call(this);
-      return this.setupType();
+      this.setupType();
+      return this.setupTarget();
     };
 
     ProteinParentController.prototype.render = function() {
       if (this.model == null) {
         this.model = new ProteinParent();
       }
-      ProteinParentController.__super__.render.call(this);
       this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
       this.$('.bv_type').val(this.model.get('type').get('value'));
       this.$('.bv_sequence').val(this.model.get('aa sequence').get('value'));
-      console.log("render model");
-      return console.log(this.model);
+      this.$('.bv_target').val(this.model.get('target').get('value'));
+      return ProteinParentController.__super__.render.call(this);
     };
 
     ProteinParentController.prototype.updateModel = function() {
@@ -272,14 +295,14 @@
       this.model.get("molecular weight").set("value", parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_molecularWeight'))));
       this.model.get("type").set("value", this.typeListController.getSelectedCode());
       this.model.get("aa sequence").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_sequence')));
+      this.model.get("target").set("value", this.targetListController.getSelectedCode());
       return ProteinParentController.__super__.updateModel.call(this);
     };
 
     ProteinParentController.prototype.setupType = function() {
-      console.log("setup type");
       this.typeList = new PickListList();
-      this.typeList.url = "/api/dataDict/protein/type";
-      this.typeListController = new PickListSelectController({
+      this.typeList.url = "/api/codetables/protein/type";
+      return this.typeListController = new PickListSelectController({
         el: this.$('.bv_type'),
         collection: this.typeList,
         insertFirstOption: new PickList({
@@ -288,7 +311,20 @@
         }),
         selectedCode: this.model.get('type').get('value')
       });
-      return console.log(this.model.get('type').get('value'));
+    };
+
+    ProteinParentController.prototype.setupTarget = function() {
+      this.targetList = new PickListList();
+      this.targetList.url = "/api/codetables/protein/target";
+      return this.targetListController = new PickListSelectController({
+        el: this.$('.bv_target'),
+        collection: this.targetList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select target"
+        }),
+        selectedCode: this.model.get('target').get('value')
+      });
     };
 
     return ProteinParentController;
@@ -314,7 +350,6 @@
 
     ProteinBatchController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new ProteinBatch();
       }
       this.errorOwnerName = 'ProteinBatchController';
@@ -323,11 +358,10 @@
 
     ProteinBatchController.prototype.render = function() {
       if (this.model == null) {
-        console.log("create new model");
         this.model = new ProteinBatch();
       }
-      ProteinBatchController.__super__.render.call(this);
-      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      return ProteinBatchController.__super__.render.call(this);
     };
 
     ProteinBatchController.prototype.updateModel = function() {
@@ -344,52 +378,23 @@
 
     function ProteinBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return ProteinBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
-    ProteinBatchSelectController.prototype.setupBatchRegForm = function(batch) {
-      var model;
-      if (batch != null) {
-        model = batch;
-      } else {
-        model = new ProteinBatch();
+    ProteinBatchSelectController.prototype.setupBatchRegForm = function() {
+      if (this.batchModel === void 0 || this.batchModel === "new batch" || this.batchModel === null) {
+        this.batchModel = new ProteinBatch();
       }
-      this.batchController = new ProteinBatchController({
-        model: model,
-        el: this.$('.bv_batchRegForm')
-      });
       return ProteinBatchSelectController.__super__.setupBatchRegForm.call(this);
     };
 
     ProteinBatchSelectController.prototype.handleSelectedBatchChanged = function() {
-      var selectedBatch;
-      console.log("handle selected batch changed");
-      selectedBatch = this.batchListController.getSelectedCode();
-      if (selectedBatch === "new batch" || selectedBatch === null || selectedBatch === void 0) {
-        return this.setupBatchRegForm();
-      } else {
-        return $.ajax({
-          type: 'GET',
-          url: "/api/batches/codename/" + selectedBatch,
-          dataType: 'json',
-          error: function(err) {
-            alert('Could not get selected batch, creating new one');
-            return this.batchController.model = new ProteinBatch();
-          },
-          success: (function(_this) {
-            return function(json) {
-              var pb;
-              if (json.length === 0) {
-                return alert('Could not get selected batch, creating new one');
-              } else {
-                pb = new ProteinBatch(json);
-                pb.set(pb.parse(pb.attributes));
-                return _this.setupBatchRegForm(pb);
-              }
-            };
-          })(this)
-        });
-      }
+      this.batchCodeName = this.batchListController.getSelectedCode();
+      this.batchModel = this.batchList.findWhere({
+        codeName: this.batchCodeName
+      });
+      return this.setupBatchRegForm();
     };
 
     return ProteinBatchSelectController;
@@ -400,6 +405,8 @@
     __extends(ProteinController, _super);
 
     function ProteinController() {
+      this.setupBatchSelectController = __bind(this.setupBatchSelectController, this);
+      this.setupParentController = __bind(this.setupParentController, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       return ProteinController.__super__.constructor.apply(this, arguments);
     }
@@ -407,14 +414,22 @@
     ProteinController.prototype.moduleLaunchName = "protein";
 
     ProteinController.prototype.initialize = function() {
+      var launchCode;
       if (this.model != null) {
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            launchCode = window.AppLaunchParams.moduleLaunchParams.code;
+            if (launchCode.indexOf("-") === -1) {
+              this.batchCodeName = "new batch";
+            } else {
+              this.batchCodeName = launchCode;
+              launchCode = launchCode.split("-")[0];
+            }
             return $.ajax({
               type: 'GET',
-              url: "/api/proteinParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/proteinParents/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');
@@ -422,13 +437,17 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var cbp;
+                  var pp;
                   if (json.length === 0) {
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
-                    cbp = new ProteinParent(json[0]);
-                    cbp.set(cbp.parse(cbp.attributes));
-                    _this.model = cbp;
+                    pp = new ProteinParent(json);
+                    pp.set(pp.parse(pp.attributes));
+                    if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                      _this.model = pp.duplicate();
+                    } else {
+                      _this.model = pp;
+                    }
                   }
                   return _this.completeInitialization();
                 };
@@ -452,11 +471,10 @@
     };
 
     ProteinController.prototype.setupParentController = function() {
-      console.log("set up protein parent controller");
-      console.log(this.model);
       this.parentController = new ProteinParentController({
         model: this.model,
-        el: this.$('.bv_parent')
+        el: this.$('.bv_parent'),
+        readOnly: this.readOnly
       });
       return ProteinController.__super__.setupParentController.call(this);
     };
@@ -464,7 +482,11 @@
     ProteinController.prototype.setupBatchSelectController = function() {
       this.batchSelectController = new ProteinBatchSelectController({
         el: this.$('.bv_batch'),
-        parentCodeName: this.model.get('codeName')
+        parentCodeName: this.model.get('codeName'),
+        batchCodeName: this.batchCodeName,
+        batchModel: this.batchModel,
+        readOnly: this.readOnly,
+        lsKind: "protein"
       });
       return ProteinController.__super__.setupBatchSelectController.call(this);
     };

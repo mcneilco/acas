@@ -1,5 +1,6 @@
 class window.CationicBlockParent extends AbstractBaseComponentParent
 	urlRoot: "/api/cationicBlockParents"
+	className: "CationicBlockParent"
 
 	initialize: ->
 		@.set
@@ -40,8 +41,19 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 			stateKind: 'cationic block parent'
 			type: 'fileValue'
 			kind: 'structural file'
+		,
+			key: 'batch number'
+			stateType: 'metadata'
+			stateKind: 'cationic block parent'
+			type: 'numericValue'
+			kind: 'batch number'
+			value: 0
 		]
 
+	duplicate: =>
+		copiedThing = super()
+		copiedThing.get("cationic block name").set "labelText", ""
+		copiedThing
 
 class window.CationicBlockBatch extends AbstractBaseComponentBatch
 	urlRoot: "/api/cationicBlockBatches"
@@ -148,7 +160,6 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 					attribute: 'purity'
 					message: "Purity must be a number"
 
-
 		if errors.length > 0
 			return errors
 		else
@@ -159,7 +170,6 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new CationicBlockParent()
 		@errorOwnerName = 'CationicBlockParentController'
 		super()
@@ -168,8 +178,8 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 	render: =>
 		unless @model?
 			@model = new CationicBlockParent()
-		super()
 		@setupStructuralFileController()
+		super()
 
 	setupStructuralFileController: ->
 		@structuralFileController = new LSFileChooserController
@@ -178,7 +188,7 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			allowedFileTypes: ['sdf', 'mol']
 			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'
@@ -189,15 +199,11 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
-		console.log "file uploaded"
 		@model.get("structural file").set("value", nameOnServer)
-		console.log @model
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
-		console.log "file removed"
 		@model.get("structural file").set("value", "")
-		console.log @model
 
 	updateModel: =>
 		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -215,18 +221,16 @@ class window.CationicBlockBatchController extends AbstractBaseComponentBatchCont
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new CationicBlockBatch()
 		@errorOwnerName = 'CationicBlockBatchController'
 		super()
 
 	render: =>
 		unless @model?
-			console.log "create new model"
 			@model = new CationicBlockBatch()
-		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
 		@$('.bv_purity').val(@model.get('purity').get('value'))
+		super()
 
 	updateModel: =>
 		@model.get("molecular weight").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_molecularWeight')))
@@ -235,42 +239,15 @@ class window.CationicBlockBatchController extends AbstractBaseComponentBatchCont
 
 class window.CationicBlockBatchSelectController extends AbstractBaseComponentBatchSelectController
 
-	setupBatchRegForm: (batch) ->
-		if batch?
-			console.log "batch exists"
-			model = batch
-		else
-			console.log "batch doesn't exist"
-			model = new CationicBlockBatch()
-		@batchController = new CationicBlockBatchController
-			model: model
-			el: @$('.bv_batchRegForm')
+	setupBatchRegForm: =>
+		if @batchModel is undefined or @batchModel is "new batch" or @batchModel is null
+			@batchModel = new CationicBlockBatch()
 		super()
 
-
 	handleSelectedBatchChanged: =>
-		console.log "handle selected batch changed"
-		selectedBatch = @batchListController.getSelectedCode()
-		if selectedBatch is "new batch" or selectedBatch is null or selectedBatch is undefined
-			@setupBatchRegForm()
-		else
-			$.ajax
-				type: 'GET'
-				url: "/api/batches/codename/"+selectedBatch
-				dataType: 'json'
-				error: (err) ->
-					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new CationicBlockBatch()
-				success: (json) =>
-					if json.length == 0
-						alert 'Could not get selected batch, creating new one'
-					else
-						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new CationicBlockBatch json
-						pb = new CationicBlockBatch json
-						pb.set pb.parse(pb.attributes)
-
-						@setupBatchRegForm(pb)
+		@batchCodeName = @batchListController.getSelectedCode()
+		@batchModel = @batchList.findWhere {codeName:@batchCodeName}
+		@setupBatchRegForm()
 
 class window.CationicBlockController extends AbstractBaseComponentController
 	moduleLaunchName: "cationic_block"
@@ -281,31 +258,35 @@ class window.CationicBlockController extends AbstractBaseComponentController
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+					if launchCode.indexOf("-") == -1
+						@batchCodeName = "new batch"
+					else
+						@batchCodeName = launchCode
+						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/cationicBlockParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/cationicBlockParents/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
-							console.log "ci 1"
 							@completeInitialization()
 						success: (json) =>
 							if json.length == 0
-								console.log "ci 2"
 								alert 'Could not get parent for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								cbp = new CationicBlockParent json
 								cbp = new CationicBlockParent json
 								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
-								console.log "ci 3"
+								if window.AppLaunchParams.moduleLaunchParams.copy
+									@model = cbp.duplicate()
+								else
+									@model = cbp
 							@completeInitialization()
 				else
-					console.log "ci 4"
 					@completeInitialization()
 			else
-				console.log "ci 5"
 				@completeInitialization()
 
 	completeInitialization: =>
@@ -314,17 +295,20 @@ class window.CationicBlockController extends AbstractBaseComponentController
 		super()
 		@$('.bv_registrationTitle').html("Cationic Block Parent/Batch Registration")
 
-	setupParentController: ->
-		console.log "set up cationic block parent controller"
-		console.log @model
+	setupParentController: =>
 		@parentController = new CationicBlockParentController
 			model: @model
 			el: @$('.bv_parent')
+			readOnly: @readOnly
 		super()
 
-	setupBatchSelectController: ->
+	setupBatchSelectController: =>
 		@batchSelectController = new CationicBlockBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
+			batchCodeName: @batchCodeName
+			batchModel: @batchModel
+			readOnly: @readOnly
+			lsKind: "cationic block"
 		super()
 

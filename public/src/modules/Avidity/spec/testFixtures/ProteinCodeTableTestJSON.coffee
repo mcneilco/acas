@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
 			type: "protein"
 			kind: "type"
@@ -19,6 +19,23 @@
 				,
 					code: "other"
 					name: "Other"
+					ignored: false
+				]
+		,
+			type: "protein"
+			kind: "target"
+			codes:
+				[
+					code: "egfr"
+					name: "EGFR"
+					ignored: false
+				,
+					code: "psma"
+					name: "PSMA"
+					ignored: false
+				,
+					code: "transferrin"
+					name: "Transferrin"
 					ignored: false
 				]
 		]

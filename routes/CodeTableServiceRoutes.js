@@ -4,14 +4,14 @@
   _ = require("underscore");
 
   exports.setupAPIRoutes = function(app) {
-    return app.get('/api/dataDict/:type/:kind', exports.getDataDictValues);
+    return app.get('/api/codetables/:type/:kind', exports.getCodeTableValues);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/api/dataDict/:type/:kind', loginRoutes.ensureAuthenticated, exports.getDataDictValues);
+    return app.get('/api/codetables/:type/:kind', loginRoutes.ensureAuthenticated, exports.getCodeTableValues);
   };
 
-  exports.getDataDictValues = function(req, resp) {
+  exports.getCodeTableValues = function(req, resp) {
     var baseurl, codeTableServiceTestJSON, config, correctCodeTable, request;
     if (global.specRunnerTestmode) {
       codeTableServiceTestJSON = require('../public/javascripts/spec/testFixtures/CodeTableJSON.js');
@@ -22,7 +22,7 @@
       return resp.end(JSON.stringify(correctCodeTable['codes']));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
       request = require('request');
       return request({
         method: 'GET',

@@ -1,16 +1,19 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.SpacerParent = (function(_super) {
     __extends(SpacerParent, _super);
 
     function SpacerParent() {
+      this.duplicate = __bind(this.duplicate, this);
       return SpacerParent.__super__.constructor.apply(this, arguments);
     }
 
     SpacerParent.prototype.urlRoot = "/api/spacerParents";
+
+    SpacerParent.prototype.className = "SpacerParent";
 
     SpacerParent.prototype.initialize = function() {
       this.set({
@@ -63,6 +66,13 @@
           stateKind: 'spacer parent',
           type: 'fileValue',
           kind: 'structural file'
+        }, {
+          key: 'batch number',
+          stateType: 'metadata',
+          stateKind: 'spacer parent',
+          type: 'numericValue',
+          kind: 'batch number',
+          value: 0
         }
       ]
     };
@@ -91,6 +101,13 @@
       } else {
         return null;
       }
+    };
+
+    SpacerParent.prototype.duplicate = function() {
+      var copiedThing;
+      copiedThing = SpacerParent.__super__.duplicate.call(this);
+      copiedThing.get("spacer name").set("labelText", "");
+      return copiedThing;
     };
 
     return SpacerParent;
@@ -229,7 +246,6 @@
 
     SpacerParentController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new SpacerParent();
       }
       this.errorOwnerName = 'SpacerParentController';
@@ -240,9 +256,9 @@
       if (this.model == null) {
         this.model = new SpacerParent();
       }
-      SpacerParentController.__super__.render.call(this);
       this.$('.bv_molecularWeight').val(this.model.get('molecular weight').get('value'));
-      return this.setupStructuralFileController();
+      this.setupStructuralFileController();
+      return SpacerParentController.__super__.render.call(this);
     };
 
     SpacerParentController.prototype.setupStructuralFileController = function() {
@@ -252,7 +268,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
-        allowedFileTypes: ['sdf', 'mol', 'xlsx'],
+        allowedFileTypes: ['sdf', 'mol'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
@@ -271,16 +287,12 @@
     };
 
     SpacerParentController.prototype.handleFileUpload = function(nameOnServer) {
-      console.log("file uploaded");
       this.model.get("structural file").set("value", nameOnServer);
-      console.log(this.model);
       return this.trigger('amDirty');
     };
 
     SpacerParentController.prototype.handleFileRemoved = function() {
-      console.log("file removed");
-      this.model.get("structural file").set("value", "");
-      return console.log(this.model);
+      return this.model.get("structural file").set("value", "");
     };
 
     SpacerParentController.prototype.updateModel = function() {
@@ -312,7 +324,6 @@
 
     SpacerBatchController.prototype.initialize = function() {
       if (this.model == null) {
-        console.log("create new model in initialize");
         this.model = new SpacerBatch();
       }
       this.errorOwnerName = 'SpacerBatchController';
@@ -321,11 +332,10 @@
 
     SpacerBatchController.prototype.render = function() {
       if (this.model == null) {
-        console.log("create new model");
         this.model = new SpacerBatch();
       }
-      SpacerBatchController.__super__.render.call(this);
-      return this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      this.$('.bv_purity').val(this.model.get('purity').get('value'));
+      return SpacerBatchController.__super__.render.call(this);
     };
 
     SpacerBatchController.prototype.updateModel = function() {
@@ -342,52 +352,23 @@
 
     function SpacerBatchSelectController() {
       this.handleSelectedBatchChanged = __bind(this.handleSelectedBatchChanged, this);
+      this.setupBatchRegForm = __bind(this.setupBatchRegForm, this);
       return SpacerBatchSelectController.__super__.constructor.apply(this, arguments);
     }
 
-    SpacerBatchSelectController.prototype.setupBatchRegForm = function(batch) {
-      var model;
-      if (batch != null) {
-        model = batch;
-      } else {
-        model = new SpacerBatch();
+    SpacerBatchSelectController.prototype.setupBatchRegForm = function() {
+      if (this.batchModel === void 0 || this.batchModel === "new batch" || this.batchModel === null) {
+        this.batchModel = new SpacerBatch();
       }
-      this.batchController = new SpacerBatchController({
-        model: model,
-        el: this.$('.bv_batchRegForm')
-      });
       return SpacerBatchSelectController.__super__.setupBatchRegForm.call(this);
     };
 
     SpacerBatchSelectController.prototype.handleSelectedBatchChanged = function() {
-      var selectedBatch;
-      console.log("handle selected batch changed");
-      selectedBatch = this.batchListController.getSelectedCode();
-      if (selectedBatch === "new batch" || selectedBatch === null || selectedBatch === void 0) {
-        return this.setupBatchRegForm();
-      } else {
-        return $.ajax({
-          type: 'GET',
-          url: "/api/batches/codename/" + selectedBatch,
-          dataType: 'json',
-          error: function(err) {
-            alert('Could not get selected batch, creating new one');
-            return this.batchController.model = new SpacerBatch();
-          },
-          success: (function(_this) {
-            return function(json) {
-              var pb;
-              if (json.length === 0) {
-                return alert('Could not get selected batch, creating new one');
-              } else {
-                pb = new SpacerBatch(json);
-                pb.set(pb.parse(pb.attributes));
-                return _this.setupBatchRegForm(pb);
-              }
-            };
-          })(this)
-        });
-      }
+      this.batchCodeName = this.batchListController.getSelectedCode();
+      this.batchModel = this.batchList.findWhere({
+        codeName: this.batchCodeName
+      });
+      return this.setupBatchRegForm();
     };
 
     return SpacerBatchSelectController;
@@ -398,6 +379,8 @@
     __extends(SpacerController, _super);
 
     function SpacerController() {
+      this.setupBatchSelectController = __bind(this.setupBatchSelectController, this);
+      this.setupParentController = __bind(this.setupParentController, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       return SpacerController.__super__.constructor.apply(this, arguments);
     }
@@ -405,14 +388,22 @@
     SpacerController.prototype.moduleLaunchName = "spacer";
 
     SpacerController.prototype.initialize = function() {
+      var launchCode;
       if (this.model != null) {
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
+            launchCode = window.AppLaunchParams.moduleLaunchParams.code;
+            if (launchCode.indexOf("-") === -1) {
+              this.batchCodeName = "new batch";
+            } else {
+              this.batchCodeName = launchCode;
+              launchCode = launchCode.split("-")[0];
+            }
             return $.ajax({
               type: 'GET',
-              url: "/api/spacerParents/codeName/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/spacerParents/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');
@@ -420,13 +411,17 @@
               },
               success: (function(_this) {
                 return function(json) {
-                  var cbp;
+                  var sp;
                   if (json.length === 0) {
                     alert('Could not get parent for code in this URL, creating new one');
                   } else {
-                    cbp = new SpacerParent(json);
-                    cbp.set(cbp.parse(cbp.attributes));
-                    _this.model = cbp;
+                    sp = new SpacerParent(json);
+                    sp.set(sp.parse(sp.attributes));
+                    if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                      _this.model = sp.duplicate();
+                    } else {
+                      _this.model = sp;
+                    }
                   }
                   return _this.completeInitialization();
                 };
@@ -450,11 +445,10 @@
     };
 
     SpacerController.prototype.setupParentController = function() {
-      console.log("set up spacer parent controller");
-      console.log(this.model);
       this.parentController = new SpacerParentController({
         model: this.model,
-        el: this.$('.bv_parent')
+        el: this.$('.bv_parent'),
+        readOnly: this.readOnly
       });
       return SpacerController.__super__.setupParentController.call(this);
     };
@@ -462,7 +456,11 @@
     SpacerController.prototype.setupBatchSelectController = function() {
       this.batchSelectController = new SpacerBatchSelectController({
         el: this.$('.bv_batch'),
-        parentCodeName: this.model.get('codeName')
+        parentCodeName: this.model.get('codeName'),
+        batchCodeName: this.batchCodeName,
+        batchModel: this.batchModel,
+        readOnly: this.readOnly,
+        lsKind: "spacer"
       });
       return SpacerController.__super__.setupBatchSelectController.call(this);
     };

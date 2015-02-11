@@ -1,5 +1,6 @@
 class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 	urlRoot: "/api/linkerSmallMoleculeParents"
+	className: "LinkerSmallMoleculeParent"
 
 	initialize: ->
 		@.set
@@ -48,10 +49,16 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 			stateKind: 'linker small molecule parent'
 			type: 'fileValue'
 			kind: 'structural file'
+		,
+			key: 'batch number'
+			stateType: 'metadata'
+			stateKind: 'linker small molecule parent'
+			type: 'numericValue'
+			kind: 'batch number'
+			value: 0
 		]
 
 	validate: (attrs) ->
-		console.log "validate parent"
 		errors = []
 		errors.push super(attrs)...
 		if attrs["molecular weight"]?
@@ -65,13 +72,15 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 					attribute: 'molecularWeight'
 					message: "Molecular weight must be a number"
 
-		console.log "parent errors"
-		console.log errors
 		if errors.length > 0
 			return errors
 		else
 			return null
 
+	duplicate: =>
+		copiedThing = super()
+		copiedThing.get("linker small molecule name").set "labelText", ""
+		copiedThing
 
 class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 	urlRoot: "/api/linkerSmallMoleculeBatches"
@@ -147,13 +156,10 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 		]
 
 	validate: (attrs) ->
-		console.log "validate batch"
 		errors = []
 		errors.push super(attrs)...
 		if attrs.purity?
-			console.log "purity"
 			purity = attrs.purity.get('value')
-			console.log purity
 			if purity is "" or purity is undefined
 				errors.push
 					attribute: 'purity'
@@ -163,8 +169,6 @@ class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
 					attribute: 'purity'
 					message: "Purity must be a number"
 
-		console.log "batch errors"
-		console.log errors
 		if errors.length > 0
 			return errors
 		else
@@ -180,7 +184,6 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new LinkerSmallMoleculeParent()
 		@errorOwnerName = 'LinkerSmallMoleculeParentController'
 		super()
@@ -189,9 +192,9 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 	render: =>
 		unless @model?
 			@model = new LinkerSmallMoleculeParent()
-		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
 		@setupStructuralFileController()
+		super()
 		@
 
 	setupStructuralFileController: ->
@@ -201,7 +204,7 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			allowedFileTypes: ['sdf', 'mol']
 			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'
@@ -212,15 +215,11 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
-		console.log "file uploaded"
 		@model.get("structural file").set("value", nameOnServer)
-		console.log @model
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
-		console.log "file removed"
 		@model.get("structural file").set("value", "")
-		console.log @model
 
 	updateModel: =>
 		@model.get("linker small molecule name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -239,17 +238,15 @@ class window.LinkerSmallMoleculeBatchController extends AbstractBaseComponentBat
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new LinkerSmallMoleculeBatch()
 		@errorOwnerName = 'LinkerSmallMoleculeBatchController'
 		super()
 
 	render: =>
 		unless @model?
-			console.log "create new model"
 			@model = new LinkerSmallMoleculeBatch()
-		super()
 		@$('.bv_purity').val(@model.get('purity').get('value'))
+		super()
 
 	updateModel: =>
 		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
@@ -257,38 +254,15 @@ class window.LinkerSmallMoleculeBatchController extends AbstractBaseComponentBat
 
 class window.LinkerSmallMoleculeBatchSelectController extends AbstractBaseComponentBatchSelectController
 
-	setupBatchRegForm: (batch)->
-		if batch?
-			model = batch
-		else
-			model = new LinkerSmallMoleculeBatch()
-		@batchController = new LinkerSmallMoleculeBatchController
-			model: model
-			el: @$('.bv_batchRegForm')
+	setupBatchRegForm: =>
+		if @batchModel is undefined or @batchModel is "new batch" or @batchModel is null
+			@batchModel = new LinkerSmallMoleculeBatch()
 		super()
 
 	handleSelectedBatchChanged: =>
-		console.log "handle selected batch changed"
-		selectedBatch = @batchListController.getSelectedCode()
-		if selectedBatch is "new batch" or selectedBatch is null or selectedBatch is undefined
-			@setupBatchRegForm()
-		else
-			$.ajax
-				type: 'GET'
-				url: "/api/batches/codename/"+selectedBatch
-				dataType: 'json'
-				error: (err) ->
-					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new LinkerSmallMoleculeBatch()
-				success: (json) =>
-					if json.length == 0
-						alert 'Could not get selected batch, creating new one'
-					else
-						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new LinkerSmallMoleculeBatch json
-						pb = new LinkerSmallMoleculeBatch json
-						pb.set pb.parse(pb.attributes)
-						@setupBatchRegForm(pb)
+		@batchCodeName = @batchListController.getSelectedCode()
+		@batchModel = @batchList.findWhere {codeName:@batchCodeName}
+		@setupBatchRegForm()
 
 class window.LinkerSmallMoleculeController extends AbstractBaseComponentController
 	moduleLaunchName: "linker_small_molecule"
@@ -299,9 +273,15 @@ class window.LinkerSmallMoleculeController extends AbstractBaseComponentControll
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+					if launchCode.indexOf("-") == -1
+						@batchCodeName = "new batch"
+					else
+						@batchCodeName = launchCode
+						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/linkerSmallMoleculeParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/linkerSmallMoleculeParents/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
@@ -311,9 +291,13 @@ class window.LinkerSmallMoleculeController extends AbstractBaseComponentControll
 								alert 'Could not get parent for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								lsmp = new LinkerSmallMoleculeParent json
 								lsmp = new LinkerSmallMoleculeParent json
 								lsmp.set lsmp.parse(lsmp.attributes)
-								@model = lsmp
+								if window.AppLaunchParams.moduleLaunchParams.copy
+									@model = lsmp.duplicate()
+								else
+									@model = lsmp
 							@completeInitialization()
 				else
 					@completeInitialization()
@@ -326,17 +310,20 @@ class window.LinkerSmallMoleculeController extends AbstractBaseComponentControll
 		super()
 		@$('.bv_registrationTitle').html("Linker Small Molecule Parent/Batch Registration")
 
-	setupParentController: ->
-		console.log "set up linker small molecule parent controller"
-		console.log @model
+	setupParentController: =>
 		@parentController = new LinkerSmallMoleculeParentController
 			model: @model
 			el: @$('.bv_parent')
+			readOnly: @readOnly
 		super()
 
-	setupBatchSelectController: ->
+	setupBatchSelectController: =>
 		@batchSelectController = new LinkerSmallMoleculeBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
+			batchCodeName: @batchCodeName
+			batchModel: @batchModel
+			readOnly: @readOnly
+			lsKind: "linker small molecule"
 		super()
 

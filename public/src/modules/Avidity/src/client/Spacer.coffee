@@ -1,5 +1,6 @@
 class window.SpacerParent extends AbstractBaseComponentParent
 	urlRoot: "/api/spacerParents"
+	className: "SpacerParent"
 
 	initialize: ->
 		@.set
@@ -48,6 +49,13 @@ class window.SpacerParent extends AbstractBaseComponentParent
 			stateKind: 'spacer parent'
 			type: 'fileValue'
 			kind: 'structural file'
+		,
+			key: 'batch number'
+			stateType: 'metadata'
+			stateKind: 'spacer parent'
+			type: 'numericValue'
+			kind: 'batch number'
+			value: 0
 		]
 
 	validate: (attrs) ->
@@ -69,6 +77,10 @@ class window.SpacerParent extends AbstractBaseComponentParent
 		else
 			return null
 
+	duplicate: =>
+		copiedThing = super()
+		copiedThing.get("spacer name").set "labelText", ""
+		copiedThing
 
 class window.SpacerBatch extends AbstractBaseComponentBatch
 	urlRoot: "/api/spacerBatches"
@@ -173,7 +185,6 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new SpacerParent()
 		@errorOwnerName = 'SpacerParentController'
 		super()
@@ -182,9 +193,9 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 	render: =>
 		unless @model?
 			@model = new SpacerParent()
-		super()
 		@$('.bv_molecularWeight').val(@model.get('molecular weight').get('value'))
 		@setupStructuralFileController()
+		super()
 
 	setupStructuralFileController: ->
 		@structuralFileController = new LSFileChooserController
@@ -193,7 +204,7 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['sdf', 'mol', 'xlsx']
+			allowedFileTypes: ['sdf', 'mol']
 			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'
@@ -204,15 +215,11 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
-		console.log "file uploaded"
 		@model.get("structural file").set("value", nameOnServer)
-		console.log @model
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
-		console.log "file removed"
 		@model.get("structural file").set("value", "")
-		console.log @model
 
 	updateModel: =>
 		@model.get("spacer name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -230,17 +237,15 @@ class window.SpacerBatchController extends AbstractBaseComponentBatchController
 
 	initialize: ->
 		unless @model?
-			console.log "create new model in initialize"
 			@model=new SpacerBatch()
 		@errorOwnerName = 'SpacerBatchController'
 		super()
 
 	render: =>
 		unless @model?
-			console.log "create new model"
 			@model = new SpacerBatch()
-		super()
 		@$('.bv_purity').val(@model.get('purity').get('value'))
+		super()
 
 	updateModel: =>
 		@model.get("purity").set("value", parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_purity')))
@@ -248,38 +253,15 @@ class window.SpacerBatchController extends AbstractBaseComponentBatchController
 
 class window.SpacerBatchSelectController extends AbstractBaseComponentBatchSelectController
 
-	setupBatchRegForm: (batch)->
-		if batch?
-			model = batch
-		else
-			model = new SpacerBatch()
-		@batchController = new SpacerBatchController
-			model: model
-			el: @$('.bv_batchRegForm')
+	setupBatchRegForm: =>
+		if @batchModel is undefined or @batchModel is "new batch" or @batchModel is null
+			@batchModel = new SpacerBatch()
 		super()
 
 	handleSelectedBatchChanged: =>
-		console.log "handle selected batch changed"
-		selectedBatch = @batchListController.getSelectedCode()
-		if selectedBatch is "new batch" or selectedBatch is null or selectedBatch is undefined
-			@setupBatchRegForm()
-		else
-			$.ajax
-				type: 'GET'
-				url: "/api/batches/codename/"+selectedBatch
-				dataType: 'json'
-				error: (err) ->
-					alert 'Could not get selected batch, creating new one'
-					@batchController.model = new SpacerBatch()
-				success: (json) =>
-					if json.length == 0
-						alert 'Could not get selected batch, creating new one'
-					else
-						#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-						#								exp = new SpacerBatch json
-						pb = new SpacerBatch json
-						pb.set pb.parse(pb.attributes)
-						@setupBatchRegForm(pb)
+		@batchCodeName = @batchListController.getSelectedCode()
+		@batchModel = @batchList.findWhere {codeName:@batchCodeName}
+		@setupBatchRegForm()
 
 class window.SpacerController extends AbstractBaseComponentController
 	moduleLaunchName: "spacer"
@@ -290,9 +272,15 @@ class window.SpacerController extends AbstractBaseComponentController
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+					if launchCode.indexOf("-") == -1
+						@batchCodeName = "new batch"
+					else
+						@batchCodeName = launchCode
+						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/spacerParents/codeName/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/spacerParents/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'
@@ -302,10 +290,13 @@ class window.SpacerController extends AbstractBaseComponentController
 								alert 'Could not get parent for code in this URL, creating new one'
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								cbp = new CationicBlockParent json
-								cbp = new SpacerParent json
-								cbp.set cbp.parse(cbp.attributes)
-								@model = cbp
+#								sp = new SpacerParent json
+								sp = new SpacerParent json
+								sp.set sp.parse(sp.attributes)
+								if window.AppLaunchParams.moduleLaunchParams.copy
+									@model = sp.duplicate()
+								else
+									@model = sp
 							@completeInitialization()
 				else
 					@completeInitialization()
@@ -318,17 +309,20 @@ class window.SpacerController extends AbstractBaseComponentController
 		super()
 		@$('.bv_registrationTitle').html("Spacer Parent/Batch Registration")
 
-	setupParentController: ->
-		console.log "set up spacer parent controller"
-		console.log @model
+	setupParentController: =>
 		@parentController = new SpacerParentController
 			model: @model
 			el: @$('.bv_parent')
+			readOnly: @readOnly
 		super()
 
-	setupBatchSelectController: ->
+	setupBatchSelectController: =>
 		@batchSelectController = new SpacerBatchSelectController
 			el: @$('.bv_batch')
 			parentCodeName: @model.get('codeName')
+			batchCodeName: @batchCodeName
+			batchModel: @batchModel
+			readOnly: @readOnly
+			lsKind: "spacer"
 		super()
 

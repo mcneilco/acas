@@ -1,24 +1,32 @@
 (function() {
   (function(exports) {
     return exports.controllerRedirectConf = {
-      PROT: {
-        entityName: "protocols",
-        stub: true,
-        "default": {
-          deepLink: "protocol_base"
-        },
-        "flipr screening assay": {
-          deepLink: "primary_screen_protocol"
+      CB: {
+        entityName: "cationicBlockParents",
+        stub: false,
+        "cationic block": {
+          deepLink: "cationic_block"
         }
       },
-      EXPT: {
-        entityName: "experiments",
+      LSM: {
+        entityName: "linkerSmallMoleculeParents",
         stub: false,
-        "default": {
-          deepLink: "experiment_base"
-        },
-        "flipr screening assay": {
-          deepLink: "flipr_screening_assay"
+        "linker small molecule": {
+          deepLink: "linker_small_molecule"
+        }
+      },
+      PROT: {
+        entityName: "proteinParents",
+        stub: false,
+        "protein": {
+          deepLink: "protein"
+        }
+      },
+      SP: {
+        entityName: "spacerParents",
+        stub: false,
+        "spacer": {
+          deepLink: "spacer"
         }
       }
     };

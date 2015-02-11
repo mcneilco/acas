@@ -17,7 +17,8 @@ exports.requiredScripts = [
     '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
     '/src/lib/dataTables/js/jquery.dataTables.js',
 	'/src/lib/jsxgraph/jsxgraphcore.js',
-	'/src/lib/jstree/jstree.min.js'
+	'/src/lib/jstree/jstree.min.js',
+    '/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [
@@ -44,6 +45,7 @@ exports.applicationScripts = [
 	"/javascripts/src/BulkLoadContainersFromSDF.js",
 	"/javascripts/src/BulkLoadSampleTransfers.js",
 	"/javascripts/src/CationicBlock.js",
+	"/javascripts/src/ComponentBrowser.js",
 	"/javascripts/src/ComponentPicker.js",
 	"/javascripts/src/CurveCurator.js",
 	"/javascripts/src/CurveCuratorAppController.js",
@@ -94,6 +96,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/CationicBlockTestJSON.js",
+	"/javascripts/spec/testFixtures/ComponentBrowserServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ComponentPickerCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ComponentPickerTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveAnalysisCodeTableTestJSON.js",
@@ -144,6 +147,7 @@ exports.specScripts = [
 	"/javascripts/spec/CationicBlockServiceSpec.js",
 	"/javascripts/spec/CationicBlockSpec.js",
 	"/javascripts/spec/CodeTableServiceSpec.js",
+	"/javascripts/spec/ComponentBrowserSpec.js",
 	"/javascripts/spec/ComponentPickerSpec.js",
 	"/javascripts/spec/CurveCuratorServiceSpec.js",
 	"/javascripts/spec/CurveCuratorSpec.js",

@@ -69,8 +69,6 @@ class window.LSFileChooserController extends Backbone.View
 			@requiresValidation = @options.requiresValidation
 		if @options.hideDelete?
 			@hideDelete = @options.hideDelete
-			console.log "hide delete"
-			console.log @hideDelete
 		@currentNumberOfFiles = 0
 
 	events:
