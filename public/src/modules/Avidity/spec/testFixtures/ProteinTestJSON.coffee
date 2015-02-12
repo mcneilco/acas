@@ -171,7 +171,7 @@
 				valueUnit: null
 				version: 0
 			,
-				clobValue: null
+				clobValue: "AUGCGACUG"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -188,13 +188,13 @@
 				publicData: true
 				recordedDate: 1363388477000
 				sigFigs: null
-				stringValue: "AUGCGACUG"
+				stringValue: null
 				uncertainty: null
 				urlValue: null
 				lsKind: "aa sequence"
 				valueOperator: null
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_aa sequence"
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_aa sequence"
 				valueUnit: null
 				version: 0
 			,

@@ -116,13 +116,6 @@ describe 'Protein testing', ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when recorded date is empty", ->
-					@pp.set recordedDate: new Date("").getTime()
-					expect(@pp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@pp.validationError, (err) ->
-						err.attribute=='recordedDate'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
 					@pp.get('scientist').set('value', "unassigned")
 					expect(@pp.isValid()).toBeFalsy()
@@ -238,13 +231,6 @@ describe 'Protein testing', ->
 				@pb = new ProteinBatch window.proteinTestJSON.proteinBatch
 			it "should be valid when loaded from saved", ->
 				expect(@pb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@pb.set recordedDate: new Date("").getTime()
-				expect(@pb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@pb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
 				@pb.get('scientist').set('value', "unassigned")
 				expect(@pb.isValid()).toBeFalsy()
@@ -440,6 +426,9 @@ describe 'Protein testing', ->
 							expect(@ppc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
 				describe "when type not filled", ->
 					beforeEach ->
+						waitsFor ->
+							@ppc.$('.bv_scientist option').length > 0
+						, 1000
 						runs ->
 							@ppc.$('.bv_type').val("unassigned")
 							@ppc.$('.bv_type').change()
@@ -650,8 +639,12 @@ describe 'Protein testing', ->
 						expect(@pbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
 					console.log @pbsc.$('.bv_batchCode')
-					expect(@pbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@pbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
+					waitsFor ->
+						@pbsc.$('.bv_batchList option').length > 0
+					, 1000
+					runs ->
+						expect(@pbsc.$('.bv_batchCode').val()).toEqual ""
+						expect(@pbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
@@ -683,13 +676,20 @@ describe 'Protein testing', ->
 			it "Should load a parent controller", ->
 				expect(@pc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@pc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				waitsFor ->
+					@pc.$('.bv_batchList option').length > 0
+				, 1000
+				runs ->
+					expect(@pc.$('.bv_batch .bv_batchCode').length).toEqual 1
 		describe "saving parent/batch for the first time", ->
 			describe "when form is initialized", ->
 				it "should have the save button be disabled initially", ->
 					expect(@pc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe 'when save is clicked', ->
 				beforeEach ->
+					waitsFor ->
+						@pc.$('.bv_fileType option').length > 0
+					, 1000
 					runs ->
 						@pc.$('.bv_parentName').val(" Updated entity name   ")
 						@pc.$('.bv_parentName').keyup()
@@ -701,7 +701,7 @@ describe 'Protein testing', ->
 						@pc.$('.bv_notebook').keyup()
 						@pc.$('.bv_molecularWeight').val("192")
 						@pc.$('.bv_molecularWeight').keyup()
-						@pc.$('.bv_type').val(" mab")
+						@pc.$('.bv_type').val("mab")
 						@pc.$('.bv_type').change()
 						@pc.$('.bv_sequence').val(" AUC")
 						@pc.$('.bv_sequence').keyup()
@@ -716,10 +716,12 @@ describe 'Protein testing', ->
 						@pc.$('.bv_location').val(" Hood 4")
 						@pc.$('.bv_location').keyup()
 					waitsFor ->
-						@pc.$('.bv_scientist option').length > 0
+						@pc.$('.bv_fileType option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
+						console.log @pc.model.validationError
+						console.log "here in test"
 						expect(@pc.$('.bv_save').attr('disabled')).toBeUndefined()
 				it "should update the parent code", ->
 					runs ->

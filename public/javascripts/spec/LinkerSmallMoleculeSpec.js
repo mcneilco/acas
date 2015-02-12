@@ -147,17 +147,6 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when recorded date is empty", function() {
-            var filtErrors;
-            this.lsmp.set({
-              recordedDate: new Date("").getTime()
-            });
-            expect(this.lsmp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.lsmp.validationError, function(err) {
-              return err.attribute === 'recordedDate';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
           it("should be invalid when scientist not selected", function() {
             var filtErrors;
             this.lsmp.get('scientist').set('value', "unassigned");
@@ -305,17 +294,6 @@
         });
         it("should be valid when loaded from saved", function() {
           return expect(this.lsmb.isValid()).toBeTruthy();
-        });
-        it("should be invalid when recorded date is empty", function() {
-          var filtErrors;
-          this.lsmb.set({
-            recordedDate: new Date("").getTime()
-          });
-          expect(this.lsmb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.lsmb.validationError, function(err) {
-            return err.attribute === 'recordedDate';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
@@ -865,8 +843,13 @@
           });
           return it("should a new batch registration form", function() {
             console.log(this.lsmbsc.$('.bv_batchCode'));
-            expect(this.lsmbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            waitsFor(function() {
+              return this.lsmbsc.$('.bv_batchList option').length > 0;
+            }, 1000);
+            return runs(function() {
+              expect(this.lsmbsc.$('.bv_batchCode').val()).toEqual("");
+              return expect(this.lsmbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            });
           });
         });
       });
@@ -911,7 +894,12 @@
           return expect(this.lsmc.$('.bv_parent .bv_parentCode').length).toEqual(1);
         });
         return it("Should load a batch controller", function() {
-          return expect(this.lsmc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          waitsFor(function() {
+            return this.lsmc.$('.bv_batchList option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.lsmc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          });
         });
       });
       return describe("saving parent/batch for the first time", function() {
@@ -922,6 +910,9 @@
         });
         return describe('when save is clicked', function() {
           beforeEach(function() {
+            waitsFor(function() {
+              return this.lsmc.$('.bv_fileType option').length > 0;
+            }, 1000);
             runs(function() {
               this.lsmc.$('.bv_parentName').val(" Updated entity name   ");
               this.lsmc.$('.bv_parentName').keyup();
@@ -945,7 +936,7 @@
               return this.lsmc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.lsmc.$('.bv_scientist option').length > 0;
+              return this.lsmc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {
