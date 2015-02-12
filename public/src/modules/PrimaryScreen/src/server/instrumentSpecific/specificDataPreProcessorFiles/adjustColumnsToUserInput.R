@@ -23,25 +23,53 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   # TODO: this should be in it's own function
   if(nrow(inputColumnTable[calculatedRead==TRUE])>0) {
     for (calculation in inputColumnTable[calculatedRead==TRUE]$userReadName) {
-      if(calculation == "Calc: (R2 / R1) * 100") {
-        if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
-          inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
-                                              get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
+      if(calculation == "Calc: (R1/R2)*100") {
+        if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
+          inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
+                                              get(inputColumnTable[userReadOrder==2]$newActivityColName)) 
                                               * 100]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
-      } else if (calculation == "Calc: R1 / R2") {
+      } else if(calculation == "Calc: (R2/R1)*100") {
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
+          inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
+                                                 get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
+                         * 100]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      } else if(calculation == "Calc: R1/R2") {
+        if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
                                                  get(inputColumnTable[userReadOrder==2]$newActivityColName))]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      } else if(calculation == "Calc: R2/R1") {
+        if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
+          inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
+                                                 get(inputColumnTable[userReadOrder==1]$newActivityColName))]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      } else if(calculation == "Calc: R1/Heavy Atom Count") {
+        if(!inputColumnTable[userReadOrder==1]$calculatedRead) {
+          inputDataTable[ , calculatedRead := get(inputColumnTable[userReadOrder==1]$newActivityColName) / 
+                                              get(inputColumnTable[userReadOrder==1]$newActivityColName)]
+          warnUser(paste0(calculation," not defined in the system yet. Putting in a placeholder of 1."))
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
       } else {
         stopUser("Calculated read not defined in the system.")
       }
-    }
+    }  
   }
   
   
