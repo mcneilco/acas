@@ -105,13 +105,6 @@ describe 'Spacer testing', ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when recorded date is empty", ->
-					@sp.set recordedDate: new Date("").getTime()
-					expect(@sp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@sp.validationError, (err) ->
-						err.attribute=='recordedDate'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
 					@sp.get('scientist').set('value', "unassigned")
 					expect(@sp.isValid()).toBeFalsy()
@@ -223,13 +216,6 @@ describe 'Spacer testing', ->
 				@sb = new SpacerBatch window.spacerTestJSON.spacerBatch
 			it "should be valid when loaded from saved", ->
 				expect(@sb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@sb.set recordedDate: new Date("").getTime()
-				expect(@sb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@sb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
 				@sb.get('scientist').set('value', "unassigned")
 				expect(@sb.isValid()).toBeFalsy()
@@ -618,8 +604,12 @@ describe 'Spacer testing', ->
 						expect(@sbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
 					console.log @sbsc.$('.bv_batchCode')
-					expect(@sbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@sbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
+					waitsFor ->
+						@sbsc.$('.bv_batchList option').length > 0
+					, 1000
+					runs ->
+						expect(@sbsc.$('.bv_batchCode').val()).toEqual ""
+						expect(@sbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
@@ -651,13 +641,20 @@ describe 'Spacer testing', ->
 			it "Should load a parent controller", ->
 				expect(@sbc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@sbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				waitsFor ->
+					@sbc.$('.bv_batchList option').length > 0
+				, 1000
+				runs ->
+					expect(@sbc.$('.bv_batch .bv_batchCode').length).toEqual 1
 		describe "saving parent/batch for the first time", ->
 			describe "when form is initialized", ->
 				it "should have the save button be disabled initially", ->
 					expect(@sbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe 'when save is clicked', ->
 				beforeEach ->
+					waitsFor ->
+						@sbc.$('.bv_fileType option').length > 0
+					, 1000
 					runs ->
 						@sbc.$('.bv_parentName').val(" Updated entity name   ")
 						@sbc.$('.bv_parentName').keyup()
@@ -680,7 +677,7 @@ describe 'Spacer testing', ->
 						@sbc.$('.bv_location').val(" Hood 4")
 						@sbc.$('.bv_location').keyup()
 					waitsFor ->
-						@sbc.$('.bv_scientist option').length > 0
+						@sbc.$('.bv_fileType option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->

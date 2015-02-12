@@ -834,8 +834,13 @@
           });
           return it("should a new batch registration form", function() {
             console.log(this.cbbsc.$('.bv_batchCode'));
-            expect(this.cbbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            waitsFor(function() {
+              return this.cbbsc.$('.bv_batchList option').length > 0;
+            }, 1000);
+            return runs(function() {
+              expect(this.cbbsc.$('.bv_batchCode').val()).toEqual("");
+              return expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            });
           });
         });
       });
@@ -857,6 +862,8 @@
           });
           return runs(function() {
             expect(this.cbbsc.$('.bv_batchCode').html()).toEqual("CB000001-1");
+            console.log("about to get scientist");
+            console.log(this.cbbsc.model);
             return expect(this.cbbsc.$('.bv_scientist').val()).toEqual("john");
           });
         });
@@ -881,7 +888,12 @@
           return expect(this.cbc.$('.bv_parent .bv_parentCode').length).toEqual(1);
         });
         return it("Should load a batch controller", function() {
-          return expect(this.cbc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          waitsFor(function() {
+            return this.cbc.$('.bv_batchList option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.cbc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          });
         });
       });
       return describe("saving parent/batch for the first time", function() {
@@ -892,6 +904,9 @@
         });
         return describe('when save is clicked', function() {
           beforeEach(function() {
+            waitsFor(function() {
+              return this.cbc.$('.bv_fileType option').length > 0;
+            }, 1000);
             runs(function() {
               this.cbc.$('.bv_parentName').val(" Updated entity name   ");
               this.cbc.$('.bv_parentName').keyup();
@@ -915,11 +930,12 @@
               return this.cbc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.cbc.$('.bv_scientist option').length > 0;
+              return this.cbc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {
             return runs(function() {
+              console.log(this.cbc.model.validationError);
               console.log("here in test");
               return expect(this.cbc.$('.bv_save').attr('disabled')).toBeUndefined();
             });
@@ -928,7 +944,7 @@
             runs(function() {
               return this.cbc.$('.bv_save').click();
             });
-            waits(2000);
+            waits(1000);
             return runs(function() {
               return expect(this.cbc.$('.bv_parentCode').html()).toEqual("CB000001");
             });

@@ -597,8 +597,12 @@ describe 'Cationic Block testing', ->
 						expect(@cbbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
 					console.log @cbbsc.$('.bv_batchCode')
-					expect(@cbbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
+					waitsFor ->
+						@cbbsc.$('.bv_batchList option').length > 0
+					, 1000
+					runs ->
+						expect(@cbbsc.$('.bv_batchCode').val()).toEqual ""
+						expect(@cbbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
@@ -615,6 +619,8 @@ describe 'Cationic Block testing', ->
 					waits(1000)
 				runs ->
 					expect(@cbbsc.$('.bv_batchCode').html()).toEqual "CB000001-1"
+					console.log "about to get scientist"
+					console.log @cbbsc.model
 					expect(@cbbsc.$('.bv_scientist').val()).toEqual "john"
 
 	describe "Cationic Block Controller", ->
@@ -631,13 +637,20 @@ describe 'Cationic Block testing', ->
 			it "Should load a parent controller", ->
 				expect(@cbc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				waitsFor ->
+					@cbc.$('.bv_batchList option').length > 0
+				, 1000
+				runs ->
+					expect(@cbc.$('.bv_batch .bv_batchCode').length).toEqual 1
 		describe "saving parent/batch for the first time", ->
 			describe "when form is initialized", ->
 				it "should have the save button be disabled initially", ->
 					expect(@cbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe 'when save is clicked', ->
 				beforeEach ->
+					waitsFor ->
+						@cbc.$('.bv_fileType option').length > 0
+					, 1000
 					runs ->
 						@cbc.$('.bv_parentName').val(" Updated entity name   ")
 						@cbc.$('.bv_parentName').keyup()
@@ -660,17 +673,17 @@ describe 'Cationic Block testing', ->
 						@cbc.$('.bv_location').val(" Hood 4")
 						@cbc.$('.bv_location').keyup()
 					waitsFor ->
-						@cbc.$('.bv_scientist option').length > 0
+						@cbc.$('.bv_fileType option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->
-#						console.log @cbc.model.validationError
+						console.log @cbc.model.validationError
 						console.log "here in test"
 						expect(@cbc.$('.bv_save').attr('disabled')).toBeUndefined()
 				it "should update the parent code", ->
 					runs ->
 						@cbc.$('.bv_save').click()
-					waits(2000)
+					waits(1000)
 					runs ->
 						expect(@cbc.$('.bv_parentCode').html()).toEqual "CB000001"
 				it "should update the batch code", ->

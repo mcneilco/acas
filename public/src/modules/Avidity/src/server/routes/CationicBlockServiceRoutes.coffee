@@ -21,27 +21,31 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName
 
 exports.validateName = (req, resp) ->
-	console.log "validate name"
-	console.log req
-	console.log JSON.stringify req.body.requestName
-	config = require '../conf/compiled/conf.js'
-	baseurl = config.all.client.service.persistence.fullpath+"lsthings/validatename?lsKind="+req.params.lsKind
-	request = require 'request'
-	request(
-		method: 'POST'
-		url: baseurl
-		body: req.body.requestName
-		json: true
-	, (error, response, json) =>
-		console.log error
-		if !error && response.statusCode == 200
-			resp.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to save cationic block parent'
+	if req.query.testMode or global.specRunnerTestmode
+		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
+		resp.end JSON.stringify true
+	else
+		console.log "validate name"
+		console.log req
+		console.log JSON.stringify req.body.requestName
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validatename?lsKind="+req.params.lsKind
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.requestName
+			json: true
+		, (error, response, json) =>
 			console.log error
-			console.log json
-			console.log response
-	)
+			if !error && response.statusCode == 200
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to save cationic block parent'
+				console.log error
+				console.log json
+				console.log response
+		)
 
 exports.cationicBlockParentByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode

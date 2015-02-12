@@ -105,13 +105,6 @@ describe 'Linker Small Molecule testing', ->
 						err.attribute=='parentName'
 					)
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when recorded date is empty", ->
-					@lsmp.set recordedDate: new Date("").getTime()
-					expect(@lsmp.isValid()).toBeFalsy()
-					filtErrors = _.filter(@lsmp.validationError, (err) ->
-						err.attribute=='recordedDate'
-					)
-					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when scientist not selected", ->
 					@lsmp.get('scientist').set('value', "unassigned")
 					expect(@lsmp.isValid()).toBeFalsy()
@@ -222,13 +215,6 @@ describe 'Linker Small Molecule testing', ->
 				@lsmb = new LinkerSmallMoleculeBatch window.linkerSmallMoleculeTestJSON.linkerSmallMoleculeBatch
 			it "should be valid when loaded from saved", ->
 				expect(@lsmb.isValid()).toBeTruthy()
-			it "should be invalid when recorded date is empty", ->
-				@lsmb.set recordedDate: new Date("").getTime()
-				expect(@lsmb.isValid()).toBeFalsy()
-				filtErrors = _.filter(@lsmb.validationError, (err) ->
-					err.attribute=='recordedDate'
-				)
-				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
 				@lsmb.get('scientist').set('value', "unassigned")
 				expect(@lsmb.isValid()).toBeFalsy()
@@ -617,8 +603,12 @@ describe 'Linker Small Molecule testing', ->
 						expect(@lsmbsc.$('.bv_batchList').val()).toEqual "new batch"
 				it "should a new batch registration form", ->
 					console.log @lsmbsc.$('.bv_batchCode')
-					expect(@lsmbsc.$('.bv_batchCode').val()).toEqual ""
-					expect(@lsmbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
+					waitsFor ->
+						@lsmbsc.$('.bv_batchList option').length > 0
+					, 1000
+					runs ->
+						expect(@lsmbsc.$('.bv_batchCode').val()).toEqual ""
+						expect(@lsmbsc.$('.bv_batchCode').html()).toEqual "Autofilled when saved"
 		describe "behavior", ->
 			it "should show the information for a selected batch", ->
 				waitsFor ->
@@ -650,13 +640,20 @@ describe 'Linker Small Molecule testing', ->
 			it "Should load a parent controller", ->
 				expect(@lsmc.$('.bv_parent .bv_parentCode').length).toEqual 1
 			it "Should load a batch controller", ->
-				expect(@lsmc.$('.bv_batch .bv_batchCode').length).toEqual 1
+				waitsFor ->
+					@lsmc.$('.bv_batchList option').length > 0
+				, 1000
+				runs ->
+					expect(@lsmc.$('.bv_batch .bv_batchCode').length).toEqual 1
 		describe "saving parent/batch for the first time", ->
 			describe "when form is initialized", ->
 				it "should have the save button be disabled initially", ->
 					expect(@lsmc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 			describe 'when save is clicked', ->
 				beforeEach ->
+					waitsFor ->
+						@lsmc.$('.bv_fileType option').length > 0
+					, 1000
 					runs ->
 						@lsmc.$('.bv_parentName').val(" Updated entity name   ")
 						@lsmc.$('.bv_parentName').keyup()
@@ -679,7 +676,7 @@ describe 'Linker Small Molecule testing', ->
 						@lsmc.$('.bv_location').val(" Hood 4")
 						@lsmc.$('.bv_location').keyup()
 					waitsFor ->
-						@lsmc.$('.bv_scientist option').length > 0
+						@lsmc.$('.bv_fileType option').length > 0
 					, 1000
 				it "should have the save button be enabled", ->
 					runs ->

@@ -24,31 +24,36 @@
   };
 
   exports.validateName = function(req, resp) {
-    var baseurl, config, request;
-    console.log("validate name");
-    console.log(req);
-    console.log(JSON.stringify(req.body.requestName));
-    config = require('../conf/compiled/conf.js');
-    baseurl = config.all.client.service.persistence.fullpath + "lsthings/validatename?lsKind=" + req.params.lsKind;
-    request = require('request');
-    return request({
-      method: 'POST',
-      url: baseurl,
-      body: req.body.requestName,
-      json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        console.log(error);
-        if (!error && response.statusCode === 200) {
-          return resp.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save cationic block parent');
+    var baseurl, cationicBlockTestJSON, config, request;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
+      return resp.end(JSON.stringify(true));
+    } else {
+      console.log("validate name");
+      console.log(req);
+      console.log(JSON.stringify(req.body.requestName));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/validatename?lsKind=" + req.params.lsKind;
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body.requestName,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
           console.log(error);
-          console.log(json);
-          return console.log(response);
-        }
-      };
-    })(this));
+          if (!error && response.statusCode === 200) {
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save cationic block parent');
+            console.log(error);
+            console.log(json);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
   };
 
   exports.cationicBlockParentByCodeName = function(req, resp) {

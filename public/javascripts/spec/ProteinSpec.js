@@ -162,17 +162,6 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when recorded date is empty", function() {
-            var filtErrors;
-            this.pp.set({
-              recordedDate: new Date("").getTime()
-            });
-            expect(this.pp.isValid()).toBeFalsy();
-            filtErrors = _.filter(this.pp.validationError, function(err) {
-              return err.attribute === 'recordedDate';
-            });
-            return expect(filtErrors.length).toBeGreaterThan(0);
-          });
           it("should be invalid when scientist not selected", function() {
             var filtErrors;
             this.pp.get('scientist').set('value', "unassigned");
@@ -326,17 +315,6 @@
         });
         it("should be valid when loaded from saved", function() {
           return expect(this.pb.isValid()).toBeTruthy();
-        });
-        it("should be invalid when recorded date is empty", function() {
-          var filtErrors;
-          this.pb.set({
-            recordedDate: new Date("").getTime()
-          });
-          expect(this.pb.isValid()).toBeFalsy();
-          filtErrors = _.filter(this.pb.validationError, function(err) {
-            return err.attribute === 'recordedDate';
-          });
-          return expect(filtErrors.length).toBeGreaterThan(0);
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
@@ -606,6 +584,9 @@
           });
           return describe("when type not filled", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.ppc.$('.bv_scientist option').length > 0;
+              }, 1000);
               return runs(function() {
                 this.ppc.$('.bv_type').val("unassigned");
                 return this.ppc.$('.bv_type').change();
@@ -908,8 +889,13 @@
           });
           return it("should a new batch registration form", function() {
             console.log(this.pbsc.$('.bv_batchCode'));
-            expect(this.pbsc.$('.bv_batchCode').val()).toEqual("");
-            return expect(this.pbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            waitsFor(function() {
+              return this.pbsc.$('.bv_batchList option').length > 0;
+            }, 1000);
+            return runs(function() {
+              expect(this.pbsc.$('.bv_batchCode').val()).toEqual("");
+              return expect(this.pbsc.$('.bv_batchCode').html()).toEqual("Autofilled when saved");
+            });
           });
         });
       });
@@ -954,7 +940,12 @@
           return expect(this.pc.$('.bv_parent .bv_parentCode').length).toEqual(1);
         });
         return it("Should load a batch controller", function() {
-          return expect(this.pc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          waitsFor(function() {
+            return this.pc.$('.bv_batchList option').length > 0;
+          }, 1000);
+          return runs(function() {
+            return expect(this.pc.$('.bv_batch .bv_batchCode').length).toEqual(1);
+          });
         });
       });
       return describe("saving parent/batch for the first time", function() {
@@ -965,6 +956,9 @@
         });
         return describe('when save is clicked', function() {
           beforeEach(function() {
+            waitsFor(function() {
+              return this.pc.$('.bv_fileType option').length > 0;
+            }, 1000);
             runs(function() {
               this.pc.$('.bv_parentName').val(" Updated entity name   ");
               this.pc.$('.bv_parentName').keyup();
@@ -976,7 +970,7 @@
               this.pc.$('.bv_notebook').keyup();
               this.pc.$('.bv_molecularWeight').val("192");
               this.pc.$('.bv_molecularWeight').keyup();
-              this.pc.$('.bv_type').val(" mab");
+              this.pc.$('.bv_type').val("mab");
               this.pc.$('.bv_type').change();
               this.pc.$('.bv_sequence').val(" AUC");
               this.pc.$('.bv_sequence').keyup();
@@ -992,11 +986,13 @@
               return this.pc.$('.bv_location').keyup();
             });
             return waitsFor(function() {
-              return this.pc.$('.bv_scientist option').length > 0;
+              return this.pc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
           it("should have the save button be enabled", function() {
             return runs(function() {
+              console.log(this.pc.model.validationError);
+              console.log("here in test");
               return expect(this.pc.$('.bv_save').attr('disabled')).toBeUndefined();
             });
           });
