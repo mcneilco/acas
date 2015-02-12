@@ -1383,6 +1383,8 @@ getReadOrderTable <- function(readList) {
   
   readsTable <- data.table(ldply(readList, data.frame))
   readsTable[ , userReadOrder := 1:nrow(readsTable)]
+  readsTable[ , calculatedRead := FALSE]
+  readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1460,9 +1462,11 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
   
   removeList <- list()
   for(name in colNamesToCheck) {
-    if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
-      inputDataTable[[name]] <- NULL
-      removeList[[length(removeList) + 1]] <- name
+    if(!grepl("^R[0-9]+ \\{Calc: *", name)) { # check to see if the column name is not a calculated read
+      if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
+        inputDataTable[[name]] <- NULL
+        removeList[[length(removeList) + 1]] <- name
+      }
     }
   }
   
@@ -1485,9 +1489,11 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   addList <- list()
   for(column in requiredColNames) {
-    if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
-      inputDataTable[[column]] <- as.numeric(NA)
-      addList[[length(addList) + 1]] <- column
+    if(!grepl("^R[0-9]+ \\{Calc: *", column)) { # check to see if the column name is not a calculated read
+      if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
+        inputDataTable[[column]] <- as.numeric(NA)
+        addList[[length(addList) + 1]] <- column
+      }
     }
   }
   
