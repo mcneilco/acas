@@ -36,7 +36,9 @@ class window.AbstractFormController extends Backbone.View
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
 				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-				@$('.bv_group_'+err.attribute).tooltip();
+#				@$('.bv_group_'+err.attribute).tooltip();
+				@$("[data-toggle=tooltip]").tooltip();
+				@$("body").tooltip selector: '.bv_group_'+err.attribute
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
@@ -45,7 +47,6 @@ class window.AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
-			$(ee).tooltip('hide')
 			$(ee).removeAttr('data-toggle')
 			$(ee).removeAttr('data-placement')
 			$(ee).removeAttr('title')
@@ -62,24 +63,25 @@ class window.AbstractFormController extends Backbone.View
 		else
 			@trigger 'invalid'
 
-#	getTrimmedInput: (selector) ->
-#		$.trim(@$(selector).val())
-
-#	convertYMDDateToMs: (inStr) ->
-#		dateParts = inStr.split('-')
-#		new Date(dateParts[0], dateParts[1]-1, dateParts[2]).getTime()
-#
-#	convertMSToYMDDate: (ms) ->
-#		date = new Date ms
-#		monthNum = date.getMonth()+1
-#		date.getFullYear()+'-'+("0" + monthNum).slice(-2)+'-'+("0" + date.getDate()).slice(-2)
-
 	disableAllInputs: ->
 		@$('input').attr 'disabled', 'disabled'
+		@$('button').attr 'disabled', 'disabled'
 		@$('select').attr 'disabled', 'disabled'
 		@$("textarea").attr 'disabled', 'disabled'
+		@$(".bv_experimentCode").css "background-color", "#eeeeee"
+		@$(".bv_experimentCode").css "color", "#333333"
+		@$(".bv_completionDateIcon").addClass "uneditable-input"
+		@$(".bv_completionDateIcon").on "click", ->
+			return false
+		@$(".bv_group_tags input").prop "placeholder", ""
+		@$(".bv_group_tags input").css "background-color", "#eeeeee"
+		@$(".bv_group_tags input").css "color", "#333333"
+		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#eeeeee"
+
+
 
 	enableAllInputs: ->
 		@$('input').removeAttr 'disabled'
 		@$('select').removeAttr 'disabled'
 		@$("textarea").removeAttr 'disabled'
+		@$('button').removeAttr 'disabled'

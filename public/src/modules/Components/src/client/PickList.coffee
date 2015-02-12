@@ -33,10 +33,16 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@selectedCode = null
 
+		if @options.showIgnored?
+			@showIgnored = @options.showIgnored
+		else
+			@showIgnored = false
+
 		if @options.insertFirstOption?
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+
 
 		if @options.autoFetch?
 			@autoFetch = @options.autoFetch
@@ -55,7 +61,12 @@ class window.PickListSelectController extends Backbone.View
 			@collection.add @insertFirstOption,
 				at: 0
 				silent: true
-
+			unless (@selectedCode is @insertFirstOption.get('code'))
+				if (@collection.where({code: @selectedCode})).length is 0
+					newOption = new PickList
+						code: @selectedCode
+						name: @selectedCode
+					@collection.add newOption
 		@render()
 
 	render: =>
@@ -72,7 +83,15 @@ class window.PickListSelectController extends Backbone.View
 		@rendered = true
 
 	addOne: (enm) =>
-		if !enm.get 'ignored'
+		shouldRender = @showIgnored
+		if enm.get 'ignored'
+			if @selectedCode?
+				if @selectedCode is enm.get 'code'
+					shouldRender = true
+		else
+			shouldRender = true
+
+		if shouldRender
 			$(@el).append new PickListOptionController(model: enm).render().el
 
 	setSelectedCode: (code) ->
@@ -100,8 +119,8 @@ class window.AddParameterOptionPanel extends Backbone.Model
 	defaults:
 		parameter: null
 		codeType: null
-		codeOrigin: "acas ddict"
-		codeKind: null #this is set when the panel is shown
+		codeOrigin: "ACAS DDICT"
+		codeKind: null
 		newOptionLabel: null
 		newOptionDescription: null
 		newOptionComments: null
@@ -148,8 +167,9 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 		parameterNameWithSpaces = @model.get('parameter').replace /([A-Z])/g,' $1'
 		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@$('.bv_parameter').html(pascalCaseParameterName)
-		@model.set
-			codeKind: parameterNameWithSpaces.toLowerCase()
+
+	hideModal: ->
+		@$('.bv_addParameterOptionModal').modal('hide')
 
 	updateModel: =>
 		@model.set
@@ -182,17 +202,19 @@ class window.EditablePickListSelectController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@setupEditablePickList()
-#		@setupContextMenu()
+		#		@setupContextMenu()
 		@setupEditingPrivileges()
 
 
 	setupEditablePickList: ->
+		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
+		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
 		@pickListController = new PickListSelectController
 			el: @$('.bv_parameterSelectList')
 			collection: @collection
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Rule"
+				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
@@ -218,6 +240,7 @@ class window.EditablePickListSelectController extends Backbone.View
 					model: new AddParameterOptionPanel
 						parameter: @options.parameter
 						codeType: @options.codeType
+						codeKind: @options.codeKind
 					el: @$('.bv_addOptionPanel')
 				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested
 			@addPanelController.render()
@@ -230,21 +253,20 @@ class window.EditablePickListSelectController extends Backbone.View
 		if @pickListController.checkOptionInCollection(newOptionCode) == undefined
 			newPickList = new PickList
 				code: newOptionCode #same as codeValue
-				name: newOptionCode.toLowerCase().replace /(^|[^a-z0-9-])([a-z])/g, (m, m1, m2, p) -> m1 + m2.toUpperCase()
+				name: requestedOptionModel.get('newOptionLabel')
 				ignored: false
 				codeType: requestedOptionModel.get('codeType')
 				codeKind: requestedOptionModel.get('codeKind')
 				codeOrigin: requestedOptionModel.get('codeOrigin')
 				description: requestedOptionModel.get('newOptionDescription')
 				comments: requestedOptionModel.get('newOptionComments')
-				newOption: true
 			@pickListController.collection.add newPickList
+			@pickListController.setSelectedCode(newPickList.get('code'))
 
-			@$('.bv_optionAddedMessage').show()
 			@$('.bv_errorMessage').hide()
+			@addPanelController.hideModal()
 
 		else
-			@$('.bv_optionAddedMessage').hide()
 			@$('.bv_errorMessage').show()
 
 	hideAddOptionButton: ->
@@ -257,21 +279,19 @@ class window.EditablePickListSelectController extends Backbone.View
 		code = @pickListController.getSelectedCode()
 		selectedModel = @pickListController.collection.getModelWithCode(code)
 		if selectedModel != undefined
-			if selectedModel.get('newOption')?
-				selectedModel.unset('newOption')
+			if selectedModel.get('id')?
+				callback.call()
+			else
 				#TODO: check to see this works once the route is set up
 				$.ajax
 					type: 'POST'
-					url: "/api/codeTables"
+					url: "/api/codetables/"+selectedModel.get('codeType')+"/"+selectedModel.get('codeKind')
 					data: selectedModel
 					success: callback.call()
 					error: (err) =>
 						alert 'could not add option to code table'
 						@serviceReturn = null
 					dataType: 'json'
-			else
-				callback.call()
-
 		else
 			callback.call()
 

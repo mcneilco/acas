@@ -17,14 +17,15 @@
 
                 <!-- CURVE FIT ANALYSIS TAB -->
                 <div class="tab-pane bv_doseResponseAnalysisParameters" id="primaryScreenProtocolModelFit"></div>
-
             </div>
         </div>
     </div>
-    <div class="span9">
-        <button type="button" class="btn bv_saveModule pull-right" style="margin-right:35px;">Save</button>
-        <div class="bv_updateModuleComplete hide pull-right" style="padding-top:5px;color:#62c462;margin-right:10px;"></div>
-        <div class="bv_savingModule pull-right hide" style="padding-top:5px;color:red;margin-right:10px;">Saving...</div>
+    <hr class="span12" style="margin-left:0px;width:705px;margin-top:28px;margin-bottom:0px;" />
+    <div class="span9" style="margin-left:20px;">
+        <div class="bv_saveInstructions" style="margin-bottom:25px;"> Please fill in the required fields (in the first and second tab) to save or update this protocol. </div>
+        <button type="button" class="btn bv_saveModule pull-left" style="margin-right:10px;">Save</button>
+        <div class="bv_updateModuleComplete hide pull-left" style="padding-top:5px;color:#62c462;margin-right:10px;"></div>
+        <div class="bv_savingModule pull-left hide" style="padding-top:5px;color:red;margin-right:10px;">Saving...</div>
 
     </div>
 
@@ -36,7 +37,7 @@
 
 <script type="text/template" id="PrimaryScreenProtocolParametersAutofillView" xmlns="http://www.w3.org/1999/html">
         <div class="form-horizontal">
-            <div class="control-group bv_group_assayActivity">
+            <div class="span9 control-group bv_group_assayActivity">
                 <label class="control-label">Assay Activity</label>
                 <div class="controls">
                     <div class="bv_assayActivity"></div>
@@ -79,12 +80,6 @@
                 <label class="control-label">Cell Line</label>
                 <div class="controls">
                      <div class="bv_cellLine"></div>
-                </div>
-            </div>
-            <div class="control-group bv_group_assayStage">
-                <label class="control-label">Assay Stage</label>
-                <div class="controls">
-                    <select class="bv_assayStage" style="width:350px;"></select>
                 </div>
             </div>
         </div>

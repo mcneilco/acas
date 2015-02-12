@@ -4,7 +4,7 @@
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#tab1" data-toggle="tab">General Information</a></li>
                 <li><a href="#tab3" data-toggle="tab">Data Analysis</a></li>
-                <!--<li><a href="#tab5" data-toggle="tab">Model Fit</a></li>-->
+                <li><a href="#tab5" data-toggle="tab">Model Fit</a></li>
             </ul>
 
             <div class="tab-content span12">
@@ -16,8 +16,8 @@
                 <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3" style="overflow:hidden;"></div>
 
 
-                <!--&lt;!&ndash; CURVE FIT ANALYSIS TAB &ndash;&gt;-->
-                <!--<div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>-->
+                <!-- CURVE FIT ANALYSIS TAB -->
+                <div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>
 
             </div>
         </div>
@@ -83,8 +83,8 @@
 
         <div class="pull-left">
             <div style="padding-left:40px;">Vehicle Control</div>
-                <form class="bv_group_vehicleControlBatch control-group" style="padding-left:40px;">
-                    <input class="pull-left bv_vehicleControlBatch" style="width:258px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
+                <form class="bv_group_vehicleControlBatch control-group pull-left" style="padding-left:40px;">
+                    <input class="input-medium pull-left bv_vehicleControlBatch" style="width:258px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
                 </form>
             </div>
         </div>
@@ -135,10 +135,11 @@
     </div>
 
 
-    <span style="margin-left:6px;margin-bottom:5px;">Read Position</span>
+    <span style="margin-left:0px;margin-bottom:5px;">Read Number</span>
+    <span style="margin-left:7px;margin-bottom:5px;">Read Position</span>
     <span style="margin-left:90px;margin-bottom:5px;">Read Name</span>
     <span class="bv_group_matchReadName">
-            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:80px;">
+            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:52px;">
                 <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:10px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
             </span>
     </span>
@@ -155,15 +156,19 @@
                 <select class="bv_signalDirectionRule" style="width:349px;"></select>
             </div>
         </div>
-        <div class="control-group bv_group_aggregateBy1">
+        <div class="control-group bv_group_aggregateBy">
             <label class="control-label">*Aggregate By</label>
             <div class="controls">
-                <span class="bv_group_aggregateBy1">
-                    <select class="bv_aggregateBy1" style="width:245px;"> </select>
-                </span>
-                <span class="bv_group_aggregateBy2">
-                    <select class="bv_aggregateBy2" style="width:100px;"></select>
-                </span>
+                <select class="bv_aggregateBy" style="width:349px;margin-right:5px;"></select>
+                <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregate By" data-content="Text to explain different options for aggregate by."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
+            </div>
+        </div>
+
+        <div class="control-group bv_group_aggregationMethod">
+            <label class="control-label">*Aggregation Method</label>
+            <div class="controls">
+                <select class="bv_aggregationMethod" style="width:349px;margin-right:5px;"> </select>
+                <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregation Method" data-content="Text to explain different options for aggregation method."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
             </div>
         </div>
         <div class="control-group bv_group_normalizationRule">
@@ -220,32 +225,49 @@
 
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
 
-    <h5>
-        <span>Analysis Status:</span>
-        <span class="bv_analysisStatus"></span>
-    </h5>
+    <!--<h5>-->
+        <!--<span>Analysis Status:</span>-->
+        <!--<span class="bv_analysisStatus"></span>-->
+    <!--</h5>-->
     <div class="bv_fileUploadWrapper"></div>
 
-    <div class="bv_resultsContainer">
-        <h5>Results:</h5>
-        <div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">
-            <div class="bv_analysisResultsHTML"></div>
+    <!--<div class="bv_resultsContainer">-->
+        <!--<h5>Results:</h5>-->
+        <!--<div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">-->
+            <!--<div class="bv_analysisResultsHTML"></div>-->
+        <!--</div>-->
+    <!--</div>-->
+    <div class="bv_saveExperimentToAnalyze span10">To analyze data, save the experiment.</div>
+
+    <div class='modal bv_invalidAnalysisStates hide'>
+        <div class="modal-header">
+            <h4>An error has occurred.</h4>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center;">Please print this message and contact an administrator.</div>
+            <div class="bv_dryRunStatus" style="text-align:left;margin-top:10px;"></div>
+            <div class="bv_dryRunResult" style="text-align:left;"></div>
+            <div style="margin-bottom:10px;height:3px;background-color:#eeeeee;"></div>
+            <div class="bv_analysisStatus" style="text-align:left;"></div>
+            <div class="bv_analysisResult" style="text-align:left;"></div>
         </div>
     </div>
-    <div class="bv_saveExperimentToAnalyze span10">To analyze data, save the experiment</div>
 
 
 </script>
 
 <script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="form-inline span10" style="margin-bottom:5px;margin-top:5px;">
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
 
+        <span class="control-group bv_group_readNumber">
+            <span class="bv_readNumber" style="margin-right: 15px;margin-left: 40px;width: 34px;"></span>
         <span class="control-group bv_group_readPosition">
-            <input class="span1 bv_readPosition" style="margin-right:10px;margin-left:20px;width:50px;" value="<%=readPosition%>" type="text">
+            <input class="span1 bv_readPosition" style="margin-right: 22px; margin-left: 35px; width: 50px;" value="<%=readPosition%>" type="text">
+            <span class="bv_readPositionHolder hide" style="margin-right: 0px; margin-left: 111px;"></span>
         </span>
         <span class="control-group bv_group_readName">
-            <select class="span6 bv_readName" style="margin-right:10px;width:355px;"></select>
+            <select class="span6 bv_readName" style="margin-right:15px;width:277px;"></select>
         </span>
         <span class="bv_group_activity">
             <label class="control-label radio" style="width:80px;padding-left:0;">

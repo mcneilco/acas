@@ -37,9 +37,10 @@ get_curve_detail <- function() {
     myMessenger$logger$debug(paste0('updating fit with postData: ', postData))
     myMessenger$capture_output("detail <- switch(POST$action,
                                                      'save' = racas::api_doseResponse_save_session(POST$sessionID, POST$user),
+                                                     'deleteSession' = racas::deleteSession(POST$sessionID),
                                                      'pointsChanged' = racas::api_doseResponse_refit(POST),
                                                      'parametersChanged' = racas::api_doseResponse_refit(POST),
-                                                     'flagUser' = racas::api_doseResponse_refit(POST))",
+                                                     'userFlagStatus' = racas::api_doseResponse_refit(POST))",
                                                      , userError = paste0("There was an error performing",POST$action)
     )
     if(myMessenger$hasErrors()) {

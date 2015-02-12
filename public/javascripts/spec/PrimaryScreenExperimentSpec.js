@@ -19,7 +19,8 @@
             return expect(this.par).toBeDefined();
           });
           return it("should have defaults", function() {
-            expect(this.par.get('readPosition')).toBeNull();
+            expect(this.par.get('readNumber')).toEqual(1);
+            expect(this.par.get('readPosition')).toEqual("");
             expect(this.par.get('readName')).toEqual("unassigned");
             return expect(this.par.get('activity')).toBeFalsy();
           });
@@ -32,7 +33,7 @@
         it("should be valid as initialized", function() {
           return expect(this.par.isValid()).toBeTruthy();
         });
-        it("should be invalid when read position is NaN", function() {
+        it("should be invalid when read position is NaN and read name is not calculated", function() {
           var filtErrors;
           this.par.set({
             readPosition: NaN
@@ -42,6 +43,18 @@
             return err.attribute === 'readPosition';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be valid when read position is '' and read name is a calculated read", function() {
+          var filtErrors;
+          this.par.set({
+            readPosition: '',
+            readName: 'Calc: (maximum-minimum)/minimum'
+          });
+          expect(this.par.isValid()).toBeTruthy();
+          filtErrors = _.filter(this.par.validationError, function(err) {
+            return err.attribute === 'readPosition';
+          });
+          return expect(filtErrors.length).toEqual(0);
         });
         return it("should be invalid when read name is unassigned", function() {
           var filtErrors;
@@ -109,15 +122,17 @@
           return expect(this.parl.length).toEqual(3);
         });
         it("should have the correct read info for the first read", function() {
-          var readtwo;
-          readtwo = this.parl.at(0);
-          expect(readtwo.get('readPosition')).toEqual(11);
-          expect(readtwo.get('readName')).toEqual("none");
-          return expect(readtwo.get('activity')).toBeTruthy();
+          var readone;
+          readone = this.parl.at(0);
+          expect(readone.get('readNumber')).toEqual(1);
+          expect(readone.get('readPosition')).toEqual(11);
+          expect(readone.get('readName')).toEqual("none");
+          return expect(readone.get('activity')).toBeTruthy();
         });
         it("should have the correct read info for the second read", function() {
           var readtwo;
           readtwo = this.parl.at(1);
+          expect(readtwo.get('readNumber')).toEqual(2);
           expect(readtwo.get('readPosition')).toEqual(12);
           expect(readtwo.get('readName')).toEqual("fluorescence");
           return expect(readtwo.get('activity')).toBeFalsy();
@@ -125,6 +140,7 @@
         return it("should have the correct read info for the third read", function() {
           var readthree;
           readthree = this.parl.at(2);
+          expect(readthree.get('readNumber')).toEqual(3);
           expect(readthree.get('readPosition')).toEqual(13);
           expect(readthree.get('readName')).toEqual("luminescence");
           return expect(readthree.get('activity')).toBeFalsy();
@@ -196,8 +212,8 @@
             expect(this.psap.get('volumeType')).toEqual("dilution");
             expect(this.psap.get('instrumentReader')).toEqual("unassigned");
             expect(this.psap.get('signalDirectionRule')).toEqual("unassigned");
-            expect(this.psap.get('aggregateBy1')).toEqual("unassigned");
-            expect(this.psap.get('aggregateBy2')).toEqual("unassigned");
+            expect(this.psap.get('aggregateBy')).toEqual("unassigned");
+            expect(this.psap.get('aggregationMethod')).toEqual("unassigned");
             expect(this.psap.get('normalizationRule')).toEqual("unassigned");
             expect(this.psap.get('hitEfficacyThreshold')).toBeNull();
             expect(this.psap.get('hitSDThreshold')).toBeNull();
@@ -205,10 +221,10 @@
             expect(this.psap.get('negativeControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('vehicleControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
-            expect(this.psap.get('thresholdType')).toEqual("sd");
+            expect(this.psap.get('thresholdType')).toEqual(null);
             expect(this.psap.get('autoHitSelection')).toBeFalsy();
             expect(this.psap.get('htsFormat')).toBeFalsy();
-            expect(this.psap.get('matchReadName')).toBeTruthy();
+            expect(this.psap.get('matchReadName')).toBeFalsy();
             expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
             return expect(this.psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy();
           });
@@ -385,25 +401,25 @@
             });
             return expect(filtErrors.length).toEqual(0);
           });
-          it("should be invalid when aggregate by1 is unassigned", function() {
+          it("should be invalid when aggregate by is unassigned", function() {
             var filtErrors;
             this.psap.set({
-              aggregateBy1: "unassigned"
+              aggregateBy: "unassigned"
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateBy1';
+              return err.attribute === 'aggregateBy';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
-          it("should be invalid when aggregate by2 is unassigned", function() {
+          it("should be invalid when aggregatation method is unassigned", function() {
             var filtErrors;
             this.psap.set({
-              aggregateBy2: "unassigned"
+              aggregationMethod: "unassigned"
             });
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
-              return err.attribute === 'aggregateBy2';
+              return err.attribute === 'aggregationMethod';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -646,14 +662,20 @@
             });
           });
           return describe("special states", function() {
+            it("should be able to get the dry run status", function() {
+              return expect(this.pse.getDryRunStatus().get('codeValue')).toEqual("not started");
+            });
+            it("should be able to get the dry run result html", function() {
+              return expect(this.pse.getDryRunResultHTML().get('clobValue')).toEqual("<p>Dry Run not started</p>");
+            });
             it("should be able to get the analysis status", function() {
-              return expect(this.pse.getAnalysisStatus().get('stringValue')).toEqual("not started");
+              return expect(this.pse.getAnalysisStatus().get('codeValue')).toEqual("not started");
             });
             it("should be able to get the analysis result html", function() {
               return expect(this.pse.getAnalysisResultHTML().get('clobValue')).toEqual("<p>Analysis not yet completed</p>");
             });
             it("should be able to get the model fit status", function() {
-              return expect(this.pse.getModelFitStatus().get('stringValue')).toEqual("not started");
+              return expect(this.pse.getModelFitStatus().get('codeValue')).toEqual("not started");
             });
             return it("should be able to get the model result html", function() {
               return expect(this.pse.getModelFitResultHTML().get('clobValue')).toEqual("<p>Model fit not yet completed</p>");
@@ -665,20 +687,24 @@
         beforeEach(function() {
           return this.pse2 = new PrimaryScreenExperiment();
         });
-        describe("defaults", function() {
-          return it("should have lsKind set to flipr screening assay", function() {
-            return expect(this.pse2.get('lsKind')).toEqual("flipr screening assay");
-          });
-        });
         return describe("special states", function() {
+          it("should be able to get the dry run status", function() {
+            return expect(this.pse2.getDryRunStatus().get('codeValue')).toEqual("not started");
+          });
+          it("should be able to get the dry run result html", function() {
+            return expect(this.pse2.getDryRunResultHTML().get('clobValue')).toEqual("");
+          });
           it("should be able to get the analysis status", function() {
-            return expect(this.pse2.getAnalysisStatus().get('stringValue')).toEqual("not started");
+            expect(this.pse2.getAnalysisStatus().get('codeValue')).toEqual("not started");
+            expect(this.pse2.getAnalysisStatus().get('codeType')).toEqual("analysis");
+            expect(this.pse2.getAnalysisStatus().get('codeKind')).toEqual("status");
+            return expect(this.pse2.getAnalysisStatus().get('codeOrigin')).toEqual("ACAS DDICT");
           });
           it("should be able to get the analysis result html", function() {
             return expect(this.pse2.getAnalysisResultHTML().get('clobValue')).toEqual("");
           });
           it("should be able to get the model fit status", function() {
-            return expect(this.pse2.getModelFitStatus().get('stringValue')).toEqual("not started");
+            return expect(this.pse2.getModelFitStatus().get('codeValue')).toEqual("not started");
           });
           return it("should be able to get the model result html", function() {
             return expect(this.pse2.getModelFitResultHTML().get('clobValue')).toEqual("");
@@ -704,6 +730,9 @@
           });
         });
         describe("render existing parameters", function() {
+          it("should show read number", function() {
+            return expect(this.parc.$('.bv_readNumber').html()).toEqual("R1");
+          });
           it("should show read position", function() {
             return expect(this.parc.$('.bv_readPosition').val()).toEqual("11");
           });
@@ -738,12 +767,24 @@
         });
       });
       return describe("validation testing", function() {
-        return beforeEach(function() {
+        beforeEach(function() {
           this.parc = new PrimaryAnalysisReadController({
             model: new PrimaryAnalysisRead(window.primaryScreenTestJSON.primaryAnalysisReads),
             el: $('#fixture')
           });
           return this.parc.render();
+        });
+        return it("should hide the hide the read position if a calculated read is chosen", function() {
+          waitsFor(function() {
+            return this.parc.$('.bv_readName option').length > 0;
+          }, 1000);
+          return runs(function() {
+            this.parc.$('.bv_readName').val('Calc: (maximum-minimum)/minimum');
+            this.parc.$('.bv_readName').change();
+            expect(this.parc.model.get('readName')).toEqual("Calc: (maximum-minimum)/minimum");
+            expect(this.parc.$('.bv_readPosition')).toBeHidden();
+            return expect(this.parc.$('.bv_readPositionHolder')).toBeVisible();
+          });
         });
       });
     });
@@ -848,6 +889,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(0)').html()).toEqual("R1");
             expect(this.parlc.$('.bv_readPosition:eq(0)').val()).toEqual("11");
             expect(this.parlc.$('.bv_readName:eq(0)').val()).toEqual("none");
             return expect(this.parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual("checked");
@@ -858,6 +900,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(1)').html()).toEqual("R2");
             expect(this.parlc.$('.bv_readPosition:eq(1)').val()).toEqual("12");
             expect(this.parlc.$('.bv_readName:eq(1)').val()).toEqual("fluorescence");
             return expect(this.parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined();
@@ -868,6 +911,7 @@
             return this.parlc.$('.bv_readName option').length > 0;
           }, 1000);
           return runs(function() {
+            expect(this.parlc.$('.bv_readNumber:eq(2)').html()).toEqual("R3");
             expect(this.parlc.$('.bv_readPosition:eq(2)').val()).toEqual("13");
             expect(this.parlc.$('.bv_readName:eq(2)').val()).toEqual("luminescence");
             return expect(this.parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined();
@@ -994,20 +1038,20 @@
               return expect(this.psapc.$('.bv_signalDirectionRule').val()).toEqual("increasing");
             });
           });
-          it('should show the aggregateBy1', function() {
+          it('should show the aggregateBy', function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.psapc.$('.bv_aggregateBy1').val()).toEqual("compound batch concentration");
+              return expect(this.psapc.$('.bv_aggregateBy').val()).toEqual("compound batch concentration");
             });
           });
-          it('should show the aggregateBy2', function() {
+          it('should show the aggregationMethod', function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              return expect(this.psapc.$('.bv_aggregateBy2').val()).toEqual("median");
+              return expect(this.psapc.$('.bv_aggregationMethod').val()).toEqual("median");
             });
           });
           it('should show the normalization rule', function() {
@@ -1097,24 +1141,24 @@
               return expect(this.psapc.model.get('signalDirectionRule')).toEqual("unassigned");
             });
           });
-          it("should update the aggregateBy1", function() {
+          it("should update the aggregateBy", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy1').val('unassigned');
-              this.psapc.$('.bv_aggregateBy1').change();
-              return expect(this.psapc.model.get('aggregateBy1')).toEqual("unassigned");
+              this.psapc.$('.bv_aggregateBy').val('unassigned');
+              this.psapc.$('.bv_aggregateBy').change();
+              return expect(this.psapc.model.get('aggregateBy')).toEqual("unassigned");
             });
           });
-          it("should update the bv_aggregateBy2", function() {
+          it("should update the bv_aggregationMethod", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy2').val('unassigned');
-              this.psapc.$('.bv_aggregateBy2').change();
-              return expect(this.psapc.model.get('aggregateBy2')).toEqual("unassigned");
+              this.psapc.$('.bv_aggregationMethod').val('unassigned');
+              this.psapc.$('.bv_aggregationMethod').change();
+              return expect(this.psapc.model.get('aggregationMethod')).toEqual("unassigned");
             });
           });
           it("should update the normalizationRule rule", function() {
@@ -1167,7 +1211,10 @@
           it("should update the positiveControl ", function() {
             this.psapc.$('.bv_positiveControlBatch').val(' pos cont ');
             this.psapc.$('.bv_positiveControlBatch').change();
-            return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
+            });
           });
           it("should update the positiveControl conc ", function() {
             this.psapc.$('.bv_positiveControlConc').val(' 250753.77 ');
@@ -1177,7 +1224,10 @@
           it("should update the negativeControl ", function() {
             this.psapc.$('.bv_negativeControlBatch').val(' neg cont ');
             this.psapc.$('.bv_negativeControlBatch').change();
-            return expect(this.psapc.model.get('negativeControl').get('batchCode')).toEqual("neg cont");
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.model.get('negativeControl').get('batchCode')).toEqual("neg cont");
+            });
           });
           it("should update the negativeControl conc ", function() {
             this.psapc.$('.bv_negativeControlConc').val(' 62 ');
@@ -1187,12 +1237,18 @@
           it("should update the vehicleControl ", function() {
             this.psapc.$('.bv_vehicleControlBatch').val(' veh cont ');
             this.psapc.$('.bv_vehicleControlBatch').change();
-            return expect(this.psapc.model.get('vehicleControl').get('batchCode')).toEqual("veh cont");
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.model.get('vehicleControl').get('batchCode')).toEqual("veh cont");
+            });
           });
           it("should update the agonistControl", function() {
             this.psapc.$('.bv_agonistControlBatch').val(' ag cont ');
             this.psapc.$('.bv_agonistControlBatch').change();
-            return expect(this.psapc.model.get('agonistControl').get('batchCode')).toEqual("ag cont");
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.model.get('agonistControl').get('batchCode')).toEqual("ag cont");
+            });
           });
           it("should update the agonistControl conc", function() {
             this.psapc.$('bv_agonistControlConc').val(' 2 ');
@@ -1266,8 +1322,20 @@
           it("should show error if positiveControl batch is not set", function() {
             this.psapc.$('.bv_positiveControlBatch').val("");
             this.psapc.$('.bv_positiveControlBatch').change();
-            expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
-            return expect(this.psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual("tooltip");
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual("tooltip");
+            });
+          });
+          it("should show error if positiveControl batch is not a preferred batch", function() {
+            this.psapc.$('.bv_positiveControlBatch').val("none");
+            this.psapc.$('.bv_positiveControlBatch').change();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual("tooltip");
+            });
           });
           it("should show error if positiveControl conc is not set", function() {
             this.psapc.$('.bv_positiveControlConc').val("");
@@ -1277,7 +1345,18 @@
           it("should show error if negativeControl batch is not set", function() {
             this.psapc.$('.bv_negativeControlBatch').val("");
             this.psapc.$('.bv_negativeControlBatch').change();
-            return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if negativeControl batch is not a preferred batch", function() {
+            this.psapc.$('.bv_negativeControlBatch').val("none");
+            this.psapc.$('.bv_negativeControlBatch').change();
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
+            });
           });
           it("should show error if negativeControl conc is not set", function() {
             this.psapc.$('.bv_negativeControlConc').val("");
@@ -1289,37 +1368,68 @@
             this.psapc.$('.bv_agonistControlBatch').change();
             this.psapc.$('.bv_agonistControlConc').val("");
             this.psapc.$('.bv_agonistControlConc').change();
-            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
-            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            });
           });
           it("should not show error if agonistControl batch and conc are set correctly", function() {
             this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
             this.psapc.$('.bv_agonistControlBatch').change();
             this.psapc.$('.bv_agonistControlConc').val(12);
             this.psapc.$('.bv_agonistControlConc').change();
-            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
-            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            });
           });
           it("should show error if agonistControl batch is correct but conc is NaN or empty", function() {
             this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
             this.psapc.$('.bv_agonistControlBatch').change();
             this.psapc.$('.bv_agonistControlConc').val("");
             this.psapc.$('.bv_agonistControlConc').change();
-            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
-            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
+            });
           });
           it("should show error if agonistControl batch is empty but conc is a number", function() {
             this.psapc.$('.bv_agonistControlBatch').val("");
             this.psapc.$('.bv_agonistControlBatch').change();
             this.psapc.$('.bv_agonistControlConc').val(23);
             this.psapc.$('.bv_agonistControlConc').change();
-            expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
-            return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
+            });
+          });
+          it("should show error if agonistControl batch is not a preferred batch", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("none");
+            this.psapc.$('.bv_agonistControlBatch').change();
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should show error if vehicleControl batch is not a preferred batch", function() {
+            this.psapc.$('.bv_vehicleControlBatch').val("none");
+            this.psapc.$('.bv_vehicleControlBatch').change();
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy();
+            });
           });
           it("should not show error if vehicleControl is not set", function() {
             this.psapc.$('.bv_vehicleControlBatch').val("");
             this.psapc.$('.bv_vehicleControlBatch').change();
-            return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy();
+            waits(1000);
+            return runs(function() {
+              return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy();
+            });
           });
           it("should not show error if instrumentReader is unassigned", function() {
             waitsFor(function() {
@@ -1341,24 +1451,24 @@
               return expect(this.psapc.$('.bv_group_signalDirectionRule').hasClass("error")).toBeTruthy();
             });
           });
-          it("should show error if aggregateBy1 is unassigned", function() {
+          it("should show error if aggregateBy is unassigned", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy1 option').length > 0;
+              return this.psapc.$('.bv_aggregateBy option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy1').val("unassigned");
-              this.psapc.$('.bv_aggregateBy1').change();
-              return expect(this.psapc.$('.bv_group_aggregateBy1').hasClass("error")).toBeTruthy();
+              this.psapc.$('.bv_aggregateBy').val("unassigned");
+              this.psapc.$('.bv_aggregateBy').change();
+              return expect(this.psapc.$('.bv_group_aggregateBy').hasClass("error")).toBeTruthy();
             });
           });
-          it("should show error if aggregateBy2 is unassigned", function() {
+          it("should show error if aggregationMethod is unassigned", function() {
             waitsFor(function() {
-              return this.psapc.$('.bv_aggregateBy2 option').length > 0;
+              return this.psapc.$('.bv_aggregationMethod option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psapc.$('.bv_aggregateBy2').val("unassigned");
-              this.psapc.$('.bv_aggregateBy2').change();
-              return expect(this.psapc.$('.bv_group_aggregateBy2').hasClass("error")).toBeTruthy();
+              this.psapc.$('.bv_aggregationMethod').val("unassigned");
+              this.psapc.$('.bv_aggregationMethod').change();
+              return expect(this.psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy();
             });
           });
           it("should show error if normalizationRule is unassigned", function() {
@@ -1372,12 +1482,14 @@
             });
           });
           it("should show error if threshold type is efficacy and efficacy threshold not a number", function() {
+            this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
             this.psapc.$('.bv_hitEfficacyThreshold').val("");
             this.psapc.$('.bv_hitEfficacyThreshold').change();
             return expect(this.psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy();
           });
           it("should show error if threshold type is sd and sd threshold not a number", function() {
+            this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeSD').click();
             this.psapc.$('.bv_hitSDThreshold').val("");
             this.psapc.$('.bv_hitSDThreshold').change();
@@ -1509,17 +1621,10 @@
             return expect(this.psac).toBeDefined;
           });
           return it("Should load the template", function() {
-            return expect(this.psac.$('.bv_analysisStatus').length).toNotEqual(0);
+            return expect(this.psac.$('.bv_fileUploadWrapper').length).toNotEqual(0);
           });
         });
         return describe("display logic", function() {
-          it("should show analysis status not started becuase this is a new experiment", function() {
-            return expect(this.psac.$('.bv_analysisStatus').html()).toEqual("not started");
-          });
-          it("should not show analysis results becuase this is a new experiment", function() {
-            expect(this.psac.$('.bv_analysisResultsHTML').html()).toEqual("");
-            return expect(this.psac.$('.bv_resultsContainer')).toBeHidden();
-          });
           it("should be able to hide data analysis controller", function() {
             this.psac.setExperimentNotSaved();
             expect(this.psac.$('.bv_fileUploadWrapper')).toBeHidden();
@@ -1544,16 +1649,16 @@
         });
         it("Should disable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
         it("Should enable analsyis parameter editing if status is finalized", function() {
           this.psac.model.getStatus().set({
-            stringValue: "finalized"
+            codeValue: "finalized"
           });
           this.psac.model.getStatus().set({
-            stringValue: "started"
+            codeValue: "started"
           });
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined();
         });
@@ -1561,11 +1666,11 @@
           return expect(this.psac.$('.bv_save').html()).toEqual("Upload Data");
         });
       });
-      return describe("handling re-analysis", function() {
+      describe("handling re-analysis", function() {
         beforeEach(function() {
           this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
           this.exp.getAnalysisStatus().set({
-            stringValue: "analsysis complete"
+            codeValue: "analsysis complete"
           });
           this.psac = new PrimaryScreenAnalysisController({
             model: this.exp,
@@ -1576,6 +1681,26 @@
         });
         return it("should show upload button as re-analyze since status is not 'not started'", function() {
           return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
+        });
+      });
+      return describe("rendering analysis based on dry run status and analysis status", function() {
+        beforeEach(function() {
+          this.exp = new PrimaryScreenExperiment(window.experimentServiceTestJSON.fullExperimentFromServer);
+          this.exp.getDryRunStatus().set({
+            codeValue: "not started"
+          });
+          this.exp.getAnalysisStatus().set({
+            codeValue: "not started"
+          });
+          this.psac = new PrimaryScreenAnalysisController({
+            model: this.exp,
+            el: $('#fixture'),
+            uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+          });
+          return this.psac.render();
+        });
+        return it("should show the upload data page", function() {
+          return expect(this.psac.$('.bv_nextControlContainer')).toBeVisible();
         });
       });
     });
@@ -1606,7 +1731,7 @@
             return expect(this.psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual(0);
           });
           it("Should load an analysis controller", function() {
-            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual(0);
+            return expect(this.psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual(0);
           });
           return xit("Should load a dose response controller", function() {
             return expect(this.psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual(0);

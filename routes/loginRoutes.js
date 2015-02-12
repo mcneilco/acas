@@ -1,5 +1,5 @@
 (function() {
-  var csUtilities;
+  var config, csUtilities;
 
   exports.setupAPIRoutes = function(app) {
     return app.get('/api/users/:username', exports.getUsers);
@@ -24,8 +24,10 @@
 
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
+  config = require('../conf/compiled/conf.js');
+
   exports.loginPage = function(req, res) {
-    var error, errorMsg, user;
+    var error, errorMsg, resetPasswordOption, user;
     user = null;
     if (req.user != null) {
       user = req.user;
@@ -35,11 +37,17 @@
     if (error.length > 0) {
       errorMsg = error[0];
     }
+    if (config.all.server.security.authstrategy === "database") {
+      resetPasswordOption = true;
+    } else {
+      resetPasswordOption = false;
+    }
     return res.render('login', {
       title: "ACAS Login",
       scripts: [],
       user: user,
-      message: errorMsg
+      message: errorMsg,
+      resetPasswordOption: resetPasswordOption
     });
   };
 
@@ -119,11 +127,11 @@
     var callback;
     callback = function(results) {
       console.log(results);
-      if (results.indexOf("Your new password is sent to your email address") >= 0) {
-        req.flash('error', 'Your new password is sent to your email address');
+      if (results.indexOf("Your new password has been sent to your email address.") >= 0) {
+        req.flash('error', 'Your new password has been sent to your email address.');
         return resp.redirect('/passwordReset');
       } else if (results.indexOf("connection_error") >= 0) {
-        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator');
+        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator.');
         return resp.redirect('/passwordReset');
       } else {
         req.flash('error', 'Invalid Email or Username');
@@ -142,13 +150,13 @@
     callback = function(results) {
       console.log(results);
       if (results.indexOf("You password has been successfully been changed") >= 0) {
-        req.flash('error', 'Your new password is set');
+        req.flash('error', 'Your new password is set.');
         return resp.redirect('/login');
       } else if (results.indexOf("connection_error") >= 0) {
-        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator');
+        req.flash('error', 'Cannot connect to authentication service. Please contact an administrator.');
         return resp.redirect('/passwordChange');
       } else {
-        req.flash('error', 'Invalid password or new password does not match');
+        req.flash('error', 'Invalid password or new password does not match.');
         return resp.redirect('/passwordChange');
       }
     };
@@ -171,12 +179,16 @@
     if (error.length > 0) {
       errorMsg = error[0];
     }
-    return res.render('passwordReset', {
-      title: "ACAS reset",
-      scripts: [],
-      user: user,
-      message: errorMsg
-    });
+    if (config.all.server.security.authstrategy === "database") {
+      return res.render('passwordReset', {
+        title: "ACAS reset",
+        scripts: [],
+        user: user,
+        message: errorMsg
+      });
+    } else {
+      return res.redirect('/login');
+    }
   };
 
   exports.changePage = function(req, res) {

@@ -1,12 +1,10 @@
 _ = require 'underscore'
 request = require 'request'
 
-exports.setupAPIRoutes = (app, loginRoutes) ->
-	app.get '/entity/edit/codeName/:code', exports.redirectToEditor
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor
-
+	app.get '/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences
 
 config = require '../conf/compiled/conf.js'
 
@@ -56,13 +54,20 @@ exports.redirectToEditor = (req, resp) ->
 		if queryPrefix != null
 			request
 				json: true
-				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
+				url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
 			, (error, response, body) =>
-				kind = response.body.lsKind
+#				kind = response.body.lsKind #from lsThing-eva
+				console.log error
+				console.log response
+				console.log body
+				kind = response.body[0].lsKind #from development
 				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 
 		else
 			resp.redirect "/#"
 
-
+exports.getLabelSequences = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/labelsequences"
+	serverUtilityFunctions.getFromACASServer(baseurl, resp)

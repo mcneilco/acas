@@ -2,9 +2,9 @@
 
 	exports.newPickListOption =
 		code: "test new option" #same as codeValue
-		codeKind: "assay type"
-		codeOrigin: "acas ddict" #default value
-		codeType: "protocolMetadata"
+		codeKind: "type"
+		codeOrigin: "ACAS DDICT" #default value
+		codeType: "assay"
 		comments: "test comments"
 		description: "test description"
 		ignored: false
@@ -21,9 +21,10 @@
 		lsTypeAndKind: "metadata_screening assay"
 		lsValues: [
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "activity"
 			codeValue: "luminescence"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -51,7 +52,8 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "molecular target"
 			codeValue: "test1"
 			codeOrigin: "customer ddict"
 			comments: null
@@ -81,9 +83,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "target"
+			codeKind: "origin"
 			codeValue: "human"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -111,9 +114,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "type"
 			codeValue: "cellular assay"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -141,9 +145,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "assay"
+			codeKind: "technology"
 			codeValue: "wizard triple luminescence"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -171,9 +176,10 @@
 			version: 0
 		,
 			clobValue: null
-			codeType: "protocolMetadata"
+			codeType: "reagent"
+			codeKind: "cell line"
 			codeValue: "cell line y"
-			codeOrigin: "acas ddict"
+			codeOrigin: "ACAS DDICT"
 			comments: null
 			dateValue: null
 			fileValue: null
@@ -200,36 +206,36 @@
 			valueUnit: null
 			version: 0
 		,
-			clobValue: null
-			codeType: "protocolMetadata"
-			codeValue: "assay development"
-			codeOrigin: "acas ddict"
-			comments: null
-			dateValue: null
-			fileValue: null
-			id: 80489
-			ignored: false
-			lsTransaction:
-				comments: "primary analysis protocol transactions"
-				id: 872
-				recordedDate: 1363388477000
-				version: 0
-
-			modifiedDate: null
-			numericValue: 100.0
-			publicData: true
-			recordedDate: 1363388477000
-			sigFigs: 2
-			stringValue: null
-			uncertainty: null
-			urlValue: null
-			lsKind: "assay stage"
-			valueOperator: null
-			lsType: "codeValue"
-			lsTypeAndKind: "codeValue_assay stage"
-			valueUnit: null
-			version: 0
-		,
+#			clobValue: null
+#			codeType: "protocolMetadata"
+#			codeValue: "assay development"
+#			codeOrigin: "acas ddict"
+#			comments: null
+#			dateValue: null
+#			fileValue: null
+#			id: 80489
+#			ignored: false
+#			lsTransaction:
+#				comments: "primary analysis protocol transactions"
+#				id: 872
+#				recordedDate: 1363388477000
+#				version: 0
+#
+#			modifiedDate: null
+#			numericValue: 100.0
+#			publicData: true
+#			recordedDate: 1363388477000
+#			sigFigs: 2
+#			stringValue: null
+#			uncertainty: null
+#			urlValue: null
+#			lsKind: "assay stage"
+#			valueOperator: null
+#			lsType: "codeValue"
+#			lsTypeAndKind: "codeValue_assay stage"
+#			valueUnit: null
+#			version: 0
+#		,
 			clobValue: null
 			codeValue: null
 			comments: null
@@ -300,7 +306,7 @@
 		codeName: "PROT-00000001"
 		id: 1
 		ignored: false
-		lsKind: "default"
+		lsKind: "Bio Activity"
 		lsLabels: [
 			id: 1
 			ignored: false
@@ -497,16 +503,16 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeValue: "created"
 				comments: null
 				dateValue: null
 				fileValue: null
 				id: 2
 				ignored: false
-				lsKind: "status"
+				lsKind: "protocol status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_protocol status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -518,7 +524,7 @@
 				recordedBy: "egao"
 				recordedDate: 1375889487000
 				sigFigs: null
-				stringValue: "created"
+				stringValue: null
 				uncertainty: null
 				uncertaintyType: null
 				unitKind: null
@@ -542,9 +548,10 @@
 			lsTypeAndKind: "metadata_screening assay"
 			lsValues: [
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "activity"
 				codeValue: "luminescence"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -572,7 +579,8 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "molecular target"
 				codeValue: "test1"
 				codeOrigin: "customer ddict"
 				comments: null
@@ -602,9 +610,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "target"
+				codeKind: "origin"
 				codeValue: "human"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -632,9 +641,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "type"
 				codeValue: "cellular assay"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -662,9 +672,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "assay"
+				codeKind: "technology"
 				codeValue: "wizard triple luminescence"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -692,9 +703,10 @@
 				version: 0
 			,
 				clobValue: null
-				codeType: "protocolMetadata"
+				codeType: "reagent"
+				codeKind: "cell line"
 				codeValue: "cell line y"
-				codeOrigin: "acas ddict"
+				codeOrigin: "ACAS DDICT"
 				comments: null
 				dateValue: null
 				fileValue: null
@@ -721,36 +733,36 @@
 				valueUnit: null
 				version: 0
 			,
-				clobValue: null
-				codeType: "protocolMetadata"
-				codeValue: "assay development"
-				codeOrigin: "acas ddict"
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 80489
-				ignored: false
-				lsTransaction:
-					comments: "primary analysis protocol transactions"
-					id: 872
-					recordedDate: 1363388477000
-					version: 0
-
-				modifiedDate: null
-				numericValue: 100.0
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: 2
-				stringValue: null
-				uncertainty: null
-				urlValue: null
-				lsKind: "assay stage"
-				valueOperator: null
-				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_assay stage"
-				valueUnit: null
-				version: 0
-			,
+#				clobValue: null
+#				codeType: "protocolMetadata"
+#				codeValue: "assay development"
+#				codeOrigin: "acas ddict"
+#				comments: null
+#				dateValue: null
+#				fileValue: null
+#				id: 80489
+#				ignored: false
+#				lsTransaction:
+#					comments: "primary analysis protocol transactions"
+#					id: 872
+#					recordedDate: 1363388477000
+#					version: 0
+#
+#				modifiedDate: null
+#				numericValue: 100.0
+#				publicData: true
+#				recordedDate: 1363388477000
+#				sigFigs: 2
+#				stringValue: null
+#				uncertainty: null
+#				urlValue: null
+#				lsKind: "assay stage"
+#				valueOperator: null
+#				lsType: "codeValue"
+#				lsTypeAndKind: "codeValue_assay stage"
+#				valueUnit: null
+#				version: 0
+#			,
 				clobValue: null
 				codeValue: null
 				comments: null
@@ -821,31 +833,66 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: "long description goes here"
+				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing","aggregateBy":"compound batch concentration","aggregationMethod":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readPosition":11,"readName":"none","activity":false},{"readPosition":12,"readName":"fluorescence","activity":true},{"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
 				codeValue: null
 				comments: null
 				dateValue: null
 				fileValue: null
-				id: 804699999
+				id: 3313
 				ignored: false
-				lsTransaction:
-					comments: "base protocol transactions"
-					id: 87
-					recordedDate: 1363388477000
-					version: 0
+				lsKind: "data analysis parameters"
+				lsTransaction: 2
+				lsType: "clobValue"
+				lsTypeAndKind: "clobValue_data analysis parameters"
+				modifiedBy: null
 				modifiedDate: null
+				numberOfReplicates: null
 				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
 				publicData: true
-				recordedDate: 1363388477000
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
 				sigFigs: null
 				stringValue: null
 				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
 				urlValue: null
-				lsKind: "description"
-				valueOperator: null
+				version: 0
+			,
+				clobValue: '{ "max": { "limitType": "pin", "value": 100 }, "min": { "limitType": "none", "value": null }, "slope": { "limitType": "limit", "value": 1.5 }, "inactiveThreshold": 20, "inverseAgonistMode": true}'
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 312331
+				ignored: false
+				lsKind: "model fit parameters"
+				lsTransaction: 2
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_description"
-				valueUnit: null
+				lsTypeAndKind: "clobValue_model fit parameters"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
 				version: 0
 			]
 			modifiedBy: null

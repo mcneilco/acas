@@ -47,7 +47,7 @@
 
     PrimaryScreenProtocolParameters.prototype.getCustomerMolecularTargetCodeOrigin = function() {
       var molecularTarget;
-      molecularTarget = this.getPrimaryScreenProtocolParameterCodeValue('molecular target');
+      molecularTarget = this.getMolecularTarget();
       if (molecularTarget.get('codeOrigin') === "customer ddict") {
         return true;
       } else {
@@ -57,14 +57,14 @@
 
     PrimaryScreenProtocolParameters.prototype.setCustomerMolecularTargetCodeOrigin = function(customerCodeOrigin) {
       var molecularTarget;
-      molecularTarget = this.getPrimaryScreenProtocolParameterCodeValue('molecular target');
+      molecularTarget = this.getMolecularTarget();
       if (customerCodeOrigin) {
         return molecularTarget.set({
           codeOrigin: "customer ddict"
         });
       } else {
         return molecularTarget.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
     };
@@ -91,26 +91,124 @@
       return maxY;
     };
 
-    PrimaryScreenProtocolParameters.prototype.getPrimaryScreenProtocolParameterCodeValue = function(parameterName) {
-      var parameter;
-      parameter = this.getOrCreateValueByTypeAndKind("codeValue", parameterName);
-      parameter.set({
-        codeType: "protocolMetadata"
-      });
-      parameter.set({
-        codeKind: parameterName
-      });
-      if (parameter.get('codeValue') === void 0 || parameter.get('codeValue') === "") {
-        parameter.set({
+    PrimaryScreenProtocolParameters.prototype.getAssayActivity = function() {
+      var aa;
+      aa = this.getOrCreateValueByTypeAndKind("codeValue", "assay activity");
+      if (aa.get('codeValue') === void 0 || aa.get('codeValue') === "" || aa.get('codeValue') === null) {
+        aa.set({
           codeValue: "unassigned"
         });
-      }
-      if (parameter.get('codeOrigin') === void 0 || parameter.get('codeOrigin') === "") {
-        parameter.set({
-          codeOrigin: "acas ddict"
+        aa.set({
+          codeType: "assay"
+        });
+        aa.set({
+          codeKind: "activity"
+        });
+        aa.set({
+          codeOrigin: "ACAS DDICT"
         });
       }
-      return parameter;
+      return aa;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getMolecularTarget = function() {
+      var mt;
+      mt = this.getOrCreateValueByTypeAndKind("codeValue", "molecular target");
+      if (mt.get('codeValue') === void 0 || mt.get('codeValue') === "" || mt.get('codeValue') === null) {
+        mt.set({
+          codeValue: "unassigned"
+        });
+        mt.set({
+          codeType: "assay"
+        });
+        mt.set({
+          codeKind: "molecular target"
+        });
+        mt.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return mt;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getTargetOrigin = function() {
+      var to;
+      to = this.getOrCreateValueByTypeAndKind("codeValue", "target origin");
+      if (to.get('codeValue') === void 0 || to.get('codeValue') === "" || to.get('codeValue') === null) {
+        to.set({
+          codeValue: "unassigned"
+        });
+        to.set({
+          codeType: "target"
+        });
+        to.set({
+          codeKind: "origin"
+        });
+        to.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return to;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getAssayType = function() {
+      var at;
+      at = this.getOrCreateValueByTypeAndKind("codeValue", "assay type");
+      if (at.get('codeValue') === void 0 || at.get('codeValue') === "" || at.get('codeValue') === null) {
+        at.set({
+          codeValue: "unassigned"
+        });
+        at.set({
+          codeType: "assay"
+        });
+        at.set({
+          codeKind: "type"
+        });
+        at.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return at;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getAssayTechnology = function() {
+      var at;
+      at = this.getOrCreateValueByTypeAndKind("codeValue", "assay technology");
+      if (at.get('codeValue') === void 0 || at.get('codeValue') === "" || at.get('codeValue') === null) {
+        at.set({
+          codeValue: "unassigned"
+        });
+        at.set({
+          codeType: "assay"
+        });
+        at.set({
+          codeKind: "technology"
+        });
+        at.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return at;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getCellLine = function() {
+      var cl;
+      cl = this.getOrCreateValueByTypeAndKind("codeValue", "cell line");
+      if (cl.get('codeValue') === void 0 || cl.get('codeValue') === "" || cl.get('codeValue') === null) {
+        cl.set({
+          codeValue: "unassigned"
+        });
+        cl.set({
+          codeType: "reagent"
+        });
+        cl.set({
+          codeKind: "cell line"
+        });
+        cl.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return cl;
     };
 
     PrimaryScreenProtocolParameters.prototype.getOrCreateValueByTypeAndKind = function(vType, vKind) {
@@ -145,14 +243,18 @@
 
     PrimaryScreenProtocol.prototype.initialize = function() {
       PrimaryScreenProtocol.__super__.initialize.call(this);
+      this.set({
+        lsType: "Biology"
+      });
       return this.set({
-        lsKind: "flipr screening assay"
+        lsKind: "Bio Activity"
       });
     };
 
     PrimaryScreenProtocol.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
+      var errors, psAnalysisParameters, psAnalysisParametersErrors, psModelFitParameters, psModelFitParametersErrors, psProtocolParameters, psProtocolParametersErrors;
       errors = [];
+      errors.push.apply(errors, PrimaryScreenProtocol.__super__.validate.call(this, attrs));
       psProtocolParameters = this.getPrimaryScreenProtocolParameters();
       psProtocolParametersErrors = psProtocolParameters.validate();
       errors.push.apply(errors, psProtocolParametersErrors);
@@ -162,49 +264,6 @@
       psModelFitParameters = new DoseResponseAnalysisParameters(this.getModelFitParameters());
       psModelFitParametersErrors = psModelFitParameters.validate(psModelFitParameters.attributes);
       errors.push.apply(errors, psModelFitParametersErrors);
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'protocolName',
-          message: attrs.subclass + " name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: attrs.subclass + " date must be set"
-        });
-      }
-      if (attrs.recordedBy === "") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "") {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
-      }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
-      }
       if (errors.length > 0) {
         return errors;
       } else {
@@ -222,6 +281,26 @@
       return this.trigger("checkForNewPickListOptions");
     };
 
+    PrimaryScreenProtocol.prototype.getModelFitType = function() {
+      var type;
+      type = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type");
+      if (!type.has('codeValue')) {
+        type.set({
+          codeValue: "unassigned"
+        });
+        type.set({
+          codeType: "model fit"
+        });
+        type.set({
+          codeKind: "type"
+        });
+        type.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return type;
+    };
+
     return PrimaryScreenProtocol;
 
   })(Protocol);
@@ -232,7 +311,14 @@
     function PrimaryScreenProtocolParametersController() {
       this.saveNewPickListOptions = __bind(this.saveNewPickListOptions, this);
       this.handleMolecularTargetDDictChanged = __bind(this.handleMolecularTargetDDictChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
+      this.handleCurveDisplayMinChanged = __bind(this.handleCurveDisplayMinChanged, this);
+      this.handleCurveDisplayMaxChanged = __bind(this.handleCurveDisplayMaxChanged, this);
+      this.handleCellLineChanged = __bind(this.handleCellLineChanged, this);
+      this.handleAssayTechnologyChanged = __bind(this.handleAssayTechnologyChanged, this);
+      this.handleAssayTypeChanged = __bind(this.handleAssayTypeChanged, this);
+      this.handleTargetOriginChanged = __bind(this.handleTargetOriginChanged, this);
+      this.handleMolecularTargetChanged = __bind(this.handleMolecularTargetChanged, this);
+      this.handleAssayActivityChanged = __bind(this.handleAssayActivityChanged, this);
       this.render = __bind(this.render, this);
       return PrimaryScreenProtocolParametersController.__super__.constructor.apply(this, arguments);
     }
@@ -243,15 +329,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.events = {
       "click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged",
-      "change .bv_assayStage": "attributeChanged",
-      "change .bv_maxY": "attributeChanged",
-      "change .bv_minY": "attributeChanged",
-      "change .bv_assayActivity": "attributeChanged",
-      "change .bv_molecularTarget": "attributeChanged",
-      "change .bv_targetOrigin": "attributeChanged",
-      "change .bv_assayType": "attributeChanged",
-      "change .bv_assayTechnology": "attributeChanged",
-      "change .bv_cellLine": "attributeChanged"
+      "change .bv_maxY": "handleCurveDisplayMaxChanged",
+      "change .bv_minY": "handleCurveDisplayMinChanged",
+      "change .bv_assayActivity": "handleAssayActivityChanged",
+      "change .bv_molecularTarget": "handleMolecularTargetChanged",
+      "change .bv_targetOrigin": "handleTargetOriginChanged",
+      "change .bv_assayType": "handleAssayTypeChanged",
+      "change .bv_assayTechnology": "handleAssayTechnologyChanged",
+      "change .bv_cellLine": "handleCellLineChanged"
     };
 
     PrimaryScreenProtocolParametersController.prototype.initialize = function() {
@@ -262,8 +347,7 @@
       this.setupTargetOriginSelect();
       this.setupAssayTypeSelect();
       this.setupAssayTechnologySelect();
-      this.setupCellLineSelect();
-      return this.setUpAssayStageSelect();
+      return this.setupCellLineSelect();
     };
 
     PrimaryScreenProtocolParametersController.prototype.render = function() {
@@ -273,7 +357,6 @@
       this.$('.bv_minY').val(this.model.getCurveDisplayMin().get('numericValue'));
       this.setupAssayActivitySelect();
       this.setupTargetOriginSelect();
-      this.setUpAssayStageSelect();
       this.setupAssayTypeSelect();
       this.setupAssayTechnologySelect();
       this.setupCellLineSelect();
@@ -284,13 +367,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayActivitySelect = function() {
       this.assayActivityList = new PickListList();
-      this.assayActivityList.url = "/api/dataDict/protocol metadata/assay activity";
+      this.assayActivityList.url = "/api/codetables/assay/activity";
       this.assayActivityListController = new EditablePickListSelectController({
         el: this.$('.bv_assayActivity'),
         collection: this.assayActivityList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue'),
+        selectedCode: this.model.getAssayActivity().get('codeValue'),
         parameter: "assayActivity",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "activity",
         roles: ["admin"]
       });
       return this.assayActivityListController.render();
@@ -298,13 +382,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupTargetOriginSelect = function() {
       this.targetOriginList = new PickListList();
-      this.targetOriginList.url = "/api/dataDict/protocol metadata/target origin";
+      this.targetOriginList.url = "/api/codetables/target/origin";
       this.targetOriginListController = new EditablePickListSelectController({
         el: this.$('.bv_targetOrigin'),
         collection: this.targetOriginList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue'),
+        selectedCode: this.model.getTargetOrigin().get('codeValue'),
         parameter: "targetOrigin",
-        codeType: "protocolMetadata",
+        codeType: "target",
+        codeKind: "origin",
         roles: ["admin"]
       });
       return this.targetOriginListController.render();
@@ -312,13 +397,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayTypeSelect = function() {
       this.assayTypeList = new PickListList();
-      this.assayTypeList.url = "/api/dataDict/protocol metadata/assay type";
+      this.assayTypeList.url = "/api/codetables/assay/type";
       this.assayTypeListController = new EditablePickListSelectController({
         el: this.$('.bv_assayType'),
         collection: this.assayTypeList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue'),
+        selectedCode: this.model.getAssayType().get('codeValue'),
         parameter: "assayType",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "type",
         roles: ["admin"]
       });
       return this.assayTypeListController.render();
@@ -326,13 +412,14 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupAssayTechnologySelect = function() {
       this.assayTechnologyList = new PickListList();
-      this.assayTechnologyList.url = "/api/dataDict/protocol metadata/assay technology";
+      this.assayTechnologyList.url = "/api/codetables/assay/technology";
       this.assayTechnologyListController = new EditablePickListSelectController({
         el: this.$('.bv_assayTechnology'),
         collection: this.assayTechnologyList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue'),
+        selectedCode: this.model.getAssayTechnology().get('codeValue'),
         parameter: "assayTechnology",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "technology",
         roles: ["admin"]
       });
       return this.assayTechnologyListController.render();
@@ -340,30 +427,17 @@
 
     PrimaryScreenProtocolParametersController.prototype.setupCellLineSelect = function() {
       this.cellLineList = new PickListList();
-      this.cellLineList.url = "/api/dataDict/protocol metadata/cell line";
+      this.cellLineList.url = "/api/codetables/reagent/cell line";
       this.cellLineListController = new EditablePickListSelectController({
         el: this.$('.bv_cellLine'),
         collection: this.cellLineList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue'),
+        selectedCode: this.model.getCellLine().get('codeValue'),
         parameter: "cellLine",
-        codeType: "protocolMetadata",
+        codeType: "reagent",
+        codeKind: "cell line",
         roles: ["admin"]
       });
       return this.cellLineListController.render();
-    };
-
-    PrimaryScreenProtocolParametersController.prototype.setUpAssayStageSelect = function() {
-      this.assayStageList = new PickListList();
-      this.assayStageList.url = "/api/dataDict/protocol metadata/assay stage";
-      return this.assayStageListController = new PickListSelectController({
-        el: this.$('.bv_assayStage'),
-        collection: this.assayStageList,
-        insertFirstOption: new PickList({
-          code: "unassigned",
-          name: "Select assay stage"
-        }),
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').get('codeValue')
-      });
     };
 
     PrimaryScreenProtocolParametersController.prototype.setupCustomerMolecularTargetDDictChkbx = function() {
@@ -374,14 +448,15 @@
         this.$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked");
         this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
       } else {
-        this.molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target";
+        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
       }
       this.molecularTargetListController = new EditablePickListSelectController({
         el: this.$('.bv_molecularTarget'),
         collection: this.molecularTargetList,
-        selectedCode: this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue'),
+        selectedCode: this.model.getMolecularTarget().get('codeValue'),
         parameter: "molecularTarget",
-        codeType: "protocolMetadata",
+        codeType: "assay",
+        codeKind: "molecular target",
         roles: ["admin"]
       });
       this.molecularTargetListController.render();
@@ -392,33 +467,67 @@
       }
     };
 
-    PrimaryScreenProtocolParametersController.prototype.updateModel = function() {
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').set({
-        codeValue: this.assayActivityListController.getSelectedCode()
+    PrimaryScreenProtocolParametersController.prototype.handleAssayActivityChanged = function() {
+      return this.model.getAssayActivity().set({
+        codeValue: this.assayActivityListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').set({
-        codeValue: this.molecularTargetListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleMolecularTargetChanged = function() {
+      return this.model.getMolecularTarget().set({
+        codeValue: this.molecularTargetListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('target origin').set({
-        codeValue: this.targetOriginListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleTargetOriginChanged = function() {
+      return this.model.getTargetOrigin().set({
+        codeValue: this.targetOriginListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay type').set({
-        codeValue: this.assayTypeListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleAssayTypeChanged = function() {
+      return this.model.getAssayType().set({
+        codeValue: this.assayTypeListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').set({
-        codeValue: this.assayTechnologyListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleAssayTechnologyChanged = function() {
+      return this.model.getAssayTechnology().set({
+        codeValue: this.assayTechnologyListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('cell line').set({
-        codeValue: this.cellLineListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleCellLineChanged = function() {
+      return this.model.getCellLine().set({
+        codeValue: this.cellLineListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getPrimaryScreenProtocolParameterCodeValue('assay stage').set({
-        codeValue: this.assayStageListController.getSelectedCode()
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleCurveDisplayMaxChanged = function() {
+      return this.model.getCurveDisplayMax().set({
+        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_maxY'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
-      this.model.getCurveDisplayMax().set({
-        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_maxY')))
-      });
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleCurveDisplayMinChanged = function() {
       return this.model.getCurveDisplayMin().set({
-        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_minY')))
+        numericValue: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_minY'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
@@ -431,11 +540,11 @@
         this.molecularTargetListController.render();
         this.molecularTargetListController.hideAddOptionButton();
       } else {
-        this.molecularTargetList.url = "/api/dataDict/protocol metadata/molecular target";
+        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
         this.molecularTargetListController.render();
         this.molecularTargetListController.showAddOptionButton();
       }
-      return this.attributeChanged();
+      return this.handleMolecularTargetChanged();
     };
 
     PrimaryScreenProtocolParametersController.prototype.saveNewPickListOptions = function(callback) {
@@ -464,6 +573,7 @@
     __extends(PrimaryScreenProtocolController, _super);
 
     function PrimaryScreenProtocolController() {
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.handleCheckForNewPickListOptions = __bind(this.handleCheckForNewPickListOptions, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.setupPrimaryScreenProtocolParametersController = __bind(this.setupPrimaryScreenProtocolParametersController, this);
@@ -530,6 +640,10 @@
       })(this));
     };
 
+    PrimaryScreenProtocolController.prototype.displayInReadOnlyMode = function() {
+      return this.protocolBaseController.displayInReadOnlyMode();
+    };
+
     return PrimaryScreenProtocolController;
 
   })(Backbone.View);
@@ -545,7 +659,6 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
-      this.setupPrimaryScreenModelFitParametersController = __bind(this.setupPrimaryScreenModelFitParametersController, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
@@ -581,10 +694,14 @@
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
                     lsKind = json[0].lsKind;
-                    if (lsKind === "flipr screening assay") {
+                    if (lsKind === "Bio Activity") {
                       prot = new PrimaryScreenProtocol(json[0]);
                       prot.set(prot.parse(prot.attributes));
-                      _this.model = prot;
+                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                        _this.model = prot.duplicateEntity();
+                      } else {
+                        _this.model = prot;
+                      }
                     } else {
                       alert('Could not get primary screen protocol for code in this URL. Creating new primary screen protocol');
                     }
@@ -610,9 +727,21 @@
       this.model.on('sync', (function(_this) {
         return function() {
           _this.trigger('amClean');
+          if (_this.model.get('subclass') == null) {
+            _this.model.set({
+              subclass: 'protocol'
+            });
+          }
           _this.$('.bv_savingModule').hide();
           _this.$('.bv_updateModuleComplete').show();
-          return _this.$('.bv_saveModule').attr('disabled', 'disabled');
+          _this.$('.bv_saveModule').attr('disabled', 'disabled');
+          if (_this.model.isNew()) {
+            _this.$('.bv_saveModule').html("Save");
+            return _this.$('.bv_saveInstructions').show();
+          } else {
+            _this.$('.bv_saveModule').html("Update");
+            return _this.$('.bv_saveInstructions').hide();
+          }
         };
       })(this));
       if (this.model.isNew()) {
@@ -629,16 +758,19 @@
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
-      this.setupPrimaryScreenModelFitParametersController();
+      this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
       this.$('.bv_save').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
-        return this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveInstructions').show();
       } else {
-        return this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveInstructions').hide();
       }
+      return this.trigger('amClean');
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {
@@ -690,31 +822,37 @@
       return this.primaryScreenAnalysisParametersController.render();
     };
 
-    AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenModelFitParametersController = function() {
-      this.primaryScreenModelFitParametersController = new DoseResponseAnalysisParametersController({
-        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters()),
+    AbstractPrimaryScreenProtocolModuleController.prototype.setupModelFitTypeController = function() {
+      this.modelFitTypeController = new ModelFitTypeController({
+        model: this.model,
         el: this.$('.bv_doseResponseAnalysisParameters')
       });
-      this.primaryScreenModelFitParametersController.on('amDirty', (function(_this) {
+      this.modelFitTypeController.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.on('amClean', (function(_this) {
+      this.modelFitTypeController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
-      this.primaryScreenModelFitParametersController.render();
-      this.primaryScreenModelFitParametersController.on('updateState', this.updateModelFitClobValue);
-      return this.primaryScreenModelFitParametersController.render();
+      this.modelFitTypeController.render();
+      return this.modelFitTypeController.on('updateState', this.updateModelFitClobValue);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.updateAnalysisClobValue = function() {
       var ap;
+      if (this.primaryScreenAnalysisParametersController.model.get('positiveControl').get('concentration') === Infinity) {
+        this.primaryScreenAnalysisParametersController.model.get('positiveControl').set({
+          concentration: "Infinity"
+        });
+      }
       ap = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
       return ap.set({
-        clobValue: JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes)
+        clobValue: JSON.stringify(this.primaryScreenAnalysisParametersController.model.attributes),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
@@ -722,7 +860,9 @@
       var mfp;
       mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
       return mfp.set({
-        clobValue: JSON.stringify(this.primaryScreenModelFitParametersController.model.attributes)
+        clobValue: JSON.stringify(this.modelFitTypeController.parameterController.model.attributes),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
@@ -747,12 +887,14 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.validationError = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.validationError.call(this);
-      return this.$('.bv_saveModule').attr('disabled', 'disabled');
+      this.$('.bv_saveModule').attr('disabled', 'disabled');
+      return this.$('.bv_saveInstructions').show();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.clearValidationErrorStyles = function() {
       AbstractPrimaryScreenProtocolModuleController.__super__.clearValidationErrorStyles.call(this);
-      return this.$('.bv_saveModule').removeAttr('disabled');
+      this.$('.bv_saveModule').removeAttr('disabled');
+      return this.$('.bv_saveInstructions').hide();
     };
 
     return AbstractPrimaryScreenProtocolModuleController;

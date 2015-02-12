@@ -1,13 +1,16 @@
 ((exports) ->
 	exports.primaryAnalysisReads = [
+		readNumber: 1
 		readPosition: 11
 		readName: "none"
 		activity: true
 	,
+		readNumber: 2
 		readPosition: 12
 		readName: "fluorescence"
 		activity: false
 	,
+		readNumber: 3
 		readPosition:13
 		readName: "luminescence"
 		activity: false
@@ -40,8 +43,8 @@
 			concentrationUnits: null
 		instrumentReader: "flipr"
 		signalDirectionRule: "increasing"
-		aggregateBy1: "compound batch concentration"
-		aggregateBy2: "median"
+		aggregateBy: "compound batch concentration"
+		aggregationMethod: "median"
 		normalizationRule: "plate order only"
 		hitEfficacyThreshold: 42
 		hitSDThreshold: 5.0

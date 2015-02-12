@@ -115,7 +115,7 @@
     var config, request;
     console.log("getting user");
     config = require('../../../conf/compiled/conf.js');
-    if (config.all.server.roologin.login && !global.specRunnerTestmode) {
+    if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
       console.log("getting user from server");
       request = require('request');
       return request({
@@ -232,25 +232,18 @@
   };
 
   exports.getCustomerMolecularTargetCodes = function(resp) {
-    var customerMolecularTargetCodeTable;
-    customerMolecularTargetCodeTable = exports.customerMolecularTargetCodeTable = [
-      {
-        active: true,
-        code: "test1",
-        description: "test1 description",
-        isDefault: false,
-        name: "Test1",
-        version: 1
-      }, {
-        active: true,
-        code: "test2",
-        description: "test2 description",
-        isDefault: false,
-        name: "Test2",
-        version: 1
-      }
-    ];
-    return resp.end(JSON.stringify(customerMolecularTargetCodeTable));
+    var molecTargetTestJSON;
+    molecTargetTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
+  };
+
+  exports.getAuthors = function(resp) {
+    var baseurl, config, serverUtilityFunctions;
+    config = require('../../../conf/compiled/conf.js');
+    serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+    baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
+    console.log(baseurl);
+    return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
 }).call(this);

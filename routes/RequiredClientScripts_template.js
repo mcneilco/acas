@@ -13,12 +13,13 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-    '/src/lib/bootstrap/bootstrap-tooltip.js',
-    '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
-    '/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/bootstrap/bootstrap-tooltip.js',
+	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
+	'/src/lib/dataTables/js/jquery.dataTables.js',
+    '/src/lib/bootstrap/bootstrap-datatable.js',
+    '/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
-    '/src/lib/moment.min.js'
+	'/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [

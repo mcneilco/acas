@@ -13,24 +13,18 @@
     app.put('/api/protocols/:id', loginRoutes.ensureAuthenticated, exports.putProtocol);
     app.get('/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels);
     app.get('/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList);
-    return app.get('/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList);
+    app.get('/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList);
+    app.get('/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch);
+    return app["delete"]('/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol);
   };
 
   exports.protocolByCodename = function(req, resp) {
-    var baseurl, config, prot, protocolServiceTestJSON, serverUtilityFunctions;
-    console.log("protocolByCodename");
+    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      prot = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
-      if (req.params.code.indexOf("screening") > -1) {
-        prot[0].lsKind = "flipr screening assay";
-      } else {
-        prot[0].lsKind = "default";
-      }
-      return resp.json(prot);
+      return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
     } else {
-      console.log("getting protocol by codename");
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -53,10 +47,10 @@
   };
 
   exports.postProtocol = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, request;
+    var baseurl, config, experimentServiceTestJSON, request;
     if (global.specRunnerTestmode) {
-      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols";
@@ -72,7 +66,7 @@
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to save new experiment');
+            console.log('got ajax error trying to save new protocol');
             console.log(error);
             console.log(json);
             return console.log(response);
@@ -100,10 +94,9 @@
       }, (function(_this) {
         return function(error, response, json) {
           if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to save new experiment');
+            console.log('got ajax error trying to save new protocol');
             console.log(error);
             console.log(json);
             return console.log(response);
@@ -169,8 +162,6 @@
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codetable";
       if (shouldFilterByName) {
         baseurl += "/?protocolName=" + filterString;
-        console.log("hello");
-        console.log(baseurl);
       } else if (shouldFilterByKind) {
         baseurl += "?lskind=" + filterString;
       }
@@ -233,6 +224,53 @@
         };
       })(this));
     }
+  };
+
+  exports.genericProtocolSearch = function(req, res) {
+    var baseurl, config, emptyResponse, protocolServiceTestJSON, serverUtilityFunctions;
+    if (global.specRunnerTestmode) {
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      if (req.params.searchTerm === "no-match") {
+        emptyResponse = [];
+        return res.end(JSON.stringify(emptyResponse));
+      } else {
+        return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol]));
+      }
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/search?q=" + req.params.searchTerm;
+      console.log("baseurl");
+      console.log(baseurl);
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, res);
+    }
+  };
+
+  exports.deleteProtocol = function(req, res) {
+    var baseurl, config, protocolID, request;
+    config = require('../conf/compiled/conf.js');
+    protocolID = req.params.id;
+    baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
+    console.log("baseurl");
+    console.log(baseurl);
+    request = require('request');
+    return request({
+      method: 'DELETE',
+      url: baseurl,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        console.log(response.statusCode);
+        if (!error && response.statusCode === 200) {
+          console.log(JSON.stringify(json));
+          return res.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to delete protocol');
+          console.log(error);
+          return console.log(response);
+        }
+      };
+    })(this));
   };
 
 }).call(this);

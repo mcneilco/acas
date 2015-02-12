@@ -7,62 +7,46 @@
     __extends(DoseResponseAnalysisParameters, _super);
 
     function DoseResponseAnalysisParameters() {
-      this.parse = __bind(this.parse, this);
+      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
-    DoseResponseAnalysisParameters.prototype.defaults = function() {
-      return {
-        inactiveThreshold: 20,
-        inverseAgonistMode: true,
-        max: new Backbone.Model({
-          limitType: 'none'
-        }),
-        min: new Backbone.Model({
-          limitType: 'none'
-        }),
-        slope: new Backbone.Model({
-          limitType: 'none'
-        })
-      };
+    DoseResponseAnalysisParameters.prototype.defaults = {
+      smartMode: true,
+      inactiveThresholdMode: true,
+      inactiveThreshold: 20,
+      inverseAgonistMode: false,
+      max: new Backbone.Model({
+        limitType: 'none'
+      }),
+      min: new Backbone.Model({
+        limitType: 'none'
+      }),
+      slope: new Backbone.Model({
+        limitType: 'none'
+      })
     };
 
     DoseResponseAnalysisParameters.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      return this.fixCompositeClasses();
     };
 
-    DoseResponseAnalysisParameters.prototype.parse = function(resp) {
-      if (resp.max != null) {
-        if (!(resp.max instanceof Backbone.Model)) {
-          resp.max = new Backbone.Model(resp.max);
-        }
-        resp.max.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+    DoseResponseAnalysisParameters.prototype.fixCompositeClasses = function() {
+      if (!(this.get('max') instanceof Backbone.Model)) {
+        this.set({
+          max: new Backbone.Model(this.get('max'))
+        });
       }
-      if (resp.min != null) {
-        if (!(resp.min instanceof Backbone.Model)) {
-          resp.min = new Backbone.Model(resp.min);
-        }
-        resp.min.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+      if (!(this.get('min') instanceof Backbone.Model)) {
+        this.set({
+          min: new Backbone.Model(this.get('min'))
+        });
       }
-      if (resp.slope != null) {
-        if (!(resp.slope instanceof Backbone.Model)) {
-          resp.slope = new Backbone.Model(resp.slope);
-        }
-        resp.slope.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+      if (!(this.get('slope') instanceof Backbone.Model)) {
+        return this.set({
+          slope: new Backbone.Model(this.get('slope'))
+        });
       }
-      return resp;
     };
 
     DoseResponseAnalysisParameters.prototype.validate = function(attrs) {
@@ -116,6 +100,8 @@
       this.handleInverseAgonistModeChanged = __bind(this.handleInverseAgonistModeChanged, this);
       this.handleInactiveThresholdMoved = __bind(this.handleInactiveThresholdMoved, this);
       this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
+      this.handleInactiveThresholdModeChanged = __bind(this.handleInactiveThresholdModeChanged, this);
+      this.handleSmartModeChanged = __bind(this.handleSmartModeChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
       return DoseResponseAnalysisParametersController.__super__.constructor.apply(this, arguments);
@@ -126,7 +112,9 @@
     DoseResponseAnalysisParametersController.prototype.autofillTemplate = _.template($("#DoseResponseAnalysisParametersAutofillView").html());
 
     DoseResponseAnalysisParametersController.prototype.events = {
+      "change .bv_smartMode": "handleSmartModeChanged",
       "change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged",
+      "change .bv_inactiveThresholdMode": "handleInactiveThresholdModeChanged",
       "click .bv_max_limitType_none": "handleMaxLimitTypeChanged",
       "click .bv_max_limitType_pin": "handleMaxLimitTypeChanged",
       "click .bv_max_limitType_limit": "handleMaxLimitTypeChanged",
@@ -159,6 +147,8 @@
       this.$('.bv_inactiveThreshold').on('slidestop', this.handleInactiveThresholdChanged);
       this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
       this.setFormTitle();
+      this.setThresholdModeEnabledState();
+      this.setInverseAgonistModeEnabledState();
       return this;
     };
 
@@ -166,11 +156,28 @@
       return this.$('.bv_inactiveThresholdDisplay').html(val);
     };
 
-    DoseResponseAnalysisParametersController.prototype.setThresholdEnabledState = function() {
-      if (this.model.get('inverseAgonistMode')) {
-        return this.$('.bv_inactiveThreshold').slider('disable');
+    DoseResponseAnalysisParametersController.prototype.setThresholdModeEnabledState = function() {
+      if (this.model.get('smartMode')) {
+        this.$('.bv_inactiveThresholdMode').removeAttr('disabled');
       } else {
+        this.$('.bv_inactiveThresholdMode').attr('disabled', 'disabled');
+      }
+      return this.setThresholdSliderEnabledState();
+    };
+
+    DoseResponseAnalysisParametersController.prototype.setThresholdSliderEnabledState = function() {
+      if (this.model.get('inactiveThresholdMode') && this.model.get('smartMode')) {
         return this.$('.bv_inactiveThreshold').slider('enable');
+      } else {
+        return this.$('.bv_inactiveThreshold').slider('disable');
+      }
+    };
+
+    DoseResponseAnalysisParametersController.prototype.setInverseAgonistModeEnabledState = function() {
+      if (this.model.get('smartMode')) {
+        return this.$('.bv_inverseAgonistMode').removeAttr('disabled');
+      } else {
+        return this.$('.bv_inverseAgonistMode').attr('disabled', 'disabled');
       }
     };
 
@@ -185,12 +192,32 @@
         value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_slope_value')))
       });
       this.model.set({
+        inactiveThresholdMode: this.$('.bv_inactiveThresholdMode').is(":checked")
+      }, {
+        silent: true
+      });
+      this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       }, {
         silent: true
       });
+      this.model.set({
+        smartMode: this.$('.bv_smartMode').is(":checked")
+      }, {
+        silent: true
+      });
+      this.setThresholdModeEnabledState();
+      this.setInverseAgonistModeEnabledState();
       this.model.trigger('change');
       return this.trigger('updateState');
+    };
+
+    DoseResponseAnalysisParametersController.prototype.handleSmartModeChanged = function() {
+      return this.attributeChanged();
+    };
+
+    DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdModeChanged = function() {
+      return this.attributeChanged();
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {
@@ -198,7 +225,7 @@
         'inactiveThreshold': ui.value
       });
       this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
-      return this.attributeChanged();
+      return this.attributeChanged;
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdMoved = function(event, ui) {
@@ -267,6 +294,130 @@
 
   })(AbstractFormController);
 
+  window.ModelFitTypeController = (function(_super) {
+    __extends(ModelFitTypeController, _super);
+
+    function ModelFitTypeController() {
+      this.updateModel = __bind(this.updateModel, this);
+      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
+      this.setupParameterController = __bind(this.setupParameterController, this);
+      this.setupModelFitTypeSelect = __bind(this.setupModelFitTypeSelect, this);
+      this.render = __bind(this.render, this);
+      return ModelFitTypeController.__super__.constructor.apply(this, arguments);
+    }
+
+    ModelFitTypeController.prototype.template = _.template($("#ModelFitTypeView").html());
+
+    ModelFitTypeController.prototype.events = {
+      "change .bv_modelFitType": "handleModelFitTypeChanged"
+    };
+
+    ModelFitTypeController.prototype.render = function() {
+      var modelFitType;
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.setupModelFitTypeSelect();
+      modelFitType = this.model.getModelFitType().get('codeValue');
+      return this.setupParameterController(modelFitType);
+    };
+
+    ModelFitTypeController.prototype.setupModelFitTypeSelect = function() {
+      var modelFitType;
+      modelFitType = this.model.getModelFitType().get('codeValue');
+      this.modelFitTypeList = new PickListList();
+      this.modelFitTypeList.url = "/api/codetables/model fit/type";
+      return this.modelFitTypeListController = new PickListSelectController({
+        el: this.$('.bv_modelFitType'),
+        collection: this.modelFitTypeList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Model Fit Type"
+        }),
+        selectedCode: modelFitType
+      });
+    };
+
+    ModelFitTypeController.prototype.setupParameterController = function(modelFitType) {
+      var drap, drapType, drapcType, mfp;
+      drapType = (function() {
+        switch (modelFitType) {
+          case "4 parameter D-R":
+            return DoseResponseAnalysisParameters;
+          case "Ki Fit":
+            return DoseResponseKiAnalysisParameters;
+          case "unassigned":
+            return "unassigned";
+        }
+      })();
+      if (this.parameterController != null) {
+        this.parameterController.undelegateEvents();
+      }
+      if (drapType === "unassigned") {
+        this.$('.bv_analysisParameterForm').empty();
+        this.parameterController = null;
+        mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
+        return mfp.set({
+          clobValue: ""
+        });
+      } else {
+        if (this.model.getModelFitParameters() === {}) {
+          drap = new drapType();
+        } else {
+          drap = new drapType(this.model.getModelFitParameters());
+        }
+        drapcType = (function() {
+          switch (modelFitType) {
+            case "4 parameter D-R":
+              return DoseResponseAnalysisParametersController;
+            case "Ki Fit":
+              return DoseResponseKiAnalysisParametersController;
+          }
+        })();
+        this.parameterController = new drapcType({
+          el: this.$('.bv_analysisParameterForm'),
+          model: drap
+        });
+        this.trigger('updateState');
+        this.parameterController.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
+        this.parameterController.on('amClean', (function(_this) {
+          return function() {
+            return _this.trigger('amClean');
+          };
+        })(this));
+        this.parameterController.model.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('updateState');
+          };
+        })(this));
+        return this.parameterController.render();
+      }
+    };
+
+    ModelFitTypeController.prototype.handleModelFitTypeChanged = function() {
+      var modelFitType;
+      modelFitType = this.$('.bv_modelFitType').val();
+      this.setupParameterController(modelFitType);
+      this.updateModel();
+      return this.modelFitTypeListController.trigger('change');
+    };
+
+    ModelFitTypeController.prototype.updateModel = function() {
+      this.model.getModelFitType().set({
+        codeValue: this.modelFitTypeListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
+      return this.model.trigger('change');
+    };
+
+    return ModelFitTypeController;
+
+  })(Backbone.View);
+
   window.DoseResponseAnalysisController = (function(_super) {
     __extends(DoseResponseAnalysisController, _super);
 
@@ -275,6 +426,7 @@
       this.launchFit = __bind(this.launchFit, this);
       this.paramsInvalid = __bind(this.paramsInvalid, this);
       this.paramsValid = __bind(this.paramsValid, this);
+      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.setReadyForFit = __bind(this.setReadyForFit, this);
       this.testReadyForFit = __bind(this.testReadyForFit, this);
@@ -289,10 +441,11 @@
     };
 
     DoseResponseAnalysisController.prototype.initialize = function() {
+      console.log("init drac");
       this.model.on("sync", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.parameterController = null;
-      this.analyzedPreviously = this.model.getModelFitStatus().get('stringValue') === "not started" ? false : true;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('codeValue') === "not started" ? false : true;
       $(this.el).empty();
       $(this.el).html(this.template());
       return this.testReadyForFit();
@@ -300,6 +453,7 @@
 
     DoseResponseAnalysisController.prototype.render = function() {
       var buttonText;
+      console.log("render drac");
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
       return this.$('.bv_fitModelButton').html(buttonText);
@@ -307,10 +461,10 @@
 
     DoseResponseAnalysisController.prototype.showExistingResults = function() {
       var fitStatus, res, resultValue;
-      fitStatus = this.model.getModelFitStatus().get('stringValue');
+      fitStatus = this.model.getModelFitStatus().get('codeValue');
       this.$('.bv_modelFitStatus').html(fitStatus);
-      resultValue = this.model.getModelFitResultHTML();
       if (!!this.analyzedPreviously) {
+        resultValue = this.model.getModelFitResultHTML();
         if (resultValue !== null) {
           res = resultValue.get('clobValue');
           if (res === "") {
@@ -324,7 +478,7 @@
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
-      if (this.model.getAnalysisStatus().get('stringValue') === "not started") {
+      if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
         return this.setNotReadyForFit();
       } else {
         return this.setReadyForFit();
@@ -332,26 +486,24 @@
     };
 
     DoseResponseAnalysisController.prototype.setNotReadyForFit = function() {
+      console.log("set not ready for fit");
       this.$('.bv_fitOptionWrapper').hide();
       this.$('.bv_resultsContainer').hide();
       return this.$('.bv_analyzeExperimentToFit').show();
     };
 
     DoseResponseAnalysisController.prototype.setReadyForFit = function() {
-      if (!this.parameterController) {
-        this.setupCurveFitAnalysisParameterController();
-      }
+      console.log("set ready for fit");
+      this.setupModelFitTypeController();
       this.$('.bv_fitOptionWrapper').show();
       this.$('.bv_analyzeExperimentToFit').hide();
       return this.handleStatusChanged();
     };
 
-    DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
-      return this.testReadyForFit();
-    };
-
     DoseResponseAnalysisController.prototype.handleStatusChanged = function() {
-      if (this.parameterController !== null) {
+      if (this.parameterController !== null && this.parameterController !== void 0) {
+        console.log("handle status changed");
+        console.log(this.parameterController);
         if (this.model.isEditable()) {
           return this.parameterController.enableAllInputs();
         } else {
@@ -360,24 +512,47 @@
       }
     };
 
-    DoseResponseAnalysisController.prototype.setupCurveFitAnalysisParameterController = function() {
-      this.parameterController = new DoseResponseAnalysisParametersController({
-        el: this.$('.bv_analysisParameterForm'),
-        model: new DoseResponseAnalysisParameters(this.model.getModelFitParameters())
+    DoseResponseAnalysisController.prototype.setupModelFitTypeController = function() {
+      var modelFitType;
+      this.modelFitTypeController = new ModelFitTypeController({
+        model: this.model,
+        el: this.$('.bv_analysisParameterForm')
       });
-      this.parameterController.on('amDirty', (function(_this) {
+      this.modelFitTypeController.render();
+      this.parameterController = this.modelFitTypeController.parameterController;
+      this.modelFitTypeController.modelFitTypeListController.on('change', (function(_this) {
         return function() {
-          return _this.trigger('amDirty');
+          return _this.handleModelFitTypeChanged();
         };
       })(this));
-      this.parameterController.on('amClean', (function(_this) {
-        return function() {
-          return _this.trigger('amClean');
-        };
-      })(this));
-      this.parameterController.on('valid', this.paramsValid);
-      this.parameterController.on('invalid', this.paramsInvalid);
-      return this.parameterController.render();
+      modelFitType = this.model.getModelFitType().get('codeValue');
+      if (modelFitType === "unassigned") {
+        return this.$('.bv_fitModelButton').hide();
+      } else {
+        return this.$('.bv_fitModelButton').show();
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.handleModelFitTypeChanged = function() {
+      var modelFitType;
+      modelFitType = this.modelFitTypeController.modelFitTypeListController.getSelectedCode();
+      if (modelFitType === "unassigned") {
+        this.$('.bv_fitModelButton').hide();
+        if (this.modelFitTypeController.parameterController != null) {
+          return this.modelFitTypeController.parameterController.undelegateEvents();
+        }
+      } else {
+        this.$('.bv_fitModelButton').show();
+        if (this.modelFitTypeController.parameterController != null) {
+          this.modelFitTypeController.parameterController.on('valid', this.paramsValid);
+          this.modelFitTypeController.parameterController.on('invalid', this.paramsInvalid);
+          if (this.modelFitTypeController.parameterController.isValid() === true) {
+            return this.paramsValid();
+          } else {
+            return this.paramsInvalid();
+          }
+        }
+      }
     };
 
     DoseResponseAnalysisController.prototype.paramsValid = function() {
@@ -395,10 +570,15 @@
           return;
         }
       }
+      this.$('.bv_fitStatusDropDown').modal({
+        backdrop: "static"
+      });
+      this.$('.bv_fitStatusDropDown').modal("show");
       fitData = {
-        inputParameters: JSON.stringify(this.parameterController.model),
+        inputParameters: JSON.stringify(this.modelFitTypeController.parameterController.model),
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.model.get('codeName'),
+        modelFitType: this.modelFitTypeController.modelFitTypeListController.getSelectedCode(),
         testMode: false
       };
       return $.ajax({
@@ -409,7 +589,8 @@
         error: (function(_this) {
           return function(err) {
             alert('got ajax error');
-            return _this.serviceReturn = null;
+            _this.serviceReturn = null;
+            return _this.$('.bv_fitStatusDropDown').modal("hide");
           };
         })(this),
         dataType: 'json'
@@ -423,7 +604,8 @@
       }
       this.$('.bv_modelFitResultsHTML').html(json.results.htmlSummary);
       this.$('.bv_modelFitStatus').html(json.results.status);
-      return this.$('.bv_resultsContainer').show();
+      this.$('.bv_resultsContainer').show();
+      return this.$('.bv_fitStatusDropDown').modal("hide");
     };
 
     return DoseResponseAnalysisController;

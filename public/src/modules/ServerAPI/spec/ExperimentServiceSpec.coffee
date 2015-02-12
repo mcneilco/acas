@@ -28,6 +28,47 @@ describe 'Experiment Service testing', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
 					expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
+		describe 'when fetching Experiment stub by code', ->
+			beforeEach ->
+				self = @
+				$.ajax
+					type: 'GET'
+					url: "api/experiments/codename/EXPT-00000124"
+					data:
+						testMode: true
+					success: (json) ->
+						self.serviceReturn = json
+					error: (err) ->
+						console.log 'got ajax error'
+						self.serviceReturn = null
+					dataType: 'json'
+
+			it 'should return a experiment stub', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
+
+		describe 'when fetching Experiment stub by name', ->
+			beforeEach ->
+				self = @
+				$.ajax
+					type: 'GET'
+					url: "api/experiments/experimentName/Test Experiment 1"
+					data:
+						testMode: true
+					success: (json) ->
+						self.serviceReturn = json
+					error: (err) ->
+						console.log 'got ajax error'
+						self.serviceReturn = null
+					dataType: 'json'
+
+			it 'should return a experiment stub', ->
+				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+				runs ->
+					console.log "serviceREturn"
+					console.log @serviceReturn
+					expect(@serviceReturn.codeName).toEqual "EXPT-00000001"
 
 		describe 'when fetching Experiment stubs by protocol code', ->
 			beforeEach ->
@@ -106,13 +147,32 @@ describe 'Experiment Service testing', ->
 				runs ->
 					expect(@serviceReturn.id).not.toBeNull()
 
+#		describe 'when geting experiment state by id', ->
+#			beforeEach ->
+#				self = @
+#				$.ajax
+#					type: 'GET'
+#					url: "api/experiments/state/11"
+#					success: (json) ->
+#						self.serviceReturn = json
+#					error: (err) ->
+#						console.log 'got ajax error'
+#						self.serviceReturn = null
+#					dataType: 'json'
+#
+#			it 'should return a full experiment', ->
+#				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
+#				runs ->
+#					expect(@serviceReturn.lsKind).toEqual "experiment metadata"
+
+
 	describe "Experiment status code", ->
 		describe 'when experiment status code service called', ->
 			beforeEach ->
 				runs ->
 					$.ajax
 						type: 'GET'
-						url: "api/dataDict/experiment metadata/experiment status"
+						url: "api/codetables/experiment/status"
 						success: (json) =>
 							@serviceReturn = json
 						error: (err) =>

@@ -13,27 +13,17 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocollabels', loginRoutes.ensureAuthenticated, exports.lsLabels
 	app.get '/api/protocolCodes', loginRoutes.ensureAuthenticated, exports.protocolCodeList
 	app.get '/api/protocolKindCodes', loginRoutes.ensureAuthenticated, exports.protocolKindCodeList
+	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
+	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
+
 
 exports.protocolByCodename = (req, resp) ->
-	console.log "protocolByCodename"
 	console.log req.params.code
 
-	#service returns a stub
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-#		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
-
-		prot = JSON.parse(JSON.stringify (protocolServiceTestJSON.stubSavedProtocol))
-		if req.params.code.indexOf("screening") > -1
-			prot[0].lsKind = "flipr screening assay"
-
-		else
-			prot[0].lsKind = "default"
-
-		resp.json prot
-
+		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
 	else
-		console.log "getting protocol by codename"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -53,8 +43,8 @@ exports.protocolById = (req, resp) ->
 
 exports.postProtocol = (req, resp) ->
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols"
@@ -69,7 +59,7 @@ exports.postProtocol = (req, resp) ->
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to save new experiment'
+				console.log 'got ajax error trying to save new protocol'
 				console.log error
 				console.log json
 				console.log response
@@ -91,10 +81,9 @@ exports.putProtocol = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to save new experiment'
+				console.log 'got ajax error trying to save new protocol'
 				console.log error
 				console.log json
 				console.log response
@@ -150,8 +139,6 @@ exports.protocolCodeList = (req, resp) ->
 
 		if shouldFilterByName
 			baseurl += "/?protocolName="+filterString
-			console.log "hello"
-			console.log baseurl
 		else if shouldFilterByKind
 			#baseurl += "/?protocolKind="+filterString
 			baseurl += "?lskind="+filterString
@@ -202,3 +189,42 @@ exports.protocolKindCodeList = (req, resp) ->
 				console.log json
 				console.log response
 		)
+
+exports.genericProtocolSearch = (req, res) ->
+	if global.specRunnerTestmode
+		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		if req.params.searchTerm == "no-match"
+			emptyResponse = []
+			res.end JSON.stringify emptyResponse
+		else
+			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol]
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm
+		console.log "baseurl"
+		console.log baseurl
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, res)
+
+exports.deleteProtocol = (req, res) ->
+	config = require '../conf/compiled/conf.js'
+	protocolID = req.params.id
+	baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
+	console.log "baseurl"
+	console.log baseurl
+	request = require 'request'
+
+	request(
+		method: 'DELETE'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		console.log response.statusCode
+		if !error && response.statusCode == 200
+			console.log JSON.stringify json
+			res.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to delete protocol'
+			console.log error
+			console.log response
+	)

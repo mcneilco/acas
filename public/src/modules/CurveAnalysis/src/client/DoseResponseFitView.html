@@ -1,10 +1,19 @@
 <script type="text/template" id="DoseResponseFitView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_fitOptionWrapper">
-        <div class="bv_analysisParameterForm"></div>
+        <div class="form-horizontal" style="margin-bottom:20px;">
+            <span class="control-group bv_group_modelFitType">
+                <!--<span>Model Fit Type</span>-->
+                <label class="control-label">Model Fit Type</label>
+                <div class="controls">
+                    <select class="span6 bv_modelFitType" style="margin-right:10px;width:170px;"></select>
+                </div>
+            </span>
+        </div>
+        <div class=" bv_analysisParameterForm"></div>
     </div>
 
     <div class="bv_group_modelFitStatus span8" style="margin-left:301px;">
-        <button class="btn btn-default bv_fitModelButton" type="button">Fit Data</button>
+        <button class="btn btn-default bv_fitModelButton hide" type="button">Fit Data</button>
     </div>
 
     <div class="span11 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px">
@@ -12,6 +21,7 @@
             <div class="bv_modelFitResultsHTML"></div>
         </div>
     </div>
+    <!--<div class="bv_uploadDataToFit span10">Upload data first before fitting</div>-->
 
     <div class='modal bv_fitStatusDropDown hide'>
         <div class="modal-header">
@@ -41,10 +51,12 @@
 
         <div class="tab-content span12" style="overflow:hidden!important;">
             <div class="tab-pane active bv_dataParser" id="DoseResponseFitTab1"></div>
-            <div class="tab-pane bv_doseResponseAnalysis" id="DoseResponseFitTab2"></div>
+            <div class="tab-pane bv_doseResponseAnalysis" id="DoseResponseFitTab2">
+                <div class="bv_uploadDataToFit span10">Data must be uploaded first before fitting.</div>
+            </div>
         </div>
-        <div class="bv_completeControlContainer hide offset6">
-            <div class="btn bv_loadAnother">Load and Fit Another</div>
+        <div class="bv_completeControlContainer hide span9" style="margin-left:17px;">
+            <div class="btn bv_loadAnother pull-right">Load and Fit Another</div>
         </div>
     </div>
 </script>

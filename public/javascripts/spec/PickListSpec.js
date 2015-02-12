@@ -31,7 +31,7 @@
       return describe("Upon init", function() {
         it("should get options from server", function() {
           return runs(function() {
-            return expect(this.pickListList.length).toEqual(4);
+            return expect(this.pickListList.length).toEqual(5);
           });
         });
         return it("should return non-ignored values", function() {
@@ -120,7 +120,7 @@
               return this.pickListList.length > 0;
             });
           });
-          it("should have five choices", function() {
+          it("should have four choices", function() {
             return runs(function() {
               return expect(this.pickListController.$("option").length).toEqual(4);
             });
@@ -152,6 +152,97 @@
           return it("should set selected", function() {
             return runs(function() {
               return expect($(this.pickListController.el).val()).toEqual("not_set");
+            });
+          });
+        });
+        describe("when selectedCode is not an option in the passed in collection", function() {
+          return it("should add the option to the collection", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "new project",
+              autoFetch: false
+            });
+            return runs(function() {
+              expect(this.pickListController.getSelectedCode()).toEqual("new project");
+              return expect((this.pickListController.collection.where({
+                code: "new project"
+              })).length).toEqual(1);
+            });
+          });
+        });
+        describe('when displayed from collection with ignored values and show ignored option is set to true', function() {
+          it("should have six choices when selected code is not ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "not_set",
+              autoFetch: false,
+              showIgnored: true
+            });
+            return runs(function() {
+              return expect(this.pickListController.getSelectedCode()).toEqual("not_set");
+            });
+          });
+          return it("should have six choices when selected code is ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "proj3ct3",
+              autoFetch: false,
+              showIgnored: true
+            });
+            return runs(function() {
+              waits(1000);
+              return expect(this.pickListController.getSelectedCode()).toEqual("proj3ct3");
+            });
+          });
+        });
+        describe('when displayed from collection with ignored values and show ignored option is set to false', function() {
+          it("should have four choices when selected code is not ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "project1",
+              autoFetch: false,
+              showIgnored: false
+            });
+            return runs(function() {
+              expect(this.pickListController.$("option").length).toEqual(4);
+              return expect(this.pickListController.getSelectedCode()).toEqual("project1");
+            });
+          });
+          return it("should have five choices when selected code is ignored", function() {
+            this.pickListController = new PickListSelectController({
+              el: this.selectFixture,
+              collection: new PickListList(window.projectServiceTestJSON.projects),
+              insertFirstOption: new PickList({
+                code: "not_set",
+                name: "Select Category"
+              }),
+              selectedCode: "proj3ct3",
+              autoFetch: false,
+              showIgnored: false
+            });
+            return runs(function() {
+              expect(this.pickListController.$("option").length).toEqual(5);
+              return expect(this.pickListController.getSelectedCode()).toEqual("proj3ct3");
             });
           });
         });
@@ -194,7 +285,7 @@
           return expect(this.adop.get('codeKind')).toBeNull();
         });
         it("should have the codeOrigin set to acas ddict", function() {
-          return expect(this.adop.get('codeOrigin')).toEqual("acas ddict");
+          return expect(this.adop.get('codeOrigin')).toEqual("ACAS DDICT");
         });
         it("should have the label text be null", function() {
           return expect(this.adop.get('newOptionLabel')).toBeNull();
@@ -225,7 +316,8 @@
         this.adopc = new AddParameterOptionPanelController({
           model: new AddParameterOptionPanel({
             parameter: "projects",
-            codeType: "protocolMetadata"
+            codeType: "protocolMetadata",
+            codeKind: "projects"
           }),
           el: $('#fixture')
         });
@@ -234,9 +326,6 @@
       describe("basic startup conditions", function() {
         it("should exist", function() {
           return expect(this.adopc).toBeDefined();
-        });
-        it("should set the codeKind", function() {
-          return expect(this.adopc.model.get('codeKind')).toEqual("projects");
         });
         it("should load a template", function() {
           return expect(this.adopc.$('.bv_addParameterOptionModal').length).toEqual(1);
@@ -300,6 +389,7 @@
               selectedCode: "unassigned",
               parameter: "projects",
               codeType: "protocolMetadata",
+              codeKind: "projects",
               roles: ["admin"]
             });
             return this.editablePickListController.render();
@@ -346,8 +436,8 @@
                 newOption = this.editablePickListController.addPanelController.model.get('newOptionLabel');
                 return expect(this.editablePickListController.pickListController.checkOptionInCollection(newOption)).toBeDefined();
               });
-              return it("should show the option added message", function() {
-                expect(this.editablePickListController.$('.bv_optionAddedMessage')).toBeVisible();
+              return it("should have the picklist's selected option be the new option", function() {
+                expect(this.editablePickListController.pickListController.getSelectedCode()).toEqual("new option");
                 return expect(this.editablePickListController.$('.bv_errorMessage')).toBeHidden();
               });
             });
@@ -363,7 +453,6 @@
                 });
               });
               return it("should tell user that the option already exists", function() {
-                expect(this.editablePickListController.$('.bv_optionAddedMessage')).toBeHidden();
                 return expect(this.editablePickListController.$('.bv_errorMessage')).toBeVisible();
               });
             });

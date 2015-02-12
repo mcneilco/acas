@@ -81,7 +81,7 @@
           })(this));
         });
         return it("should return redirect", function() {
-          return assert.equal(this.response.request.uri.href.indexOf('flipr_screening_assay') > 0, true);
+          return assert.equal(this.response.request.uri.href.indexOf('primary_screen_experiment') > 0, true);
         });
       });
       return describe("When user enters a not special protocol", function() {

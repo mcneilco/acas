@@ -1,5 +1,6 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/codename/:code', exports.experimentByCodename
+	app.get '/api/experiments/experimentName/:name', exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', exports.experimentById
 	app.post '/api/experiments', exports.postExperiment
@@ -8,14 +9,15 @@ exports.setupAPIRoutes = (app) ->
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
+	app.get '/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
-	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
+	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -25,8 +27,8 @@ exports.experimentByCodename = (req, resp) ->
 #		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
 
-		if req.params.code.indexOf("screening") > -1
-			expt.lsKind = "flipr screening assay"
+		if req.params.code.indexOf("Bio Activity") > -1
+			expt.lsKind = "Bio Activity"
 
 		else
 			expt.lsKind = "default"
@@ -43,6 +45,26 @@ exports.experimentByCodename = (req, resp) ->
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.experimentByName = (req, resp) ->
+	console.log "exports.experiment by name"
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments?findByName&name="+req.params.name
+		console.log baseurl
+#		fullObjectFlag = "with=fullobject"
+#		if req.query.fullObject
+#			baseurl += "?#{fullObjectFlag}"
+#			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+#		else
+#			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.experimentsByProtocolCodename = (request, response) ->
 	console.log request.params.code
@@ -74,7 +96,6 @@ exports.postExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		console.log "in post experiment"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
@@ -89,9 +110,17 @@ exports.postExperiment = (req, resp) ->
 				resp.end JSON.stringify json
 			else
 				console.log 'got ajax error trying to save new experiment'
-				console.log error
-				console.log json
+				console.log "response"
 				console.log response
+				console.log response.body
+				console.log response.body[0]
+				console.log response.body[0].message
+				if response.body[0].message is "not unique experiment name"
+					console.log json
+					console.log "ending resp"
+					resp.end JSON.stringify response.body[0].message
+#				alert response['message']
+#				console.log response
 		)
 
 exports.putExperiment = (req, resp) ->
@@ -102,8 +131,6 @@ exports.putExperiment = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		putId = req.body.id
-		console.log "putID"
-		console.log putId
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+putId
 		request = require 'request'
 		request(
@@ -132,8 +159,12 @@ exports.genericExperimentSearch = (req, res) ->
 		else
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 	else
-		json = {message: "genericExperimentSearch not implemented yet"}
-		res.end JSON.stringify json
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm
+		console.log "baseurl"
+		console.log baseurl
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
 	if global.specRunnerTestmode
@@ -148,8 +179,7 @@ exports.deleteExperiment = (req, res) ->
 	#curl -i -X DELETE -H Accept:application/json -H Content-Type:application/json  http://host4.labsynch.com:8080/acas/experiments/406773
 	config = require '../conf/compiled/conf.js'
 	experimentId = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"experiments/"+experimentId
-	console.log "baseurl"
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
 	console.log baseurl
 	request = require 'request'
 
@@ -220,7 +250,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-						)
+							)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error
@@ -230,3 +260,16 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 		else
 			resp.statusCode = 500
 			resp.end "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
+
+exports.experimentValueById = (req, resp) ->
+	console.log req.params.id
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer.lsStates[1] #return experiment metadata state
+	else
+#		json = {message: "experiment state by id not implemented yet"}
+#		res.end JSON.stringify json
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experimentvalues/"+req.params.id
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)

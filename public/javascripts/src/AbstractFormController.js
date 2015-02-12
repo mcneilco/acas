@@ -53,7 +53,10 @@
             _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
             _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
             _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
-            _this.$('.bv_group_' + err.attribute).tooltip();
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
             _this.$('.bv_group_' + err.attribute).addClass('input_error error');
             return _this.trigger('notifyError', {
               owner: _this.errorOwnerName,
@@ -72,7 +75,6 @@
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, (function(_this) {
         return function(ee) {
-          $(ee).tooltip('hide');
           $(ee).removeAttr('data-toggle');
           $(ee).removeAttr('data-placement');
           $(ee).removeAttr('title');
@@ -97,14 +99,26 @@
 
     AbstractFormController.prototype.disableAllInputs = function() {
       this.$('input').attr('disabled', 'disabled');
+      this.$('button').attr('disabled', 'disabled');
       this.$('select').attr('disabled', 'disabled');
-      return this.$("textarea").attr('disabled', 'disabled');
+      this.$("textarea").attr('disabled', 'disabled');
+      this.$(".bv_experimentCode").css("background-color", "#eeeeee");
+      this.$(".bv_experimentCode").css("color", "#333333");
+      this.$(".bv_completionDateIcon").addClass("uneditable-input");
+      this.$(".bv_completionDateIcon").on("click", function() {
+        return false;
+      });
+      this.$(".bv_group_tags input").prop("placeholder", "");
+      this.$(".bv_group_tags input").css("background-color", "#eeeeee");
+      this.$(".bv_group_tags input").css("color", "#333333");
+      return this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
     };
 
     AbstractFormController.prototype.enableAllInputs = function() {
       this.$('input').removeAttr('disabled');
       this.$('select').removeAttr('disabled');
-      return this.$("textarea").removeAttr('disabled');
+      this.$("textarea").removeAttr('disabled');
+      return this.$('button').removeAttr('disabled');
     };
 
     return AbstractFormController;

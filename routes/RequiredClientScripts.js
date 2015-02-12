@@ -13,12 +13,13 @@ exports.requiredScripts = [
 	'/src/lib/jqueryFileUpload/js/jquery.fileupload-ui.js',
 	'/src/lib/jqueryFileUpload/js/locale.js',
 	'/src/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js',
-    '/src/lib/bootstrap/bootstrap-tooltip.js',
-    '/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
-    '/src/lib/dataTables/js/jquery.dataTables.js',
-	'/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/bootstrap/bootstrap-tooltip.js',
+	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
+	'/src/lib/dataTables/js/jquery.dataTables.js',
+    '/src/lib/bootstrap/bootstrap-datatable.js',
+    '/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
-    '/src/lib/moment.min.js'
+	'/src/lib/moment.min.js'
 ];
 
 exports.applicationScripts = [
@@ -54,6 +55,7 @@ exports.applicationScripts = [
 	"/javascripts/src/DocUpload.js",
 	"/javascripts/src/DoseResponseAnalysis.js",
 	"/javascripts/src/DoseResponseFit.js",
+	"/javascripts/src/DoseResponseKiAnalysis.js",
 	"/javascripts/src/ExperimentBrowser.js",
 	"/javascripts/src/GeneDataQueries.js",
 	"/javascripts/src/GenericDataParser.js",
@@ -66,6 +68,7 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/Protein.js",
+	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/RNA.js",
 	"/javascripts/src/Spacer.js",
 	"/javascripts/src/TagList.js"
@@ -177,6 +180,7 @@ exports.specScripts = [
 	"/javascripts/spec/PrimaryScreenProtocolSpec.js",
 	"/javascripts/spec/ProjectsServiceSpec.js",
 	"/javascripts/spec/ProteinSpec.js",
+	"/javascripts/spec/ProtocolBrowserSpec.js",
 	"/javascripts/spec/ProtocolServiceSpec.js",
 	"/javascripts/spec/ProtocolSpec.js",
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",

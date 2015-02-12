@@ -1,8 +1,8 @@
 ((exports) ->
 	exports.codetableValues =
 		[
-			type: "experiment metadata"
-			kind: "experiment status"
+			type: "experiment"
+			kind: "status"
 			codes:
 				[
 					code: "created"

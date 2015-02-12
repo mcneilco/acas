@@ -1,13 +1,14 @@
 
 class window.PrimaryAnalysisRead extends Backbone.Model
 	defaults:
-		readPosition: null
+		readNumber: 1
+		readPosition: ""
 		readName: "unassigned"
 		activity: false
 
 	validate: (attrs) =>
 		errors = []
-		if _.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null
+		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null) and attrs.readName.indexOf("Calc:")==-1
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -29,7 +30,7 @@ class window.TransformationRule extends Backbone.Model
 
 	validate: (attrs) ->
 		errors = []
-		if attrs.transformationRule is "unassigned"
+		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
 			errors.push
 				attribute: 'transformationRule'
 				message: "Transformation Rule must be assigned"
@@ -104,25 +105,25 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults: ->
 		instrumentReader: "unassigned"
 		signalDirectionRule: "unassigned"
-		aggregateBy1: "unassigned"
-		aggregateBy2: "unassigned"
+		aggregateBy: "unassigned"
+		aggregationMethod: "unassigned"
 		normalizationRule: "unassigned"
 		assayVolume: null
 		transferVolume: null
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		negativeControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		vehicleControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		agonistControl: new Backbone.Model() # will be converted into a new Backbone.Model()
-		thresholdType: "sd"
+		positiveControl: new Backbone.Model()
+		negativeControl: new Backbone.Model()
+		vehicleControl: new Backbone.Model()
+		agonistControl: new Backbone.Model()
+		thresholdType: null
 		volumeType: "dilution"
 		htsFormat: false
 		autoHitSelection: false
-		matchReadName: true
-		primaryAnalysisReadList: new PrimaryAnalysisReadList() # will be converted into a new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList() # will be converted into a new TransformationRuleList()
+		matchReadName: false
+		primaryAnalysisReadList: new PrimaryAnalysisReadList()
+		transformationRuleList: new TransformationRuleList()
 
 
 	initialize: ->
@@ -173,65 +174,73 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
-		if positiveControl is "" or positiveControl is undefined
+		if positiveControl is "" or positiveControl is undefined or positiveControl is "invalid" or positiveControl is null
 			errors.push
 				attribute: 'positiveControlBatch'
-				message: "Positive control batch much be set"
+				message: "A registered batch number must be provided."
 		positiveControlConc = @get('positiveControl').get('concentration')
 		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
 			errors.push
 				attribute: 'positiveControlConc'
-				message: "Positive control conc much be set"
+				message: "Positive control conc must be set"
+
 		negativeControl = @get('negativeControl').get('batchCode')
-		if negativeControl is "" or negativeControl is undefined
+		if negativeControl is "" or negativeControl is undefined or negativeControl is "invalid" or negativeControl is null
 			errors.push
 				attribute: 'negativeControlBatch'
-				message: "Negative control batch much be set"
+				message: "A registered batch number must be provided."
 		negativeControlConc = @get('negativeControl').get('concentration')
 		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
-				message: "Negative control conc much be set"
+				message: "Negative control conc must be set"
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if (agonistControl !="" and agonistControl != undefined) or (agonistControlConc != "" and agonistControlConc != undefined) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined
+		if (agonistControl !="" and agonistControl != undefined and agonistControl != null) or (agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null) # at least one of the agonist control fields is filled
+			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
 				errors.push
 					attribute: 'agonistControlBatch'
-					message: "Agonist control batch much be set"
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is ""
+					message: "A registered batch number must be provided."
+			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
 				errors.push
 					attribute: 'agonistControlConc'
-					message: "Agonist control conc much be set"
-		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is ""
+					message: "Agonist control conc must be set"
+		vehicleControl = @get('vehicleControl').get('batchCode')
+		if vehicleControl is "invalid"
+			errors.push
+				attribute: 'vehicleControlBatch'
+				message: "A registered batch number must be provided."
+
+		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is null
 			errors.push
 				attribute: 'signalDirectionRule'
 				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy1 is "unassigned" or attrs.aggregateBy1 is ""
+		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is null
 			errors.push
-				attribute: 'aggregateBy1'
-				message: "Aggregate By1 must be assigned"
-		if attrs.aggregateBy2 is "unassigned" or attrs.aggregateBy2 is ""
+				attribute: 'aggregateBy'
+				message: "Aggregate By must be assigned"
+		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is null
 			errors.push
-				attribute: 'aggregateBy2'
-				message: "Aggregate By2 must be assigned"
-		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is ""
+				attribute: 'aggregationMethod'
+				message: "Aggregation method must be assigned"
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
-		if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
-			errors.push
-				attribute: 'hitSDThreshold'
-				message: "SD threshold must be assigned"
-		if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
-			errors.push
-				attribute: 'hitEfficacyThreshold'
-				message: "Efficacy threshold must be assigned"
+		if attrs.autoHitSelection
+			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
+				errors.push
+					attribute: 'hitSDThreshold'
+					message: "SD threshold must be a number"
+			if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
+				errors.push
+					attribute: 'hitEfficacyThreshold'
+					message: "Efficacy threshold must be a number"
 		if _.isNaN(attrs.assayVolume)
 			errors.push
 				attribute: 'assayVolume'
-				message: "Assay volume must be assigned"
+				message: "Assay volume must be a number"
 		if (attrs.assayVolume == "" or attrs.assayVolume == null) and (attrs.transferVolume != "" and attrs.transferVolume != null)
 				errors.push
 					attribute: 'assayVolume'
@@ -243,7 +252,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		if attrs.volumeType == "transfer" and _.isNaN(attrs.transferVolume)
 			errors.push
 				attribute: 'transferVolume'
-				message: "Transfer volume must be assigned"
+				message: "Transfer volume must be a number"
 
 		if errors.length > 0
 			return errors
@@ -274,28 +283,26 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	initialize: ->
 		super()
-		@.set lsKind: "flipr screening assay"
+		@.set lsType: "Biology"
+		@.set lsKind: "Bio Activity"
 
-	getAnalysisParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
-		if ap.get('clobValue')?
-			return new PrimaryScreenAnalysisParameters $.parseJSON(ap.get('clobValue'))
-		else
-			return new PrimaryScreenAnalysisParameters()
-
-	getModelFitParameters: ->
-		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-		if ap.get('clobValue')?
-			return $.parseJSON(ap.get('clobValue'))
-		else
-			return {}
-
-	getAnalysisStatus: ->
-		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if !status.has('stringValue')
-			status.set stringValue: "not started"
+	getDryRunStatus: ->
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
+		if !status.has('codeValue')
+			status.set codeValue: "not started"
+			status.set codeType: "dry run"
+			status.set codeKind: "status"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
+
+	getDryRunResultHTML: ->
+		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "dry run result html"
+		if !result.has('clobValue')
+			result.set clobValue: ""
+
+		result
+
 
 	getAnalysisResultHTML: ->
 		result = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "analysis result html"
@@ -305,9 +312,10 @@ class window.PrimaryScreenExperiment extends Experiment
 		result
 
 	getModelFitStatus: ->
-		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit status"
-		if !status.has('stringValue')
-			status.set stringValue: "not started"
+		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit status"
+		if !status.has('codeValue')
+			console.log "new model fit status value"
+			status.set codeValue: "not started"
 
 		status
 
@@ -318,13 +326,29 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		result
 
+	getModelFitType: ->
+		type = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type"
+		if !type.has('codeValue')
+			type.set codeValue: "unassigned"
+			type.set codeType: "model fit"
+			type.set codeKind: "type"
+			type.set codeOrigin: "ACAS DDICT"
+
+		type
+
+	copyProtocolAttributes: (protocol) =>
+		modelFitStatus = @getModelFitStatus().get('codeValue')
+		console.log modelFitStatus
+		super(protocol)
+		@getModelFitStatus().set codeValue: modelFitStatus
+
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"
 	className: "form-inline"
 	events:
 		"change .bv_readPosition": "attributeChanged"
-		"change .bv_readName": "attributeChanged"
+		"change .bv_readName": "handleReadNameChanged"
 		"click .bv_activity": "attributeChanged"
 		"click .bv_delete": "clear"
 
@@ -338,13 +362,15 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		@$('.bv_readNumber').html('R'+@model.get('readNumber'))
 		@setUpReadNameSelect()
+		@hideReadPosition(@model.get('readName'))
 
 		@
 
 	setUpReadNameSelect: ->
 		@readNameList = new PickListList()
-		@readNameList.url = "/api/dataDict/experiment metadata/read name"
+		@readNameList.url = "/api/codetables/reader data/read name"
 		@readNameListController = new PickListSelectController
 			el: @$('.bv_readName')
 			collection: @readNameList
@@ -352,6 +378,16 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Read Name"
 			selectedCode: @model.get('readName')
+
+	hideReadPosition: (readName) ->
+		isCalculatedRead = readName.indexOf("Calc:") > -1
+		if isCalculatedRead is true
+			@$('.bv_readPosition').val('')
+			@$('.bv_readPosition').hide()
+			@$('.bv_readPositionHolder').show()
+		else
+			@$('.bv_readPosition').show()
+			@$('.bv_readPositionHolder').hide()
 
 	setUpReadPosition: (matchReadNameChecked) ->
 		if matchReadNameChecked
@@ -364,10 +400,16 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		activity = @$('.bv_activity').is(":checked")
 		@model.set
 			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
-			readName: @readNameListController.getSelectedCode()
 			activity: activity
 		@model.triggerAmDirty()
 		@trigger 'updateState'
+
+	handleReadNameChanged: =>
+		readName = @readNameListController.getSelectedCode()
+		@hideReadPosition(readName)
+		@model.set
+			readName: readName
+		@attributeChanged()
 
 	clear: =>
 		@model.destroy()
@@ -401,7 +443,7 @@ class window.TransformationRuleController extends AbstractFormController
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
-		@transformationList.url = "/api/dataDict/experiment metadata/transformation"
+		@transformationList.url = "/api/codetables/analysis parameter/transformation"
 		@transformationListController = new PickListSelectController
 			el: @$('.bv_transformationRule')
 			collection: @transformationList
@@ -418,11 +460,13 @@ class window.TransformationRuleController extends AbstractFormController
 class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
 	matchReadNameChecked: true
+	nextReadNumber: 1
 	events:
 		"click .bv_addReadButton": "addNewRead"
 
 	initialize: =>
 		@collection.on 'remove', @checkActivity
+		@collection.on 'remove', @renumberReads
 		@collection.on 'remove', => @collection.trigger 'change'
 
 
@@ -447,6 +491,9 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			newModel.triggerAmDirty()
 
 	addOneRead: (read) ->
+#		readNumber = 'R' +  @nextReadNumber.toString()
+		read.set readNumber: @nextReadNumber
+		@nextReadNumber++
 		parc = new PrimaryAnalysisReadController
 			model: read
 		@$('.bv_readInfo').append parc.render().el
@@ -465,6 +512,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
+		console.log "check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
@@ -475,6 +523,17 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 				@collection.at(index).set activity: true
 			index = index - 1
 
+	renumberReads: =>
+		console.log "renumber reads"
+		console.log @collection
+		@nextReadNumber = 1
+		index = 0
+		while index < @collection.length
+			readNumber = 'R'+@nextReadNumber.toString()
+			@collection.at(index).set readNumber: @nextReadNumber
+			@$('.bv_readNumber:eq('+index+')').html(readNumber)
+			index++
+			@nextReadNumber++
 
 class window.TransformationRuleListController extends AbstractFormController
 	template: _.template($("#TransformationRuleListView").html())
@@ -524,20 +583,20 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	events:
 		"change .bv_instrumentReader": "attributeChanged"
 		"change .bv_signalDirectionRule": "attributeChanged"
-		"change .bv_aggregateBy1": "attributeChanged"
-		"change .bv_aggregateBy2": "attributeChanged"
+		"change .bv_aggregateBy": "attributeChanged"
+		"change .bv_aggregationMethod": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
 		"change .bv_assayVolume": "handleAssayVolumeChanged"
 		"change .bv_dilutionFactor": "handleDilutionFactorChanged"
 		"change .bv_transferVolume": "handleTransferVolumeChanged"
 		"change .bv_hitEfficacyThreshold": "attributeChanged"
 		"change .bv_hitSDThreshold": "attributeChanged"
-		"change .bv_positiveControlBatch": "attributeChanged"
+		"change .bv_positiveControlBatch": "handlePositiveControlBatchChanged"
 		"change .bv_positiveControlConc": "attributeChanged"
-		"change .bv_negativeControlBatch": "attributeChanged"
+		"change .bv_negativeControlBatch": "handleNegativeControlBatchChanged"
 		"change .bv_negativeControlConc": "attributeChanged"
-		"change .bv_vehicleControlBatch": "attributeChanged"
-		"change .bv_agonistControlBatch": "attributeChanged"
+		"change .bv_vehicleControlBatch": "handleVehicleControlBatchChanged"
+		"change .bv_agonistControlBatch": "handleAgonistControlBatchChanged"
 		"change .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
@@ -556,8 +615,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.bind 'amDirty', => @trigger 'amDirty', @
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 
 
@@ -566,10 +625,13 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
+		@$("[data-toggle=popover]").popover();
+		@$("body").tooltip selector: '.bv_popover'
+
 		@setupInstrumentReaderSelect()
 		@setupSignalDirectionSelect()
-		@setupAggregateBy1Select()
-		@setupAggregateBy2Select()
+		@setupAggregateBySelect()
+		@setupAggregationMethodSelect()
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
@@ -581,7 +643,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupInstrumentReaderSelect: ->
 		@instrumentList = new PickListList()
-		@instrumentList.url = "/api/dataDict/experiment metadata/instrument reader"
+		@instrumentList.url = "/api/codetables/equipment/instrument reader"
 		@instrumentListController = new PickListSelectController
 			el: @$('.bv_instrumentReader')
 			collection: @instrumentList
@@ -592,7 +654,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 
 	setupSignalDirectionSelect: ->
 		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/dataDict/experiment metadata/signal direction"
+		@signalDirectionList.url = "/api/codetables/analysis parameter/signal direction"
 		@signalDirectionListController = new PickListSelectController
 			el: @$('.bv_signalDirectionRule')
 			collection: @signalDirectionList
@@ -601,37 +663,37 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				name: "Select Signal Direction"
 			selectedCode: @model.get('signalDirectionRule')
 
-	setupAggregateBy1Select: ->
-		@aggregateBy1List = new PickListList()
-		@aggregateBy1List.url = "/api/dataDict/experiment metadata/aggregate by1"
-		@aggregateBy1ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy1')
-			collection: @aggregateBy1List
+	setupAggregateBySelect: ->
+		@aggregateByList = new PickListList()
+		@aggregateByList.url = "/api/codetables/analysis parameter/aggregate by"
+		@aggregateByListController = new PickListSelectController
+			el: @$('.bv_aggregateBy')
+			collection: @aggregateByList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select"
-			selectedCode: @model.get('aggregateBy1')
+				name: "Select Aggregate By"
+			selectedCode: @model.get('aggregateBy')
 
-	setupAggregateBy2Select: ->
-		@aggregateBy2List = new PickListList()
-		@aggregateBy2List.url = "/api/dataDict/experiment metadata/aggregate by2"
-		@aggregateBy2ListController = new PickListSelectController
-			el: @$('.bv_aggregateBy2')
-			collection: @aggregateBy2List
+	setupAggregationMethodSelect: ->
+		@aggregationMethodList = new PickListList()
+		@aggregationMethodList.url = "/api/codetables/analysis parameter/aggregation method"
+		@aggregationMethodListController = new PickListSelectController
+			el: @$('.bv_aggregationMethod')
+			collection: @aggregationMethodList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select"
-			selectedCode: @model.get('aggregateBy2')
+				name: "Select Aggregation Method"
+			selectedCode: @model.get('aggregationMethod')
 
 	setupNormalizationSelect: ->
 		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/dataDict/experiment metadata/normalization"
+		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
 		@normalizationListController = new PickListSelectController
 			el: @$('.bv_normalizationRule')
 			collection: @normalizationList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select Rule"
+				name: "Select Normalization Rule"
 			selectedCode: @model.get('normalizationRule')
 
 	setupReadListController: ->
@@ -657,8 +719,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@model.set
 			instrumentReader: @instrumentListController.getSelectedCode()
 			signalDirectionRule: @signalDirectionListController.getSelectedCode()
-			aggregateBy1: @aggregateBy1ListController.getSelectedCode()
-			aggregateBy2: @aggregateBy2ListController.getSelectedCode()
+			aggregateBy: @aggregateByListController.getSelectedCode()
+			aggregationMethod: @aggregationMethodListController.getSelectedCode()
 			normalizationRule: @normalizationListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
@@ -673,21 +735,82 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('dilutionFactor') != ""
 			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
 		@model.get('positiveControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
 			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
 		@model.get('negativeControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
 			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
 		@model.get('vehicleControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
 			concentration: null
 		@model.get('agonistControl').set
-			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
 			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
 		@trigger 'updateState'
+
+	handlePositiveControlBatchChanged: ->
+		console.log "handle pos cont batch changed"
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
+		@getPreferredBatchId(batchCode, 'positiveControl')
+
+	handleNegativeControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
+		@getPreferredBatchId(batchCode, 'negativeControl')
+
+	handleAgonistControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
+		@getPreferredBatchId(batchCode, 'agonistControl')
+
+	handleVehicleControlBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
+		@getPreferredBatchId(batchCode, 'vehicleControl')
+
+	getPreferredBatchId: (batchId, control) ->
+		console.log "beg of getPreferredBatchId"
+		if batchId == ""
+			@model.get(control).set batchCode: ""
+			@attributeChanged()
+			return
+		else
+			@requestData =
+				requests: [
+					{requestName: batchId}
+				]
+			$.ajax
+				type: 'POST'
+				url: "/api/preferredBatchId"
+				data: @requestData
+				success: (json) =>
+					@handlePreferredBatchIdReturn(json, control)
+				error: (err) =>
+					console.log 'got ajax error'
+					@serviceReturn = null
+				dataType: 'json'
+
+	handlePreferredBatchIdReturn: (json, control) =>
+		console.log "beg of handle preferred batch id return"
+		if json.results?
+			results = (json.results)[0]
+			console.log results
+			preferredName = results.preferredName
+			requestName = results.requestName
+			if preferredName == requestName
+				@model.get(control).set batchCode: preferredName
+				console.log "valid id"
+				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
+				@attributeChanged()
+			else if preferredName == ""
+				@model.get(control).set batchCode: "invalid"
+				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
+				console.log "invalid id"
+				@attributeChanged()
+			else
+				console.log "alias, save full name"
+				@model.get(control).set batchCode: preferredName
+				@attributeChanged()
+				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
+				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
+				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
+				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -752,6 +875,11 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		unless skipUpdate is true
 			@attributeChanged()
 
+	enableAllInputs: ->
+		super()
+		if @$('.bv_matchReadName').is(":checked")
+			@$('.bv_readPosition').attr 'disabled','disabled'
+
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 #	See UploadAndRunPrimaryAnalsysisController for example required initialization function
 
@@ -759,6 +887,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@allowedFileTypes = ['zip']
 		@loadReportFile = true
 		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
 		@$('.bv_reportFileDirections').html('To upload an <b>optional well flagging file</b>, click the "Browse Files…" button and select a file.')
 #		@$("label[for='.bv_attachReportFile']").innerHTML('Attach optional well flagging file')
 		@$('.bv_attachReportCheckboxText').html('Attach optional well flagging file')
@@ -773,7 +902,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = @options.analyzedPreviously
 		@analysisParameterController.render()
 		if @analyzedPreviously
-			@$('.bv_save').html("Re-Analyze")
+			@$('.bv_loadAnother').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 
 	handleMSFormValid: =>
@@ -787,14 +916,15 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		if @analysisParameterController.isValid()
 			super()
 
-	parseAndSave: =>
-		if @analyzedPreviously
-			if !confirm("Re-analyzing the data will delete the previously saved results")
-				return
-		super()
-
 	handleValidationReturnSuccess: (json) =>
 		super(json)
+		if not json.hasError
+			resultStatus = "Dry Run Results: Success"
+			if json.hasWarning
+				resultStatus += " but with warnings"
+		else
+			resultStatus = "Dry Run Results: Failed"
+		@$('.bv_resultStatus').html(resultStatus)
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
@@ -802,10 +932,31 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
 
+	backToUpload: =>
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
+	loadAnother: =>
+		if @analyzedPreviously
+			if !confirm("Re-analyzing the data will delete the previously saved results.")
+				return
+		super()
+		@$('.bv_resultStatus').html("Upload Data and Analyze")
+		@$('.bv_resultStatus').show()
+
 	showFileSelectPhase: ->
 		super()
+		@$('.bv_resultStatus').show()
 		if @analysisParameterController?
 			@analysisParameterController.enableAllInputs()
+
+	showFileUploadCompletePhase: ->
+		@analyzedPreviously = true
+		super()
+
+	disableAllInputs: ->
+		@analysisParameterController.disableAllInputs()
 
 	disableAll: ->
 		@analysisParameterController.disableAllInputs()
@@ -835,6 +986,10 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 	setExperimentId: (expId) ->
 		@experimentId = expId
 
+	updateAnalysisParamModel: (model) ->
+		@analysisParameterController.model = model.getAnalysisParameters()
+		@analysisParameterController.render()
+
 class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
 	initialize: ->
 		@fileProcessorURL = "/api/primaryAnalysis/runPrimaryAnalysis"
@@ -843,7 +998,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
-		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
@@ -861,28 +1017,149 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		if @model.isNew()
 			@setExperimentNotSaved()
 		else
-			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 			@setExperimentSaved()
+			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 
 
 	render: =>
 		@showExistingResults()
 
 	showExistingResults: ->
+		dryRunStatus = @model.getDryRunStatus()
+		if dryRunStatus != null
+			dryRunStatus = dryRunStatus.get('codeValue')
+		else
+			dryRunStatus = "not started"
 		analysisStatus = @model.getAnalysisStatus()
 		if analysisStatus != null
-			analysisStatus = analysisStatus.get('stringValue')
+			analysisStatus = analysisStatus.get('codeValue')
 		else
 			analysisStatus = "not started"
-		@$('.bv_analysisStatus').html(analysisStatus)
-		resultValue = @model.getAnalysisResultHTML()
-		if resultValue != null
-			res = resultValue.get('clobValue')
-			if res == ""
-				@$('.bv_resultsContainer').hide()
+#		@$('.bv_analysisStatus').html(analysisStatus)
+
+		#running statuses
+		if dryRunStatus is "running"
+			if analysisStatus is "running" # invalid state
+				@showWarningStatus(dryRunStatus, analysisStatus)
 			else
-				@$('.bv_analysisResultsHTML').html(res)
-				@$('.bv_resultsContainer').show()
+				statusId = @model.getDryRunStatus().get('id')
+				@trigger "dryRunRunning"
+				@checkStatus(statusId, "dryRun")
+		else if analysisStatus is "running"
+			if dryRunStatus is "not started" # invalid state
+				@showWarningStatus(dryRunStatus, analysisStatus)
+			else #valid
+				statusId = @model.getAnalysisStatus().get('id')
+				@trigger 'analysisRunning'
+				@checkStatus(statusId, "analysis")
+
+		#show analysis result clob
+		else if analysisStatus is "complete" or analysisStatus is "failed"
+			@showAnalysisResults(analysisStatus)
+
+		else
+			if dryRunStatus is "not started"
+				@showUploadWrapper()
+			else
+				@showDryRunResults(dryRunStatus)
+
+	showWarningStatus: (dryRunStatus, analysisStatus) ->
+		resultStatus = "An error has occurred. Dry Run: "+dryRunStatus+ ". Analysis: "+ analysisStatus+"."
+		resultHTML = "An error has occurred."
+		@trigger "warning"
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+
+	checkStatus: (statusId, analysisStep) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/values/"+statusId
+			dataType: 'json'
+			error: (err) ->
+				alert 'Error - Could not get requested status value.'
+			success: (json) =>
+				if json.length == 0
+					alert 'Success but could not get requested status value.'
+				else
+					statusValue = new Value json
+					status = statusValue.get('codeValue')
+					if status is "running"
+						setTimeout(@checkStatus, 5000, statusId, analysisStep)
+						if analysisStep is "dryRun"
+							resultStatus = "Dry Run Results: Dry run in progress."
+							resultHTML = ""
+						else
+							resultStatus = "Upload Results: Upload in progress."
+							resultHTML = @model.getDryRunResultHTML().get('clobValue')
+						@$('.bv_resultStatus').html(resultStatus)
+						@$('.bv_htmlSummary').html(resultHTML)
+						if @dataAnalysisController?
+							@dataAnalysisController.showFileUploadPhase()
+
+					else
+						#TODO: need to get updated state and show
+						@showUpdatedModel =>
+							@showUpdatedStatus(analysisStep)
+
+	showUpdatedModel: (callback) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codename/"+@model.get('codeName')
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get experiment for codeName of the model'
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get experiment for codeName of the model'
+				else
+					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#					exp = new PrimaryScreenExperiment json
+					exp = new PrimaryScreenExperiment json[0]
+					exp.set exp.parse(exp.attributes)
+					@model = exp
+					@dataAnalysisController.updateAnalysisParamModel(@model)
+					callback.call()
+
+	showUpdatedStatus: (analysisStep)->
+		if analysisStep is "dryRun"
+			@trigger "dryRunDone"
+			@showDryRunResults(@model.getDryRunStatus().get('codeValue'))
+		else
+			@trigger "analysisDone"
+			@showAnalysisResults(@model.getAnalysisStatus().get('codeValue'))
+
+	showAnalysisResults: (analysisStatus) ->
+		if analysisStatus is "complete"
+			resultStatus = "Upload Results: Success"
+		else
+			resultStatus = "Upload Results: Failed due to errors"
+		resultHTML = @model.getAnalysisResultHTML().get('clobValue')
+		if @dataAnalysisController?
+			@dataAnalysisController.showFileUploadCompletePhase()
+			@dataAnalysisController.disableAllInputs()
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+
+	showDryRunResults: (dryRunStatus) ->
+		if dryRunStatus is "complete"
+			resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
+		else
+			resultStatus = "Dry Run Results: Failed"
+		resultHTML = @model.getDryRunResultHTML().get('clobValue')
+		if @dataAnalysisController?
+			@dataAnalysisController.parseFileUploaded = true
+			@dataAnalysisController.filePassedValidation = true
+			@dataAnalysisController.showFileUploadPhase()
+			@dataAnalysisController.handleFormValid()
+			@dataAnalysisController.disableAllInputs()
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
+
+	showUploadWrapper: ->
+		resultStatus = "Upload Data and Analyze"
+		resultHTML = ""
+		@$('.bv_resultStatus').html(resultStatus)
+		@$('.bv_htmlSummary').html(resultHTML)
 
 	setExperimentNotSaved: ->
 		@$('.bv_fileUploadWrapper').hide()
@@ -894,10 +1171,10 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_fileUploadWrapper').show()
 
 	handleExperimentSaved: =>
+		@setExperimentSaved()
 		unless @dataAnalysisController?
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
 		@model.getStatus().on 'change', @handleStatusChanged
-		@setExperimentSaved()
 
 	handleAnalysisComplete: =>
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
@@ -915,7 +1192,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		newArgs =
 			el: @$('.bv_fileUploadWrapper')
 			paramsFromExperiment:	@model.getAnalysisParameters()
-			analyzedPreviously: @model.getAnalysisStatus().get('stringValue')!="not started"
+			analyzedPreviously: @model.getAnalysisStatus().get('codeValue')!="not started"
 		@dataAnalysisController = new window[dacClassName](newArgs)
 		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)
@@ -924,6 +1201,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
+#		@showExistingResults()
 
 
 # This wraps all the tabs
@@ -936,31 +1214,45 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get experiment for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
+					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
+						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
+						@completeInitialization()
+					else
+						$.ajax
+							type: 'GET'
+							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+							dataType: 'json'
+							error: (err) ->
 								alert 'Could not get experiment for code in this URL, creating new one'
-							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								exp = new PrimaryScreenExperiment json
-								lsKind = json[0].lsKind
-								if lsKind is "flipr screening assay"
-									exp = new PrimaryScreenExperiment json[0]
-									exp.set exp.parse(exp.attributes)
-									@model = exp
+								@completeInitialization()
+							success: (json) =>
+								if json.length == 0
+									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
-							@completeInitialization()
+									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+	#								exp = new PrimaryScreenExperiment json
+									lsKind = json[0].lsKind
+									if lsKind is "Bio Activity"
+										exp = new PrimaryScreenExperiment json[0]
+										exp.set exp.parse(exp.attributes)
+										if window.AppLaunchParams.moduleLaunchParams.copy
+											@model = exp.duplicateEntity()
+										else
+											@model = exp
+									else
+										alert 'Could not get primary screen experiment for code in this URL. Creating new primary screen experiment'
+								@completeInitialization()
 				else
 					@completeInitialization()
 			else
 				@completeInitialization()
+
+	createExperimentFromProtocol: (code) ->
+		@model = new PrimaryScreenExperiment()
+		@model.set protocol: new PrimaryScreenProtocol
+			codeName: code
+		@setupExperimentBaseController()
+		@experimentBaseController.getAndSetProtocol(code)
 
 	completeInitialization: =>
 		unless @model?
@@ -968,6 +1260,34 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 		$(@el).html @template()
 		@model.on 'sync', @handleExperimentSaved
+		@setupExperimentBaseController()
+		@analysisController = new PrimaryScreenAnalysisController
+			model: @model
+			el: @$('.bv_primaryScreenDataAnalysis')
+			uploadAndRunControllerName: @uploadAndRunControllerName
+		@analysisController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@analysisController.on 'amClean', =>
+			@trigger 'amClean'
+		@analysisController.on 'warning', =>
+			@showWarningModal()
+		@analysisController.on 'dryRunRunning', =>
+			@showValidateProgressBar()
+		@analysisController.on 'dryRunDone', =>
+			@hideValidateProgressBar()
+		@analysisController.on 'analysisRunning', =>
+			@showSaveProgressBar()
+		@analysisController.on 'analysisDone', =>
+			@hideSaveProgressBar()
+		@setupModelFitController(@modelFitControllerName)
+		@analysisController.on 'analysis-completed', =>
+			@modelFitController.setReadyForFit()
+		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
+		@experimentBaseController.render()
+		@analysisController.render()
+		@modelFitController.render()
+
+	setupExperimentBaseController: ->
 		@experimentBaseController = new ExperimentBaseController
 			model: @model
 			el: @$('.bv_experimentBase')
@@ -977,21 +1297,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@experimentBaseController.on 'amClean', =>
 			@trigger 'amClean'
-		@analysisController = new PrimaryScreenAnalysisController
-			model: @model
-			el: @$('.bv_primaryScreenDataAnalysis')
-			uploadAndRunControllerName: @uploadAndRunControllerName
-		@analysisController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@analysisController.on 'amClean', =>
-			@trigger 'amClean'
-		#@setupModelFitController(@modelFitControllerName)
-#		@analysisController.on 'analysis-completed', =>
-#			@modelFitController.primaryAnalysisCompleted()
-		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
-		@experimentBaseController.render()
-		@analysisController.render()
-		#@modelFitController.render()
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =
@@ -1004,17 +1309,56 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amClean'
 
 	handleExperimentSaved: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'experiment'
 		@analysisController.render()
 
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
 
+	showWarningModal: ->
+		@$('a[href="#tab3"]').tab('show')
+		dryRunStatus = @model.getDryRunStatus().get('codeValue')
+		dryRunResult = @model.getDryRunResultHTML().get('clobValue')
+		analysisStatus = @model.getAnalysisStatus().get('codeValue')
+		analysisResult = @model.getAnalysisResultHTML().get('clobValue')
+		@$('.bv_dryRunStatus').html("Dry Run Status: "+dryRunStatus)
+		@$('.bv_dryRunResult').html("Dry Run Result HTML: "+dryRunResult)
+		@$('.bv_analysisStatus').html("Analysis Status: "+analysisStatus)
+		@$('.bv_analysisResult').html("Analysis Result HTML: "+analysisResult)
+		@$('.bv_invalidAnalysisStates').modal
+			backdrop: "static"
+		@$('.bv_invalidAnalysisStates').modal("show")
+		@$('.bv_fileUploadWrapper .bv_fileUploadWrapper').hide()
+		@$('.bv_fileUploadWrapper .bv_flowControl').hide()
+
+
+
+	showValidateProgressBar: ->
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_validateStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_validateStatusDropDown').modal("show")
+
+	showSaveProgressBar: ->
+		@$('a[href="#tab3"]').tab('show')
+		@$('.bv_saveStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_saveStatusDropDown').modal("show")
+
+	hideValidateProgressBar: ->
+		@$('.bv_validateStatusDropDown').modal("hide")
+
+	hideSaveProgressBar: ->
+		@$('.bv_saveStatusDropDown').modal("hide")
+
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 	modelFitControllerName: "DoseResponseAnalysisController"
-	protocolFilter: "?protocolName=FLIPR"
-	protocolKindFilter: "?protocolKind=flipr screening assay"
-	moduleLaunchName: "flipr_screening_assay"
+#	modelFitControllerName: "PrimaryScreenModelFitController"
+#	protocolFilter: "?protocolName=FLIPR"
+	protocolKindFilter: "?protocolKind=Bio Activity"
+	moduleLaunchName: "primary_screen_experiment"
 
 
 

@@ -8,6 +8,30 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "GenericDataParserController"
 		autoLaunchName:"generic_data_parser"
 	,
+		isHeader: false
+		menuName: "Dose-Response Fit"
+		mainControllerClassName: "DoseResponseFitWorkflowController"
+	,
+		isHeader: false
+		menuName: "Protocol Base"
+		mainControllerClassName: "ProtocolBaseController"
+		autoLaunchName:"protocol_base"
+	,
+		isHeader: false
+		menuName: "Primary Screen Protocol"
+		mainControllerClassName: "PrimaryScreenProtocolModuleController"
+		autoLaunchName:"primary_screen_protocol"
+	,
+		isHeader: false
+		menuName: "Experiment Base"
+		mainControllerClassName: "ExperimentBaseController"
+		autoLaunchName:"experiment_base"
+	,
+		isHeader: false
+		menuName: "Analyze FLIPR Data"
+		mainControllerClassName: "PrimaryScreenExperimentController"
+		autoLaunchName:"primary_screen_experiment"
+	,
 		isHeader: true
 		menuName: "Register Components"
 	,
@@ -41,27 +65,32 @@ window.ModuleMenusConfiguration =
 #		mainControllerClassName: "ComponentPickerController"
 #		autoLaunchName:"component_picker"
 #	,
-#		isHeader: true
-#		menuName: "Inventory"
-#	,
-#		isHeader: false
-#		menuName: "Load Containers From SDF"
-#		mainControllerClassName: "BulkLoadContainersFromSDFController"
-#	,
-#		isHeader: false
-#		menuName: "Load Sample Transfer Log"
-#		mainControllerClassName: "BulkLoadSampleTransfersController"
-#	,
+		isHeader: true
+		menuName: "Inventory"
+	,
+		isHeader: false
+		menuName: "Load Containers From SDF"
+		mainControllerClassName: "BulkLoadContainersFromSDFController"
+	,
+		isHeader: false
+		menuName: "Load Sample Transfer Log"
+		mainControllerClassName: "BulkLoadSampleTransfersController"
+	,
 		isHeader: true
 		menuName: "Search and Edit"
 	,
 		isHeader: false, menuName: "Search Components"
 		mainControllerClassName: "ComponentBrowserController"
-#	,
-#		isHeader: true
-#		menuName: "Admin"
-#	,
-#		isHeader: false, menuName: "Logging"
-#		mainControllerClassName: "LoggingController"
+	,
+		isHeader: false, menuName: "Protocol Browser"
+		mainControllerClassName: "ProtocolBrowserController"
+	,
+		isHeader: false, menuName: "Experiment Browser"
+		mainControllerClassName: "ExperimentBrowserController"
+	,
+		isHeader: true
+		menuName: "Admin"
+	,
+		isHeader: false, menuName: "Logging"
+		mainControllerClassName: "LoggingController"
 	]
-

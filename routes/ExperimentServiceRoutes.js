@@ -1,6 +1,7 @@
 (function() {
   exports.setupAPIRoutes = function(app) {
     app.get('/api/experiments/codename/:code', exports.experimentByCodename);
+    app.get('/api/experiments/experimentName/:name', exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
@@ -9,14 +10,15 @@
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename);
+    app.get('/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
-    app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
     app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
-    return app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    return app.get('/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById);
   };
 
   exports.experimentByCodename = function(req, resp) {
@@ -26,8 +28,8 @@
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       expt = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
-      if (req.params.code.indexOf("screening") > -1) {
-        expt.lsKind = "flipr screening assay";
+      if (req.params.code.indexOf("Bio Activity") > -1) {
+        expt.lsKind = "Bio Activity";
       } else {
         expt.lsKind = "default";
       }
@@ -43,6 +45,21 @@
       } else {
         return serverUtilityFunctions.getFromACASServer(baseurl, resp);
       }
+    }
+  };
+
+  exports.experimentByName = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log("exports.experiment by name");
+    if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments?findByName&name=" + req.params.name;
+      console.log(baseurl);
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 
@@ -81,7 +98,6 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      console.log("in post experiment");
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
@@ -97,9 +113,16 @@
             return resp.end(JSON.stringify(json));
           } else {
             console.log('got ajax error trying to save new experiment');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
+            console.log("response");
+            console.log(response);
+            console.log(response.body);
+            console.log(response.body[0]);
+            console.log(response.body[0].message);
+            if (response.body[0].message === "not unique experiment name") {
+              console.log(json);
+              console.log("ending resp");
+              return resp.end(JSON.stringify(response.body[0].message));
+            }
           }
         };
       })(this));
@@ -114,8 +137,6 @@
     } else {
       config = require('../conf/compiled/conf.js');
       putId = req.body.id;
-      console.log("putID");
-      console.log(putId);
       baseurl = config.all.client.service.persistence.fullpath + "experiments/" + putId;
       request = require('request');
       return request({
@@ -140,7 +161,7 @@
   };
 
   exports.genericExperimentSearch = function(req, res) {
-    var emptyResponse, experimentServiceTestJSON, json;
+    var baseurl, config, emptyResponse, experimentServiceTestJSON, serverUtilityFunctions;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       if (req.params.searchTerm === "no-match") {
@@ -150,10 +171,12 @@
         return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
       }
     } else {
-      json = {
-        message: "genericExperimentSearch not implemented yet"
-      };
-      return res.end(JSON.stringify(json));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/search?q=" + req.params.searchTerm;
+      console.log("baseurl");
+      console.log(baseurl);
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, res);
     }
   };
 
@@ -176,8 +199,7 @@
     var baseurl, config, experimentId, request;
     config = require('../conf/compiled/conf.js');
     experimentId = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "experiments/" + experimentId;
-    console.log("baseurl");
+    baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
     console.log(baseurl);
     request = require('request');
     return request({
@@ -278,6 +300,20 @@
         resp.statusCode = 500;
         return resp.end("configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist");
       }
+    }
+  };
+
+  exports.experimentValueById = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log(req.params.id);
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer.lsStates[1]));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 

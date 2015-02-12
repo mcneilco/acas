@@ -33,6 +33,7 @@ BEGIN {
     gsub(/[^A-Za-z0-9_]/,"_",n);
     # Remove newlines from the value.
     gsub(/[\n\r]/,"",v);
+    gsub(/\"/,"\\\"",v);
     print n "=\"" v "\"";
     n = "";
     v = "";

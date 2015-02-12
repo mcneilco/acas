@@ -38,6 +38,62 @@ This suite of services provides CRUD operations on Experiment Objects
           });
         });
       });
+      describe('when fetching Experiment stub by code', function() {
+        beforeEach(function() {
+          var self;
+          self = this;
+          return $.ajax({
+            type: 'GET',
+            url: "api/experiments/codename/EXPT-00000124",
+            data: {
+              testMode: true
+            },
+            success: function(json) {
+              return self.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return self.serviceReturn = null;
+            },
+            dataType: 'json'
+          });
+        });
+        return it('should return a experiment stub', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
+          });
+        });
+      });
+      describe('when fetching Experiment stub by name', function() {
+        beforeEach(function() {
+          var self;
+          self = this;
+          return $.ajax({
+            type: 'GET',
+            url: "api/experiments/experimentName/Test Experiment 1",
+            data: {
+              testMode: true
+            },
+            success: function(json) {
+              return self.serviceReturn = json;
+            },
+            error: function(err) {
+              console.log('got ajax error');
+              return self.serviceReturn = null;
+            },
+            dataType: 'json'
+          });
+        });
+        return it('should return a experiment stub', function() {
+          waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
+          return runs(function() {
+            console.log("serviceREturn");
+            console.log(this.serviceReturn);
+            return expect(this.serviceReturn.codeName).toEqual("EXPT-00000001");
+          });
+        });
+      });
       describe('when fetching Experiment stubs by protocol code', function() {
         beforeEach(function() {
           var self;
@@ -146,7 +202,7 @@ This suite of services provides CRUD operations on Experiment Objects
           return runs(function() {
             return $.ajax({
               type: 'GET',
-              url: "api/dataDict/experiment metadata/experiment status",
+              url: "api/codetables/experiment/status",
               success: (function(_this) {
                 return function(json) {
                   return _this.serviceReturn = json;

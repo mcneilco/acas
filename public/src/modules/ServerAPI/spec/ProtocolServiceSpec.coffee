@@ -229,4 +229,3 @@ describe 'Protocol CRUD testing', ->
 					expect(@serviceReturn[0].name).toBeDefined()
 					expect(@serviceReturn[0].ignored).toBeDefined()
 
-

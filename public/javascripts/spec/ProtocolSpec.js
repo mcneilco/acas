@@ -35,7 +35,10 @@
             return expect(this.prot.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.prot.get('recordedBy')).toEqual("");
+            return expect(this.prot.getScientist().get('codeValue')).toEqual("unassigned");
+          });
+          it('Should have the recordedBy set to the loginUser username', function() {
+            return expect(this.prot.get('recordedBy')).toEqual("jmcneil");
           });
           it('Should have an recordedDate set to now', function() {
             return expect(new Date(this.prot.get('recordedDate')).getHours()).toEqual(new Date().getHours());
@@ -49,13 +52,20 @@
             expect(this.prot.getAssayTreeRule() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayTreeRule().get('stringValue')).toEqual("");
           });
+          it('Should have an assay stage value', function() {
+            expect(this.prot.getAssayStage() instanceof Value).toBeTruthy();
+            expect(this.prot.getAssayStage().get('codeValue')).toEqual("unassigned");
+            expect(this.prot.getAssayStage().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.prot.getAssayStage().get('codeType')).toEqual("assay");
+            return expect(this.prot.getAssayStage().get('codeKind')).toEqual("stage");
+          });
           it('Should have an assay principle value', function() {
             expect(this.prot.getAssayPrinciple() instanceof Value).toBeTruthy();
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("");
           });
-          it('Should have a description value', function() {
-            expect(this.prot.getDescription() instanceof Value).toBeTruthy();
-            return expect(this.prot.getDescription().get('clobValue')).toEqual("");
+          it('Should have a protocol details value', function() {
+            expect(this.prot.getDetails() instanceof Value).toBeTruthy();
+            return expect(this.prot.getDetails().get('clobValue')).toEqual("");
           });
           it('Should have a comments value', function() {
             expect(this.prot.getComments() instanceof Value).toBeTruthy();
@@ -65,41 +75,41 @@
             return expect(this.prot.getNotebook() instanceof Value).toBeTruthy();
           });
           it('Protocol status should default to created ', function() {
-            return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
           });
-          return it('completionDate should be null ', function() {
-            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(null);
+          return it('creationDate should be null ', function() {
+            return expect(this.prot.getCreationDate().get('dateValue')).toEqual(null);
           });
         });
         return describe("other features", function() {
           return describe("should tell you if it is editable based on status", function() {
             it("should be locked if status is created", function() {
               this.prot.getStatus().set({
-                stringValue: "created"
+                codeValue: "created"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is started", function() {
               this.prot.getStatus().set({
-                stringValue: "started"
+                codeValue: "started"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is complete", function() {
               this.prot.getStatus().set({
-                stringValue: "complete"
+                codeValue: "complete"
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
             it("should be locked if status is finalized", function() {
               this.prot.getStatus().set({
-                stringValue: "finalized"
+                codeValue: "finalized"
               });
               return expect(this.prot.isEditable()).toBeFalsy();
             });
             return it("should be locked if status is rejected", function() {
               this.prot.getStatus().set({
-                stringValue: "rejected"
+                codeValue: "rejected"
               });
               return expect(this.prot.isEditable()).toBeFalsy();
             });
@@ -138,8 +148,8 @@
           it('Should have an assay principle value', function() {
             return expect(this.prot.getAssayPrinciple().get('clobValue')).toEqual("assay principle goes here");
           });
-          it('Should have a description value', function() {
-            return expect(this.prot.getDescription().get('clobValue')).toEqual("long description goes here");
+          it('Should have a protocol details value', function() {
+            return expect(this.prot.getDetails().get('clobValue')).toEqual("protocol details go here");
           });
           it('Should have a comments value', function() {
             return expect(this.prot.getComments().get('clobValue')).toEqual("protocol comments go here");
@@ -147,11 +157,11 @@
           it('Should have a notebook value', function() {
             return expect(this.prot.getNotebook().get('stringValue')).toEqual("912");
           });
-          it('Should have a completionDate value', function() {
-            return expect(this.prot.getCompletionDate().get('dateValue')).toEqual(1342080000000);
+          it('Should have a creationDate value', function() {
+            return expect(this.prot.getCreationDate().get('dateValue')).toEqual(1342080000000);
           });
           return it('Should have a status value', function() {
-            return expect(this.prot.getStatus().get('stringValue')).toEqual("created");
+            return expect(this.prot.getStatus().get('codeValue')).toEqual("created");
           });
         });
       });
@@ -327,19 +337,18 @@
         });
         it("should be invalid when scientist not selected", function() {
           var filtErrors;
-          this.prot.set({
-            recordedBy: ""
+          this.prot.getScientist().set({
+            codeValue: "unassigned"
           });
           expect(this.prot.isValid()).toBeFalsy();
           return filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'recordedBy';
+            return err.attribute === 'scientist';
           });
         });
         it("should be invalid when notebook is empty", function() {
           var filtErrors;
           this.prot.getNotebook().set({
-            stringValue: "",
-            recordedBy: this.prot.get('recordedBy')
+            stringValue: ""
           });
           expect(this.prot.isValid()).toBeFalsy();
           filtErrors = _.filter(this.prot.validationError, function(err) {
@@ -347,14 +356,14 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it('should require that completionDate not be ""', function() {
+        return it('should require that creationDate not be ""', function() {
           var filtErrors;
-          this.prot.getCompletionDate().set({
+          this.prot.getCreationDate().set({
             dateValue: new Date("").getTime()
           });
           expect(this.prot.isValid()).toBeFalsy();
           filtErrors = _.filter(this.prot.validationError, function(err) {
-            return err.attribute === 'completionDate';
+            return err.attribute === 'creationDate';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -426,17 +435,22 @@
           it("should show the save button text as Update", function() {
             return expect(this.pbc.$('.bv_save').html()).toEqual("Update");
           });
-          it("should fill the short description field", function() {
-            return expect(this.pbc.$('.bv_shortDescription').html()).toEqual("primary analysis");
-          });
           it("should fill the assay tree rule field", function() {
-            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("assay tree rule goes here");
+            return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("/assayTreeRule");
+          });
+          it("should fill the assay stage field", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayStage').val()).toEqual("assay development");
+            });
           });
           it("should fill the assay principle field", function() {
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
-          it("should fill the long description field", function() {
-            return expect(this.pbc.$('.bv_description').html()).toEqual("long description goes here");
+          it("should fill the protocol details field", function() {
+            return expect(this.pbc.$('.bv_details').html()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
             return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
@@ -444,8 +458,13 @@
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
           });
-          it("should fill the user field", function() {
-            return expect(this.pbc.$('.bv_recordedBy').val()).toEqual("nxm7557");
+          it("should fill the scientist field", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_scientist').val()).toEqual("jane");
+            });
           });
           it("should fill the protocol code field", function() {
             return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
@@ -508,10 +527,15 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.pbc.model.get('recordedBy')).toEqual("nxm7557");
-            this.pbc.$('.bv_recordedBy').val("xxl7932");
-            this.pbc.$('.bv_recordedBy').change();
-            return expect(this.pbc.model.get('recordedBy')).toEqual("xxl7932");
+            expect(this.pbc.model.getScientist().get('codeValue')).toEqual("jane");
+            waitsFor(function() {
+              return this.pbc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_scientist').val('unassigned');
+              this.pbc.$('.bv_scientist').change();
+              return expect(this.pbc.model.getScientist().get('codeValue')).toEqual("unassigned");
+            });
           });
           it("should update model when shortDescription is changed", function() {
             this.pbc.$('.bv_shortDescription').val(" New short description   ");
@@ -534,6 +558,11 @@
             expect(desc).toEqual("Updated assay tree rule");
             return expect(this.pbc.model.getAssayTreeRule().get('stringValue')).toEqual("Updated assay tree rule");
           });
+          it("should update model when assay stage is changed", function() {
+            this.pbc.$('.bv_assayStage').val("unassigned");
+            this.pbc.$('.bv_assayStage').change();
+            return expect(this.pbc.model.getAssayStage().get('codeValue')).toEqual("unassigned");
+          });
           it("should update model when assay principle is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_assayPrinciple').val(" New assay principle   ");
@@ -545,16 +574,16 @@
             expect(desc).toEqual("New assay principle");
             return expect(this.pbc.model.getAssayPrinciple().get('clobValue')).toEqual("New assay principle");
           });
-          it("should update model when description is changed", function() {
+          it("should update model when protocol details is changed", function() {
             var desc, states, values;
-            this.pbc.$('.bv_description').val(" New long description   ");
-            this.pbc.$('.bv_description').change();
-            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+            this.pbc.$('.bv_details').val(" New protocol details   ");
+            this.pbc.$('.bv_details').change();
+            states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
-            values = states[0].getValuesByTypeAndKind("clobValue", "description");
+            values = states[0].getValuesByTypeAndKind("clobValue", "protocol details");
             desc = values[0].get('clobValue');
-            expect(desc).toEqual("New long description");
-            return expect(this.pbc.model.getDescription().get('clobValue')).toEqual("New long description");
+            expect(desc).toEqual("New protocol details");
+            return expect(this.pbc.model.getDetails().get('clobValue')).toEqual("New protocol details");
           });
           it("should update model when comments is changed", function() {
             var desc, states, values;
@@ -572,10 +601,10 @@
             this.pbc.$('.bv_protocolName').change();
             return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
           });
-          it("should update model when completion date is changed", function() {
-            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_completionDate').change();
-            return expect(this.pbc.model.getCompletionDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
+          it("should update model when creation date is changed", function() {
+            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_creationDate').change();
+            return expect(this.pbc.model.getCreationDate().get('dateValue')).toEqual(new Date(2013, 2, 16).getTime());
           });
           it("should update model when notebook is changed", function() {
             this.pbc.$('.bv_notebook').val(" Updated notebook  ");
@@ -594,7 +623,7 @@
             return runs(function() {
               this.pbc.$('.bv_status').val('complete');
               this.pbc.$('.bv_status').change();
-              return expect(this.pbc.model.getStatus().get('stringValue')).toEqual('complete');
+              return expect(this.pbc.model.getStatus().get('codeValue')).toEqual('complete');
             });
           });
         });
@@ -603,7 +632,7 @@
         beforeEach(function() {
           this.prot = new Protocol();
           this.prot.getStatus().set({
-            stringValue: "created"
+            codeValue: "created"
           });
           this.pbc = new ProtocolBaseController({
             model: this.prot,
@@ -619,7 +648,7 @@
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
           });
           it("should not fill the date field", function() {
-            return expect(this.pbc.$('.bv_completionDate').val()).toEqual("");
+            return expect(this.pbc.$('.bv_creationDate').val()).toEqual("");
           });
           it("should show the save button text as Save", function() {
             return expect(this.pbc.$('.bv_save').html()).toEqual("Save");
@@ -638,20 +667,28 @@
               return expect(this.pbc.$('.bv_status').val()).toEqual('created');
             });
           });
-          return it("should have the assay tree rule be empty", function() {
+          it("should have the assay tree rule be empty", function() {
             return expect(this.pbc.$('.bv_assayTreeRule').val()).toEqual("");
+          });
+          return it("should have the assay stage be empty", function() {
+            waitsFor(function() {
+              return this.pbc.$('.bv_assayStage option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_assayStage').val()).toEqual("unassigned");
+            });
           });
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.pbc.$('.bv_recordedBy').val("nxm7557");
-            this.pbc.$('.bv_recordedBy').change();
+            this.pbc.$('.bv_scientist').val("bob");
+            this.pbc.$('.bv_scientist').change();
             this.pbc.$('.bv_shortDescription').val(" New short description   ");
             this.pbc.$('.bv_shortDescription').change();
             this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
             this.pbc.$('.bv_protocolName').change();
-            this.pbc.$('.bv_completionDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_completionDate').change();
+            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+            this.pbc.$('.bv_creationDate').change();
             this.pbc.$('.bv_notebook').val("my notebook");
             return this.pbc.$('.bv_notebook').change();
           });
@@ -692,27 +729,30 @@
           });
           describe("when scientist not selected", function() {
             beforeEach(function() {
+              waitsFor(function() {
+                return this.pbc.$('.bv_scientist option').length > 0;
+              }, 1000);
               return runs(function() {
-                this.pbc.$('.bv_recordedBy').val("");
-                return this.pbc.$('.bv_recordedBy').change();
+                this.pbc.$('.bv_scientist').val("unassigned");
+                return this.pbc.$('.bv_scientist').change();
               });
             });
             return it("should show error on scientist dropdown", function() {
               return runs(function() {
-                return expect(this.pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy();
+                return expect(this.pbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy();
               });
             });
           });
           describe("when date field not filled in", function() {
             beforeEach(function() {
               return runs(function() {
-                this.pbc.$('.bv_completionDate').val("");
-                return this.pbc.$('.bv_completionDate').change();
+                this.pbc.$('.bv_creationDate').val("");
+                return this.pbc.$('.bv_creationDate').change();
               });
             });
             return it("should show error in date field", function() {
               return runs(function() {
-                return expect(this.pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy();
+                return expect(this.pbc.$('.bv_group_creationDate').hasClass('error')).toBeTruthy();
               });
             });
           });
@@ -741,6 +781,7 @@
               });
               waits(1000);
               return runs(function() {
+                console.log(this.pbc.model.validationError);
                 return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("PROT-00000001");
               });
             });

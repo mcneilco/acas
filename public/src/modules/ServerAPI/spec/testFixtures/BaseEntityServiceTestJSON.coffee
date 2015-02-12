@@ -1,4 +1,32 @@
 ((exports) ->
+	exports.authorsList =
+	[
+		{
+			code: "bob"
+			codeName: null
+			displayOrder: null
+			id: 1
+			ignored: false
+			name: "Bob Roberts"
+		},
+		{
+			code: "john"
+			codeName: null
+			displayOrder: null
+			id: 2
+			ignored: false
+			name: "John Smith"
+		},
+		{
+			code: "jane"
+			codeName: null
+			displayOrder: null
+			id: 3
+			ignored: false
+			name: "Jane Doe"
+
+		}
+	]
 
 	exports.savedExperimentWithAnalysisGroups =
 		codeName: "EXPT-00000222"
@@ -133,6 +161,40 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "assay"
+				codeKind: "scientist"
+				codeOrigin: "ACAS authors"
+				codeValue: "jane"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 523
+				ignored: false
+				lsKind: "scientist"
+				lsTransaction: 2
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_scientist"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -191,16 +253,19 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "experiment"
+				codeValue: "started"
 				comments: null
-				dateValue: 1342080000000
+				dateValue: null
 				fileValue: null
-				id: 1
+				id: 2
 				ignored: false
-				lsKind: "completion date"
+				lsKind: "experiment status"
 				lsTransaction: 2
-				lsType: "dateValue"
-				lsTypeAndKind: "dateValue_completion date"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_experiment status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -221,38 +286,7 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 2
-				ignored: false
-				lsKind: "status"
-				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: "started"
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: "long description goes here"
+				clobValue: "experiment details go here"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -272,10 +306,10 @@
 				stringValue: null
 				uncertainty: null
 				urlValue: null
-				lsKind: "description"
+				lsKind: "experiment details"
 				valueOperator: null
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_description"
+				lsTypeAndKind: "clobValue_experiment details"
 				valueUnit: null
 				version: 0
 			,
@@ -1529,7 +1563,7 @@
 			lsType: "metadata"
 			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
-				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing signal (highest = 100%)","aggregateBy1":"compound batch concentration","aggregateBy2":"median","transformationRule":"(maximum-minimum)/minimum","normalizationRule":"plate order","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"autoHitSelection":false,"primaryAnalysisReadList":[{"readOrder":11,"readName":"luminescence","matchReadName":true},{"readOrder":12,"readName":"fluorescence","matchReadName":true},{"readOrder":13,"readName":"other read name","matchReadName":false}]}'
+				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing signal (highest = 100%)","aggregateBy":"compound batch concentration","aggregationMethod":"median","transformationRule":"(maximum-minimum)/minimum","normalizationRule":"plate order","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"autoHitSelection":false,"primaryAnalysisReadList":[{"readOrder":11,"readName":"luminescence","matchReadName":true},{"readOrder":12,"readName":"fluorescence","matchReadName":true},{"readOrder":13,"readName":"other read name","matchReadName":false}]}'
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1694,8 +1728,8 @@
 				ignored: false
 				lsKind: "analysis status"
 				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_analysis status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_analysis status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1750,6 +1784,40 @@
 				version: 0
 			,
 				clobValue: null
+				codeType: "assay"
+				codeKind: "scientist"
+				codeOrigin: "ACAS authors"
+				codeValue: "jane"
+				comments: null
+				dateValue: null
+				fileValue: null
+				id: 5123
+				ignored: false
+				lsKind: "scientist"
+				lsTransaction: 2
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_scientist"
+				modifiedBy: null
+				modifiedDate: null
+				numberOfReplicates: null
+				numericValue: null
+				operatorKind: null
+				operatorType: "comparison"
+				operatorTypeAndKind: "comparison_null"
+				publicData: true
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				uncertaintyType: null
+				unitKind: null
+				unitType: null
+				unitTypeAndKind: "null_null"
+				urlValue: null
+				version: 0
+			,
+				clobValue: null
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1781,16 +1849,19 @@
 				version: 0
 			,
 				clobValue: null
-				codeValue: null
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "experiment"
+				codeValue: "started"
 				comments: null
-				dateValue: 1342080000000
+				dateValue: null
 				fileValue: null
-				id: 1
+				id: 2
 				ignored: false
-				lsKind: "completion date"
+				lsKind: "experiment status"
 				lsTransaction: 2
-				lsType: "dateValue"
-				lsTypeAndKind: "dateValue_completion date"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_experiment status"
 				modifiedBy: null
 				modifiedDate: null
 				numberOfReplicates: null
@@ -1811,38 +1882,7 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				id: 2
-				ignored: false
-				lsKind: "status"
-				lsTransaction: 2
-				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: "started"
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: "long description goes here"
+				clobValue: "experiment details go here"
 				codeValue: null
 				comments: null
 				dateValue: null
@@ -1862,10 +1902,10 @@
 				stringValue: null
 				uncertainty: null
 				urlValue: null
-				lsKind: "description"
+				lsKind: "experiment details"
 				valueOperator: null
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_description"
+				lsTypeAndKind: "clobValue_experiment details"
 				valueUnit: null
 				version: 0
 			,

@@ -44,6 +44,5 @@ class window.CurveCuratorAppController extends Backbone.View
 					@$('.bv_resultViewerBtn').attr('href',resultViewerURL)
 					@$('.bv_resultViewerBtn').show()
 				error: (err) =>
-					console.log 'got ajax error'
 					@serviceReturn = null
 				dataType: 'json'

@@ -1,17 +1,8 @@
 ((exports) ->
 	exports.codetableValues =
 		[
-			type: "protocol metadata"
-			kind: "assay stage"
-			codes:
-				[
-					code: "assay development"
-					name: "Assay Development"
-					ignored: false
-				]
-		,
-			type: "protocol metadata"
-			kind: "assay activity"
+			type: "assay"
+			kind: "activity"
 			codes:
 				[
 					code: "luminescence"
@@ -23,7 +14,7 @@
 					ignored: false
 				]
 		,
-			type: "protocol metadata"
+			type: "assay"
 			kind: "molecular target"
 			codes:
 				[
@@ -36,8 +27,8 @@
 					ignored: false
 				]
 		,
-			type: "protocol metadata"
-			kind: "target origin"
+			type: "target"
+			kind: "origin"
 			codes:
 				[
 					code: "human"
@@ -49,8 +40,8 @@
 					ignored: false
 				]
 		,
-			type: "protocol metadata"
-			kind:"assay type"
+			type: "assay"
+			kind:"type"
 			codes:
 				[
 					code: "cellular assay"
@@ -58,8 +49,8 @@
 					ignored: false
 				]
 		,
-			type: "protocol metadata"
-			kind: "assay technology"
+			type: "assay"
+			kind: "technology"
 			codes:
 				[
 					code: "wizard triple luminescence"
@@ -67,7 +58,7 @@
 					ignored: false
 				]
 		,
-			type: "protocol metadata"
+			type: "reagent"
 			kind: "cell line"
 			codes:
 				[
