@@ -448,9 +448,9 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 							else
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 #								prot = new PrimaryScreenProtocol json
-								lsKind = json[0].lsKind
+								lsKind = json.lsKind
 								if lsKind is "Bio Activity"
-									prot = new PrimaryScreenProtocol json[0]
+									prot = new PrimaryScreenProtocol json
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy
 										@model = prot.duplicateEntity()

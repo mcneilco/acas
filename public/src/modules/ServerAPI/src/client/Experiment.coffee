@@ -179,7 +179,7 @@ class window.ExperimentBaseController extends BaseEntityController
 	#								expt = new Experiment json
 									lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 									if lsKind is "default"
-										expt = new Experiment json[0]
+										expt = new Experiment json
 										expt.set expt.parse(expt.attributes)
 										if window.AppLaunchParams.moduleLaunchParams.copy
 											@model = expt.duplicateEntity()
