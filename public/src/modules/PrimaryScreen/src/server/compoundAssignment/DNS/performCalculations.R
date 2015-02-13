@@ -3,6 +3,8 @@ performCalculations <- function(resultTable, parameters) {
   resultTable <- normalizeData(resultTable, parameters)
   
   # get transformed columns
+  transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
+  transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (trans in 1:length(parameters$transformationRuleList)) {
     transformation <- parameters$transformationRuleList[[trans]]$transformationRule
     if(transformation != "null") {
