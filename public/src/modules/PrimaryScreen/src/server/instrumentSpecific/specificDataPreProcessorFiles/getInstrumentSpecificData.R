@@ -3,7 +3,7 @@
 #require(rdap)
 
 
-getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, userInputReadTable, testMode=TRUE, 
+getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, readsTable, testMode=TRUE, 
                                       errorEnv, tempFilePath=NULL, dryRun=TRUE, matchNames=FALSE) {
   #
   # Parses the raw instrument files. Folder needs to have a plate association 
@@ -11,7 +11,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, us
   #
   # Input:  filePath (folder where the raw data files are)
   #         instrument (instrument type that is being parsed)
-  #         userInputReadTable (data.table from GUI input. Columns: readPosition, readName, activity)
+  #         readsTable (data.table from GUI input. Columns: readPosition, readName, activity)
   #         testMode (boolean)
   #         errorEnv
   #         tempFilePath (where log files and ini files are saved)
@@ -37,9 +37,12 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, us
   
   plateAssociationDT <- generateIniFile(filePath, tempFilePath, instrument)
   
-  userInputReadTable <- formatUserInputActivityColumns(readsTable=userInputReadTable, 
-                                               activityColNames=unique(plateAssociationDT$dataTitle), 
-                                               tempFilePath=tempFilePath, matchNames=matchNames)
+  # keep this in this part of the code so that warnings can be relayed to user before uploading data
+  userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, 
+                                                       activityColNames=unique(plateAssociationDT$dataTitle), 
+                                                       tempFilePath=tempFilePath, matchNames=matchNames)
+  
+  ## TODO: dryRun should return "summaryInfo" here?
 
   assayData <- data.frame()
   assayData <- plateAssociationDT[ , parseAssayPlateFiles(file.path(filePath,assayFileName), 
@@ -48,11 +51,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, us
                                                           tempFilePath=tempFilePath), 
                                   by=list(assayFileName, assayBarcode, plateOrder)]
   
-  assayData <- adjustColumnsToUserInput(inputColumnTable=userInputReadTable, 
-                                        inputDataTable=assayData, 
-                                        tempFilePath=tempFilePath)
-  
-  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData))
+  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData, userInputReadTable=userInputReadTable))
 }
 
 

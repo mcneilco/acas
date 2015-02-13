@@ -29,7 +29,7 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv,
   
   instrumentData <- getInstrumentSpecificData(filePath=folderToParse, 
                                               instrument=parameters$instrumentReader, 
-                                              userInputReadTable=readsTable, 
+                                              readsTable=readsTable, 
                                               testMode=testMode,
                                               errorEnv=errorEnv,
                                               tempFilePath=tempFilePath, # this should be the analysis folder?

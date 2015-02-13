@@ -1,6 +1,6 @@
 
 
-adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFilePath) {
+adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   # inputColumnTable: 
   #   userReadPosition: null if "match names" = TRUE in GUI
   #   userReadName: character
@@ -9,10 +9,6 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
   #   calculatedRead: boolean
   #   activityColName: character
   #   newActivityColName: character
-  
-  
-  # For log file
-  write.table(paste0(Sys.time(), "\tbegin adjustColumnsToUserInput"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   # sets the names for all of the "defined" reads, but none of the calculated reads
   setnames(inputDataTable, 
@@ -35,8 +31,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
       } else if(calculation == "Calc: (R2/R1)*100") {
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
-                                                 get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
-                         * 100]
+                                              get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
+                                              * 100]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
@@ -44,7 +40,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
       } else if(calculation == "Calc: R1/R2") {
         if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
-                                                 get(inputColumnTable[userReadOrder==2]$newActivityColName))]
+                                              get(inputColumnTable[userReadOrder==2]$newActivityColName))]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
@@ -52,7 +48,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
       } else if(calculation == "Calc: R2/R1") {
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
-                                                 get(inputColumnTable[userReadOrder==1]$newActivityColName))]
+                                              get(inputColumnTable[userReadOrder==1]$newActivityColName))]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
@@ -72,16 +68,28 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable, tempFileP
     }  
   }
   
-  
-  colNamesToCheck <- setdiff(colnames(inputDataTable), c("assayFileName", "assayBarcode", "rowName", "colName", "wellReference", "plateOrder"))
+  standardListOfColNames <- c("plateType",
+                              "assayBarcode",
+                              "cmpdBarcode",
+                              "sourceType",
+                              "well",
+                              "row",
+                              "column",
+                              "plateOrder",
+                              "batchName",
+                              "batch_number",
+                              "cmpdConc",
+                              "batchCode")
+  colNamesToCheck <- setdiff(colnames(inputDataTable), standardListOfColNames)
   colNamesToKeep <- inputColumnTable$newActivityColName
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
   inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)
   
   # copy the read column that we want to do transformation/normalization on (user input)
-  activityColName <- inputColumnTable$newActivityColName[inputColumnTable$activityCol]
-  inputDataTable$activity <- as.numeric(inputDataTable[ , get(activityColName)])
+  activityColName <- inputColumnTable[activityCol==TRUE]$newActivityColName
+  #     inputDataTable[ , activity := as.numeric(get(activityColName))]
+  inputDataTable$activity <- as.numeric(inputDataTable[,get(activityColName)])
   
   return(inputDataTable)
 }

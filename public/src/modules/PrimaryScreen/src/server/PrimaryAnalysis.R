@@ -1669,6 +1669,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"getCompoundAssignments.R"))
   
   resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
+
+  # this also performs any calculations from the GUI
+  resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
   
   resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
