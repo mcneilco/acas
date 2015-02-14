@@ -55,10 +55,36 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
         }
       } else if(calculation == "Calc: R1/Heavy Atom Count") {
         if(!inputColumnTable[userReadOrder==1]$calculatedRead) {
+          # Adds a new "read" so that this will one of the columns that are kept
+          hacReadOrder <- nrow(inputColumnTable)+1
+          newInputColumnTableRow <- data.table(userReadPosition="",
+                                               userReadName="",
+                                               activityCol=FALSE,
+                                               userReadOrder=hacReadOrder,
+                                               calculatedRead=FALSE,
+                                               activityColName="HAC: Heavy Atom Count",
+                                               newActivityColName=paste0("R",hacReadOrder," {HAC: Heavy Atom Count}"))
+          inputColumnTable <- rbind(inputColumnTable, newInputColumnTableRow)
+          
+          # Call the service to get the heavy atom count
+          heavyAtomCount <- data.table(batchCode=unique(inputDataTable$batchCode),
+                                       heavyAtomCount=get_compound_properties(unique(inputDataTable$batchCode), 
+                                                                              propertyNames = c("HEAVY_ATOM_COUNT"), 
+                                                                              applicationSettings$service.external.compound.calculatedProperties.url)$HEAVY_ATOM_COUNT)
+          
+          
+          # Merge the HAC data table with the overall data table
+          inputDataTable <- merge(inputDataTable, heavyAtomCount, by="batchCode")
+          
+          # Re sort the data table (merge sorted on batchCode)
+          setkeyv(inputDataTable, c("plateOrder","row","column"))
+          
+          
           inputDataTable[ , calculatedRead := get(inputColumnTable[userReadOrder==1]$newActivityColName) / 
-                                              get(inputColumnTable[userReadOrder==1]$newActivityColName)]
-          warnUser(paste0(calculation," not defined in the system yet. Putting in a placeholder of 1."))
+                                              heavyAtomCount]
+          
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+          setnames(inputDataTable, "heavyAtomCount", inputColumnTable[activityColName == "HAC: Heavy Atom Count"]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }

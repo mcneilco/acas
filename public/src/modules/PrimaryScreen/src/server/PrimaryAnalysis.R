@@ -1584,6 +1584,31 @@ removeNonCurves <- function(analysisData) {
   return(rbind(doseRespData, newSingle))
 }
 
+get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::applicationSettings$service.external.compound.calculatedProperties.url) {
+  namedProperties <- propertyNames
+  names(namedProperties) <- rep("propertyName",length(propertyNames))
+  response <- do.call(postForm, 
+                      as.list(
+                        c(uri = serviceUrl,
+                          inFormat = "ids", 
+                          namedProperties,
+                          compoundPayload = paste0(ids, collapse = '\n'),
+                          style = 'HTTPPOST'
+                        )
+                      )
+  )
+  if(length(propertyNames) == 1) {
+    lines <- paste0(strsplit(response,'\n')[[1]])
+    blanks <- lines == ""
+    lines[blanks] <- NA
+    properties <- fread(paste0(lines,collapse = "\n"))
+  } else {
+    properties <- fread(response, header = F)
+  }
+  setnames(properties, propertyNames)
+  return(properties)
+}
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
@@ -1670,6 +1695,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
 
+  
+  # TODO: Rmove this when value is in config.properties
+  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
   # this also performs any calculations from the GUI
   resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
   
