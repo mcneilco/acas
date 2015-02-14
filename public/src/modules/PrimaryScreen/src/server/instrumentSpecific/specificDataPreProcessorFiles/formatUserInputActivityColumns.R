@@ -14,8 +14,8 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   userInput <- copy(readsTable)
   setnames(userInput, c("readPosition", "readName","activity"), c("userReadPosition", "userReadName","activityCol"))
   #userInput$activityCol <- NULL
-  userInput$activityColName <- "None"
-  userInput$newActivityColName <- "None"
+  userInput[ , activityColName := "None"]
+  userInput[ , newActivityColName := "None"]
   
   noMatch <- list()
   overWrite <- list()
@@ -26,40 +26,50 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
     stopUser("At least one read column needs to be chosen as the activity column.")
   }
   
-  if(length(activityColNames) < nrow(userInput)) {
+  if(length(activityColNames) < nrow(userInput[calculatedRead == FALSE])) {
     stopUser("More fields are defined in read input than are available from data file.")
   }
   
   if (matchNames) {
-    for(name in userInput$userReadName) {
+    # Finds activity columns that match the user input activity. 
+    # Assigns new activity column names of format "Rn {activity}"
+    # Filters out calculated read columns since those won't match.
+    for(name in userInput[calculatedRead == FALSE]$userReadName) {
       columnCount <- 0
       for(activity in activityColNames) {
         if(name == activity) {
-          userInput[userReadName==name, ]$activityColName <- activity
-          userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",activity,"}")
+          userInput[userReadName==name, activityColName := activity]
+          userInput[userReadName==name, newActivityColName := paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",activity,"}")]
           columnCount <- columnCount + 1
         }
       }
       if(columnCount == 0) {
         noMatch[[length(noMatch) + 1]] <- name
-        userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
+        userInput[userReadName==name, newActivityColName := paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")]
       } else if(columnCount > 1) {
         stopUser(paste0("Multiple activity columns found for read name: '", name, "'"))
       } 
     } 
   } else {
-    for (order in userInput$userReadPosition) {
-      userInput[userReadPosition == order, ]$activityColName <- activityColNames[[order]]
+    # Finds activity columns that match the user input read position. 
+    # Assigns new activity column names of format "Rn {userInputReadName}"
+    # Filters out calculated read columns since those don't have a position in the raw data files
+    for (order in userInput[calculatedRead == FALSE]$userReadOrder) {
+      userInput[userReadOrder == order, activityColName := activityColNames[[order]]]
     }
     # Checks to see if data has a generic name (Rn)
-    for(name in userInput$userReadName) {
+    for(name in userInput[calculatedRead == FALSE]$userReadName) {
       if(!grepl("^R[0-9]+$", userInput[userReadName==name, ]$activityColName) && name != userInput[userReadName==name, ]$activityColName){
         overWrite[[length(overWrite) + 1]] <- userInput[userReadName==name, ]$activityColName
       }
-      userInput[userReadName==name, ]$newActivityColName <- paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")
+      userInput[userReadName==name, newActivityColName := paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",name,"}")]
     }
   }
   
+  # Assigns new activity column names to Calculated Reads
+  for(name in userInput[calculatedRead == TRUE]$userReadName) {
+    userInput[userReadName == name , newActivityColName := paste0("R", userInput[userReadName==name, ]$userReadOrder, " {",name,"}")]
+  }
   
   # these warnings/errors will only happen if matchNames = TRUE
   validActivityColumns <- userInput[activityColName != "None", ]$activityColName

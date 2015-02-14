@@ -23,6 +23,8 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv,
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
   
+  ## TODO: dryRun should return "summaryInfo" here?
+  
   matchNames <- parameters$matchReadName
   
   instrumentData <- getInstrumentSpecificData(filePath=folderToParse, 

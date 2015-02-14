@@ -51,9 +51,7 @@ getInstrumentSpecificData <- function(filePath=".", instrument=NA_character_, re
                                                           tempFilePath=tempFilePath), 
                                   by=list(assayFileName, assayBarcode, plateOrder)]
   
-  assayData <- adjustColumnsToUserInput(inputColumnTable=userInputReadTable, inputDataTable=assayData, tempFilePath=tempFilePath)
-  
-  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData))
+  return(list(plateAssociationDT=plateAssociationDT, assayData=assayData, userInputReadTable=userInputReadTable))
 }
 
 

@@ -38,9 +38,9 @@ getPlateDataOrder <- function(filePath, instrument, tempFilePath) {
   
   # Reorder columns
   if (TRUE %in% grepl("sidecarBarcode", colnames(plateAssociationDT))) {
-    setcolorder(plateData, c("plateOrder", "readOrder", "assayBarcode", "compoundBarcode_1", "sidecarBarcode", "assayFileName", "instrumentType", "dataTitle"))
+    setcolorder(plateData, c("plateOrder", "readPosition", "assayBarcode", "compoundBarcode_1", "sidecarBarcode", "assayFileName", "instrumentType", "dataTitle"))
   } else {
-    setcolorder(plateData, c("plateOrder", "readOrder", "assayBarcode", "compoundBarcode_1", "assayFileName", "instrumentType", "dataTitle"))
+    setcolorder(plateData, c("plateOrder", "readPosition", "assayBarcode", "compoundBarcode_1", "assayFileName", "instrumentType", "dataTitle"))
   }
   
   return(plateData)

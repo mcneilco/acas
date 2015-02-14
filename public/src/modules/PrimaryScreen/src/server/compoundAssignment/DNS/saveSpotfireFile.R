@@ -48,8 +48,9 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
   
   # targetPath is only for testing
-  finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
-                                        targetPath = "testSpotfire.txt")
+#   finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
+#                                         targetPath = "testSpotfire.txt")
+finalLocation <- "blah"
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
     # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/DNS/files/v1/Files/FILE1419587.txt\
