@@ -1382,7 +1382,7 @@ getReadOrderTable <- function(readList) {
   # Output: readsTable (data.table)
   
   readsTable <- data.table(ldply(readList, data.frame))
-  readsTable[ , userReadOrder := 1:nrow(readsTable)]
+  setnames(readsTable, "readNumber", "userReadOrder")
   readsTable[ , calculatedRead := FALSE]
   readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
   
