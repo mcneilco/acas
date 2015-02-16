@@ -83,8 +83,6 @@ exports.specScripts = [
 	"/src/modules/Components/spec/testFixtures/projectServiceTestJSON.js",
 	"/src/modules/DocForBatches/spec/testFixtures/testJSON.js",
 	"/src/modules/Logging/spec/testFixtures/LoggingTestJSON.js",
-	"/javascripts/spec/testFixtures/AbstractBaseComponentCodeTableTestJSON.js",
-	"/javascripts/spec/testFixtures/AbstractBaseComponentTestJSON.js",
 	"/javascripts/spec/testFixtures/AttachFileCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/AttachFileTestJSON.js",
 	"/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js",

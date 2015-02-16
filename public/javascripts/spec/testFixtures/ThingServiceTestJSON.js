@@ -627,7 +627,7 @@
                 version: 0
               }, {
                 clobValue: null,
-                codeValue: "Avidity",
+                codeValue: "Customer",
                 comments: null,
                 dateValue: null,
                 fileValue: null,
