@@ -1,5 +1,5 @@
 class window.CationicBlockParent extends AbstractBaseComponentParent
-	urlRoot: "/api/cationicBlockParents"
+	urlRoot: "/api/things/parent/cationic block"
 	className: "CationicBlockParent"
 
 	initialize: ->
@@ -56,7 +56,7 @@ class window.CationicBlockParent extends AbstractBaseComponentParent
 		copiedThing
 
 class window.CationicBlockBatch extends AbstractBaseComponentBatch
-	urlRoot: "/api/cationicBlockBatches"
+	urlRoot: "/api/things/batch/cationic block"
 
 	initialize: ->
 		@.set
@@ -168,6 +168,11 @@ class window.CationicBlockBatch extends AbstractBaseComponentBatch
 class window.CationicBlockParentController extends AbstractBaseComponentParentController
 	additionalParentAttributesTemplate: _.template($("#CationicBlockParentView").html())
 
+	events: ->
+		_(super()).extend(
+			"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
+		)
+
 	initialize: ->
 		unless @model?
 			@model=new CationicBlockParent()
@@ -181,7 +186,18 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 		@setupStructuralFileController()
 		super()
 
-	setupStructuralFileController: ->
+	setupStructuralFileController: =>
+		structuralFileValue = @model.get('structural file').get('value')
+		if structuralFileValue is null or structuralFileValue is "" or structuralFileValue is undefined
+			console.log "structural file is null"
+			@createNewFileChooser()
+			@$('.bv_deleteSavedFile').hide()
+		else
+			console.log "structural file is not null"
+			@$('.bv_structuralFile').html '<a href='+structuralFileValue+'>'+structuralFileValue+'</a>'
+
+	createNewFileChooser: =>
+		console.log "create new file chooser"
 		@structuralFileController = new LSFileChooserController
 			el: @$('.bv_structuralFile')
 			formId: 'fieldBlah',
@@ -195,17 +211,24 @@ class window.CationicBlockParentController extends AbstractBaseComponentParentCo
 		@structuralFileController.on 'amClean', =>
 			@trigger 'amClean'
 		@structuralFileController.render()
-		@structuralFileController.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
 		@model.get("structural file").set("value", nameOnServer)
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
+		console.log "handle file removed"
 		@model.get("structural file").set("value", "")
+		console.log @model
+
+	handleDeleteSavedStructuralFile: =>
+		console.log "handle delete saved structural file"
+		@handleFileRemoved()
+		@$('.bv_deleteSavedFile').hide()
+		@createNewFileChooser()
 
 	updateModel: =>
+		console.log "updateModel"
 		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
 		super()
 
@@ -266,7 +289,7 @@ class window.CationicBlockController extends AbstractBaseComponentController
 						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/cationicBlockParents/codename/"+launchCode
+						url: "/api/things/parent/cationic block/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'

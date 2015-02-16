@@ -40,8 +40,6 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-		console.log "copy protocol attributes"
-		console.log @
 		#cache values I don't want to overwrite
 		scientist = @getScientist().get('codeValue')
 		notebook = @getNotebook().get('stringValue')

@@ -1,5 +1,5 @@
 class window.SpacerParent extends AbstractBaseComponentParent
-	urlRoot: "/api/spacerParents"
+	urlRoot: "/api/things/parent/spacer"
 	className: "SpacerParent"
 
 	initialize: ->
@@ -83,7 +83,7 @@ class window.SpacerParent extends AbstractBaseComponentParent
 		copiedThing
 
 class window.SpacerBatch extends AbstractBaseComponentBatch
-	urlRoot: "/api/spacerBatches"
+	urlRoot: "/api/things/batch/spacer"
 
 	initialize: ->
 		@.set
@@ -219,7 +219,7 @@ class window.SpacerParentController extends AbstractBaseComponentParentControlle
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
-		@model.get("structural file").set("value", "")
+		@model.get("structural file").set("value", null)
 
 	updateModel: =>
 		@model.get("spacer name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -280,7 +280,7 @@ class window.SpacerController extends AbstractBaseComponentController
 						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/spacerParents/codename/"+launchCode
+						url: "/api/things/parent/spacer/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'

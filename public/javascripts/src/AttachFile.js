@@ -64,9 +64,11 @@
     function AttachFileController() {
       this.clear = __bind(this.clear, this);
       this.updateModel = __bind(this.updateModel, this);
+      this.handleDeleteSavedStructuralFile = __bind(this.handleDeleteSavedStructuralFile, this);
       this.handleFileTypeChanged = __bind(this.handleFileTypeChanged, this);
       this.handleFileRemoved = __bind(this.handleFileRemoved, this);
       this.handleFileUpload = __bind(this.handleFileUpload, this);
+      this.createNewFileChooser = __bind(this.createNewFileChooser, this);
       this.render = __bind(this.render, this);
       return AttachFileController.__super__.constructor.apply(this, arguments);
     }
@@ -77,7 +79,8 @@
 
     AttachFileController.prototype.events = {
       "change .bv_fileType": "handleFileTypeChanged",
-      "click .bv_delete": "clear"
+      "click .bv_delete": "clear",
+      "click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
     };
 
     AttachFileController.prototype.initialize = function() {
@@ -88,23 +91,49 @@
       console.log("first Option Name?");
       console.log(this.options.firstOptionName);
       if (this.options.firstOptionName != null) {
-        return this.firstOptionName = this.options.firstOptionName;
+        this.firstOptionName = this.options.firstOptionName;
       } else {
-        return this.firstOptionName = "Select File Type";
+        this.firstOptionName = "Select File Type";
+      }
+      if (this.options.allowedFileTypes != null) {
+        this.allowedFileTypes = this.options.allowedFileTypes;
+      } else {
+        this.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];
+      }
+      if (this.options.fileTypeListURL != null) {
+        return this.fileTypeListURL = this.options.fileTypeListURL;
+      } else {
+        return this.fileTypeListURL = alert('a file type list url must be provided');
       }
     };
 
     AttachFileController.prototype.render = function() {
+      var fileValue;
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
       this.setUpFileTypeSelect();
+      console.log("HERE");
+      console.log(this.model.get('fileValue'));
+      fileValue = this.model.get('fileValue');
+      if (fileValue === null || fileValue === "" || fileValue === void 0) {
+        console.log("fileValue is null");
+        this.createNewFileChooser();
+        this.$('.bv_deleteSavedFile').hide();
+      } else {
+        console.log("fileValue is not null");
+        this.$('.bv_uploadFile').html('<a href=' + fileValue + '>' + fileValue + '</a>');
+      }
+      return this;
+    };
+
+    AttachFileController.prototype.createNewFileChooser = function() {
       this.lsFileChooser = new LSFileChooserController({
         el: this.$('.bv_uploadFile'),
         formId: 'fieldBlah',
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
-        allowedFileTypes: ['pdf'],
+        allowedFileTypes: this.allowedFileTypes,
         hideDelete: this.autoAddAttachFileModel
       });
       this.lsFileChooser.render();
@@ -114,8 +143,9 @@
     };
 
     AttachFileController.prototype.setUpFileTypeSelect = function() {
+      console.log("set up file type select");
       this.fileTypeList = new PickListList();
-      this.fileTypeList.url = "/api/codetables/analytical method/file type";
+      this.fileTypeList.url = this.fileTypeListURL;
       return this.fileTypeListController = new PickListSelectController({
         el: this.$('.bv_fileType'),
         collection: this.fileTypeList,
@@ -154,6 +184,12 @@
     AttachFileController.prototype.handleFileTypeChanged = function() {
       this.updateModel();
       return this.trigger('amDirty');
+    };
+
+    AttachFileController.prototype.handleDeleteSavedStructuralFile = function() {
+      this.handleFileRemoved();
+      this.$('.bv_deleteSavedFile').hide();
+      return this.createNewFileChooser();
     };
 
     AttachFileController.prototype.updateModel = function() {
@@ -204,7 +240,17 @@
         this.autoAddAttachFileModel = true;
       }
       if (this.autoAddAttachFileModel) {
-        return this.collection.bind('remove', this.ensureValidCollectionLength);
+        this.collection.bind('remove', this.ensureValidCollectionLength);
+      }
+      if (this.options.allowedFileTypes != null) {
+        this.allowedFileTypes = this.options.allowedFileTypes;
+      } else {
+        this.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];
+      }
+      if (this.options.fileTypeListURL != null) {
+        return this.fileTypeListURL = this.options.fileTypeListURL;
+      } else {
+        return this.fileTypeListURL = alert('a file type list url must be provided');
       }
     };
 
@@ -240,7 +286,9 @@
       afc = new AttachFileController({
         model: fileInfo,
         autoAddAttachFileModel: this.autoAddAttachFileModel,
-        firstOptionName: this.options.firstOptionName
+        firstOptionName: this.options.firstOptionName,
+        allowedFileTypes: this.allowedFileTypes,
+        fileTypeListURL: this.fileTypeListURL
       });
       this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
       afc.on('amDirty', (function(_this) {

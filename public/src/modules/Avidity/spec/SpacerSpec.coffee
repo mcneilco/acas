@@ -682,30 +682,4 @@ describe 'Spacer testing', ->
 				it "should have the save button be enabled", ->
 					runs ->
 						expect(@sbc.$('.bv_save').attr('disabled')).toBeUndefined()
-				it "should update the parent code", ->
-					runs ->
-						@sbc.$('.bv_save').click()
-					waits(2000)
-					runs ->
-						expect(@sbc.$('.bv_parentCode').html()).toEqual "SP000001"
-				it "should update the batch code", ->
-					runs ->
-						@sbc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@sbc.$('.bv_batchCode').html()).toEqual "SP000001-1"
-				it "should show the update parent button", ->
-					runs ->
-						@sbc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@sbc.$('.bv_updateParent')).toBeVisible()
-				it "should show the update batch button", ->
-					runs ->
-						@sbc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@sbc.$('.bv_saveBatch')).toBeVisible()
-
-
 

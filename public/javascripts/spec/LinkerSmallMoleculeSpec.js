@@ -939,45 +939,9 @@
               return this.lsmc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
-          it("should have the save button be enabled", function() {
+          return it("should have the save button be enabled", function() {
             return runs(function() {
               return expect(this.lsmc.$('.bv_save').attr('disabled')).toBeUndefined();
-            });
-          });
-          it("should update the parent code", function() {
-            runs(function() {
-              return this.lsmc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.lsmc.$('.bv_parentCode').html()).toEqual("LSM000001");
-            });
-          });
-          it("should update the batch code", function() {
-            runs(function() {
-              return this.lsmc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.lsmc.$('.bv_batchCode').html()).toEqual("LSM000001-1");
-            });
-          });
-          it("should show the update parent button", function() {
-            runs(function() {
-              return this.lsmc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.lsmc.$('.bv_updateParent')).toBeVisible();
-            });
-          });
-          return it("should show the update batch button", function() {
-            runs(function() {
-              return this.lsmc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.lsmc.$('.bv_saveBatch')).toBeVisible();
             });
           });
         });

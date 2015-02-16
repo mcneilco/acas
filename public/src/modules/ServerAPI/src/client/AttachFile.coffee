@@ -32,6 +32,7 @@ class window.AttachFileController extends AbstractFormController
 	events:
 		"change .bv_fileType": "handleFileTypeChanged"
 		"click .bv_delete": "clear"
+		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: ->
 		@errorOwnerName = 'AttachFileController'
@@ -44,18 +45,39 @@ class window.AttachFileController extends AbstractFormController
 			@firstOptionName = @options.firstOptionName
 		else
 			@firstOptionName = "Select File Type"
+		if @options.allowedFileTypes?
+			@allowedFileTypes = @options.allowedFileTypes
+		else
+			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+		if @options.fileTypeListURL?
+			@fileTypeListURL = @options.fileTypeListURL
+		else
+			@fileTypeListURL = alert 'a file type list url must be provided'
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@setUpFileTypeSelect()
+		console.log "HERE"
+		console.log @model.get('fileValue')
+		fileValue = @model.get('fileValue')
+		if fileValue is null or fileValue is "" or fileValue is undefined
+			console.log "fileValue is null"
+			@createNewFileChooser()
+			@$('.bv_deleteSavedFile').hide()
+		else
+			console.log "fileValue is not null"
+			@$('.bv_uploadFile').html '<a href='+fileValue+'>'+fileValue+'</a>'
+		@
+
+	createNewFileChooser: =>
 		@lsFileChooser = new LSFileChooserController({
 			el: @$('.bv_uploadFile'),
 			formId: 'fieldBlah',
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
-			allowedFileTypes: ['pdf']
+			allowedFileTypes: @allowedFileTypes
 			hideDelete: @autoAddAttachFileModel
 		});
 		@lsFileChooser.render()
@@ -64,8 +86,9 @@ class window.AttachFileController extends AbstractFormController
 		@
 
 	setUpFileTypeSelect: ->
+		console.log "set up file type select"
 		@fileTypeList = new PickListList()
-		@fileTypeList.url = "/api/codetables/analytical method/file type"
+		@fileTypeList.url = @fileTypeListURL
 		@fileTypeListController = new PickListSelectController
 			el: @$('.bv_fileType')
 			collection: @fileTypeList
@@ -98,6 +121,11 @@ class window.AttachFileController extends AbstractFormController
 		@updateModel()
 		@trigger 'amDirty'
 
+	handleDeleteSavedStructuralFile: =>
+		@handleFileRemoved()
+		@$('.bv_deleteSavedFile').hide()
+		@createNewFileChooser()
+
 	updateModel: =>
 		@model.set
 			fileType: @$('.bv_fileType').val()
@@ -129,6 +157,14 @@ class window.AttachFileListController extends Backbone.View
 			@autoAddAttachFileModel = true
 		if @autoAddAttachFileModel
 			@collection.bind 'remove', @ensureValidCollectionLength
+		if @options.allowedFileTypes?
+			@allowedFileTypes = @options.allowedFileTypes
+		else
+			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+		if @options.fileTypeListURL?
+			@fileTypeListURL = @options.fileTypeListURL
+		else
+			@fileTypeListURL = alert 'a file type list url must be provided'
 
 	render: =>
 		$(@el).empty()
@@ -159,6 +195,8 @@ class window.AttachFileListController extends Backbone.View
 			model: fileInfo
 			autoAddAttachFileModel: @autoAddAttachFileModel
 			firstOptionName: @options.firstOptionName
+			allowedFileTypes: @allowedFileTypes
+			fileTypeListURL: @fileTypeListURL
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
 #		afc.on 'fileUploaded', =>
 #			if @autoAddAttachFileModel

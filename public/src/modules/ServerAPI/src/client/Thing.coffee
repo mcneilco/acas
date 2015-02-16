@@ -110,7 +110,7 @@ class window.Thing extends Backbone.Model
 			analyticalFileValue = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", @get('lsKind')+" batch", "fileValue", type.code
 #			if type.code is "nmr"
 #				analyticalFileValue.set fileValue: "test fileValue"
-			unless analyticalFileValue.get('fileValue') is undefined or analyticalFileValue.get('fileValue') is ""
+			unless (analyticalFileValue.get('fileValue') is undefined or analyticalFileValue.get('fileValue') is "" or analyticalFileValue.get('fileValue') is null) or type.code is "unassigned"
 				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
 				#add new afm to attach file list
 				afm = new AttachFile

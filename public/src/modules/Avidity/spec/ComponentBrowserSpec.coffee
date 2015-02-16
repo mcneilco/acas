@@ -41,13 +41,13 @@ describe "Component Browser module testing", ->
 			it "should show the component name", ->
 				expect(@prsc.$('.bv_componentName').html()).toEqual "cMAP10"
 			it "should show the component code", ->
-				expect(@prsc.$('.bv_componentCode').html()).toEqual "CB000001"
+				expect(@prsc.$('.bv_componentCode').html()).toEqual "CB000001-1"
 			it "should show the component kind", ->
 				expect(@prsc.$('.bv_componentKind').html()).toEqual "cationic block"
 			it "should show the scientist", ->
-				expect(@prsc.$('.bv_scientist').html()).toEqual "2012-07-12"
+				expect(@prsc.$('.bv_scientist').html()).toEqual "john"
 			it "should show the completion date", ->
-				expect(@prsc.$('.bv_completionDate').html()).toEqual "john"
+				expect(@prsc.$('.bv_completionDate').html()).toEqual "2012-07-12"
 		describe "basic behavior", ->
 			it "should trigger gotClick when the row is clicked", ->
 				@clickTriggered = false

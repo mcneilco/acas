@@ -11,7 +11,7 @@
       return ProteinParent.__super__.constructor.apply(this, arguments);
     }
 
-    ProteinParent.prototype.urlRoot = "/api/proteinParents";
+    ProteinParent.prototype.urlRoot = "/api/things/parent/protein";
 
     ProteinParent.prototype.className = "ProteinParent";
 
@@ -145,7 +145,7 @@
       return ProteinBatch.__super__.constructor.apply(this, arguments);
     }
 
-    ProteinBatch.prototype.urlRoot = "/api/proteinBatches";
+    ProteinBatch.prototype.urlRoot = "/api/things/batch/protein";
 
     ProteinBatch.prototype.initialize = function() {
       this.set({
@@ -429,7 +429,7 @@
             }
             return $.ajax({
               type: 'GET',
-              url: "/api/proteinParents/codename/" + launchCode,
+              url: "/api/things/parent/protein/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');

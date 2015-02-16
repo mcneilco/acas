@@ -1,5 +1,5 @@
 class window.ProteinParent extends AbstractBaseComponentParent
-	urlRoot: "/api/proteinParents"
+	urlRoot: "/api/things/parent/protein"
 	className: "ProteinParent"
 
 	initialize: ->
@@ -104,7 +104,7 @@ class window.ProteinParent extends AbstractBaseComponentParent
 		copiedThing
 
 class window.ProteinBatch extends AbstractBaseComponentBatch
-	urlRoot: "/api/proteinBatches"
+	urlRoot: "/api/things/batch/protein"
 
 	initialize: ->
 		@.set
@@ -308,7 +308,7 @@ class window.ProteinController extends AbstractBaseComponentController
 						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/proteinParents/codename/"+launchCode
+						url: "/api/things/parent/protein/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'

@@ -83,8 +83,6 @@
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
       var completionDate, estates, notebook, project, pstates, scientist;
-      console.log("copy protocol attributes");
-      console.log(this);
       scientist = this.getScientist().get('codeValue');
       notebook = this.getNotebook().get('stringValue');
       completionDate = this.getCompletionDate().get('dateValue');

@@ -11,7 +11,7 @@
       return CationicBlockParent.__super__.constructor.apply(this, arguments);
     }
 
-    CationicBlockParent.prototype.urlRoot = "/api/cationicBlockParents";
+    CationicBlockParent.prototype.urlRoot = "/api/things/parent/cationic block";
 
     CationicBlockParent.prototype.className = "CationicBlockParent";
 
@@ -87,7 +87,7 @@
       return CationicBlockBatch.__super__.constructor.apply(this, arguments);
     }
 
-    CationicBlockBatch.prototype.urlRoot = "/api/cationicBlockBatches";
+    CationicBlockBatch.prototype.urlRoot = "/api/things/batch/cationic block";
 
     CationicBlockBatch.prototype.initialize = function() {
       this.set({
@@ -219,13 +219,22 @@
 
     function CationicBlockParentController() {
       this.updateModel = __bind(this.updateModel, this);
+      this.handleDeleteSavedStructuralFile = __bind(this.handleDeleteSavedStructuralFile, this);
       this.handleFileRemoved = __bind(this.handleFileRemoved, this);
       this.handleFileUpload = __bind(this.handleFileUpload, this);
+      this.createNewFileChooser = __bind(this.createNewFileChooser, this);
+      this.setupStructuralFileController = __bind(this.setupStructuralFileController, this);
       this.render = __bind(this.render, this);
       return CationicBlockParentController.__super__.constructor.apply(this, arguments);
     }
 
     CationicBlockParentController.prototype.additionalParentAttributesTemplate = _.template($("#CationicBlockParentView").html());
+
+    CationicBlockParentController.prototype.events = function() {
+      return _(CationicBlockParentController.__super__.events.call(this)).extend({
+        "click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
+      });
+    };
 
     CationicBlockParentController.prototype.initialize = function() {
       if (this.model == null) {
@@ -244,6 +253,20 @@
     };
 
     CationicBlockParentController.prototype.setupStructuralFileController = function() {
+      var structuralFileValue;
+      structuralFileValue = this.model.get('structural file').get('value');
+      if (structuralFileValue === null || structuralFileValue === "" || structuralFileValue === void 0) {
+        console.log("structural file is null");
+        this.createNewFileChooser();
+        return this.$('.bv_deleteSavedFile').hide();
+      } else {
+        console.log("structural file is not null");
+        return this.$('.bv_structuralFile').html('<a href=' + structuralFileValue + '>' + structuralFileValue + '</a>');
+      }
+    };
+
+    CationicBlockParentController.prototype.createNewFileChooser = function() {
+      console.log("create new file chooser");
       this.structuralFileController = new LSFileChooserController({
         el: this.$('.bv_structuralFile'),
         formId: 'fieldBlah',
@@ -263,9 +286,7 @@
           return _this.trigger('amClean');
         };
       })(this));
-      this.structuralFileController.render();
-      this.structuralFileController.on('fileUploader:uploadComplete', this.handleFileUpload);
-      return this.structuralFileController.on('fileDeleted', this.handleFileRemoved);
+      return this.structuralFileController.render();
     };
 
     CationicBlockParentController.prototype.handleFileUpload = function(nameOnServer) {
@@ -274,10 +295,20 @@
     };
 
     CationicBlockParentController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      console.log("handle file removed");
+      this.model.get("structural file").set("value", "");
+      return console.log(this.model);
+    };
+
+    CationicBlockParentController.prototype.handleDeleteSavedStructuralFile = function() {
+      console.log("handle delete saved structural file");
+      this.handleFileRemoved();
+      this.$('.bv_deleteSavedFile').hide();
+      return this.createNewFileChooser();
     };
 
     CationicBlockParentController.prototype.updateModel = function() {
+      console.log("updateModel");
       this.model.get("cationic block name").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_parentName')));
       return CationicBlockParentController.__super__.updateModel.call(this);
     };
@@ -387,7 +418,7 @@
             }
             return $.ajax({
               type: 'GET',
-              url: "/api/cationicBlockParents/codename/" + launchCode,
+              url: "/api/things/parent/cationic block/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');

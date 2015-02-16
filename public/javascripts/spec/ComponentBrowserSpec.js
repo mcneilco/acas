@@ -62,16 +62,16 @@
           return expect(this.prsc.$('.bv_componentName').html()).toEqual("cMAP10");
         });
         it("should show the component code", function() {
-          return expect(this.prsc.$('.bv_componentCode').html()).toEqual("CB000001");
+          return expect(this.prsc.$('.bv_componentCode').html()).toEqual("CB000001-1");
         });
         it("should show the component kind", function() {
           return expect(this.prsc.$('.bv_componentKind').html()).toEqual("cationic block");
         });
         it("should show the scientist", function() {
-          return expect(this.prsc.$('.bv_scientist').html()).toEqual("2012-07-12");
+          return expect(this.prsc.$('.bv_scientist').html()).toEqual("john");
         });
         return it("should show the completion date", function() {
-          return expect(this.prsc.$('.bv_completionDate').html()).toEqual("john");
+          return expect(this.prsc.$('.bv_completionDate').html()).toEqual("2012-07-12");
         });
       });
       return describe("basic behavior", function() {

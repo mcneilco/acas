@@ -143,7 +143,7 @@
       for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
         type = fileTypes[_i];
         analyticalFileValue = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", this.get('lsKind') + " batch", "fileValue", type.code);
-        if (!(analyticalFileValue.get('fileValue') === void 0 || analyticalFileValue.get('fileValue') === "")) {
+        if (!((analyticalFileValue.get('fileValue') === void 0 || analyticalFileValue.get('fileValue') === "" || analyticalFileValue.get('fileValue') === null) || type.code === "unassigned")) {
           afm = new AttachFile({
             fileType: type.code,
             fileValue: analyticalFileValue.get('fileValue')

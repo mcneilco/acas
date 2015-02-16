@@ -147,7 +147,6 @@ exports.specScripts = [
 	"/javascripts/spec/BulkLoadSampleTransfersServerSpec.js",
 	"/javascripts/spec/BulkLoadSampleTransfersSpec.js",
 	"/javascripts/spec/CationicBlock.js",
-	"/javascripts/spec/CationicBlockServiceSpec.js",
 	"/javascripts/spec/CationicBlockSpec.js",
 	"/javascripts/spec/CodeTableServiceSpec.js",
 	"/javascripts/spec/ComponentBrowserSpec.js",
@@ -187,7 +186,6 @@ exports.specScripts = [
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/SpacerSpec.js",
 	"/javascripts/spec/TagListSpec.js",
-	"/javascripts/spec/ThingServiceSpec.js",
 	"/javascripts/spec/ThingSpec.js",
 	"/javascripts/spec/UtilityFunctionsSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"

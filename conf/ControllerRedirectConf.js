@@ -2,28 +2,28 @@
   (function(exports) {
     return exports.controllerRedirectConf = {
       CB: {
-        entityName: "cationicBlockParents",
+        entityName: "things/parent/cationic block",
         stub: false,
         "cationic block": {
           deepLink: "cationic_block"
         }
       },
       LSM: {
-        entityName: "linkerSmallMoleculeParents",
+        entityName: "things/parent/linker small molecule",
         stub: false,
         "linker small molecule": {
           deepLink: "linker_small_molecule"
         }
       },
       PRTN: {
-        entityName: "proteinParents",
+        entityName: "things/parent/protein",
         stub: false,
         "protein": {
           deepLink: "protein"
         }
       },
       SP: {
-        entityName: "spacerParents",
+        entityName: "things/parent/spacer",
         stub: false,
         "spacer": {
           deepLink: "spacer"

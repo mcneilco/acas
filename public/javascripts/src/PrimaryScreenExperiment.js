@@ -520,7 +520,6 @@
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit status");
       if (!status.has('codeValue')) {
-        console.log("new model fit status value");
         status.set({
           codeValue: "not started"
         });
@@ -562,7 +561,6 @@
     PrimaryScreenExperiment.prototype.copyProtocolAttributes = function(protocol) {
       var modelFitStatus;
       modelFitStatus = this.getModelFitStatus().get('codeValue');
-      console.log(modelFitStatus);
       PrimaryScreenExperiment.__super__.copyProtocolAttributes.call(this, protocol);
       return this.getModelFitStatus().set({
         codeValue: modelFitStatus
@@ -835,7 +833,6 @@
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
       var activitySet, index, _results;
-      console.log("check activity");
       index = this.collection.length - 1;
       activitySet = false;
       _results = [];
@@ -856,8 +853,6 @@
 
     PrimaryAnalysisReadListController.prototype.renumberReads = function() {
       var index, readNumber, _results;
-      console.log("renumber reads");
-      console.log(this.collection);
       this.nextReadNumber = 1;
       index = 0;
       _results = [];
@@ -1186,7 +1181,6 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handlePositiveControlBatchChanged = function() {
       var batchCode;
-      console.log("handle pos cont batch changed");
       batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch'));
       return this.getPreferredBatchId(batchCode, 'positiveControl');
     };
@@ -1210,7 +1204,6 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.getPreferredBatchId = function(batchId, control) {
-      console.log("beg of getPreferredBatchId");
       if (batchId === "") {
         this.model.get(control).set({
           batchCode: ""
@@ -1235,7 +1228,6 @@
           })(this),
           error: (function(_this) {
             return function(err) {
-              console.log('got ajax error');
               return _this.serviceReturn = null;
             };
           })(this),
@@ -1246,17 +1238,14 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handlePreferredBatchIdReturn = function(json, control) {
       var preferredName, requestName, results;
-      console.log("beg of handle preferred batch id return");
       if (json.results != null) {
         results = json.results[0];
-        console.log(results);
         preferredName = results.preferredName;
         requestName = results.requestName;
         if (preferredName === requestName) {
           this.model.get(control).set({
             batchCode: preferredName
           });
-          console.log("valid id");
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
           return this.attributeChanged();
         } else if (preferredName === "") {
@@ -1264,10 +1253,8 @@
             batchCode: "invalid"
           });
           this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          console.log("invalid id");
           return this.attributeChanged();
         } else {
-          console.log("alias, save full name");
           this.model.get(control).set({
             batchCode: preferredName
           });

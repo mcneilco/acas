@@ -681,28 +681,3 @@ describe 'Linker Small Molecule testing', ->
 				it "should have the save button be enabled", ->
 					runs ->
 						expect(@lsmc.$('.bv_save').attr('disabled')).toBeUndefined()
-				it "should update the parent code", ->
-					runs ->
-						@lsmc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@lsmc.$('.bv_parentCode').html()).toEqual "LSM000001"
-				it "should update the batch code", ->
-					runs ->
-						@lsmc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@lsmc.$('.bv_batchCode').html()).toEqual "LSM000001-1"
-				it "should show the update parent button", ->
-					runs ->
-						@lsmc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@lsmc.$('.bv_updateParent')).toBeVisible()
-				it "should show the update batch button", ->
-					runs ->
-						@lsmc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@lsmc.$('.bv_saveBatch')).toBeVisible()
-

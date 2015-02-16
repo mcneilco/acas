@@ -46,6 +46,7 @@ describe "Attach File testing", ->
 				@afc = new AttachFileController
 					model: new AttachFile window.attachFileTestJSON.attachFileInfo[0]
 					el: $('#fixture')
+					fileTypeListURL: "/api/codetables/analytical method/file type"
 				@afc.render()
 			describe "basic existance tests", ->
 				it "should exist", ->
@@ -78,6 +79,7 @@ describe "Attach File testing", ->
 				@aflc= new AttachFileListController
 					el: $('#fixture')
 					collection: new AttachFileList()
+					fileTypeListURL: "/api/codetables/analytical method/file type"
 				@aflc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->

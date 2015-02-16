@@ -989,47 +989,11 @@
               return this.pc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
-          it("should have the save button be enabled", function() {
+          return it("should have the save button be enabled", function() {
             return runs(function() {
               console.log(this.pc.model.validationError);
               console.log("here in test");
               return expect(this.pc.$('.bv_save').attr('disabled')).toBeUndefined();
-            });
-          });
-          it("should update the parent code", function() {
-            runs(function() {
-              return this.pc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.pc.$('.bv_parentCode').html()).toEqual("PROT000001");
-            });
-          });
-          it("should update the batch code", function() {
-            runs(function() {
-              return this.pc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.pc.$('.bv_batchCode').html()).toEqual("PROT000001-1");
-            });
-          });
-          it("should show the update parent button", function() {
-            runs(function() {
-              return this.pc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.pc.$('.bv_updateParent')).toBeVisible();
-            });
-          });
-          return it("should show the update batch button", function() {
-            runs(function() {
-              return this.pc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.pc.$('.bv_saveBatch')).toBeVisible();
             });
           });
         });

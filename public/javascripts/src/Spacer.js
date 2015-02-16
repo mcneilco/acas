@@ -11,7 +11,7 @@
       return SpacerParent.__super__.constructor.apply(this, arguments);
     }
 
-    SpacerParent.prototype.urlRoot = "/api/spacerParents";
+    SpacerParent.prototype.urlRoot = "/api/things/parent/spacer";
 
     SpacerParent.prototype.className = "SpacerParent";
 
@@ -121,7 +121,7 @@
       return SpacerBatch.__super__.constructor.apply(this, arguments);
     }
 
-    SpacerBatch.prototype.urlRoot = "/api/spacerBatches";
+    SpacerBatch.prototype.urlRoot = "/api/things/batch/spacer";
 
     SpacerBatch.prototype.initialize = function() {
       this.set({
@@ -292,7 +292,7 @@
     };
 
     SpacerParentController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      return this.model.get("structural file").set("value", null);
     };
 
     SpacerParentController.prototype.updateModel = function() {
@@ -403,7 +403,7 @@
             }
             return $.ajax({
               type: 'GET',
-              url: "/api/spacerParents/codename/" + launchCode,
+              url: "/api/things/parent/spacer/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');

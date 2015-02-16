@@ -56,11 +56,10 @@ exports.redirectToEditor = (req, resp) ->
 				json: true
 				url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
 			, (error, response, body) =>
-#				kind = response.body.lsKind #from lsThing-eva
 				console.log error
 				console.log response
 				console.log body
-				kind = response.body[0].lsKind #from development
+				kind = response.body.lsKind
 				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 

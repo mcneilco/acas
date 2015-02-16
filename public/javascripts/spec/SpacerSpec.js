@@ -939,45 +939,9 @@
               return this.sbc.$('.bv_fileType option').length > 0;
             }, 1000);
           });
-          it("should have the save button be enabled", function() {
+          return it("should have the save button be enabled", function() {
             return runs(function() {
               return expect(this.sbc.$('.bv_save').attr('disabled')).toBeUndefined();
-            });
-          });
-          it("should update the parent code", function() {
-            runs(function() {
-              return this.sbc.$('.bv_save').click();
-            });
-            waits(2000);
-            return runs(function() {
-              return expect(this.sbc.$('.bv_parentCode').html()).toEqual("SP000001");
-            });
-          });
-          it("should update the batch code", function() {
-            runs(function() {
-              return this.sbc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.sbc.$('.bv_batchCode').html()).toEqual("SP000001-1");
-            });
-          });
-          it("should show the update parent button", function() {
-            runs(function() {
-              return this.sbc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.sbc.$('.bv_updateParent')).toBeVisible();
-            });
-          });
-          return it("should show the update batch button", function() {
-            runs(function() {
-              return this.sbc.$('.bv_save').click();
-            });
-            waits(1000);
-            return runs(function() {
-              return expect(this.sbc.$('.bv_saveBatch')).toBeVisible();
             });
           });
         });

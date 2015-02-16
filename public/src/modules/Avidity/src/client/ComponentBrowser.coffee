@@ -182,15 +182,14 @@ class window.ComponentBrowserController extends Backbone.View
 
 	getSelectedComponentParent: (batchModel) ->
 		lsKind = batchModel.get('lsKind')
-		lsKind = lsKind.replace /(^|[^a-z0-9-])([a-z])/g, (m, m1, m2, p) -> m1 + m2.toUpperCase()
-		lsKind = lsKind.replace /\s/g, ''
-		camelCaseLsKind = lsKind.charAt(0).toLowerCase()+lsKind.slice(1,)
+		pascalCaseLsKind = lsKind.replace /(^|[^a-z0-9-])([a-z])/g, (m, m1, m2, p) -> m1 + m2.toUpperCase()
+		pascalCaseLsKind = pascalCaseLsKind.replace /\s/g, ''
 		batchCodeName = batchModel.get('codeName')
 		parentCodeName = batchCodeName.split("-")[0]
 
 		$.ajax
 			type: 'GET'
-			url: "/api/"+camelCaseLsKind+"Parents/codename/"+parentCodeName
+			url: "/api/things/parent/"+lsKind+"/codename/"+parentCodeName
 			dataType: 'json'
 			error: (err) ->
 				alert 'Could not get parent component'
@@ -199,11 +198,12 @@ class window.ComponentBrowserController extends Backbone.View
 					alert 'Could not get parent for code in this URL, creating new one'
 				else
 					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-					parentModel = new window[lsKind+"Parent"] json
+					parentModel = new window[pascalCaseLsKind+"Parent"] json
 					parentModel.set parentModel.parse(parentModel.attributes)
-				@setupComponentController(lsKind, parentModel, batchCodeName, batchModel)
+				@setupComponentController(pascalCaseLsKind, parentModel, batchCodeName, batchModel)
 
 	setupComponentController: (lsKind, parentModel, batchCodeName, batchModel) =>
+		console.log lsKind
 		@componentController = new window[lsKind+"Controller"]
 			model: parentModel
 			batchCodeName: batchCodeName

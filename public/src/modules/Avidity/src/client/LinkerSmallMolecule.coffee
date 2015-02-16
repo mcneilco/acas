@@ -1,5 +1,5 @@
 class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
-	urlRoot: "/api/linkerSmallMoleculeParents"
+	urlRoot: "/api/things/parent/linker small molecule"
 	className: "LinkerSmallMoleculeParent"
 
 	initialize: ->
@@ -83,7 +83,7 @@ class window.LinkerSmallMoleculeParent extends AbstractBaseComponentParent
 		copiedThing
 
 class window.LinkerSmallMoleculeBatch extends AbstractBaseComponentBatch
-	urlRoot: "/api/linkerSmallMoleculeBatches"
+	urlRoot: "/api/things/batch/linker small molecule"
 
 	initialize: ->
 		@.set
@@ -219,7 +219,7 @@ class window.LinkerSmallMoleculeParentController extends AbstractBaseComponentPa
 		@trigger 'amDirty'
 
 	handleFileRemoved: =>
-		@model.get("structural file").set("value", "")
+		@model.get("structural file").set("value", null)
 
 	updateModel: =>
 		@model.get("linker small molecule name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_parentName'))
@@ -281,7 +281,7 @@ class window.LinkerSmallMoleculeController extends AbstractBaseComponentControll
 						launchCode =launchCode.split("-")[0]
 					$.ajax
 						type: 'GET'
-						url: "/api/linkerSmallMoleculeParents/codename/"+launchCode
+						url: "/api/things/parent/linker small molecule/codename/"+launchCode
 						dataType: 'json'
 						error: (err) ->
 							alert 'Could not get parent for code in this URL, creating new one'

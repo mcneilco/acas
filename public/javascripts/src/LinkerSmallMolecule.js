@@ -11,7 +11,7 @@
       return LinkerSmallMoleculeParent.__super__.constructor.apply(this, arguments);
     }
 
-    LinkerSmallMoleculeParent.prototype.urlRoot = "/api/linkerSmallMoleculeParents";
+    LinkerSmallMoleculeParent.prototype.urlRoot = "/api/things/parent/linker small molecule";
 
     LinkerSmallMoleculeParent.prototype.className = "LinkerSmallMoleculeParent";
 
@@ -121,7 +121,7 @@
       return LinkerSmallMoleculeBatch.__super__.constructor.apply(this, arguments);
     }
 
-    LinkerSmallMoleculeBatch.prototype.urlRoot = "/api/linkerSmallMoleculeBatches";
+    LinkerSmallMoleculeBatch.prototype.urlRoot = "/api/things/batch/linker small molecule";
 
     LinkerSmallMoleculeBatch.prototype.initialize = function() {
       this.set({
@@ -293,7 +293,7 @@
     };
 
     LinkerSmallMoleculeParentController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      return this.model.get("structural file").set("value", null);
     };
 
     LinkerSmallMoleculeParentController.prototype.updateModel = function() {
@@ -404,7 +404,7 @@
             }
             return $.ajax({
               type: 'GET',
-              url: "/api/linkerSmallMoleculeParents/codename/" + launchCode,
+              url: "/api/things/parent/linker small molecule/codename/" + launchCode,
               dataType: 'json',
               error: function(err) {
                 alert('Could not get parent for code in this URL, creating new one');

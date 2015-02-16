@@ -314,7 +314,6 @@ class window.PrimaryScreenExperiment extends Experiment
 	getModelFitStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit status"
 		if !status.has('codeValue')
-			console.log "new model fit status value"
 			status.set codeValue: "not started"
 
 		status
@@ -338,7 +337,6 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	copyProtocolAttributes: (protocol) =>
 		modelFitStatus = @getModelFitStatus().get('codeValue')
-		console.log modelFitStatus
 		super(protocol)
 		@getModelFitStatus().set codeValue: modelFitStatus
 
@@ -512,7 +510,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
-		console.log "check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
@@ -524,8 +521,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			index = index - 1
 
 	renumberReads: =>
-		console.log "renumber reads"
-		console.log @collection
 		@nextReadNumber = 1
 		index = 0
 		while index < @collection.length
@@ -748,7 +743,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@trigger 'updateState'
 
 	handlePositiveControlBatchChanged: ->
-		console.log "handle pos cont batch changed"
 		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
 		@getPreferredBatchId(batchCode, 'positiveControl')
 
@@ -765,7 +759,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@getPreferredBatchId(batchCode, 'vehicleControl')
 
 	getPreferredBatchId: (batchId, control) ->
-		console.log "beg of getPreferredBatchId"
 		if batchId == ""
 			@model.get(control).set batchCode: ""
 			@attributeChanged()
@@ -782,29 +775,23 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				success: (json) =>
 					@handlePreferredBatchIdReturn(json, control)
 				error: (err) =>
-					console.log 'got ajax error'
 					@serviceReturn = null
 				dataType: 'json'
 
 	handlePreferredBatchIdReturn: (json, control) =>
-		console.log "beg of handle preferred batch id return"
 		if json.results?
 			results = (json.results)[0]
-			console.log results
 			preferredName = results.preferredName
 			requestName = results.requestName
 			if preferredName == requestName
 				@model.get(control).set batchCode: preferredName
-				console.log "valid id"
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
 				@attributeChanged()
 			else if preferredName == ""
 				@model.get(control).set batchCode: "invalid"
 				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-				console.log "invalid id"
 				@attributeChanged()
 			else
-				console.log "alias, save full name"
 				@model.get(control).set batchCode: preferredName
 				@attributeChanged()
 				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'

@@ -723,29 +723,4 @@ describe 'Protein testing', ->
 						console.log @pc.model.validationError
 						console.log "here in test"
 						expect(@pc.$('.bv_save').attr('disabled')).toBeUndefined()
-				it "should update the parent code", ->
-					runs ->
-						@pc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@pc.$('.bv_parentCode').html()).toEqual "PROT000001"
-				it "should update the batch code", ->
-					runs ->
-						@pc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@pc.$('.bv_batchCode').html()).toEqual "PROT000001-1"
-				it "should show the update parent button", ->
-					runs ->
-						@pc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@pc.$('.bv_updateParent')).toBeVisible()
-				it "should show the update batch button", ->
-					runs ->
-						@pc.$('.bv_save').click()
-					waits(1000)
-					runs ->
-						expect(@pc.$('.bv_saveBatch')).toBeVisible()
-
 

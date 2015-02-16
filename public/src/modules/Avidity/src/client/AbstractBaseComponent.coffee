@@ -194,8 +194,6 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		@trigger 'amClean'
 		@trigger 'parentSaved'
 		@render()
-		console.log "parent modelsavecallback"
-		console.log @model
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
@@ -229,6 +227,7 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 		@$( ".bv_completionDate" ).datepicker( "show" )
 
 	updateModel: =>
+		console.log "update abc parent model"
 		@model.get("scientist").set("value", @scientistListController.getSelectedCode())
 #		@model.get("cationic block name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_cationicBlockParentName'))
 		@model.get("notebook").set("value", UtilityFunctions::getTrimmedInput @$('.bv_notebook'))
@@ -245,7 +244,6 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 	validateParentName: ->
 		@$('.bv_updateParent').attr('disabled', 'disabled')
 		lsKind = @model.get('lsKind')
-		console.log lsKind
 		name= [@model.get(lsKind+' name').get('labelText')]
 		$.ajax
 			type: 'POST'
@@ -265,8 +263,6 @@ class window.AbstractBaseComponentParentController extends AbstractFormControlle
 			alert 'The requested parent name has already been registered. Please choose a new parent name.'
 
 	handleUpdateParent: =>
-		console.log "handle update parent"
-		console.log @model
 		@model.reformatBeforeSaving()
 		@$('.bv_updatingParent').show()
 		@$('.bv_updateParentComplete').html('Update Complete.')
@@ -385,18 +381,19 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 				if json.length == 0
 					alert 'Got empty list of analytical file types'
 				else
+					@analyticalMethodFileTypesJSON = json
 					attachFileList = @model.getAnalyticalFiles(json)
 					@finishSetupAttachFileListController(attachFileList)
 
 	finishSetupAttachFileListController: (attachFileList) ->
 #		attachFileList = @model.getAttachFileList()
-#		console.log attachFileList
-#		console.log "done getting afl"
 		@attachFileListController= new AttachFileListController
 			autoAddAttachFileModel: false
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
 			firstOptionName: "Select Method"
+			allowedFileTypes: ['pdf']
+			fileTypeListURL: "/api/codetables/analytical method/file type"
 		@attachFileListController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@attachFileListController.on 'amClean', =>
@@ -428,6 +425,7 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 
 	handleSaveBatch: =>
 		@$('.bv_savingBatch').show()
+		@saveAnalyticalMethod()
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
 		if @model.isNew() is true
@@ -436,6 +434,42 @@ class window.AbstractBaseComponentBatchController extends AbstractFormController
 			@model.urlRoot = @model.get('urlRoot')
 		@$('.bv_saveBatch').attr('disabled', 'disabled')
 		@model.save()
+
+	saveAnalyticalMethod: =>
+		console.log "save analytical method"
+		#TODO: unset all analytical methods lsValues
+		console.log @model
+		for fileType in @analyticalMethodFileTypesJSON
+#			search to see if @attachFileListController.collection has a model with this file type
+			console.log @attachFileListController.collection
+			console.log fileType
+			matchedModel=@attachFileListController.collection.findWhere {fileType:fileType.code}
+			analyticalMethodValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", @model.get('lsKind')+" batch", "fileValue", fileType.code
+			if matchedModel is undefined
+				console.log "no matched model"
+				#the file type doesn't have a file uploaded for it
+				#set fileValue to null
+				analyticalMethodValue.set fileValue: ""
+			else
+				console.log "matched model"
+				fileValue = matchedModel.get('fileValue')
+				console.log fileValue
+				analyticalMethodValue.set fileValue: fileValue
+
+#		@attachFileListController.collection.each (attachFileModel) =>
+#			console.log attachFileModel
+#			console.log attachFileModel.get('fileType')
+#			console.log attachFileModel.get('fileValue')
+#			analyticalMethod = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", @model.get('lsKind')+" batch", "fileValue", attachFileModel.get('fileType')
+#			fileValue = attachFileModel.get('fileValue')
+#			if fileValue is null or fileValue is "" or fileValue is undefined
+##				@model.unset analyticalMethod
+#				analyticalMethod.set fileValue: ""
+#				console.log "need to delete fileValue"
+#				console.log analyticalMethod
+#				console.log @model
+#			else
+#				analyticalMethod.set fileValue: attachFileModel.get('fileValue')
 
 	isValid: =>
 		validCheck = super()
@@ -487,7 +521,6 @@ class window.AbstractBaseComponentBatchSelectController extends Backbone.View
 			error: (err) ->
 				alert 'Could not get batch list'
 			success: (json) =>
-				console.log json
 				@batchList = new ComponentList json
 				@translateIntoPickListFormat()
 
@@ -673,14 +706,12 @@ class window.AbstractBaseComponentController extends Backbone.View
 			dataType: 'json'
 
 	handleValidateReturn: (validNewLabel) =>
-		console.log "handle validate return"
 		if validNewLabel is true
 			@handleSaveClicked()
 		else
 			alert 'The requested parent name has already been registered. Please choose a new parent name.'
 
 	handleSaveClicked: =>
-		console.log "handle save clicked"
 		@saveNewParentAttributes()
 		@parentController.model.prepareToSave()
 		@$('.bv_save').hide()
@@ -698,6 +729,7 @@ class window.AbstractBaseComponentController extends Backbone.View
 		@parentController.model.get('notebook').set('value', notebook)
 
 	saveFirstBatch: (json) =>
+		@batchSelectController.batchController.saveAnalyticalMethod()
 		@batchSelectController.batchController.model.prepareToSave()
 		@batchSelectController.batchController.model.reformatBeforeSaving()
 		@$('.bv_saveBatch').html("Save Batch")

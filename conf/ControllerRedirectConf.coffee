@@ -2,22 +2,22 @@
 	exports.controllerRedirectConf =
 		{
 			CB:
-				entityName: "cationicBlockParents"
+				entityName: "things/parent/cationic block"
 				stub: false #route will return a stub. this is only used for stubsMode testing
 				"cationic block":
 					deepLink: "cationic_block"
 			LSM:
-				entityName: "linkerSmallMoleculeParents"
+				entityName: "things/parent/linker small molecule"
 				stub: false #route will return a stub. this is only used for stubsMode testing
 				"linker small molecule":
 					deepLink: "linker_small_molecule"
 			PRTN:
-				entityName: "proteinParents"
+				entityName: "things/parent/protein"
 				stub: false #route will return a stub. this is only used for stubsMode testing
 				"protein":
 					deepLink: "protein"
 			SP:
-				entityName: "spacerParents"
+				entityName: "things/parent/spacer"
 				stub: false #route will return a stub. this is only used for stubsMode testing
 				"spacer":
 					deepLink: "spacer"

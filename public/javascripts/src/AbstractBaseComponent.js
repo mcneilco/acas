@@ -338,9 +338,7 @@
       this.$('.bv_updatingParent').hide();
       this.trigger('amClean');
       this.trigger('parentSaved');
-      this.render();
-      console.log("parent modelsavecallback");
-      return console.log(this.model);
+      return this.render();
     };
 
     AbstractBaseComponentParentController.prototype.modelChangeCallback = function(method, model) {
@@ -390,6 +388,7 @@
     };
 
     AbstractBaseComponentParentController.prototype.updateModel = function() {
+      console.log("update abc parent model");
       this.model.get("scientist").set("value", this.scientistListController.getSelectedCode());
       this.model.get("notebook").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')));
       return this.model.get("completion date").set("value", UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))));
@@ -409,7 +408,6 @@
       var lsKind, name;
       this.$('.bv_updateParent').attr('disabled', 'disabled');
       lsKind = this.model.get('lsKind');
-      console.log(lsKind);
       name = [this.model.get(lsKind + ' name').get('labelText')];
       return $.ajax({
         type: 'POST',
@@ -440,8 +438,6 @@
     };
 
     AbstractBaseComponentParentController.prototype.handleUpdateParent = function() {
-      console.log("handle update parent");
-      console.log(this.model);
       this.model.reformatBeforeSaving();
       this.$('.bv_updatingParent').show();
       this.$('.bv_updateParentComplete').html('Update Complete.');
@@ -475,6 +471,7 @@
     function AbstractBaseComponentBatchController() {
       this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.isValid = __bind(this.isValid, this);
+      this.saveAnalyticalMethod = __bind(this.saveAnalyticalMethod, this);
       this.handleSaveBatch = __bind(this.handleSaveBatch, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
@@ -604,6 +601,7 @@
             if (json.length === 0) {
               return alert('Got empty list of analytical file types');
             } else {
+              _this.analyticalMethodFileTypesJSON = json;
               attachFileList = _this.model.getAnalyticalFiles(json);
               return _this.finishSetupAttachFileListController(attachFileList);
             }
@@ -617,7 +615,9 @@
         autoAddAttachFileModel: false,
         el: this.$('.bv_attachFileList'),
         collection: attachFileList,
-        firstOptionName: "Select Method"
+        firstOptionName: "Select Method",
+        allowedFileTypes: ['pdf'],
+        fileTypeListURL: "/api/codetables/analytical method/file type"
       });
       this.attachFileListController.on('amDirty', (function(_this) {
         return function() {
@@ -663,6 +663,7 @@
 
     AbstractBaseComponentBatchController.prototype.handleSaveBatch = function() {
       this.$('.bv_savingBatch').show();
+      this.saveAnalyticalMethod();
       this.model.prepareToSave();
       this.model.reformatBeforeSaving();
       if (this.model.isNew() === true) {
@@ -672,6 +673,37 @@
       }
       this.$('.bv_saveBatch').attr('disabled', 'disabled');
       return this.model.save();
+    };
+
+    AbstractBaseComponentBatchController.prototype.saveAnalyticalMethod = function() {
+      var analyticalMethodValue, fileType, fileValue, matchedModel, _i, _len, _ref, _results;
+      console.log("save analytical method");
+      console.log(this.model);
+      _ref = this.analyticalMethodFileTypesJSON;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        fileType = _ref[_i];
+        console.log(this.attachFileListController.collection);
+        console.log(fileType);
+        matchedModel = this.attachFileListController.collection.findWhere({
+          fileType: fileType.code
+        });
+        analyticalMethodValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", this.model.get('lsKind') + " batch", "fileValue", fileType.code);
+        if (matchedModel === void 0) {
+          console.log("no matched model");
+          _results.push(analyticalMethodValue.set({
+            fileValue: ""
+          }));
+        } else {
+          console.log("matched model");
+          fileValue = matchedModel.get('fileValue');
+          console.log(fileValue);
+          _results.push(analyticalMethodValue.set({
+            fileValue: fileValue
+          }));
+        }
+      }
+      return _results;
     };
 
     AbstractBaseComponentBatchController.prototype.isValid = function() {
@@ -756,7 +788,6 @@
         },
         success: (function(_this) {
           return function(json) {
-            console.log(json);
             _this.batchList = new ComponentList(json);
             return _this.translateIntoPickListFormat();
           };
@@ -1038,7 +1069,6 @@
     };
 
     AbstractBaseComponentController.prototype.handleValidateReturn = function(validNewLabel) {
-      console.log("handle validate return");
       if (validNewLabel === true) {
         return this.handleSaveClicked();
       } else {
@@ -1047,7 +1077,6 @@
     };
 
     AbstractBaseComponentController.prototype.handleSaveClicked = function() {
-      console.log("handle save clicked");
       this.saveNewParentAttributes();
       this.parentController.model.prepareToSave();
       this.$('.bv_save').hide();
@@ -1071,6 +1100,7 @@
 
     AbstractBaseComponentController.prototype.saveFirstBatch = function(json) {
       var batchDataToPost;
+      this.batchSelectController.batchController.saveAnalyticalMethod();
       this.batchSelectController.batchController.model.prepareToSave();
       this.batchSelectController.batchController.model.reformatBeforeSaving();
       this.$('.bv_saveBatch').html("Save Batch");
