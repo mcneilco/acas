@@ -11,7 +11,7 @@ readDataTitles <- function(fileName, parseParams, headerRowVector, tempFilePath)
                                                                    check.names=FALSE, fill=NA,
                                                                    comment.char="")), 
                                                c("X")))[dataTitle!=""]
-    dataTitles$readOrder <- 1:nrow(dataTitles) 
+    dataTitles$readPosition <- 1:nrow(dataTitles) 
   } else {
     stopUser("Internal error: Unknown error in readDataTitles function.")
   }

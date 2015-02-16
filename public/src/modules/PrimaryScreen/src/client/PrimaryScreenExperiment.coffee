@@ -1218,9 +1218,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								else
 									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 	#								exp = new PrimaryScreenExperiment json
-									lsKind = json[0].lsKind
+									lsKind = json.lsKind
 									if lsKind is "Bio Activity"
-										exp = new PrimaryScreenExperiment json[0]
+										exp = new PrimaryScreenExperiment json
 										exp.set exp.parse(exp.attributes)
 										if window.AppLaunchParams.moduleLaunchParams.copy
 											@model = exp.duplicateEntity()

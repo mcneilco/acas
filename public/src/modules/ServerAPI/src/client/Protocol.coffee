@@ -105,7 +105,7 @@ class window.ProtocolBaseController extends BaseEntityController
 								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 								lsKind = json[0].lsKind
 								if lsKind is "default"
-									prot = new Protocol json[0]
+									prot = new Protocol json
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy
 										@model = prot.duplicateEntity()
