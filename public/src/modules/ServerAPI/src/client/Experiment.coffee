@@ -175,7 +175,7 @@ class window.ExperimentBaseController extends BaseEntityController
 								else
 									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 	#								expt = new Experiment json
-									lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
+									lsKind = json.lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 									if lsKind is "default"
 										expt = new Experiment json
 										expt.set expt.parse(expt.attributes)
@@ -332,7 +332,7 @@ class window.ExperimentBaseController extends BaseEntityController
 					if json.length == 0
 						alert("Could not find selected protocol in database")
 					else
-						@model.set protocol: new Protocol(json[0])
+						@model.set protocol: new Protocol(json)
 						@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
 					alert 'got ajax error from getting protocol '+ code

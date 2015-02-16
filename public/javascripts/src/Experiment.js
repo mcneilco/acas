@@ -292,9 +292,9 @@
                     if (json.length === 0) {
                       alert('Could not get experiment for code in this URL, creating new one');
                     } else {
-                      lsKind = json[0].lsKind;
+                      lsKind = json.lsKind;
                       if (lsKind === "default") {
-                        expt = new Experiment(json[0]);
+                        expt = new Experiment(json);
                         expt.set(expt.parse(expt.attributes));
                         if (window.AppLaunchParams.moduleLaunchParams.copy) {
                           _this.model = expt.duplicateEntity();
@@ -511,7 +511,7 @@
                 return alert("Could not find selected protocol in database");
               } else {
                 _this.model.set({
-                  protocol: new Protocol(json[0])
+                  protocol: new Protocol(json)
                 });
                 return _this.getFullProtocol();
               }

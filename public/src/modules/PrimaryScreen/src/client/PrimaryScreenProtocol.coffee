@@ -446,8 +446,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 							if json.length == 0
 								alert 'Could not get protocol for code in this URL, creating new one'
 							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								prot = new PrimaryScreenProtocol json
 								lsKind = json.lsKind
 								if lsKind is "Bio Activity"
 									prot = new PrimaryScreenProtocol json

@@ -1851,9 +1851,9 @@
                     if (json.length === 0) {
                       alert('Could not get experiment for code in this URL, creating new one');
                     } else {
-                      lsKind = json[0].lsKind;
+                      lsKind = json.lsKind;
                       if (lsKind === "Bio Activity") {
-                        exp = new PrimaryScreenExperiment(json[0]);
+                        exp = new PrimaryScreenExperiment(json);
                         exp.set(exp.parse(exp.attributes));
                         if (window.AppLaunchParams.moduleLaunchParams.copy) {
                           _this.model = exp.duplicateEntity();

@@ -102,8 +102,7 @@ class window.ProtocolBaseController extends BaseEntityController
 							if json.length == 0
 								alert 'Could not get protocol for code in this URL, creating new one'
 							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-								lsKind = json[0].lsKind
+								lsKind = json.lsKind
 								if lsKind is "default"
 									prot = new Protocol json
 									prot.set prot.parse(prot.attributes)

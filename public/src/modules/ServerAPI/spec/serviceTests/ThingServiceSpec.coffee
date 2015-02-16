@@ -1,7 +1,7 @@
 assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
-cationicBlockTestJSON = require '../testFixtures/CationicBlockTestJSON.js'
+thingTestJSON = require '../testFixtures/ThingTestJSON.js'
 fs = require 'fs'
 config = require '../../../../conf/compiled/conf.js'
 
@@ -18,7 +18,7 @@ describe.only "Thing Service testing", ->
 	describe "Thing CRUD testing", ->
 		describe "when fetching Thing by codename", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/cationic block/CB000001", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/thing/CB000001", (error, response, body) =>
 					@responseJSON = body
 					@response = response
 					done()
@@ -30,9 +30,9 @@ describe.only "Thing Service testing", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/cationic block"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/thing"
 					json: true
-					body: cationicBlockTestJSON.cationicBlockParent
+					body: thingTestJSON.thingParent
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body
@@ -44,9 +44,9 @@ describe.only "Thing Service testing", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/batch/cationic block/CB000001"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/batch/thing/CB000001"
 					json: true
-					body: cationicBlockTestJSON.cationicBlockBatch
+					body: thingTestJSON.thingBatch
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body
@@ -58,9 +58,9 @@ describe.only "Thing Service testing", ->
 			before (done) ->
 				@.timeout(20000)
 				request.put
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/cationic block/CB00001"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/thing/CB00001"
 					json: true
-					body: cationicBlockTestJSON.cationicBlockParent
+					body: thingTestJSON.thingParent
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body
@@ -70,7 +70,7 @@ describe.only "Thing Service testing", ->
 
 		describe "when getting batches by parent codeName", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/batches/cationic block/parentCodeName/CB000001", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/batches/thing/parentCodeName/CB000001", (error, response, body) =>
 					@responseJSON = body
 					@response = response
 					done()
@@ -82,7 +82,7 @@ describe.only "Thing Service testing", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/validateName/cationic block"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/validateName/thing"
 					json: true
 					body: JSON.stringify "['exampleName']"
 				, (error, response, body) =>

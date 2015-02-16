@@ -20,10 +20,10 @@
   };
 
   exports.thingByCodeName = function(req, resp) {
-    var baseurl, cationicBlockTestJSON, config, serverUtilityFunctions;
+    var baseurl, config, serverUtilityFunctions, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
-      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -34,11 +34,11 @@
   };
 
   exports.postThingParent = function(req, resp) {
-    var baseurl, cationicBlockTestJSON, config, request;
+    var baseurl, config, request, thingTestJSON;
     console.log("post thing parent");
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
-      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
@@ -64,10 +64,10 @@
   };
 
   exports.postThingBatch = function(req, resp) {
-    var baseurl, cationicBlockTestJSON, config, request;
+    var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
-      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockBatch));
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      return resp.end(JSON.stringify(thingTestJSON.thingBatch));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/?parentIdOrCodeName=" + req.params.parentCode;
@@ -93,10 +93,10 @@
   };
 
   exports.putThing = function(req, resp) {
-    var baseurl, cationicBlockTestJSON, config, request;
+    var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
-      return resp.end(JSON.stringify(cationicBlockTestJSON.cationicBlockParent));
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/" + req.params.code;
@@ -121,11 +121,11 @@
   };
 
   exports.batchesByParentCodeName = function(req, resp) {
-    var baseurl, cationicBlockServiceTestJSON, config, serverUtilityFunctions;
+    var baseurl, config, serverUtilityFunctions, thingServiceTestJSON;
     console.log("get batches by parent codeName");
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockServiceTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js');
-      return resp.end(JSON.stringify(cationicBlockServiceTestJSON.batchList));
+      thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
+      return resp.end(JSON.stringify(thingServiceTestJSON.batchList));
     } else {
       if (req.params.parentCode === "undefined") {
         return resp.end(JSON.stringify([]));
@@ -139,9 +139,9 @@
   };
 
   exports.validateName = function(req, resp) {
-    var baseurl, cationicBlockTestJSON, config, request;
+    var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      cationicBlockTestJSON = require('../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
       return resp.end(JSON.stringify(true));
     } else {
       console.log("validate name");
@@ -161,7 +161,7 @@
           if (!error && response.statusCode === 200) {
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to save cationic block parent');
+            console.log('got ajax error trying to save thing parent');
             console.log(error);
             console.log(json);
             return console.log(response);

@@ -18,8 +18,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
-		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -30,8 +30,8 @@ exports.thingByCodeName = (req, resp) ->
 exports.postThingParent = (req, resp) ->
 	console.log "post thing parent"
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
-		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
@@ -57,8 +57,8 @@ exports.postThingParent = (req, resp) ->
 
 exports.postThingBatch = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
-		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockBatch
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		resp.end JSON.stringify thingTestJSON.thingBatch
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/?parentIdOrCodeName="+req.params.parentCode
@@ -84,8 +84,8 @@ exports.postThingBatch = (req, resp) ->
 
 exports.putThing = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
-		resp.end JSON.stringify cationicBlockTestJSON.cationicBlockParent
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
@@ -107,8 +107,8 @@ exports.putThing = (req, resp) ->
 exports.batchesByParentCodeName = (req, resp) ->
 	console.log "get batches by parent codeName"
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockServiceTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockServiceTestJSON.js'
-		resp.end JSON.stringify cationicBlockServiceTestJSON.batchList
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
 		if req.params.parentCode is "undefined"
 			resp.end JSON.stringify []
@@ -120,7 +120,7 @@ exports.batchesByParentCodeName = (req, resp) ->
 
 exports.validateName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		cationicBlockTestJSON = require '../public/javascripts/spec/testFixtures/CationicBlockTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
 		resp.end JSON.stringify true
 	else
 		console.log "validate name"
@@ -139,7 +139,7 @@ exports.validateName = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to save cationic block parent'
+				console.log 'got ajax error trying to save thing parent'
 				console.log error
 				console.log json
 				console.log response

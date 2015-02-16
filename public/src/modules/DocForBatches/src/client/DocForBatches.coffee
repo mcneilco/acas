@@ -46,7 +46,7 @@ class window.DocForBatches extends Backbone.Model
 				if json.length == 0
 					alert "Could not find required protocol with code: "+docForBatchesProtocolCode+". Please seek help from an administrator"
 				else
-					@.protocol = new Protocol(json[0])
+					@.protocol = new Protocol(json)
 			error: (err) ->
 				alert 'got ajax error from api/protocols/codename/ in DocForBatches.coffee'
 			dataType: 'json'
