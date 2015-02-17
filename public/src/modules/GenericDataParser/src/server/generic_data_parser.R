@@ -905,7 +905,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   
   if (!is.null(mainCode)) {
     longResults$batchCode <- longResults[[mainCode]]
-  } else {
+  } else if (is.null(longResults$batchCode)) {
     longResults$batchCode <- NA
   }
   
