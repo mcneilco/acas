@@ -1381,9 +1381,15 @@ getReadOrderTable <- function(readList) {
   # Input:  readList (list of lists)
   # Output: readsTable (data.table)
   
-  readsTable <- data.table(ldply(readList, data.frame))
-  setnames(readsTable, "readNumber", "userReadOrder")
-  readsTable[ , calculatedRead := FALSE]
+  readsTable <- data.table(ldply(readList, function(item) {
+    data.frame(
+        userReadOrder = item$readNumber,
+        readPosition = ifelse(is.null(item$readPosition), NA_real_, item$readPosition),
+        readName = item$readName,
+        activity = item$activity,
+        calculatedRead = FALSE
+      )
+  }))
   readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
