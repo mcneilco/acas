@@ -925,8 +925,8 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     id = unique(id),
     batchCode = unique(batchCode), 
     UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
-    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
-    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
+    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA_character_},
+    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA_character_},
     comments = if(any(!isComment)) {UnparsedValue[isComment]} else {NA}),
     keyby="rowID,valueKindAndUnit"]
   
