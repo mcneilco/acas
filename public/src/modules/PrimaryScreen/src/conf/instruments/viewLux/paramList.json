@@ -1,1 +1,0 @@
-{"paramList":{"headerRowSearchString":"Plate\tRepeat\tWell\tType","dataRowSearchString":"^[0-9]*\t[0-9]*\t[A-Z]{1,2}","sepChar":"\t","headerExists":true,"beginDataColNumber":1,"dataTitleIdentifier":"NA","dataFormat":"listFormatSingleFile"}}

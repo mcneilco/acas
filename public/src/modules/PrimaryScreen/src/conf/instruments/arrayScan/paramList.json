@@ -1,1 +1,0 @@
-{"paramList":{"headerRowSearchString":"^\t 1 \t 2 \t 3 \t 4 \t 5|^\t1\t2\t3\t4\t5","dataRowSearchString":"^[A-Z]{1,2}\t","sepChar":"\t","headerExists":true,"beginDataColNumber":2,"dataTitleIdentifier":"^Feature: ","dataFormat":"plateFormatSingleFile"}}
