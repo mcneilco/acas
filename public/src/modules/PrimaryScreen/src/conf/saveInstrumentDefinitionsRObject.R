@@ -23,8 +23,8 @@ dontRunThisFunction <- function() {
 }
 
 saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/PrimaryScreen/src/conf/instruments/", 
-                                             instruments=list("acumen","arrayScan","biacore","envision","flipr","lumiLux","microBeta","quantStudio","thermalMelt","viewLux","flipr1")) {
-  
+                                             instruments=list("acumen","arrayscan","biacore","envision","flipr","lumilux","microbeta","quantstudio","thermalmelt","viewlux","flipr1")) {
+  require(rjson)
   for(instrumentType in instruments) {
     instrumentExists <- TRUE
     
@@ -38,7 +38,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = 2,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "plateFormatMultiFile")
-    } else if (instrumentType == "arrayScan") {
+    } else if (instrumentType == "arrayscan") {
       detectionLine   <- "^Feature: "
       paramList <- list(headerRowSearchString = "^\t 1 \t 2 \t 3 \t 4 \t 5|^\t1\t2\t3\t4\t5",
                         dataRowSearchString   = "^[A-Z]{1,2}\t",
@@ -74,7 +74,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = 2,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "plateFormatSingleFile")
-    } else if (instrumentType == "lumiLux") {
+    } else if (instrumentType == "lumilux") {
       detectionLine     <- "^Begin Analysis Info"
       paramList <- list(headerRowSearchString = "^Well,Group,Index",
                         dataRowSearchString   = "^[A-Z]{1,2}[0-9]{1,2},",
@@ -83,7 +83,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = 1,
                         dataTitleIdentifier   = NA, 
                         dataFormat            = "listFormatSingleFile")
-    } else if (instrumentType == "microBeta") {
+    } else if (instrumentType == "microbeta") {
       detectionLine     <- "^RUN INFORMATION|^Cassette information"  
       paramList <- list(headerRowSearchString = "^ \t1",
                         dataRowSearchString   = "^[A-Z]{1,2}\t",
@@ -92,7 +92,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = 2,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "plateFormatSingleFile")
-    } else if (instrumentType == "quantStudio") {
+    } else if (instrumentType == "quantstudio") {
       detectionLine  <- "#Positive Hit Settings: "
       paramList <- list(headerRowSearchString = "^#\tWell\tProtein\t",
                         dataRowSearchString   = "^[0-9]*\t[A-Z]{1,2}[0-9]{1,2}\t",
@@ -110,7 +110,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = NA,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "stat1stat2seq1")
-    } else if (instrumentType == "thermalMelt") {
+    } else if (instrumentType == "thermalmelt") {
       detectionLine <- "^Wells \t Tm Boltzmann"
       paramList <- list(headerRowSearchString = "^Wells \t Tm Boltzmann",
                         dataRowSearchString   = "^[A-Z]{1,2}[0-9]{1,2} \t",
@@ -119,7 +119,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         beginDataColNumber    = 1,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "listFormatSingleFile")
-    } else if (instrumentType == "viewLux") {
+    } else if (instrumentType == "viewlux") {
       detectionLine     <- ";-"
       paramList <- list(headerRowSearchString = "Plate\tRepeat\tWell\tType",
                         dataRowSearchString   = "^[0-9]*\t[0-9]*\t[A-Z]{1,2}",
@@ -151,7 +151,7 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
 }
 
 removeInstrumentFiles <- function(filePath=file.path("public/src/modules/PrimaryScreen/src/conf/instruments"), 
-                                  instruments=list("acumen","arrayScan","biacore","envision","flipr","lumiLux","microBeta","quantStudio","thermalMelt","viewLux","flipr1"),
+                                  instruments=list("acumen","arrayscan","biacore","envision","flipr","lumilux","microbeta","quantstudio","thermalmelt","viewlux","flipr1"),
                                   extension=".Rda"){
   for (instrumentType in instruments) {
     setwd(file.path(filePath,instrumentType))
