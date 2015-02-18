@@ -252,6 +252,7 @@ if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     #echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
+echo "ACAS_USER = $ACAS_USER"
 
 case "$1" in
     start)
