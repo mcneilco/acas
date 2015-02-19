@@ -94,7 +94,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment, p
   
   # Remove unneeded columns
   # flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
-  flagData <- data.table(validatedFlagData)
+  flagData <- as.data.table(validatedFlagData[, list(assayBarcode, well, flagType, 
+                                                flagObservation, flagReason, flagComment)])
   
   return(flagData)
 }
@@ -1078,7 +1079,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
   #             every test
-  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  # Returns: a data.table containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
   #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
   #             didn't define a hit, it is left as NA
   
