@@ -32,6 +32,7 @@
     __extends(CurveCuratorAppController, _super);
 
     function CurveCuratorAppController() {
+      this.hideLoadCurvesModal = __bind(this.hideLoadCurvesModal, this);
       this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
       this.render = __bind(this.render, this);
       return CurveCuratorAppController.__super__.constructor.apply(this, arguments);
@@ -44,6 +45,7 @@
       this.ccc = new CurveCuratorController({
         el: this.$('.bv_curveCurator')
       });
+      this.ccc.on('getCurvesSuccessful', this.hideLoadCurvesModal);
       this.render();
       this.router = new CurveCuratorAppRouter({
         appController: this
@@ -60,8 +62,9 @@
     };
 
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_loadCurvesModal'));
       this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
-      return $.ajax({
+      $.ajax({
         type: 'GET',
         url: "/api/experiments/resultViewerURL/" + exptCode,
         success: (function(_this) {
@@ -72,14 +75,20 @@
             _this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
             return _this.$('.bv_resultViewerBtn').show();
           };
-        })(this),
+        })(this)
+      });
+      return {
         error: (function(_this) {
           return function(err) {
             return _this.serviceReturn = null;
           };
         })(this),
         dataType: 'json'
-      });
+      };
+    };
+
+    CurveCuratorAppController.prototype.hideLoadCurvesModal = function() {
+      return UtilityFunctions.prototype.hideProgressModal(this.$('.bv_loadCurvesModal'));
     };
 
     return CurveCuratorAppController;
