@@ -1,6 +1,6 @@
 class window.PrimaryScreenProtocolParameters extends State
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors =[]
 		maxY = @getCurveDisplayMax().get('numericValue')
 		if isNaN(maxY)
@@ -137,7 +137,7 @@ class window.PrimaryScreenProtocol extends Protocol
 		@.set lsType: "Biology"
 		@.set lsKind: "Bio Activity"
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
 		errors.push super(attrs)...
 		psProtocolParameters = @getPrimaryScreenProtocolParameters()
@@ -490,7 +490,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@trigger 'amDirty'
 			@$('.bv_updateModuleComplete').hide()
 		@model.on 'readyToSave', @handleFinishSave
-
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
 		@setupModelFitTypeController()
@@ -542,7 +541,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.on 'updateState', @updateAnalysisClobValue
 		@primaryScreenAnalysisParametersController.render()
 
-	setupModelFitTypeController: ->
+	setupModelFitTypeController: =>
 		@modelFitTypeController = new ModelFitTypeController
 			model: @model
 			el: @$('.bv_doseResponseAnalysisParameters')

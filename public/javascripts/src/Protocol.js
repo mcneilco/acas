@@ -240,7 +240,6 @@
       this.setupTagList();
       this.setUpAssayStageSelect();
       this.model.getStatus().on('change', this.updateEditable);
-      this.render();
       return this.trigger('amClean');
     };
 

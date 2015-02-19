@@ -8,6 +8,7 @@
 
     function PrimaryScreenProtocolParameters() {
       this.getCustomerMolecularTargetCodeOrigin = __bind(this.getCustomerMolecularTargetCodeOrigin, this);
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -238,6 +239,7 @@
     __extends(PrimaryScreenProtocol, _super);
 
     function PrimaryScreenProtocol() {
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -659,6 +661,7 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
+      this.setupModelFitTypeController = __bind(this.setupModelFitTypeController, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);

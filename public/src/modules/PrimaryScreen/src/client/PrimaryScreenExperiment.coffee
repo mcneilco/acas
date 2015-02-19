@@ -8,7 +8,7 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null) and attrs.readName.indexOf("Calc:")==-1
+		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -21,14 +21,11 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		else
 			return null
 
-	triggerAmDirty: =>
-		@trigger 'amDirty', @
-
 class window.TransformationRule extends Backbone.Model
 	defaults:
 		transformationRule: "unassigned"
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
 		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
 			errors.push
@@ -40,8 +37,6 @@ class window.TransformationRule extends Backbone.Model
 		else
 			return null
 
-	triggerAmDirty: =>
-		@trigger 'amDirty', @
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
@@ -167,7 +162,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		resp
 
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
@@ -253,7 +248,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
-
 		if errors.length > 0
 			return errors
 		else
@@ -347,7 +341,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	events:
 		"change .bv_readPosition": "attributeChanged"
 		"change .bv_readName": "handleReadNameChanged"
-		"click .bv_activity": "attributeChanged"
+		"click .bv_activity": "handleActivityChanged"
 		"click .bv_delete": "clear"
 
 	initialize: ->
@@ -378,7 +372,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 			selectedCode: @model.get('readName')
 
 	hideReadPosition: (readName) ->
-		isCalculatedRead = readName.indexOf("Calc:") > -1
+		isCalculatedRead = readName.slice(0,5) == "Calc:"
 		if isCalculatedRead is true
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').hide()
@@ -395,11 +389,8 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 
 	updateModel: =>
-		activity = @$('.bv_activity').is(":checked")
 		@model.set
 			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
-			activity: activity
-		@model.triggerAmDirty()
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
@@ -409,9 +400,17 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 			readName: readName
 		@attributeChanged()
 
+	handleActivityChanged: =>
+		activity = @$('.bv_activity').is(":checked")
+		@model.set
+			activity: activity
+		@attributeChanged()
+		@trigger 'updateAllActivities'
+
 	clear: =>
+		@model.trigger 'amDirty'
 		@model.destroy()
-		@model.triggerAmDirty()
+		@attributeChanged()
 
 
 class window.TransformationRuleController extends AbstractFormController
@@ -435,7 +434,6 @@ class window.TransformationRuleController extends AbstractFormController
 
 	updateModel: =>
 		@model.set transformationRule: @transformationListController.getSelectedCode()
-		@model.triggerAmDirty()
 		@trigger 'updateState'
 
 
@@ -453,11 +451,12 @@ class window.TransformationRuleController extends AbstractFormController
 
 	clear: =>
 		@model.destroy()
+		@attributeChanged()
 
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
-	matchReadNameChecked: true
+	matchReadNameChecked: false
 	nextReadNumber: 1
 	events:
 		"click .bv_addReadButton": "addNewRead"
@@ -486,10 +485,9 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		if @collection.length ==1
 			@checkActivity()
 		unless skipAmDirtyTrigger is true
-			newModel.triggerAmDirty()
+			newModel.trigger 'amDirty'
 
 	addOneRead: (read) ->
-#		readNumber = 'R' +  @nextReadNumber.toString()
 		read.set readNumber: @nextReadNumber
 		@nextReadNumber++
 		parc = new PrimaryAnalysisReadController
@@ -498,6 +496,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		parc.setUpReadPosition(@matchReadNameChecked)
 		parc.on 'updateState', =>
 			@trigger 'updateState'
+		parc.on 'updateAllActivities', @updateAllActivities
 
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
@@ -530,6 +529,13 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			index++
 			@nextReadNumber++
 
+	updateAllActivities: =>
+		index = @collection.length-1
+		while index >=0
+			activity = @$('.bv_activity:eq('+index+')').is(":checked")
+			@collection.at(index).set activity: activity
+			index--
+
 class window.TransformationRuleListController extends AbstractFormController
 	template: _.template($("#TransformationRuleListView").html())
 	events:
@@ -555,7 +561,7 @@ class window.TransformationRuleListController extends AbstractFormController
 		@collection.add newModel
 		@addOneRule(newModel)
 		unless skipAmDirtyTrigger is true
-			newModel.triggerAmDirty()
+			newModel.trigger 'amDirty'
 
 
 	addOneRule: (rule) ->
@@ -1267,6 +1273,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
+			@modelFitController.render()
 			@modelFitController.setReadyForFit()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()

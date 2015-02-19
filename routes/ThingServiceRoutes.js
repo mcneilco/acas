@@ -22,7 +22,7 @@
   exports.thingByCodeName = function(req, resp) {
     var baseurl, config, serverUtilityFunctions, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
@@ -37,7 +37,7 @@
     var baseurl, config, request, thingTestJSON;
     console.log("post thing parent");
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
@@ -66,7 +66,7 @@
   exports.postThingBatch = function(req, resp) {
     var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingTestJSON.thingBatch));
     } else {
       config = require('../conf/compiled/conf.js');
@@ -95,7 +95,7 @@
   exports.putThing = function(req, resp) {
     var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingTestJSON.thingParent));
     } else {
       config = require('../conf/compiled/conf.js');
@@ -141,7 +141,7 @@
   exports.validateName = function(req, resp) {
     var baseurl, config, request, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
-      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingTestJSON.js');
+      thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(true));
     } else {
       console.log("validate name");

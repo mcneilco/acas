@@ -36,7 +36,7 @@ class window.AbstractFormController extends Backbone.View
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
 				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-#				@$('.bv_group_'+err.attribute).tooltip();
+	#				@$('.bv_group_'+err.attribute).tooltip();
 				@$("[data-toggle=tooltip]").tooltip();
 				@$("body").tooltip selector: '.bv_group_'+err.attribute
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'

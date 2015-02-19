@@ -142,7 +142,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setUpAssayStageSelect()
 		@model.getStatus().on 'change', @updateEditable
 
-		@render()
+#		@render()
 		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
