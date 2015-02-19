@@ -29,6 +29,8 @@ class window.AbstractFormController extends Backbone.View
 
 	validationError: =>
 		errors = @model.validationError
+		console.log "validationError errors"
+		console.log errors
 		@clearValidationErrorStyles()
 
 		_.each errors, (err) =>
@@ -36,10 +38,11 @@ class window.AbstractFormController extends Backbone.View
 				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
 				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
 				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-#				@$('.bv_group_'+err.attribute).tooltip();
+	#				@$('.bv_group_'+err.attribute).tooltip();
 				@$("[data-toggle=tooltip]").tooltip();
 				@$("body").tooltip selector: '.bv_group_'+err.attribute
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
+				console.log err.attribute
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
 
@@ -57,10 +60,13 @@ class window.AbstractFormController extends Backbone.View
 		@model.isValid()
 
 	handleModelChange: =>
+		console.log "handle model change"
 		@clearValidationErrorStyles()
 		if @isValid()
+			console.log "valid"
 			@trigger 'valid'
 		else
+			console.log "invalid"
 			@trigger 'invalid'
 
 	disableAllInputs: ->

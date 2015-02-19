@@ -8,6 +8,7 @@
 
     function PrimaryScreenProtocolParameters() {
       this.getCustomerMolecularTargetCodeOrigin = __bind(this.getCustomerMolecularTargetCodeOrigin, this);
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -238,6 +239,7 @@
     __extends(PrimaryScreenProtocol, _super);
 
     function PrimaryScreenProtocol() {
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -582,7 +584,9 @@
     }
 
     PrimaryScreenProtocolController.prototype.initialize = function() {
+      console.log("setup pbc");
       this.setupProtocolBaseController();
+      console.log("setup psppc");
       this.setupPrimaryScreenProtocolParametersController();
       return this.protocolBaseController.model.on("checkForNewPickListOptions", this.handleCheckForNewPickListOptions);
     };
@@ -659,6 +663,7 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
+      this.setupModelFitTypeController = __bind(this.setupModelFitTypeController, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
@@ -720,12 +725,15 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.completeInitialization = function() {
+      console.log("beg of complete init");
       if (this.model == null) {
         this.model = new PrimaryScreenProtocol();
       }
+      console.log("created new protocol");
       $(this.el).html(this.template());
       this.model.on('sync', (function(_this) {
         return function() {
+          console.log("sync");
           _this.trigger('amClean');
           if (_this.model.get('subclass') == null) {
             _this.model.set({
@@ -756,7 +764,9 @@
         };
       })(this));
       this.model.on('readyToSave', this.handleFinishSave);
+      console.log("setup pspc");
       this.setupPrimaryScreenProtocolController();
+      console.log("setup psapc");
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
@@ -804,6 +814,7 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenAnalysisParametersController = function() {
+      console.log("set up psapc");
       this.primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController({
         model: this.model.getAnalysisParameters(),
         el: this.$('.bv_primaryScreenAnalysisParameters')
@@ -823,6 +834,7 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupModelFitTypeController = function() {
+      console.log("setup model fit controller");
       this.modelFitTypeController = new ModelFitTypeController({
         model: this.model,
         el: this.$('.bv_doseResponseAnalysisParameters')

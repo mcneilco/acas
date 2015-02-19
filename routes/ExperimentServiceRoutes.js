@@ -250,7 +250,7 @@
                 resp.statusCode = 404;
                 return resp.json(resultViewerURL);
               } else {
-                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment[0].protocol.id;
+                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment.protocol.id;
                 request = require('request');
                 return request({
                   method: 'GET',
@@ -263,12 +263,12 @@
                     return resp.json(resultViewerURL);
                   } else {
                     if (!error && response.statusCode === 200) {
-                      preferredExperimentLabel = _.filter(experiment[0].lsLabels, function(lab) {
+                      preferredExperimentLabel = _.filter(experiment.lsLabels, function(lab) {
                         return lab.preferred && lab.ignored === false;
                       });
                       preferredExperimentLabelText = preferredExperimentLabel[0].labelText;
                       if (config.all.client.service.result.viewer.experimentNameColumn === "EXPERIMENT_NAME") {
-                        experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText;
+                        experimentName = experiment.codeName + "::" + preferredExperimentLabelText;
                       } else {
                         experimentName = preferredExperimentLabelText;
                       }

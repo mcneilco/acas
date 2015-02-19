@@ -7,7 +7,6 @@
     __extends(PrimaryAnalysisRead, _super);
 
     function PrimaryAnalysisRead() {
-      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
       this.validate = __bind(this.validate, this);
       return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
     }
@@ -22,7 +21,9 @@
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null) && attrs.readName.indexOf("Calc:") === -1) {
+      console.log("VALIDATE READ");
+      console.log(attrs.readPosition);
+      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
         errors.push({
           attribute: 'readPosition',
           message: "Read position must be a number"
@@ -41,10 +42,6 @@
       }
     };
 
-    PrimaryAnalysisRead.prototype.triggerAmDirty = function() {
-      return this.trigger('amDirty', this);
-    };
-
     return PrimaryAnalysisRead;
 
   })(Backbone.Model);
@@ -53,7 +50,7 @@
     __extends(TransformationRule, _super);
 
     function TransformationRule() {
-      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
+      this.validate = __bind(this.validate, this);
       return TransformationRule.__super__.constructor.apply(this, arguments);
     }
 
@@ -77,10 +74,6 @@
       }
     };
 
-    TransformationRule.prototype.triggerAmDirty = function() {
-      return this.trigger('amDirty', this);
-    };
-
     return TransformationRule;
 
   })(Backbone.Model);
@@ -97,8 +90,10 @@
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
       var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
+      console.log("validate read list collection");
       modelErrors = [];
       usedReadNames = {};
+      console.log(this.length);
       if (this.length !== 0) {
         for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
           model = this.at(index);
@@ -189,6 +184,7 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
+      this.validate = __bind(this.validate, this);
       this.parse = __bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
@@ -301,6 +297,8 @@
       var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors, vehicleControl;
       errors = [];
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
+      console.log("read errors");
+      console.log(readErrors);
       errors.push.apply(errors, readErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
       errors.push.apply(errors, transformationErrors);
@@ -417,6 +415,7 @@
           message: "Transfer volume must be a number"
         });
       }
+      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -576,6 +575,7 @@
 
     function PrimaryAnalysisReadController() {
       this.clear = __bind(this.clear, this);
+      this.handleActivityChanged = __bind(this.handleActivityChanged, this);
       this.handleReadNameChanged = __bind(this.handleReadNameChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
@@ -591,7 +591,7 @@
     PrimaryAnalysisReadController.prototype.events = {
       "change .bv_readPosition": "attributeChanged",
       "change .bv_readName": "handleReadNameChanged",
-      "click .bv_activity": "attributeChanged",
+      "click .bv_activity": "handleActivityChanged",
       "click .bv_delete": "clear"
     };
 
@@ -626,7 +626,7 @@
 
     PrimaryAnalysisReadController.prototype.hideReadPosition = function(readName) {
       var isCalculatedRead;
-      isCalculatedRead = readName.indexOf("Calc:") > -1;
+      isCalculatedRead = readName.slice(0, 5) === "Calc:";
       if (isCalculatedRead === true) {
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').hide();
@@ -639,20 +639,18 @@
 
     PrimaryAnalysisReadController.prototype.setUpReadPosition = function(matchReadNameChecked) {
       if (matchReadNameChecked) {
+        console.log("disable read position");
         return this.$('.bv_readPosition').attr('disabled', 'disabled');
       } else {
+        console.log("enable read position");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
 
     PrimaryAnalysisReadController.prototype.updateModel = function() {
-      var activity;
-      activity = this.$('.bv_activity').is(":checked");
       this.model.set({
-        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))),
-        activity: activity
+        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition')))
       });
-      this.model.triggerAmDirty();
       return this.trigger('updateState');
     };
 
@@ -666,9 +664,20 @@
       return this.attributeChanged();
     };
 
+    PrimaryAnalysisReadController.prototype.handleActivityChanged = function() {
+      var activity;
+      activity = this.$('.bv_activity').is(":checked");
+      this.model.set({
+        activity: activity
+      });
+      this.attributeChanged();
+      return this.trigger('updateAllActivities');
+    };
+
     PrimaryAnalysisReadController.prototype.clear = function() {
+      this.model.trigger('amDirty');
       this.model.destroy();
-      return this.model.triggerAmDirty();
+      return this.attributeChanged();
     };
 
     return PrimaryAnalysisReadController;
@@ -709,7 +718,6 @@
       this.model.set({
         transformationRule: this.transformationListController.getSelectedCode()
       });
-      this.model.triggerAmDirty();
       return this.trigger('updateState');
     };
 
@@ -728,7 +736,8 @@
     };
 
     TransformationRuleController.prototype.clear = function() {
-      return this.model.destroy();
+      this.model.destroy();
+      return this.attributeChanged();
     };
 
     return TransformationRuleController;
@@ -739,6 +748,7 @@
     __extends(PrimaryAnalysisReadListController, _super);
 
     function PrimaryAnalysisReadListController() {
+      this.updateAllActivities = __bind(this.updateAllActivities, this);
       this.renumberReads = __bind(this.renumberReads, this);
       this.checkActivity = __bind(this.checkActivity, this);
       this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
@@ -750,7 +760,7 @@
 
     PrimaryAnalysisReadListController.prototype.template = _.template($("#PrimaryAnalysisReadListView").html());
 
-    PrimaryAnalysisReadListController.prototype.matchReadNameChecked = true;
+    PrimaryAnalysisReadListController.prototype.matchReadNameChecked = false;
 
     PrimaryAnalysisReadListController.prototype.nextReadNumber = 1;
 
@@ -792,7 +802,7 @@
         this.checkActivity();
       }
       if (skipAmDirtyTrigger !== true) {
-        return newModel.triggerAmDirty();
+        return newModel.trigger('amDirty');
       }
     };
 
@@ -807,17 +817,19 @@
       });
       this.$('.bv_readInfo').append(parc.render().el);
       parc.setUpReadPosition(this.matchReadNameChecked);
-      return parc.on('updateState', (function(_this) {
+      parc.on('updateState', (function(_this) {
         return function() {
           return _this.trigger('updateState');
         };
       })(this));
+      return parc.on('updateAllActivities', this.updateAllActivities);
     };
 
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
       this.matchReadNameChecked = matchReadName;
       if (this.matchReadNameChecked) {
         this.$('.bv_readPosition').val('');
+        console.log("match read name changed -disable read position");
         this.$('.bv_readPosition').attr('disabled', 'disabled');
         return this.collection.each((function(_this) {
           return function(read) {
@@ -827,6 +839,7 @@
           };
         })(this));
       } else {
+        console.log("match read name changed -enable read position");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
@@ -864,6 +877,20 @@
         this.$('.bv_readNumber:eq(' + index + ')').html(readNumber);
         index++;
         _results.push(this.nextReadNumber++);
+      }
+      return _results;
+    };
+
+    PrimaryAnalysisReadListController.prototype.updateAllActivities = function() {
+      var activity, index, _results;
+      index = this.collection.length - 1;
+      _results = [];
+      while (index >= 0) {
+        activity = this.$('.bv_activity:eq(' + index + ')').is(":checked");
+        this.collection.at(index).set({
+          activity: activity
+        });
+        _results.push(index--);
       }
       return _results;
     };
@@ -923,7 +950,7 @@
       this.collection.add(newModel);
       this.addOneRule(newModel);
       if (skipAmDirtyTrigger !== true) {
-        return newModel.triggerAmDirty();
+        return newModel.trigger('amDirty');
       }
     };
 
@@ -1348,6 +1375,7 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
+      console.log("handle read name changed");
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
@@ -1939,6 +1967,7 @@
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
+          _this.modelFitController.render();
           return _this.modelFitController.setReadyForFit();
         };
       })(this));

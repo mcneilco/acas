@@ -240,12 +240,13 @@
       this.setupTagList();
       this.setUpAssayStageSelect();
       this.model.getStatus().on('change', this.updateEditable);
-      this.render();
       return this.trigger('amClean');
     };
 
     ProtocolBaseController.prototype.render = function() {
+      console.log("beg render of pbc");
       if (this.model == null) {
+        console.log("create new protocol");
         this.model = new Protocol();
       }
       this.setUpAssayStageSelect();
@@ -257,6 +258,7 @@
       this.$('.bv_assayTreeRule').val(this.model.getAssayTreeRule().get('stringValue'));
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
+      console.log("end render of pbc");
       return this;
     };
 
