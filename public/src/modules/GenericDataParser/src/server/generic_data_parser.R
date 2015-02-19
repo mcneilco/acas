@@ -2251,9 +2251,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
-    if (length(experiment) == 0) {
-      stopUser(paste0("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1]))
-    }
     protocol <- getProtocolById(experiment$protocol$id)
     validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
     validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
