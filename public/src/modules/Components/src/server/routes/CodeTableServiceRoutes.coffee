@@ -16,12 +16,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getAllCodeTableValues = (req, resp) ->
 	if global.specRunnerTestmode
-		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
-		resp.end JSON.stringify correctCodeTable['codes']
-
+		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/codeTableServiceTestJSON.js'
+		resp.end JSON.stringify codeTableServiceTestJSON['codes']
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = "#{config.all.client.service.persistence.fullpath}api/v1/ddictvalues?format=codetable"
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues?format=codetable"
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -31,7 +30,7 @@ exports.getAllCodeTableValues = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.json json
 			else
-				console.log 'got ajax error trying to get protocol labels'
+				console.log 'got ajax error trying to get all code table entries'
 				console.log error
 				console.log json
 				console.log response
@@ -39,13 +38,12 @@ exports.getAllCodeTableValues = (req, resp) ->
 
 exports.getCodeTableValues = (req, resp) ->
 	if global.specRunnerTestmode
-		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
-		correctCodeTable = _.findWhere(codeTableServiceTestJSON.codes, {type:req.params.type, kind:req.params.kind})
+		fullCodeTableJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
+		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:req.params.type, kind:req.params.kind})
 		resp.end JSON.stringify correctCodeTable['codes']
-
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = "#{config.all.client.service.persistence.fullpath}api/v1/ddictvalues/all/#{req.params.type}/#{req.params.kind}/codetable"
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/all/#{req.params.type}/#{req.params.kind}/codetable"
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -55,7 +53,7 @@ exports.getCodeTableValues = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.json json
 			else
-				console.log 'got ajax error trying to get protocol labels'
+				console.log 'got ajax error trying to get code table entries'
 				console.log error
 				console.log json
 				console.log response
@@ -64,13 +62,12 @@ exports.getCodeTableValues = (req, resp) ->
 
 exports.postCodeTable = (req, resp) ->
 	if global.specRunnerTestmode
-		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
-		correctCodeTable = _.findWhere(codeTableServiceTestJSON.codes, {type:req.params.type, kind:req.params.kind})
-		resp.end JSON.stringify correctCodeTable['codes']
+		codeTablePostTestJSON = require '../public/javascripts/spec/testFixtures/codeTablePostTestJSON.js'
+		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		console.log "attempting to post new code table value"
 		config = require '../conf/compiled/conf.js'
-		baseurl = "#{config.all.client.service.persistence.fullpath}api/v1/ddictvalues/codetable"
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/codetable"
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -91,13 +88,12 @@ exports.postCodeTable = (req, resp) ->
 exports.putCodeTable = (req, resp) ->
 	#console.log JSON.stringify req.body
 	if global.specRunnerTestmode
-		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
-		correctCodeTable = _.findWhere(codeTableServiceTestJSON.codes, {type:req.params.type, kind:req.params.kind})
-		resp.end JSON.stringify correctCodeTable['codes']
+		codeTablePostTestJSON = require '../public/javascripts/spec/testFixtures/codeTablePutTestJSON.js'
+		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		config = require '../conf/compiled/conf.js'
 		putId = req.body.id
-		baseurl = "#{config.all.client.service.persistence.fullpath}api/v1/ddictvalues/codetable/#{putId}"
+		baseurl = "#{config.all.client.service.persistence.fullpath}ddictvalues/codetable/#{putId}"
 
 		request = require 'request'
 		request(
