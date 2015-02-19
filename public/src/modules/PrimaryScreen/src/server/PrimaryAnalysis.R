@@ -48,7 +48,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   #               and no wells are flagged. Also may include information to flag analysis groups.
   
   if(is.null(flaggedWells) || flaggedWells == "") {
-    resultTable[, flag:= as.character(NA)]
+    resultTable[, flag:=NA_character_]
     resultTable[, flagType:=NA_character_]
     resultTable[, flagObservation:=NA_character_]
     resultTable[, flagReason:=NA_character_]
@@ -1624,8 +1624,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
   #                       "analysisGroupFlags" or spotfire "KOandHit"
   
-  require("data.table")
-  library(plyr)
+  library("data.table")
+  library("plyr")
   
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
@@ -2528,8 +2528,12 @@ updateHtsFormat <- function (htsFormat, experiment) {
 runPrimaryAnalysis <- function(request) {
   # Highest level function, runs everything else
   library('racas')
+  
+  globalMessenger <- messenger()$reset()
+  developmentMode <- FALSE
   options("scipen"=15)
   #save(request, file="request.Rda")
+  
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -2537,86 +2541,54 @@ runPrimaryAnalysis <- function(request) {
   user <- request$user
   testMode <- request$testMode
   inputParameters <- request$inputParameters
-  ## TODO test structure: remove when GUI JSON is fixed
+  ## GUI json is locked into calling the second file a report file...
   request$flaggedFile <- request$reportFile
-  ## TODO end test structure
   flaggedWells <- request$flaggedFile
   flaggingStage <- ifelse(is.null(request$flaggingStage), "KOandHit", request$flaggingStage)
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
-  errorHandlingBox <- list(errorList = list())
-  attach(errorHandlingBox)
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
   
-  loadResult <- tryCatch.W.E(runMain(folderToParse = folderToParse, 
-                                     user = user, 
-                                     dryRun = dryRun, 
-                                     testMode = testMode, 
-                                     experimentId = experimentId, 
-                                     inputParameters = inputParameters,
-                                     flaggedWells = flaggedWells,
-                                     flaggingStage = flaggingStage))
-  
-  # If the output has class simpleError or is not a list, save it as an error
-  if (sum(class(loadResult$value)=="userStop") > 0) {
-    errorList <- c(errorList,list(loadResult$value$message))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="SQLException") > 0) {
-    errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         racas::applicationSettings$server.database.host, 
-                                         racas::applicationSettings$server.database.port, ":", 
-                                         as.character(loadResult$value), 
-                                         ". Please contact your system administrator.")))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="simpleError") > 0) {
-    errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
-                                          as.character(loadResult$value$message))))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
-    errorList <- c(errorList,list(as.character(loadResult$value)))
-    loadResult$value <- NULL
+  if (developmentMode) {
+    loadResult <- list(value = runMain(folderToParse = folderToParse, 
+                                       user = user, 
+                                       dryRun = dryRun, 
+                                       testMode = testMode, 
+                                       experimentId = experimentId, 
+                                       inputParameters = inputParameters,
+                                       flaggedWells = flaggedWells,
+                                       flaggingStage = flaggingStage))
+  } else {
+    loadResult <- tryCatchLog(runMain(folderToParse = folderToParse, 
+                                      user = user, 
+                                      dryRun = dryRun, 
+                                      testMode = testMode, 
+                                      experimentId = experimentId, 
+                                      inputParameters = inputParameters,
+                                      flaggedWells = flaggedWells,
+                                      flaggingStage = flaggingStage))
   }
   
-  # Save warning messages but not the function call, which is only useful while programming
-  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
-  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
-    if(any(class(x) == "userWarning")) {
-      x$message
-    } else {
-      paste0("The system has encountered an internal warning: ", x$message)
-    }
-  })
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
+  allTextErrors <- c(allTextErrors, errorList)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
-  
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
-  #   
-  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
-  #   
+  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
+  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo))) 
   
   # Create the HTML to display
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
-  
-  # Detach the box for error handling
-  detach(errorHandlingBox)
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
   
   tryCatch({
     if(is.null(loadResult$value$experiment)) {
@@ -2625,7 +2597,6 @@ runPrimaryAnalysis <- function(request) {
       experiment <- loadResult$value$experiment
     }
     saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
-    
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
   })

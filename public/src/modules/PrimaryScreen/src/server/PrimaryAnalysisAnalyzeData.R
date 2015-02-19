@@ -87,7 +87,7 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   #   experimentCode <- "EXPT-00000887"
   #   wellFlagFile <- "Step2_Renormalize_Input_v2 (4).txt"
   
-  experiment <- getExperimentByCodeName(experimentCode)[[1]]
+  experiment <- getExperimentByCodeName(experimentCode)
   
   experimentStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   experimentClobValues <- getValuesByTypeAndKind(experimentStates, "clobValue_data analysis parameters")[[1]]

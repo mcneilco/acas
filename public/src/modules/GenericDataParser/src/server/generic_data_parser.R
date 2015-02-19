@@ -11,14 +11,6 @@
 # Parses a "Generic" formatted excel file into an upload file for ACAS
 #########################################################################
 
-#TODO:
-# Deploy server changes to host3
-# Figure out how to store values either in protocol or in a text file in a way that will work for UI as well
-# Information to store: lockcorpname, states to create, replaceFakeCorpBatchId
-# Don't blow up when all points are excluded
-# Deal with numbers in the assay date area
-# Error handling for project service
-
 # How to run: 
 #   Before running: 
 #     Set your working directory to the ACAS_HOME (RStudio defaults to this)
@@ -73,7 +65,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   #    names are allowed, and a boolean indicating whether the format is "use existing experiment"
   
   require('gdata')
-
+  
   # Check if extra data was picked up that should not be
   if (length(metaData[[1]]) > 1) {
     extraData <- c(as.character(metaData[[1]][2:length(metaData[[1]])]),
@@ -2168,10 +2160,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   # Validate Input Parameters
   if (is.na(pathToGenericDataFormatExcelFile)) {
-    stopUser("Need Excel file path as input")
+    stop("SEL: Need Excel file path as input")
   }
   if (!file.exists(pathToGenericDataFormatExcelFile)) {
-    stopUser("Cannot find input file")
+    stop("SEL: Cannot find input file")
   }
   
   genericDataFileDataFrame <- readExcelOrCsv(pathToGenericDataFormatExcelFile)
@@ -2259,9 +2251,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   useExistingExperiment <- inputFormat %in% c("Use Existing Experiment", "Precise For Existing Experiment")
   if (useExistingExperiment) {
     experiment <- getExperimentByCodeName(validatedMetaData$'Experiment Code Name'[1])
-    if (length(experiment) == 0) {
-      stopUser(paste0("Experiment Code Name not found ", validatedMetaData$'Experiment Code Name'[1]))
-    }
     protocol <- getProtocolById(experiment$protocol$id)
     validatedMetaData$'Protocol Name' <- getPreferredName(protocol)
     validatedMetaData$'Experiment Name' <- getPreferredName(experiment)
@@ -2474,18 +2463,19 @@ translateClassToValueType <- function(x, reverse = F) {
 parseGenericData <- function(request) {
   # Highest level function
   # 
-  # Outputs a response with labels: 
-  #   value (a list with numbers of analysis groups, treatment groups, and subjects to be uploaded)
-  #   warningList (a character vector)
-  #   errorList (a character vector)
-  #   error (a boolean)
+  # Outputs a response that can be translated to JSON, values are: 
+  #   commit (boolean)
+  #   transactionId (integer)
+  #   results (list)
+  #   hasError (boolean)
+  #   hasWarning (boolean)
+  #   errorMessages (list)
+  
+  globalMessenger <- messenger()$reset()
 
-  # Set up high level needs
-  require('compiler')
-  enableJIT(3)
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
-  # server and does not wrap everything in tryCatch so traceback() will work
+  # server and does not wrap everything in tryCatch so debug will keep printing
   developmentMode <- FALSE
   
   # Collect the information from the request
@@ -2538,59 +2528,24 @@ parseGenericData <- function(request) {
                                       errorEnv = errorEnv))
   }
   
-  # If the output has class simpleError or is not a list, save it as an error
-#   if (sum(class(loadResult$value)=="userStop") > 0) {
-#     errorList <- c(errorList,list(loadResult$value$message))
-#     loadResult$value <- NULL
-#   } else if (sum(class(loadResult$value)=="SQLException") > 0) {
-#     errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-#                                          configList$server.database.host,configList$server.database.port, ":", 
-#                                          as.character(loadResult$value), ". Please contact your system administrator.")))
-#     loadResult$value <- NULL
-#   } else if (sum(class(loadResult$value)=="simpleError") > 0) {
-#     errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
-#                                           as.character(loadResult$value$message))))
-#     loadResult$value <- NULL
-#   } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
-#     errorList <- c(errorList,list(as.character(loadResult$value)))
-#     loadResult$value <- NULL
-#   }
-  
-  # Save warning messages but not the function call, which is only useful while programming
-  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
-  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
-    if(any(class(x) == "userWarning")) {
-      x$message
-      } else {
-        paste0("The system has encountered an internal warning: ", x$message)
-        }
-    })
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  loadResult$errorList <- lapply(loadResult$errorList, getElement, "message")
-  loadResult$errorList <- c(loadResult$errorList, errorList)
-  hasError <- length(loadResult$errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
+  allTextErrors <- c(allTextErrors, errorList)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in loadResult$errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
-  
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
-  #   
+  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
-  #   
   
   # Create the HTML to display
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
   
   if(!dryRun) {
     htmlSummary <- saveAnalysisResults(experiment=experiment, hasError, htmlSummary, loadResult$value$lsTransactionId)
