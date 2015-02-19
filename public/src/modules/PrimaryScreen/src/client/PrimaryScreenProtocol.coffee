@@ -383,9 +383,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 class window.PrimaryScreenProtocolController extends Backbone.View
 
 	initialize: ->
-		console.log "setup pbc"
 		@setupProtocolBaseController()
-		console.log "setup psppc"
 		@setupPrimaryScreenProtocolParametersController()
 		@protocolBaseController.model.on "checkForNewPickListOptions", @handleCheckForNewPickListOptions
 
@@ -465,13 +463,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 				@completeInitialization()
 
 	completeInitialization: =>
-		console.log "beg of complete init"
 		unless @model?
 			@model = new PrimaryScreenProtocol()
-		console.log "created new protocol"
 		$(@el).html @template()
 		@model.on 'sync', =>
-			console.log "sync"
 			@trigger 'amClean'
 			unless @model.get('subclass')?
 				@model.set subclass: 'protocol'
@@ -495,9 +490,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@trigger 'amDirty'
 			@$('.bv_updateModuleComplete').hide()
 		@model.on 'readyToSave', @handleFinishSave
-		console.log "setup pspc"
 		@setupPrimaryScreenProtocolController()
-		console.log "setup psapc"
 		@setupPrimaryScreenAnalysisParametersController()
 		@setupModelFitTypeController()
 
@@ -538,7 +531,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenProtocolController.on 'prepareToSaveToDatabase', @prepareToSaveToDatabase
 
 	setupPrimaryScreenAnalysisParametersController: =>
-		console.log "set up psapc"
 		@primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController
 			model: @model.getAnalysisParameters()
 			el: @$('.bv_primaryScreenAnalysisParameters')
@@ -550,7 +542,6 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.render()
 
 	setupModelFitTypeController: =>
-		console.log "setup model fit controller"
 		@modelFitTypeController = new ModelFitTypeController
 			model: @model
 			el: @$('.bv_doseResponseAnalysisParameters')

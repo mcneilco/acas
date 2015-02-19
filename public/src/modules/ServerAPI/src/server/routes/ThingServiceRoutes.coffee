@@ -18,7 +18,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
@@ -30,7 +30,7 @@ exports.thingByCodeName = (req, resp) ->
 exports.postThingParent = (req, resp) ->
 	console.log "post thing parent"
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
@@ -57,7 +57,7 @@ exports.postThingParent = (req, resp) ->
 
 exports.postThingBatch = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingTestJSON.thingBatch
 	else
 		config = require '../conf/compiled/conf.js'
@@ -84,7 +84,7 @@ exports.postThingBatch = (req, resp) ->
 
 exports.putThing = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
@@ -120,7 +120,7 @@ exports.batchesByParentCodeName = (req, resp) ->
 
 exports.validateName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingTestJSON.js'
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.end JSON.stringify true
 	else
 		console.log "validate name"

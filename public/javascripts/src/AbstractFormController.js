@@ -46,8 +46,6 @@
     AbstractFormController.prototype.validationError = function() {
       var errors;
       errors = this.model.validationError;
-      console.log("validationError errors");
-      console.log(errors);
       this.clearValidationErrorStyles();
       _.each(errors, (function(_this) {
         return function(err) {
@@ -60,7 +58,6 @@
               selector: '.bv_group_' + err.attribute
             });
             _this.$('.bv_group_' + err.attribute).addClass('input_error error');
-            console.log(err.attribute);
             return _this.trigger('notifyError', {
               owner: _this.errorOwnerName,
               errorLevel: 'error',
@@ -92,13 +89,10 @@
     };
 
     AbstractFormController.prototype.handleModelChange = function() {
-      console.log("handle model change");
       this.clearValidationErrorStyles();
       if (this.isValid()) {
-        console.log("valid");
         return this.trigger('valid');
       } else {
-        console.log("invalid");
         return this.trigger('invalid');
       }
     };

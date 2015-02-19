@@ -8,8 +8,6 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		console.log "VALIDATE READ"
-		console.log attrs.readPosition
 		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
@@ -44,10 +42,8 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
 
 	validateCollection: (matchReadName) =>
-		console.log "validate read list collection"
 		modelErrors = []
 		usedReadNames = {}
-		console.log @length
 		if @.length != 0
 			for index in [0..@.length-1]
 				model = @.at(index)
@@ -169,8 +165,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	validate: (attrs) =>
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
-		console.log "read errors"
-		console.log readErrors
 		errors.push readErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
@@ -254,7 +248,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
-		console.log errors
 		if errors.length > 0
 			return errors
 		else
@@ -390,10 +383,8 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	setUpReadPosition: (matchReadNameChecked) ->
 		if matchReadNameChecked
-			console.log "disable read position"
 			@$('.bv_readPosition').attr('disabled','disabled')
 		else
-			console.log "enable read position"
 			@$('.bv_readPosition').removeAttr('disabled')
 
 
@@ -511,12 +502,10 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		@matchReadNameChecked = matchReadName
 		if @matchReadNameChecked
 			@$('.bv_readPosition').val('')
-			console.log "match read name changed -disable read position"
 			@$('.bv_readPosition').attr('disabled','disabled')
 			@collection.each (read) =>
 				read.set readPosition: ''
 		else
-			console.log "match read name changed -enable read position"
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
@@ -873,7 +862,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@attributeChanged()
 
 	handleMatchReadNameChanged: (skipUpdate) =>
-		console.log "handle read name changed"
 		matchReadName = @$('.bv_matchReadName').is(":checked")
 		@model.set matchReadName: matchReadName
 		@readListController.matchReadNameChanged(matchReadName)

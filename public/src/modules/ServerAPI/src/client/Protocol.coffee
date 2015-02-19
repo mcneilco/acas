@@ -146,9 +146,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
-		console.log "beg render of pbc"
 		unless @model?
-			console.log "create new protocol"
 			@model = new Protocol()
 		@setUpAssayStageSelect()
 		@$('.bv_creationDate').datepicker();
@@ -158,7 +156,6 @@ class window.ProtocolBaseController extends BaseEntityController
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
-		console.log "end render of pbc"
 		@
 
 	setUpAssayStageSelect: ->

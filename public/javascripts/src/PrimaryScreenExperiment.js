@@ -21,8 +21,6 @@
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      console.log("VALIDATE READ");
-      console.log(attrs.readPosition);
       if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
         errors.push({
           attribute: 'readPosition',
@@ -90,10 +88,8 @@
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
       var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
-      console.log("validate read list collection");
       modelErrors = [];
       usedReadNames = {};
-      console.log(this.length);
       if (this.length !== 0) {
         for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
           model = this.at(index);
@@ -297,8 +293,6 @@
       var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors, vehicleControl;
       errors = [];
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
-      console.log("read errors");
-      console.log(readErrors);
       errors.push.apply(errors, readErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
       errors.push.apply(errors, transformationErrors);
@@ -415,7 +409,6 @@
           message: "Transfer volume must be a number"
         });
       }
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -639,10 +632,8 @@
 
     PrimaryAnalysisReadController.prototype.setUpReadPosition = function(matchReadNameChecked) {
       if (matchReadNameChecked) {
-        console.log("disable read position");
         return this.$('.bv_readPosition').attr('disabled', 'disabled');
       } else {
-        console.log("enable read position");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
@@ -829,7 +820,6 @@
       this.matchReadNameChecked = matchReadName;
       if (this.matchReadNameChecked) {
         this.$('.bv_readPosition').val('');
-        console.log("match read name changed -disable read position");
         this.$('.bv_readPosition').attr('disabled', 'disabled');
         return this.collection.each((function(_this) {
           return function(read) {
@@ -839,7 +829,6 @@
           };
         })(this));
       } else {
-        console.log("match read name changed -enable read position");
         return this.$('.bv_readPosition').removeAttr('disabled');
       }
     };
@@ -1375,7 +1364,6 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
       var matchReadName;
-      console.log("handle read name changed");
       matchReadName = this.$('.bv_matchReadName').is(":checked");
       this.model.set({
         matchReadName: matchReadName
