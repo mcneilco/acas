@@ -98,7 +98,7 @@ class window.PickListSelectController extends Backbone.View
 		console.log "set selected code"
 		console.log code
 		@selectedCode = code
-#		$(@el).val @selectedCode  if @rendered
+		#		$(@el).val @selectedCode  if @rendered
 		if @rendered
 			$(@el).val @selectedCode
 			console.log "done"

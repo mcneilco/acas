@@ -94,7 +94,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment, p
   
   # Remove unneeded columns
   # flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
-  flagData <- data.table(validatedFlagData)
+  flagData <- as.data.table(validatedFlagData[, list(assayBarcode, well, flagType, 
+                                                flagObservation, flagReason, flagComment)])
   
   return(flagData)
 }
@@ -1078,7 +1079,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
   #             every test
-  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  # Returns: a data.table containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
   #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
   #             didn't define a hit, it is left as NA
   
@@ -1390,7 +1391,7 @@ getReadOrderTable <- function(readList) {
         calculatedRead = FALSE
       )
   }))
-  readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
+  readsTable[grep("^Calc:", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1919,7 +1920,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
-    if (!is.null(parameters$agonist$batchCode)) {
+    if (!is.null(parameters$agonist$batchCode) && parameters$agonist$batchCode != "") {
       summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
     }
   }
@@ -2514,6 +2515,8 @@ deleteModelSettings <- function(experiment) {
   #   is "not started"
   updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "codeValue", "model fit status")
+  updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit type")
   updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "clobValue", "model fit parameters")
   updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 

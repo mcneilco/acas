@@ -31,7 +31,7 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
   write.table(paste0(Sys.time(), "\tbegin getCompoundPlateData"), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   queryCompoundsFromDB <- function(barcodes){
-    queryString <- paste0("select kp.barcode as cmpdBarcode, dd_plateType.value as plateType, kpw.wellref as wellreference, bp.corp_name, bb.batch_number, kwi.concvalue as cmpdConc, kp.supplier ",
+    queryString <- paste0("select distinct kp.barcode as cmpdBarcode, dd_plateType.value as plateType, kpw.wellref as wellreference, bp.corp_name, bb.batch_number, kwi.concvalue as cmpdConc, kp.supplier ",
                           "from kalypsysadmin.kplate kp ",
                           "join kalypsysadmin.kplatewell kpw on kpw.plateid = kp.plateid ",
                           "join kalypsysadmin.kwellitem kwi on kwi.wellid = kpw.wellid ",
