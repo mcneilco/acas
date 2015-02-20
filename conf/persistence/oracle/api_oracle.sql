@@ -202,7 +202,7 @@ CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
 SELECT lsvalues9_.id        AS responseSubjectValueId,
   lsvalues9_.recorded_by    AS recorded_by,
-  lsvalues9_.ls_transaction AS ls_transaction,
+  lsvalues9_.ls_transaction AS lsTransaction,
   lsvalues9_.numeric_value  AS response,
   lsvalues9_.unit_kind      AS responseUnits,
   lsvalues9_.ls_kind        AS responseKind,
