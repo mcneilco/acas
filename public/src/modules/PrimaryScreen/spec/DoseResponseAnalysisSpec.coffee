@@ -375,8 +375,8 @@ describe "Dose Response Analysis Module Testing", ->
 				it "Should load the template", ->
 					expect(@drac.$('.bv_modelFitStatus').length).toNotEqual 0
 			describe "display logic not ready to fit", ->
-				it "should show model fit status Curves not fit becuase this is a new experiment", ->
-					expect(@drac.$('.bv_modelFitStatus').html()).toEqual " Curves not fit"
+				it "should show model fit status not started becuase this is a new experiment", ->
+					expect(@drac.$('.bv_modelFitStatus').html()).toEqual "not started"
 				it "should not show model fit results becuase this is a new experiment", ->
 					expect(@drac.$('.bv_modelFitResultsHTML').html()).toEqual ""
 					expect(@drac.$('.bv_resultsContainer')).toBeHidden()
@@ -387,11 +387,24 @@ describe "Dose Response Analysis Module Testing", ->
 			describe "display logic after ready to fit", ->
 				beforeEach ->
 					@drac.setReadyForFit()
-				it "Should load the fit parameter form", ->
-					expect(@drac.$('.bv_max_limitType_none').length).toNotEqual 0
+				it "Should load the model fit type select controller", ->
+					expect(@drac.$('.bv_modelFitType').length).toEqual 1
 				it "should be able to show model controller", ->
 					expect(@drac.$('.bv_fitOptionWrapper')).toBeVisible()
 					expect(@drac.$('.bv_analyzeExperimentToFit')).toBeHidden()
+				it "Should load the fit parameter form after a model fit type is selected", ->
+					waitsFor ->
+						@drac.$('.bv_modelFitType option').length > 0
+					, 1000
+					runs ->
+						@drac.$('.bv_modelFitType').val('4 parameter D-R')
+						@drac.$('.bv_modelFitType').change()
+					waitsFor ->
+						@drac.$('.bv_max_limitType_none').length > 0
+					, 1000
+					runs ->
+						expect(@drac.$('.bv_max_limitType_none').length).toNotEqual 0
+
 		describe "experiment status locks analysis", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -399,6 +412,7 @@ describe "Dose Response Analysis Module Testing", ->
 					model: @exp
 					el: $('#fixture')
 				@drac.model.getAnalysisStatus().set codeValue: "analsysis complete"
+				@drac.model.getModelFitType().set codeValue: "4 parameter D-R"
 				@drac.primaryAnalysisCompleted()
 				@drac.render()
 			describe "experiment status change handling", ->
@@ -412,12 +426,24 @@ describe "Dose Response Analysis Module Testing", ->
 				it "should show fit button as Re-Fit since status is ' Curves not fit'", ->
 					expect(@drac.$('.bv_fitModelButton').html()).toEqual "Re-Fit"
 			describe "Form valid change handling", ->
+				beforeEach ->
+					waitsFor ->
+						@drac.$('.bv_modelFitType option').length > 0
+					, 1000
+					runs ->
+						@drac.$('.bv_modelFitType').val('4 parameter D-R')
+						@drac.$('.bv_modelFitType').change()
+					waitsFor ->
+						@drac.$('.bv_max_limitType_none').length > 0
+					, 1000
 				it "should show button enabled since form loaded with valid values from test fixture", ->
-					expect(@drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined()
+					runs ->
+						expect(@drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined()
 				it "should show button disabled when form is invalid", ->
-					@drac.$('.bv_max_value').val ""
-					@drac.$('.bv_max_value').change()
-					expect(@drac.$('.bv_fitModelButton').attr('disabled')).toEqual 'disabled'
+					runs ->
+						@drac.$('.bv_max_value').val ""
+						@drac.$('.bv_max_value').change()
+						expect(@drac.$('.bv_fitModelButton').attr('disabled')).toEqual 'disabled'
 		describe "handling re-fit", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer

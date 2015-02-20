@@ -303,9 +303,9 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 
-#	primaryAnalysisCompleted: ->
-#		console.log "primary analysis completed"
-#		@testReadyForFit()
+	primaryAnalysisCompleted: ->
+		console.log "primary analysis completed"
+		@testReadyForFit()
 
 	handleStatusChanged: =>
 		if @parameterController != null and @parameterController != undefined

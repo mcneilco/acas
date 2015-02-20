@@ -1105,9 +1105,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				if json.length == 0
 					alert 'Could not get experiment for codeName of the model'
 				else
-					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#					exp = new PrimaryScreenExperiment json
-					exp = new PrimaryScreenExperiment json[0]
+					exp = new PrimaryScreenExperiment json
 					exp.set exp.parse(exp.attributes)
 					@model = exp
 					@dataAnalysisController.updateAnalysisParamModel(@model)
@@ -1279,6 +1277,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@experimentBaseController.render()
 		@analysisController.render()
 		@modelFitController.render()
+		@$('.bv_cancel').attr('disabled','disabled')
 
 	setupExperimentBaseController: ->
 		@experimentBaseController = new ExperimentBaseController
@@ -1290,6 +1289,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@experimentBaseController.on 'amClean', =>
 			@trigger 'amClean'
+		@experimentBaseController.on 'reinitialize', @reinitialize
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =
@@ -1344,6 +1344,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	hideSaveProgressBar: ->
 		@$('.bv_saveStatusDropDown').modal("hide")
+
+	reinitialize: =>
+		@model = null
+		@completeInitialization()
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"

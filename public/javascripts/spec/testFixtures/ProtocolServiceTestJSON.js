@@ -441,27 +441,25 @@
         }
       ]
     };
-    exports.stubSavedProtocol = [
-      {
-        codeName: "PROT-00000001",
-        experimentCount: 12,
-        id: 14325,
-        ignored: false,
-        lsKind: null,
-        lsTransaction: {
-          comments: "protocol 201 transactions",
-          id: 179,
-          recordedDate: 1361600825000,
-          version: 0
-        },
-        modifiedBy: null,
-        modifiedDate: null,
-        recordedBy: "jmcneil",
-        recordedDate: 1361600860000,
-        shortDescription: "protocol short description goes here",
+    exports.stubSavedProtocol = {
+      codeName: "PROT-00000001",
+      experimentCount: 12,
+      id: 14325,
+      ignored: false,
+      lsKind: null,
+      lsTransaction: {
+        comments: "protocol 201 transactions",
+        id: 179,
+        recordedDate: 1361600825000,
         version: 0
-      }
-    ];
+      },
+      modifiedBy: null,
+      modifiedDate: null,
+      recordedBy: "jmcneil",
+      recordedDate: 1361600860000,
+      shortDescription: "protocol short description goes here",
+      version: 0
+    };
     exports.protocolToSave = [
       {
         codeName: "PROT-00000066",
@@ -597,7 +595,7 @@
         physicallyLabled: false,
         preferred: true,
         protocol: {
-          codeName: "PROT-00000010",
+          codeName: "PROT-00000001",
           id: 2588,
           ignored: false,
           lsKind: "default",
@@ -777,7 +775,7 @@
         physicallyLabled: false,
         preferred: true,
         protocol: {
-          codeName: "PROT-00000001",
+          codeName: "PROT-00000211",
           id: 2590,
           ignored: false,
           lsKind: "FLIPR",

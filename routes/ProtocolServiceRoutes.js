@@ -137,9 +137,9 @@
       for (_i = 0, _len = labels.length; _i < _len; _i++) {
         label = labels[_i];
         if (shouldFilterByName) {
-          match = label.labelText.toUpperCase().indexOf(filterString) > -1;
+          match = label.labelText.toLowerCase().indexOf(filterString) > -1;
         } else if (shouldFilterByKind) {
-          match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1;
+          match = label.protocol.lsKind.toLowerCase().indexOf(filterString) > -1;
         } else {
           match = true;
         }

@@ -349,6 +349,9 @@
       this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
+      this.handleCancelComplete = __bind(this.handleCancelComplete, this);
+      this.handleCancelClicked = __bind(this.handleCancelClicked, this);
+      this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.beginSave = __bind(this.beginSave, this);
       this.updateEditable = __bind(this.updateEditable, this);
@@ -359,6 +362,8 @@
       this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleScientistChanged = __bind(this.handleScientistChanged, this);
+      this.modelChangeCallback = __bind(this.modelChangeCallback, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
       return BaseEntityController.__super__.constructor.apply(this, arguments);
     }
@@ -374,7 +379,9 @@
         "change .bv_entityName": "handleNameChanged",
         "change .bv_notebook": "handleNotebookChanged",
         "change .bv_status": "handleStatusChanged",
-        "click .bv_save": "handleSaveClicked"
+        "click .bv_save": "handleSaveClicked",
+        "click .bv_newEntity": "handleNewEntityClicked",
+        "click .bv_cancel": "handleCancelClicked"
       };
     };
 
@@ -382,25 +389,8 @@
       if (this.model == null) {
         this.model = new BaseEntity();
       }
-      this.model.on('sync', (function(_this) {
-        return function() {
-          _this.trigger('amClean');
-          if (_this.model.get('subclass') == null) {
-            _this.model.set({
-              subclass: 'entity'
-            });
-          }
-          _this.$('.bv_saving').hide();
-          _this.$('.bv_updateComplete').show();
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
-        };
-      })(this));
+      this.model.on('sync', this.modelSyncCallback);
+      this.model.on('change', this.modelChangeCallback);
       this.errorOwnerName = 'BaseEntityController';
       this.setBindings();
       $(this.el).empty();
@@ -428,17 +418,38 @@
       this.$('.bv_scientist').val(this.model.getScientist().get('codeValue'));
       this.$('.bv_' + subclass + 'Code').html(this.model.get('codeName'));
       this.$('.bv_' + subclass + 'Kind').html(this.model.get('lsKind'));
-      this.$('.bv_details').html(this.model.getDetails().get('clobValue'));
-      this.$('.bv_comments').html(this.model.getComments().get('clobValue'));
+      this.$('.bv_details').val(this.model.getDetails().get('clobValue'));
+      this.$('.bv_comments').val(this.model.getComments().get('clobValue'));
       this.$('.bv_notebook').val(this.model.getNotebook().get('stringValue'));
       this.$('.bv_status').val(this.model.getStatus().get('codeValue'));
       if (this.model.isNew()) {
         this.$('.bv_save').html("Save");
+        this.$('.bv_newEntity').hide();
       } else {
         this.$('.bv_save').html("Update");
+        this.$('.bv_newEntity').show();
       }
       this.updateEditable();
       return this;
+    };
+
+    BaseEntityController.prototype.modelSyncCallback = function() {
+      this.trigger('amClean');
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'entity'
+        });
+      }
+      this.$('.bv_saving').hide();
+      this.$('.bv_updateComplete').show();
+      return this.render();
+    };
+
+    BaseEntityController.prototype.modelChangeCallback = function() {
+      this.trigger('amDirty');
+      this.$('.bv_updateComplete').hide();
+      this.$('.bv_cancel').removeAttr('disabled');
+      return this.$('.bv_cancelComplete').hide();
     };
 
     BaseEntityController.prototype.setupStatusSelect = function() {
@@ -547,7 +558,6 @@
         recordedDate: new Date().getTime()
       });
       this.updateEditable();
-      console.log("handle status changed");
       return this.model.trigger('change');
     };
 
@@ -556,6 +566,7 @@
         this.enableAllInputs();
         this.$('.bv_lock').hide();
         this.$('.bv_save').attr('disabled', 'disabled');
+        this.$('.bv_cancel').attr('disabled', 'disabled');
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');
@@ -578,7 +589,6 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
-      console.log("handle save clicked");
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
@@ -588,8 +598,39 @@
       }
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_saving').show();
-      console.log(this.model);
       return this.model.save();
+    };
+
+    BaseEntityController.prototype.handleNewEntityClicked = function() {
+      if (this.model.get('lsKind') === "default") {
+        this.model = null;
+        this.completeInitialization();
+      } else {
+        this.trigger('reinitialize');
+      }
+      return this.trigger('amClean');
+    };
+
+    BaseEntityController.prototype.handleCancelClicked = function() {
+      if (this.model.isNew()) {
+        if (this.model.get('lsKind') === "default") {
+          this.model = null;
+          this.completeInitialization();
+        } else {
+          this.trigger('reinitialize');
+        }
+      } else {
+        this.$('.bv_canceling').show();
+        this.model.fetch({
+          success: this.handleCancelComplete
+        });
+      }
+      return this.trigger('amClean');
+    };
+
+    BaseEntityController.prototype.handleCancelComplete = function() {
+      this.$('.bv_canceling').hide();
+      return this.$('.bv_cancelComplete').show();
     };
 
     BaseEntityController.prototype.validationError = function() {

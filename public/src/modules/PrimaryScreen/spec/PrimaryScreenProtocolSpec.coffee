@@ -371,6 +371,13 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
 				it "should have a primary screen analysis parameters controller", ->
 					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "displaying save, cancel, and new protocol buttons", ->
+				it "should have the buttons from protocol base hidden", ->
+					expect(@pspmc.$('.bv_save')).toBeHidden()
+					expect(@pspmc.$('.bv_cancel')).toBeHidden()
+					expect(@pspmc.$('.bv_newEntity')).toBeHidden()
+				it "should have the new protocol button for the module be hidden", ->
+					expect(@pspmc.$('.bv_newModule')).toBeHidden()
 			describe "save module button testing", ->
 				describe "when instantiated with new primary screen protocol", ->
 					it "should show the save button text as Save", ->
@@ -426,6 +433,21 @@ describe "Primary Screen Protocol module testing", ->
 							console.log "save should have been clicked"
 							console.log @pspmc
 							expect(@pspmc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
+				describe "cancel button behavior testing", ->
+					it "should call a fetch on the model when cancel is clicked", ->
+						runs ->
+							@pspmc.$('.bv_cancel').click()
+						waits(1000)
+						runs ->
+							expect(@pspmc.$('.bv_protocolName').val()).toEqual ""
+				describe "new protocol button behavior testing", ->
+					it "should create a new protocol when New Protocol is clicked", ->
+						runs ->
+							@pspmc.$('.bv_newModule').click()
+						waits(1000)
+						runs ->
+							expect(@pspmc.$('.bv_protocolName').val()).toEqual ""
+							expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
 		describe "when instantiated with data", ->
 			beforeEach ->
 				@pspmc = new PrimaryScreenProtocolModuleController
@@ -439,6 +461,13 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
 				it "should have a primary screen analysis parameters controller", ->
 					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "displaying save, cancel, and new protocol buttons", ->
+				it "should have the buttons from protocol base hidden", ->
+					expect(@pspmc.$('.bv_save')).toBeHidden()
+					expect(@pspmc.$('.bv_cancel')).toBeHidden()
+					expect(@pspmc.$('.bv_newEntity')).toBeHidden()
+				it "should have the new protocol button for the module be visible", ->
+					expect(@pspmc.$('.bv_newModule')).toBeVisible()
 			describe "save module button testing", ->
 				describe "when instantiated with new primary screen protocol", ->
 					it "should show the save button text as Update", ->
@@ -488,7 +517,28 @@ describe "Primary Screen Protocol module testing", ->
 						waits(1000)
 						runs ->
 							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
-
+			describe "cancel button behavior testing", ->
+				it "should call a fetch on the model when cancel is clicked", ->
+					runs ->
+						@pspmc.$('.bv_protocolName').val(" Updated protocol name   ")
+						@pspmc.$('.bv_protocolName').change()
+						expect(@pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
+						@pspmc.$('.bv_positiveControlBatch').val('blah')
+						@pspmc.$('.bv_positiveControlBatch').change()
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual "blah"
+						@pspmc.$('.bv_cancel').click()
+					waits(1000)
+					runs ->
+						expect(@pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical"
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual "CMPD-12345678-01"
+			describe "new protocol button behavior testing", ->
+				it "should create a new protocol when New Protocol is clicked", ->
+					runs ->
+						@pspmc.$('.bv_newModule').click()
+					waits(1000)
+					runs ->
+						expect(@pspmc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
 
 
 

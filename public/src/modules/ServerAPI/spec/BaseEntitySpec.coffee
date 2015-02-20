@@ -301,13 +301,17 @@ describe "Base Entity testing", ->
 			describe "property display", ->
 				it "should show the save button text as Update", ->
 					expect(@bec.$('.bv_save').html()).toEqual "Update"
+				it "should show the create new entity button", ->
+					expect(@bec.$('.bv_newEntity')).toBeVisible()
+				it "should have the cancel button be disabled", ->
+					expect(@bec.$('.bv_newEntity')).toBeVisible()
 				it "should fill the short description field", ->
 					expect(@bec.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 				xit "should fill the entity details field", ->
 					#test breaks because subclass was set to experiment instead of entity
 					expect(@bec.$('.bv_details').html()).toEqual "experiment details goes here"
 				it "should fill the comments field", ->
-					expect(@bec.$('.bv_comments').html()).toEqual "comments go here"
+					expect(@bec.$('.bv_comments').val()).toEqual "comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the entity name field", ->
@@ -367,6 +371,9 @@ describe "Base Entity testing", ->
 						@bec.$('.bv_status').change()
 						expect(@bec.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
+				it "should enable the cancel button", ->
+					@bec.model.trigger 'change'
+					expect(@bec.$('.bv_cancel').attr('disabled')).toBeUndefined()
 				it "should update model when scientist is changed", ->
 					expect(@bec.model.getScientist().get('codeValue')).toEqual "jane"
 					waitsFor ->
@@ -452,6 +459,10 @@ describe "Base Entity testing", ->
 					expect(@bec.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
 					expect(@bec.$('.bv_save').attr('disabled')).toEqual 'disabled'
+				it "should hide the create new entity button", ->
+					expect(@bec.$('.bv_newEntity')).toBeHidden()
+				it "should have the cancel button be disabled", ->
+					expect(@bec.$('.bv_cancel').attr('disabled')).toEqual 'disabled'
 				it "should show the status select disabled", ->
 					expect(@bec.$('.bv_status').attr('disabled')).toEqual 'disabled'
 				it "should show status select value as created", ->
@@ -469,22 +480,27 @@ describe "Base Entity testing", ->
 						expect(@bec2.$('.bv_status').val()).toEqual 'created'
 			describe "controller validation rules", ->
 				beforeEach ->
-					@bec.$('.bv_scientist').val("bob")
-					@bec.$('.bv_scientist').change()
-					@bec.$('.bv_shortDescription').val(" New short description   ")
-					@bec.$('.bv_shortDescription').change()
-					@bec.$('.bv_entityName').val(" Updated entity name   ")
-					@bec.$('.bv_entityName').change()
-#					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
-#					@bec.$('.bv_completionDate').change()
-					@bec.$('.bv_notebook').val("my notebook")
-					@bec.$('.bv_notebook').change()
+					waitsFor ->
+						@bec.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						@bec.$('.bv_scientist').val("bob")
+						@bec.$('.bv_scientist').change()
+						@bec.$('.bv_shortDescription').val(" New short description   ")
+						@bec.$('.bv_shortDescription').change()
+						@bec.$('.bv_entityName').val(" Updated entity name   ")
+						@bec.$('.bv_entityName').change()
+	#					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
+	#					@bec.$('.bv_completionDate').change()
+						@bec.$('.bv_notebook').val("my notebook")
+						@bec.$('.bv_notebook').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@bec.isValid()).toBeTruthy()
 					it "save button should be enabled", ->
 						runs ->
+							console.log @bec.model.validationError
 							expect(@bec.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
@@ -543,4 +559,3 @@ describe "Base Entity testing", ->
 						waits(1000)
 						runs ->
 							expect(@bec.$('.bv_save').html()).toEqual "Update"
-

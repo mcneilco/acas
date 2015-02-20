@@ -502,6 +502,16 @@
             return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
           });
         });
+        describe("displaying save, cancel, and new protocol buttons", function() {
+          it("should have the buttons from protocol base hidden", function() {
+            expect(this.pspmc.$('.bv_save')).toBeHidden();
+            expect(this.pspmc.$('.bv_cancel')).toBeHidden();
+            return expect(this.pspmc.$('.bv_newEntity')).toBeHidden();
+          });
+          return it("should have the new protocol button for the module be hidden", function() {
+            return expect(this.pspmc.$('.bv_newModule')).toBeHidden();
+          });
+        });
         return describe("save module button testing", function() {
           describe("when instantiated with new primary screen protocol", function() {
             it("should show the save button text as Save", function() {
@@ -511,7 +521,7 @@
               return expect(this.pspmc.$('.bv_saveModule').attr('disabled')).toEqual('disabled');
             });
           });
-          return describe("expect save to work", function() {
+          describe("expect save to work", function() {
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
@@ -570,6 +580,29 @@
               });
             });
           });
+          describe("cancel button behavior testing", function() {
+            return it("should call a fetch on the model when cancel is clicked", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_cancel').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pspmc.$('.bv_protocolName').val()).toEqual("");
+              });
+            });
+          });
+          return describe("new protocol button behavior testing", function() {
+            return it("should create a new protocol when New Protocol is clicked", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_newModule').click();
+              });
+              waits(1000);
+              return runs(function() {
+                expect(this.pspmc.$('.bv_protocolName').val()).toEqual("");
+                return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
+              });
+            });
+          });
         });
       });
       return describe("when instantiated with data", function() {
@@ -591,7 +624,17 @@
             return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
           });
         });
-        return describe("save module button testing", function() {
+        describe("displaying save, cancel, and new protocol buttons", function() {
+          it("should have the buttons from protocol base hidden", function() {
+            expect(this.pspmc.$('.bv_save')).toBeHidden();
+            expect(this.pspmc.$('.bv_cancel')).toBeHidden();
+            return expect(this.pspmc.$('.bv_newEntity')).toBeHidden();
+          });
+          return it("should have the new protocol button for the module be visible", function() {
+            return expect(this.pspmc.$('.bv_newModule')).toBeVisible();
+          });
+        });
+        describe("save module button testing", function() {
           describe("when instantiated with new primary screen protocol", function() {
             it("should show the save button text as Update", function() {
               return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
@@ -649,6 +692,36 @@
               return runs(function() {
                 return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
               });
+            });
+          });
+        });
+        describe("cancel button behavior testing", function() {
+          return it("should call a fetch on the model when cancel is clicked", function() {
+            runs(function() {
+              this.pspmc.$('.bv_protocolName').val(" Updated protocol name   ");
+              this.pspmc.$('.bv_protocolName').change();
+              expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
+              this.pspmc.$('.bv_positiveControlBatch').val('blah');
+              this.pspmc.$('.bv_positiveControlBatch').change();
+              expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("blah");
+              return this.pspmc.$('.bv_cancel').click();
+            });
+            waits(1000);
+            return runs(function() {
+              expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("FLIPR target A biochemical");
+              return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("CMPD-12345678-01");
+            });
+          });
+        });
+        return describe("new protocol button behavior testing", function() {
+          return it("should create a new protocol when New Protocol is clicked", function() {
+            runs(function() {
+              return this.pspmc.$('.bv_newModule').click();
+            });
+            waits(1000);
+            return runs(function() {
+              expect(this.pspmc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
+              return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
             });
           });
         });

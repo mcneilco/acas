@@ -423,6 +423,12 @@
           it("should show the save button text as Update", function() {
             return expect(this.bec.$('.bv_save').html()).toEqual("Update");
           });
+          it("should show the create new entity button", function() {
+            return expect(this.bec.$('.bv_newEntity')).toBeVisible();
+          });
+          it("should have the cancel button be disabled", function() {
+            return expect(this.bec.$('.bv_newEntity')).toBeVisible();
+          });
           it("should fill the short description field", function() {
             return expect(this.bec.$('.bv_shortDescription').html()).toEqual("experiment created by generic data parser");
           });
@@ -430,7 +436,7 @@
             return expect(this.bec.$('.bv_details').html()).toEqual("experiment details goes here");
           });
           it("should fill the comments field", function() {
-            return expect(this.bec.$('.bv_comments').html()).toEqual("comments go here");
+            return expect(this.bec.$('.bv_comments').val()).toEqual("comments go here");
           });
           xit("should fill the entity name field", function() {
             return expect(this.bec.$('.bv_entityName').val()).toEqual("FLIPR target A biochemical");
@@ -511,6 +517,10 @@
           });
         });
         return describe("User edits fields", function() {
+          it("should enable the cancel button", function() {
+            this.bec.model.trigger('change');
+            return expect(this.bec.$('.bv_cancel').attr('disabled')).toBeUndefined();
+          });
           it("should update model when scientist is changed", function() {
             expect(this.bec.model.getScientist().get('codeValue')).toEqual("jane");
             waitsFor(function() {
@@ -610,6 +620,12 @@
           it("should show the save button disabled", function() {
             return expect(this.bec.$('.bv_save').attr('disabled')).toEqual('disabled');
           });
+          it("should hide the create new entity button", function() {
+            return expect(this.bec.$('.bv_newEntity')).toBeHidden();
+          });
+          it("should have the cancel button be disabled", function() {
+            return expect(this.bec.$('.bv_cancel').attr('disabled')).toEqual('disabled');
+          });
           it("should show the status select disabled", function() {
             return expect(this.bec.$('.bv_status').attr('disabled')).toEqual('disabled');
           });
@@ -636,14 +652,19 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.bec.$('.bv_scientist').val("bob");
-            this.bec.$('.bv_scientist').change();
-            this.bec.$('.bv_shortDescription').val(" New short description   ");
-            this.bec.$('.bv_shortDescription').change();
-            this.bec.$('.bv_entityName').val(" Updated entity name   ");
-            this.bec.$('.bv_entityName').change();
-            this.bec.$('.bv_notebook').val("my notebook");
-            return this.bec.$('.bv_notebook').change();
+            waitsFor(function() {
+              return this.bec.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.bec.$('.bv_scientist').val("bob");
+              this.bec.$('.bv_scientist').change();
+              this.bec.$('.bv_shortDescription').val(" New short description   ");
+              this.bec.$('.bv_shortDescription').change();
+              this.bec.$('.bv_entityName').val(" Updated entity name   ");
+              this.bec.$('.bv_entityName').change();
+              this.bec.$('.bv_notebook').val("my notebook");
+              return this.bec.$('.bv_notebook').change();
+            });
           });
           describe("form validation setup", function() {
             it("should be valid if form fully filled out", function() {
@@ -653,6 +674,7 @@
             });
             return it("save button should be enabled", function() {
               return runs(function() {
+                console.log(this.bec.model.validationError);
                 return expect(this.bec.$('.bv_save').attr('disabled')).toBeUndefined();
               });
             });

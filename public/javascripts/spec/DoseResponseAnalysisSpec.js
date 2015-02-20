@@ -518,8 +518,8 @@
           });
         });
         describe("display logic not ready to fit", function() {
-          it("should show model fit status Curves not fit becuase this is a new experiment", function() {
-            return expect(this.drac.$('.bv_modelFitStatus').html()).toEqual(" Curves not fit");
+          it("should show model fit status not started becuase this is a new experiment", function() {
+            return expect(this.drac.$('.bv_modelFitStatus').html()).toEqual("not started");
           });
           it("should not show model fit results becuase this is a new experiment", function() {
             expect(this.drac.$('.bv_modelFitResultsHTML').html()).toEqual("");
@@ -535,12 +535,27 @@
           beforeEach(function() {
             return this.drac.setReadyForFit();
           });
-          it("Should load the fit parameter form", function() {
-            return expect(this.drac.$('.bv_max_limitType_none').length).toNotEqual(0);
+          it("Should load the model fit type select controller", function() {
+            return expect(this.drac.$('.bv_modelFitType').length).toEqual(1);
           });
-          return it("should be able to show model controller", function() {
+          it("should be able to show model controller", function() {
             expect(this.drac.$('.bv_fitOptionWrapper')).toBeVisible();
             return expect(this.drac.$('.bv_analyzeExperimentToFit')).toBeHidden();
+          });
+          return it("Should load the fit parameter form after a model fit type is selected", function() {
+            waitsFor(function() {
+              return this.drac.$('.bv_modelFitType option').length > 0;
+            }, 1000);
+            runs(function() {
+              this.drac.$('.bv_modelFitType').val('4 parameter D-R');
+              return this.drac.$('.bv_modelFitType').change();
+            });
+            waitsFor(function() {
+              return this.drac.$('.bv_max_limitType_none').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.drac.$('.bv_max_limitType_none').length).toNotEqual(0);
+            });
           });
         });
       });
@@ -553,6 +568,9 @@
           });
           this.drac.model.getAnalysisStatus().set({
             codeValue: "analsysis complete"
+          });
+          this.drac.model.getModelFitType().set({
+            codeValue: "4 parameter D-R"
           });
           this.drac.primaryAnalysisCompleted();
           return this.drac.render();
@@ -578,13 +596,29 @@
           });
         });
         return describe("Form valid change handling", function() {
+          beforeEach(function() {
+            waitsFor(function() {
+              return this.drac.$('.bv_modelFitType option').length > 0;
+            }, 1000);
+            runs(function() {
+              this.drac.$('.bv_modelFitType').val('4 parameter D-R');
+              return this.drac.$('.bv_modelFitType').change();
+            });
+            return waitsFor(function() {
+              return this.drac.$('.bv_max_limitType_none').length > 0;
+            }, 1000);
+          });
           it("should show button enabled since form loaded with valid values from test fixture", function() {
-            return expect(this.drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined();
+            return runs(function() {
+              return expect(this.drac.$('.bv_fitModelButton').attr('disabled')).toBeUndefined();
+            });
           });
           return it("should show button disabled when form is invalid", function() {
-            this.drac.$('.bv_max_value').val("");
-            this.drac.$('.bv_max_value').change();
-            return expect(this.drac.$('.bv_fitModelButton').attr('disabled')).toEqual('disabled');
+            return runs(function() {
+              this.drac.$('.bv_max_value').val("");
+              this.drac.$('.bv_max_value').change();
+              return expect(this.drac.$('.bv_fitModelButton').attr('disabled')).toEqual('disabled');
+            });
           });
         });
       });

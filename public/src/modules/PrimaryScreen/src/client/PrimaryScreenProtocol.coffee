@@ -399,6 +399,8 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 			@trigger 'amClean'
 		@protocolBaseController.on "noEditablePickLists", =>
 			@trigger 'prepareToSaveToDatabase'
+		@protocolBaseController.on 'reinitialize', =>
+			@trigger 'reinitialize'
 		@protocolBaseController.render()
 
 	setupPrimaryScreenProtocolParametersController: =>
@@ -427,6 +429,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 	events:
 		"click .bv_saveModule": "handleSaveModule"
+		"click .bv_cancelModule": "handleCancelClicked"
+		"click .bv_newModule": "handleNewEntityClicked"
 
 
 	initialize: =>
@@ -466,29 +470,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		unless @model?
 			@model = new PrimaryScreenProtocol()
 		$(@el).html @template()
-		@model.on 'sync', =>
-			@trigger 'amClean'
-			unless @model.get('subclass')?
-				@model.set subclass: 'protocol'
-			@$('.bv_savingModule').hide()
-			@$('.bv_updateModuleComplete').show()
-			@$('.bv_saveModule').attr('disabled', 'disabled')
-			if @model.isNew()
-				@$('.bv_saveModule').html("Save")
-				@$('.bv_saveInstructions').show()
-			else
-				@$('.bv_saveModule').html("Update")
-				@$('.bv_saveInstructions').hide()
-
-		if @model.isNew()
-			@$('.bv_saveModule').html("Save")
-		else
-			@$('.bv_saveModule').html("Update")
-
-
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateModuleComplete').hide()
+		@model.on 'sync', @modelSyncCallback
+		@model.on 'change', @modelChangeCallback
 		@model.on 'readyToSave', @handleFinishSave
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
@@ -498,16 +481,47 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@setBindings()
 
 		@$('.bv_save').hide()
+		@$('.bv_cancel').hide()
+		@$('.bv_newEntity').hide()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 
+		if @model.isNew()
+			@$('.bv_saveModule').html("Save")
+			@$('.bv_saveInstructions').show()
+			@$('.bv_newModule').hide()
+		else
+			@$('.bv_saveModule').html("Update")
+			@$('.bv_saveInstructions').hide()
+			@$('.bv_newModule').show()
+		@$('.bv_cancelModule').attr('disabled','disabled')
+		@trigger 'amClean' #so that module starts off clean when initialized
+
+	modelSyncCallback: =>
+		@trigger 'amClean'
+		unless @model.get('subclass')?
+			@model.set subclass: 'protocol'
+		@$('.bv_savingModule').hide()
+		if @$('.bv_cancelModuleComplete').is(":visible")
+			@$('.bv_updateModuleComplete').hide()
+		else
+			@$('.bv_updateModuleComplete').show()
+		@$('.bv_saveModule').attr('disabled', 'disabled')
 		if @model.isNew()
 			@$('.bv_saveModule').html("Save")
 			@$('.bv_saveInstructions').show()
 		else
 			@$('.bv_saveModule').html("Update")
 			@$('.bv_saveInstructions').hide()
+		@setupPrimaryScreenProtocolController()
+		@setupPrimaryScreenAnalysisParametersController()
+		@setupModelFitTypeController()
+		@$('.bv_cancelModule').attr('disabled', 'disabled')
 
-		@trigger 'amClean' #so that module starts off clean when initialized
+	modelChangeCallback: =>
+		@trigger 'amDirty'
+		@$('.bv_updateModuleComplete').hide()
+		@$('.bv_cancelModule').removeAttr('disabled')
+		@$('.bv_cancelModuleComplete').hide()
 
 	handleProtocolSaved: =>
 		@trigger 'amClean'
@@ -520,6 +534,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 
 	setupPrimaryScreenProtocolController: =>
+		if @primaryScreenProtocolController?
+			@primaryScreenProtocolController.undelegateEvents()
 		@primaryScreenProtocolController = new PrimaryScreenProtocolController
 			model: @model
 			el: @$('.bv_primaryScreenProtocolGeneralInfoWrapper')
@@ -527,10 +543,13 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 			@trigger 'amDirty'
 		@primaryScreenProtocolController.on 'amClean', =>
 			@trigger 'amClean'
+		@primaryScreenProtocolController.on 'reinitialize', @reinitialize
 		@primaryScreenProtocolController.render()
 		@primaryScreenProtocolController.on 'prepareToSaveToDatabase', @prepareToSaveToDatabase
 
 	setupPrimaryScreenAnalysisParametersController: =>
+		if @primaryScreenAnalysisParametersController?
+			@primaryScreenAnalysisParametersController.undelegateEvents()
 		@primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController
 			model: @model.getAnalysisParameters()
 			el: @$('.bv_primaryScreenAnalysisParameters')
@@ -542,6 +561,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController.render()
 
 	setupModelFitTypeController: =>
+		if @modelFitTypeController?
+			@modelFitTypeController.undelegateEvents()
 		@modelFitTypeController = new ModelFitTypeController
 			model: @model
 			el: @$('.bv_doseResponseAnalysisParameters')
@@ -595,6 +616,27 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		super()
 		@$('.bv_saveModule').removeAttr('disabled')
 		@$('.bv_saveInstructions').hide()
+
+	reinitialize: =>
+		@model = null
+		@completeInitialization()
+
+	handleCancelClicked: =>
+#		@primaryScreenProtocolController.protocolBaseController.handleCancelClicked()
+		if @model.isNew()
+			@reinitialize()
+		else
+			@$('.bv_cancelingModule').show()
+			@model.fetch
+				success: @handleCancelComplete
+		@trigger 'amClean'
+
+	handleCancelComplete: =>
+		@$('.bv_cancelingModule').hide()
+		@$('.bv_cancelModuleComplete').show()
+	handleNewEntityClicked: =>
+		@primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked()
+
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController
 	moduleLaunchName: "primary_screen_protocol"
