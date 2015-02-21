@@ -33,6 +33,11 @@
       mainControllerClassName: "PrimaryScreenExperimentController",
       autoLaunchName: "primary_screen_experiment"
     }, {
+      isHeader: false,
+      menuName: "Example Thing",
+      mainControllerClassName: "ExampleThingController",
+      autoLaunchName: "cationic_block"
+    }, {
       isHeader: true,
       menuName: "Inventory"
     }, {
@@ -54,10 +59,6 @@
       isHeader: false,
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
-    }, {
-      isHeader: false,
-      menuName: "Example Thing",
-      mainControllerClassName: "ExampleThingController"
     }, {
       isHeader: true,
       menuName: "Admin"

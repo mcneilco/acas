@@ -115,6 +115,7 @@ class window.ExampleThing extends Thing
 
 class window.ExampleThingController extends AbstractFormController
 	template: _.template($("#AbstractBaseComponentThingView").html())
+	moduleLaunchName: "cationic_block"
 
 	events: ->
 		"keyup .bv_thingName": "attributeChanged"
@@ -126,6 +127,41 @@ class window.ExampleThingController extends AbstractFormController
 		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: =>
+		if @model?
+			@completeInitialization()
+		else
+			if window.AppLaunchParams.moduleLaunchParams?
+				console.log "has module launch params"
+				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
+					launchCode = window.AppLaunchParams.moduleLaunchParams.code
+					if launchCode.indexOf("-") == -1
+						@batchCodeName = "new batch"
+					else
+						@batchCodeName = launchCode
+						launchCode =launchCode.split("-")[0]
+					$.ajax
+						type: 'GET'
+						url: "/api/things/parent/cationic block/codename/"+launchCode
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get parent for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							if json.length == 0
+								alert 'Could not get parent for code in this URL, creating new one'
+							else
+								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+#								cbp = new CationicBlockParent json
+								cbp = new ExampleThing json
+								cbp.set cbp.parse(cbp.attributes)
+								@model = cbp
+							@completeInitialization()
+				else
+					@completeInitialization()
+			else
+				@completeInitialization()
+
+	completeInitialization: =>
 		unless @model?
 			@model=new ExampleThing()
 		@errorOwnerName = 'ExampleThingController'
@@ -137,8 +173,9 @@ class window.ExampleThingController extends AbstractFormController
 		@listenTo @model, 'sync', @modelSaveCallback
 		@listenTo @model, 'change', @modelChangeCallback
 		$(@el).empty()
-		$(@el).html @template()
+		$(@el).html @template(@model.attributes)
 		@setupScientistSelect()
+		@render()
 
 
 	render: =>
