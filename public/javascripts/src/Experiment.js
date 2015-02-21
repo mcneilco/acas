@@ -296,7 +296,7 @@
                     } else {
                       lsKind = json[0].lsKind;
                       if (lsKind === "default") {
-                        expt = new Experiment(json[0]);
+                        expt = new Experiment(json);
                         expt.set(expt.parse(expt.attributes));
                         if (window.AppLaunchParams.moduleLaunchParams.copy) {
                           _this.model = expt.duplicateEntity();

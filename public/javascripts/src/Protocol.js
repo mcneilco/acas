@@ -183,7 +183,7 @@
                   } else {
                     lsKind = json[0].lsKind;
                     if (lsKind === "default") {
-                      prot = new Protocol(json[0]);
+                      prot = new Protocol(json);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
                         _this.model = prot.duplicateEntity();

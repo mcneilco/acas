@@ -71,7 +71,7 @@
             console.log(error);
             console.log(response);
             console.log(body);
-            kind = response.body[0].lsKind;
+            kind = response.body.lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);
           };

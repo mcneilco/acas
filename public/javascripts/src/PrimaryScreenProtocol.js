@@ -693,9 +693,9 @@
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    lsKind = json[0].lsKind;
+                    lsKind = json.lsKind;
                     if (lsKind === "Bio Activity") {
-                      prot = new PrimaryScreenProtocol(json[0]);
+                      prot = new PrimaryScreenProtocol(json);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
                         _this.model = prot.duplicateEntity();
