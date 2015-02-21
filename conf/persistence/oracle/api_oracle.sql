@@ -201,6 +201,7 @@ AND lsvalues0_.ls_kind not like '%curve id';
 CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
 SELECT lsvalues9_.id        AS responseSubjectValueId,
+  analysisgr2_.code_name	AS analysisGroupCode,
   lsvalues9_.recorded_by    AS recorded_by,
   lsvalues9_.ls_transaction AS lsTransaction,
   lsvalues9_.numeric_value  AS response,
