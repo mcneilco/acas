@@ -12,8 +12,7 @@ getLastDataRowNumber <- function(fileName, searchString, tempFilePath) {
   # runlog
   write.table(paste0(Sys.time(), "\tbegin getLastDataRowNumber\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  rawLines <- readLines(fileName, warn = FALSE, encoding = "latin1")
-  dataRowNumber <- grep(searchString, rawLines)
+  dataRowNumber <- getDataRowNumber(fileName, searchString, tempFilePath)
   
   lastDataRowNumber <- c()
   
@@ -22,9 +21,11 @@ getLastDataRowNumber <- function(fileName, searchString, tempFilePath) {
     nextLineNumber <- dataRowNumber[(i+1)]
     
     if (lineNumber == max(dataRowNumber)) {
-        lastDataRowNumber <- append(lastDataRowNumber, lineNumber, after = length(lastDataRowNumber))
+      # last row in the fector
+      lastDataRowNumber <- append(lastDataRowNumber, lineNumber, after = length(lastDataRowNumber))
     } else if (lineNumber != (nextLineNumber - 1)) {
-        lastDataRowNumber <- append(lastDataRowNumber, lineNumber, after = length(lastDataRowNumber))
+      # if there is a gap in the rows, then the next number is the beginning of the next data set
+      lastDataRowNumber <- append(lastDataRowNumber, lineNumber, after = length(lastDataRowNumber))
     }
   }
   
