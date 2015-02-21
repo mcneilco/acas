@@ -61,6 +61,7 @@ exports.getCodeTableValues = (req, resp) ->
 
 
 exports.postCodeTable = (req, resp) ->
+	console.log "post code table route"
 	if global.specRunnerTestmode
 		codeTablePostTestJSON = require '../public/javascripts/spec/testFixtures/codeTablePostTestJSON.js'
 		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
@@ -72,7 +73,7 @@ exports.postCodeTable = (req, resp) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body
+			body: req.body.codeEntry
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 201

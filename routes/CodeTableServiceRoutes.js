@@ -79,6 +79,7 @@
 
   exports.postCodeTable = function(req, resp) {
     var baseurl, codeTablePostTestJSON, config, request;
+    console.log("post code table route");
     if (global.specRunnerTestmode) {
       codeTablePostTestJSON = require('../public/javascripts/spec/testFixtures/codeTablePostTestJSON.js');
       return resp.end(JSON.stringify(codeTablePostTestJSON.codeEntry));
@@ -90,7 +91,7 @@
       return request({
         method: 'POST',
         url: baseurl,
-        body: req.body,
+        body: req.body.codeEntry,
         json: true
       }, (function(_this) {
         return function(error, response, json) {
