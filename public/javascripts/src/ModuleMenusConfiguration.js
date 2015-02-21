@@ -55,6 +55,10 @@
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
     }, {
+      isHeader: false,
+      menuName: "Example Thing",
+      mainControllerClassName: "ExampleThingController"
+    }, {
       isHeader: true,
       menuName: "Admin"
     }, {
