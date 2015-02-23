@@ -499,7 +499,6 @@
     };
 
     DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
-      console.log("primary analysis completed");
       return this.testReadyForFit();
     };
 

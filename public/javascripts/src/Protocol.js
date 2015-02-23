@@ -256,7 +256,6 @@
       }
       this.render();
       if (this.model.get('lsKind') !== "default") {
-        console.log("should hide buttons");
         this.$('.bv_newEntity').hide();
         this.$('.bv_cancel').hide();
         this.$('.bv_save').hide();

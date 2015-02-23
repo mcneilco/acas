@@ -158,7 +158,6 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_updateComplete').show()
 		@render()
 		unless @model.get('lsKind') is "default"
-			console.log "should hide buttons"
 			@$('.bv_newEntity').hide()
 			@$('.bv_cancel').hide()
 			@$('.bv_save').hide()

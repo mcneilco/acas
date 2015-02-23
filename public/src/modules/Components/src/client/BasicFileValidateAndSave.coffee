@@ -136,8 +136,6 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 				backdrop: "static"
 			@$('.bv_saveStatusDropDown').modal("show")
 			dataToPost = @prepareDataToPost(false)
-			console.log "data to post"
-			console.log dataToPost
 			$.ajax
 				type: 'POST'
 				url: @fileProcessorURL,

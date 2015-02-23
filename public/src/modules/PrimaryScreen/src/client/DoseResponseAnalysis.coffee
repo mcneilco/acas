@@ -304,7 +304,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@handleStatusChanged()
 
 	primaryAnalysisCompleted: ->
-		console.log "primary analysis completed"
 		@testReadyForFit()
 
 	handleStatusChanged: =>
