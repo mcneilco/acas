@@ -8,11 +8,11 @@ calculateTreatmemtGroupID <- function(results, inputFormat, stateGroups, resultT
     # Standard code
     treatmentGrouping <- which(lapply(stateGroups, getElement, "stateKind") == "treatment")
     groupingColumns <- stateGroups[[treatmentGrouping]]$valueKinds
-    groupingColumns <- resultTypes$DataColumn[resultTypes$Type %in% groupingColumns]
+    groupingColumns <- resultTypes$DataColumn[resultTypes$valueKind %in% groupingColumns]
     if(stateGroups[[treatmentGrouping]]$includesCorpName) {
       groupingColumns <- c(groupingColumns, "Corporate Batch ID")
     }
-    a <- do.call(paste,results[,groupingColumns])
+    a <- do.call(paste,results[,groupingColumns, drop=FALSE])
     return(as.numeric(factor(a)))
   }
 }

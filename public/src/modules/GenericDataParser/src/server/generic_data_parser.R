@@ -1702,7 +1702,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   batchCodeStateIndices <- which(sapply(stateGroups, getElement, "includesCorpName"))
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
-  
+  subjectDataWithBatchCodeRows <- combineDose(subjectDataWithBatchCodeRows)
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####  
@@ -1720,7 +1720,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex", "resultTypeAndUnit"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
+    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
       stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
@@ -1740,6 +1740,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
       batchCodeStateIndices <- which(sapply(stateGroups, function(x) return(x$includesCorpName)))
       if (is.null(treatmentGroupData$stateVersion)) treatmentGroupData$stateVersion <- 0
       treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
+      treatmentGroupDataWithBatchCodeRows <- combineDose(treatmentGroupDataWithBatchCodeRows)
       # TODO: don't save fake batch codes as batch codes
       savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
                                                             entityKind = "treatmentgroup", 
@@ -2459,6 +2460,27 @@ translateClassToValueType <- function(x, reverse = F) {
   } else {
     return(valueTypeVector[match(x, classVector)])
   }
+}
+combineDose <- function(entityData, replacedFakeBatchCode = NULL, optionalColumns = c("treatmentGroupID", "analysisGroupID", "stateVersion")) {
+  # Combines the "Dose" value with the "batch code" value, making the "Dose" 
+  # into the concentration of the "batch code"
+  
+  neededColumns <- c("stateID", "stateGroupIndex")
+  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
+  
+  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
+  
+  internalCombine <- function(x) {
+    if ("Dose" %in% x$valueKind && "batch code" %in% x$valueKind) {
+      x[x$valueKind == "batch code", "concentration"] <- x[x$valueKind == "Dose", "numericValue"]
+      x[x$valueKind == "batch code", "concUnit"] <- x[x$valueKind == "Dose", "valueUnit"]
+      return(x[x$valueKind != "Dose", ])
+    } else {
+      return(x)
+    }
+  }
+  output <- ddply(entityData, usedColumns, internalCombine)
+  return(output)
 }
 parseGenericData <- function(request) {
   # Highest level function
