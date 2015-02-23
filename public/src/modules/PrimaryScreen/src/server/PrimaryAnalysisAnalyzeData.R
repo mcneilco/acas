@@ -4,7 +4,8 @@ require(data.table)
 
 myMessenger <- Messenger$new()
 myMessenger$logger <- logger(logName = "com.acas.reanalysis", logToConsole = FALSE)
-myMessenger$logger$debug("primary reanalysis initiated")
+# This was causing issues... figure out why it ended up in the output text
+#myMessenger$logger$debug("primary reanalysis initiated")
 
 write_csv <- function(x, file, rows = 1000L, ...) {
   passes <- NROW(x) %/% rows
