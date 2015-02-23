@@ -7,7 +7,7 @@ readDataTitles <- function(fileName, parseParams, headerRowVector, tempFilePath)
     dataTitles <- data.table(dataTitle=setdiff(colnames(read.table(fileName, 
                                                                    sep=parseParams$sepChar, 
                                                                    skip=headerRowVector-1, 
-                                                                   nrows=1, header=TRUE,
+                                                                   nrows=1, header=parseParams$headerExists,
                                                                    check.names=FALSE, fill=NA,
                                                                    comment.char="")), 
                                                c("X")))[dataTitle!=""]

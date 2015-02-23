@@ -90,7 +90,7 @@
       return request({
         method: 'POST',
         url: baseurl,
-        body: req.body,
+        body: req.body.codeEntry,
         json: true
       }, (function(_this) {
         return function(error, response, json) {

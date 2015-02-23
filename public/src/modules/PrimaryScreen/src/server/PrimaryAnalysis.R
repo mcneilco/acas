@@ -1372,6 +1372,9 @@ loadInstrumentReadParameters <- function(instrumentType) {
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
   }
+  if(paramList$headerRowSearchString == "NA") {
+    paramList$headerRowSearchString <- NA
+  }
   
   return(paramList)  
 }

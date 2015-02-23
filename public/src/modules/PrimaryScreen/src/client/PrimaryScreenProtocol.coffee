@@ -228,6 +228,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "assay"
 			codeKind: "activity"
 			roles: ["admin"]
+		@assayActivityListController.on 'change', @handleAssayActivityChanged
 		@assayActivityListController.render()
 
 	setupTargetOriginSelect: ->
@@ -241,6 +242,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "target"
 			codeKind: "origin"
 			roles: ["admin"]
+		@targetOriginListController.on 'change', @handleTargetOriginChanged
 		@targetOriginListController.render()
 
 	setupAssayTypeSelect: ->
@@ -254,6 +256,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "assay"
 			codeKind: "type"
 			roles: ["admin"]
+		@assayTypeListController.on 'change', @handleAssayTypeChanged
 		@assayTypeListController.render()
 
 	setupAssayTechnologySelect: ->
@@ -267,6 +270,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "assay"
 			codeKind: "technology"
 			roles: ["admin"]
+		@assayTechnologyListController.on 'change', @handleAssayTechnologyChanged
 		@assayTechnologyListController.render()
 
 	setupCellLineSelect: ->
@@ -280,6 +284,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "reagent"
 			codeKind: "cell line"
 			roles: ["admin"]
+		@cellLineListController.on 'change', @handleCellLineChanged
 		@cellLineListController.render()
 
 
@@ -299,6 +304,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeType: "assay"
 			codeKind: "molecular target"
 			roles: ["admin"]
+		@molecularTargetListController.on 'change', @handleMolecularTargetChanged
 		@molecularTargetListController.render()
 		if checked
 			@molecularTargetListController.hideAddOptionButton()
@@ -497,10 +503,15 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@trigger 'amClean' #so that module starts off clean when initialized
 
 	modelSyncCallback: =>
-		@trigger 'amClean'
 		unless @model.get('subclass')?
 			@model.set subclass: 'protocol'
+		@setupPrimaryScreenProtocolController()
+		@setupPrimaryScreenAnalysisParametersController()
+		@setupModelFitTypeController()
 		@$('.bv_savingModule').hide()
+		@$('.bv_save').hide()
+		@$('.bv_cancel').hide()
+		@$('.bv_newEntity').hide()
 		if @$('.bv_cancelModuleComplete').is(":visible")
 			@$('.bv_updateModuleComplete').hide()
 		else
@@ -512,10 +523,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		else
 			@$('.bv_saveModule').html("Update")
 			@$('.bv_saveInstructions').hide()
-		@setupPrimaryScreenProtocolController()
-		@setupPrimaryScreenAnalysisParametersController()
-		@setupModelFitTypeController()
 		@$('.bv_cancelModule').attr('disabled', 'disabled')
+		@trigger 'amClean'
 
 	modelChangeCallback: =>
 		@trigger 'amDirty'

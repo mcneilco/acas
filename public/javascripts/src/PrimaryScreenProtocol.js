@@ -379,6 +379,7 @@
         codeKind: "activity",
         roles: ["admin"]
       });
+      this.assayActivityListController.on('change', this.handleAssayActivityChanged);
       return this.assayActivityListController.render();
     };
 
@@ -394,6 +395,7 @@
         codeKind: "origin",
         roles: ["admin"]
       });
+      this.targetOriginListController.on('change', this.handleTargetOriginChanged);
       return this.targetOriginListController.render();
     };
 
@@ -409,6 +411,7 @@
         codeKind: "type",
         roles: ["admin"]
       });
+      this.assayTypeListController.on('change', this.handleAssayTypeChanged);
       return this.assayTypeListController.render();
     };
 
@@ -424,6 +427,7 @@
         codeKind: "technology",
         roles: ["admin"]
       });
+      this.assayTechnologyListController.on('change', this.handleAssayTechnologyChanged);
       return this.assayTechnologyListController.render();
     };
 
@@ -439,6 +443,7 @@
         codeKind: "cell line",
         roles: ["admin"]
       });
+      this.cellLineListController.on('change', this.handleCellLineChanged);
       return this.cellLineListController.render();
     };
 
@@ -461,6 +466,7 @@
         codeKind: "molecular target",
         roles: ["admin"]
       });
+      this.molecularTargetListController.on('change', this.handleMolecularTargetChanged);
       this.molecularTargetListController.render();
       if (checked) {
         return this.molecularTargetListController.hideAddOptionButton();
@@ -766,13 +772,18 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.modelSyncCallback = function() {
-      this.trigger('amClean');
       if (this.model.get('subclass') == null) {
         this.model.set({
           subclass: 'protocol'
         });
       }
+      this.setupPrimaryScreenProtocolController();
+      this.setupPrimaryScreenAnalysisParametersController();
+      this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
+      this.$('.bv_save').hide();
+      this.$('.bv_cancel').hide();
+      this.$('.bv_newEntity').hide();
       if (this.$('.bv_cancelModuleComplete').is(":visible")) {
         this.$('.bv_updateModuleComplete').hide();
       } else {
@@ -786,10 +797,8 @@
         this.$('.bv_saveModule').html("Update");
         this.$('.bv_saveInstructions').hide();
       }
-      this.setupPrimaryScreenProtocolController();
-      this.setupPrimaryScreenAnalysisParametersController();
-      this.setupModelFitTypeController();
-      return this.$('.bv_cancelModule').attr('disabled', 'disabled');
+      this.$('.bv_cancelModule').attr('disabled', 'disabled');
+      return this.trigger('amClean');
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.modelChangeCallback = function() {
