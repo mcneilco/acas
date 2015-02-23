@@ -1372,6 +1372,9 @@ loadInstrumentReadParameters <- function(instrumentType) {
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
   }
+  if(paramList$headerRowSearchString == "NA") {
+    paramList$headerRowSearchString <- NA
+  }
   
   return(paramList)  
 }
@@ -1391,7 +1394,7 @@ getReadOrderTable <- function(readList) {
         calculatedRead = FALSE
       )
   }))
-  readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
+  readsTable[grep("^Calc:", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1920,7 +1923,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
-    if (!is.null(parameters$agonist$batchCode)) {
+    if (!is.null(parameters$agonist$batchCode) && parameters$agonist$batchCode != "") {
       summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
     }
   }

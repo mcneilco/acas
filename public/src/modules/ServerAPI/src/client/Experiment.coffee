@@ -211,28 +211,15 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
-		@model.on 'sync', =>
-			unless @model.get('subclass')?
-				@model.set subclass: 'experiment'
-			@$('.bv_saving').hide()
-			if @$('.bv_saveFailed').is(":visible")
-				@$('.bv_updateComplete').hide()
-				@trigger 'amDirty'
-			else
-				@$('.bv_updateComplete').show()
-				@trigger 'amClean'
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
+		@model.on 'sync', @modelSyncCallback
+		@model.on 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
 
 
 	render: =>
@@ -248,6 +235,18 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
 		@
+
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'experiment'
+		@$('.bv_saving').hide()
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
+		else
+			@$('.bv_updateComplete').show()
+			@trigger 'amClean'
+		@render()
 
 	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null

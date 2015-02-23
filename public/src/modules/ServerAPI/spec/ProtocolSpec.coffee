@@ -111,7 +111,7 @@ describe "Protocol module testing", ->
 
 		describe "when loaded from stub", ->
 			beforeEach ->
-				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol[0]
+				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol
 				runs ->
 					@fetchReturned = false
 					@prot.fetch success: =>
@@ -301,9 +301,9 @@ describe "Protocol module testing", ->
 				it "should fill the assay principle field", ->
 					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
 				it "should fill the protocol details field", ->
-					expect(@pbc.$('.bv_details').html()).toEqual "protocol details go here"
+					expect(@pbc.$('.bv_details').val()).toEqual "protocol details go here"
 				it "should fill the comments field", ->
-					expect(@pbc.$('.bv_comments').html()).toEqual "protocol comments go here"
+					expect(@pbc.$('.bv_comments').val()).toEqual "protocol comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the protocol name field", ->
@@ -442,6 +442,23 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_status').val('complete')
 						@pbc.$('.bv_status').change()
 						expect(@pbc.model.getStatus().get('codeValue')).toEqual 'complete'
+			describe "cancel button behavior testing", ->
+				it "should call a fetch on the model when cancel is clicked", ->
+					runs ->
+						@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
+						@pbc.$('.bv_protocolName').change()
+						expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
+						@pbc.$('.bv_cancel').click()
+					waits(1000)
+					runs ->
+						expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical"
+			describe "new protocol button behavior testing", ->
+				it "should create a new protocol when New Protocol is clicked", ->
+					runs ->
+						@pbc.$('.bv_newEntity').click()
+					waits(1000)
+					runs ->
+						expect(@pbc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
 		describe "When created from a new protocol", ->
 			beforeEach ->
 				@prot = new Protocol()
@@ -554,4 +571,18 @@ describe "Protocol module testing", ->
 						waits(1000)
 						runs ->
 							expect(@pbc.$('.bv_save').html()).toEqual "Update"
+				describe "cancel button behavior testing", ->
+					it "should call a fetch on the model when cancel is clicked", ->
+						runs ->
+							@pbc.$('.bv_cancel').click()
+						waits(1000)
+						runs ->
+							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
+				describe "new protocol button behavior testing", ->
+					it "should create a new protocol when New Protocol is clicked", ->
+						runs ->
+							@pbc.$('.bv_newEntity').click()
+						waits(1000)
+						runs ->
+							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 

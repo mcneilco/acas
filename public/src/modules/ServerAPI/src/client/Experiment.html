@@ -87,20 +87,24 @@
 
     <div>
         <div class="span10">Experiment Details</div>
-        <textarea rows="7" class="bv_details" style="width:625px; max-width:625px;" placeholder="Experiment Details"></textarea>
+        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;" placeholder="Experiment Details"></textarea>
     </div>
 
     <div>
         <div class="span10">Comments</div>
-        <textarea rows="7" class="bv_comments" style="width:650px;" placeholder="Comments"></textarea>
+        <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;" placeholder="Comments"></textarea>
     </div>
 
     <!-- SAVE AND CANCEL -->
-    <div>
-        <button type="button" class="btn bv_save pull-left" style="margin-right:10px;">Save</button>
-        <div class="bv_updateComplete hide" style="padding-top:5px;color:#62c462;"></div>
-        <div class="bv_saving hide" style="padding-top:5px;color:red;">Saving...</div>
-        <div class="bv_saveFailed hide" style="padding-top:5px;color:red;">Save Failed</div>
+    <div class="span10" style="width:650px;margin-left:25px;">
+        <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
+        <button type="button" class="btn bv_newEntity pull-right" style="margin-right:5px;">New Experiment</button>
+        <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;"disabled="disabled">Cancel</button>
+        <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;"></div>
+        <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;">Saving...</div>
+        <div class="bv_saveFailed pull-right hide" style="padding-top:5px;color:red;">Save Failed</div>
+        <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+        <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
     </div>
 
 

@@ -249,6 +249,7 @@
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
@@ -346,38 +347,15 @@
           });
         };
       })(this));
-      this.model.on('sync', (function(_this) {
-        return function() {
-          if (_this.model.get('subclass') == null) {
-            _this.model.set({
-              subclass: 'experiment'
-            });
-          }
-          _this.$('.bv_saving').hide();
-          if (_this.$('.bv_saveFailed').is(":visible")) {
-            _this.$('.bv_updateComplete').hide();
-            _this.trigger('amDirty');
-          } else {
-            _this.$('.bv_updateComplete').show();
-            _this.trigger('amClean');
-          }
-          return _this.render();
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
-        };
-      })(this));
-      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupScientistSelect();
       this.setupTagList();
-      this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
-      return this.render();
+      this.render();
+      this.model.on('sync', this.modelSyncCallback);
+      this.model.on('change', this.modelChangeCallback);
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -396,6 +374,23 @@
       }
       ExperimentBaseController.__super__.render.call(this);
       return this;
+    };
+
+    ExperimentBaseController.prototype.modelSyncCallback = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'experiment'
+        });
+      }
+      this.$('.bv_saving').hide();
+      if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
+        this.$('.bv_updateComplete').hide();
+        this.trigger('amDirty');
+      } else {
+        this.$('.bv_updateComplete').show();
+        this.trigger('amClean');
+      }
+      return this.render();
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {

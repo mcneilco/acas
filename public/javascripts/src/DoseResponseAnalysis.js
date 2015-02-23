@@ -498,6 +498,10 @@
       return this.handleStatusChanged();
     };
 
+    DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
+      return this.testReadyForFit();
+    };
+
     DoseResponseAnalysisController.prototype.handleStatusChanged = function() {
       if (this.parameterController !== null && this.parameterController !== void 0) {
         if (this.model.isEditable()) {

@@ -58,10 +58,10 @@ saveInstrumentDefinitionsRObject <- function(filePath="public/src/modules/Primar
                         dataFormat            = "listFormatSingleFile")
     } else if (instrumentType == "envision") {
       detectionLine    <- "^Calculated results: Calc 1:|^Results for"
-      paramList <- list(headerRowSearchString = "^,01,02,03,04",
-                        dataRowSearchString   = "^[A-Z]{1,2},",
+      paramList <- list(headerRowSearchString = NA,
+                        dataRowSearchString   = "^[A-Z]{1,2},[0-9]",
                         sepChar               = ",",
-                        headerExists          = TRUE,
+                        headerExists          = FALSE,
                         beginDataColNumber    = 2,
                         dataTitleIdentifier   = NA,
                         dataFormat            = "plateFormatSingleFile")

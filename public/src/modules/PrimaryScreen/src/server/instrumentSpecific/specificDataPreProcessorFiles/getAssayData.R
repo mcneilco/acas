@@ -22,7 +22,7 @@ getAssayData <- function(fileName, begRow, endRow, sepChar, headerExists=TRUE, b
     colClasses=c("character"),
     sep=sepChar,
     skip=begRow - 1,
-    nrows=endRow - begRow,
+    nrows=endRow - ifelse(headerExists,begRow,begRow-1),
     header=headerExists,
     fill=NA
   )

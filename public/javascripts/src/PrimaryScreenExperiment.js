@@ -1262,24 +1262,17 @@
           this.model.get(control).set({
             batchCode: preferredName
           });
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return this.attributeChanged();
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return this.attributeChanged();
         } else {
+          this.$('.bv_' + control + 'Batch').val(preferredName);
           this.model.get(control).set({
             batchCode: preferredName
           });
-          this.attributeChanged();
-          this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
-          this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
-          this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
+        return this.attributeChanged();
       }
     };
 
@@ -1706,7 +1699,7 @@
             if (json.length === 0) {
               return alert('Could not get experiment for codeName of the model');
             } else {
-              exp = new PrimaryScreenExperiment(json[0]);
+              exp = new PrimaryScreenExperiment(json);
               exp.set(exp.parse(exp.attributes));
               _this.model = exp;
               _this.dataAnalysisController.updateAnalysisParamModel(_this.model);
@@ -1835,6 +1828,7 @@
     __extends(AbstractPrimaryScreenExperimentController, _super);
 
     function AbstractPrimaryScreenExperimentController() {
+      this.reinitialize = __bind(this.reinitialize, this);
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
@@ -1962,7 +1956,8 @@
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
       this.analysisController.render();
-      return this.modelFitController.render();
+      this.modelFitController.render();
+      return this.$('.bv_cancel').attr('disabled', 'disabled');
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupExperimentBaseController = function() {
@@ -1977,11 +1972,12 @@
           return _this.trigger('amDirty');
         };
       })(this));
-      return this.experimentBaseController.on('amClean', (function(_this) {
+      this.experimentBaseController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
+      return this.experimentBaseController.on('reinitialize', this.reinitialize);
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {
@@ -2057,6 +2053,11 @@
 
     AbstractPrimaryScreenExperimentController.prototype.hideSaveProgressBar = function() {
       return this.$('.bv_saveStatusDropDown').modal("hide");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.reinitialize = function() {
+      this.model = null;
+      return this.completeInitialization();
     };
 
     return AbstractPrimaryScreenExperimentController;

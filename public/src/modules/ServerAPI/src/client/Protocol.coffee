@@ -125,25 +125,15 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@model.on 'sync', =>
-			unless @model.get('subclass')?
-				@model.set subclass: 'protocol'
-			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
-			@render()
-			@trigger 'amClean'
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
+		@render()
+		@model.on 'sync', @modelSyncCallback
+		@model.on 'change', @modelChangeCallback
 		@model.getStatus().on 'change', @updateEditable
-
-#		@render()
-		@trigger 'amClean' #so that module starts off clean when initialized
+#		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
 		unless @model?
@@ -157,6 +147,21 @@ class window.ProtocolBaseController extends BaseEntityController
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
+
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'protocol'
+		@$('.bv_saving').hide()
+		if @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+		else
+			@$('.bv_updateComplete').show()
+		@render()
+		unless @model.get('lsKind') is "default"
+			@$('.bv_newEntity').hide()
+			@$('.bv_cancel').hide()
+			@$('.bv_save').hide()
+		@trigger 'amClean'
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()

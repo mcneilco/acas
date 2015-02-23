@@ -115,9 +115,9 @@ exports.protocolCodeList = (req, resp) ->
 		protCodes = []
 		for label in labels
 			if shouldFilterByName
-				match = label.labelText.toUpperCase().indexOf(filterString) > -1
+				match = label.labelText.toLowerCase().indexOf(filterString) > -1
 			else if shouldFilterByKind
-				match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
+				match = label.protocol.lsKind.toLowerCase().indexOf(filterString) > -1
 			else
 				match = true
 			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match

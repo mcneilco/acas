@@ -167,7 +167,7 @@
       });
       describe("when loaded from stub", function() {
         beforeEach(function() {
-          this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol[0]);
+          this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol);
           return runs(function() {
             this.fetchReturned = false;
             return this.prot.fetch({
@@ -450,10 +450,10 @@
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
           it("should fill the protocol details field", function() {
-            return expect(this.pbc.$('.bv_details').html()).toEqual("protocol details go here");
+            return expect(this.pbc.$('.bv_details').val()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
-            return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
+            return expect(this.pbc.$('.bv_comments').val()).toEqual("protocol comments go here");
           });
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
@@ -525,7 +525,7 @@
             });
           });
         });
-        return describe("User edits fields", function() {
+        describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.pbc.model.getScientist().get('codeValue')).toEqual("jane");
             waitsFor(function() {
@@ -624,6 +624,31 @@
               this.pbc.$('.bv_status').val('complete');
               this.pbc.$('.bv_status').change();
               return expect(this.pbc.model.getStatus().get('codeValue')).toEqual('complete');
+            });
+          });
+        });
+        describe("cancel button behavior testing", function() {
+          return it("should call a fetch on the model when cancel is clicked", function() {
+            runs(function() {
+              this.pbc.$('.bv_protocolName').val(" Updated protocol name   ");
+              this.pbc.$('.bv_protocolName').change();
+              expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
+              return this.pbc.$('.bv_cancel').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("FLIPR target A biochemical");
+            });
+          });
+        });
+        return describe("new protocol button behavior testing", function() {
+          return it("should create a new protocol when New Protocol is clicked", function() {
+            runs(function() {
+              return this.pbc.$('.bv_newEntity').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
             });
           });
         });
@@ -769,7 +794,7 @@
               });
             });
           });
-          return describe("expect save to work", function() {
+          describe("expect save to work", function() {
             it("model should be valid and ready to save", function() {
               return runs(function() {
                 return expect(this.pbc.model.isValid()).toBeTruthy();
@@ -792,6 +817,28 @@
               waits(1000);
               return runs(function() {
                 return expect(this.pbc.$('.bv_save').html()).toEqual("Update");
+              });
+            });
+          });
+          describe("cancel button behavior testing", function() {
+            return it("should call a fetch on the model when cancel is clicked", function() {
+              runs(function() {
+                return this.pbc.$('.bv_cancel').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
+              });
+            });
+          });
+          return describe("new protocol button behavior testing", function() {
+            return it("should create a new protocol when New Protocol is clicked", function() {
+              runs(function() {
+                return this.pbc.$('.bv_newEntity').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
               });
             });
           });
