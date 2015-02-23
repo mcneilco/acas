@@ -4,12 +4,8 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   # Change well type names
   translationList <- list(
     test = "Compound Discrete (Tested Lot)", 
-    PC = paste0("Positive Control [", parameters$positiveControl$batchCode, " - ",
-                parameters$positiveControl$concentration, " ",
-                parameters$positiveControl$concentrationUnits, "]"),
-    NC = paste0("Negative Control [", parameters$negativeControl$batchCode, " - ",
-                parameters$negativeControl$concentration, " ",
-                parameters$negativeControl$concentrationUnits, "]"),
+    PC = "Positive Control",
+    NC = "Negative Control",
     BLANK = "Blank")
   inputTable[, wellType := unlist(translationList[wellType])]
 
