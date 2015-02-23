@@ -791,19 +791,12 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			requestName = results.requestName
 			if preferredName == requestName
 				@model.get(control).set batchCode: preferredName
-				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-				@attributeChanged()
 			else if preferredName == ""
 				@model.get(control).set batchCode: "invalid"
-				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-				@attributeChanged()
 			else
+				@$('.bv_'+control+'Batch').val(preferredName)
 				@model.get(control).set batchCode: preferredName
-				@attributeChanged()
-				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
-				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
-				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
-				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
+			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()

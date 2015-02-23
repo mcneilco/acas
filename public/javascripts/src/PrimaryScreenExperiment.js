@@ -1262,24 +1262,17 @@
           this.model.get(control).set({
             batchCode: preferredName
           });
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return this.attributeChanged();
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return this.attributeChanged();
         } else {
+          this.$('.bv_' + control + 'Batch').val(preferredName);
           this.model.get(control).set({
             batchCode: preferredName
           });
-          this.attributeChanged();
-          this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
-          this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
-          this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
+        return this.attributeChanged();
       }
     };
 
