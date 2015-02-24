@@ -1936,7 +1936,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- 1345
   }
   if (dryRun && !testMode) {
-    saveAcasFileToExperiment(
+    serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
@@ -2016,6 +2016,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     deleteAnalysisGroupsByExperiment(experiment)
     deleteModelSettings(experiment)
+    
+    serverFileLocation <- saveAcasFileToExperiment(
+      folderToParse, experiment, 
+      "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2126,6 +2130,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     summaryInfo$viewerLink <- viewerLink
   }
   
+  summaryInfo$info$"Original Data File" <- paste0(
+    '<a href="', getAcasFileLink(serverFileLocation, login=T), '" target="_blank">Original Data File</a>')
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
