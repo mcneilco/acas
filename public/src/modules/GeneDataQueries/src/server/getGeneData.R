@@ -12,8 +12,10 @@ require('racas')
 
 if(is.null(GET$format)){
   exportCSV <- FALSE
+  onlyPublicData <- "true"
 } else {
   exportCSV <- ifelse(GET$format == "CSV", TRUE, FALSE)
+  onlyPublicData <- "false"
 }
 
 postData <- rawToChar(receiveBin())
@@ -55,10 +57,11 @@ batchCodeList <- unique(batchCodeList)
 batchCodeList.Json <- toJSON(batchCodeList)
 
 dataCsv <- getURL(
-  paste0(racas::applicationSettings$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv"),
+  paste0(racas::applicationSettings$client.service.persistence.fullpath, "analysisgroupvalues/geneCodeData?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=batchCodeList.Json)
+
 
 dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
 dataDT <- as.data.table(dataDF)
@@ -66,10 +69,8 @@ dataDT <- as.data.table(dataDF)
 
 pivotResults <- function(geneId, lsKind, result){
   exptSubset <- data.table(geneId, lsKind, result)
-  setkey(exptSubset, geneId, lsKind)
-  out <- exptSubset[CJ(unique(geneId), unique(lsKind))][, as.list(result), by=geneId]
-  setnames(out, c("geneId", as.character(unique(exptSubset$lsKind))))
-  return(out)
+  answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result") )
+  return(answers)
 }
 
 if (nrow(dataDT) > 0){
@@ -176,15 +177,4 @@ if (exportCSV){
   setContentType("application/json")
   cat(toJSON(responseJson))
   
-  #    setHeader(header='Content-Disposition', 'attachment; filename=rpdf.pdf')
-  #    setContentType("application/text")
-  ##    t <- tempfile()
-  #    pdf(t)
-  ##    attach(mtcars)
-  #    plot(wt, mpg)
-  #    abline(lm(mpg~wt))
-  #    title("PDF Report")
-  #    dev.off()
-  #    setHeader('Content-Length',file.info(t)$size)
-  #    sendBin(readBin(t,'raw',n=file.info(t)$size))
 }
