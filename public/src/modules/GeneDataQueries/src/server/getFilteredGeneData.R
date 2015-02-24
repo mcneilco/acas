@@ -1,10 +1,27 @@
 # The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
 # ROUTE: /getFilteredGeneData
+
+#.libPaths('/opt/acas_home/app_1.4/acas/r_libs')
+
 require('RCurl')
 require('rjson')
 require('data.table')
 require('racas')
+require('reshape2')
 
+#setwd('/opt/acas_home/app_1.4/acas/public/src/modules/GeneDataQueries/src/server')
+#setwd('/opt/acas_homes/acas/acas/public/src/modules/GeneDataQueries/src/server')
+source('getSELColOrder.R')
+source('getExperimentColOrder.R')
+
+#.libPaths('/opt/acas_homes/acas/acas/r_libs')
+
+
+myLogger <- createLogger(logName = "com.acas.get.getFilteredGeneData",
+                         logFileName = 'geneData.log',
+                         logLevel = "DEBUG", logToConsole = FALSE)
+
+#myLogger$debug("get getFilteredGeneData data initiated")
 
 ### FUNCTIONS #####
 
@@ -60,7 +77,13 @@ getSQLFromJSONFilterList <- function(searchFilters) {
       # print(filterList)
       # print(searchFilters[[filterList]])
 
-      termsSQL <- rbind(termsSQL, list(termName, sqlQuery))
+      #termsSQL <- rbind(termsSQL, list(termName, sqlQuery))
+
+	  if (filterList == 1){
+	      termsSQL <- as.data.table(list(termName, sqlQuery))
+	  } else {
+	      termsSQL <- rbind(termsSQL, list(termName, sqlQuery))
+	  }
 
     }
 
@@ -81,6 +104,8 @@ getFullSQLQuery <- function(termsSQL, sqlString) {
   sqlString <- gsub(" AND ", " INTERSECT ", sqlString)
   sqlString <- gsub(" OR ", " UNION ", sqlString)
   sqlString <- gsub(" NOT ", " EXCEPT ", sqlString) # alternate SQL servers: s/except/minus
+  sqlString <- gsub(" MINUS ", " EXCEPT ", sqlString) # alternate SQL servers: s/except/minus
+  sqlString <- gsub(" EXCEPT ", " EXCEPT ", sqlString) # alternate SQL servers: s/except/minus
 
   for (rowSubstitute in 1:nrow(termsSQL)) {
     sqlString <- gsub(termsSQL[rowSubstitute, tableTermName], termsSQL[rowSubstitute, tableSQLQuery], sqlString)
@@ -96,13 +121,24 @@ getFullSQLQuery <- function(termsSQL, sqlString) {
 
 if(is.null(GET$format)){
   exportCSV <- FALSE
+  onlyPublicData <- "true"
 } else {
   exportCSV <- ifelse(GET$format == "CSV", TRUE, FALSE)
+  onlyPublicData <- "false"
 }
 
+
 postData <- rawToChar(receiveBin())
-#postData <- '{"queryParams":{"batchCodes":"1,2,15,17","experimentCodeList":["PROT-00000026","EXPT-00000397","EXPT-00000398","EXPT-00000396","genomic","Root Node"],"searchFilters":{"booleanFilter":"advanced","advancedFilter":"","filters":[{"termName":"Q1","experimentCode":"EXPT-00000397","lsKind":"Result 7","lsType":"numericValue","operator":">","filterValue":"7"}]}},"maxRowsToReturn":"10000","user":"nouser"}'
+
+myLogger$debug(postData)
+
+#postData <- '{"queryParams":{"batchCodes":"29 60","experimentCodeList":["EXPT-00017","tags_EXPT-00017","PROT-00014","_External data_Published Influenza Datasets"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
+exportCSV <- FALSE
+onlyPublicData <- "true"
+
+
 postData.list <- fromJSON(postData)
+
 
 batchCodeList <- list()
 if (!is.null(postData.list$queryParams$batchCodes)) {
@@ -147,61 +183,112 @@ searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
 
+
+save(searchParams,file="searchParams.rda")
+
 if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 	termsSQL <- getSQLFromJSONFilterList(postData.list$queryParams$searchFilters$filters)
+#myLogger$debug("here is the termsSQL")
+#myLogger$debug(termsSQL)
+
+
 	advancedSqlQuery <- getFullSQLQuery(termsSQL, postData.list$queryParams$searchFilters$advancedFilter)
+#myLogger$debug("here is the advancedSqlQuery")
+#myLogger$debug(advancedSqlQuery)
 	searchParams$advancedFilterSQL <- advancedSqlQuery
 }
 
+#myLogger$debug("here is the final searchParams")
+#myLogger$debug(toJSON(searchParams))
+#myLogger$debug(searchParams)
 
+
+serverURL <- racas::applicationSettings$client.service.persistence.fullpath
+#serverURL <- "http://host5.labsynch.com:8080/acas-1.4/"
 dataCsv <- getURL(
-  #	'http://localhost:8080/acas/experiments/agdata/batchcodelist/experimentcodelist?format=csv',
-  paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/agdata/batchcodelist/experimentcodelist?format=csv"),
+  paste0(serverURL, "experiments/agdata/batchcodelist/experimentcodelist?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
 
 
-dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
-dataDT <- as.data.table(dataDF)
+errorFlag <- FALSE
+tryCatch({
+  dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
+  error = function(ex) {
+  errorFlag <<- TRUE
+})
+
+if (errorFlag){
+        dataDT <- data.table()
+} else {
+        dataDT <- as.data.table(dataDF)
+}
+
 
 pivotResults <- function(geneId, lsKind, result){
   exptSubset <- data.table(geneId, lsKind, result)
-  setkey(exptSubset, geneId, lsKind)
-  out <- exptSubset[CJ(unique(geneId), unique(lsKind))][, as.list(result), by=geneId]
-  setnames(out, c("geneId", as.character(unique(exptSubset$lsKind))))
-  return(out)
+  answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result") )
+  return(answers)
 }
+
 
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
-  for (expt in unique(dataDT$experimentId)){
-    #print(paste0("current experiment ", expt))
+  experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName)))
+  setkey(experimentIdDT, experimentCodeName)
+  experimentIdList <- experimentIdDT$experimentId
+  for (expt in experimentIdList){
+    myLogger$debug(paste0("current experiment ", expt))
     if(firstPass){
-      outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
-      experimentName <- dataDT[ experimentId == expt , unique(experimentName)]
-      codeName <- as.character(unique(outputDT$experimentCodeName))
-      outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId))
-      colNames <- setdiff(names(outputDT),c("geneId"))
-      setnames(outputDT, c("geneId", paste0(experimentName, "::", colNames)))
-      firstPass <- FALSE
-      colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
-      allColNamesDF <- merge(data.frame(lsKind=colNames), colNamesDF)
+		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
+		experimentName <- as.character(unique(outputDT$experimentName))
+		codeName <- as.character(unique(outputDT$experimentCodeName))
+		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
+		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
+		#setcolorder(outputDT, c("geneId",exptDataColumns))
+		outputDT <- subset(outputDT, ,sel=c("geneId",exptDataColumns))
+
+		for (colName in exptDataColumns){
+			setnames(outputDT, colName, paste0(experimentName, "::", colName))
+		}
+		firstPass <- FALSE
+
+		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
+		orderCols$order <- as.integer(as.character(orderCols$order))
+		colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
+		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
       
     } else {
-      outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
-      experimentName <- dataDT[ experimentId == expt , unique(experimentName)]
-      codeName <- as.character(unique(outputDT2$experimentCodeName))
-      outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId))
-      colNames2 <- setdiff(names(outputDT2),c("geneId"))
-      colNames <- c(colNames, colNames2)
-      setnames(outputDT2, c("geneId", paste0(experimentName, "::", colNames2)))
-      outputDT <- merge(outputDT, outputDT2, by="geneId", all=TRUE)
-      colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
-      colNamesDF2 <- merge(data.frame(lsKind=colNames2), colNamesDF2)
-      allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
+		myLogger$debug(paste0("current firstPass ", firstPass))
+		outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
+		myLogger$debug(paste0("current outputDT2 ", nrow(outputDT2)))
+		myLogger$debug(paste0("current outputDT2 ", names(outputDT2)))
+
+		experimentName <- as.character(unique(outputDT2$experimentName))
+		codeName <- as.character(unique(outputDT2$experimentCodeName))
+		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
+		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
+		myLogger$debug(paste0("current experimentCodeName ", codeName))
+		myLogger$debug(paste0("current exptDataColumns ", exptDataColumns))
+
+		#setcolorder(outputDT2, c("geneId",exptDataColumns))
+		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
+		for (colName in exptDataColumns){
+			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
+		}
+		outputDT <- merge(outputDT, outputDT2, by="geneId", all=TRUE)
+		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
+		orderCols$order <- as.integer(as.character(orderCols$order))
+		colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
+		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
+		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
     }
   }
+
+
   
   outputDF <- as.data.frame(outputDT)
   names(outputDF) <- NULL
@@ -218,7 +305,9 @@ if (nrow(dataDT) > 0){
     return(sType)
   }
   
+  allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
+  allColNamesDT[ , exptColName := paste0(experimentName, '::', lsKind)]
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]

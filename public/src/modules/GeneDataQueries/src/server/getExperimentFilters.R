@@ -5,8 +5,8 @@ require('rjson')
 require('racas')
 
 configList <- racas::applicationSettings
-postData <- rawToChar(receiveBin(1024))
-#postData <- '{"experimentCodes": ["EXPT-00000314", "EXPT-00000002-testingPut-101"]}'
+postData <- rawToChar(receiveBin())
+#postData <- '{"experimentCodes": ["EXPT-00004", "EXPT-00000002-testingPut-101"]}'
 #cat(postData)
 
 
@@ -20,9 +20,9 @@ if (length(postData.list$experimentCodes) > 1){
 	postData.Json <- toJSON(postData.single)
 }
 
+
 experimentFilters <- getURL(
 	paste0(configList$client.service.persistence.fullpath, "experiments/filters/jsonArray"),
-#	paste0("http://localhost:8080/acas/experiments/filters/jsonArray"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
 	postfields=postData.Json)
