@@ -125,7 +125,7 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   #     "testMode": "false"              
   #   √ "flaggedFile": "Step2_Renormalize_Input_v2 (1).txt"
   
-  analysisResult <- runPrimaryAnalysis(request) # need request
+  analysisResult <- runPrimaryAnalysis(request, externalFlagging=TRUE) # need request
   # do we need to return something different if we're not in dry run?
   # no - we will never run this in !dryRun
   outputText <- analysisResult$results$jsonSummary$dryRunReports$spotfireFile$fileText

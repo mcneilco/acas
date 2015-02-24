@@ -2531,8 +2531,10 @@ updateHtsFormat <- function (htsFormat, experiment) {
   updateValueByTypeAndKind(htsFormat, "experiment", experiment$id, "metadata", "experiment metadata",
                            "stringValue", "hts format")
 }
-runPrimaryAnalysis <- function(request) {
-  # Highest level function, runs everything else
+runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
+  # Highest level function, runs everything else 
+  #   externalFlagging should be TRUE when flagging is coming from a service,
+  #   e.g. when called by spotfire
   library('racas')
   
   globalMessenger <- messenger()$reset()
@@ -2615,12 +2617,14 @@ runPrimaryAnalysis <- function(request) {
       path= getwd(),
       folderToParse= folderToParse,
       dryRun= dryRun,
-      htmlSummary= htmlSummary,
-      jsonSummary= list(dryRunReports = loadResult$value$dryRunReports)
+      htmlSummary= htmlSummary
     ),
     hasError= hasError,
     hasWarning= hasWarning,
     errorMessages= errorMessages)
+  if (externalFlagging) {
+    response$results$jsonSummary <- list(dryRunReports = loadResult$value$dryRunReports)
+  }
   return(response)
 }
 
