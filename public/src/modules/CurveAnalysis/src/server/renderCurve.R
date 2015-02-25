@@ -2,102 +2,18 @@
 # ROUTE: /curve/render/dr
 
 renderCurve <- function(getParams) {
-  # Get data
-  if(is.null(getParams$ymin)) {
-    yMin <- NA
-  } else {
-    yMin <- as.numeric(getParams$ymin)
-  }
-  if(!is.null(getParams$yNormMin)) {
-    yMin <- as.numeric(getParams$yNormMin)
-  }
-  if(is.null(getParams$ymax)) {
-    yMax <- NA
-  } else {
-    yMax <- as.numeric(getParams$ymax)
-  }
-  if(!is.null(getParams$yNormMax)) {
-    yMax <- as.numeric(getParams$yNormMax)
-  }
-  if(is.null(getParams$xmin)) {
-    xMin <- NA
-  } else {
-    xMin <- as.numeric(getParams$xmin)
-  }
-  if(!is.null(getParams$xNormMin)) {
-    xMin <- as.numeric(getParams$xNormMin)
-  }
-  if(is.null(getParams$xmax)) {
-    xMax <- NA
-  } else {
-    xMax <- as.numeric(getParams$xmax)
-  }
-  if(!is.null(getParams$xNormMax)) {
-    xMax <- as.numeric(getParams$xNormMax)
-  }
-  if(is.null(getParams$height)) {
-    height <- 500
-  } else {
-    height <- as.numeric(getParams$height)
-  }
-  if(!is.null(getParams$cellHeight)) {
-    height <- as.numeric(getParams$cellHeight)
-  }
-  if(is.null(getParams$width)) {
-    width <- 700
-  } else {
-    width <- as.numeric(getParams$width)
-  }
-  if(!is.null(getParams$cellWidth)) {
-    width <- as.numeric(getParams$cellWidth)
-  }
-  if(is.null(getParams$inTable)) {
-    inTable <- FALSE
-  } else {
-    inTable <- as.logical(getParams$inTable)
-  }
-  if(is.null(getParams$showAxes)) {
-    showAxes <- TRUE
-  } else {
-    showAxes <- as.logical(getParams$showAxes)
-  }
-  if(is.null(getParams$showGrid)) {
-    showGrid <- !inTable
-  } else {
-    showGrid <- as.logical(getParams$showGrid)
-  }
-  if(is.null(getParams$labelAxes)) {
-    labelAxes <- !inTable
-  } else {
-    labelAxes <- as.logical(getParams$labelAxes)
-  }
-  if(is.null(getParams$legend)) {
-    legend <- !inTable
-  } else {
-    legend <- as.logical(getParams$legend)
-  }
-  
-  if(is.null(getParams$curveIds)) {
-    stop("curveIds not provided, provide curveIds")
-    DONE
-  } else {
-    curveIds <- getParams$curveIds
-    curveIdsStrings <- strsplit(curveIds,",")[[1]]
-    curveIds <- suppressWarnings(as.integer(curveIds))
-    if(is.na(curveIds)) {
-      curveIds <- curveIdsStrings
-    }
-  }
+  # Redirect to Curator if inTable is false
   if(!is.null(getParams$inTable)) {
     if(!as.logical(getParams$inTable)) {
       if(length(curveIds == 1)) {
         experimentCode <- query(paste0("SELECT e.code_name
-                                     FROM experiment e
-                                     JOIN analysis_group ag on ag.experiment_id=e.id
-                                     JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
-                                     JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
-                                     WHERE agv.string_value = ",sqliz(GET$curveIds),"
-                                     AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
+                                       FROM experiment e
+                                       JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
+                                       JOIN analysis_group ag ON ag.id = eag.analysis_group_id
+                                       JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
+                                       JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
+                                       WHERE agv.string_value = ",sqliz(GET$curveIds),"
+                                       AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
         link <- paste(getSSLString(), racas::applicationSettings$client.host, ":",
                       racas::applicationSettings$client.port,
                       "/curveCurator/",experimentCode,"/",curveIds,
@@ -108,24 +24,46 @@ renderCurve <- function(getParams) {
       }
     }
   }
-data <- getCurveData(curveIds, globalConnect=TRUE)
+  # Parse GET Parameters
+  parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
-#To be backwards compatable with hill slope example files
-hillSlopes <- which(!is.na(data$parameters$hillslope))
-if(length(hillSlopes) > 0  ) {
-  data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
-}
-fittedHillSLopes <- which(!is.na(data$parameters$fitted_hillslope))
-if(length(fittedHillSLopes) > 0 ) {
-  data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSLopes]
+  # GET FIT DATA
+  fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
+  data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
+  
+  #To be backwards compatable with hill slope example files
+  hillSlopes <- which(!is_null_or_na(data$parameters$hillslope))
+  if(length(hillSlopes) > 0  ) {
+    data$parameters$slope <- -data$parameters$hillslope[hillSlopes]
+  }
+  fittedHillSlopes <- which(!is_null_or_na(data$parameters$fitted_hillslope))
+  if(length(fittedHillSlopes) > 0 ) {
+    data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSlopes]
+  }
+  
+  
+  #Get Protocol Curve Display Min and Max for first curve in list
+  if(any(is.na(parsedParams$yMin),is.na(parsedParams$yMax))) {
+    protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
+    plotWindow <- racas::get_plot_window(fitData[1]$points[[1]])
+    recommendedDisplayWindow <- list(ymax = max(protocol_display_values$ymax,plotWindow[2], na.rm = TRUE), ymin = min(protocol_display_values$ymin,plotWindow[4], na.rm = TRUE))
+    if(is.na(parsedParams$yMin)) parsedParams$yMin <- recommendedDisplayWindow$ymin
+    if(is.na(parsedParams$yMax)) parsedParams$yMax <- recommendedDisplayWindow$ymax
+  }
+
+  #Retrieve rendering hint parameters
+  renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
+
+  setContentType("image/png")
+  setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
+  t <- tempfile()
+  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend)
+  sendBin(readBin(t,'raw',n=file.info(t)$size))
+  unlink(t)
+  DONE
 }
 
-setContentType("image/png")
-t <- tempfile()
-plotCurve(curveData = data$points, params = data$parameters, fitFunction = LL4, paramNames = c("ec50", "min", "max", "slope"), drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=yMin, ymax=yMax, xmin=xMin, xmax=xMax, height=height, width=width, showGrid = showGrid, showAxes = showAxes, labelAxes = labelAxes, showLegend=legend)
-sendBin(readBin(t,'raw',n=file.info(t)$size))
-unlink(t)
-DONE
-}
-#dput(GET)
 renderCurve(getParams = GET)
+
+
+

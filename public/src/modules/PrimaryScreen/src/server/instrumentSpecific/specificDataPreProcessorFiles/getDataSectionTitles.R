@@ -10,15 +10,21 @@ getDataSectionTitles <- function(fileName, parseParams, tempFilePath) {
   write.table(paste0(Sys.time(), "\tbegin getDataSectionTitles\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   # Returns a vector if there are multiple data sets
-  headerRowVector <- getDataRowNumber(fileName, parseParams$headerRowSearchString, tempFilePath=tempFilePath)
+  if(parseParams$headerExists) {
+    # row number of header row in data set
+    firstDataRowNumber <- getDataRowNumber(fileName, parseParams$headerRowSearchString, tempFilePath=tempFilePath)  
+  } else {
+    # row number of first data row in data set
+    firstDataRowNumber <- getFirstDataRowNumber(fileName, parseParams$dataRowSearchString, tempFilePath=tempFilePath)
+  }
   lastDataRowVector <- getLastDataRowNumber(fileName, parseParams$dataRowSearchString, tempFilePath=tempFilePath)
   
   # Checks to make sure that the header and last data rows are defined for each data set
-  if(length(headerRowVector) != length(lastDataRowVector)) {
+  if(length(firstDataRowNumber) != length(lastDataRowVector)) {
     stopUser("Beginning row and ending row not defined for all data sets")
   }
   
-  dataTitles <- readDataTitles(fileName, parseParams, headerRowVector, tempFilePath) 
+  dataTitles <- readDataTitles(fileName, parseParams, firstDataRowNumber, tempFilePath) 
   
   return(dataTitles)
 }

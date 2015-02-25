@@ -17,6 +17,10 @@
         code: "project3",
         name: "Project 3",
         ignored: false
+      }, {
+        code: "proj3ct4",
+        name: "proj3ct four",
+        ignored: true
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.projectServiceTestJSON = window.projectServiceTestJSON || {} : exports));

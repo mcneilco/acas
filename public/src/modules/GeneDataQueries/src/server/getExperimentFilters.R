@@ -20,9 +20,9 @@ if (length(postData.list$experimentCodes) > 1){
 	postData.Json <- toJSON(postData.single)
 }
 
+
 experimentFilters <- getURL(
-	paste0(configList$client.service.persistence.fullpath, "api/v1/experiments/filters/jsonArray"),
-#	paste0("http://localhost:8080/acas/experiments/filters/jsonArray"),
+	paste0(configList$client.service.persistence.fullpath, "experiments/filters/jsonArray"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
 	postfields=postData.Json)

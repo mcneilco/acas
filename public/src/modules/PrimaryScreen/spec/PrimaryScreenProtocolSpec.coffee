@@ -19,41 +19,41 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspp.getCurveDisplayMin().get('numericValue')).toEqual 0
 			describe "required states and values", ->
 				it "should have an assay activity value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeKind')).toEqual "assay activity"
+					expect(@pspp.getAssayActivity() instanceof Value).toBeTruthy()
+					expect(@pspp.getAssayActivity().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getAssayActivity().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getAssayActivity().get('codeType')).toEqual "assay"
+					expect(@pspp.getAssayActivity().get('codeKind')).toEqual "activity"
 				it "should have a molecular target value with code origin set to acas ddict", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeKind')).toEqual "molecular target"
+					expect(@pspp.getMolecularTarget() instanceof Value).toBeTruthy()
+					expect(@pspp.getMolecularTarget().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getMolecularTarget().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getMolecularTarget().get('codeType')).toEqual "assay"
+					expect(@pspp.getMolecularTarget().get('codeKind')).toEqual "molecular target"
 				it "should have a target origin value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeKind')).toEqual "target origin"
+					expect(@pspp.getTargetOrigin() instanceof Value).toBeTruthy()
+					expect(@pspp.getTargetOrigin().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getTargetOrigin().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getTargetOrigin().get('codeType')).toEqual "target"
+					expect(@pspp.getTargetOrigin().get('codeKind')).toEqual "origin"
 				it "should have an assay type value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeKind')).toEqual "assay type"
+					expect(@pspp.getAssayType() instanceof Value).toBeTruthy()
+					expect(@pspp.getAssayType().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getAssayType().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getAssayType().get('codeType')).toEqual "assay"
+					expect(@pspp.getAssayType().get('codeKind')).toEqual "type"
 				it "should have an assay technology value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeKind')).toEqual "assay technology"
+					expect(@pspp.getAssayTechnology() instanceof Value).toBeTruthy()
+					expect(@pspp.getAssayTechnology().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getAssayTechnology().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getAssayTechnology().get('codeType')).toEqual "assay"
+					expect(@pspp.getAssayTechnology().get('codeKind')).toEqual "technology"
 				it "should have a cell line value", ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy()
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual "acas ddict"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual "protocolMetadata"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeKind')).toEqual "cell line"
+					expect(@pspp.getCellLine() instanceof Value).toBeTruthy()
+					expect(@pspp.getCellLine().get('codeValue')).toEqual "unassigned"
+					expect(@pspp.getCellLine().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@pspp.getCellLine().get('codeType')).toEqual "reagent"
+					expect(@pspp.getCellLine().get('codeKind')).toEqual "cell line"
 
 		describe "When loaded from existing", ->
 			beforeEach ->
@@ -67,18 +67,18 @@ describe "Primary Screen Protocol module testing", ->
 				it "should have a minY curve display ", ->
 					expect(@pspp.getCurveDisplayMin().get('numericValue')).toEqual 10.0
 				it 'Should have an assay Activity value', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "luminescence"
+					expect(@pspp.getAssayActivity().get('codeValue')).toEqual "luminescence"
 				it 'Should have a molecularTarget value with the codeOrigin set to customer ddict', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test1"
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual "customer ddict"
+					expect(@pspp.getMolecularTarget().get('codeValue')).toEqual "test1"
+					expect(@pspp.getMolecularTarget().get('codeOrigin')).toEqual "customer ddict"
 				it 'Should have an targetOrigin value', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "human"
+					expect(@pspp.getTargetOrigin().get('codeValue')).toEqual "human"
 				it 'Should have an assay type value', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "cellular assay"
-				it 'Should have a molecularTarget value with code origin set to dns target list', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "wizard triple luminescence"
-				it 'Should have an targetOrigin value', ->
-					expect(@pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "cell line y"
+					expect(@pspp.getAssayType().get('codeValue')).toEqual "cellular assay"
+				it 'Should have a assay technology value', ->
+					expect(@pspp.getAssayTechnology().get('codeValue')).toEqual "wizard triple luminescence"
+				it 'Should have an cell line value', ->
+					expect(@pspp.getCellLine().get('codeValue')).toEqual "cell line y"
 
 		describe "model validation", ->
 			beforeEach ->
@@ -114,8 +114,8 @@ describe "Primary Screen Protocol module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@psp).toBeDefined()
-				it "should have lsKind set to flipr screening assay", ->
-					expect(@psp.get('lsKind')).toEqual "flipr screening assay"
+				it "should have lsKind set to Bio Activity", ->
+					expect(@psp.get('lsKind')).toEqual "Bio Activity"
 			describe "special getters", ->
 				describe "primary screen protocol parameters", ->
 					it 'Should be able to get primary screen protocol parameters', ->
@@ -156,42 +156,42 @@ describe "Primary Screen Protocol module testing", ->
 						@psppc.$('.bv_assayActivity option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getAssayActivity().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.assayActivityListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the molecularTarget as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_molecularTarget option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the targetOrigin as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getTargetOrigin().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.targetOriginListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the assay type as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_assayType option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getAssayType().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.assayTypeListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the assay technology as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_assayTechnology option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getAssayTechnology().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.assayTechnologyListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the cell line as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_cellLine option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "unassigned"
 				it "should have the customer molecular target ddict checkbox ", ->
 					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toBeUndefined()
@@ -219,7 +219,7 @@ describe "Primary Screen Protocol module testing", ->
 						@psppc.$('.bv_assayActivity option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "luminescence"
+						expect(@psppc.model.getAssayActivity().get('codeValue')).toEqual "luminescence"
 						expect(@psppc.assayActivityListController.getSelectedCode()).toEqual "luminescence"
 				it "should have the molecularTarget set", ->
 					waitsFor ->
@@ -227,35 +227,35 @@ describe "Primary Screen Protocol module testing", ->
 					, 1000
 					runs ->
 						waits(1000)
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test1"
+						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "test1"
 						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "test1"
 				it "should have the targetOrigin set", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "human"
+						expect(@psppc.model.getTargetOrigin().get('codeValue')).toEqual "human"
 						expect(@psppc.targetOriginListController.getSelectedCode()).toEqual "human"
 				it "should have the assay type set", ->
 					waitsFor ->
 						@psppc.$('.bv_assayType option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "cellular assay"
+						expect(@psppc.model.getAssayType().get('codeValue')).toEqual "cellular assay"
 						expect(@psppc.assayTypeListController.getSelectedCode()).toEqual "cellular assay"
 				it "should have the assay technology set", ->
 					waitsFor ->
 						@psppc.$('.bv_assayTechnology option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "wizard triple luminescence"
+						expect(@psppc.model.getAssayTechnology().get('codeValue')).toEqual "wizard triple luminescence"
 						expect(@psppc.assayTechnologyListController.getSelectedCode()).toEqual "wizard triple luminescence"
 				it "should have the cell line set", ->
 					waitsFor ->
 						@psppc.$('.bv_cellLine option').length > 0
 					, 1000
 					runs ->
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "cell line y"
+						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "cell line y"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "cell line y"
 				it "should have the customer molecular target ddict checkbox checked ", ->
 					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toEqual "checked"
@@ -272,7 +272,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_assayActivity .bv_parameterSelectList').val('fluorescence')
 						@psppc.$('.bv_assayActivity').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual "fluorescence"
+						expect(@psppc.model.getAssayActivity().get('codeValue')).toEqual "fluorescence"
 				it "should update the molecular target", ->
 					waitsFor ->
 						@psppc.$('.bv_molecularTarget option').length > 0
@@ -280,7 +280,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2')
 						@psppc.$('.bv_molecularTarget').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual "test2"
+						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "test2"
 				it "should update the target origin", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -288,7 +288,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_targetOrigin .bv_parameterSelectList').val('chimpanzee')
 						@psppc.$('.bv_targetOrigin').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual "chimpanzee"
+						expect(@psppc.model.getTargetOrigin().get('codeValue')).toEqual "chimpanzee"
 				it "should update the assay type", ->
 					waitsFor ->
 						@psppc.$('.bv_assayType option').length > 0
@@ -296,7 +296,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_assayType .bv_parameterSelectList').val('unassigned')
 						@psppc.$('.bv_assayType').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getAssayType().get('codeValue')).toEqual "unassigned"
 				it "should update the assay technology", ->
 					waitsFor ->
 						@psppc.$('.bv_assayTechnology option').length > 0
@@ -304,7 +304,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_assayTechnology .bv_parameterSelectList').val('unassigned')
 						@psppc.$('.bv_assayTechnology').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getAssayTechnology().get('codeValue')).toEqual "unassigned"
 				it "should update the cell line", ->
 					waitsFor ->
 						@psppc.$('.bv_cellLine option').length > 0
@@ -312,7 +312,7 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						@psppc.$('.bv_cellLine .bv_parameterSelectList').val('unassigned')
 						@psppc.$('.bv_cellLine').change()
-						expect(@psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual "unassigned"
+						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "unassigned"
 				it "should update the curve display max", ->
 					@psppc.$('.bv_maxY').val("130 ")
 					@psppc.$('.bv_maxY').change()
@@ -371,6 +371,13 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
 				it "should have a primary screen analysis parameters controller", ->
 					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "displaying save, cancel, and new protocol buttons", ->
+				it "should have the buttons from protocol base hidden", ->
+					expect(@pspmc.$('.bv_save')).toBeHidden()
+					expect(@pspmc.$('.bv_cancel')).toBeHidden()
+					expect(@pspmc.$('.bv_newEntity')).toBeHidden()
+				it "should have the new protocol button for the module be hidden", ->
+					expect(@pspmc.$('.bv_newModule')).toBeHidden()
 			describe "save module button testing", ->
 				describe "when instantiated with new primary screen protocol", ->
 					it "should show the save button text as Save", ->
@@ -384,9 +391,9 @@ describe "Primary Screen Protocol module testing", ->
 							@pspmc.$('.bv_protocolName').change()
 							@pspmc.$('.bv_recordedBy').val("nxm7557")
 							@pspmc.$('.bv_recordedBy').change()
-							@pspmc.$('.bv_completionDate').val(" 2013-3-16   ")
-							@pspmc.$('.bv_completionDate').val(" 2013-3-16   ")
-							@pspmc.$('.bv_completionDate').change()
+							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
+							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
+							@pspmc.$('.bv_creationDate').change()
 							@pspmc.$('.bv_notebook').val("my notebook")
 							@pspmc.$('.bv_notebook').change()
 							@pspmc.$('.bv_positiveControlBatch').val("test")
@@ -426,6 +433,21 @@ describe "Primary Screen Protocol module testing", ->
 							console.log "save should have been clicked"
 							console.log @pspmc
 							expect(@pspmc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
+				describe "cancel button behavior testing", ->
+					it "should call a fetch on the model when cancel is clicked", ->
+						runs ->
+							@pspmc.$('.bv_cancel').click()
+						waits(1000)
+						runs ->
+							expect(@pspmc.$('.bv_protocolName').val()).toEqual ""
+				describe "new protocol button behavior testing", ->
+					it "should create a new protocol when New Protocol is clicked", ->
+						runs ->
+							@pspmc.$('.bv_newModule').click()
+						waits(1000)
+						runs ->
+							expect(@pspmc.$('.bv_protocolName').val()).toEqual ""
+							expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
 		describe "when instantiated with data", ->
 			beforeEach ->
 				@pspmc = new PrimaryScreenProtocolModuleController
@@ -439,6 +461,13 @@ describe "Primary Screen Protocol module testing", ->
 					expect(@pspmc.primaryScreenProtocolController).toBeDefined()
 				it "should have a primary screen analysis parameters controller", ->
 					expect(@pspmc.primaryScreenAnalysisParametersController).toBeDefined()
+			describe "displaying save, cancel, and new protocol buttons", ->
+				it "should have the buttons from protocol base hidden", ->
+					expect(@pspmc.$('.bv_save')).toBeHidden()
+					expect(@pspmc.$('.bv_cancel')).toBeHidden()
+					expect(@pspmc.$('.bv_newEntity')).toBeHidden()
+				it "should have the new protocol button for the module be visible", ->
+					expect(@pspmc.$('.bv_newModule')).toBeVisible()
 			describe "save module button testing", ->
 				describe "when instantiated with new primary screen protocol", ->
 					it "should show the save button text as Update", ->
@@ -455,8 +484,8 @@ describe "Primary Screen Protocol module testing", ->
 							@pspmc.$('.bv_protocolName').change()
 							@pspmc.$('.bv_recordedBy').val("nxm7557")
 							@pspmc.$('.bv_recordedBy').change()
-							@pspmc.$('.bv_completionDate').val(" 2013-3-16   ")
-							@pspmc.$('.bv_completionDate').change()
+							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
+							@pspmc.$('.bv_creationDate').change()
 							@pspmc.$('.bv_notebook').val("my notebook")
 							@pspmc.$('.bv_notebook').change()
 							@pspmc.$('.bv_positiveControlBatch').val("test")
@@ -488,7 +517,28 @@ describe "Primary Screen Protocol module testing", ->
 						waits(1000)
 						runs ->
 							expect(@pspmc.$('.bv_saveModule').html()).toEqual "Update"
-
+			describe "cancel button behavior testing", ->
+				it "should call a fetch on the model when cancel is clicked", ->
+					runs ->
+						@pspmc.$('.bv_protocolName').val(" Updated protocol name   ")
+						@pspmc.$('.bv_protocolName').change()
+						expect(@pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
+						@pspmc.$('.bv_positiveControlBatch').val('blah')
+						@pspmc.$('.bv_positiveControlBatch').change()
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual "blah"
+						@pspmc.$('.bv_cancel').click()
+					waits(1000)
+					runs ->
+						expect(@pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical"
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual "CMPD-12345678-01"
+			describe "new protocol button behavior testing", ->
+				it "should create a new protocol when New Protocol is clicked", ->
+					runs ->
+						@pspmc.$('.bv_newModule').click()
+					waits(1000)
+					runs ->
+						expect(@pspmc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
+						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
 
 
 

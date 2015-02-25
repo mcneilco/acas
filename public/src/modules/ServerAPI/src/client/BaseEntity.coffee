@@ -5,7 +5,7 @@ class window.BaseEntity extends Backbone.Model
 		subclass: "entity"
 		lsType: "default"
 		lsKind: "default"
-		recordedBy: ""
+		recordedBy: window.AppLaunchParams.loginUser.username
 		recordedDate: new Date().getTime()
 		shortDescription: " "
 		lsLabels: new LabelList()
@@ -31,14 +31,24 @@ class window.BaseEntity extends Backbone.Model
 				@trigger 'change'
 		resp
 
-
-	getDescription: ->
+	getScientist: ->
 		metadataKind = @.get('subclass') + " metadata"
-		description = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", "description"
-		if description.get('clobValue') is undefined or description.get('clobValue') is ""
-			description.set clobValue: ""
+		scientist = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "scientist"
+		if scientist.get('codeValue') is undefined
+			scientist.set codeValue: "unassigned"
+			scientist.set codeType: "assay"
+			scientist.set codeKind: "scientist"
+			scientist.set codeOrigin: window.conf.scientistCodeOrigin
 
-		description
+		scientist
+
+	getDetails: ->
+		metadataKind = @.get('subclass') + " metadata"
+		entityDetails = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "clobValue", @.get('subclass') + " details"
+		if entityDetails.get('clobValue') is undefined or entityDetails.get('clobValue') is ""
+			entityDetails.set clobValue: ""
+
+		entityDetails
 
 	getComments: ->
 		metadataKind = @.get('subclass') + " metadata"
@@ -48,23 +58,20 @@ class window.BaseEntity extends Backbone.Model
 
 		comments
 
-	getCompletionDate: ->
-		metadataKind = @.get('subclass') + " metadata"
-		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "dateValue", "completion date"
-
-
 	getNotebook: ->
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
 	getStatus: ->
-		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "status"
+		subclass = @.get('subclass')
+		metadataKind = subclass + " metadata"
+		valueKind = subclass + " status"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", valueKind
 		if status.get('codeValue') is undefined or status.get('codeValue') is ""
 			status.set codeValue: "created"
-			status.set codeType: "protocol"
+			status.set codeType: subclass
 			status.set codeKind: "status"
-			status.set codeOrigin: "acas ddict"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
 
@@ -109,21 +116,17 @@ class window.BaseEntity extends Backbone.Model
 			errors.push
 				attribute: 'recordedDate'
 				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
+		if attrs.subclass?
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is undefined or notebook is null
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
+			scientist = @getScientist().get('codeValue')
+			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
+				errors.push
+					attribute: 'scientist'
+					message: "Scientist must be set"
 
 		if errors.length > 0
 			return errors
@@ -131,7 +134,7 @@ class window.BaseEntity extends Backbone.Model
 			return null
 
 	prepareToSave: ->
-		rBy = @get('recordedBy')
+		rBy = window.AppLaunchParams.loginUser.username
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
 		@get('lsLabels').each (lab) ->
@@ -149,6 +152,11 @@ class window.BaseEntity extends Backbone.Model
 					val.set recordedBy: rBy
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
+		if @attributes.subclass?
+			delete @attributes.subclass
+		if @attributes.protocol?
+			if @attributes.protocol.attributes.subclass?
+				delete @attributes.protocol.attributes.subclass
 		@trigger "readyToSave", @
 
 	duplicateEntity: =>
@@ -176,12 +184,12 @@ class window.BaseEntity extends Backbone.Model
 		copiedEntity.set
 			lsLabels: new LabelList()
 			lsStates: copiedStates
-			recordedBy: ""
+			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 			version: 0
 		copiedEntity.getStatus().set codeValue: "created"
-		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity.getNotebook().set stringValue: ""
+		copiedEntity.getScientist().set codeValue: "unassigned"
 
 		copiedEntity
 
@@ -192,89 +200,94 @@ class window.BaseEntityController extends AbstractFormController
 	template: _.template($("#BaseEntityView").html())
 
 	events: ->
-		"change .bv_recordedBy": "handleRecordedByChanged"
+		"change .bv_scientist": "handleScientistChanged"
 		"change .bv_shortDescription": "handleShortDescriptionChanged"
-		"change .bv_description": "handleDescriptionChanged"
+		"change .bv_details": "handleDetailsChanged"
 		"change .bv_comments": "handleCommentsChanged"
 		"change .bv_entityName": "handleNameChanged"
-		"change .bv_completionDate": "handleDateChanged"
-		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+#		"change .bv_completionDate": "handleDateChanged"
+#		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"change .bv_notebook": "handleNotebookChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
+		"click .bv_newEntity": "handleNewEntityClicked"
+		"click .bv_cancel": "handleCancelClicked"
 
 
 	initialize: ->
 		unless @model?
 			@model=new BaseEntity()
-		@listenTo @model, 'sync', @modelSaveCallBack
-		@listenTo @model, 'change', @modelChangeCallBack
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@errorOwnerName = 'BaseEntityController'
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupTagList()
 		@model.getStatus().on 'change', @updateEditable
-
-	modelSaveCallBack: (method, model) ->
-		@trigger 'amClean'
-		@$('.bv_saving').hide()
-		@$('.bv_updateComplete').show()
-		@$('.bv_save').attr('disabled', 'disabled')
-		@render()
-
-	modelChangeCallBack: (method, model) ->
-		@trigger 'amDirty'
-		@$('.bv_updateComplete').hide()
 
 	render: =>
 		unless @model?
 			@model = new BaseEntity()
 		subclass = @model.get('subclass')
-		@$('.bv_shortDescription').html @model.get('shortDescription')
+		unless @model.get('shortDescription') is " "
+			@$('.bv_shortDescription').html @model.get('shortDescription')
 		bestName = @model.get('lsLabels').pickBestName()
 		if bestName?
 			@$('.bv_'+subclass+'Name').val bestName.get('labelText')
-		@$('.bv_recordedBy').val(@model.get('recordedBy'))
+		@$('.bv_scientist').val(@model.getScientist().get('codeValue'))
 		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
-		@$('.bv_description').html(@model.getDescription().get('clobValue'))
-		@$('.bv_comments').html(@model.getComments().get('clobValue'))
-		@$('.bv_completionDate').datepicker();
-		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.getCompletionDate().get('dateValue')?
-			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
+		@$('.bv_details').val(@model.getDetails().get('clobValue'))
+		@$('.bv_comments').val(@model.getComments().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
+			@$('.bv_newEntity').hide()
 		else
 			@$('.bv_save').html("Update")
+			@$('.bv_newEntity').show()
 		@updateEditable()
 
 		@
 
+	modelSyncCallback: =>
+		@trigger 'amClean'
+		unless @model.get('subclass')?
+			@model.set subclass: 'entity'
+		@$('.bv_saving').hide()
+		@$('.bv_updateComplete').show()
+		@render()
+
+	modelChangeCallback: =>
+		@trigger 'amDirty'
+		@$('.bv_updateComplete').hide()
+		@$('.bv_cancel').removeAttr('disabled')
+		@$('.bv_cancelComplete').hide()
+
 	setupStatusSelect: ->
+		statusState = @model.getStatus()
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/"+@model.get('subclass')+"/status"
+		@statusList.url = "/api/codetables/"+statusState.get('codeType')+"/"+statusState.get('codeKind')
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
-			selectedCode: @model.getStatus().get 'codeValue'
+			selectedCode: statusState.get 'codeValue'
 
-	setupRecordedBySelect: ->
-		@recordedByList = new PickListList()
-		@recordedByList.url = "/api/authors"
-		@recordedByListController = new PickListSelectController
-			el: @$('.bv_recordedBy')
-			collection: @recordedByList
+	setupScientistSelect: ->
+		@scientistList = new PickListList()
+		@scientistList.url = "/api/authors"
+		@scientistListController = new PickListSelectController
+			el: @$('.bv_scientist')
+			collection: @scientistList
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Scientist"
-			selectedCode: @model.get('recordedBy')
+			selectedCode: @model.getScientist().get('codeValue')
 
 	setupTagList: ->
 		@$('.bv_tags').val ""
@@ -284,26 +297,36 @@ class window.BaseEntityController extends AbstractFormController
 		@tagListController.render()
 
 
-	handleRecordedByChanged: =>
-		@model.set recordedBy: @recordedByListController.getSelectedCode()
-		@handleNameChanged()
+	handleScientistChanged: =>
+		@model.getScientist().set
+			codeValue: @scientistListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleShortDescriptionChanged: =>
 		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
 		if trimmedDesc != ""
-			@model.set shortDescription: trimmedDesc
+			@model.set
+				shortDescription: trimmedDesc
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
 		else
-			@model.set shortDescription: " " #fix for oracle persistance bug
+			@model.set
+				shortDescription: " " #fix for oracle persistance bug
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
 
-	handleDescriptionChanged: =>
-		@model.getDescription().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_description')
-			recordedBy: @model.get('recordedBy')
+	handleDetailsChanged: =>
+		@model.getDetails().set
+			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_details')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleCommentsChanged: =>
 		@model.getComments().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_comments')
-			recordedBy: @model.get('recordedBy')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleNameChanged: =>
 		subclass = @model.get('subclass')
@@ -311,26 +334,26 @@ class window.BaseEntityController extends AbstractFormController
 		@model.get('lsLabels').setBestName new Label
 			lsKind: subclass+" name"
 			labelText: newName
-			recordedBy: @model.get('recordedBy')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		#TODO label change propagation isn't really working, so this is the work-around
 		@model.trigger 'change'
 
-	handleDateChanged: =>
-		@model.getCompletionDate().set dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
-		@model.trigger 'change'
-
-
-	handleCompletionDateIconClicked: =>
-		@$( ".bv_completionDate" ).datepicker( "show" )
-
 	handleNotebookChanged: =>
-		@model.getNotebook().set stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+		@model.getNotebook().set
+			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 	handleStatusChanged: =>
-		@model.getStatus().set codeValue: @statusListController.getSelectedCode()
+		@model.getStatus().set
+			codeValue: @statusListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
+		@model.trigger 'change'
 
 
 
@@ -338,6 +361,8 @@ class window.BaseEntityController extends AbstractFormController
 		if @model.isEditable()
 			@enableAllInputs()
 			@$('.bv_lock').hide()
+			@$('.bv_save').attr('disabled', 'disabled')
+			@$('.bv_cancel').attr('disabled','disabled')
 		else
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
@@ -361,8 +386,34 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_updateComplete').html "Save Complete"
 		else
 			@$('.bv_updateComplete').html "Update Complete"
+		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
 		@model.save()
+
+	handleNewEntityClicked: =>
+		if @model.get('lsKind') is "default" #base protocol/experiment
+			@model = null
+			@completeInitialization()
+		else
+			@trigger 'reinitialize'
+		@trigger 'amClean'
+
+	handleCancelClicked: =>
+		if @model.isNew()
+			if @model.get('lsKind') is "default" #base protocol/experiment
+				@model = null
+				@completeInitialization()
+			else
+				@trigger 'reinitialize'
+		else
+			@$('.bv_canceling').show()
+			@model.fetch
+				success: @handleCancelComplete
+		@trigger 'amClean'
+
+	handleCancelComplete: =>
+		@$('.bv_canceling').hide()
+		@$('.bv_cancelComplete').show()
 
 	validationError: =>
 		super()

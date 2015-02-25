@@ -49,16 +49,21 @@
       this.clearValidationErrorStyles();
       _.each(errors, (function(_this) {
         return function(err) {
-          _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
-          _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
-          _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
-          _this.$('.bv_group_' + err.attribute).tooltip();
-          _this.$('.bv_group_' + err.attribute).addClass('input_error error');
-          return _this.trigger('notifyError', {
-            owner: _this.errorOwnerName,
-            errorLevel: 'error',
-            message: err.message
-          });
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
         };
       })(this));
       return this.trigger('invalid');
@@ -70,7 +75,6 @@
       this.trigger('clearErrors', this.errorOwnerName);
       return _.each(errorElms, (function(_this) {
         return function(ee) {
-          $(ee).tooltip('hide');
           $(ee).removeAttr('data-toggle');
           $(ee).removeAttr('data-placement');
           $(ee).removeAttr('title');
@@ -113,7 +117,8 @@
     AbstractFormController.prototype.enableAllInputs = function() {
       this.$('input').removeAttr('disabled');
       this.$('select').removeAttr('disabled');
-      return this.$("textarea").removeAttr('disabled');
+      this.$("textarea").removeAttr('disabled');
+      return this.$('button').removeAttr('disabled');
     };
 
     return AbstractFormController;

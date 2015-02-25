@@ -226,10 +226,10 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
 			experimentCode: @model.get('codeName')
 			protocolName: @model.get('protocol').get("codeName")
-			recordedBy: @model.get('recordedBy')
+			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
-			analysisStatus: @model.getAnalysisStatus().get("stringValue")
-			recordedDate: @model.get("recordedDate")
+			analysisStatus: @model.getAnalysisStatus().get("codeValue")
+			completionDate: @model.getCompletionDate().get('dateValue')
 		$(@el).html(@template(toDisplay))
 
 		@
@@ -300,15 +300,15 @@ class window.ExperimentBrowserController extends Backbone.View
 			@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
 
-
-
-			unless @includeDuplicateAndEdit
-				@selectedExperimentUpdated new Experiment experiments[0]
-
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		@experimentController = new ExperimentBaseController
-			model: experiment
+		if experiment.get('lsKind') is "Bio Activity"
+			@experimentController = new ExperimentBaseController
+				protocolKindFilter: "?protocolKind=Bio Activity"
+				model: new PrimaryScreenExperiment experiment.attributes
+		else
+			@experimentController = new ExperimentBaseController
+				model: new Experiment experiment.attributes
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
 		@experimentController.displayInReadOnlyMode()
@@ -367,8 +367,8 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	handleDuplicateExperimentClicked: =>
 		experimentKind = @experimentController.model.get('lsKind')
-		if experimentKind is "flipr screening assay"
-			window.open("/entity/copy/flipr_screening_assay/#{@experimentController.model.get("codeName")}",'_blank');
+		if experimentKind is "Bio Activity"
+			window.open("/entity/copy/primary_screen_experiment/#{@experimentController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 

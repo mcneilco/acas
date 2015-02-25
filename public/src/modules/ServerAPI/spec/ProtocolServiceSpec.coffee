@@ -26,7 +26,7 @@ describe 'Protocol CRUD testing', ->
 		it 'should return a protocol stub', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
-				expect(@serviceReturn[0].codeName).toContain "PROT-"
+				expect(@serviceReturn.codeName).toContain "PROT-"
 
 
 	describe 'when fetching full Protocol by id', ->
@@ -228,5 +228,4 @@ describe 'Protocol CRUD testing', ->
 					expect(@serviceReturn[0].code).toBeDefined()
 					expect(@serviceReturn[0].name).toBeDefined()
 					expect(@serviceReturn[0].ignored).toBeDefined()
-
 

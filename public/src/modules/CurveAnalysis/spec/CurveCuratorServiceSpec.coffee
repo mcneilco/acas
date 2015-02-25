@@ -23,7 +23,7 @@ describe 'Curve Curator service testing', ->
 			it 'should curve stubs with an id', ->
 				waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 				runs ->
-					expect(@serviceReturn.curves[0].curveid).toEqual "AG-00344443_1680"
+					expect(@serviceReturn.curves[0].curveid).toEqual "AG-00439996_6863"
 		describe "when experimentCode is invalid", ->
 			beforeEach ->
 				self = @
@@ -102,7 +102,7 @@ describe 'Curve Curator service testing', ->
 			runs ->
 				expect(@testModel.get('curveAttributes').compoundCode).toEqual "CMPD-0000001-01A"
 				console.log @testModel.get('curveAttributes')
-				expect(@testModel.get('curveAttributes').EC50).toEqual 0.614351982526937
+				expect(@testModel.get('curveAttributes').EC50).toEqual 0.513604908525085
 		it 'should return curve detail with plotData', ->
 			waitsFor ->
 				@syncEvent
@@ -113,14 +113,14 @@ describe 'Curve Curator service testing', ->
 				expect(@testModel.get('plotData').points.length).toBeGreaterThan 5
 				console.log (@testModel.get('plotData').points[0].dose).toBeDefined
 				console.log (@testModel.get('plotData').points[0].response).toBeDefined
-				expect(@testModel.get('plotData').curve.ec50).toEqual 0.614351982526937
+				expect(@testModel.get('plotData').curve.ec50).toEqual 0.513604908525085
 		it 'should return curve detail with fitSettings', ->
 			waitsFor ->
 				@syncEvent
 			, 'service did not return'
 			, 2000
 			runs ->
-				expect(@testModel.get('fitSettings').get('max').get('limitType')).toEqual 'none'
+				expect(@testModel.get('fitSettings').get('max').get('limitType')).toEqual 'pin'
 
 
 	goodDataRequest =
@@ -161,5 +161,3 @@ describe 'Curve Curator service testing', ->
 			waitsFor( @waitForServiceReturn, 'service did not return', 2000)
 			runs ->
 				expect(@serviceReturn.fitSummary).tobeDefined
-
-

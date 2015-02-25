@@ -84,6 +84,11 @@
       } else {
         this.selectedCode = null;
       }
+      if (this.options.showIgnored != null) {
+        this.showIgnored = this.options.showIgnored;
+      } else {
+        this.showIgnored = false;
+      }
       if (this.options.insertFirstOption != null) {
         this.insertFirstOption = this.options.insertFirstOption;
       } else {
@@ -94,7 +99,7 @@
       } else {
         this.autoFetch = true;
       }
-      if (this.autoFetch) {
+      if (this.autoFetch === true) {
         return this.collection.fetch({
           success: this.handleListReset
         });
@@ -104,11 +109,23 @@
     };
 
     PickListSelectController.prototype.handleListReset = function() {
+      var newOption;
       if (this.insertFirstOption) {
         this.collection.add(this.insertFirstOption, {
           at: 0,
           silent: true
         });
+        if (!(this.selectedCode === this.insertFirstOption.get('code'))) {
+          if ((this.collection.where({
+            code: this.selectedCode
+          })).length === 0) {
+            newOption = new PickList({
+              code: this.selectedCode,
+              name: this.selectedCode
+            });
+            this.collection.add(newOption);
+          }
+        }
       }
       return this.render();
     };
@@ -131,7 +148,18 @@
     };
 
     PickListSelectController.prototype.addOne = function(enm) {
-      if (!enm.get('ignored')) {
+      var shouldRender;
+      shouldRender = this.showIgnored;
+      if (enm.get('ignored')) {
+        if (this.selectedCode != null) {
+          if (this.selectedCode === enm.get('code')) {
+            shouldRender = true;
+          }
+        }
+      } else {
+        shouldRender = true;
+      }
+      if (shouldRender) {
         return $(this.el).append(new PickListOptionController({
           model: enm
         }).render().el);
@@ -142,6 +170,8 @@
       this.selectedCode = code;
       if (this.rendered) {
         return $(this.el).val(this.selectedCode);
+      } else {
+        return "not done";
       }
     };
 
@@ -173,7 +203,7 @@
     AddParameterOptionPanel.prototype.defaults = {
       parameter: null,
       codeType: null,
-      codeOrigin: "acas ddict",
+      codeOrigin: "ACAS DDICT",
       codeKind: null,
       newOptionLabel: null,
       newOptionDescription: null,
@@ -239,10 +269,11 @@
       this.$('.bv_addParameterOptionModal').modal('show');
       parameterNameWithSpaces = this.model.get('parameter').replace(/([A-Z])/g, ' $1');
       pascalCaseParameterName = parameterNameWithSpaces.charAt(0).toUpperCase() + parameterNameWithSpaces.slice(1);
-      this.$('.bv_parameter').html(pascalCaseParameterName);
-      return this.model.set({
-        codeKind: parameterNameWithSpaces.toLowerCase()
-      });
+      return this.$('.bv_parameter').html(pascalCaseParameterName);
+    };
+
+    AddParameterOptionPanelController.prototype.hideModal = function() {
+      return this.$('.bv_addParameterOptionModal').modal('hide');
     };
 
     AddParameterOptionPanelController.prototype.updateModel = function() {
@@ -275,6 +306,7 @@
     __extends(EditablePickListSelectController, _super);
 
     function EditablePickListSelectController() {
+      this.saveNewOption = __bind(this.saveNewOption, this);
       this.handleAddOptionRequested = __bind(this.handleAddOptionRequested, this);
       this.handleShowAddPanel = __bind(this.handleShowAddPanel, this);
       this.setupEditingPrivileges = __bind(this.setupEditingPrivileges, this);
@@ -296,12 +328,15 @@
     };
 
     EditablePickListSelectController.prototype.setupEditablePickList = function() {
+      var parameterNameWithSpaces, pascalCaseParameterName;
+      parameterNameWithSpaces = this.options.parameter.replace(/([A-Z])/g, ' $1');
+      pascalCaseParameterName = parameterNameWithSpaces.charAt(0).toUpperCase() + parameterNameWithSpaces.slice(1);
       return this.pickListController = new PickListSelectController({
         el: this.$('.bv_parameterSelectList'),
         collection: this.collection,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select Rule"
+          name: "Select " + pascalCaseParameterName
         }),
         selectedCode: this.options.selectedCode
       });
@@ -329,13 +364,18 @@
       return this.pickListController.getSelectedCode();
     };
 
+    EditablePickListSelectController.prototype.setSelectedCode = function(code) {
+      return this.pickListController.setSelectedCode(code);
+    };
+
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
         if (this.addPanelController == null) {
           this.addPanelController = new AddParameterOptionPanelController({
             model: new AddParameterOptionPanel({
               parameter: this.options.parameter,
-              codeType: this.options.codeType
+              codeType: this.options.codeType,
+              codeKind: this.options.codeKind
             }),
             el: this.$('.bv_addOptionPanel')
           });
@@ -352,22 +392,20 @@
       if (this.pickListController.checkOptionInCollection(newOptionCode) === void 0) {
         newPickList = new PickList({
           code: newOptionCode,
-          name: newOptionCode.toLowerCase().replace(/(^|[^a-z0-9-])([a-z])/g, function(m, m1, m2, p) {
-            return m1 + m2.toUpperCase();
-          }),
+          name: requestedOptionModel.get('newOptionLabel'),
           ignored: false,
           codeType: requestedOptionModel.get('codeType'),
           codeKind: requestedOptionModel.get('codeKind'),
           codeOrigin: requestedOptionModel.get('codeOrigin'),
           description: requestedOptionModel.get('newOptionDescription'),
-          comments: requestedOptionModel.get('newOptionComments'),
-          newOption: true
+          comments: requestedOptionModel.get('newOptionComments')
         });
         this.pickListController.collection.add(newPickList);
-        this.$('.bv_optionAddedMessage').show();
-        return this.$('.bv_errorMessage').hide();
+        this.pickListController.setSelectedCode(newPickList.get('code'));
+        this.trigger('change');
+        this.$('.bv_errorMessage').hide();
+        return this.addPanelController.hideModal();
       } else {
-        this.$('.bv_optionAddedMessage').hide();
         return this.$('.bv_errorMessage').show();
       }
     };
@@ -384,24 +422,30 @@
       var code, selectedModel;
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
-      if (selectedModel !== void 0) {
-        if (selectedModel.get('newOption') != null) {
-          selectedModel.unset('newOption');
+      if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
+        if (selectedModel.get('id') != null) {
+          return callback.call();
+        } else {
           return $.ajax({
             type: 'POST',
-            url: "/api/codeTables",
-            data: selectedModel,
-            success: callback.call(),
+            url: "/api/codetables",
+            data: JSON.stringify({
+              codeEntry: selectedModel
+            }),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: (function(_this) {
+              return function(response) {
+                return callback.call();
+              };
+            })(this),
             error: (function(_this) {
               return function(err) {
                 alert('could not add option to code table');
                 return _this.serviceReturn = null;
               };
-            })(this),
-            dataType: 'json'
+            })(this)
           });
-        } else {
-          return callback.call();
         }
       } else {
         return callback.call();

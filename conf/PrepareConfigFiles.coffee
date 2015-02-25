@@ -103,7 +103,7 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	routes.join('\n\n')
 
 getApacheCompileOptions = ->
-	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl']
+	posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl', '/usr/sbin/httpd2-prefork', '/usr/sbin/httpd2']
 	for possibleCommand in posssibleCommands
 		if shell.which(possibleCommand)
 			apacheCommand = possibleCommand
@@ -121,10 +121,13 @@ getApacheCompileOptions = ->
 			if option.match('Ubuntu')
 				apacheVersion = 'Ubuntu'
 			else
-				if os.type() == "Darwin"
-					apacheVersion = 'Darwin'
+				if option.match('SUSE')
+					apacheVersion = 'SUSE'
 				else
-					apacheVersion = 'Redhat'
+					if os.type() == "Darwin"
+						apacheVersion = 'Darwin'
+					else
+						apacheVersion = 'Redhat'
 		else
 			option = option.match(/^ -D .*/)
 			if option?
@@ -152,6 +155,10 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 			serverRoot = '\"/etc/httpd\"'
 			modulesDir = 'modules/'
 			typesConfig = '/etc/mime.types'
+		when 'SUSE'
+			serverRoot = '\"/usr\"'
+			modulesDir = 'lib64/apache2/'
+			typesConfig = '/etc/mime.types'
 		when 'Darwin'
 			serverRoot = '\"/usr\"'
 			modulesDir = 'libexec/apache2/'
@@ -168,11 +175,11 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
 	confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
 	confs.push('TypesConfig ' + typesConfig)
-	if apacheVersion in ['Redhat', 'Darwin']
+	if apacheVersion in ['Redhat', 'Darwin', 'SUSE']
 		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
-		confs.push('Mutex default:/Users/bbolt/Documents/mcneilco/acas/bin')
+		confs.push('Mutex default:' + acasHome + '/bin')
 		confs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
 		confs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
@@ -180,17 +187,22 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
 	confs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
 
-	if Boolean(config.all.client.service.rapache.use.ssl)
+	if Boolean(config.all.client.use.ssl)
+		urlPrefix = 'https'
 		confs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 		confs.push('SSLEngine On')
 		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
 		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
 		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
 		confs.push('SSLPassPhraseDialog ' + '\'|' + path.resolve(acasHome,'conf','executeNodeScript.sh') + ' ' + path.resolve(acasHome,'conf','getSSLPassphrase.js' + '\''))
-
-	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	else
+		urlPrefix = 'http'
 	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	confs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
+	confs.push('RewriteEngine On')
+	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.all.client.host}:#{config.all.client.port}/$1 [L,R,NE]")
+
 	confs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	confs.join('\n')

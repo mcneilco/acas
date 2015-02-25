@@ -25,7 +25,7 @@ block content
                                 input.btn.btn-primary(type="submit", value="Submit")
                                 - if (resetPasswordOption)
                                     a.forgotPasswordLink(href="/passwordReset") Forgot your password?
-        - if (message =="Your new password is set.")
+        - if (message == "Your new password is set.")
             div.span7.offset1.alert.alert-success.loginError #{message}
         - else if (message != "")
             div.span7.offset1.alert.alert-error.loginError #{message}

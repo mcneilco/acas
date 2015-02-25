@@ -31,23 +31,33 @@
 # runPrimaryAnalysis(request=list(fileToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRunMode=TRUE,user="smeyer",testMode=FALSE,primaryAnalysisExperimentId=659))
 # runMain(folderToParse="public/src/modules/PrimaryScreen/spec/specFiles",dryRun=TRUE,user="smeyer",testMode=FALSE, experimentId=27099)
 # newest experimentID: 75191, 9036, 11203
-# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
+# request <- fromJSON("{\"primaryAnalysisReads\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRules\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}],\"primaryScreenAnalysisParameters\":{\"positiveControl\":{\"batchCode\":\"CMPD-12345678-01\",\"concentration\":10,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"CMPD-87654321-01\",\"concentration\":1,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"CMPD-87654399-01\",\"concentration\":250753.77,\"concentrationUnits\":\"uM\"},\"vehicleControl\":{\"batchCode\":\"CMPD-00000001-01\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":11,\"readName\":\"none\",\"activity\":true},{\"readPosition\":12,\"readName\":\"fluorescence\",\"activity\":false},{\"readPosition\":13,\"readName\":\"luminescence\",\"activity\":false}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}}")
 ############ testMode TRUE #############
-# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive.zip", "privateUploads/")
-# request <- structure(list(fileToParse = "Archive.zip", reportFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}", primaryAnalysisExperimentId = 203528, testMode = "true"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
-############ testMode FALSE ############
+# file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/Archive (2).zip", "privateUploads/")
+# file.copy("public/src/modules/PrimaryScreen/spec/specFiles/Step2_Renormalize_Input_v2.txt", "privateUploads/")
+# request <- structure(list(fileToParse = "Archive (2).zip", reportFile = "Step2_Renormalize_Input_v2.txt", dryRunMode = TRUE, user = "bob", primaryAnalysisExperimentId = 203528, testMode = "true", flaggedWells = "Step2_Renormalize_Input_v2.txt", inputParameters = "{\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.5,\"concentrationUnits\":\"uM\"},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0,\"concentrationUnits\":\"uM\"},\"agonistControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":\"null\"},\"vehicleControl\":{\"batchCode\":\"null\",\"concentration\":null,\"concentrationUnits\":null},\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"hitEfficacyThreshold\":42,\"hitSDThreshold\":5,\"thresholdType\":\"sd\",\"transferVolume\":12,\"dilutionFactor\":21,\"volumeType\":\"dilution\",\"assayVolume\":24,\"autoHitSelection\":false,\"htsFormat\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"none\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"},{\"transformationRule\":\"null\"}]}"), .Names = c("fileToParse", "reportFile", "dryRunMode", "user", "primaryAnalysisExperimentId", "testMode", "flaggedWells", "inputParameters"))
+############ testMode FALSE #############
 # file.copy("/Users/smeyer/Documents/clients/DNS/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
-# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"% efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
+# request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"DNS001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"DNS000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
-getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment) {
+source("public/src/conf/customFunctions.R")
+
+getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment, parameters) {
+  # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
+  #               well number, and if it's flagged. If NULL, the file did not exist,
+  #               and no wells are flagged. Also may include information to flag analysis groups.
   
-  if(is.null(flaggedWells)) {
-    resultTable[ , flag:= as.character(NA)]
+  if(is.null(flaggedWells) || flaggedWells == "") {
+    resultTable[, flag:=NA_character_]
+    resultTable[, flagType:=NA_character_]
+    resultTable[, flagObservation:=NA_character_]
+    resultTable[, flagReason:=NA_character_]
+    resultTable[, flagComment:=NA_character_]
     return(resultTable)
   }
-  
+
   # Get a table of flags associated with the data. If there was no file name given, then all flags are NA
-  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment)
+  flagData <- getWellFlags(flaggedWells, resultTable, flaggingStage, experiment, parameters)
   
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
@@ -61,18 +71,18 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   return(resultTable)
 }
 
-getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
+getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment, parameters) {
   # Reads the flagged wells from an input csv or Excel file
   # Input: flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #        resultTable, a data.table that must contain all of the barcodes and wells for the data set
   #        flaggingStage, a string indicating whether the user intends to modify "wellFlags" or
-  #                       "analysisGroupFlags"
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   # Returns: a data.table with each barcode, well, and associated flag. All column names are lowercase.
   
   # Extract information from the flag file
   flagData <- parseWellFlagFile(flaggedWells, resultTable)
   
-  flagData <- changeColNameReadability(flagData, "humanToComputer")
+  flagData <- changeColNameReadability(flagData, "humanToComputer", parameters)
   
   # Ensure that the data is in the proper form
   validatedFlagData <- validateWellFlagData(flagData, resultTable)
@@ -84,7 +94,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment) {
   
   # Remove unneeded columns
   # flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
-  flagData <- data.table(validatedFlagData)
+  flagData <- as.data.table(validatedFlagData[, list(assayBarcode, well, flagType, 
+                                                flagObservation, flagReason, flagComment)])
   
   return(flagData)
 }
@@ -99,7 +110,8 @@ getUserHits <- function(analysisGroupData, flaggedWells, resultTable, replicateT
   #             batchName and well for each test
   #          replicateType, a string that defines an analysis group (ie, "across plate")
   #          experiment, a list that is an experiment, and contains a code name
-  #          flaggingStage, a string indicating whether users want to moidfy "wellFlags" or "analysisGroupFlags"
+  #          flaggingStage, a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   # Returns: analysisGroupData: the original table, including a column indicating whether the user specified
   #             an analysis group as a hit or a miss
   #          summaryFlagData: the batchName and userHit columns for every piece of data
@@ -167,12 +179,21 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, hasAgon
     negativeControl$concentration <- Inf
   }
   
-  if(vehicleControl$batchCode != "null") {
+  if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
   }
   
-  posBatchFilter <- batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration
-  negBatchFilter <- batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration
+  toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
+  if (is.null(toleranceRange)) {
+    warnUser("Config issue: control tolerance not set")
+    toleranceRange <- 0
+  }
+  #   toleranceRange <- 0.01
+  
+  posBatchFilter <- batchNames==positiveControl$batchCode & 
+                    abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
+  negBatchFilter <- batchNames==negativeControl$batchCode & 
+                    abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100
     
   if(!is.null(concentrationUnits)) {
     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
@@ -214,6 +235,21 @@ getAnalysisGroupColumns <- function(replicateType) {
 return(requiredColumns)
 }
 
+computeRobustZPrime <- function(positiveControls, negativeControls) {
+  # Computes robust Z'
+  #
+  # Args:
+  #   positiveControls:   A vector of the values of the positive controls
+  #   negativeControls:   A vector of the values of the negative controls
+  # Returns:
+  #   A numeric value between 0 and 1
+  
+  madPositiveControl <- mad(positiveControls)
+  madNegativeControl <- mad(negativeControls)
+  medianPositiveControl <- median(positiveControls)
+  medianNegativeControl <- median(negativeControls)
+  return (1 - 3*(madPositiveControl+madNegativeControl)/abs(medianPositiveControl-medianNegativeControl))
+}
 
 computeZPrime <- function(positiveControls, negativeControls) {
   # Computes Z'
@@ -231,7 +267,7 @@ computeZPrime <- function(positiveControls, negativeControls) {
   return (1 - 3*(sdPositiveControl+sdNegativeControl)/abs(meanPositiveControl-meanNegativeControl))
 }
 
-createPlots <- function(resultTable){
+createPlots <- function(resultTable, parameters){
   source("primaryAnalysisPlots.R")
   require('tools')
   
@@ -308,14 +344,15 @@ createPlots <- function(resultTable){
                             well = resultTable$well[resultTable$barcode==barcode])
     createHeatMap(paste("Heatmap ",barcode), plateData)
   }
-  #create heatmap for average of set
+  #create heatmap for average of set (median or mean, depending on user input)
   plateDataTable <- data.table(values = resultTable$normalized, 
                                well = resultTable$well)
-  plateData <- plateDataTable[,list(values = mean(values)), by=well]
+  plateData <- plateDataTable[,list(values = useAggregationMethod(values, parameters)), by=well]
   createHeatMap("All Plates", plateData)
   
 }
-saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, experimentId){
+
+saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, experimentId, parameters){
   #save(subjectData, experimentId, file="test.Rda")
   
   recordedBy <- user
@@ -413,7 +450,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   subjectData$fileName <- NULL
   
   makeLongData <- function(entityData, resultTypes, splitTreatmentGroupsBy) {
-    library('reshape')
+    library('reshape2')
     library('gdata')
     
     entityData$entityID <- seq(1,nrow(entityData))
@@ -621,7 +658,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   treatmentDataStart <- subjectData[subjectData$valueKind %in% c(treatmentDataValueKinds, analysisValueKinds)
                                     & !(subjectData$subjectID %in% excludedSubjects),]
   
-  createRawOnlyTreatmentGroupDataDT <- function(subjectData) {
+  createRawOnlyTreatmentGroupDataDT <- function(subjectData, parameters) {
     isGreaterThan <- any(subjectData$valueOperator==">", na.rm=TRUE)
     isLessThan <- any(subjectData$valueOperator=="<", na.rm=TRUE)
     resultValue <- NA
@@ -636,7 +673,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
       resultValue <- min(subjectData$numericValue)
     } else {
       resultOperator <- as.character(NA)
-      resultValue <- mean(subjectData$numericValue)
+      resultValue <- useAggregationMethod(subjectData$numericValue, parameters)
     }
     return(list(
       "stateID" = subjectData$stateID[1],
@@ -660,7 +697,7 @@ saveData <- function(subjectData, treatmentGroupData, analysisGroupData, user, e
   treatmentDataStartDT <- as.data.table(treatmentDataStart)
   
   keepValueKinds <- c("maximum", "minimum", "Dose", "transformed efficacy","normalized efficacy","over efficacy threshold","max time","late peak", "has agonist", "comparison graph")
-  treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
+  treatmentGroupDataDT <- treatmentDataStartDT[ valueKind %in% keepValueKinds, createRawOnlyTreatmentGroupDataDT(.SD, parameters), by = c("analysisGroupID", "treatmentGroupCodeName", "treatmentGroupID", "resultTypeAndUnit", "stateGroupIndex",
                                                                                                                               "batchCode", "valueKind", "valueUnit", "valueType")]
   #setkey(treatmentGroupDataDT, treatmentGroupID)
   treatmentGroupData <- as.data.frame(treatmentGroupDataDT)
@@ -904,8 +941,8 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
   #
   # validatedFlagData: a (validated) table containing information about which wells
   #               (and possibly analysis groups) are flagged
-  # flaggingStage: a string indicating whether the user is modifying "wellFlags"
-  #                or "analysisGroupFlags"
+  # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   
   if(is.null(validatedFlagData)) {
     #There was no flag file given, so we aren't doing any flagging
@@ -1042,7 +1079,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
   #             every test
-  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  # Returns: a data.table containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
   #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
   #             didn't define a hit, it is left as NA
   
@@ -1257,16 +1294,8 @@ saveFileLocations <- function (rawResultsLocation, resultsLocation, pdfLocation,
 }
 saveInputParameters <- function(inputParameters, experiment, lsTransaction, recordedBy) {
   # input: inputParameters a string that is JSON
-  metadataState <- getOrCreateExperimentState(experiment, "metadata", "experiment metadata", recordedBy, lsTransaction)
-  
-  inputParamValue <- updateOrCreateStateValue(
-    "experiment", lsType = "clobValue",
-    lsKind = "data analysis parameters",
-    clobValue = inputParameters,
-    lsState = metadataState,
-    lsTransaction = lsTransaction,
-    recordedBy = recordedBy)
-  
+  updateValueByTypeAndKind(inputParameters, "experiment", experiment$id, "metadata", 
+                           "experiment metadata", "clobValue", "data analysis parameters")
   return(NULL)
 }
 getExperimentParameters <- function(inputParameters) {
@@ -1305,39 +1334,13 @@ getExperimentParameters <- function(inputParameters) {
     parameters$aggregateReplicates<- "no"
   }
   
-  if (is.null(parameters$dilutionRatio)) {
+  if(!is.null(parameters$dilutionFactor) && is.null(parameters$dilutionRatio)) {
+    parameters$dilutionRatio <- parameters$dilutionFactor
+  } else if (is.null(parameters$dilutionRatio)) {
     parameters$dilutionRatio <- 2
   }
   
   return(parameters)
-}
-setAnalysisStatus <- function(status, metadataState) {
-  # Sets the analysis status
-  #
-  # Args:
-  #   status:         A string to set the analysis status
-  #   metadataState:  A list that is a state that has a value of type "analysis status"
-  # Returns:
-  #   NULL
-  
-  valueKinds <- lapply(metadataState$lsValues,getElement,"lsKind")
-  
-  valuesToDelete <- metadataState$lsValues[valueKinds == "analysis status"]
-  
-  tryCatch({
-    lapply(valuesToDelete, deleteExperimentValue)
-    
-    statusValue <- createStateValue(
-      lsType = "stringValue",
-      lsKind = "analysis status",
-      stringValue = status,
-      lsState = metadataState)
-    
-    saveExperimentValues(list(statusValue))
-  }, error = function(e) {
-    stopUser("Could not save the experiment status")
-  })
-  return(NULL)
 }
 
 loadInstrumentReadParameters <- function(instrumentType) {
@@ -1369,6 +1372,9 @@ loadInstrumentReadParameters <- function(instrumentType) {
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
   }
+  if(paramList$headerRowSearchString == "NA") {
+    paramList$headerRowSearchString <- NA
+  }
   
   return(paramList)  
 }
@@ -1379,7 +1385,16 @@ getReadOrderTable <- function(readList) {
   # Input:  readList (list of lists)
   # Output: readsTable (data.table)
   
-  readsTable <- data.table(ldply(readList, data.frame))
+  readsTable <- data.table(ldply(readList, function(item) {
+    data.frame(
+        userReadOrder = item$readNumber,
+        readPosition = ifelse(is.null(item$readPosition), NA_real_, item$readPosition),
+        readName = item$readName,
+        activity = item$activity,
+        calculatedRead = FALSE
+      )
+  }))
+  readsTable[grep("^Calc:", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1425,12 +1440,22 @@ checkControls <- function(resultTable) {
   # Input:  resultTable (data.table)
   # Output: none
   
+  controlsExist <- list(posExists=TRUE, negExists=TRUE)
   if (!any(resultTable$wellType == "PC")) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control is defined correctly.")
+    controlsExist$posExists <- FALSE
   }
   
   if (!any(resultTable$wellType == "NC")) {
+    controlsExist$negExists <- FALSE
+  }
+  
+  if(!controlsExist$posExists && !controlsExist$negExists) {
+    stopUser("The positive and negative controls were not found in the plates. Make sure all transfers have been loaded 
+             and your controls are defined correctly.")
+  } else if (!controlsExist$posExists) {
+    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control is defined correctly.")
+  } else if (!controlsExist$negExists) {
     stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
              and your negative control is defined correctly.")
   }
@@ -1447,17 +1472,20 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
   
   removeList <- list()
   for(name in colNamesToCheck) {
-    if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
-      inputDataTable[[name]] <- NULL
-      removeList[[length(removeList) + 1]] <- name
+    if(!grepl("^R[0-9]+ \\{Calc: *", name)) { # check to see if the column name is not a calculated read
+      if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
+        inputDataTable[[name]] <- NULL
+        removeList[[length(removeList) + 1]] <- name
+      }
     }
   }
   
-  if(length(removeList) == 1) {
-    warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
-  } else if(length(removeList) > 1) {
-    warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
-  }
+  # No need to warn user when not using some of the data columns.
+  #   if(length(removeList) == 1) {
+  #     warnUser(paste0("Removed 1 data column: '", removeList[[1]], "'"))
+  #   } else if(length(removeList) > 1) {
+  #     warnUser(paste0("Removed ",length(removeList)," data columns: '", paste(removeList, collapse="','"), "'"))
+  #   }
   return(inputDataTable)
 }
 
@@ -1471,9 +1499,11 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   addList <- list()
   for(column in requiredColNames) {
-    if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
-      inputDataTable[[column]] <- as.numeric(NA)
-      addList[[length(addList) + 1]] <- column
+    if(!grepl("^R[0-9]+ \\{Calc: *", column)) { # check to see if the column name is not a calculated read
+      if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
+        inputDataTable[[column]] <- as.numeric(NA)
+        addList[[length(addList) + 1]] <- column
+      }
     }
   }
   
@@ -1499,33 +1529,128 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
+autoFlagWells <- function(resultTable, parameters) {
+  resultTable[, autoFlagType:=NA_character_]
+  resultTable[, autoFlagObservation:=NA_character_]
+  resultTable[, autoFlagReason:=NA_character_]
+  if(!parameters$autoHitSelection) {
+    return(resultTable)
+  }
+  if(is.null(parameters$thresholdType) || parameters$thresholdType == "") {
+    return(resultTable)
+  } else if(parameters$thresholdType == "efficacy") {
+    hitThreshold <- parameters$hitEfficacyThreshold
+    thresholdType <- "percent efficacy"
+    
+    setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
+    resultTable[transformed_efficacy > hitThreshold , autoFlagType := "HIT"]
+    setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
+  } else if(parameters$thresholdType == "sd") {
+    hitThreshold <- parameters$hitSDThreshold
+    thresholdType <- "standard deviation"
+    resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+  } else {
+    stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
+  }
+  
+  resultTable[autoFlagType == "HIT", autoFlagObservation := "hit"]
+  resultTable[autoFlagType == "HIT", autoFlagReason := "hit"]
+  
+  return(resultTable)
+  
+}
+
+getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
+  if(is.null(numRows) && is.null(numCols)) {
+    stopUser("Internal error: unknown plate dimensions")
+  }
+  
+  if(is.null(numRows)) {
+    colDim <- ceiling((numCols / 12)) * 12
+    rowDim <- (colDim / 12) * 8
+  } else if (is.null(numCols)) {
+    rowDim <- ceiling((numRows / 8)) * 8
+    colDim <- (rowDim / 8) * 12
+  } else {
+    baseSize <- max(ceiling((numCols / 12)), ceiling((numRows / 8)))
+    colDim <- baseSize * 12
+    rowDim <- baseSize * 8
+  }
+  return(list(colDim=colDim, rowDim=rowDim))
+  
+}
+removeNonCurves <- function(analysisData) {
+  # Removes non-curve analysis group data, leaving only enough information to create the 
+  # analysis groups without states and values so treatment groups can be created
+  doseRespData <- analysisData[stateKind == "dose response"]
+  singlePointData <- analysisData[stateKind != "dose response"]
+  clearThese <- setdiff(names(analysisData), c("tempId", "parentId"))
+  newColOrder <- c("tempId", "parentId", clearThese)
+  # Need to set up a data table keeping on the parentId of the singlePointData 
+  newSingle <- unique(singlePointData[,list(tempId, parentId)])
+  newSingle[, (clearThese):=NA]
+  setcolorder(newSingle, newColOrder)
+  setcolorder(doseRespData, newColOrder)
+  return(rbind(doseRespData, newSingle))
+}
+
+get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::applicationSettings$service.external.compound.calculatedProperties.url) {
+  namedProperties <- propertyNames
+  names(namedProperties) <- rep("propertyName",length(propertyNames))
+  response <- do.call(postForm, 
+                      as.list(
+                        c(uri = serviceUrl,
+                          inFormat = "ids", 
+                          namedProperties,
+                          compoundPayload = paste0(ids, collapse = '\n'),
+                          style = 'HTTPPOST'
+                        )
+                      )
+  )
+  if(length(propertyNames) == 1) {
+    lines <- paste0(strsplit(response,'\n')[[1]])
+    blanks <- lines == ""
+    lines[blanks] <- NA
+    properties <- fread(paste0(lines,collapse = "\n"))
+  } else {
+    properties <- fread(response, header = F)
+  }
+  setnames(properties, propertyNames)
+  return(properties)
+}
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
   # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
   #               well number, and if it's flagged. If NULL, the file did not exist,
   #               and no wells are flagged. Also may include information to flag analysis groups.
-  # flaggingStage: a string indicating whether the user is currently altering "wellFlags" or 
-  #               "analysisGroupFlags"
+  # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
+  #                       "analysisGroupFlags" or spotfire "KOandHit"
   
-  require("data.table")
-  library(plyr)
+  library("data.table")
+  library("plyr")
   
-  originalFileToParse <- folderToParse
-  folderToParse <- racas::getUploadedFilePath(folderToParse)
+  fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
-  if (!file.exists(folderToParse)) {
+  if (!file.exists(fullPathToParse)) {
     stopUser("Input file not found")
   }
   
   if(!testMode) {
     experiment <- getExperimentById(experimentId)
-    setExperimentStatus(status = "running", experiment, dryRun)
+    setExperimentStatus(status = "running", experiment, dryRun=dryRun)
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
   
   parameters <- getExperimentParameters(inputParameters)
+
+  if(!is.null(parameters$thresholdType) && 
+       length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
+       !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
+    stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
+  }
   
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
@@ -1538,7 +1663,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
   
   
-  # If the folderToParse is actually a zip file
+  # If the fullPathToParse is actually a zip file
   zipFile <- NULL
   experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
   
@@ -1548,8 +1673,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   dir.create(dryRunFileLocation, showWarnings = FALSE)
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
   
-  if (!file.info(folderToParse)$isdir) {
-    folderToParse <- unzipDataFolder(folderToParse, targetLocation, experiment)
+  if (!file.info(fullPathToParse)$isdir) {
+    fullPathToParse <- unzipDataFolder(fullPathToParse, targetLocation, experiment)
   } 
   
   # GREEN (instrument-specific)
@@ -1565,7 +1690,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"specificDataPreProcessor.R"))
   
   instrumentData <- specificDataPreProcessor(parameters=parameters, 
-                                             folderToParse=folderToParse, 
+                                             folderToParse=fullPathToParse, 
                                              errorEnv=errorEnv, 
                                              dryRun=dryRun, 
                                              instrumentClass=instrumentReadParams$dataFormat, 
@@ -1578,27 +1703,27 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"getCompoundAssignments.R"))
   
-  resultTable <- getCompoundAssignments(folderToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
+  resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
+
   
-  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchName, concentrations=resultTable$cmpdConc, 
+  # TODO: Rmove this when value is in config.properties
+  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
+  # this also performs any calculations from the GUI
+  resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
+  
+  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                        concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                        positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                        vehicleControl=parameters$vehicleControl, testMode=testMode)
-  
+  resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
   checkControls(resultTable)
   
-  ## Well Flagging Here
+  ## User Well Flagging Here
   
-  resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment)
-  resultTable[, flagType:=NA_character_]
-  resultTable[, flagObservation:=NA_character_]
-  resultTable[, flagReason:=NA_character_]
-  resultTable[, flagComment:=NA_character_]
-  resultTable[, autoFlagType:=NA_character_]
-  resultTable[, autoFlagObservation:=NA_character_]
-  resultTable[, autoFlagReason:=NA_character_]
+  # user well flagging
+  resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment, parameters)
   
-  ## End Well Flagging
+  ## End User Well Flagging
   
   ## RED SECTION - Client Specific
   #calculations
@@ -1607,23 +1732,41 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   resultTable <- performCalculations(resultTable, parameters)
   
+  ## BLUE SECTION - Auto Well Flagging
+
+  resultTable <- autoFlagWells(resultTable, parameters)
+  resultTable[autoFlagType=="KO", flag := "KO"]
+  
+  # END Auto Well Flagging
+  
+  # Save full resultTable, including wells with no compounds, to write to the spotfire file.
+  # Remove the wells with no compounds to save to the database
+  spotfireResultTable <- copy(resultTable)
+  resultTable <- resultTable[batchCode != "::"]
+  
   # was "across plates"
-  if (parameters$aggregateBy == "compound batch concentration") {
-    groupBy <- c("batchCode", "wellType")
-  } else if (parameters$aggregateBy == "within plates") {
-    groupBy <- c("batchCode", "wellType", "assayBarcode")
-  } else {
+  groupBy <- switch(parameters$aggregateBy,
+                    "entire assay" = c("batchCode", "wellType"),
+                    "cmpd plate" = c("batchCode", "wellType", "cmpdBarcode"),
+                    "assay plate" = c("batchCode", "wellType", "assayBarcode"),
+                    "none" = c("batchCode", "wellType", "assayBarcode", "well"),
+                    "cmpd batch conc" = c("batchCode", "wellType"),               # TODO: remove this line when done with old tests
+                    "compound batch concentration" = c("batchCode", "wellType"))  # TODO: remove this line when done with old tests
+  if (is.null(groupBy)) {
+    warnUser("No valid aggregation selected. Using no aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
   treatmentGroupBy <- c(groupBy, "cmpdConc")
   
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
+  
   batchDataTable <- resultTable[is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
+  
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
   if(FALSE) {
@@ -1637,7 +1780,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     if (TRUE) {  # racas::applicationSettings$client.blah.usespotfire
       # May need to return to using analysisGroupData eventually
       # this output table renames
-      # TODO: Should this be in an IFF specific "saveSpotfireFile" function?
+      # TODO: Move to a company specific "saveSpotfireFile" function
       outputTable <- ddply(resultTable, c("batchName", "hasAgonist", "assayBarcode", "wellType"), function(idf) {
         data.frame("Flag" = idf$flag,
                    "Corporate Batch ID" = as.character(idf$batchName),
@@ -1679,7 +1822,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     summaryInfo <- list(
       info = list(
-        "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$barcode)), " plates:\n  ", paste(unique(resultTable$barcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchName)),
         "Hits" = sum(tolower(analysisGroupData$userHit) == "yes"),
@@ -1694,6 +1836,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
+    if (!is.null(parameters$agonist$batchCode)) {
+      summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
+    }
     library('RCurl')
     row.names(outputTable) <- NULL
     # Check if we should create the "User Defined Hit" column from scratch, or if we can
@@ -1764,7 +1909,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     summaryInfo <- list(
       info = list(
-        "Sweetener" = parameters$agonist$batchCode,
         "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchCode)),
         # "Hits" = sum(analysisGroupData$threshold),
@@ -1779,6 +1923,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
+    if (!is.null(parameters$agonist$batchCode) && parameters$agonist$batchCode != "") {
+      summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
+    }
   }
   
   # This runs on dryRun and save, could be split to save different values
@@ -1789,8 +1936,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- 1345
   }
   if (dryRun && !testMode) {
-    saveAcasFileToExperiment(
-      originalFileToParse, experiment, 
+    serverFileLocation <- saveAcasFileToExperiment(
+      folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
   
@@ -1833,9 +1980,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      
+      if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+        hitThreshold <- parameters$hitEfficacyThreshold
+      } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
+        hitThreshold <- parameters$hitSDThreshold
+      } else {
+        hitThreshold <- ""
+      }
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
-                               threshold = parameters$hitEfficacyThreshold, experiment, dryRun)
+                               threshold = hitThreshold, experiment, dryRun)
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
@@ -1843,10 +1996,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
       
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, saveLocation=dryRunFileLocation)
-    summaryInfo$info$"Spotfire" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
-                                          racas::applicationSettings$client.port,
-                                          '/dataFiles/', summaryInfo$dryRunReports, '" target="_blank">Spotfire</a>')
+    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+                                                   experiment, parameters, user)
+    # TODO: loop or lapply to get all
+    singleDryRunReport <- summaryInfo$dryRunReports[[1]]
+    summaryInfo$info[[singleDryRunReport$title]] <- paste0(
+      '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
   
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
@@ -1856,21 +2011,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/analysis"), showWarnings = FALSE)
-    #experiment <<- experiment
-    deleteExperimentAnalysisGroups <- function(experiment, lsServerURL = racas::applicationSettings$client.service.persistence.fullpath) {
-      response <- getURL(
-        paste0(lsServerURL, "experiments/",experiment$id, "?with=analysisgroups"),
-        customrequest='DELETE',
-        httpheader=c('Content-Type'='application/json'),
-        postfields=toJSON(experiment))
-      if(response!="") {
-        stop (paste("The loader was unable to delete the old experiment's analysis groups."))
-      }
-      return(response)
-    }
     
-    # TODO: bring this back in after roo route is completed
-    #deleteExperimentAnalysisGroups(experiment)
+    updateHtsFormat(parameters$htsFormat, experiment)
+    
+    deleteAnalysisGroupsByExperiment(experiment)
+    deleteModelSettings(experiment)
+    
+    serverFileLocation <- saveAcasFileToExperiment(
+      folderToParse, experiment, 
+      "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -1892,7 +2041,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       #save(resultTable, treatmentGroupData, analysisGroupData, file = "test2.Rda")
       
-      lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId)
+      lsTransaction <- saveData(subjectData = resultTable, treatmentGroupData, analysisGroupData, user, experimentId, parameters)
     } else { # We are using Rdap
       
       
@@ -1907,7 +2056,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       #TODO: get from file
       #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
       #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
-      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_percent efficacy", "transformed_sd"), 
       #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
       #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
       #                                 stringsAsFactors=FALSE) 
@@ -1916,7 +2065,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
       #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
-      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_% efficacy", "transformed_sd"), 
+      #                                 columnName=c("assayBarcode", "well", "wellType", "normalizedActivity", "transformed_percent efficacy", "transformed_sd"), 
       #                                 stateType=c("metadata","metadata","metadata", "data", "data", "data"), 
       #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
       #                                 publicData=c(TRUE, TRUE, TRUE, TRUE, TRUE, TRUE),
@@ -1925,6 +2074,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       resultTable[, tempId:=index]
       subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
+      # Remove empty rows (getting rid of NA flags)
+      subjectDataLong <- subjectDataLong[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
       
@@ -1932,15 +2083,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                               forceBatchCodeAdd = TRUE)
       analysisGroupDataLong[, parentId:=experimentId]
       
-      # Removes blank rows, be careful when Save HTS is checked, this will need to be updated
+      # Removes blank rows
       analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
+      if (parameters$htsFormat) {
+        analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
+      }
       
       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                   subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
-      
-      #analysisGroupData$experimentVersion <- experiment$version
-      
     }
     
     #     if (!useRdap) {
@@ -1979,6 +2130,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     summaryInfo$viewerLink <- viewerLink
   }
   
+  summaryInfo$info$"Original Data File" <- paste0(
+    '<a href="', getAcasFileLink(serverFileLocation, login=T), '" target="_blank">Original Data File</a>')
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
@@ -2013,7 +2166,7 @@ validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
     stopUser("Invalid value types")
   }
   
-  if (createNew) {
+  if (createNew && length(newValueKinds) > 0) {
     # Create the new valueKinds, using the correct valueType
     newValueKindTypes <- valueTypes[match(newValueKinds, valueKinds)]
     
@@ -2030,16 +2183,11 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   # Uploads all the data to the server
   # 
   # Args:
-  #   metaData:               A data frame of the meta data
   #   lsTransaction:          An id of the transaction
-  #   calculatedResults:      A data frame of the calculated results (analysis group data)
-  #   treatmentGroupData:     A data frame of the treatment group data
-  #   rawResults:             A data frame of the raw results (subject group data)
-  #   xLabel:                 A string with the name of the variable that is in the 'x' column
-  #   yLabel:                 A string with the name of the variable that is in the 'y' column
-  #   tempIdLabel:            A string with the name of the variable that is in the 'temp id' column
-  #   testOutputLocation:     A string with the file location to output a JSON file to when dryRun is TRUE
-  #   developmentMode:        A boolean that marks if the JSON request should be saved to a file
+  #   analysisGroupData:      A data.table of the analysis group data
+  #   treatmentGroupData:     A data.table of the treatment group data
+  #   subjectData:            A data.table of the subject data
+  #   recordedBy:             The username of the current user
   #
   #   Returns:
   #     lsTransaction
@@ -2050,6 +2198,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
     valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
   ))
+  valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
   validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
   
   if(is.null(lsTransaction)) {
@@ -2060,6 +2209,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   # Not all of these will be filled
   analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
                                       analysisGroupData$stateKind)))
+  analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
   
   if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
     analysisGroupData$publicData <- TRUE
@@ -2107,9 +2257,11 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
   return (lsTransaction)
 }
 
-changeColNameReadability <- function(inputTable, readabilityChange) {
-  
-  colNameChangeTable <- getColNameChangeDataTables()[[readabilityChange]]
+changeColNameReadability <- function(inputTable, readabilityChange, parameters) {
+  # Changes column names of inputTable human-readable to non-spaced computer-readable
+  # inputTable: a data.table
+  # readabilityChange: "computerToHuman" or "humanToComputer"
+  colNameChangeTable <- getColNameChangeDataTables(parameters)[[readabilityChange]]
   
   colNameChangeTable <- selectColNamesToChange(colnames(inputTable), colNameChangeTable)
   
@@ -2139,7 +2291,7 @@ selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   return(colNameChangeTable)
 }
 
-getColNameChangeDataTables <- function() {
+getColNameChangeDataTables <- function(parameters) {
   
   colNameDataTable <- data.table(computerColNames = c("plateType",
                                                       "assayBarcode",
@@ -2154,7 +2306,7 @@ getColNameChangeDataTables <- function() {
                                                       "batch_number",
                                                       "batchCode",
                                                       "cmpdConc",
-                                                      "transformed_% efficacy",
+                                                      "transformed_percent efficacy",
                                                       "transformed_sd",
                                                       "zPrimeByPlate",
                                                       "zPrime",
@@ -2184,7 +2336,7 @@ getColNameChangeDataTables <- function() {
                                                    "SD Score",
                                                    "Z' By Plate",
                                                    "Z'",
-                                                   "Activity",
+                                                   getActivityFullName(parameters),
                                                    "Normalized Activity",
                                                    "Flag Type",
                                                    "Flag Observation",
@@ -2198,7 +2350,12 @@ getColNameChangeDataTables <- function() {
   
   return(colNameDataTableList)
 }
-
+getActivityFullName <- function(parameters) {
+  # Gets a full activity name with read name and position included
+  rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
+  activityReadName <- rot[rot$activity, paste0("R", readPosition, " {", readName, "}")]
+  return(paste0("Activity - ", activityReadName))
+}
 formatColumnNameChangeDT <- function(colDataTable) {
   # Takes a data.table containing two columns: compColNames and humColNames. Returns a list containing two data tables. 
   # One will translate human to computer readable, the other will be computer to human readable. 
@@ -2220,41 +2377,47 @@ formatColumnNameChangeDT <- function(colDataTable) {
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam Fix
+  ##### TODO: Sam allow parameters for 1.5.1
+  #
+  # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
+  # parameters: list, currently only used for aggregationMethod
+  # groupBy: character vector of grouping columns for which subjects belong to one treatment group
+  
+  groupBy <- c(groupBy, "tempParentId")
+  
+  # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                   "activity", "normalizedActivity",
                   grep("^transformed_", names(batchDataTable), value=TRUE)
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
+  # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
   
-  aggregateTreatmentData <- function(DT, meanTarget, sdTarget) {
-    # get means
-    outputMeans <- lapply(meanTarget, function(x) {
-      mean(as.numeric(DT[, x, with=FALSE][[1]]))
-    })
-    names(outputMeans) <- meanTarget
-    
-    # get SDs
-    outputSDs <- lapply(sdTarget, function(x) {
-      sd(as.numeric(DT[, x, with=FALSE][[1]]))
-    })
-    names(outputSDs) <- paste0("standardDeviation_", sdTarget)
-    
-    # TODO: get numberOfReplicates
-    
-    # Copy tempParentId to tempId, tempParentId should be only one unique number
-    tempId <- list(tempId = DT[1, tempParentId])
-    
-    return(c(outputMeans, outputSDs, tempId))
-  }
+  aggregationFunction <- switch(parameters$aggregationMethod,
+                                "mean" = mean,
+                                "median" = median,
+                                stopUser = stopUser("Internal error: Aggregation method not defined in system.")
+  )
+  aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget] 
   
-  treatmentData <- batchDataTable[, aggregateTreatmentData(.SD, meanTarget, sdTarget), 
-                                  by=groupBy] #concUnit,hasAgonist,?
+  ### get numberOfReplicates
+  numRep <- batchDataTable[ , lapply(.SD, function(x) {as.numeric(length(x))}), by = groupBy, .SDcols = sdTarget] 
+  setnames(sds, sdTarget, paste0("standardDeviation_", sdTarget))
+  setnames(numRep, sdTarget, paste0("numberOfReplicates_", sdTarget))
+  
+  ### combine all tables together by setting keys
+  setkeyv(sds, groupBy)
+  setkeyv(numRep, groupBy)
+  setkeyv(aggregationResults, groupBy)
+  treatmentData <- sds[aggregationResults][numRep]
+  setnames(treatmentData, "tempParentId", "tempId")
+  
   return(treatmentData)
 }
 getAnalysisGroupData <- function(treatmentGroupData) {
@@ -2262,44 +2425,34 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
   library(data.table)
   
-  # Replaces data with a curve id if there are more than 3 points
-  aggregateCurveData <- function(DT, newID, BY) {
-    newTempId <- BY$tempParentId
-    if(length(unique(DT[, cmpdConc])) > 3) {
-      output <- DT[NA]
-      output[, tempId:=newTempId]
-      output[, curveId:=as.character(newID)]
-      output[, batchCode:=DT[1, batchCode]]
-      output[, renderingHint:="4 parameter D-R"]
-      return(output)
-    } else {
-      output <- copy(DT)
-      output[, tempId:=newTempId]
-      return(output)
-    }
-  }
-  
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[, renderingHint:=NA_character_]
-  analysisData <- preCurveData[, aggregateCurveData(.SD, .GRP, .BY), by=tempParentId]
-  analysisData[, tempParentId:=NULL]
+  preCurveData[, doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
+  setkey(preCurveData, tempParentId)
+  curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
+  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  curveData[, curveId := as.character(1:nrow(curveData))]
+  otherData <- preCurveData[doseResponse == FALSE]
+  analysisData <- rbind(curveData, otherData)
+  analysisData[, tempId := NULL]
+  setnames(analysisData, "tempParentId", "tempId")
+  analysisData[, doseResponse := NULL]  
   return(analysisData)
   
-  # TODO: bring hasAgonist back in, or put in a config
+  # TODO: bring hasAgonist back in (in 1.5.1), or put in a config
   
   #       if (parameters$aggregateReplicates == "across plates") {
-  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
   #                                                     stDev = sd(values), n=length(values), 
-  #                                                     sdScore = mean(sdScore), 
+  #                                                     sdScore = useAggregationMethod(sdScore, parameters), 
   #                                                     threshold = ifelse(all(threshold), "yes", "no"),
   #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
   #                                              by=list(batchName,fluorescent,concUnit,hasAgonist, wellType)]
   #       } else if (parameters$aggregateReplicates == "within plates") {
-  #         treatmentGroupData <- batchDataTable[, list(groupMean = mean(values), 
+  #         treatmentGroupData <- batchDataTable[, list(groupAggregate = useAggregationMethod(values, parameters), 
   #                                                     stDev = sd(values), 
   #                                                     n=length(values),
-  #                                                     sdScore = mean(sdScore),
+  #                                                     sdScore = useAggregationMethod(sdScore, parameters),
   #                                                     threshold = ifelse(all(threshold), "yes", "no"),
   #                                                     latePeak = if (all(latePeak)) "yes" else if (!any(latePeak)) "no" else "sometimes"),
   #                                              by=list(batchName,fluorescent,barcode,concUnit,hasAgonist, wellType)]
@@ -2332,17 +2485,54 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if ("tempParentId" %in% names(resultTable)) {
     idVars <- c(idVars, "tempParentId")
   }
+  codeIdVars <- c(idVars, "cmpdConc")
   
-  usedCol <- (resultTypes[, includedColumn, with=F][[1]]) & (resultTypes$columnName %in% names(resultTable))
+  # Get columns that are in resultTypes and are correct for this melt type
+  usedCol <- (resultTypes$columnName %in% names(resultTable)) & (resultTypes[, includedColumn, with=F][[1]])
   
+  # Numeric results include standard deviation and number of replicates, others do not
   numericResultColumns <- resultTypes[valueType=="numericValue" & usedCol, columnName]
+  stDevColumns <- paste0("standardDeviation_", numericResultColumns)
+  stDevColumns <- intersect(stDevColumns, names(resultTable))
+  numRepColumns <- paste0("numberOfReplicates_", numericResultColumns)
+  numRepColumns <- intersect(numRepColumns, names(resultTable))
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
-  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, variable.name="columnName", value.name="numericValue")
-  codeResults <- melt(resultTable, id.vars=idVars, measure.vars=codeResultColumns, variable.name="columnName", value.name="codeValue")
-  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, variable.name="columnName", value.name="stringValue", variable.factor = FALSE)
+  ### Melt each group
+  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
+                         variable.name="columnName", value.name="numericValue")
+  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+                       variable.name="columnName", value.name="uncertainty")
+  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+                        variable.name="columnName", value.name="numberOfReplicates")
+  codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
+                      variable.name="columnName", value.name="codeValue")
+  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
+                        variable.name="columnName", value.name="stringValue", 
+                        variable.factor = FALSE)
   
+  ### Combine numericValues with their standard deviations and number of replicates
+  keyCols <- c(idVars, "columnName")
+  setkeyv(numericResults, keyCols)
+  if (length(stDevColumns) > 0) {
+    stDevResults[, columnName := gsub("standardDeviation_", "", columnName, fixed = TRUE)]
+    stDevResults[, uncertaintyType:="standard deviation"]
+    setkeyv(stDevResults, keyCols)
+    numericResults <- numericResults[stDevResults]
+  }
+  if (length(numRepColumns) > 0) {
+    numRepResults[, columnName := gsub("numberOfReplicates_", "", columnName, fixed = TRUE)]
+    setkeyv(numRepResults, keyCols)
+    numericResults <- numericResults[numRepResults]
+  }
+  
+  codeResults[, concentration:=cmpdConc]
+  codeResults[, cmpdConc:=NULL]
+  codeResults[columnName != "batchCode", concentration:=NA]
+  codeResults[!is.na(concentration), concUnit:="uM"]
+  
+  # Combines all tables, filling with NA
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
   fullTable <- merge(longResults, resultTypes, by = "columnName")
@@ -2352,7 +2542,6 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
   }
-  
   
   return(fullTable)  
 }
@@ -2365,11 +2554,36 @@ matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
   stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
   return(stateKindVect)
 }
-runPrimaryAnalysis <- function(request) {
-  # Highest level function, runs everything else
+deleteModelSettings <- function(experiment) {
+  # Sets model fit settings back to their original values
+  # Not changing model fit type, should not be checked if "model fit status"
+  #   is "not started"
+  updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit status")
+  updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit type")
+  updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit parameters")
+  updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "clobValue", "model fit result html")
+}
+updateHtsFormat <- function (htsFormat, experiment) {
+  # Updates htsFormat to a standardized form of htsFormat, "true" or "false"
+  htsFormat <- ifelse(as.logical(htsFormat), "true", "false")
+  updateValueByTypeAndKind(htsFormat, "experiment", experiment$id, "metadata", "experiment metadata",
+                           "stringValue", "hts format")
+}
+runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
+  # Highest level function, runs everything else 
+  #   externalFlagging should be TRUE when flagging is coming from a service,
+  #   e.g. when called by spotfire
   library('racas')
+  
+  globalMessenger <- messenger()$reset()
+  developmentMode <- FALSE
   options("scipen"=15)
   #save(request, file="request.Rda")
+  
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -2377,93 +2591,62 @@ runPrimaryAnalysis <- function(request) {
   user <- request$user
   testMode <- request$testMode
   inputParameters <- request$inputParameters
-  flaggedWells <- request$flaggedWells
-  flaggingStage <- ifelse(is.null(request$flaggingStage), "", request$flaggingStage)
+  ## GUI json is locked into calling the second file a report file...
+  request$flaggedFile <- request$reportFile
+  flaggedWells <- request$flaggedFile
+  flaggingStage <- ifelse(is.null(request$flaggingStage), "KOandHit", request$flaggingStage)
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
-  errorHandlingBox <- list(errorList = list())
-  attach(errorHandlingBox)
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
   
-  loadResult <- tryCatch.W.E(runMain(folderToParse = folderToParse, 
-                                     user = user, 
-                                     dryRun = dryRun, 
-                                     testMode = testMode, 
-                                     experimentId = experimentId, 
-                                     inputParameters = inputParameters,
-                                     flaggedWells = flaggedWells,
-                                     flaggingStage = flaggingStage))
-  
-  # If the output has class simpleError or is not a list, save it as an error
-  if (sum(class(loadResult$value)=="userStop") > 0) {
-    errorList <- c(errorList,list(loadResult$value$message))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="SQLException") > 0) {
-    errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         racas::applicationSettings$server.database.host, 
-                                         racas::applicationSettings$server.database.port, ":", 
-                                         as.character(loadResult$value), 
-                                         ". Please contact your system administrator.")))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="simpleError") > 0) {
-    errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
-                                          as.character(loadResult$value$message))))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
-    errorList <- c(errorList,list(as.character(loadResult$value)))
-    loadResult$value <- NULL
+  if (developmentMode) {
+    loadResult <- list(value = runMain(folderToParse = folderToParse, 
+                                       user = user, 
+                                       dryRun = dryRun, 
+                                       testMode = testMode, 
+                                       experimentId = experimentId, 
+                                       inputParameters = inputParameters,
+                                       flaggedWells = flaggedWells,
+                                       flaggingStage = flaggingStage))
+  } else {
+    loadResult <- tryCatchLog(runMain(folderToParse = folderToParse, 
+                                      user = user, 
+                                      dryRun = dryRun, 
+                                      testMode = testMode, 
+                                      experimentId = experimentId, 
+                                      inputParameters = inputParameters,
+                                      flaggedWells = flaggedWells,
+                                      flaggingStage = flaggingStage))
   }
   
-  # Save warning messages but not the function call, which is only useful while programming
-  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
-  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
-    if(any(class(x) == "userWarning")) {
-      x$message
-    } else {
-      paste0("The system has encountered an internal warning: ", x$message)
-    }
-  })
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
+  allTextErrors <- c(allTextErrors, errorList)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
-  
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
-  #   
-  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
-  #   
+  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
+  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo))) 
   
   # Create the HTML to display
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
-  
-  # Detach the box for error handling
-  detach(errorHandlingBox)
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
   
   tryCatch({
     if(is.null(loadResult$value$experiment)) {
-      experiment <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath,"experiments/",experimentId)))
+      experiment <- getExperimentById(experimentId)
     } else {
       experiment <- loadResult$value$experiment
     }
-    if(!dryRun) {
-      htmlSummary <- saveAnalysisResults(experiment, hasError, htmlSummary)
-    }
+    saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
   })
@@ -2481,6 +2664,9 @@ runPrimaryAnalysis <- function(request) {
     hasError= hasError,
     hasWarning= hasWarning,
     errorMessages= errorMessages)
+  if (externalFlagging) {
+    response$results$jsonSummary <- list(dryRunReports = loadResult$value$dryRunReports)
+  }
   return(response)
 }
 

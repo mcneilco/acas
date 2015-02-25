@@ -7,7 +7,7 @@
         "default": {
           deepLink: "protocol_base"
         },
-        "flipr screening assay": {
+        "Bio Activity": {
           deepLink: "primary_screen_protocol"
         }
       },
@@ -17,8 +17,8 @@
         "default": {
           deepLink: "experiment_base"
         },
-        "flipr screening assay": {
-          deepLink: "flipr_screening_assay"
+        "Bio Activity": {
+          deepLink: "primary_screen_experiment"
         }
       }
     };

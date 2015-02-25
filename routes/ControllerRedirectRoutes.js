@@ -6,7 +6,8 @@
   request = require('request');
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
+    app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
+    return app.get('/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences);
   };
 
   config = require('../conf/compiled/conf.js');
@@ -63,11 +64,14 @@
       if (queryPrefix !== null) {
         return request({
           json: true,
-          url: "http://localhost:" + config.all.server.nodeapi.port + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
+          url: config.all.server.nodeapi.path + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
         }, (function(_this) {
           return function(error, response, body) {
             var deepLink, kind;
-            kind = response.body[0].lsKind;
+            console.log(error);
+            console.log(response);
+            console.log(body);
+            kind = response.body.lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);
           };
@@ -76,6 +80,13 @@
         return resp.redirect("/#");
       }
     }
+  };
+
+  exports.getLabelSequences = function(req, resp) {
+    var baseurl, serverUtilityFunctions;
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    baseurl = config.all.client.service.persistence.fullpath + "/labelsequences";
+    return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
 }).call(this);

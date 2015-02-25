@@ -19,8 +19,10 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
     skip=begRow - 1,
     nrows=endRow - begRow,
     header=headerExists, 
-    fill=NA,
-    check.names=FALSE
+    fill=TRUE,
+    check.names=FALSE,
+    comment.char="",
+    stringsAsFactors=FALSE
   )
   
   assayData <- as.data.table(assayData)
@@ -28,21 +30,33 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
     setnames(assayData, "Wells", "Well")
   }
   
-  assayData$rowName <- gsub("[0-9]{1,2}","",assayData$Well)
-  assayData$rowName <- sprintf("%2s", assayData$rowName)
-  assayData$rowName <- gsub(" ","-",assayData$rowName)
+  assayData[ , rowName := gsub("[0-9]{1,2}","",Well)]
+  assayData[ , rowName := sprintf("%2s", rowName)]
+  assayData[ , rowName := gsub(" ","-",rowName)]
   
-  assayData$colName <- gsub("[A-Z]{1,2}","",assayData$Well)
-  assayData$colName <- gsub(" ","",assayData$colName)
+  assayData[ , colName := gsub("[A-Z]{1,2}","",Well)]
+  assayData[ , colName := gsub(" ","",colName)]
   
-  assayData$Row <- ""
-  assayData$Column <- ""
+  assayData[ , Row := ""]
+  assayData[ , Column := ""]
   assayData[ , c("Well","Row","Column") := NULL]
   if(!is.null(assayData$X)) {
     assayData[ , c("X") := NULL]
   }
   
   suppressWarnings(assayData$"" <- NULL)
+
+  # Because this loop removes a column and then adds it, the column order changes for each 
+  # column that is logical. This calls a different "name" and can skip columns if two 
+  # "logical" columns are side by side. "rev()" solves this problem by going from the last 
+  # name to the first - column order does not get affected for columns that haven't been 
+  # tested yet, since the empty string column is added at the end of the data.table.
+  for (name in rev(colnames(assayData))) {
+    if(class(assayData[ , name, with=FALSE][[1]]) == "logical") {
+      assayData[ , name := NULL, with=FALSE]
+      assayData[ , name := "", with=FALSE]
+    }
+  }
   
   getWellReferenceData(assayData, tempFilePath=tempFilePath)
   
@@ -52,5 +66,7 @@ getFormattedData <- function(fileName, sepChar, begRow, endRow, headerExists, te
   }
   
   setkeyv(assayData, c("rowName","wellReference"))
+  
+  return(assayData)
   
 }

@@ -7,6 +7,8 @@
     __extends(Experiment, _super);
 
     function Experiment() {
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
+      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
       this.parse = __bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
@@ -80,7 +82,8 @@
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var completionDate, estates, notebook, project, pstates;
+      var completionDate, estates, notebook, project, pstates, scientist;
+      scientist = this.getScientist().get('codeValue');
       notebook = this.getNotebook().get('stringValue');
       completionDate = this.getCompletionDate().get('dateValue');
       project = this.getProjectCode().get('codeValue');
@@ -97,12 +100,10 @@
           svals = st.get('lsValues');
           svals.each(function(sv) {
             var evalue;
-            if (!(sv.get('lsKind') === "notebook" || sv.get('lsKind') === "project" || sv.get('lsKind') === "completion date")) {
-              evalue = new Value(sv.attributes);
-              evalue.unset('id');
-              evalue.unset('lsTransaction');
-              return evals.add(evalue);
-            }
+            evalue = new Value(sv.attributes);
+            evalue.unset('id');
+            evalue.unset('lsTransaction');
+            return evals.add(evalue);
           });
           estate.set({
             lsValues: evals
@@ -114,6 +115,9 @@
         lsKind: protocol.get('lsKind'),
         protocol: protocol,
         lsStates: estates
+      });
+      this.getScientist().set({
+        codeValue: scientist
       });
       this.getNotebook().set({
         stringValue: notebook
@@ -129,63 +133,33 @@
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, projectCode;
+      var cDate, errors, projectCode;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
-        }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'experimentName',
-          message: "Experiment name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: "Experiment date must be set"
-        });
-      }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
+      errors.push.apply(errors, Experiment.__super__.validate.call(this, attrs));
       if (attrs.protocol === null) {
         errors.push({
           attribute: 'protocolCode',
           message: "Protocol must be set"
         });
       }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
-      }
-      projectCode = this.getProjectCode().get('codeValue');
-      if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-        errors.push({
-          attribute: 'projectCode',
-          message: "Project must be set"
-        });
-      }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
+      if (attrs.subclass != null) {
+        projectCode = this.getProjectCode().get('codeValue');
+        if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+          errors.push({
+            attribute: 'projectCode',
+            message: "Project must be set"
+          });
+        }
+        cDate = this.getCompletionDate().get('dateValue');
+        if (cDate === void 0 || cDate === "" || cDate === null) {
+          cDate = "fred";
+        }
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'completionDate',
+            meetsage: "Assay completion date must be set"
+          });
+        }
       }
       if (errors.length > 0) {
         return errors;
@@ -205,10 +179,10 @@
           codeType: "project"
         });
         projectCodeValue.set({
-          codeKind: "project"
+          codeKind: "biology"
         });
         projectCodeValue.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return projectCodeValue;
@@ -217,13 +191,35 @@
     Experiment.prototype.getAnalysisStatus = function() {
       var metadataKind, status;
       metadataKind = this.get('subclass') + " metadata";
-      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "stringValue", "analysis status");
-      if (status.get('stringValue') === void 0 || status.get('stringValue') === "") {
+      status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "analysis status");
+      if (status.get('codeValue') === void 0 || status.get('codeValue') === "") {
         status.set({
-          stringValue: "created"
+          codeValue: "not started"
+        });
+        status.set({
+          codeType: "analysis"
+        });
+        status.set({
+          codeKind: "status"
+        });
+        status.set({
+          codeOrigin: "ACAS DDICT"
         });
       }
       return status;
+    };
+
+    Experiment.prototype.getCompletionDate = function() {
+      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
+    };
+
+    Experiment.prototype.duplicateEntity = function() {
+      var copiedEntity;
+      copiedEntity = Experiment.__super__.duplicateEntity.call(this);
+      copiedEntity.getCompletionDate().set({
+        dateValue: null
+      });
+      return copiedEntity;
     };
 
     return Experiment;
@@ -248,9 +244,12 @@
 
     function ExperimentBaseController() {
       this.updateEditable = __bind(this.updateEditable, this);
+      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
+      this.handleDateChanged = __bind(this.handleDateChanged, this);
       this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
       this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
@@ -264,7 +263,9 @@
         "change .bv_experimentName": "handleNameChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
-        "change .bv_projectCode": "handleProjectCodeChanged"
+        "change .bv_projectCode": "handleProjectCodeChanged",
+        "change .bv_completionDate": "handleDateChanged",
+        "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
       });
     };
 
@@ -274,37 +275,42 @@
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
-            return $.ajax({
-              type: 'GET',
-              url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
-              dataType: 'json',
-              error: function(err) {
-                alert('Could not get experiment for code in this URL, creating new one');
-                return this.completeInitialization();
-              },
-              success: (function(_this) {
-                return function(json) {
-                  var expt, lsKind;
-                  if (json.length === 0) {
-                    alert('Could not get experiment for code in this URL, creating new one');
-                  } else {
-                    lsKind = json[0].lsKind;
-                    if (lsKind === "default") {
-                      expt = new Experiment(json[0]);
-                      expt.set(expt.parse(expt.attributes));
-                      if (window.AppLaunchParams.moduleLaunchParams.copy) {
-                        _this.model = expt.duplicateEntity();
-                      } else {
-                        _this.model = expt;
-                      }
+            if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
+              this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
+              return this.completeInitialization();
+            } else {
+              return $.ajax({
+                type: 'GET',
+                url: "/api/experiments/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+                dataType: 'json',
+                error: function(err) {
+                  alert('Could not get experiment for code in this URL, creating new one');
+                  return this.completeInitialization();
+                },
+                success: (function(_this) {
+                  return function(json) {
+                    var expt, lsKind;
+                    if (json.length === 0) {
+                      alert('Could not get experiment for code in this URL, creating new one');
                     } else {
-                      alert('Could not get experiment for code in this URL. Creating new experiment');
+                      lsKind = json.lsKind;
+                      if (lsKind === "default") {
+                        expt = new Experiment(json);
+                        expt.set(expt.parse(expt.attributes));
+                        if (window.AppLaunchParams.moduleLaunchParams.copy) {
+                          _this.model = expt.duplicateEntity();
+                        } else {
+                          _this.model = expt;
+                        }
+                      } else {
+                        alert('Could not get experiment for code in this URL. Creating new experiment');
+                      }
                     }
-                  }
-                  return _this.completeInitialization();
-                };
-              })(this)
-            });
+                    return _this.completeInitialization();
+                  };
+                })(this)
+              });
+            }
           } else {
             return this.completeInitialization();
           }
@@ -312,6 +318,16 @@
           return this.completeInitialization();
         }
       }
+    };
+
+    ExperimentBaseController.prototype.createExperimentFromProtocol = function(code) {
+      this.model = new Experiment();
+      this.model.set({
+        protocol: new Protocol({
+          codeName: code
+        })
+      });
+      return this.getAndSetProtocol(code);
     };
 
     ExperimentBaseController.prototype.completeInitialization = function() {
@@ -331,34 +347,15 @@
           });
         };
       })(this));
-      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
-      this.listenTo(this.model, 'change', this.modelChangeCallBack);
-      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupTagList();
-      this.model.getStatus().on('change', this.updateEditable);
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
-      return this.render();
-    };
-
-    ExperimentBaseController.prototype.modelSaveCallBack = function(method, model) {
-      this.$('.bv_saving').hide();
-      this.$('.bv_save').attr('disabled', 'disabled');
-      if (this.$('.bv_saveFailed').is(":visible")) {
-        this.$('.bv_updateComplete').hide();
-        this.trigger('amDirty');
-      } else {
-        this.$('.bv_updateComplete').show();
-        this.trigger('amClean');
-      }
-      return this.render();
-    };
-
-    ExperimentBaseController.prototype.modelChangeCallBack = function(method, model) {
-      this.trigger('amDirty');
-      return this.$('.bv_updateComplete').hide();
+      this.render();
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ExperimentBaseController.prototype.render = function() {
@@ -370,8 +367,30 @@
       }
       this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
       this.setUseProtocolParametersDisabledState();
+      this.$('.bv_completionDate').datepicker();
+      this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.getCompletionDate().get('dateValue') != null) {
+        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
+      }
       ExperimentBaseController.__super__.render.call(this);
       return this;
+    };
+
+    ExperimentBaseController.prototype.modelSyncCallback = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'experiment'
+        });
+      }
+      this.$('.bv_saving').hide();
+      if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
+        this.$('.bv_updateComplete').hide();
+        this.trigger('amDirty');
+      } else {
+        this.$('.bv_updateComplete').show();
+        this.trigger('amClean');
+      }
+      return this.render();
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {
@@ -416,7 +435,7 @@
 
     ExperimentBaseController.prototype.setupStatusSelect = function() {
       this.statusList = new PickListList();
-      this.statusList.url = "/api/dataDict/experiment/status";
+      this.statusList.url = "/api/codetables/experiment/status";
       return this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
@@ -468,6 +487,10 @@
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
       var code;
       code = this.protocolListController.getSelectedCode();
+      return this.getAndSetProtocol(code);
+    };
+
+    ExperimentBaseController.prototype.getAndSetProtocol = function(code) {
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
@@ -480,17 +503,17 @@
           success: (function(_this) {
             return function(json) {
               if (json.length === 0) {
-                return alert("Could not find selected protocol in database, please get help");
+                return alert("Could not find selected protocol in database");
               } else {
                 _this.model.set({
-                  protocol: new Protocol(json[0])
+                  protocol: new Protocol(json)
                 });
                 return _this.getFullProtocol();
               }
             };
           })(this),
           error: function(err) {
-            return alert('got ajax error from api/protocols/codename/ in Exeriment.coffee');
+            return alert('got ajax error from getting protocol ' + code);
           },
           dataType: 'json'
         });
@@ -499,7 +522,9 @@
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       this.model.getProjectCode().set({
-        codeValue: this.projectListController.getSelectedCode()
+        codeValue: this.projectListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.model.trigger('change');
     };
@@ -507,6 +532,19 @@
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
       return this.render();
+    };
+
+    ExperimentBaseController.prototype.handleDateChanged = function() {
+      this.model.getCompletionDate().set({
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
+      return this.model.trigger('change');
+    };
+
+    ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {
+      return this.$(".bv_completionDate").datepicker("show");
     };
 
     ExperimentBaseController.prototype.updateEditable = function() {

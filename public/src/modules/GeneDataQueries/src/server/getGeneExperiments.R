@@ -12,8 +12,6 @@ configList <- racas::applicationSettings
 postData <- rawToChar(receiveBin())
 
 #postData <- '{"geneIDs":"1, 2; 15, blah"}'
-#postData <- '{"geneIDs":""}'
-
 geneData <- fromJSON(postData)$geneIDs
 geneDataList <- strsplit(geneData, split="\\W")[[1]]
 geneDataList <- geneDataList[geneDataList!=""]
@@ -28,8 +26,7 @@ if (length(geneDataList) > 0) {
 	requestObject$requests <- requestList
 
 	geneNameList <- getURL(
-		paste0(configList$client.service.persistence.fullpath, "api/v1/lsthings/getGeneCodeNameFromNameRequest"),
-		#paste0("http://host3.labsynch.com:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+		paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 		customrequest='POST',
 		httpheader=c('Content-Type'='application/json'),
 		postfields=toJSON(requestObject))
@@ -60,8 +57,7 @@ if (length(geneDataList) > 0) {
 
 
 experimentNodes <- getURL(
-	#paste0("http://host3.labsynch.com:8080/acas/experiments/jstreenodes/jsonArray"),
-	paste0(configList$client.service.persistence.fullpath, "api/v1/experiments/jstreenodes/jsonArray"),
+	paste0(configList$client.service.persistence.fullpath, "experiments/jstreenodes/jsonArray"),
 	customrequest='POST',
 	httpheader=c('Content-Type'='application/json'),
 	postfields=batchCodes.Json)

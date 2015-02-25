@@ -18,25 +18,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 
 exports.protocolByCodename = (req, resp) ->
-	console.log "protocolByCodename"
 	console.log req.params.code
 
-	#service returns a stub
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-#		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
-
-		prot = JSON.parse(JSON.stringify (protocolServiceTestJSON.stubSavedProtocol))
-		if req.params.code.indexOf("screening") > -1
-			prot[0].lsKind = "flipr screening assay"
-
-		else
-			prot[0].lsKind = "default"
-
-		resp.json prot
-
+		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
 	else
-		console.log "getting protocol by codename"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -56,8 +43,8 @@ exports.protocolById = (req, resp) ->
 
 exports.postProtocol = (req, resp) ->
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols"
@@ -94,7 +81,6 @@ exports.putProtocol = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
 				console.log 'got ajax error trying to save new protocol'
@@ -153,8 +139,6 @@ exports.protocolCodeList = (req, resp) ->
 
 		if shouldFilterByName
 			baseurl += "/?protocolName="+filterString
-			console.log "hello"
-			console.log baseurl
 		else if shouldFilterByKind
 			#baseurl += "/?protocolKind="+filterString
 			baseurl += "?lskind="+filterString
@@ -216,7 +200,7 @@ exports.genericProtocolSearch = (req, res) ->
 			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/protocols/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -225,7 +209,7 @@ exports.genericProtocolSearch = (req, res) ->
 exports.deleteProtocol = (req, res) ->
 	config = require '../conf/compiled/conf.js'
 	protocolID = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"/api/v1/protocols/browser/"+protocolID
+	baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
 	console.log "baseurl"
 	console.log baseurl
 	request = require 'request'

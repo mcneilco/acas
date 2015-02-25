@@ -145,7 +145,7 @@
           return expect(this.ersc.$('.bv_protocolName').html()).toEqual("protocol name");
         });
         return it("should show the scientist", function() {
-          return expect(this.ersc.$('.bv_recordedBy').html()).toEqual("jmcneil");
+          return expect(this.ersc.$('.bv_scientist').html()).toEqual("jane");
         });
       });
       return describe("basic behavior", function() {
@@ -208,29 +208,14 @@
           });
         });
         return it("should display a message alerting the user that no matching experiments were found if the search returns no experiments", function() {
-          this.searchReturned = false;
-          this.searchController = new ExperimentSimpleSearchController({
-            model: new ExperimentSearch(),
-            el: this.fixture
-          });
-          this.searchController.on("searchReturned", (function(_this) {
-            return function() {
-              return _this.searchReturned = true;
-            };
-          })(this));
-          $(".bv_experimentSearchTerm").val("no-match");
-          runs((function(_this) {
-            return function() {
-              return _this.searchController.doSearch("no-match");
-            };
-          })(this));
-          waitsFor(function() {
-            return this.searchReturned;
-          }, 300);
-          return runs(function() {
-            expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy();
-            return expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found");
-          });
+          var estc;
+          estc = new ExperimentBrowserController();
+          $("#fixture").html(estc.render().el);
+          estc.setupExperimentSummaryTable([]);
+          console.log('$(".bv_noMatchesFoundMessage").html()');
+          console.log($(".bv_noMatchesFoundMessage").html());
+          expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy();
+          return expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found");
         });
       });
     });
@@ -251,7 +236,7 @@
       });
       return describe("Startup", function() {
         return it("should initialize the search controller", function() {
-          return expect(this.ebc.$('.bv_find').length).toEqual(1);
+          return expect(this.ebc.$('.bv_doSearch').length).toEqual(1);
         });
       });
     });
@@ -261,7 +246,7 @@
           return typeof this.serviceReturn !== 'undefined';
         };
       });
-      describe("Generic Search Node Proxy", function() {
+      return describe("Generic Search Node Proxy", function() {
         return it("should exist and return an OK status", function() {
           var searchTerm;
           searchTerm = "some experiment";
@@ -269,38 +254,6 @@
             return $.ajax({
               type: 'GET',
               url: "/api/experiments/genericSearch/" + searchTerm,
-              dataType: "json",
-              data: {
-                testMode: true,
-                fullObject: false
-              },
-              success: (function(_this) {
-                return function(json) {
-                  return _this.serviceReturn = json;
-                };
-              })(this),
-              error: (function(_this) {
-                return function(err) {
-                  console.log('got ajax error');
-                  return _this.serviceReturn = null;
-                };
-              })(this)
-            });
-          });
-          waitsFor(this.waitForServiceReturn, 'service did not return', 10000);
-          return runs(function() {
-            return expect(this.serviceReturn).toBeTruthy();
-          });
-        });
-      });
-      return describe("Edit Experiment redirect proxy", function() {
-        return it("should exist and return an OK status", function() {
-          var experimentCodeName;
-          experimentCodeName = "EXPT-00000001";
-          runs(function() {
-            return $.ajax({
-              type: 'GET',
-              url: "/api/experiments/edit/" + experimentCodeName,
               dataType: "json",
               data: {
                 testMode: true,

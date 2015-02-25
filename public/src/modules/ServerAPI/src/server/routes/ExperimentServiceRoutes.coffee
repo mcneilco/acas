@@ -15,9 +15,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
 	app.get '/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch
-	app.get '/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
+	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -27,8 +27,8 @@ exports.experimentByCodename = (req, resp) ->
 #		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 		expt = JSON.parse(JSON.stringify (experimentServiceTestJSON.fullExperimentFromServer))
 
-		if req.params.code.indexOf("screening") > -1
-			expt.lsKind = "flipr screening assay"
+		if req.params.code.indexOf("Bio Activity") > -1
+			expt.lsKind = "Bio Activity"
 
 		else
 			expt.lsKind = "default"
@@ -56,7 +56,7 @@ exports.experimentByName = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments?findByName&name="+req.params.name
+		baseurl = config.all.client.service.persistence.fullpath+"experiments?findByName&name="+req.params.name
 		console.log baseurl
 #		fullObjectFlag = "with=fullobject"
 #		if req.query.fullObject
@@ -96,7 +96,6 @@ exports.postExperiment = (req, resp) ->
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
-		console.log "in post experiment"
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		request = require 'request'
@@ -132,8 +131,6 @@ exports.putExperiment = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		putId = req.body.id
-		console.log "putID"
-		console.log putId
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+putId
 		request = require 'request'
 		request(
@@ -163,14 +160,11 @@ exports.genericExperimentSearch = (req, res) ->
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"api/v1/experiments/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, res)
-
-#		json = {message: "genericExperimentSearch not implemented yet"}
-#		res.end JSON.stringify json
 
 exports.editExperimentLookupAndRedirect = (req, res) ->
 	if global.specRunnerTestmode
@@ -185,8 +179,7 @@ exports.deleteExperiment = (req, res) ->
 	#curl -i -X DELETE -H Accept:application/json -H Content-Type:application/json  http://host4.labsynch.com:8080/acas/experiments/406773
 	config = require '../conf/compiled/conf.js'
 	experimentId = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"/api/v1/experiments/browser/"+experimentId
-	console.log "baseurl"
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
 	console.log baseurl
 	request = require 'request'
 
@@ -228,7 +221,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 						resp.statusCode = 404
 						resp.json resultViewerURL
 					else
-						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment[0].protocol.id
+						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment.protocol.id
 						request = require 'request'
 						request(
 							method: 'GET'
@@ -240,11 +233,11 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 								resp.json resultViewerURL
 							else
 								if !error && response.statusCode == 200
-									preferredExperimentLabel = _.filter experiment[0].lsLabels, (lab) ->
+									preferredExperimentLabel = _.filter experiment.lsLabels, (lab) ->
 										lab.preferred && lab.ignored==false
 									preferredExperimentLabelText = preferredExperimentLabel[0].labelText
 									if config.all.client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME"
-										experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText
+										experimentName = experiment.codeName + "::" + preferredExperimentLabelText
 									else
 										experimentName = preferredExperimentLabelText
 									preferredProtocolLabel = _.filter protocol.lsLabels, (lab) ->
@@ -257,7 +250,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-						)
+							)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error
@@ -267,3 +260,16 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 		else
 			resp.statusCode = 500
 			resp.end "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
+
+exports.experimentValueById = (req, resp) ->
+	console.log req.params.id
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer.lsStates[1] #return experiment metadata state
+	else
+#		json = {message: "experiment state by id not implemented yet"}
+#		res.end JSON.stringify json
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experimentvalues/"+req.params.id
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)

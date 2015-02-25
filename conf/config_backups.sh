@@ -89,7 +89,7 @@ logStartLineDaily="echo \"$client_deployMode Hourly Backup\" >> \$BaseBackupDir/
 ACASNameDaily="acasArchNameGz=hourlyACAS_\`date +%H\`.tar.gz"
 acasTarLine="tar -pPzcf \$BaseBackupDir/backup_hourly/\$acasArchNameGz $ACAS_HOME/$server_datafiles_relative_path >> \$BaseBackupDir/backup_hourly/backuplog.txt 2>&1"
 passwordEnvironmentVariable="export PGPASSWORD=${server_database_password}"
-dbDumpLine="pg_dump --host=${server_database_host} --port=${server_database_port} --username=${server_database_username} --clean ${server_database_name} | gzip -c > \$BaseBackupDir/backup_hourly/${server_database_name}_DatabaseDump_\`date +%H\`.gz"
+dbDumpLine="$(which pg_dump)" --host=${server_database_host} --port=${server_database_port} --username=${server_database_username} --clean ${server_database_name} | gzip -c > \$BaseBackupDir/backup_hourly/${server_database_name}_DatabaseDump_\`date +%H\`.gz"
 
 ##Add Lines to Temp File
 echo $backupDirLine >> $backupsLocation/scripts/backup_hourly.sh

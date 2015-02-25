@@ -53,7 +53,7 @@
               publicData: true,
               recordedDate: 1363388477000,
               sigFigs: null,
-              stringValue: "assay tree rule goes here",
+              stringValue: "/assayTreeRule",
               uncertainty: null,
               urlValue: null,
               lsKind: "assay tree rule",
@@ -64,9 +64,10 @@
               version: 0
             }, {
               clobValue: null,
-              codeType: "protocolMetadata",
+              codeKind: "stage",
+              codeType: "assay",
               codeValue: "assay development",
-              codeOrigin: "acas ddict",
+              codeOrigin: "ACAS DDICT",
               comments: null,
               dateValue: null,
               fileValue: null,
@@ -142,10 +143,10 @@
               stringValue: null,
               uncertainty: null,
               urlValue: null,
-              lsKind: "description",
+              lsKind: "protocol details",
               valueOperator: null,
               lsType: "clobValue",
-              lsTypeAndKind: "clobValue_description",
+              lsTypeAndKind: "clobValue_protocol details",
               valueUnit: null,
               version: 0
             }, {
@@ -175,6 +176,40 @@
               lsType: "clobValue",
               lsTypeAndKind: "clobValue_comments",
               valueUnit: null,
+              version: 0
+            }, {
+              clobValue: null,
+              codeType: "assay",
+              codeKind: "scientist",
+              codeOrigin: "ACAS authors",
+              codeValue: "jane",
+              comments: null,
+              dateValue: null,
+              fileValue: null,
+              id: 523,
+              ignored: false,
+              lsKind: "scientist",
+              lsTransaction: 2,
+              lsType: "codeValue",
+              lsTypeAndKind: "codeValue_scientist",
+              modifiedBy: null,
+              modifiedDate: null,
+              numberOfReplicates: null,
+              numericValue: null,
+              operatorKind: null,
+              operatorType: "comparison",
+              operatorTypeAndKind: "comparison_null",
+              publicData: true,
+              recordedBy: "smeyer",
+              recordedDate: 1375889487000,
+              sigFigs: null,
+              stringValue: null,
+              uncertainty: null,
+              uncertaintyType: null,
+              unitKind: null,
+              unitType: null,
+              unitTypeAndKind: "null_null",
+              urlValue: null,
               version: 0
             }, {
               clobValue: null,
@@ -215,10 +250,10 @@
               fileValue: null,
               id: 1,
               ignored: false,
-              lsKind: "completion date",
+              lsKind: "creation date",
               lsTransaction: 2,
               lsType: "dateValue",
-              lsTypeAndKind: "dateValue_completion date",
+              lsTypeAndKind: "dateValue_creation date",
               modifiedBy: null,
               modifiedDate: null,
               numberOfReplicates: null,
@@ -268,16 +303,19 @@
               version: 0
             }, {
               clobValue: null,
+              codeKind: "status",
+              codeOrigin: "ACAS DDICT",
+              codeType: "protocol",
               codeValue: "created",
               comments: null,
               dateValue: null,
               fileValue: null,
               id: 2,
               ignored: false,
-              lsKind: "status",
+              lsKind: "protocol status",
               lsTransaction: 2,
               lsType: "codeValue",
-              lsTypeAndKind: "codeValue_status",
+              lsTypeAndKind: "codeValue_protocol status",
               modifiedBy: null,
               modifiedDate: null,
               numberOfReplicates: null,
@@ -389,7 +427,7 @@
       lsTypeAndKind: "default_default",
       modifiedBy: null,
       modifiedDate: null,
-      recordedBy: "nxm7557",
+      recordedBy: "jane",
       recordedDate: 1375141508000,
       shortDescription: "primary analysis",
       version: 1,
@@ -403,27 +441,25 @@
         }
       ]
     };
-    exports.stubSavedProtocol = [
-      {
-        codeName: "PROT-00000001",
-        experimentCount: 12,
-        id: 14325,
-        ignored: false,
-        lsKind: null,
-        lsTransaction: {
-          comments: "protocol 201 transactions",
-          id: 179,
-          recordedDate: 1361600825000,
-          version: 0
-        },
-        modifiedBy: null,
-        modifiedDate: null,
-        recordedBy: "jmcneil",
-        recordedDate: 1361600860000,
-        shortDescription: "protocol short description goes here",
+    exports.stubSavedProtocol = {
+      codeName: "PROT-00000001",
+      experimentCount: 12,
+      id: 14325,
+      ignored: false,
+      lsKind: null,
+      lsTransaction: {
+        comments: "protocol 201 transactions",
+        id: 179,
+        recordedDate: 1361600825000,
         version: 0
-      }
-    ];
+      },
+      modifiedBy: null,
+      modifiedDate: null,
+      recordedBy: "jmcneil",
+      recordedDate: 1361600860000,
+      shortDescription: "protocol short description goes here",
+      version: 0
+    };
     exports.protocolToSave = [
       {
         codeName: "PROT-00000066",
@@ -559,7 +595,7 @@
         physicallyLabled: false,
         preferred: true,
         protocol: {
-          codeName: "PROT-00000010",
+          codeName: "PROT-00000001",
           id: 2588,
           ignored: false,
           lsKind: "default",
@@ -739,7 +775,7 @@
         physicallyLabled: false,
         preferred: true,
         protocol: {
-          codeName: "PROT-00000001",
+          codeName: "PROT-00000211",
           id: 2590,
           ignored: false,
           lsKind: "FLIPR",

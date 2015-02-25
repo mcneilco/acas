@@ -11,9 +11,9 @@ test_that("formatUserInputActivityColumns functionality", {
   testReadNamesMissAll <- list("Fluorescence","Valid Neuron Count","Valid Field Count")
   testReadNames <- list("ValidNeuronCount","ValidFieldCount","NeuriteTotalLengthPerNeuronCh2")
   testActivityColNames <- c("ValidNeuronCount","NeuriteTotalLengthPerNeuronCh2","ValidFieldCount") 
-  testReadsTable <- data.table(readOrder=testReadOrder, readNames=testReadNames, activityCol=c(TRUE, FALSE, FALSE))
-  testReadsTableMissOne <- data.table(readOrder=testReadOrder, readNames=testReadNamesMissOne, activityCol=c(TRUE, FALSE, FALSE))
-  testReadsTableMissAll <- data.table(readOrder=testReadOrder, readNames=testReadNamesMissAll, activityCol=c(TRUE, FALSE, FALSE))
+  testReadsTable <- data.table(readPosition=testReadOrder, readName=testReadNames, activity=c(TRUE, FALSE, FALSE))
+  testReadsTableMissOne <- data.table(readPosition=testReadOrder, readName=testReadNamesMissOne, activity=c(TRUE, FALSE, FALSE))
+  testReadsTableMissAll <- data.table(readPosition=testReadOrder, readName=testReadNamesMissAll, activity=c(TRUE, FALSE, FALSE))
   tempFilePath <- tempdir()
   
   testColTable <- formatUserInputActivityColumns(readsTable=testReadsTable, activityColNames=testActivityColNames, tempFilePath, matchNames=TRUE)

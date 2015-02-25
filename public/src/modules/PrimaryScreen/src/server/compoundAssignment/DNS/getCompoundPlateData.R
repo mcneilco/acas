@@ -31,7 +31,7 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
   write.table(paste0(Sys.time(), "\tbegin getCompoundPlateData"), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   queryCompoundsFromDB <- function(barcodes){
-    queryString <- paste0("select kp.barcode as cmpdBarcode, dd_plateType.value as plateType, kpw.wellref as wellreference, bp.corp_name, bb.batch_number, kwi.concvalue as cmpdConc, kp.supplier ",
+    queryString <- paste0("select distinct kp.barcode as cmpdBarcode, dd_plateType.value as plateType, kpw.wellref as wellreference, bp.corp_name, bb.batch_number, kwi.concvalue as cmpdConc, kp.supplier ",
                           "from kalypsysadmin.kplate kp ",
                           "join kalypsysadmin.kplatewell kpw on kpw.plateid = kp.plateid ",
                           "join kalypsysadmin.kwellitem kwi on kwi.wellid = kpw.wellid ",
@@ -41,8 +41,13 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
                           "where kp.barcode in ('", paste(barcodes, collapse = "','"), "') ",
                           "order by kp.barcode, kpw.wellref ")
                           
-    return(sqlQuery(queryString))
-  }  
+    return(sqlQuery(queryString = queryString, 
+                    host = racas::applicationSettings$server.service.external.inventory.database.host,
+                    port = racas::applicationSettings$server.service.external.inventory.database.port,
+                    sid = racas::applicationSettings$server.service.external.inventory.database.name,
+                    userName = racas::applicationSettings$server.service.external.inventory.database.username,
+                    userPassword = racas::applicationSettings$server.service.external.inventory.database.password))
+  }
   
   ##   cmpdBarcode plateType wellRef corporateName batchRef cmpdConc libraryID
   ## kp.barcode, dd_plateType.value as plateType, kpw.wellref, bp.corp_name, bb.batch_number, kwi.concvalue, kp.supplier

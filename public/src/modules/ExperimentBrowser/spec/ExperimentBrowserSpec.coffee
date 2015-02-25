@@ -104,7 +104,7 @@ describe "Experiment Browser module testing", ->
 			it "should show the protocolName", ->
 				expect(@ersc.$('.bv_protocolName').html()).toEqual "protocol name"
 			it "should show the scientist", ->
-				expect(@ersc.$('.bv_recordedBy').html()).toEqual "jmcneil"
+				expect(@ersc.$('.bv_scientist').html()).toEqual "jane"
 		describe "basic behavior", ->
 			it "should trigger gotClick when the row is clicked", ->
 				@clickTriggered = false
@@ -146,22 +146,15 @@ describe "Experiment Browser module testing", ->
 					expect(@clickTriggered).toBeTruthy()
 
 			it "should display a message alerting the user that no matching experiments were found if the search returns no experiments", ->
-				@searchReturned = false
-				@searchController = new ExperimentSimpleSearchController
-					model: new ExperimentSearch()
-					el: @fixture
-				@searchController.on "searchReturned", =>
-					@searchReturned = true
-				$(".bv_experimentSearchTerm").val "no-match"
-				runs =>
-					@searchController.doSearch("no-match")
-				#$(".bv_doSearch").click()
-				waitsFor ->
-					@searchReturned
-				, 300
-				runs ->
-					expect($(".bv_matchingExperimentsHeader").hasClass("hide")).toBeFalsy()
-					expect($(".bv_matchingExperimentsHeader").html()).toContain("No Matching Experiments Found")
+				estc = new ExperimentBrowserController()
+				$("#fixture").html estc.render().el
+
+				estc.setupExperimentSummaryTable([])
+				#waits(1000)
+				console.log '$(".bv_noMatchesFoundMessage").html()'
+				console.log $(".bv_noMatchesFoundMessage").html()
+				expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy()
+				expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found")
 
 
 	describe "ExperimentBrowserController tests", ->
@@ -176,7 +169,7 @@ describe "Experiment Browser module testing", ->
 				expect(@ebc.$('.bv_experimentSearchController').length).toEqual 1
 		describe "Startup", ->
 			it "should initialize the search controller", ->
-				expect(@ebc.$('.bv_find').length).toEqual 1
+				expect(@ebc.$('.bv_doSearch').length).toEqual 1
 
 	describe "Experiment Browser Services", ->
 		beforeEach ->
@@ -204,26 +197,6 @@ describe "Experiment Browser module testing", ->
 				runs ->
 					expect(@serviceReturn).toBeTruthy()
 
-		describe "Edit Experiment redirect proxy", ->
-			it "should exist and return an OK status", ->
-				experimentCodeName = "EXPT-00000001"
-				runs ->
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/edit/#{experimentCodeName}"
-						dataType: "json"
-						data:
-							testMode: true
-							fullObject: false
-						success: (json) =>
-							@serviceReturn = json
-						error: (err) =>
-							console.log 'got ajax error'
-							@serviceReturn = null
-
-				waitsFor( @waitForServiceReturn, 'service did not return', 10000)
-				runs ->
-					expect(@serviceReturn).toBeTruthy()
 
 #TODO add search field that filters protocols in protocol select
 #TODO make protocol select a multi-select and search on list of protocols

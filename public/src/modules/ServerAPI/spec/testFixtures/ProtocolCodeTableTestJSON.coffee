@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.dataDictValues =
+	exports.codetableValues =
 		[
 			type: "protocol"
 			kind: "status"
@@ -23,6 +23,15 @@
 				,
 					code: "rejected"
 					name: "Rejected"
+					ignored: false
+				]
+		,
+			type: "assay"
+			kind: "stage"
+			codes:
+				[
+					code: "assay development"
+					name: "Assay Development"
 					ignored: false
 				]
 		]

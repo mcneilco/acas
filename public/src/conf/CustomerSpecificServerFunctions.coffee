@@ -182,20 +182,12 @@ exports.makeServiceRequestHeaders = (user) ->
 		"From": username
 
 exports.getCustomerMolecularTargetCodes = (resp) ->
-	customerMolecularTargetCodeTable = 	exports.customerMolecularTargetCodeTable = [
-		active: true
-		code: "test1"
-		description: "test1 description"
-		isDefault: false
-		name: "Test1"
-		version: 1
-	,
-		active: true
-		code: "test2"
-		description: "test2 description"
-		isDefault: false
-		name: "Test2"
-		version: 1
-	]
+	molecTargetTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
-	resp.end JSON.stringify customerMolecularTargetCodeTable
+exports.getAuthors = (resp) ->
+	config = require '../../../conf/compiled/conf.js'
+	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+	console.log baseurl
+	serverUtilityFunctions.getFromACASServer(baseurl, resp)

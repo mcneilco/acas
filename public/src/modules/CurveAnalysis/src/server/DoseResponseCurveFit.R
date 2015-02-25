@@ -1,7 +1,7 @@
 library(racas)
 
 myMessenger <- Messenger$new()
-myMessenger$logger <- logger(logName = "com.acas.doseresponse.fit.experiment", logToConsole = FALSE)
+myMessenger$logger <- createLogger(logName = "com.acas.doseresponse.fit.experiment", logToConsole = FALSE)
 myMessenger$logger$debug("dose response fit experiment initiated")
 
 fitDoseResponse <- function(request){
@@ -15,6 +15,7 @@ fitDoseResponse <- function(request){
   experimentCode <- request$experimentCode
   user <- request$user
   testMode <- as.logical(request$testMode)
-  myMessenger$capture_output("response <- api_doseResponse.experiment(simpleFitSettings, user, experimentCode, testMode)")
-  return( response)
+  modelFitType <- request$modelFitType
+  myMessenger$capture_output(response <- api_doseResponse_experiment(simpleFitSettings, modelFitType, user, experimentCode, testMode))
+  return(response)
 }

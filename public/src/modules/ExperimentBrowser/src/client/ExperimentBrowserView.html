@@ -91,13 +91,13 @@
 
 
 <script type="text/template" id="ExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
-	<td class='bv_experimentName' style="width: 125px;"><%= experimentCode %></td>
-	<td class='bv_experimentCode' style="width: 200px;"><%= experimentName %></td>
-	<td class='bv_protocolName' style="width: 125px;"><%=protocolName%></td>
-	<td class='bv_recordedBy' style="width: 125px;"><%=recordedBy%></td>
-	<td class='bv_recordedDate' style="width: 80px;"><%= moment(recordedDate).format("YYYY-MM-DD") %></td>
-	<td class='bv_status' ><%=status%></td>
-	<td class='bv_analysisStatus' ><%=analysisStatus%></td>
+		<td class='bv_experimentCode'><%=experimentCode%></td>
+		<td class='bv_experimentName'><%=experimentName%></td>
+    <td class='bv_protocolName'><%=protocolName%></td>
+    <td class='bv_scientist'><%=scientist%></td>
+    <td class='bv_completionDate'><%=moment(completionDate).format("YYYY-MM-DD")%></td>
+    <td class='bv_status'><%=status%></td>
+    <td class='bv_analysisStatus'><%=analysisStatus%></td>
 </script>
 
 <script type="text/template" id="ExperimentSummaryTableView" xmlns="http://www.w3.org/1999/html">

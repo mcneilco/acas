@@ -1,48 +1,39 @@
 class window.DoseResponseAnalysisParameters extends Backbone.Model
-	defaults: ->
+	defaults:
+		smartMode: true
+		inactiveThresholdMode: true
 		inactiveThreshold: 20
-		inverseAgonistMode: true
+		inverseAgonistMode: false
 		max: new Backbone.Model limitType: 'none'
 		min: new Backbone.Model limitType: 'none'
 		slope: new Backbone.Model limitType: 'none'
 
 	initialize: ->
-		@.set @parse(@.attributes)
+		@fixCompositeClasses()
 
-	parse: (resp) =>
-		if resp.max?
-			if resp.max not instanceof Backbone.Model
-				resp.max = new Backbone.Model(resp.max)
-			resp.max.on 'change', =>
-				@trigger 'change'
-		if resp.min?
-			if resp.min not instanceof Backbone.Model
-				resp.min = new Backbone.Model(resp.min)
-			resp.min.on 'change', =>
-				@trigger 'change'
-		if resp.slope?
-			if resp.slope not instanceof Backbone.Model
-				resp.slope = new Backbone.Model(resp.slope)
-			resp.slope.on 'change', =>
-				@trigger 'change'
-		resp
+	fixCompositeClasses: =>
+		if @get('max') not instanceof Backbone.Model
+			@set max: new Backbone.Model(@get('max'))
+		if @get('min') not instanceof Backbone.Model
+			@set min: new Backbone.Model(@get('min'))
+		if @get('slope') not instanceof Backbone.Model
+			@set slope: new Backbone.Model(@get('slope'))
 
 
 	validate: (attrs) ->
 		errors = []
-
 		limitType = attrs.min.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) or attrs.min.get('value') == null)
 			errors.push
 				attribute: 'min_value'
 				message: "Min threshold value must be set when limit type is pin or limit"
 		limitType = attrs.max.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.max.get('value')) || attrs.max.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.max.get('value')) or attrs.max.get('value') == null)
 			errors.push
 				attribute: 'max_value'
 				message: "Max threshold value must be set when limit type is pin or limit"
 		limitType = attrs.slope.get('limitType')
-		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.slope.get('value')) || attrs.slope.get('value') == null)
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.slope.get('value')) or attrs.slope.get('value') == null)
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
@@ -60,7 +51,9 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	autofillTemplate: _.template($("#DoseResponseAnalysisParametersAutofillView").html())
 
 	events:
+		"change .bv_smartMode": "handleSmartModeChanged"
 		"change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged"
+		"change .bv_inactiveThresholdMode": "handleInactiveThresholdModeChanged"
 		"click .bv_max_limitType_none": "handleMaxLimitTypeChanged"
 		"click .bv_max_limitType_pin": "handleMaxLimitTypeChanged"
 		"click .bv_max_limitType_limit": "handleMaxLimitTypeChanged"
@@ -90,17 +83,31 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
 		@setFormTitle()
-#		@setThresholdEnabledState()
+		@setThresholdModeEnabledState()
+		@setInverseAgonistModeEnabledState()
 		@
 
 	updateThresholdDisplay: (val)->
 		@$('.bv_inactiveThresholdDisplay').html val
 
-	setThresholdEnabledState: ->
-		if @model.get 'inverseAgonistMode'
-			@$('.bv_inactiveThreshold').slider('disable')
+	setThresholdModeEnabledState: ->
+		if @model.get 'smartMode'
+			@$('.bv_inactiveThresholdMode').removeAttr('disabled')
 		else
+			@$('.bv_inactiveThresholdMode').attr('disabled','disabled')
+		@setThresholdSliderEnabledState()
+
+	setThresholdSliderEnabledState: ->
+		if @model.get('inactiveThresholdMode') and @model.get('smartMode')
 			@$('.bv_inactiveThreshold').slider('enable')
+		else
+			@$('.bv_inactiveThreshold').slider('disable')
+
+	setInverseAgonistModeEnabledState: ->
+		if @model.get 'smartMode'
+			@$('.bv_inverseAgonistMode').removeAttr('disabled')
+		else
+			@$('.bv_inverseAgonistMode').attr('disabled','disabled')
 
 	updateModel: =>
 		@model.get('max').set
@@ -109,15 +116,27 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_min_value'))
 		@model.get('slope').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_slope_value'))
+		@model.set inactiveThresholdMode: @$('.bv_inactiveThresholdMode').is(":checked"),
+			silent: true
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
+		@model.set smartMode: @$('.bv_smartMode').is(":checked"),
+			silent: true
+		@setThresholdModeEnabledState()
+		@setInverseAgonistModeEnabledState()
 		@model.trigger 'change'
 		@trigger 'updateState'
+
+	handleSmartModeChanged: =>
+		@attributeChanged()
+
+	handleInactiveThresholdModeChanged: =>
+		@attributeChanged()
 
 	handleInactiveThresholdChanged: (event, ui) =>
 		@model.set 'inactiveThreshold': ui.value
 		@updateThresholdDisplay(@model.get 'inactiveThreshold')
-		@attributeChanged()
+		@attributeChanged
 
 	handleInactiveThresholdMoved: (event, ui) =>
 		@updateThresholdDisplay(ui.value)
@@ -127,7 +146,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	handleMaxLimitTypeChanged: =>
 		radioValue = @$("input[name='bv_max_limitType']:checked").val()
-
 		@model.get('max').set limitType: radioValue, silent: true
 		if radioValue == 'none'
 			@$('.bv_max_value').attr('disabled','disabled')
@@ -162,6 +180,78 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		else
 			@formTitle = @$(".bv_formTitle").html()
 
+class window.ModelFitTypeController extends Backbone.View
+	template: _.template($("#ModelFitTypeView").html())
+
+	events:
+		"change .bv_modelFitType": "handleModelFitTypeChanged"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@setupModelFitTypeSelect()
+		modelFitType = @model.getModelFitType().get('codeValue')
+		@setupParameterController(modelFitType)
+
+	setupModelFitTypeSelect: =>
+		modelFitType = @model.getModelFitType().get('codeValue')
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+			selectedCode: modelFitType
+
+	setupParameterController: (modelFitType) =>
+		drapType = switch modelFitType
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+			when "unassigned" then "unassigned"
+		if @parameterController?
+			@parameterController.undelegateEvents()
+		if drapType is "unassigned"
+			@$('.bv_analysisParameterForm').empty()
+			@parameterController = null
+			mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
+			mfp.set clobValue: ""
+
+		else
+			if @model.getModelFitParameters() is {}
+				drap = new drapType()
+			else
+				drap = new drapType @model.getModelFitParameters()
+
+			drapcType = switch modelFitType
+				when "4 parameter D-R" then DoseResponseAnalysisParametersController
+				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			@parameterController = new drapcType
+				el: @$('.bv_analysisParameterForm')
+				model: drap
+			@trigger 'updateState'
+			@parameterController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@parameterController.on 'amClean', =>
+				@trigger 'amClean'
+			@parameterController.model.on 'change', =>
+				@trigger 'updateState'
+			@parameterController.render()
+
+	handleModelFitTypeChanged: =>
+		modelFitType = @$('.bv_modelFitType').val()
+		@setupParameterController(modelFitType)
+		@updateModel()
+		@modelFitTypeListController.trigger 'change'
+
+	updateModel: =>
+		@model.getModelFitType().set
+			codeValue: @modelFitTypeListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		@model.trigger 'change'
+
 class window.DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())
 	events:
@@ -171,7 +261,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
-		@analyzedPreviously = if @model.getModelFitStatus().get('stringValue') == "not started" then false else true
+		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		$(@el).empty()
 		$(@el).html @template()
 		@testReadyForFit()
@@ -182,10 +272,10 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_fitModelButton').html buttonText
 
 	showExistingResults: ->
-		fitStatus = @model.getModelFitStatus().get('stringValue')
+		fitStatus = @model.getModelFitStatus().get('codeValue')
 		@$('.bv_modelFitStatus').html(fitStatus)
-		resultValue = @model.getModelFitResultHTML()
-		unless not @analyzedPreviously
+		if @analyzedPreviously
+			resultValue = @model.getModelFitResultHTML()
 			if resultValue != null
 				res = resultValue.get('clobValue')
 				if res == ""
@@ -193,9 +283,11 @@ class window.DoseResponseAnalysisController extends Backbone.View
 				else
 					@$('.bv_modelFitResultsHTML').html(res)
 					@$('.bv_resultsContainer').show()
+		else
+			@$('.bv_resultsContainer').hide()
 
 	testReadyForFit: =>
-		if @model.getAnalysisStatus().get('stringValue') == "not started"
+		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
 		else
 			@setReadyForFit()
@@ -206,10 +298,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		unless @parameterController
-			@setupCurveFitAnalysisParameterController()
+		@setupModelFitTypeController()
 		@$('.bv_fitOptionWrapper').show()
-		@$('.bv_fitModelButton').show()
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 
@@ -217,23 +307,40 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	handleStatusChanged: =>
-		if @parameterController != null
+		if @parameterController != null and @parameterController != undefined
 			if @model.isEditable()
 				@parameterController.enableAllInputs()
 			else
 				@parameterController.disableAllInputs()
 
-	setupCurveFitAnalysisParameterController: ->
-		@parameterController = new DoseResponseAnalysisParametersController
+	setupModelFitTypeController: ->
+		@modelFitTypeController = new ModelFitTypeController
+			model: @model
 			el: @$('.bv_analysisParameterForm')
-			model: new DoseResponseAnalysisParameters	@model.getModelFitParameters()
-		@parameterController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@parameterController.on 'amClean', =>
-			@trigger 'amClean'
-		@parameterController.on 'valid', @paramsValid
-		@parameterController.on 'invalid', @paramsInvalid
-		@parameterController.render()
+		@modelFitTypeController.render()
+		@parameterController = @modelFitTypeController.parameterController
+		@modelFitTypeController.modelFitTypeListController.on 'change', => @handleModelFitTypeChanged()
+		modelFitType = @model.getModelFitType().get('codeValue')
+		if modelFitType is "unassigned"
+			@$('.bv_fitModelButton').hide()
+		else
+			@$('.bv_fitModelButton').show()
+
+	handleModelFitTypeChanged: =>
+		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
+		if modelFitType is "unassigned"
+			@$('.bv_fitModelButton').hide()
+			if @modelFitTypeController.parameterController?
+				@modelFitTypeController.parameterController.undelegateEvents()
+		else
+			@$('.bv_fitModelButton').show()
+			if @modelFitTypeController.parameterController?
+				@modelFitTypeController.parameterController.on 'valid', @paramsValid
+				@modelFitTypeController.parameterController.on 'invalid', @paramsInvalid
+				if @modelFitTypeController.parameterController.isValid() is true
+					@paramsValid()
+				else
+					@paramsInvalid()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')
@@ -246,11 +353,16 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			if !confirm("Re-fitting the data will delete the previously fitted results")
 				return
 
+		@$('.bv_fitStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_fitStatusDropDown').modal "show"
+
 		fitData =
-			inputParameters: JSON.stringify @parameterController.model
+			inputParameters: JSON.stringify @modelFitTypeController.parameterController.model
 			user: window.AppLaunchParams.loginUserName
 #			experimentCode: "fail"
 			experimentCode: @model.get('codeName')
+			modelFitType: @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 			testMode: false
 
 		$.ajax
@@ -261,6 +373,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			error: (err) =>
 				alert 'got ajax error'
 				@serviceReturn = null
+				@$('.bv_fitStatusDropDown').modal("hide")
 			dataType: 'json'
 
 	fitReturnSuccess: (json) =>
@@ -270,4 +383,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
 		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
+		@$('.bv_fitStatusDropDown').modal("hide")
+
 

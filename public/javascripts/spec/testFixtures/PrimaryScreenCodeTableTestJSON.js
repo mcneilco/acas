@@ -1,8 +1,8 @@
 (function() {
   (function(exports) {
-    return exports.dataDictValues = [
+    return exports.codetableValues = [
       {
-        type: "experiment metadata",
+        type: "equipment",
         kind: "instrument reader",
         codes: [
           {
@@ -12,7 +12,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "signal direction",
         codes: [
           {
@@ -22,7 +22,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "aggregate by",
         codes: [
           {
@@ -32,7 +32,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "aggregation method",
         codes: [
           {
@@ -46,7 +46,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "analysis parameter",
         kind: "transformation",
         codes: [
           {
@@ -64,8 +64,8 @@
           }
         ]
       }, {
-        type: "experiment metadata",
-        kind: "normalization",
+        type: "analysis parameter",
+        kind: "normalization method",
         codes: [
           {
             code: "plate order only",
@@ -86,7 +86,7 @@
           }
         ]
       }, {
-        type: "experiment metadata",
+        type: "reader data",
         kind: "read name",
         codes: [
           {
@@ -98,8 +98,26 @@
             name: "Fluorescence",
             ignored: false
           }, {
+            code: "Calc: (maximum-minimum)/minimum",
+            name: "Calc: (maximum-minimum)/minimum",
+            ignored: false
+          }, {
             code: "none",
             name: "None",
+            ignored: false
+          }
+        ]
+      }, {
+        type: "model fit",
+        kind: "type",
+        codes: [
+          {
+            code: "4 parameter D-R",
+            name: "EC50",
+            ignored: false
+          }, {
+            code: "Ki Fit",
+            name: "KI",
             ignored: false
           }
         ]

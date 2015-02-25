@@ -39,8 +39,9 @@ class window.Experiment extends BaseEntity
 				@trigger 'change'
 			resp
 
-	copyProtocolAttributes: (protocol) ->
+	copyProtocolAttributes: (protocol) =>
 		#cache values I don't want to overwrite
+		scientist = @getScientist().get('codeValue')
 		notebook = @getNotebook().get('stringValue')
 		completionDate = @getCompletionDate().get('dateValue')
 		project = @getProjectCode().get('codeValue')
@@ -55,11 +56,11 @@ class window.Experiment extends BaseEntity
 				evals = new ValueList()
 				svals = st.get('lsValues')
 				svals.each (sv) ->
-					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date"
-						evalue = new Value(sv.attributes)
-						evalue.unset 'id'
-						evalue.unset 'lsTransaction'
-						evals.add(evalue)
+#					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date" || sv.get('lsKind')=="scientist"
+					evalue = new Value(sv.attributes)
+					evalue.unset 'id'
+					evalue.unset 'lsTransaction'
+					evals.add(evalue)
 				estate.set lsValues: evals
 				estates.add(estate)
 		@set
@@ -67,13 +68,12 @@ class window.Experiment extends BaseEntity
 			protocol: protocol
 #			shortDescription: protocol.get('shortDescription')
 			lsStates: estates
+		@getScientist().set codeValue: scientist
 		@getNotebook().set stringValue: notebook
 		@getCompletionDate().set dateValue: completionDate
 		@getProjectCode().set codeValue: project
 #		@getComments().set clobValue: protocol.getComments().get('clobValue')
 #		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
-		#TODO: after merging DNETRPLC-63 branch (with attach files to protocols/experiments feature and with getDetails instead of getDescription), need to uncomment code below and delete the code above:
-		#@getDetails().set clobValue: protocol.getDetails().get('clobValue')
 #		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"
@@ -81,44 +81,23 @@ class window.Experiment extends BaseEntity
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'experimentName'
-				message: "Experiment name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: "Experiment date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
+		errors.push super(attrs)...
 		if attrs.protocol == null
 			errors.push
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
-		projectCode = @getProjectCode().get('codeValue')
-		if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-			errors.push
-				attribute: 'projectCode'
-				message: "Project must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
+		if attrs.subclass?
+			projectCode = @getProjectCode().get('codeValue')
+			if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+				errors.push
+					attribute: 'projectCode'
+					message: "Project must be set"
+			cDate = @getCompletionDate().get('dateValue')
+			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+			if isNaN(cDate)
+				errors.push
+					attribute: 'completionDate'
+					meetsage: "Assay completion date must be set"
 
 		if errors.length > 0
 			return errors
@@ -130,20 +109,30 @@ class window.Experiment extends BaseEntity
 		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
 			projectCodeValue.set codeValue: "unassigned"
 			projectCodeValue.set codeType: "project"
-			projectCodeValue.set codeKind: "project"
-			projectCodeValue.set codeOrigin: "acas ddict"
+			projectCodeValue.set codeKind: "biology"
+			projectCodeValue.set codeOrigin: "ACAS DDICT"
 
 		projectCodeValue
 
 	getAnalysisStatus: ->
 		metadataKind = @.get('subclass') + " metadata"
-		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "analysis status"
+		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "analysis status"
 		#		status = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "analysis status"
-		if status.get('stringValue') is undefined or status.get('stringValue') is ""
-			status.set stringValue: "created"
+		if status.get('codeValue') is undefined or status.get('codeValue') is ""
+			status.set codeValue: "not started"
+			status.set codeType: "analysis"
+			status.set codeKind: "status"
+			status.set codeOrigin: "ACAS DDICT"
 
 		status
 
+	getCompletionDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
+
+	duplicateEntity: =>
+		copiedEntity = super()
+		copiedEntity.getCompletionDate().set dateValue: null
+		copiedEntity
 
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
@@ -158,6 +147,9 @@ class window.ExperimentBaseController extends BaseEntityController
 			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 			"change .bv_protocolCode": "handleProtocolCodeChanged"
 			"change .bv_projectCode": "handleProjectCodeChanged"
+			"change .bv_completionDate": "handleDateChanged"
+			"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+
 		)
 
 	initialize: ->
@@ -166,34 +158,44 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get experiment for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
+					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
+						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
+						@completeInitialization()
+					else
+						$.ajax
+							type: 'GET'
+							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+							dataType: 'json'
+							error: (err) ->
 								alert 'Could not get experiment for code in this URL, creating new one'
-							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#								expt = new Experiment json
-								lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
-								if lsKind is "default"
-									expt = new Experiment json[0]
-									expt.set expt.parse(expt.attributes)
-									if window.AppLaunchParams.moduleLaunchParams.copy
-										@model = expt.duplicateEntity()
-									else
-										@model = expt
+								@completeInitialization()
+							success: (json) =>
+								if json.length == 0
+									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									alert 'Could not get experiment for code in this URL. Creating new experiment'
-							@completeInitialization()
+									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
+	#								expt = new Experiment json
+									lsKind = json.lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
+									if lsKind is "default"
+										expt = new Experiment json
+										expt.set expt.parse(expt.attributes)
+										if window.AppLaunchParams.moduleLaunchParams.copy
+											@model = expt.duplicateEntity()
+										else
+											@model = expt
+									else
+										alert 'Could not get experiment for code in this URL. Creating new experiment'
+								@completeInitialization()
 				else
 					@completeInitialization()
 			else
 				@completeInitialization()
+
+	createExperimentFromProtocol: (code) ->
+		@model = new Experiment()
+		@model.set protocol: new Protocol
+			codeName: code
+		@getAndSetProtocol(code)
 
 	completeInitialization: ->
 		unless @model?
@@ -209,31 +211,15 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
-		@listenTo @model, 'sync', @modelSaveCallBack
-		@listenTo @model, 'change', @modelChangeCallBack
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
-
-	modelSaveCallBack: (method, model) ->
-		@$('.bv_saving').hide()
-		@$('.bv_save').attr('disabled', 'disabled')
-		if @$('.bv_saveFailed').is(":visible")
-			@$('.bv_updateComplete').hide()
-			@trigger 'amDirty'
-		else
-			@$('.bv_updateComplete').show()
-			@trigger 'amClean'
-		@render()
-
-	modelChangeCallBack: (method, model) ->
-		@trigger 'amDirty'
-		@$('.bv_updateComplete').hide()
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
 
 	render: =>
 		unless @model?
@@ -242,8 +228,24 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
 		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@setUseProtocolParametersDisabledState()
+		@$('.bv_completionDate').datepicker();
+		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCompletionDate().get('dateValue')?
+			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
 		@
+
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'experiment'
+		@$('.bv_saving').hide()
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
+		else
+			@$('.bv_updateComplete').show()
+			@trigger 'amClean'
+		@render()
 
 	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null
@@ -279,7 +281,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	setupStatusSelect: ->
 		@statusList = new PickListList()
-		@statusList.url = "/api/dataDict/experiment/status"
+		@statusList.url = "/api/codetables/experiment/status"
 		@statusListController = new PickListSelectController
 			el: @$('.bv_status')
 			collection: @statusList
@@ -313,6 +315,9 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleProtocolCodeChanged: =>
 		code = @protocolListController.getSelectedCode()
+		@getAndSetProtocol(code)
+
+	getAndSetProtocol: (code) ->
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
 			#@getFullProtocol()
@@ -323,21 +328,36 @@ class window.ExperimentBaseController extends BaseEntityController
 				url: "/api/protocols/codename/"+code
 				success: (json) =>
 					if json.length == 0
-						alert("Could not find selected protocol in database, please get help")
+						alert("Could not find selected protocol in database")
 					else
-						@model.set protocol: new Protocol(json[0])
+						@model.set protocol: new Protocol(json)
 						@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
-					alert 'got ajax error from api/protocols/codename/ in Exeriment.coffee'
+					alert 'got ajax error from getting protocol '+ code
 				dataType: 'json'
 
 	handleProjectCodeChanged: =>
-		@model.getProjectCode().set codeValue: @projectListController.getSelectedCode()
+		@model.getProjectCode().set
+			codeValue: @projectListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+
+	handleDateChanged: =>
+		@model.getCompletionDate().set
+			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		@model.trigger 'change'
+
+
+	handleCompletionDateIconClicked: =>
+		@$( ".bv_completionDate" ).datepicker( "show" )
+
 
 	updateEditable: =>
 		super()

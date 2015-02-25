@@ -6,6 +6,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
 		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
+		app.get '/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity
 	else
 	app.get '/:moduleName/codeName/:code', exports.autoLaunchWithCode
 	app.get '/', exports.index
@@ -20,6 +21,7 @@ exports.autoLaunchWithCode = (req, res) ->
 		moduleName: req.params.moduleName
 		code: req.params.code
 		copy: false
+		createFromOtherEntity: false
 	exports.index req, res, moduleLaunchParams
 
 exports.copyAndLaunchWithCode = (req, res) ->
@@ -27,6 +29,15 @@ exports.copyAndLaunchWithCode = (req, res) ->
 		moduleName: req.params.moduleName
 		code: req.params.code
 		copy: true
+		createFromOtherEntity: false
+	exports.index req, res, moduleLaunchParams
+
+exports.autoLaunchCreateFromOtherEntity = (req, res) ->
+	moduleLaunchParams =
+		moduleName: req.params.moduleName
+		code: req.params.code
+		copy: false
+		createFromOtherEntity: true
 	exports.index req, res, moduleLaunchParams
 
 exports.index = (req, res, moduleLaunchParams) ->
@@ -99,17 +110,16 @@ exports.liveServiceSpecRunner = (req, res) ->
 	scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
 
 	res.render('LiveServiceSpecRunner', {
-	title: 'SeuratAddOns LiveServiceSpecRunner',
-	scripts: scriptsToLoad
-	appParams:
-		loginUserName: 'jmcneil'
-		loginUser:
-			id: 2,
-			username: "jmcneil",
-			email: "jmcneil@example.com",
-			firstName: "John",
-			lastName: "McNeil"
-		testMode: false
-		liveServiceTest: true
+		title: 'SeuratAddOns LiveServiceSpecRunner',
+		scripts: scriptsToLoad
+		appParams:
+			loginUserName: 'jmcneil'
+			loginUser:
+				id: 2,
+				username: "jmcneil",
+				email: "jmcneil@example.com",
+				firstName: "John",
+				lastName: "McNeil"
+			testMode: false
+			liveServiceTest: true
 	})
-

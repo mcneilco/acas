@@ -45,7 +45,7 @@ describe "Protocol Browser module testing", ->
 			it "should show the protocol kind", ->
 				expect(@prsc.$('.bv_protocolKind').html()).toEqual "default"
 			it "should show the scientist", ->
-				expect(@prsc.$('.bv_recordedBy').html()).toEqual "nxm7557"
+				expect(@prsc.$('.bv_scientist').html()).toEqual "jane"
 			it "should show the status", ->
 				expect(@prsc.$('.bv_status').html()).toEqual "created"
 			it "should show the assay stage", ->

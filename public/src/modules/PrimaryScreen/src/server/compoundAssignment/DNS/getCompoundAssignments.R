@@ -22,11 +22,18 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
                                                              "batch_number",
                                                              "cmpdConc",
                                                              assayCompoundData$activityColNames), with=FALSE]
+  # TODO: Check concUnit prior to making this adjustment
+  resultTable[ , cmpdConc := cmpdConc * 1000]
   
   resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
-  resultTable <- resultTable[batchCode != "NA::NA"] 
+  resultTable[batchCode == "NA::NA", batchCode := "::"]
   #   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
   setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
+  
+  # apply dilution
+  if (!is.null(parameters$dilutionRatio)) {
+    resultTable$cmpdConc <- resultTable$cmpdConc / parameters$dilutionRatio
+  }
   
   return(resultTable)
 }

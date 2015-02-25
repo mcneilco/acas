@@ -26,46 +26,46 @@
         });
         return describe("required states and values", function() {
           it("should have an assay activity value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeKind')).toEqual("assay activity");
+            expect(this.pspp.getAssayActivity() instanceof Value).toBeTruthy();
+            expect(this.pspp.getAssayActivity().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getAssayActivity().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getAssayActivity().get('codeType')).toEqual("assay");
+            return expect(this.pspp.getAssayActivity().get('codeKind')).toEqual("activity");
           });
           it("should have a molecular target value with code origin set to acas ddict", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeKind')).toEqual("molecular target");
+            expect(this.pspp.getMolecularTarget() instanceof Value).toBeTruthy();
+            expect(this.pspp.getMolecularTarget().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getMolecularTarget().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getMolecularTarget().get('codeType')).toEqual("assay");
+            return expect(this.pspp.getMolecularTarget().get('codeKind')).toEqual("molecular target");
           });
           it("should have a target origin value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeKind')).toEqual("target origin");
+            expect(this.pspp.getTargetOrigin() instanceof Value).toBeTruthy();
+            expect(this.pspp.getTargetOrigin().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getTargetOrigin().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getTargetOrigin().get('codeType')).toEqual("target");
+            return expect(this.pspp.getTargetOrigin().get('codeKind')).toEqual("origin");
           });
           it("should have an assay type value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeKind')).toEqual("assay type");
+            expect(this.pspp.getAssayType() instanceof Value).toBeTruthy();
+            expect(this.pspp.getAssayType().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getAssayType().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getAssayType().get('codeType')).toEqual("assay");
+            return expect(this.pspp.getAssayType().get('codeKind')).toEqual("type");
           });
           it("should have an assay technology value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeKind')).toEqual("assay technology");
+            expect(this.pspp.getAssayTechnology() instanceof Value).toBeTruthy();
+            expect(this.pspp.getAssayTechnology().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getAssayTechnology().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getAssayTechnology().get('codeType')).toEqual("assay");
+            return expect(this.pspp.getAssayTechnology().get('codeKind')).toEqual("technology");
           });
           return it("should have a cell line value", function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line') instanceof Value).toBeTruthy();
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeOrigin')).toEqual("acas ddict");
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeType')).toEqual("protocolMetadata");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeKind')).toEqual("cell line");
+            expect(this.pspp.getCellLine() instanceof Value).toBeTruthy();
+            expect(this.pspp.getCellLine().get('codeValue')).toEqual("unassigned");
+            expect(this.pspp.getCellLine().get('codeOrigin')).toEqual("ACAS DDICT");
+            expect(this.pspp.getCellLine().get('codeType')).toEqual("reagent");
+            return expect(this.pspp.getCellLine().get('codeKind')).toEqual("cell line");
           });
         });
       });
@@ -86,23 +86,23 @@
             return expect(this.pspp.getCurveDisplayMin().get('numericValue')).toEqual(10.0);
           });
           it('Should have an assay Activity value', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("luminescence");
+            return expect(this.pspp.getAssayActivity().get('codeValue')).toEqual("luminescence");
           });
           it('Should have a molecularTarget value with the codeOrigin set to customer ddict', function() {
-            expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test1");
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeOrigin')).toEqual("customer ddict");
+            expect(this.pspp.getMolecularTarget().get('codeValue')).toEqual("test1");
+            return expect(this.pspp.getMolecularTarget().get('codeOrigin')).toEqual("customer ddict");
           });
           it('Should have an targetOrigin value', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("human");
+            return expect(this.pspp.getTargetOrigin().get('codeValue')).toEqual("human");
           });
           it('Should have an assay type value', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("cellular assay");
+            return expect(this.pspp.getAssayType().get('codeValue')).toEqual("cellular assay");
           });
-          it('Should have a molecularTarget value with code origin set to dns target list', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("wizard triple luminescence");
+          it('Should have a assay technology value', function() {
+            return expect(this.pspp.getAssayTechnology().get('codeValue')).toEqual("wizard triple luminescence");
           });
-          return it('Should have an targetOrigin value', function() {
-            return expect(this.pspp.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("cell line y");
+          return it('Should have an cell line value', function() {
+            return expect(this.pspp.getCellLine().get('codeValue')).toEqual("cell line y");
           });
         });
       });
@@ -156,8 +156,8 @@
           it("should be defined", function() {
             return expect(this.psp).toBeDefined();
           });
-          return it("should have lsKind set to flipr screening assay", function() {
-            return expect(this.psp.get('lsKind')).toEqual("flipr screening assay");
+          return it("should have lsKind set to Bio Activity", function() {
+            return expect(this.psp.get('lsKind')).toEqual("Bio Activity");
           });
         });
         return describe("special getters", function() {
@@ -217,7 +217,7 @@
               return this.psppc.$('.bv_assayActivity option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getAssayActivity().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.assayActivityListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -226,7 +226,7 @@
               return this.psppc.$('.bv_molecularTarget option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getMolecularTarget().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -235,7 +235,7 @@
               return this.psppc.$('.bv_targetOrigin option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getTargetOrigin().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.targetOriginListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -244,7 +244,7 @@
               return this.psppc.$('.bv_assayType option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getAssayType().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.assayTypeListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -253,7 +253,7 @@
               return this.psppc.$('.bv_assayTechnology option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getAssayTechnology().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.assayTechnologyListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -262,7 +262,7 @@
               return this.psppc.$('.bv_cellLine option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
+              expect(this.psppc.model.getCellLine().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("unassigned");
             });
           });
@@ -301,7 +301,7 @@
               return this.psppc.$('.bv_assayActivity option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("luminescence");
+              expect(this.psppc.model.getAssayActivity().get('codeValue')).toEqual("luminescence");
               return expect(this.psppc.assayActivityListController.getSelectedCode()).toEqual("luminescence");
             });
           });
@@ -311,7 +311,7 @@
             }, 1000);
             return runs(function() {
               waits(1000);
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test1");
+              expect(this.psppc.model.getMolecularTarget().get('codeValue')).toEqual("test1");
               return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("test1");
             });
           });
@@ -320,7 +320,7 @@
               return this.psppc.$('.bv_targetOrigin option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("human");
+              expect(this.psppc.model.getTargetOrigin().get('codeValue')).toEqual("human");
               return expect(this.psppc.targetOriginListController.getSelectedCode()).toEqual("human");
             });
           });
@@ -329,7 +329,7 @@
               return this.psppc.$('.bv_assayType option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("cellular assay");
+              expect(this.psppc.model.getAssayType().get('codeValue')).toEqual("cellular assay");
               return expect(this.psppc.assayTypeListController.getSelectedCode()).toEqual("cellular assay");
             });
           });
@@ -338,7 +338,7 @@
               return this.psppc.$('.bv_assayTechnology option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("wizard triple luminescence");
+              expect(this.psppc.model.getAssayTechnology().get('codeValue')).toEqual("wizard triple luminescence");
               return expect(this.psppc.assayTechnologyListController.getSelectedCode()).toEqual("wizard triple luminescence");
             });
           });
@@ -347,7 +347,7 @@
               return this.psppc.$('.bv_cellLine option').length > 0;
             }, 1000);
             return runs(function() {
-              expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("cell line y");
+              expect(this.psppc.model.getCellLine().get('codeValue')).toEqual("cell line y");
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("cell line y");
             });
           });
@@ -369,7 +369,7 @@
             return runs(function() {
               this.psppc.$('.bv_assayActivity .bv_parameterSelectList').val('fluorescence');
               this.psppc.$('.bv_assayActivity').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay activity').get('codeValue')).toEqual("fluorescence");
+              return expect(this.psppc.model.getAssayActivity().get('codeValue')).toEqual("fluorescence");
             });
           });
           it("should update the molecular target", function() {
@@ -379,7 +379,7 @@
             return runs(function() {
               this.psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2');
               this.psppc.$('.bv_molecularTarget').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('molecular target').get('codeValue')).toEqual("test2");
+              return expect(this.psppc.model.getMolecularTarget().get('codeValue')).toEqual("test2");
             });
           });
           it("should update the target origin", function() {
@@ -389,7 +389,7 @@
             return runs(function() {
               this.psppc.$('.bv_targetOrigin .bv_parameterSelectList').val('chimpanzee');
               this.psppc.$('.bv_targetOrigin').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('target origin').get('codeValue')).toEqual("chimpanzee");
+              return expect(this.psppc.model.getTargetOrigin().get('codeValue')).toEqual("chimpanzee");
             });
           });
           it("should update the assay type", function() {
@@ -399,7 +399,7 @@
             return runs(function() {
               this.psppc.$('.bv_assayType .bv_parameterSelectList').val('unassigned');
               this.psppc.$('.bv_assayType').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay type').get('codeValue')).toEqual("unassigned");
+              return expect(this.psppc.model.getAssayType().get('codeValue')).toEqual("unassigned");
             });
           });
           it("should update the assay technology", function() {
@@ -409,7 +409,7 @@
             return runs(function() {
               this.psppc.$('.bv_assayTechnology .bv_parameterSelectList').val('unassigned');
               this.psppc.$('.bv_assayTechnology').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('assay technology').get('codeValue')).toEqual("unassigned");
+              return expect(this.psppc.model.getAssayTechnology().get('codeValue')).toEqual("unassigned");
             });
           });
           it("should update the cell line", function() {
@@ -419,7 +419,7 @@
             return runs(function() {
               this.psppc.$('.bv_cellLine .bv_parameterSelectList').val('unassigned');
               this.psppc.$('.bv_cellLine').change();
-              return expect(this.psppc.model.getPrimaryScreenProtocolParameterCodeValue('cell line').get('codeValue')).toEqual("unassigned");
+              return expect(this.psppc.model.getCellLine().get('codeValue')).toEqual("unassigned");
             });
           });
           it("should update the curve display max", function() {
@@ -502,6 +502,16 @@
             return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
           });
         });
+        describe("displaying save, cancel, and new protocol buttons", function() {
+          it("should have the buttons from protocol base hidden", function() {
+            expect(this.pspmc.$('.bv_save')).toBeHidden();
+            expect(this.pspmc.$('.bv_cancel')).toBeHidden();
+            return expect(this.pspmc.$('.bv_newEntity')).toBeHidden();
+          });
+          return it("should have the new protocol button for the module be hidden", function() {
+            return expect(this.pspmc.$('.bv_newModule')).toBeHidden();
+          });
+        });
         return describe("save module button testing", function() {
           describe("when instantiated with new primary screen protocol", function() {
             it("should show the save button text as Save", function() {
@@ -511,16 +521,16 @@
               return expect(this.pspmc.$('.bv_saveModule').attr('disabled')).toEqual('disabled');
             });
           });
-          return describe("expect save to work", function() {
+          describe("expect save to work", function() {
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
                 this.pspmc.$('.bv_protocolName').change();
                 this.pspmc.$('.bv_recordedBy').val("nxm7557");
                 this.pspmc.$('.bv_recordedBy').change();
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
                 this.pspmc.$('.bv_notebook').change();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
@@ -570,6 +580,29 @@
               });
             });
           });
+          describe("cancel button behavior testing", function() {
+            return it("should call a fetch on the model when cancel is clicked", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_cancel').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pspmc.$('.bv_protocolName').val()).toEqual("");
+              });
+            });
+          });
+          return describe("new protocol button behavior testing", function() {
+            return it("should create a new protocol when New Protocol is clicked", function() {
+              runs(function() {
+                return this.pspmc.$('.bv_newModule').click();
+              });
+              waits(1000);
+              return runs(function() {
+                expect(this.pspmc.$('.bv_protocolName').val()).toEqual("");
+                return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
+              });
+            });
+          });
         });
       });
       return describe("when instantiated with data", function() {
@@ -591,7 +624,17 @@
             return expect(this.pspmc.primaryScreenAnalysisParametersController).toBeDefined();
           });
         });
-        return describe("save module button testing", function() {
+        describe("displaying save, cancel, and new protocol buttons", function() {
+          it("should have the buttons from protocol base hidden", function() {
+            expect(this.pspmc.$('.bv_save')).toBeHidden();
+            expect(this.pspmc.$('.bv_cancel')).toBeHidden();
+            return expect(this.pspmc.$('.bv_newEntity')).toBeHidden();
+          });
+          return it("should have the new protocol button for the module be visible", function() {
+            return expect(this.pspmc.$('.bv_newModule')).toBeVisible();
+          });
+        });
+        describe("save module button testing", function() {
           describe("when instantiated with new primary screen protocol", function() {
             it("should show the save button text as Update", function() {
               return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
@@ -612,8 +655,8 @@
                 this.pspmc.$('.bv_protocolName').change();
                 this.pspmc.$('.bv_recordedBy').val("nxm7557");
                 this.pspmc.$('.bv_recordedBy').change();
-                this.pspmc.$('.bv_completionDate').val(" 2013-3-16   ");
-                this.pspmc.$('.bv_completionDate').change();
+                this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
+                this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
                 this.pspmc.$('.bv_notebook').change();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
@@ -649,6 +692,36 @@
               return runs(function() {
                 return expect(this.pspmc.$('.bv_saveModule').html()).toEqual("Update");
               });
+            });
+          });
+        });
+        describe("cancel button behavior testing", function() {
+          return it("should call a fetch on the model when cancel is clicked", function() {
+            runs(function() {
+              this.pspmc.$('.bv_protocolName').val(" Updated protocol name   ");
+              this.pspmc.$('.bv_protocolName').change();
+              expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
+              this.pspmc.$('.bv_positiveControlBatch').val('blah');
+              this.pspmc.$('.bv_positiveControlBatch').change();
+              expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("blah");
+              return this.pspmc.$('.bv_cancel').click();
+            });
+            waits(1000);
+            return runs(function() {
+              expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("FLIPR target A biochemical");
+              return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("CMPD-12345678-01");
+            });
+          });
+        });
+        return describe("new protocol button behavior testing", function() {
+          return it("should create a new protocol when New Protocol is clicked", function() {
+            runs(function() {
+              return this.pspmc.$('.bv_newModule').click();
+            });
+            waits(1000);
+            return runs(function() {
+              expect(this.pspmc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
+              return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
             });
           });
         });

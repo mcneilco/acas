@@ -5,6 +5,9 @@ class window.Protocol extends BaseEntity
 		@.set subclass: "protocol"
 		super()
 
+	getCreationDate: ->
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "dateValue", "creation date"
+
 	getAssayTreeRule: ->
 		assayTreeRule = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "assay tree rule"
 		if assayTreeRule.get('stringValue') is undefined
@@ -16,9 +19,9 @@ class window.Protocol extends BaseEntity
 		assayStage = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "assay stage"
 		if assayStage.get('codeValue') is undefined or assayStage.get('codeValue') is "" or assayStage.get('codeValue') is null
 			assayStage.set codeValue: "unassigned"
-			assayStage.set codeType: "protocolMetadata"
-			assayStage.set codeKind: "assay stage"
-			assayStage.set codeOrigin: "acas ddict"
+			assayStage.set codeType: "assay"
+			assayStage.set codeKind: "stage"
+			assayStage.set codeOrigin: "ACAS DDICT"
 
 		assayStage
 
@@ -32,35 +35,14 @@ class window.Protocol extends BaseEntity
 
 	validate: (attrs) ->
 		errors = []
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
-			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'protocolName'
-				message: attrs.subclass+" name must be set"
-		if _.isNaN(attrs.recordedDate)
-			errors.push
-				attribute: 'recordedDate'
-				message: attrs.subclass+" date must be set"
-		if attrs.recordedBy is "" or attrs.recordedBy is "unassigned"
-			errors.push
-				attribute: 'recordedBy'
-				message: "Scientist must be set"
-		cDate = @getCompletionDate().get('dateValue')
-		if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
-		if isNaN(cDate)
-			errors.push
-				attribute: 'completionDate'
-				message: "Assay completion date must be set"
-		notebook = @getNotebook().get('stringValue')
-		if notebook is "" or notebook is "unassigned" or notebook is undefined
-			errors.push
-				attribute: 'notebook'
-				message: "Notebook must be set"
+		errors.push super(attrs)...
+		if attrs.subclass?
+			cDate = @getCreationDate().get('dateValue')
+			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
+			if isNaN(cDate)
+				errors.push
+					attribute: 'creationDate'
+					message: "Date must be set"
 		assayTreeRule = @getAssayTreeRule().get('stringValue')
 		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
 			if assayTreeRule.charAt([0]) != "/"
@@ -80,6 +62,11 @@ class window.Protocol extends BaseEntity
 	isStub: ->
 		return @get('lsLabels').length == 0 #protocol stubs won't have this
 
+	duplicateEntity: =>
+		copiedEntity = super()
+		copiedEntity.getCreationDate().set dateValue: null
+		copiedEntity
+
 class window.ProtocolList extends Backbone.Collection
 	model: Protocol
 
@@ -93,6 +80,8 @@ class window.ProtocolBaseController extends BaseEntityController
 			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
 			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"change .bv_creationDate": "handleCreationDateChanged"
+			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 
 		)
 
@@ -113,10 +102,9 @@ class window.ProtocolBaseController extends BaseEntityController
 							if json.length == 0
 								alert 'Could not get protocol for code in this URL, creating new one'
 							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-								lsKind = json[0].lsKind
+								lsKind = json.lsKind
 								if lsKind is "default"
-									prot = new Protocol json[0]
+									prot = new Protocol json
 									prot.set prot.parse(prot.attributes)
 									if window.AppLaunchParams.moduleLaunchParams.copy
 										@model = prot.duplicateEntity()
@@ -137,60 +125,81 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@listenTo @model, 'sync', @modelSaveCallBack
-		@listenTo @model, 'change', @modelChangeCallBack
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
-		@setupRecordedBySelect()
+		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
-		@model.getStatus().on 'change', @updateEditable
-
 		@render()
-		@trigger 'amClean' #so that module starts off clean when initialized
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
+#		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
 		unless @model?
 			@model = new Protocol()
 		@setUpAssayStageSelect()
+		@$('.bv_creationDate').datepicker();
+		@$('.bv_creationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		if @model.getCreationDate().get('dateValue')?
+			@$('.bv_creationDate').val UtilityFunctions::convertMSToYMDDate(@model.getCreationDate().get('dateValue'))
 		@$('.bv_assayTreeRule').val @model.getAssayTreeRule().get('stringValue')
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
 
-	modelSaveCallBack: (method, model) ->
-		@trigger 'amClean'
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'protocol'
 		@$('.bv_saving').hide()
-		@$('.bv_updateComplete').show()
-		@$('.bv_save').attr('disabled', 'disabled')
+		if @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+		else
+			@$('.bv_updateComplete').show()
 		@render()
-
-	modelChangeCallBack: (method, model) ->
-		@trigger 'amDirty'
-		@$('.bv_updateComplete').hide()
-
+		unless @model.get('lsKind') is "default"
+			@$('.bv_newEntity').hide()
+			@$('.bv_cancel').hide()
+			@$('.bv_save').hide()
+		@trigger 'amClean'
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
-		@assayStageList.url = "/api/dataDict/protocol metadata/assay stage"
+		@assayStageList.url = "/api/codetables/assay/stage"
 		@assayStageListController = new PickListSelectController
 			el: @$('.bv_assayStage')
 			collection: @assayStageList
 			insertFirstOption: new PickList
 				code: "unassigned"
-				name: "Select assay stage"
+				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
+
+	handleCreationDateChanged: =>
+		@model.getCreationDate().set
+			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		@model.trigger 'change'
+
+
+	handleCreationDateIconClicked: =>
+		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
 		@model.getAssayStage().set
 			codeValue: @assayStageListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@trigger 'change'
 
 	handleAssayPrincipleChanged: =>
 		@model.getAssayPrinciple().set
 			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
-			recordedBy: @model.get('recordedBy')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	handleAssayTreeRuleChanged: =>
 		@model.getAssayTreeRule().set
 			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()

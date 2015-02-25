@@ -15,7 +15,8 @@ describe "Primary Screen Experiment module testing", ->
 				it "should be defined", ->
 					expect(@par).toBeDefined()
 				it "should have defaults", ->
-					expect(@par.get('readPosition')).toBeNull()
+					expect(@par.get('readNumber')).toEqual 1
+					expect(@par.get('readPosition')).toEqual ""
 					expect(@par.get('readName')).toEqual "unassigned"
 					expect(@par.get('activity')).toBeFalsy()
 		describe "model validation tests", ->
@@ -23,12 +24,20 @@ describe "Primary Screen Experiment module testing", ->
 				@par = new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads[0]
 			it "should be valid as initialized", ->
 				expect(@par.isValid()).toBeTruthy()
-			it "should be invalid when read position is NaN", ->
+			it "should be invalid when read position is NaN and read name is not calculated", ->
 				@par.set readPosition: NaN
 				expect(@par.isValid()).toBeFalsy()
 				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readPosition'
 				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be valid when read position is '' and read name is a calculated read", ->
+				@par.set
+					readPosition: ''
+					readName: 'Calc: (maximum-minimum)/minimum'
+				expect(@par.isValid()).toBeTruthy()
+				filtErrors = _.filter @par.validationError, (err) ->
+					err.attribute=='readPosition'
+				expect(filtErrors.length).toEqual 0
 			it "should be invalid when read name is unassigned", ->
 				@par.set readName: "unassigned"
 				expect(@par.isValid()).toBeFalsy()
@@ -70,17 +79,20 @@ describe "Primary Screen Experiment module testing", ->
 			it "should have three reads", ->
 				expect(@parl.length).toEqual 3
 			it "should have the correct read info for the first read", ->
-				readtwo = @parl.at(0)
-				expect(readtwo.get('readPosition')).toEqual 11
-				expect(readtwo.get('readName')).toEqual "none"
-				expect(readtwo.get('activity')).toBeTruthy()
+				readone = @parl.at(0)
+				expect(readone.get('readNumber')).toEqual 1
+				expect(readone.get('readPosition')).toEqual 11
+				expect(readone.get('readName')).toEqual "none"
+				expect(readone.get('activity')).toBeTruthy()
 			it "should have the correct read info for the second read", ->
 				readtwo = @parl.at(1)
+				expect(readtwo.get('readNumber')).toEqual 2
 				expect(readtwo.get('readPosition')).toEqual 12
 				expect(readtwo.get('readName')).toEqual "fluorescence"
 				expect(readtwo.get('activity')).toBeFalsy()
 			it "should have the correct read info for the third read", ->
 				readthree = @parl.at(2)
+				expect(readthree.get('readNumber')).toEqual 3
 				expect(readthree.get('readPosition')).toEqual 13
 				expect(readthree.get('readName')).toEqual "luminescence"
 				expect(readthree.get('activity')).toBeFalsy()
@@ -141,7 +153,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeFalsy()
-					expect(@psap.get('matchReadName')).toBeTruthy()
+					expect(@psap.get('matchReadName')).toBeFalsy()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
 					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 
@@ -253,13 +265,13 @@ describe "Primary Screen Experiment module testing", ->
 					@psap.set aggregateBy: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
-						err.attribute=='aggregateByGroup'
+						err.attribute=='aggregateBy'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when aggregatation method is unassigned", ->
 					@psap.set aggregationMethod: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
-						err.attribute=='aggregateByGroup'
+						err.attribute=='aggregationMethod'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when signal direction rule is unassigned", ->
 					@psap.set signalDirectionRule: "unassigned"
@@ -382,27 +394,35 @@ describe "Primary Screen Experiment module testing", ->
 						# this is not hydrated into a specific model type at this level, it is passed to the specific curve fit class for that
 						expect(@pse.getModelFitParameters().inverseAgonistMode ).toBeTruthy()
 				describe "special states", ->
+					it "should be able to get the dry run status", ->
+						expect(@pse.getDryRunStatus().get('codeValue')).toEqual "not started"
+					it "should be able to get the dry run result html", ->
+						expect(@pse.getDryRunResultHTML().get('clobValue')).toEqual "<p>Dry Run not started</p>"
 					it "should be able to get the analysis status", ->
-						expect(@pse.getAnalysisStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getAnalysisStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the analysis result html", ->
 						expect(@pse.getAnalysisResultHTML().get('clobValue')).toEqual "<p>Analysis not yet completed</p>"
 					it "should be able to get the model fit status", ->
-						expect(@pse.getModelFitStatus().get('stringValue')).toEqual "not started"
+						expect(@pse.getModelFitStatus().get('codeValue')).toEqual "not started"
 					it "should be able to get the model result html", ->
 						expect(@pse.getModelFitResultHTML().get('clobValue')).toEqual "<p>Model fit not yet completed</p>"
 		describe "When loaded from new", ->
 			beforeEach ->
 				@pse2 = new PrimaryScreenExperiment()
-			describe "defaults", ->
-				it "should have lsKind set to flipr screening assay", ->
-					expect(@pse2.get('lsKind')).toEqual "flipr screening assay"
 			describe "special states", ->
+				it "should be able to get the dry run status", ->
+					expect(@pse2.getDryRunStatus().get('codeValue')).toEqual "not started"
+				it "should be able to get the dry run result html", ->
+					expect(@pse2.getDryRunResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the analysis status", ->
-					expect(@pse2.getAnalysisStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('codeValue')).toEqual "not started"
+					expect(@pse2.getAnalysisStatus().get('codeType')).toEqual "analysis"
+					expect(@pse2.getAnalysisStatus().get('codeKind')).toEqual "status"
+					expect(@pse2.getAnalysisStatus().get('codeOrigin')).toEqual "ACAS DDICT"
 				it "should be able to get the analysis result html", ->
 					expect(@pse2.getAnalysisResultHTML().get('clobValue')).toEqual ""
 				it "should be able to get the model fit status", ->
-					expect(@pse2.getModelFitStatus().get('stringValue')).toEqual "not started"
+					expect(@pse2.getModelFitStatus().get('codeValue')).toEqual "not started"
 				it "should be able to get the model result html", ->
 					expect(@pse2.getModelFitResultHTML().get('clobValue')).toEqual ""
 
@@ -419,6 +439,8 @@ describe "Primary Screen Experiment module testing", ->
 				it "should load a template", ->
 					expect(@parc.$('.bv_readName').length).toEqual 1
 			describe "render existing parameters", ->
+				it "should show read number", ->
+					expect(@parc.$('.bv_readNumber').html()).toEqual "R1"
 				it "should show read position", ->
 					expect(@parc.$('.bv_readPosition').val()).toEqual "11"
 				it "should show read name", ->
@@ -448,6 +470,17 @@ describe "Primary Screen Experiment module testing", ->
 					model: new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads
 					el: $('#fixture')
 				@parc.render()
+			it "should hide the hide the read position if a calculated read is chosen", ->
+				waitsFor ->
+					@parc.$('.bv_readName option').length > 0
+				, 1000
+				runs ->
+					@parc.$('.bv_readName').val('Calc: (maximum-minimum)/minimum')
+					@parc.$('.bv_readName').change()
+					expect(@parc.model.get('readName')).toEqual "Calc: (maximum-minimum)/minimum"
+					expect(@parc.$('.bv_readPosition')).toBeHidden()
+					expect(@parc.$('.bv_readPositionHolder')).toBeVisible()
+
 
 	describe "TransformationRuleController", ->
 		describe "when instantiated", ->
@@ -524,6 +557,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(0)').html()).toEqual "R1"
 					expect(@parlc.$('.bv_readPosition:eq(0)').val()).toEqual "11"
 					expect(@parlc.$('.bv_readName:eq(0)').val()).toEqual "none"
 					expect(@parlc.$('.bv_activity:eq(0)').attr("checked")).toEqual "checked"
@@ -532,6 +566,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(1)').html()).toEqual "R2"
 					expect(@parlc.$('.bv_readPosition:eq(1)').val()).toEqual "12"
 					expect(@parlc.$('.bv_readName:eq(1)').val()).toEqual "fluorescence"
 					expect(@parlc.$('.bv_activity:eq(1)').attr("checked")).toBeUndefined()
@@ -540,6 +575,7 @@ describe "Primary Screen Experiment module testing", ->
 					@parlc.$('.bv_readName option').length > 0
 				, 1000
 				runs ->
+					expect(@parlc.$('.bv_readNumber:eq(2)').html()).toEqual "R3"
 					expect(@parlc.$('.bv_readPosition:eq(2)').val()).toEqual "13"
 					expect(@parlc.$('.bv_readName:eq(2)').val()).toEqual "luminescence"
 					expect(@parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined()
@@ -767,7 +803,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the positiveControl ", ->
 					@psapc.$('.bv_positiveControlBatch').val(' pos cont ')
 					@psapc.$('.bv_positiveControlBatch').change()
-					expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
 					@psapc.$('.bv_positiveControlConc').val(' 250753.77 ')
 					@psapc.$('.bv_positiveControlConc').change()
@@ -775,7 +813,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the negativeControl ", ->
 					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
 					@psapc.$('.bv_negativeControlBatch').change()
-					expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
 				it "should update the negativeControl conc ", ->
 					@psapc.$('.bv_negativeControlConc').val(' 62 ')
 					@psapc.$('.bv_negativeControlConc').change()
@@ -783,11 +823,15 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the vehicleControl ", ->
 					@psapc.$('.bv_vehicleControlBatch').val(' veh cont ')
 					@psapc.$('.bv_vehicleControlBatch').change()
-					expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
 				it "should update the agonistControl", ->
 					@psapc.$('.bv_agonistControlBatch').val(' ag cont ')
 					@psapc.$('.bv_agonistControlBatch').change()
-					expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
+					waits(1000)
+					runs ->
+						expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
 				it "should update the agonistControl conc", ->
 					@psapc.$('bv_agonistControlConc').val(' 2 ')
 					@psapc.$('.bv_agonistControlConc').change()
@@ -844,8 +888,17 @@ describe "Primary Screen Experiment module testing", ->
 				it "should show error if positiveControl batch is not set", ->
 					@psapc.$('.bv_positiveControlBatch').val ""
 					@psapc.$('.bv_positiveControlBatch').change()
-					expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
-					expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
+				it "should show error if positiveControl batch is not a preferred batch", ->
+					@psapc.$('.bv_positiveControlBatch').val "none"
+					@psapc.$('.bv_positiveControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl conc is not set", ->
 					@psapc.$('.bv_positiveControlConc').val ""
 					@psapc.$('.bv_positiveControlConc').change()
@@ -853,7 +906,15 @@ describe "Primary Screen Experiment module testing", ->
 				it "should show error if negativeControl batch is not set", ->
 					@psapc.$('.bv_negativeControlBatch').val ""
 					@psapc.$('.bv_negativeControlBatch').change()
-					expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if negativeControl batch is not a preferred batch", ->
+					@psapc.$('.bv_negativeControlBatch').val "none"
+					@psapc.$('.bv_negativeControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
 				it "should show error if negativeControl conc is not set", ->
 					@psapc.$('.bv_negativeControlConc').val ""
 					@psapc.$('.bv_negativeControlConc').change()
@@ -863,33 +924,55 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val ""
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should not show error if agonistControl batch and conc are set correctly", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val 12
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should show error if agonistControl batch is correct but conc is NaN or empty", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val ""
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
 				it "should show error if agonistControl batch is empty but conc is a number", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
 					@psapc.$('.bv_agonistControlBatch').change()
 					@psapc.$('.bv_agonistControlConc').val 23
 					@psapc.$('.bv_agonistControlConc').change()
-					expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
-					expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
+				it "should show error if agonistControl batch is not a preferred batch", ->
+					@psapc.$('.bv_agonistControlBatch').val "none"
+					@psapc.$('.bv_agonistControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
+				it "should show error if vehicleControl batch is not a preferred batch", ->
+					@psapc.$('.bv_vehicleControlBatch').val "none"
+					@psapc.$('.bv_vehicleControlBatch').change()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
 				it "should not show error if vehicleControl is not set", ->
 					@psapc.$('.bv_vehicleControlBatch').val ""
 					@psapc.$('.bv_vehicleControlBatch').change()
-					expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
 				it "should not show error if instrumentReader is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_instrumentReader option').length > 0
@@ -913,7 +996,7 @@ describe "Primary Screen Experiment module testing", ->
 					runs ->
 						@psapc.$('.bv_aggregateBy').val "unassigned"
 						@psapc.$('.bv_aggregateBy').change()
-						expect(@psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_aggregateBy').hasClass("error")).toBeTruthy()
 				it "should show error if aggregationMethod is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_aggregationMethod option').length > 0
@@ -921,7 +1004,7 @@ describe "Primary Screen Experiment module testing", ->
 					runs ->
 						@psapc.$('.bv_aggregationMethod').val "unassigned"
 						@psapc.$('.bv_aggregationMethod').change()
-						expect(@psapc.$('.bv_group_aggregateByGroup').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy()
 				it "should show error if normalizationRule is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_normalizationRule option').length > 0
@@ -1044,13 +1127,13 @@ describe "Primary Screen Experiment module testing", ->
 				it "Class should exist", ->
 					expect(@psac).toBeDefined
 				it "Should load the template", ->
-					expect(@psac.$('.bv_analysisStatus').length).toNotEqual 0
+					expect(@psac.$('.bv_fileUploadWrapper').length).toNotEqual 0
 			describe "display logic", ->
-				it "should show analysis status not started becuase this is a new experiment", ->
-					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
-				it "should not show analysis results becuase this is a new experiment", ->
-					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
-					expect(@psac.$('.bv_resultsContainer')).toBeHidden()
+#				it "should show analysis status not started becuase this is a new experiment", ->
+#					expect(@psac.$('.bv_analysisStatus').html()).toEqual "not started"
+#				it "should not show analysis results becuase this is a new experiment", ->
+#					expect(@psac.$('.bv_analysisResultsHTML').html()).toEqual ""
+#					expect(@psac.$('.bv_resultsContainer')).toBeHidden()
 				it "should be able to hide data analysis controller", ->
 					@psac.setExperimentNotSaved()
 					expect(@psac.$('.bv_fileUploadWrapper')).toBeHidden()
@@ -1079,7 +1162,7 @@ describe "Primary Screen Experiment module testing", ->
 		describe "handling re-analysis", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
-				@exp.getAnalysisStatus().set stringValue: "analsysis complete"
+				@exp.getAnalysisStatus().set codeValue: "analsysis complete"
 				@psac = new PrimaryScreenAnalysisController
 					model: @exp
 					el: $('#fixture')
@@ -1087,6 +1170,20 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			it "should show upload button as re-analyze since status is not 'not started'", ->
 				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
+		describe "rendering analysis based on dry run status and analysis status", ->
+			beforeEach ->
+				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
+				@exp.getDryRunStatus().set codeValue: "not started"
+				@exp.getAnalysisStatus().set codeValue: "not started"
+				@psac = new PrimaryScreenAnalysisController
+					model: @exp
+					el: $('#fixture')
+					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
+				@psac.render()
+			it "should show the upload data page", ->
+				expect(@psac.$('.bv_nextControlContainer')).toBeVisible()
+				#TODO: finish writing specs
+
 
 
 	describe "Abstract Primary Screen Experiment Controller testing", ->
@@ -1109,7 +1206,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "Should load a base experiment controller", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
-					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_analysisStatus').length).toNotEqual 0
+					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual 0
 				#TODO this spec is not running because prod IFF does not include a fit module yet
 				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0

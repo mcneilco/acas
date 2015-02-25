@@ -7,18 +7,47 @@
       isHeader: false,
       menuName: "Load Experiment",
       mainControllerClassName: "GenericDataParserController",
-      autoLaunchName: "generic_data_parser",
-      requireUserRoles: ["admin", "loadData"]
+      autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
-      menuName: "Create Protocol",
+      menuName: "Dose-Response Fit",
+      mainControllerClassName: "DoseResponseFitWorkflowController"
+    }, {
+      isHeader: false,
+      menuName: "Protocol Base",
       mainControllerClassName: "ProtocolBaseController",
       autoLaunchName: "protocol_base"
     }, {
       isHeader: false,
-      menuName: "",
+      menuName: "Primary Screen Protocol",
+      mainControllerClassName: "PrimaryScreenProtocolModuleController",
+      autoLaunchName: "primary_screen_protocol"
+    }, {
+      isHeader: false,
+      menuName: "Experiment Base",
       mainControllerClassName: "ExperimentBaseController",
       autoLaunchName: "experiment_base"
+    }, {
+      isHeader: false,
+      menuName: "Analyze FLIPR Data",
+      mainControllerClassName: "PrimaryScreenExperimentController",
+      autoLaunchName: "primary_screen_experiment"
+    }, {
+      isHeader: false,
+      menuName: "Example Thing",
+      mainControllerClassName: "ExampleThingController",
+      autoLaunchName: "cationic_block"
+    }, {
+      isHeader: true,
+      menuName: "Inventory"
+    }, {
+      isHeader: false,
+      menuName: "Load Containers From SDF",
+      mainControllerClassName: "BulkLoadContainersFromSDFController"
+    }, {
+      isHeader: false,
+      menuName: "Load Sample Transfer Log",
+      mainControllerClassName: "BulkLoadSampleTransfersController"
     }, {
       isHeader: true,
       menuName: "Search and Edit"
@@ -31,8 +60,12 @@
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
     }, {
+      isHeader: true,
+      menuName: "Admin"
+    }, {
       isHeader: false,
-      menuName: "Gene ID Query"
+      menuName: "Logging",
+      mainControllerClassName: "LoggingController"
     }
   ];
 

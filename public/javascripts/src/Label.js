@@ -21,6 +21,12 @@
       imageFile: null
     };
 
+    Label.prototype.changeLabelText = function(options) {
+      return this.set({
+        labelText: options
+      });
+    };
+
     return Label;
 
   })(Backbone.Model);
@@ -137,6 +143,31 @@
       }
     };
 
+    LabelList.prototype.getLabelByTypeAndKind = function(type, kind) {
+      return this.filter(function(label) {
+        return (!label.get('ignored')) && (label.get('lsType') === type) && (label.get('lsKind') === kind);
+      });
+    };
+
+    LabelList.prototype.getOrCreateLabelByTypeAndKind = function(type, kind) {
+      var label, labels;
+      labels = this.getLabelByTypeAndKind(type, kind);
+      label = labels[0];
+      if (label == null) {
+        label = new Label({
+          lsType: type,
+          lsKind: kind
+        });
+        this.add(label);
+        label.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+      }
+      return label;
+    };
+
     return LabelList;
 
   })(Backbone.Collection);
@@ -152,6 +183,18 @@
       ignored: false,
       recordedDate: null,
       recordedBy: ""
+    };
+
+    Value.prototype.initialize = function() {
+      return this.on({
+        "change:value": this.setValueType
+      });
+    };
+
+    Value.prototype.setValueType = function() {
+      this.set(this.get('lsType'), this.get('value'));
+      this.set('recordedBy', window.AppLaunchParams.loginUser.username);
+      return this.set('recordedDate', new Date().getTime());
     };
 
     return Value;
@@ -188,19 +231,30 @@
     };
 
     State.prototype.initialize = function() {
-      return this.set(this.parse(this.attributes));
+      if (this.has('lsValues')) {
+        if (!(this.get('lsValues') instanceof ValueList)) {
+          this.set({
+            lsValues: new ValueList(this.get('lsValues'))
+          });
+        }
+      }
+      return this.get('lsValues').on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
     };
 
     State.prototype.parse = function(resp) {
       if (resp.lsValues != null) {
         if (!(resp.lsValues instanceof ValueList)) {
           resp.lsValues = new ValueList(resp.lsValues);
+          resp.lsValues.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.lsValues.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
       }
       return resp;
     };

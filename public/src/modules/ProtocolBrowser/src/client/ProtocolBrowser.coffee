@@ -94,12 +94,11 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
 			protocolCode: @model.get('codeName')
 			protocolKind: @model.get('lsKind')
-			recordedBy: @model.get('recordedBy')
+			scientist: @model.getScientist().get('codeValue')
 			assayStage: @model.getAssayStage().get("codeValue")
 			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
-#			analysisStatus: @model.getAnalysisStatus().get("stringValue")
-			recordedDate: @model.get("recordedDate")
+			creationDate: @model.getCreationDate().get('dateValue')
 		$(@el).html(@template(toDisplay))
 
 		@
@@ -135,6 +134,7 @@ class window.ProtocolBrowserController extends Backbone.View
 		"click .bv_deleteProtocol": "handleDeleteProtocolClicked"
 		"click .bv_editProtocol": "handleEditProtocolClicked"
 		"click .bv_duplicateProtocol": "handleDuplicateProtocolClicked"
+		"click .bv_createExperiment": "handleCreateExperimentClicked"
 		"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
@@ -170,7 +170,7 @@ class window.ProtocolBrowserController extends Backbone.View
 
 	selectedProtocolUpdated: (protocol) =>
 		@trigger "selectedProtocolUpdated"
-		if protocol.get('lsKind') is "flipr screening assay"
+		if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
 		else
@@ -236,12 +236,18 @@ class window.ProtocolBrowserController extends Backbone.View
 		window.open("/entity/edit/codeName/#{@protocolController.model.get("codeName")}",'_blank');
 
 	handleDuplicateProtocolClicked: =>
-#		window.open("/api/protocols/duplicate/#{@protocolController.model.get("codeName")}",'_blank');
 		protocolKind = @protocolController.model.get('lsKind')
-		if protocolKind is "flipr screening assay"
+		if protocolKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
+
+	handleCreateExperimentClicked: =>
+		protocolKind = @protocolController.model.get('lsKind')
+		if protocolKind is "Bio Activity"
+			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+		else
+			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 
 	destroyProtocolSummaryTable: =>
 		if @protocolSummaryTable?

@@ -1,6 +1,10 @@
-exports.setupRoutes = (app) ->
+exports.setupAPIRoutes = (app) ->
 	app.get '/api/reagentReg/hazardCatagories', exports.gethazardCatagories
 	app.get '/api/reagentReg/reagents/codename', exports.getReagentByCodename
+
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/reagentReg/hazardCatagories', loginRoutes.ensureAuthenticated, exports.gethazardCatagories
+	app.get '/api/reagentReg/reagents/codename', loginRoutes.ensureAuthenticated, exports.getReagentByCodename
 
 exports.gethazardCatagories = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'

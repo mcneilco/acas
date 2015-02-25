@@ -2,7 +2,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/primaryAnalysis/runPrimaryAnalysis', loginRoutes.ensureAuthenticated, exports.runPrimaryAnalysis
 
 exports.runPrimaryAnalysis = (request, response)  ->
-	request.connection.setTimeout 1800000
+	request.connection.setTimeout 180000000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	console.log request.body
 

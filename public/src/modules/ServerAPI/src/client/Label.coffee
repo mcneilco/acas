@@ -10,6 +10,9 @@ class window.Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
+	changeLabelText: (options) ->
+		@set labelText: options
+
 class window.LabelList extends Backbone.Collection
 	model: Label
 
@@ -71,11 +74,35 @@ class window.LabelList extends Backbone.Collection
 		else
 			@add label
 
+	getLabelByTypeAndKind: (type, kind) ->
+		@filter (label) ->
+			(not label.get('ignored')) and (label.get('lsType')==type) and (label.get('lsKind')==kind)
+
+	getOrCreateLabelByTypeAndKind: (type, kind) ->
+		labels = @getLabelByTypeAndKind type, kind
+		label = labels[0] #TODO should do something smart if there are more than one
+		unless label?
+			label = new Label
+				lsType: type
+				lsKind: kind
+			@.add label
+			label.on 'change', =>
+				@trigger('change')
+		return label
+
 class window.Value extends Backbone.Model
 	defaults:
 		ignored: false
 		recordedDate: null
 		recordedBy: ""
+
+	initialize: ->
+		@.on "change:value": @setValueType
+
+	setValueType: ->
+		@.set @get('lsType'), @get('value')
+		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
+		@.set 'recordedDate', new Date().getTime()
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -88,14 +115,18 @@ class window.State extends Backbone.Model
 		recordedBy: ""
 
 	initialize: ->
-		@.set @parse(@.attributes)
+		if @has('lsValues')
+			if @get('lsValues') not instanceof ValueList
+				@set lsValues: new ValueList(@get('lsValues'))
+		@get('lsValues').on 'change', =>
+			@trigger 'change'
 
 	parse: (resp) ->
 		if resp.lsValues?
 			if resp.lsValues not instanceof ValueList
 				resp.lsValues = new ValueList(resp.lsValues)
-			resp.lsValues.on 'change', =>
-				@trigger 'change'
+				resp.lsValues.on 'change', =>
+					@trigger 'change'
 		resp
 
 	getValuesByTypeAndKind: (type, kind) ->

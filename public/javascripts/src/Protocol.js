@@ -1,12 +1,13 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.Protocol = (function(_super) {
     __extends(Protocol, _super);
 
     function Protocol() {
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
       return Protocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -17,6 +18,10 @@
         subclass: "protocol"
       });
       return Protocol.__super__.initialize.call(this);
+    };
+
+    Protocol.prototype.getCreationDate = function() {
+      return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "protocol metadata", "dateValue", "creation date");
     };
 
     Protocol.prototype.getAssayTreeRule = function() {
@@ -38,13 +43,13 @@
           codeValue: "unassigned"
         });
         assayStage.set({
-          codeType: "protocolMetadata"
+          codeType: "assay"
         });
         assayStage.set({
-          codeKind: "assay stage"
+          codeKind: "stage"
         });
         assayStage.set({
-          codeOrigin: "acas ddict"
+          codeOrigin: "ACAS DDICT"
         });
       }
       return assayStage;
@@ -62,50 +67,20 @@
     };
 
     Protocol.prototype.validate = function(attrs) {
-      var assayTreeRule, bestName, cDate, errors, nameError, notebook;
+      var assayTreeRule, cDate, errors;
       errors = [];
-      bestName = attrs.lsLabels.pickBestName();
-      nameError = true;
-      if (bestName != null) {
-        nameError = true;
-        if (bestName.get('labelText') !== "") {
-          nameError = false;
+      errors.push.apply(errors, Protocol.__super__.validate.call(this, attrs));
+      if (attrs.subclass != null) {
+        cDate = this.getCreationDate().get('dateValue');
+        if (cDate === void 0 || cDate === "" || cDate === null) {
+          cDate = "fred";
         }
-      }
-      if (nameError) {
-        errors.push({
-          attribute: 'protocolName',
-          message: attrs.subclass + " name must be set"
-        });
-      }
-      if (_.isNaN(attrs.recordedDate)) {
-        errors.push({
-          attribute: 'recordedDate',
-          message: attrs.subclass + " date must be set"
-        });
-      }
-      if (attrs.recordedBy === "" || attrs.recordedBy === "unassigned") {
-        errors.push({
-          attribute: 'recordedBy',
-          message: "Scientist must be set"
-        });
-      }
-      cDate = this.getCompletionDate().get('dateValue');
-      if (cDate === void 0 || cDate === "" || cDate === null) {
-        cDate = "fred";
-      }
-      if (isNaN(cDate)) {
-        errors.push({
-          attribute: 'completionDate',
-          message: "Assay completion date must be set"
-        });
-      }
-      notebook = this.getNotebook().get('stringValue');
-      if (notebook === "" || notebook === "unassigned" || notebook === void 0) {
-        errors.push({
-          attribute: 'notebook',
-          message: "Notebook must be set"
-        });
+        if (isNaN(cDate)) {
+          errors.push({
+            attribute: 'creationDate',
+            message: "Date must be set"
+          });
+        }
       }
       assayTreeRule = this.getAssayTreeRule().get('stringValue');
       if (!(assayTreeRule === "" || assayTreeRule === void 0 || assayTreeRule === null)) {
@@ -132,6 +107,15 @@
       return this.get('lsLabels').length === 0;
     };
 
+    Protocol.prototype.duplicateEntity = function() {
+      var copiedEntity;
+      copiedEntity = Protocol.__super__.duplicateEntity.call(this);
+      copiedEntity.getCreationDate().set({
+        dateValue: null
+      });
+      return copiedEntity;
+    };
+
     return Protocol;
 
   })(BaseEntity);
@@ -156,6 +140,9 @@
       this.handleAssayTreeRuleChanged = __bind(this.handleAssayTreeRuleChanged, this);
       this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
       this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
+      this.handleCreationDateIconClicked = __bind(this.handleCreationDateIconClicked, this);
+      this.handleCreationDateChanged = __bind(this.handleCreationDateChanged, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       this.initialize = __bind(this.initialize, this);
@@ -171,7 +158,9 @@
         "change .bv_protocolName": "handleNameChanged",
         "change .bv_assayTreeRule": "handleAssayTreeRuleChanged",
         "change .bv_assayStage": "handleAssayStageChanged",
-        "change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+        "change .bv_assayPrinciple": "handleAssayPrincipleChanged",
+        "change .bv_creationDate": "handleCreationDateChanged",
+        "click .bv_creationDateIcon": "handleCreationDateIconClicked"
       });
     };
 
@@ -195,9 +184,9 @@
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    lsKind = json[0].lsKind;
+                    lsKind = json.lsKind;
                     if (lsKind === "default") {
-                      prot = new Protocol(json[0]);
+                      prot = new Protocol(json);
                       prot.set(prot.parse(prot.attributes));
                       if (window.AppLaunchParams.moduleLaunchParams.copy) {
                         _this.model = prot.duplicateEntity();
@@ -229,16 +218,14 @@
       this.setBindings();
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.listenTo(this.model, 'sync', this.modelSaveCallBack);
-      this.listenTo(this.model, 'change', this.modelChangeCallBack);
-      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
-      this.setupRecordedBySelect();
+      this.setupScientistSelect();
       this.setupTagList();
       this.setUpAssayStageSelect();
-      this.model.getStatus().on('change', this.updateEditable);
       this.render();
-      return this.trigger('amClean');
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ProtocolBaseController.prototype.render = function() {
@@ -246,42 +233,70 @@
         this.model = new Protocol();
       }
       this.setUpAssayStageSelect();
+      this.$('.bv_creationDate').datepicker();
+      this.$('.bv_creationDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      if (this.model.getCreationDate().get('dateValue') != null) {
+        this.$('.bv_creationDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCreationDate().get('dateValue')));
+      }
       this.$('.bv_assayTreeRule').val(this.model.getAssayTreeRule().get('stringValue'));
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
     };
 
-    ProtocolBaseController.prototype.modelSaveCallBack = function(method, model) {
-      this.trigger('amClean');
+    ProtocolBaseController.prototype.modelSyncCallback = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'protocol'
+        });
+      }
       this.$('.bv_saving').hide();
-      this.$('.bv_updateComplete').show();
-      this.$('.bv_save').attr('disabled', 'disabled');
-      return this.render();
-    };
-
-    ProtocolBaseController.prototype.modelChangeCallBack = function(method, model) {
-      this.trigger('amDirty');
-      return this.$('.bv_updateComplete').hide();
+      if (this.$('.bv_cancelComplete').is(":visible")) {
+        this.$('.bv_updateComplete').hide();
+      } else {
+        this.$('.bv_updateComplete').show();
+      }
+      this.render();
+      if (this.model.get('lsKind') !== "default") {
+        this.$('.bv_newEntity').hide();
+        this.$('.bv_cancel').hide();
+        this.$('.bv_save').hide();
+      }
+      return this.trigger('amClean');
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
       this.assayStageList = new PickListList();
-      this.assayStageList.url = "/api/dataDict/protocol metadata/assay stage";
+      this.assayStageList.url = "/api/codetables/assay/stage";
       return this.assayStageListController = new PickListSelectController({
         el: this.$('.bv_assayStage'),
         collection: this.assayStageList,
         insertFirstOption: new PickList({
           code: "unassigned",
-          name: "Select assay stage"
+          name: "Select Assay Stage"
         }),
         selectedCode: this.model.getAssayStage().get('codeValue')
       });
     };
 
+    ProtocolBaseController.prototype.handleCreationDateChanged = function() {
+      this.model.getCreationDate().set({
+        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_creationDate'))),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
+      return this.model.trigger('change');
+    };
+
+    ProtocolBaseController.prototype.handleCreationDateIconClicked = function() {
+      return this.$(".bv_creationDate").datepicker("show");
+    };
+
     ProtocolBaseController.prototype.handleAssayStageChanged = function() {
       this.model.getAssayStage().set({
-        codeValue: this.assayStageListController.getSelectedCode()
+        codeValue: this.assayStageListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
       return this.trigger('change');
     };
@@ -289,13 +304,16 @@
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
       return this.model.getAssayPrinciple().set({
         clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
-        recordedBy: this.model.get('recordedBy')
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 
     ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {
       return this.model.getAssayTreeRule().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule'))
+        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule')),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
       });
     };
 

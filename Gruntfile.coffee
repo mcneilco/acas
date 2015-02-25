@@ -66,6 +66,14 @@ module.exports = (grunt) ->
 					dest: "conf/"
 					ext: '.js'
 				]
+			compileModuleConf:
+				files: [
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/conf/*.coffee"]
+					dest: "public/javascripts/conf/"
+					ext: '.js'
+				]
 			compilePublicConf:
 				files: [
 					expand: true
@@ -119,7 +127,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee"]
+					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee","acas_custom/public_conf/serviceTests/*.coffee"]
 					dest: "acas_custom/javascripts/spec/test/"
 					ext: '.js'
 				]
@@ -137,6 +145,14 @@ module.exports = (grunt) ->
 					flatten: true
 					src: ["acas_custom/conf/*.coffee"]
 					dest: "acas_custom/conf/"
+					ext: '.js'
+				]
+			custom_compileModuleConf:
+				files: [
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/src/conf/*.coffee"]
+					dest: "acas_custom/javascripts/conf/"
 					ext: '.js'
 				]
 			custom_compilePublicConf:
@@ -216,6 +232,10 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
+			prepare_module_conf_JSON:
+				options:
+					cwd: 'conf'
+				src: 'conf/PrepareModuleConfJSON.js'
 			prepare_test_JSON:
 				options:
 					cwd: 'conf'
@@ -260,6 +280,9 @@ module.exports = (grunt) ->
 			compileConf:
 				files: "conf/*.coffee"
 				tasks: "coffee:compileConf"
+			compileModuleConf:
+				files: "public/src/modules/**/conf/*.coffee"
+				tasks: "coffee:compileModuleConf"
 			compilePublicConf:
 				files: "public/src/conf/*.coffee"
 				tasks: "coffee:compilePublicConf"
@@ -288,6 +311,9 @@ module.exports = (grunt) ->
 			custom_compileConf:
 				files: "acas_custom/conf/*.coffee"
 				tasks: "coffee:custom_compileConf"
+			custom_compileModuleConf:
+				files: "acas_custom/public_conf/*.coffee"
+				tasks: "coffee:custom_compileModuleConf"
 			custom_compilePublicConf:
 				files: "acas_custom/public_conf/*.coffee"
 				tasks: "coffee:custom_compilePublicConf"
@@ -326,6 +352,10 @@ module.exports = (grunt) ->
 						'public/src/modules/*/src/client/*.js'
 						#appScriptsInJavascripts
 						'public/javascripts/src/*.js'
+#						#confScriptsInModules
+#						'public/src/modules/*/conf/*.js'
+#						#confScriptsInJavascripts
+#						'public/javascripts/conf/*.js'
 						#testJSONInModules
 						'public/src/modules/*/spec/testFixtures/*.js'
 						#testJSONInJavascripts
@@ -343,6 +373,11 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
+			prepare_module_conf_JSON:
+				files: [
+					"public/javascripts/conf/*.js"
+				]
+				tasks: "execute:prepare_module_conf_JSON"
 			prepare_test_JSON:
 				files: [
 					"public/javascripts/spec/testFixtures/*.js"

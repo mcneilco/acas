@@ -1,0 +1,38 @@
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td{
+    border-top-width:0px;
+    margin-bottom:100px;
+    padding-top:5px;
+}
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.size{
+    display:none;
+}
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.delete{
+    padding-top:2px;
+    padding-right:0px;
+}
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-download.fade.in td.preview{
+    display:none;
+}
+
+.bv_uploadFile form.fileupload div.row.fileupload-buttonbar {
+    margin-left:5px;
+}
+
+.bv_uploadFile form.fileupload div.row.fileupload-buttonbar div.span7.bv_manualFileSelect{
+    padding-left:0px !important;
+}
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td{
+    border-top-width:0px;
+    margin-bottom:100px;
+    padding-top:5px;
+}
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.preview {
+    display: none;
+}
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.size{
+    display:none;
+}

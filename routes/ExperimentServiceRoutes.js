@@ -16,9 +16,9 @@
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
-    app.get('/api/experiments/edit/:experimentCodeName', loginRoutes.ensureAuthenticated, exports.editExperimentLookupAndRedirect);
     app["delete"]('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment);
-    return app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    app.get('/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename);
+    return app.get('/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById);
   };
 
   exports.experimentByCodename = function(req, resp) {
@@ -28,8 +28,8 @@
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       expt = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
-      if (req.params.code.indexOf("screening") > -1) {
-        expt.lsKind = "flipr screening assay";
+      if (req.params.code.indexOf("Bio Activity") > -1) {
+        expt.lsKind = "Bio Activity";
       } else {
         expt.lsKind = "default";
       }
@@ -57,7 +57,7 @@
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments?findByName&name=" + req.params.name;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments?findByName&name=" + req.params.name;
       console.log(baseurl);
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -98,7 +98,6 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      console.log("in post experiment");
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments";
       request = require('request');
@@ -138,8 +137,6 @@
     } else {
       config = require('../conf/compiled/conf.js');
       putId = req.body.id;
-      console.log("putID");
-      console.log(putId);
       baseurl = config.all.client.service.persistence.fullpath + "experiments/" + putId;
       request = require('request');
       return request({
@@ -175,7 +172,7 @@
       }
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "api/v1/experiments/search?q=" + req.params.searchTerm;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/search?q=" + req.params.searchTerm;
       console.log("baseurl");
       console.log(baseurl);
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -202,8 +199,7 @@
     var baseurl, config, experimentId, request;
     config = require('../conf/compiled/conf.js');
     experimentId = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "/api/v1/experiments/browser/" + experimentId;
-    console.log("baseurl");
+    baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
     console.log(baseurl);
     request = require('request');
     return request({
@@ -254,7 +250,7 @@
                 resp.statusCode = 404;
                 return resp.json(resultViewerURL);
               } else {
-                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment[0].protocol.id;
+                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment.protocol.id;
                 request = require('request');
                 return request({
                   method: 'GET',
@@ -267,12 +263,12 @@
                     return resp.json(resultViewerURL);
                   } else {
                     if (!error && response.statusCode === 200) {
-                      preferredExperimentLabel = _.filter(experiment[0].lsLabels, function(lab) {
+                      preferredExperimentLabel = _.filter(experiment.lsLabels, function(lab) {
                         return lab.preferred && lab.ignored === false;
                       });
                       preferredExperimentLabelText = preferredExperimentLabel[0].labelText;
                       if (config.all.client.service.result.viewer.experimentNameColumn === "EXPERIMENT_NAME") {
-                        experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText;
+                        experimentName = experiment.codeName + "::" + preferredExperimentLabelText;
                       } else {
                         experimentName = preferredExperimentLabelText;
                       }
@@ -304,6 +300,20 @@
         resp.statusCode = 500;
         return resp.end("configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist");
       }
+    }
+  };
+
+  exports.experimentValueById = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    console.log(req.params.id);
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer.lsStates[1]));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 

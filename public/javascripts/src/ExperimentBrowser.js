@@ -336,10 +336,10 @@
         experimentName: this.model.get('lsLabels').pickBestName().get('labelText'),
         experimentCode: this.model.get('codeName'),
         protocolName: this.model.get('protocol').get("codeName"),
-        recordedBy: this.model.get('recordedBy'),
+        scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
-        analysisStatus: this.model.getAnalysisStatus().get("stringValue"),
-        recordedDate: this.model.get("recordedDate")
+        analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
+        completionDate: this.model.getCompletionDate().get('dateValue')
       };
       $(this.el).html(this.template(toDisplay));
       return this;
@@ -452,18 +452,22 @@
           collection: new ExperimentList(experiments)
         });
         this.experimentSummaryTable.on("selectedRowUpdated", this.selectedExperimentUpdated);
-        $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
-        if (!this.includeDuplicateAndEdit) {
-          return this.selectedExperimentUpdated(new Experiment(experiments[0]));
-        }
+        return $(".bv_experimentTableController").html(this.experimentSummaryTable.render().el);
       }
     };
 
     ExperimentBrowserController.prototype.selectedExperimentUpdated = function(experiment) {
       this.trigger("selectedExperimentUpdated");
-      this.experimentController = new ExperimentBaseController({
-        model: experiment
-      });
+      if (experiment.get('lsKind') === "Bio Activity") {
+        this.experimentController = new ExperimentBaseController({
+          protocolKindFilter: "?protocolKind=Bio Activity",
+          model: new PrimaryScreenExperiment(experiment.attributes)
+        });
+      } else {
+        this.experimentController = new ExperimentBaseController({
+          model: new Experiment(experiment.attributes)
+        });
+      }
       $('.bv_experimentBaseController').html(this.experimentController.render().el);
       this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
@@ -532,8 +536,8 @@
     ExperimentBrowserController.prototype.handleDuplicateExperimentClicked = function() {
       var experimentKind;
       experimentKind = this.experimentController.model.get('lsKind');
-      if (experimentKind === "flipr screening assay") {
-        return window.open("/entity/copy/flipr_screening_assay/" + (this.experimentController.model.get("codeName")), '_blank');
+      if (experimentKind === "Bio Activity") {
+        return window.open("/entity/copy/primary_screen_experiment/" + (this.experimentController.model.get("codeName")), '_blank');
       } else {
         return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');
       }

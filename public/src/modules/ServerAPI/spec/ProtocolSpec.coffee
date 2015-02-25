@@ -26,7 +26,9 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').length).toEqual 0
 					expect(@prot.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@prot.get('recordedBy')).toEqual ""
+					expect(@prot.getScientist().get('codeValue')).toEqual "unassigned"
+				it 'Should have the recordedBy set to the loginUser username', ->
+					expect(@prot.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
 					expect(new Date(@prot.get('recordedDate')).getHours()).toEqual new Date().getHours()
 				it 'Should have an empty short description with a space as an oracle work-around', ->
@@ -38,15 +40,15 @@ describe "Protocol module testing", ->
 				it 'Should have an assay stage value', ->
 					expect(@prot.getAssayStage() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayStage().get('codeValue')).toEqual "unassigned"
-					expect(@prot.getAssayStage().get('codeOrigin')).toEqual "acas ddict"
-					expect(@prot.getAssayStage().get('codeType')).toEqual "protocolMetadata"
-					expect(@prot.getAssayStage().get('codeKind')).toEqual "assay stage"
+					expect(@prot.getAssayStage().get('codeOrigin')).toEqual "ACAS DDICT"
+					expect(@prot.getAssayStage().get('codeType')).toEqual "assay"
+					expect(@prot.getAssayStage().get('codeKind')).toEqual "stage"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple() instanceof Value).toBeTruthy()
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual ""
-				it 'Should have a description value', -> # description will be Protocol Details or experimentDetails
-					expect(@prot.getDescription() instanceof Value).toBeTruthy()
-					expect(@prot.getDescription().get('clobValue')).toEqual ""
+				it 'Should have a protocol details value', ->
+					expect(@prot.getDetails() instanceof Value).toBeTruthy()
+					expect(@prot.getDetails().get('clobValue')).toEqual ""
 				it 'Should have a comments value', ->
 					expect(@prot.getComments() instanceof Value).toBeTruthy()
 					expect(@prot.getComments().get('clobValue')).toEqual ""
@@ -54,8 +56,8 @@ describe "Protocol module testing", ->
 					expect(@prot.getNotebook() instanceof Value).toBeTruthy()
 				it 'Protocol status should default to created ', ->
 					expect(@prot.getStatus().get('codeValue')).toEqual "created"
-				it 'completionDate should be null ', ->
-					expect(@prot.getCompletionDate().get('dateValue')).toEqual null
+				it 'creationDate should be null ', ->
+					expect(@prot.getCreationDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
@@ -96,20 +98,20 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').at(0).get('lsValues').at(0).get('lsKind')).toEqual "assay tree rule"
 				it 'Should have an assay principle value', ->
 					expect(@prot.getAssayPrinciple().get('clobValue')).toEqual "assay principle goes here"
-				it 'Should have a description value', ->
-					expect(@prot.getDescription().get('clobValue')).toEqual "protocol details go here"
+				it 'Should have a protocol details value', ->
+					expect(@prot.getDetails().get('clobValue')).toEqual "protocol details go here"
 				it 'Should have a comments value', ->
 					expect(@prot.getComments().get('clobValue')).toEqual "protocol comments go here"
 				it 'Should have a notebook value', ->
 					expect(@prot.getNotebook().get('stringValue')).toEqual "912"
-				it 'Should have a completionDate value', ->
-					expect(@prot.getCompletionDate().get('dateValue')).toEqual 1342080000000
+				it 'Should have a creationDate value', ->
+					expect(@prot.getCreationDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
 					expect(@prot.getStatus().get('codeValue')).toEqual "created"
 
 		describe "when loaded from stub", ->
 			beforeEach ->
-				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol[0]
+				@prot = new Protocol window.protocolServiceTestJSON.stubSavedProtocol
 				runs ->
 					@fetchReturned = false
 					@prot.fetch success: =>
@@ -219,26 +221,25 @@ describe "Protocol module testing", ->
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 			it "should be invalid when scientist not selected", ->
-				@prot.set recordedBy: ""
+				@prot.getScientist().set codeValue: "unassigned"
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='recordedBy'
+					err.attribute=='scientist'
 				)
 			it "should be invalid when notebook is empty", ->
 				@prot.getNotebook().set
 					stringValue: ""
-					recordedBy: @prot.get('recordedBy')
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-			it 'should require that completionDate not be ""', ->
-				@prot.getCompletionDate().set
+			it 'should require that creationDate not be ""', ->
+				@prot.getCreationDate().set
 					dateValue: new Date("").getTime()
 				expect(@prot.isValid()).toBeFalsy()
 				filtErrors = _.filter(@prot.validationError, (err) ->
-					err.attribute=='completionDate'
+					err.attribute=='creationDate'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
 		describe "prepare to save", ->
@@ -289,10 +290,8 @@ describe "Protocol module testing", ->
 			describe "property display", ->
 				it "should show the save button text as Update", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Update"
-				it "should fill the short description field", ->
-					expect(@pbc.$('.bv_shortDescription').html()).toEqual "primary analysis"
 				it "should fill the assay tree rule field", ->
-					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "assay tree rule goes here"
+					expect(@pbc.$('.bv_assayTreeRule').val()).toEqual "/assayTreeRule"
 				it "should fill the assay stage field", ->
 					waitsFor ->
 						@pbc.$('.bv_assayStage option').length > 0
@@ -301,16 +300,20 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_assayStage').val()).toEqual "assay development"
 				it "should fill the assay principle field", ->
 					expect(@pbc.$('.bv_assayPrinciple').val()).toEqual "assay principle goes here"
-				it "should fill the long description field", ->
-					expect(@pbc.$('.bv_description').html()).toEqual "protocol details go here"
+				it "should fill the protocol details field", ->
+					expect(@pbc.$('.bv_details').val()).toEqual "protocol details go here"
 				it "should fill the comments field", ->
-					expect(@pbc.$('.bv_comments').html()).toEqual "protocol comments go here"
+					expect(@pbc.$('.bv_comments').val()).toEqual "protocol comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the protocol name field", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual "FLIPR target A biochemical"
-				it "should fill the user field", ->
-					expect(@pbc.$('.bv_recordedBy').val()).toEqual "nxm7557"
+				it "should fill the scientist field", ->
+					waitsFor ->
+						@pbc.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						expect(@pbc.$('.bv_scientist').val()).toEqual "jane"
 				it "should fill the protocol code field", ->
 					expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 				it "should fill the protocol kind field", ->
@@ -357,10 +360,14 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@pbc.model.get 'recordedBy').toEqual "nxm7557"
-					@pbc.$('.bv_recordedBy').val("xxl7932")
-					@pbc.$('.bv_recordedBy').change()
-					expect(@pbc.model.get 'recordedBy').toEqual "xxl7932"
+					expect(@pbc.model.getScientist().get('codeValue')).toEqual "jane"
+					waitsFor ->
+						@pbc.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_scientist').val('unassigned')
+						@pbc.$('.bv_scientist').change()
+						expect(@pbc.model.getScientist().get('codeValue')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@pbc.$('.bv_shortDescription').val(" New short description   ")
 					@pbc.$('.bv_shortDescription').change()
@@ -391,15 +398,15 @@ describe "Protocol module testing", ->
 					desc = values[0].get('clobValue')
 					expect(desc).toEqual "New assay principle"
 					expect(@pbc.model.getAssayPrinciple().get('clobValue')).toEqual "New assay principle"
-				it "should update model when description is changed", ->
-					@pbc.$('.bv_description').val(" New long description   ")
-					@pbc.$('.bv_description').change()
+				it "should update model when protocol details is changed", ->
+					@pbc.$('.bv_details').val(" New protocol details   ")
+					@pbc.$('.bv_details').change()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
-					values = states[0].getValuesByTypeAndKind("clobValue", "description")
+					values = states[0].getValuesByTypeAndKind("clobValue", "protocol details")
 					desc = values[0].get('clobValue')
-					expect(desc).toEqual "New long description"
-					expect(@pbc.model.getDescription().get('clobValue')).toEqual "New long description"
+					expect(desc).toEqual "New protocol details"
+					expect(@pbc.model.getDetails().get('clobValue')).toEqual "New protocol details"
 				it "should update model when comments is changed", ->
 					@pbc.$('.bv_comments').val(" New comments   ")
 					@pbc.$('.bv_comments').change()
@@ -413,10 +420,10 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
 					@pbc.$('.bv_protocolName').change()
 					expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
-				it "should update model when completion date is changed", ->
-					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_completionDate').change()
-					expect(@pbc.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
+				it "should update model when creation date is changed", ->
+					@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
+					@pbc.$('.bv_creationDate').change()
+					expect(@pbc.model.getCreationDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
 					@pbc.$('.bv_notebook').change()
@@ -435,6 +442,23 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_status').val('complete')
 						@pbc.$('.bv_status').change()
 						expect(@pbc.model.getStatus().get('codeValue')).toEqual 'complete'
+			describe "cancel button behavior testing", ->
+				it "should call a fetch on the model when cancel is clicked", ->
+					runs ->
+						@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
+						@pbc.$('.bv_protocolName').change()
+						expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
+						@pbc.$('.bv_cancel').click()
+					waits(1000)
+					runs ->
+						expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "FLIPR target A biochemical"
+			describe "new protocol button behavior testing", ->
+				it "should create a new protocol when New Protocol is clicked", ->
+					runs ->
+						@pbc.$('.bv_newEntity').click()
+					waits(1000)
+					runs ->
+						expect(@pbc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
 		describe "When created from a new protocol", ->
 			beforeEach ->
 				@prot = new Protocol()
@@ -449,7 +473,7 @@ describe "Protocol module testing", ->
 				it "should have protocol name not set", ->
 					expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 				it "should not fill the date field", ->
-					expect(@pbc.$('.bv_completionDate').val()).toEqual ""
+					expect(@pbc.$('.bv_creationDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
 					expect(@pbc.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
@@ -472,19 +496,24 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_assayStage').val()).toEqual "unassigned"
 			describe "controller validation rules", ->
 				beforeEach ->
-					@pbc.$('.bv_recordedBy').val("nxm7557")
-					@pbc.$('.bv_recordedBy').change()
-					@pbc.$('.bv_shortDescription').val(" New short description   ")
-					@pbc.$('.bv_shortDescription').change()
-					@pbc.$('.bv_protocolName').val(" Updated entity name   ")
-					@pbc.$('.bv_protocolName').change()
-					@pbc.$('.bv_completionDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_completionDate').change()
-					@pbc.$('.bv_notebook').val("my notebook")
-					@pbc.$('.bv_notebook').change()
+					waitsFor ->
+						@pbc.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_scientist').val("bob")
+						@pbc.$('.bv_scientist').change()
+						@pbc.$('.bv_shortDescription').val(" New short description   ")
+						@pbc.$('.bv_shortDescription').change()
+						@pbc.$('.bv_protocolName').val(" Updated entity name   ")
+						@pbc.$('.bv_protocolName').change()
+						@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
+						@pbc.$('.bv_creationDate').change()
+						@pbc.$('.bv_notebook').val("my notebook")
+						@pbc.$('.bv_notebook').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
+							console.log @pbc.model.validationError
 							expect(@pbc.isValid()).toBeTruthy()
 					it "save button should be enabled", ->
 						runs ->
@@ -505,20 +534,23 @@ describe "Protocol module testing", ->
 							expect(@pbc.$('.bv_save').attr('disabled')).toEqual 'disabled'
 				describe "when scientist not selected", ->
 					beforeEach ->
+						waitsFor ->
+							@pbc.$('.bv_scientist option').length > 0
+						, 1000
 						runs ->
-							@pbc.$('.bv_recordedBy').val("")
-							@pbc.$('.bv_recordedBy').change()
+							@pbc.$('.bv_scientist').val("unassigned")
+							@pbc.$('.bv_scientist').change()
 					it "should show error on scientist dropdown", ->
 						runs ->
-							expect(@pbc.$('.bv_group_recordedBy').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
 				describe "when date field not filled in", ->
 					beforeEach ->
 						runs ->
-							@pbc.$('.bv_completionDate').val("")
-							@pbc.$('.bv_completionDate').change()
+							@pbc.$('.bv_creationDate').val("")
+							@pbc.$('.bv_creationDate').change()
 					it "should show error in date field", ->
 						runs ->
-							expect(@pbc.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
+							expect(@pbc.$('.bv_group_creationDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
@@ -536,6 +568,7 @@ describe "Protocol module testing", ->
 							@pbc.$('.bv_save').click()
 						waits(1000)
 						runs ->
+							console.log @pbc.model.validationError
 							expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 					it "should show the save button text as Update", ->
 						runs ->
@@ -543,4 +576,18 @@ describe "Protocol module testing", ->
 						waits(1000)
 						runs ->
 							expect(@pbc.$('.bv_save').html()).toEqual "Update"
+				describe "cancel button behavior testing", ->
+					it "should call a fetch on the model when cancel is clicked", ->
+						runs ->
+							@pbc.$('.bv_cancel').click()
+						waits(1000)
+						runs ->
+							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
+				describe "new protocol button behavior testing", ->
+					it "should create a new protocol when New Protocol is clicked", ->
+						runs ->
+							@pbc.$('.bv_newEntity').click()
+						waits(1000)
+						runs ->
+							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 

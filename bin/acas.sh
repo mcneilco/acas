@@ -46,7 +46,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
 
 
 running() {
-    runningCommand="forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
+    runningCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
     fi
@@ -55,7 +55,7 @@ running() {
 }
 
 start_server() {
-    startCommand="forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
+    startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
@@ -65,7 +65,7 @@ start_server() {
 
 stop_server() {
 
-    stopCommand="forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
+    stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
@@ -150,9 +150,9 @@ log() {
 do_start() {
     dirname=`basename $ACAS_HOME`
     LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
-    logname=$server_log_path/${dirname}${server_log_suffix}.log
-    logout=$server_log_path/${dirname}${server_log_suffix}_stdout.log
-    logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
+    logname=$server_log_path/acas_app${server_log_suffix}.log
+    logout=$server_log_path/acas_app${server_log_suffix}_stdout.log
+    logerr=$server_log_path/acas_app${server_log_suffix}_stderr.log
     # Check if it's running first
     if running ;  then
         log "app.js already running"
@@ -239,10 +239,7 @@ get_status() {
 ################################################################################
 ################################################################################
 
-scriptPath=$(readlink ${BASH_SOURCE[0]})
-if [ "$scriptPath" == '' ]; then
-    scriptPath=$(readlink -f ${BASH_SOURCE[0]})
-fi
+scriptPath=$(readlink -f ${BASH_SOURCE[0]})
 ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
 echo "ACAS_HOME = $ACAS_HOME"
 cd $ACAS_HOME
@@ -255,6 +252,7 @@ if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     #echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
+echo "ACAS_USER = $ACAS_USER"
 
 case "$1" in
     start)

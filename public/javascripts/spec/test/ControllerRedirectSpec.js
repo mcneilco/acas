@@ -55,7 +55,6 @@
       });
     });
     describe("experiment redirect", function() {
-      console.log("yay");
       describe("When user enters in generic experiment", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/entity/edit/codeName/EXPT-generic", (function(_this) {
@@ -81,7 +80,7 @@
           })(this));
         });
         return it("should return redirect", function() {
-          return assert.equal(this.response.request.uri.href.indexOf('flipr_screening_assay') > 0, true);
+          return assert.equal(this.response.request.uri.href.indexOf('primary_screen_experiment') > 0, true);
         });
       });
       return describe("When user enters a not special protocol", function() {

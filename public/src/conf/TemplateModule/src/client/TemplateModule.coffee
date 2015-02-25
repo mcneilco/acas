@@ -47,7 +47,7 @@ class window.ReagentController extends AbstractFormController
 
 	setupHazardCategorySelect: ->
 		@hazardCategoryList = new PickListList()
-		@hazardCategoryList.url = "/api/reagentReg/hazardCatagories"
+		@hazardCategoryList.url = "/api/codetables/reagentReg/hazardCategories"
 		@hazardCategoryListController = new PickListSelectController
 			el: @$('.bv_hazardCategory')
 			collection: @hazardCategoryList

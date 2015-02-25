@@ -19,6 +19,7 @@ class window.DoseResponseFitController extends Backbone.View
 	template: _.template($("#DoseResponseFitView").html())
 	events:
 		"click .bv_fitModelButton": "launchFit"
+		"change .bv_modelFitType": "handleModelFitTypeChanged"
 
 	initialize: ->
 		if !@options.experimentCode?
@@ -28,19 +29,57 @@ class window.DoseResponseFitController extends Backbone.View
 		@parameterController = null
 		$(@el).empty()
 		$(@el).html @template()
-		@setupCurveFitAnalysisParameterController()
+		@setupModelFitTypeSelect()
 
-	setupCurveFitAnalysisParameterController: ->
-		@parameterController = new DoseResponseAnalysisParametersController
-			el: @$('.bv_analysisParameterForm')
-			model: new DoseResponseAnalysisParameters()
-		@parameterController.on 'amDirty', =>
-			@trigger 'amDirty'
-		@parameterController.on 'amClean', =>
-			@trigger 'amClean'
-		@parameterController.on 'valid', @paramsValid
-		@parameterController.on 'invalid', @paramsInvalid
-		@parameterController.render()
+	setupModelFitTypeSelect: ->
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+
+	setupParameterController: (modelFitType) =>
+		drapType = switch modelFitType
+			when "4 parameter D-R" then DoseResponseAnalysisParameters
+			when "Ki Fit" then DoseResponseKiAnalysisParameters
+			when "unassigned" then "unassigned"
+		if drapType is "unassigned"
+			@$('.bv_analysisParameterForm').empty()
+			@$('.bv_fitModelButton').hide()
+
+		else
+			@$('.bv_fitModelButton').show()
+			if @options? && @options.initialAnalysisParameters?
+				drap = new drapType @options.initialAnalysisParameters
+			else
+				drap = new drapType()
+
+			drapcType = switch modelFitType
+				when "4 parameter D-R" then DoseResponseAnalysisParametersController
+				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			@parameterController = new drapcType
+				el: @$('.bv_analysisParameterForm')
+				model: drap
+
+			@parameterController.on 'amDirty', =>
+				@trigger 'amDirty'
+			@parameterController.on 'amClean', =>
+				@trigger 'amClean'
+			@parameterController.on 'valid', @paramsValid
+			@parameterController.on 'invalid', @paramsInvalid
+			@parameterController.render()
+
+	handleModelFitTypeChanged: ->
+		modelFitType = @$('.bv_modelFitType').val()
+		@setupParameterController(modelFitType)
+		if @parameterController?
+			if @parameterController.isValid() is true
+				@paramsValid()
+			else
+				@paramsInvalid()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')
@@ -57,6 +96,7 @@ class window.DoseResponseFitController extends Backbone.View
 			inputParameters: JSON.stringify @parameterController.model
 			user: window.AppLaunchParams.loginUserName
 			experimentCode: @options.experimentCode
+			modelFitType: @modelFitTypeListController.getSelectedCode()
 			testMode: false
 
 		$.ajax
@@ -72,7 +112,6 @@ class window.DoseResponseFitController extends Backbone.View
 
 	fitReturnSuccess: (json) =>
 		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
-		@$('.bv_modelFitStatus').html(json.results.status)
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitModelButton').hide()
 		@$('.bv_fitOptionWrapper').hide()
@@ -111,6 +150,7 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		@modelFitController = new DoseResponseFitController
 			experimentCode: @drdpc.getNewExperimentCode()
 			el: @$('.bv_doseResponseAnalysis')
+
 		@modelFitController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@modelFitController.on 'amClean', =>
@@ -125,9 +165,12 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 
 	handleFitComplete: =>
 		@$('.bv_completeControlContainer').show()
+		@drdpc.$('.bv_loadAnother').hide()
 
 	handleFitAnother: =>
 		@drdpc.loadAnother()
+		@$('.bv_doseResponseAnalysis').empty()
+		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
 

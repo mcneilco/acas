@@ -1,6 +1,12 @@
 # ROUTE: /experiment/primaryanalysis
 require(data.table)
 
+
+myMessenger <- Messenger$new()
+myMessenger$logger <- logger(logName = "com.acas.reanalysis", logToConsole = FALSE)
+# This was causing issues... figure out why it ended up in the output text
+#myMessenger$logger$debug("primary reanalysis initiated")
+
 write_csv <- function(x, file, rows = 1000L, ...) {
   passes <- NROW(x) %/% rows
   remaining <- NROW(x) %% rows
@@ -30,7 +36,7 @@ dataframe_to_csvstring <- function(x, ...) {
   csv_string <- readChar(t, file.info(t)$size)
 }
 
-normalizeData <- function() {
+normalizeDataOriginal <- function() {
     experimentCode <- POST$experimentCode
     data <- fread(paste0("file://",FILES$file$tmp_name))
     data[, originalOrder:=1:nrow(data)]
@@ -60,6 +66,78 @@ normalizeData <- function() {
     setContentType("text/csv;")
     cat(csv_data)
     DONE
+}
+
+normalizeData <- function() {
+  setwd(racas::applicationSettings$appHome)
+  source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R")
+  experimentCode <- POST$experimentCode
+  flagFile <- getUploadedFilePath(FILES$file$name)
+  file.copy(FILES$file$tmp_name, flagFile, overwrite = T)
+  csvText <- spotfireWrapperFunction(experimentCode, flagFile)
+  #myMessenger$capture_output({csvText <- spotfireWrapperFunction(experimentCode, flagFile)})
+  #myMessenger$logger$debug(csvText)
+  setHeader("Access-Control-Allow-Origin","*")
+  setHeader("Content-Length",nchar(csvText))
+  setContentType("text/csv;")
+  cat(csvText)
+  DONE
+}
+
+spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
+  #   experimentCode <- "EXPT-00000887"
+  #   wellFlagFile <- "Step2_Renormalize_Input_v2 (4).txt"
+  
+  experiment <- getExperimentByCodeName(experimentCode)
+  
+  experimentStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
+  experimentClobValues <- getValuesByTypeAndKind(experimentStates, "clobValue_data analysis parameters")[[1]]
+  experimentFolderPath <- getValuesByTypeAndKind(experimentStates, "fileValue_dryrun source file")[[1]]
+  
+  # wellFlagFile is passed a location relative from ACAS_HOME, but expects one from privateUploads
+  wellFlagFile <- gsub(getUploadedFilePath(""), "", wellFlagFile)
+  
+  request <- list()
+  request$inputParameters <- experimentClobValues$clobValue
+  request$primaryAnalysisExperimentId <- experiment$id
+  # This loses filename input, maybe add it back later, or just don't save over the old input file
+  newPath <- tempfile("spotfireInput", getUploadedFilePath(""), ".zip")
+  fileInfo <- fromJSON(getURLcheckStatus(paste0(getAcasFileLink(experimentFolderPath$fileValue), "/metadata.json")))
+  file.copy(fileInfo[[1]]$dnsFile$path, newPath)
+  #download.file(getAcasFileLink(experimentFolderPath$fileValue), newPath)
+  request$fileToParse <- basename(newPath)
+  request$user <- experiment$recordedBy
+  request$reportFile <- wellFlagFile
+  request$flaggedFile <- wellFlagFile
+  request$testMode <- FALSE
+  
+  #   request$testMode <- "false"
+  request$dryRunMode <- "true"
+  
+  #   names(request): 
+  #   √ "fileToParse": "Archive.zip"
+  #   √ "reportFile": "Step2_Renormalize_Input_v2 (1).txt"
+  #     "imagesFile": ""
+  #     "dryRunMode": "true"           
+  #   √ "user": "bob"
+  #   √ "inputParameters": lots of stuff (parameters)
+  #   √ "primaryAnalysisExperimentId": "1111764" 
+  #     "testMode": "false"              
+  #   √ "flaggedFile": "Step2_Renormalize_Input_v2 (1).txt"
+  
+  analysisResult <- runPrimaryAnalysis(request, externalFlagging=TRUE) # need request
+  # do we need to return something different if we're not in dry run?
+  # no - we will never run this in !dryRun
+  outputText <- analysisResult$results$jsonSummary$dryRunReports$spotfireFile$fileText
+  
+  #   spotfireFileLocation <- paste0("curl --form experimentCode=",
+  #                                  experimentCode,
+  #                                  "  --form file=@",
+  #                                  wellFlagFile,
+  #                                  " http://acas-d.dart.corp/r-services-api/experiment/primaryanalysis/")
+  
+  #   fileValue <- savedInDatabaseSomewhere /jazz hands
+  return(outputText)
 }
 
 normalizeData()

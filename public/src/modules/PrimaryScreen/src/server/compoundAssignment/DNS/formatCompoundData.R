@@ -9,7 +9,7 @@ formatCompoundData <- function(assayCompoundDT, assayData, testMode, tempFilePat
   # For log file
   write.table(paste0(Sys.time(), "\tbegin getAllCompoundData"), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
-  compoundData <- data.table(getCompoundPlateData(barcodes=assayCompoundDT$cmpdBarcode, testMode=testMode, tempFilePath=tempFilePath))
+  compoundData <- data.table(getCompoundPlateData(barcodes=unique(assayCompoundDT$cmpdBarcode), testMode=testMode, tempFilePath=tempFilePath))
   
   if(length(grep("sidecar", assayCompoundDT$sourceType)) > 0) {
     

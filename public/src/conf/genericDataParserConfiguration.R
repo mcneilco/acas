@@ -1,17 +1,11 @@
 getFormatSettings <- function() {
-  formatSettings <- list(
+  formatSettings <- list(rawOnly = list(
     "Custom Example" = list(
       annotationType = "",
       hideAllData = FALSE,
       extraHeaders = data.frame(),
       sigFigs = 3,
-      stateGroups = list(list(entityKind = "analysis group",
-                              stateType = "data",
-                              stateKind = "calculated data",
-                              valueKinds = c("Dose", "Weight", "Force"),
-                              includesOthers = FALSE,
-                              includesCorpName = TRUE),
-                         list(entityKind = "subject",
+      stateGroups = list(list(entityKind = "subject",
                               stateType = "data",
                               stateKind = "treatment",
                               valueKinds = c("Dose"),
@@ -69,7 +63,17 @@ getFormatSettings <- function() {
                                              "IV - Vss_obs", "PO - Vss_obs"),
                               includesOthers = TRUE,
                               includesCorpName = FALSE))
+    ), 
+    doseResponseRender = list(
+      "Ki Fit" = list(
+        doseResponseKinds = list(
+          "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Ki",
+          "curve id", "fitSummaryClob", "Ligand Conc", "Kd", "Fitted Ki",
+          "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
+          "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
+        )
+      )
     )
-  )
+  ))
   return(formatSettings)
 } 

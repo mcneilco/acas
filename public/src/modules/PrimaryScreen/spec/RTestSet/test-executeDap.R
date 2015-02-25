@@ -9,12 +9,14 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   require(testthat)
   
   originalWD <- Sys.getenv("ACAS_HOME")
-  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
+  source(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R"))
+  fileList <- c(list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/","plateFormatSingleFile"), full.names=TRUE),
+                list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/"), full.names=TRUE), 
                 list.files(file.path(originalWD,"public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS"), full.names=TRUE))
   lapply(fileList, source)
   
   
-  readsTable <- data.table(readOrder=1, readNames="R1", activityCol=TRUE) 
+  readsTable <- data.table(readPosition=1, readName="R1", activity=TRUE) 
   
   tempFilePath <- tempdir()
   testFilePath <- file.path(originalWD,"public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_flipr/EXPT00FL01/Raw_data")
@@ -42,7 +44,7 @@ test_that("getInstrumentSpecificData & getCompoundAssignments functionality", {
   # file.remove("defaultlog.ini")
   # expect_that(read.table("defaultlog.ini"), gives_warning())
   
-  readsTable <- data.table(readOrder=1, readNames="R1", activityCol=TRUE) 
+  readsTable <- data.table(readPosition=1, readName="R1", activity=TRUE) 
   
   testFilePath <- file.path(originalWD, "public/src/modules/PrimaryScreen/spec/RTestSet/docs/test_raw_data_microBeta/EXPT00MB01/Raw_data")
   instrumentSpecData <- getInstrumentSpecificData(filePath=testFilePath, testMode=TRUE, instrument="microBeta", tempFilePath=tempFilePath, readsTable=readsTable, matchNames=FALSE)
