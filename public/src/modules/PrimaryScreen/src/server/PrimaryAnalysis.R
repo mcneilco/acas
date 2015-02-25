@@ -2377,7 +2377,11 @@ formatColumnNameChangeDT <- function(colDataTable) {
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam Fix for 1.5.1
+  ##### TODO: Sam allow parameters for 1.5.1
+  #
+  # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
+  # parameters: list, currently only used for aggregationMethod
+  # groupBy: character vector of grouping columns for which subjects belong to one treatment group
   
   groupBy <- c(groupBy, "tempParentId")
   
@@ -2393,7 +2397,6 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
-  # TODO: get numberOfReplicates
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = mean,
@@ -2401,11 +2404,18 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                                 stopUser = stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
-  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget]  
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget] 
+  
+  ### get numberOfReplicates
+  numRep <- batchDataTable[ , lapply(.SD, function(x) {as.numeric(length(x))}), by = groupBy, .SDcols = sdTarget] 
   setnames(sds, sdTarget, paste0("standardDeviation_", sdTarget))
+  setnames(numRep, sdTarget, paste0("numberOfReplicates_", sdTarget))
+  
+  ### combine all tables together by setting keys
   setkeyv(sds, groupBy)
+  setkeyv(numRep, groupBy)
   setkeyv(aggregationResults, groupBy)
-  treatmentData <- sds[aggregationResults]
+  treatmentData <- sds[aggregationResults][numRep]
   setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
@@ -2477,25 +2487,52 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   }
   codeIdVars <- c(idVars, "cmpdConc")
   
-  usedCol <- (resultTypes[, includedColumn, with=F][[1]]) & (resultTypes$columnName %in% names(resultTable))
+  # Get columns that are in resultTypes and are correct for this melt type
+  usedCol <- (resultTypes$columnName %in% names(resultTable)) & (resultTypes[, includedColumn, with=F][[1]])
   
+  # Numeric results include standard deviation and number of replicates, others do not
   numericResultColumns <- resultTypes[valueType=="numericValue" & usedCol, columnName]
+  stDevColumns <- paste0("standardDeviation_", numericResultColumns)
+  stDevColumns <- intersect(stDevColumns, names(resultTable))
+  numRepColumns <- paste0("numberOfReplicates_", numericResultColumns)
+  numRepColumns <- intersect(numRepColumns, names(resultTable))
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
+  ### Melt each group
   numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
                          variable.name="columnName", value.name="numericValue")
+  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+                       variable.name="columnName", value.name="uncertainty")
+  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+                        variable.name="columnName", value.name="numberOfReplicates")
   codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
                       variable.name="columnName", value.name="codeValue")
   stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
   
+  ### Combine numericValues with their standard deviations and number of replicates
+  keyCols <- c(idVars, "columnName")
+  setkeyv(numericResults, keyCols)
+  if (length(stDevColumns) > 0) {
+    stDevResults[, columnName := gsub("standardDeviation_", "", columnName, fixed = TRUE)]
+    stDevResults[, uncertaintyType:="standard deviation"]
+    setkeyv(stDevResults, keyCols)
+    numericResults <- numericResults[stDevResults]
+  }
+  if (length(numRepColumns) > 0) {
+    numRepResults[, columnName := gsub("numberOfReplicates_", "", columnName, fixed = TRUE)]
+    setkeyv(numRepResults, keyCols)
+    numericResults <- numericResults[numRepResults]
+  }
+  
   codeResults[, concentration:=cmpdConc]
   codeResults[, cmpdConc:=NULL]
   codeResults[columnName != "batchCode", concentration:=NA]
   codeResults[!is.na(concentration), concUnit:="uM"]
   
+  # Combines all tables, filling with NA
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
   fullTable <- merge(longResults, resultTypes, by = "columnName")
@@ -2505,7 +2542,6 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
   }
-  
   
   return(fullTable)  
 }
