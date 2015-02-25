@@ -1595,7 +1595,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                                      numberOfLabels=max(subjectData$treatmentGroupID)),
                                        use.names=FALSE)
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, configList$server.service.external.file.type, configList$server.service.external.file.service.url)
+  serverFileLocation <- saveAcasFileToExperiment(
+    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(subjectData[[mainCode]])
     if (configList$server.service.external.report.registration.url != "") {
@@ -2002,9 +2004,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   }
   
   
-  serverFileLocation <- moveFileToExperimentFolder(fileStartLocation, experiment, recordedBy, lsTransaction, 
-                                                   configList$server.service.external.file.type, 
-                                                   configList$server.service.external.file.service.url)
+  serverFileLocation <- saveAcasFileToExperiment(
+    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData$batchCode)
     if (configList$server.service.external.report.registration.url != "") {
@@ -2152,22 +2154,22 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   library('RCurl')
 
-  pathToGenericDataFormatExcelFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
+  fullPathToFile <- racas::getUploadedFilePath(pathToGenericDataFormatExcelFile)
   if (!is.null(reportFilePath) && reportFilePath != "") {
     reportFilePath <- racas::getUploadedFilePath(reportFilePath)
   }
   
-  lsTranscationComments <- paste("Upload of", pathToGenericDataFormatExcelFile)
+  lsTranscationComments <- paste("Upload of", fullPathToFile)
   
   # Validate Input Parameters
-  if (is.na(pathToGenericDataFormatExcelFile)) {
+  if (is.na(fullPathToFile)) {
     stop("SEL: Need Excel file path as input")
   }
-  if (!file.exists(pathToGenericDataFormatExcelFile)) {
+  if (!file.exists(fullPathToFile)) {
     stop("SEL: Cannot find input file")
   }
   
-  genericDataFileDataFrame <- readExcelOrCsv(pathToGenericDataFormatExcelFile)
+  genericDataFileDataFrame <- readExcelOrCsv(fullPathToFile)
   
   # Meta Data
   metaData <- getSection(genericDataFileDataFrame, lookFor = "Experiment Meta Data", transpose = TRUE)
@@ -2272,7 +2274,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if (!dryRun && errorFree && !useExistingExperiment) {
-    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, 
+    experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
                                       recordedBy, configList, deletedExperimentCodes)
     
     # If an error occurs, this allows the experiment to still be accessed
