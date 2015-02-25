@@ -10,8 +10,11 @@ class window.ModuleLauncher extends Backbone.Model
 		autoLaunchName: null
 
 	requestActivation: ->
-		@trigger 'activationRequested', @
-		@set isActive: true
+		if @get('menuName') is "Gene ID Query"
+			window.open("/GeneIDQuery",'_blank');
+		else
+			@trigger 'activationRequested', @
+			@set isActive: true
 
 	requestDeactivation: ->
 		@trigger 'deactivationRequested', @

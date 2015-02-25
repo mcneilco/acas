@@ -496,19 +496,24 @@ describe "Protocol module testing", ->
 						expect(@pbc.$('.bv_assayStage').val()).toEqual "unassigned"
 			describe "controller validation rules", ->
 				beforeEach ->
-					@pbc.$('.bv_scientist').val("bob")
-					@pbc.$('.bv_scientist').change()
-					@pbc.$('.bv_shortDescription').val(" New short description   ")
-					@pbc.$('.bv_shortDescription').change()
-					@pbc.$('.bv_protocolName').val(" Updated entity name   ")
-					@pbc.$('.bv_protocolName').change()
-					@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
-					@pbc.$('.bv_creationDate').change()
-					@pbc.$('.bv_notebook').val("my notebook")
-					@pbc.$('.bv_notebook').change()
+					waitsFor ->
+						@pbc.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						@pbc.$('.bv_scientist').val("bob")
+						@pbc.$('.bv_scientist').change()
+						@pbc.$('.bv_shortDescription').val(" New short description   ")
+						@pbc.$('.bv_shortDescription').change()
+						@pbc.$('.bv_protocolName').val(" Updated entity name   ")
+						@pbc.$('.bv_protocolName').change()
+						@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
+						@pbc.$('.bv_creationDate').change()
+						@pbc.$('.bv_notebook').val("my notebook")
+						@pbc.$('.bv_notebook').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
+							console.log @pbc.model.validationError
 							expect(@pbc.isValid()).toBeTruthy()
 					it "save button should be enabled", ->
 						runs ->

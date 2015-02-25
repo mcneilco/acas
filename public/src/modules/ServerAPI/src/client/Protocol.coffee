@@ -85,7 +85,7 @@ class window.ProtocolBaseController extends BaseEntityController
 
 		)
 
-	initialize: ->
+	initialize: =>
 		if @model?
 			@completeInitialization()
 		else
@@ -118,7 +118,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			else
 				@completeInitialization()
 
-	completeInitialization: ->
+	completeInitialization: =>
 		unless @model?
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
@@ -130,8 +130,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@render()
-		@model.on 'sync', @modelSyncCallback
-		@model.on 'change', @modelChangeCallback
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@model.getStatus().on 'change', @updateEditable
 #		@trigger 'amClean' #so that module starts off clean when initialized
 

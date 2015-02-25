@@ -353,8 +353,8 @@
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
       this.render();
-      this.model.on('sync', this.modelSyncCallback);
-      this.model.on('change', this.modelChangeCallback);
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       return this.model.getStatus().on('change', this.updateEditable);
     };
 

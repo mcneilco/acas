@@ -217,8 +217,8 @@ class window.BaseEntityController extends AbstractFormController
 	initialize: ->
 		unless @model?
 			@model=new BaseEntity()
-		@model.on 'sync', @modelSyncCallback
-		@model.on 'change', @modelChangeCallback
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@errorOwnerName = 'BaseEntityController'
 		@setBindings()
 		$(@el).empty()

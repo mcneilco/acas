@@ -389,8 +389,8 @@
       if (this.model == null) {
         this.model = new BaseEntity();
       }
-      this.model.on('sync', this.modelSyncCallback);
-      this.model.on('change', this.modelChangeCallback);
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.errorOwnerName = 'BaseEntityController';
       this.setBindings();
       $(this.el).empty();

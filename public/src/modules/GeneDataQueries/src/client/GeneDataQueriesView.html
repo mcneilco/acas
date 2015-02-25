@@ -36,7 +36,7 @@
 	        <tbody></tbody>
 	    </table>
     </div>
-    <div class="span5 offset3 bv_noResultsFound">
+    <div class="span5 bv_noResultsFound">
 	    <div class="well well-small noResultsWell">
 	        <h5>No results found for this query.</h5>
 	    </div>
@@ -106,7 +106,11 @@
             <option val="exact">equals</option>
             <option val="contains">contains</option>
         </select>
-        <input type="text" class="span2 bv_filterValue" placeholder="filter value" />
+        <span class="control-group bv_group_filterValue">
+            <span class="controls">
+                <input type="text" class="span2 bv_filterValue" placeholder="filter value" />
+            </span>
+        </span>
         <button class="close bv_delete">&times;</button>
     </div>
 </script>
@@ -216,7 +220,7 @@
             <h5 class="aboutACAS">About ACAS</h5>
             <span>ACAS SEL (Advanced Capture and Analysis System) is a data loading and analysis web application designed by <a  href="http://www.mcneilco.com">John McNeil & Co., Inc.</a></span>
             <div class="helpLinks">
-                <a class="btn" href="/change">Change Password</a>
+                <a class="btn" href="/passwordChange">Change Password</a>
             </div>
         </div>
         <div class="modal-footer">
@@ -228,7 +232,7 @@
         <div class="well well-small bv_toolbar">
             <button class="btn bv_gidNavHelpButton"><i class="icon-question-sign"></i></button>
             <a href="/logout" class="btn logoutButton">Logout</a>
-            <button class="btn pull-right bv_gidNavSettingsButton disabled"><i class="icon-wrench"></i></button>
+            <button class="btn pull-right bv_gidNavSettingsButton disabled hide"><i class="icon-wrench"></i></button>
         </div>
     </div>
 </script>

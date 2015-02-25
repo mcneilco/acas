@@ -32,7 +32,7 @@ See ProtocolServiceTestJSON.coffee for examples
       return it('should return a protocol stub', function() {
         waitsFor(this.waitForServiceReturn, 'service did not return', 2000);
         return runs(function() {
-          return expect(this.serviceReturn[0].codeName).toContain("PROT-");
+          return expect(this.serviceReturn.codeName).toContain("PROT-");
         });
       });
     });
