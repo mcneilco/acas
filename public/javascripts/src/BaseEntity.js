@@ -644,7 +644,9 @@
     };
 
     BaseEntityController.prototype.displayInReadOnlyMode = function() {
-      this.$(".bv_save").addClass("hide");
+      this.$(".bv_save").hide();
+      this.$(".bv_cancel").hide();
+      this.$(".bv_newEntity").hide();
       return this.disableAllInputs();
     };
 
