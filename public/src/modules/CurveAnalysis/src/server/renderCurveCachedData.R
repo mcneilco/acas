@@ -28,7 +28,7 @@ renderCurve <- function(getParams) {
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
   # GET Cached Curve Data
-  data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds)
+  data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
   data$parameters <- as.data.frame(data$parameters)
   data$points <- as.data.frame(data$points)
 
