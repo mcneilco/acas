@@ -1,5 +1,5 @@
 # The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
-# ROUTE: /curve/render/dr
+# ROUTE: /curve/render/dr-cache
 
 renderCurve <- function(getParams) {
   # Redirect to Curator if inTable is false
@@ -27,10 +27,11 @@ renderCurve <- function(getParams) {
   # Parse GET Parameters
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
-  # GET FIT DATA
-  fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
-  data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
-  
+  # GET Cached Curve Data
+  data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
+  data$parameters <- as.data.frame(data$parameters)
+  data$points <- as.data.frame(data$points)
+
   #To be backwards compatable with hill slope example files
   hillSlopes <- which(!is_null_or_na(data$parameters$hillslope))
   if(length(hillSlopes) > 0  ) {
@@ -45,14 +46,14 @@ renderCurve <- function(getParams) {
   #Get Protocol Curve Display Min and Max for first curve in list
   if(any(is.na(parsedParams$yMin),is.na(parsedParams$yMax))) {
     protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
-    plotWindow <- racas::get_plot_window(fitData[1]$points[[1]])
+    plotWindow <- racas::get_plot_window(data$points)
     recommendedDisplayWindow <- list(ymax = max(protocol_display_values$ymax,plotWindow[2], na.rm = TRUE), ymin = min(protocol_display_values$ymin,plotWindow[4], na.rm = TRUE))
     if(is.na(parsedParams$yMin)) parsedParams$yMin <- recommendedDisplayWindow$ymin
     if(is.na(parsedParams$yMax)) parsedParams$yMax <- recommendedDisplayWindow$ymax
   }
 
   #Retrieve rendering hint parameters
-  renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
+  renderingOptions <- racas::get_rendering_hint_options(data$parameters[1,]$renderingHint)
 
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
