@@ -15,7 +15,11 @@ performCalculations <- function(resultTable, parameters) {
   # compute Z' and Z' by plate
   resultTable[, zPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$normalizedActivity,
                                         negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$normalizedActivity)]
+  resultTable[, rawZPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$activity,
+                                           negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$activity)]
   resultTable[, zPrimeByPlate := computeZPrimeByPlate(.SD),
+              by=assayBarcode]
+  resultTable[, rawZPrimeByPlate := computeRawZPrimeByPlate(.SD),
               by=assayBarcode]
   
   resultTable[, index:=1:nrow(resultTable)]
@@ -46,6 +50,13 @@ computeZPrimeByPlate <- function(mainData) {
   # creates a vector called
   positiveControls <- mainData[wellType == "PC" & is.na(flag)]$normalizedActivity
   negativeControls <- mainData[wellType == "NC" & is.na(flag)]$normalizedActivity
+  
+  return(computeZPrime(positiveControls, negativeControls))
+}
+
+computeRawZPrimeByPlate <- function(mainData) {
+  positiveControls <- mainData[wellType == "PC" & is.na(flag)]$activity
+  negativeControls <- mainData[wellType == "NC" & is.na(flag)]$activity
   
   return(computeZPrime(positiveControls, negativeControls))
 }

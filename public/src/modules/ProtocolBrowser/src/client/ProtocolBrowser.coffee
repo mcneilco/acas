@@ -35,31 +35,18 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		protocolSearchTerm = $.trim(@$(".bv_protocolSearchTerm").val())
 		$(".bv_searchTerm").val ""
 		if protocolSearchTerm isnt ""
-			if @$(".bv_clearSearchIcon").hasClass "hide"
-				@$(".bv_protocolSearchTerm").attr("disabled", true)
-				@$(".bv_doSearchIcon").addClass "hide"
-				@$(".bv_clearSearchIcon").removeClass "hide"
-				$(".bv_searchingProtocolsMessage").removeClass "hide"
-				$(".bv_protocolBrowserSearchInstructions").addClass "hide"
-				$(".bv_searchTerm").html protocolSearchTerm
-
-				@doSearch protocolSearchTerm
-
-			else
-				@$(".bv_protocolSearchTerm").val ""
-				@$(".bv_protocolSearchTerm").attr("disabled", false)
-				@$(".bv_clearSearchIcon").addClass "hide"
-				@$(".bv_doSearchIcon").removeClass "hide"
-				$(".bv_searchingProtocolsMessage").addClass "hide"
-				$(".bv_protocolBrowserSearchInstructions").removeClass "hide"
-				$(".bv_searchProtocolsStatusIndicator").removeClass "hide"
-
-				@updateProtocolSearchTerm()
-				@trigger "resetSearch"
+			$(".bv_noMatchesFoundMessage").addClass "hide"
+			$(".bv_searchingProtocolsMessage").removeClass "hide"
+			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
+			$(".bv_searchTerm").html protocolSearchTerm
+			$(".bv_searchProtocolsStatusIndicator").removeClass "hide"
+			@doSearch protocolSearchTerm
 
 	doSearch: (protocolSearchTerm) =>
 		@trigger 'find'
-		#$(".bv_protocolTableController").html "Searching..."
+		# disable the search text field while performing a search
+		@$(".bv_protocolSearchTerm").attr "disabled", true
+		@$(".bv_doSearch").attr "disabled", true
 
 		unless protocolSearchTerm is ""
 			$.ajax
@@ -73,6 +60,10 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 					@trigger "searchReturned", protocol
 				error: (result) =>
 					@trigger "searchReturned", null
+				complete: =>
+					# re-enable the search text field regardless of if any results found
+					@$(".bv_protocolSearchTerm").attr "disabled", false
+					@$(".bv_doSearch").attr "disabled", false
 
 
 class window.ProtocolRowSummaryController extends Backbone.View
@@ -112,7 +103,6 @@ class window.ProtocolSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ProtocolSummaryTableView').html())
 		$(@el).html @template
-		window.fooSearchResults = @collection
 		if @collection.models.length is 0
 			@$(".bv_noMatchesFoundMessage").removeClass "hide"
 			# display message indicating no results were found
@@ -147,9 +137,10 @@ class window.ProtocolBrowserController extends Backbone.View
 			el: @$('.bv_protocolSearchController')
 		@searchController.render()
 		@searchController.on "searchReturned", @setupProtocolSummaryTable
-		@searchController.on "resetSearch", @destroyProtocolSummaryTable
+		#@searchController.on "resetSearch", @destroyProtocolSummaryTable
 
 	setupProtocolSummaryTable: (protocols) =>
+		@destroyProtocolSummaryTable()
 		$(".bv_searchingProtocolsMessage").addClass "hide"
 		if protocols is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
