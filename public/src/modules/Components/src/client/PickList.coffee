@@ -230,6 +230,9 @@ class window.EditablePickListSelectController extends Backbone.View
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
 
+	setSelectedCode: (code) ->
+		@pickListController.setSelectedCode(code)
+
 	handleShowAddPanel: =>
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
 			unless @addPanelController?

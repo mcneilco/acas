@@ -364,6 +364,10 @@
       return this.pickListController.getSelectedCode();
     };
 
+    EditablePickListSelectController.prototype.setSelectedCode = function(code) {
+      return this.pickListController.setSelectedCode(code);
+    };
+
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
         if (this.addPanelController == null) {

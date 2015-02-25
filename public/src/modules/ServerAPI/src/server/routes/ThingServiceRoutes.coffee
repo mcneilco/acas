@@ -1,4 +1,5 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.get '/api/things/:lsType/:lsKind', exports.thingsByTypeKind
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -8,6 +9,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName/:lsKind', exports.validateName
 
 exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -15,6 +17,17 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 	app.post '/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName
+
+exports.thingsByTypeKind = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.batchList
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
