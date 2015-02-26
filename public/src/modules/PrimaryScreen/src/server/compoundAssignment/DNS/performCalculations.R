@@ -157,7 +157,16 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
     } else {
       stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
-    return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    
+    # Determine if signal direction is decreasing or increasing
+    if (parameters$signalDirectionRule == "increasing") {
+      return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    } else if (parameters$signalDirectionRule == "decreasing") {
+      return(-(as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    } else {
+      stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
+    }
+    
   } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)
