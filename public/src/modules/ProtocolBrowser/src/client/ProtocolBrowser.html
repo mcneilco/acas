@@ -70,7 +70,7 @@
     <div class="bv_protocolSearchController" style="padding-bottom: 0px;"></div>
     <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
 
-        <div class="bv_searchStatusIndicator" style="height: 280px;">
+        <div class="bv_searchProtocolsStatusIndicator" style="height: 280px;">
             <table width="100%">
                 <thead>
                 <tr><td style="display: none;">placeholder</td></tr>
@@ -85,7 +85,7 @@
                             <i class="icon-search bv_doSearchIcon"></i>
                             Protocol Browser
                         </div>
-                        <div class="hide bv_searchingMessage" style="margin: auto;">
+                        <div class="hide bv_searchingProtocolsMessage" style="margin: auto;">
                             <h5>Searching for Protocols containing text "<i class="bv_searchTerm"></i>"</h5>
                             <div class="progress progress-striped active " style="width: 90%; margin: auto;">
                                 <div class="bar" style="width: 100%; margin: auto;"></div>
@@ -97,16 +97,18 @@
             </table>
         </div>
 
-        <div class="bv_protocolTableController hide" style="margin: 10px; padding: 0px; overflow: auto; height: 280px; overflow: auto;"></div>
+        <div class="bv_protocolTableController hide" style="margin: 0px; padding: 10px; overflow: auto; height: 280px; overflow: auto;"></div>
     </div>
     <!--
     <h5>Selected Protocol Details</h5>
     -->
     <div class="well well-small bv_protocolBaseControllerContainer hide" style="margin-top: 10px;">
-        <button class="btn btn-danger bv_deleteProtocol">Delete</button>
-        <button class="btn btn-success bv_createExperiment pull-right" style="margin-left:0.5em;">Create Experiment</button>
-        <button class="btn bv_duplicateProtocol pull-right" style="margin-left: 0.5em;">Duplicate</button>
-        <button class="btn bv_editProtocol pull-right">Edit</button>
+        <div>
+            <button class="btn btn-danger bv_deleteProtocol">Delete</button>
+            <button class="btn btn-success bv_createExperiment pull-right" style="margin-left:0.5em;">Create Experiment</button>
+            <button class="btn bv_duplicateProtocol pull-right" style="margin-left: 0.5em;">Duplicate</button>
+            <button class="btn bv_editProtocol pull-right">Edit</button>
+        </div>
         <hr />
         <div class="">
             <div class="bv_protocolBaseController hide"></div>

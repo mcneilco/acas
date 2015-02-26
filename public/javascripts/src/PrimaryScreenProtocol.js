@@ -746,8 +746,8 @@
         this.model = new PrimaryScreenProtocol();
       }
       $(this.el).html(this.template());
-      this.model.on('sync', this.modelSyncCallback);
-      this.model.on('change', this.modelChangeCallback);
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();

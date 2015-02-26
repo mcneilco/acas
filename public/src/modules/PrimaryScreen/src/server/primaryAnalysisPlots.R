@@ -25,7 +25,7 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
 #        xlim = c(-1,2),
        xlim = c(floor(min(values)),ceiling(max(values))),
        ylim = c(0,yHeight*1.04),
-       xlab = "Normalized Activity (rfu)",
+       xlab = "Normalized Activity",
        ylab = "Number per bin",
        yaxs="i",
        type="n"
@@ -47,7 +47,7 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
 }
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
-                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), 
+                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity", margins = c(1,1,1,1), 
                                rotateXLabel = FALSE, colourPalette = NA, threshold = NULL) {
   #error handling
   if (all(!PC,!NC,!test)) {
@@ -167,7 +167,7 @@ createComparison <- function(title, ylim = NULL, norm = FALSE,
            yData[resultTableCopy$wellType == "NC"], 
            col = "green")
   }
-  title(main = title, ylab = "Activity (rfu)") 
+  title(main = title, ylab = "Activity") 
   legend(x=(max(tickLocations)-min(tickLocations))*.7+min(tickLocations), y=2, fill=c("green","red"), legend=c("positive control","negative control"), xpd = TRUE)
   
 }
@@ -233,7 +233,7 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
           axis.text.y = element_text(size = rel(1)),
           axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
-  scale_fill_continuous(name="Activity (rfu)")
+  scale_fill_continuous(name="Normalized Activity")
   return(plateHeatmap)
 }
 

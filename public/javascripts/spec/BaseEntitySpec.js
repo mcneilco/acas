@@ -134,13 +134,12 @@
             return expect(this.bem.getNotebook().get('stringValue')).toEqual("911");
           });
           return it('Should have a status value', function() {
-            console.log(this.bem.getStatus());
             return expect(this.bem.getStatus().get('codeValue')).toEqual("started");
           });
         });
       });
       describe("model change propogation", function() {
-        it("should trigger change when label changed", function() {
+        it("should triggprier change when label changed", function() {
           runs(function() {
             this.bem = new BaseEntity();
             this.baseEntityChanged = false;

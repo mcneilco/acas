@@ -476,8 +476,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		unless @model?
 			@model = new PrimaryScreenProtocol()
 		$(@el).html @template()
-		@model.on 'sync', @modelSyncCallback
-		@model.on 'change', @modelChangeCallback
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@model.on 'readyToSave', @handleFinishSave
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()

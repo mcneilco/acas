@@ -144,6 +144,8 @@
       this.handleCreationDateChanged = __bind(this.handleCreationDateChanged, this);
       this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 
@@ -221,8 +223,8 @@
       this.setupTagList();
       this.setUpAssayStageSelect();
       this.render();
-      this.model.on('sync', this.modelSyncCallback);
-      this.model.on('change', this.modelChangeCallback);
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       return this.model.getStatus().on('change', this.updateEditable);
     };
 

@@ -21,7 +21,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                        "Well", "Row", "Column", "Plate Order", "Well Type", "Corporate Name",
                        "Batch Number", "Corporate Batch Name", "Compound Concentration",
                        activityColNames,
-                       "Efficacy", "SD Score", "Z' By Plate", "Z'", getActivityFullName(parameters), 
+                       "Efficacy", "SD Score", "Z' By Plate", "Raw Z' By Plate", "Z'", "Raw Z'", getActivityFullName(parameters), 
                        "Normalized Activity", "Flag Type", "Flag Observation", "Flag Reason",
                        "Flag Comment", "Auto Flag Type", "Auto Flag Observation",
                        "Auto Flag Reason")
