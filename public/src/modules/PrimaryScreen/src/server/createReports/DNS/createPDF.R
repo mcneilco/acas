@@ -31,16 +31,16 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
                            wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate", 
                            margins = c(4,2,20,4), rotateXLabel = TRUE, test = FALSE, colourPalette = c("blue","green")))
   
-  if(!is.null(resultTable$"transformed_% efficacy")) {
+  if(!is.null(resultTable$"transformed_percent efficacy")) {
     print(createGGComparison(graphTitle = "Efficacy by Compound Barcode", xColumn=resultTable$batchName,
-                             wellType = resultTable$wellType, dataRow = resultTable$"transformed_% efficacy", xLabel = "Compound Batch", 
+                             wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Compound Batch", 
                              margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
-                             yLabel="% efficacy"))
+                             yLabel="percent efficacy"))
     
     print(createGGComparison(graphTitle = "Efficacy by Plate Order", xColumn=resultTable$plateOrder,
-                             wellType = resultTable$wellType, dataRow = resultTable$"transformed_% efficacy", xLabel = "Plate Order", 
+                             wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Plate Order", 
                              margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
-                             yLabel="% efficacy"))
+                             yLabel="percent efficacy"))
   }
   
   createZPrimeByPlatePlot(resultTable)
