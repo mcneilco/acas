@@ -914,6 +914,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
+		console.log "handle save return success"
 		super(json)
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
@@ -1161,6 +1162,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@model.getStatus().on 'change', @handleStatusChanged
 
 	handleAnalysisComplete: =>
+		console.log "handle analysis complete"
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
 		@trigger 'analysis-completed'
@@ -1264,8 +1266,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
-			@modelFitController.render()
-			@modelFitController.setReadyForFit()
+			@fetchModel()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
@@ -1341,6 +1342,29 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 	reinitialize: =>
 		@model = null
 		@completeInitialization()
+
+	fetchModel: =>
+		console.log "fetch Model"
+#		@model.fetch
+#			success: @updateModelFitTab()
+
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codeName/"+@model.get('codeName')
+			success: (json) =>
+				@model = new PrimaryScreenExperiment json
+				@updateModelFitTab()
+			error: (err) =>
+				alert 'Could not get experiment with this codeName'
+			dataType: 'json'
+
+	updateModelFitTab: =>
+		console.log "update Model Fit Tab"
+		@modelFitController.model = @model
+		@modelFitController.setReadyForFit()
+		@$('.bv_resultsContainer').hide()
+#		@modelFitController.render()
+
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
