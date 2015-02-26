@@ -1450,14 +1450,14 @@ checkControls <- function(resultTable) {
   }
   
   if(!controlsExist$posExists && !controlsExist$negExists) {
-    stopUser("The positive and negative controls were not found in the plates. Make sure all transfers have been loaded 
-             and your controls are defined correctly.")
+    stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
+             and your controls and dilution factor are defined correctly.")
   } else if (!controlsExist$posExists) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control is defined correctly.")
+    stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control (or dilution factor) is defined correctly.")
   } else if (!controlsExist$negExists) {
-    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
-             and your negative control is defined correctly.")
+    stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your negative control (or dilution factor) is defined correctly.")
   }
 }
 
