@@ -706,20 +706,26 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.pbc.$('.bv_scientist').val("bob");
-            this.pbc.$('.bv_scientist').change();
-            this.pbc.$('.bv_shortDescription').val(" New short description   ");
-            this.pbc.$('.bv_shortDescription').change();
-            this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
-            this.pbc.$('.bv_protocolName').change();
-            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_creationDate').change();
-            this.pbc.$('.bv_notebook').val("my notebook");
-            return this.pbc.$('.bv_notebook').change();
+            waitsFor(function() {
+              return this.pbc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_scientist').val("bob");
+              this.pbc.$('.bv_scientist').change();
+              this.pbc.$('.bv_shortDescription').val(" New short description   ");
+              this.pbc.$('.bv_shortDescription').change();
+              this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
+              this.pbc.$('.bv_protocolName').change();
+              this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+              this.pbc.$('.bv_creationDate').change();
+              this.pbc.$('.bv_notebook').val("my notebook");
+              return this.pbc.$('.bv_notebook').change();
+            });
           });
           describe("form validation setup", function() {
             it("should be valid if form fully filled out", function() {
               return runs(function() {
+                console.log(this.pbc.model.validationError);
                 return expect(this.pbc.isValid()).toBeTruthy();
               });
             });

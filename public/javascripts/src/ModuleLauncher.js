@@ -21,10 +21,14 @@
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
-      this.trigger('activationRequested', this);
-      return this.set({
-        isActive: true
-      });
+      if (this.get('menuName') === "Gene ID Query") {
+        return window.open("/GeneIDQuery", '_blank');
+      } else {
+        this.trigger('activationRequested', this);
+        return this.set({
+          isActive: true
+        });
+      }
     };
 
     ModuleLauncher.prototype.requestDeactivation = function() {

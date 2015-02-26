@@ -45,7 +45,7 @@ class window.CurveCuratorAppController extends Backbone.View
 					resultViewerURL = @resultViewerURL.resultViewerURL
 					@$('.bv_resultViewerBtn').attr('href',resultViewerURL)
 					@$('.bv_resultViewerBtn').show()
-			error: (err) =>
+				error: (err) =>
 					@serviceReturn = null
 				dataType: 'json'
 

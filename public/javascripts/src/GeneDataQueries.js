@@ -310,10 +310,69 @@
 
   })(Backbone.View);
 
+  window.ExperimentResultFilterTerm = (function(_super) {
+    __extends(ExperimentResultFilterTerm, _super);
+
+    function ExperimentResultFilterTerm() {
+      return ExperimentResultFilterTerm.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentResultFilterTerm.prototype.defaults = function() {
+      return {
+        filterValue: ""
+      };
+    };
+
+    ExperimentResultFilterTerm.prototype.validate = function(attrs) {
+      var errors;
+      errors = [];
+      if ((attrs.filterValue === "" && attrs.lsType !== 'booleanValue') || (attrs.filterValue === null && attrs.lsType !== 'booleanValue')) {
+        errors.push({
+          attribute: 'filterValue',
+          message: "Filter value must be set"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
+    return ExperimentResultFilterTerm;
+
+  })(Backbone.Model);
+
+  window.ExperimentResultFilterTermList = (function(_super) {
+    __extends(ExperimentResultFilterTermList, _super);
+
+    function ExperimentResultFilterTermList() {
+      return ExperimentResultFilterTermList.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentResultFilterTermList.prototype.model = ExperimentResultFilterTerm;
+
+    ExperimentResultFilterTermList.prototype.validateCollection = function() {
+      var modelErrors;
+      modelErrors = [];
+      this.each((function(_this) {
+        return function(model) {
+          return modelErrors.push.apply(modelErrors, model.validationError);
+        };
+      })(this));
+      return modelErrors;
+    };
+
+    return ExperimentResultFilterTermList;
+
+  })(Backbone.Collection);
+
   window.ExperimentResultFilterTermController = (function(_super) {
     __extends(ExperimentResultFilterTermController, _super);
 
     function ExperimentResultFilterTermController() {
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
       this.clear = __bind(this.clear, this);
       this.updateModel = __bind(this.updateModel, this);
       this.setOperatorOptions = __bind(this.setOperatorOptions, this);
@@ -331,10 +390,13 @@
     ExperimentResultFilterTermController.prototype.events = {
       "change .bv_experiment": "setKindOptions",
       "change .bv_kind": "setOperatorOptions",
-      "click .bv_delete": "clear"
+      "click .bv_delete": "clear",
+      "change .bv_filterValue": "attributeChanged"
     };
 
     ExperimentResultFilterTermController.prototype.initialize = function() {
+      this.errorOwnerName = 'ExperimentResultFilterTermController';
+      this.setBindings();
       this.filterOptions = this.options.filterOptions;
       this.model.set({
         termName: this.options.termName
@@ -377,17 +439,26 @@
           this.$('.bv_operator_number').addClass('bv_operator').show();
           this.$('.bv_operator_bool').removeClass('bv_operator').hide();
           this.$('.bv_operator_string').removeClass('bv_operator').hide();
-          return this.$('.bv_filterValue').show();
+          this.$('.bv_filterValue').show();
+          this.$('.bv_filterValue').val("");
+          this.$('.bv_filterValue').change();
+          return this.updateModel();
         case "booleanValue":
           this.$('.bv_operator_number').removeClass('bv_operator').hide();
           this.$('.bv_operator_bool').addClass('bv_operator').show();
           this.$('.bv_operator_string').removeClass('bv_operator').hide();
-          return this.$('.bv_filterValue').hide();
+          this.$('.bv_filterValue').hide();
+          this.$('.bv_filterValue').val("");
+          this.$('.bv_filterValue').change();
+          return this.updateModel();
         case "stringValue":
           this.$('.bv_operator_number').removeClass('bv_operator').hide();
           this.$('.bv_operator_bool').removeClass('bv_operator').hide();
           this.$('.bv_operator_string').addClass('bv_operator').show();
-          return this.$('.bv_filterValue').show();
+          this.$('.bv_filterValue').show();
+          this.$('.bv_filterValue').val("");
+          this.$('.bv_filterValue').change();
+          return this.updateModel();
       }
     };
 
@@ -421,17 +492,29 @@
     };
 
     ExperimentResultFilterTermController.prototype.clear = function() {
-      return this.model.destroy();
+      this.model.destroy();
+      return this.trigger('checkCollection');
+    };
+
+    ExperimentResultFilterTermController.prototype.validationError = function() {
+      ExperimentResultFilterTermController.__super__.validationError.call(this);
+      return this.trigger('disableNext');
+    };
+
+    ExperimentResultFilterTermController.prototype.clearValidationErrorStyles = function() {
+      ExperimentResultFilterTermController.__super__.clearValidationErrorStyles.call(this);
+      return this.trigger('enableNext');
     };
 
     return ExperimentResultFilterTermController;
 
-  })(Backbone.View);
+  })(AbstractFormController);
 
   window.ExperimentResultFilterTermListController = (function(_super) {
     __extends(ExperimentResultFilterTermListController, _super);
 
     function ExperimentResultFilterTermListController() {
+      this.checkCollection = __bind(this.checkCollection, this);
       this.addOne = __bind(this.addOne, this);
       this.render = __bind(this.render, this);
       return ExperimentResultFilterTermListController.__super__.constructor.apply(this, arguments);
@@ -453,12 +536,13 @@
     ExperimentResultFilterTermListController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
+      this.collection.on('change', this.checkCollection);
       return this;
     };
 
     ExperimentResultFilterTermListController.prototype.addOne = function() {
       var erftc, newModel;
-      newModel = new Backbone.Model();
+      newModel = new ExperimentResultFilterTerm();
       this.collection.add(newModel);
       erftc = new ExperimentResultFilterTermController({
         model: newModel,
@@ -466,7 +550,35 @@
         termName: this.TERM_NUMBER_PREFIX + this.nextTermNumber++
       });
       this.$('.bv_filterTerms').append(erftc.render().el);
-      return this.on("updateFilterModels", erftc.updateModel);
+      this.on("updateFilterModels", erftc.updateModel);
+      erftc.on('checkCollection', (function(_this) {
+        return function() {
+          return _this.checkCollection();
+        };
+      })(this));
+      erftc.on('disableNext', (function(_this) {
+        return function() {
+          return _this.trigger('disableNext');
+        };
+      })(this));
+      erftc.on('enableNext', (function(_this) {
+        return function() {
+          return _this.trigger('enableNext');
+        };
+      })(this));
+      if (erftc.model.validationError.length > 0) {
+        return this.trigger('disableNext');
+      } else {
+        return this.trigger('enableNext');
+      }
+    };
+
+    ExperimentResultFilterTermListController.prototype.checkCollection = function() {
+      if (this.collection.validateCollection().length > 0) {
+        return this.trigger('disableNext');
+      } else {
+        return this.trigger('enableNext');
+      }
     };
 
     ExperimentResultFilterTermListController.prototype.updateCollection = function() {
@@ -503,10 +615,20 @@
       $(this.el).html(this.template());
       this.erftlc = new ExperimentResultFilterTermListController({
         el: this.$('.bv_filterTermList'),
-        collection: new Backbone.Collection(),
+        collection: new ExperimentResultFilterTermList(),
         filterOptions: this.filterOptions
       });
       this.erftlc.render();
+      this.erftlc.on('enableNext', (function(_this) {
+        return function() {
+          return _this.trigger('enableNext');
+        };
+      })(this));
+      this.erftlc.on('disableNext', (function(_this) {
+        return function() {
+          return _this.trigger('disableNext');
+        };
+      })(this));
       this.handleBooleanFilterChanged();
       return this;
     };
@@ -657,6 +779,16 @@
         filterOptions: new Backbone.Collection(json.results.experiments)
       });
       this.erfc.render();
+      this.erfc.on('disableNext', (function(_this) {
+        return function() {
+          return _this.trigger('disableNext');
+        };
+      })(this));
+      this.erfc.on('enableNext', (function(_this) {
+        return function() {
+          return _this.trigger('enableNext');
+        };
+      })(this));
       this.$('.bv_getExperimentsView').hide();
       this.$('.bv_getFiltersView').show();
       return this.nextStep = 'fromFiltersToResults';

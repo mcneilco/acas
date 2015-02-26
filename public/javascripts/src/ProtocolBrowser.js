@@ -72,10 +72,10 @@
       $(".bv_searchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
-        $(".bv_searchingMessage").removeClass("hide");
+        $(".bv_searchingProtocolsMessage").removeClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
         $(".bv_searchTerm").html(protocolSearchTerm);
-        $(".bv_searchStatusIndicator").removeClass("hide");
+        $(".bv_searchProtocolsStatusIndicator").removeClass("hide");
         return this.doSearch(protocolSearchTerm);
       }
     };
@@ -249,14 +249,14 @@
 
     ProtocolBrowserController.prototype.setupProtocolSummaryTable = function(protocols) {
       this.destroyProtocolSummaryTable();
-      $(".bv_searchingMessage").addClass("hide");
+      $(".bv_searchingProtocolsMessage").addClass("hide");
       if (protocols === null) {
         return this.$(".bv_errorOccurredPerformingSearch").removeClass("hide");
       } else if (protocols.length === 0) {
         this.$(".bv_noMatchesFoundMessage").removeClass("hide");
         return this.$(".bv_protocolTableController").html("");
       } else {
-        $(".bv_searchStatusIndicator").addClass("hide");
+        $(".bv_searchProtocolsStatusIndicator").addClass("hide");
         this.$(".bv_protocolTableController").removeClass("hide");
         this.protocolSummaryTable = new ProtocolSummaryTableController({
           collection: new ProtocolList(protocols)
@@ -280,7 +280,20 @@
       $('.bv_protocolBaseController').html(this.protocolController.render().el);
       this.protocolController.displayInReadOnlyMode();
       $(".bv_protocolBaseController").removeClass("hide");
-      return $(".bv_protocolBaseControllerContainer").removeClass("hide");
+      $(".bv_protocolBaseControllerContainer").removeClass("hide");
+      if (protocol.getStatus().get('codeValue') === "deleted") {
+        this.$('.bv_deleteProtocol').hide();
+        this.$('.bv_editProtocol').hide();
+        return this.$('.bv_duplicateProtocol').hide();
+      } else {
+        this.$('.bv_editProtocol').show();
+        this.$('.bv_duplicateProtocol').show();
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+          return this.$('.bv_deleteProtocol').show();
+        } else {
+          return this.$('.bv_deleteProtocol').hide();
+        }
+      }
     };
 
     ProtocolBrowserController.prototype.handleDeleteProtocolClicked = function() {
@@ -303,7 +316,7 @@
       this.$(".bv_deletingStatusIndicator").removeClass("hide");
       this.$(".bv_deleteButtons").addClass("hide");
       return $.ajax({
-        url: "api/protocols/browser/" + (this.protocolController.model.get("id")),
+        url: "/api/protocols/browser/" + (this.protocolController.model.get("id")),
         type: 'DELETE',
         success: (function(_this) {
           return function(result) {

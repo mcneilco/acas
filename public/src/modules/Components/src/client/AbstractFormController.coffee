@@ -77,7 +77,7 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags input").css "background-color", "#eeeeee"
 		@$(".bv_group_tags input").css "color", "#333333"
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#eeeeee"
-
+		@$("span.tag.label.label-info span").attr "data-role", ""
 
 
 	enableAllInputs: ->
