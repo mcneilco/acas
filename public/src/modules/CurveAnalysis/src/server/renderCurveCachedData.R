@@ -42,10 +42,9 @@ renderCurve <- function(getParams) {
     data$parameters$fitted_slope <- -data$parameters$fitted_hillslope[fittedHillSlopes]
   }
   
-  
   #Get Protocol Curve Display Min and Max for first curve in list
   if(any(is.na(parsedParams$yMin),is.na(parsedParams$yMax))) {
-    protocol_display_values <- racas::get_protocol_curve_display_min_and_max_by_curve_id(parsedParams$curveIds[[1]])
+    protocol_display_values <- list(ymax = data$parameters[1,]$curvedisplaymax, ymin = data$parameters[1,]$curvedisplaymin)
     plotWindow <- racas::get_plot_window(data$points)
     recommendedDisplayWindow <- list(ymax = max(protocol_display_values$ymax,plotWindow[2], na.rm = TRUE), ymin = min(protocol_display_values$ymin,plotWindow[4], na.rm = TRUE))
     if(is.na(parsedParams$yMin)) parsedParams$yMin <- recommendedDisplayWindow$ymin
