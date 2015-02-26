@@ -1730,7 +1730,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"performCalculations.R"))
   
+  if(length(unique(resultTable$activity)) == 1) {
+    stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
+  }
+    
   resultTable <- performCalculations(resultTable, parameters)
+  
+  if(unique(resultTable$normalizedActivity) == "NaN") {
+    stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
+  }
+  
+  
   
   ## BLUE SECTION - Auto Well Flagging
 
@@ -2515,15 +2525,15 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
   ### Melt each group
-  numericResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
+  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
                          variable.name="columnName", value.name="numericValue")
-  stDevResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
                        variable.name="columnName", value.name="uncertainty")
-  numRepResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
                         variable.name="columnName", value.name="numberOfReplicates")
-  codeResults <- reshape2::melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
+  codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
                       variable.name="columnName", value.name="codeValue")
-  stringResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
+  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
   
