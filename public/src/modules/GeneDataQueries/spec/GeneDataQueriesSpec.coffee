@@ -224,12 +224,38 @@ describe "Gene Data Queries Module Testing", ->
 
 
 		describe "Experiment attribute filtering panel", ->
+			describe "Experiment Result Filter Term model testing", ->
+				describe "when loaded from new", ->
+					beforeEach ->
+						@erft = new ExperimentResultFilterTerm()
+					describe "Defaults", ->
+						it 'Should have a empty filter value', ->
+							expect(@erft.get("filterValue")).toEqual ""
+				describe "model validation tests", ->
+					beforeEach ->
+						@erft = new ExperimentResultFilterTerm()
+					it "should be invalid when the filter value is empty and the lsType is not booleanValue", ->
+						@erft.set lsType: "stringValue"
+						@erft.set filterValue: ""
+						expect(@erft.isValid()).toBeFalsy()
+						filtErrors = _.filter @erft.validationError, (err) ->
+							err.attribute=='filterValue'
+						expect(filtErrors.length).toBeGreaterThan 0
+
+			describe "Experiment Result Filter Term List testing", ->
+				describe "When loaded from new", ->
+					beforeEach ->
+						@erftl = new ExperimentResultFilterTermList()
+					describe "Existence", ->
+						it "should be defined", ->
+							expect(@erftl).toBeDefined()
+
 			describe "filter term controller", ->
 				describe 'when instantiated', ->
 					beforeEach ->
 						@erftc = new ExperimentResultFilterTermController
 							el: $('#fixture')
-							model: new Backbone.Model()
+							model: new ExperimentResultFilterTerm()
 							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
 							termName: "Q1"
 						@erftc.render()
@@ -298,6 +324,19 @@ describe "Gene Data Queries Module Testing", ->
 							@erftc.$('.bv_kind').change()
 							expect(@erftc.$('.bv_operator option').length).toEqual 3
 							expect(@erftc.$('.bv_filterValue')).toBeVisible()
+					describe "controller validation rules", ->
+						describe "when filter value is hidden", ->
+							it "should be invalid", ->
+								@erftc.$('.bv_kind').val "hit"
+								@erftc.$('.bv_kind').change()
+								expect(@erftc.$('.bv_group_filterValue').hasClass('error')).toBeFalsy()
+						describe "when filter value is shown and not filled", ->
+							it "should be invalid", ->
+								@erftc.$('.bv_kind').val "category"
+								@erftc.$('.bv_kind').change()
+								@erftc.$('.bv_filterValue').val("")
+								@erftc.$('.bv_filterValue').change()
+								expect(@erftc.$('.bv_group_filterValue').hasClass('error')).toBeTruthy()
 					describe "get filter term", ->
 						it "should return hash of user selections", ->
 							@erftc.$('.bv_experiment').val "EXPT-00000396"
@@ -317,7 +356,7 @@ describe "Gene Data Queries Module Testing", ->
 					beforeEach ->
 						@erftlc = new ExperimentResultFilterTermListController
 							el: $('#fixture')
-							collection: new Backbone.Collection()
+							collection: new ExperimentResultFilterTermList()
 							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
 						@erftlc.render()
 					describe "basic existance tests", ->

@@ -26,7 +26,7 @@
 
 </script>
 
-		<!--TODOX: bv_moduleTitle needs to be smaller; padding below module loader needs to be reduced. -->
+<!--TODOX: bv_moduleTitle needs to be smaller; padding below module loader needs to be reduced. -->
 
 
 <script type="text/template" id="PrimaryScreenAnalysisParametersView" xmlns="http://www.w3.org/1999/html">
@@ -81,14 +81,14 @@
                 </form>
             </div>
 
-        <div class="pull-left">
-            <div style="padding-left:40px;">Vehicle Control</div>
+            <div class="pull-left">
+                <div style="padding-left:40px;">Vehicle Control</div>
                 <form class="bv_group_vehicleControlBatch control-group pull-left" style="padding-left:40px;">
                     <input class="input-medium pull-left bv_vehicleControlBatch" style="width:258px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
                 </form>
             </div>
         </div>
-	</div>
+    </div>
 
     <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
 
@@ -129,7 +129,7 @@
             <label class="control-label">Instrument Reader</label>
             <div class="controls">
                 <select class="bv_instrumentReader" style="width:349px;">
-               </select>
+                </select>
             </div>
         </div>
     </div>
@@ -216,7 +216,7 @@
 
 
     <!--<hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;" />-->
-<!---->
+    <!---->
     <!--<h5 style="margin-bottom:27px;">Upload Data and Analyze</h5>-->
 
 
@@ -226,16 +226,16 @@
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
 
     <!--<h5>-->
-        <!--<span>Analysis Status:</span>-->
-        <!--<span class="bv_analysisStatus"></span>-->
+    <!--<span>Analysis Status:</span>-->
+    <!--<span class="bv_analysisStatus"></span>-->
     <!--</h5>-->
     <div class="bv_fileUploadWrapper"></div>
 
     <!--<div class="bv_resultsContainer">-->
-        <!--<h5>Results:</h5>-->
-        <!--<div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">-->
-            <!--<div class="bv_analysisResultsHTML"></div>-->
-        <!--</div>-->
+    <!--<h5>Results:</h5>-->
+    <!--<div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">-->
+    <!--<div class="bv_analysisResultsHTML"></div>-->
+    <!--</div>-->
     <!--</div>-->
     <div class="bv_saveExperimentToAnalyze span10">To analyze data, save the experiment.</div>
 
@@ -271,8 +271,8 @@
         </span>
         <span class="bv_group_activity">
             <label class="control-label radio" style="width:80px;padding-left:0;">
-            <input type="radio" name="bv_activity" class="bv_activity" style="margin-right:10px;margin-top:2px;" <% if (activity) { %> checked="checked"<% }%> />Activity
-        </label>
+                <input type="radio" name="bv_activity" class="bv_activity" style="margin-right:10px;margin-top:2px;" <% if (activity) { %> checked="checked"<% }%> />Activity
+            </label>
         </span>
         <button class="close bv_delete" style="margin-top:1px;">&times;</button>
 
@@ -295,6 +295,6 @@
 </script>
 
 <script type="text/template" id="TransformationRuleListView" xmlns="http://www.w3.org/1999/html">
-<span class="bv_transformationInfo pull-right"></span>
-<button class="btn bv_addTransformationButton" style="margin-left:388px;">Add Transformation</button>
+    <span class="bv_transformationInfo pull-right"></span>
+    <button class="btn bv_addTransformationButton" style="margin-left:388px;">Add Transformation</button>
 </script>

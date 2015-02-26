@@ -168,7 +168,7 @@
         emptyResponse = [];
         return res.end(JSON.stringify(emptyResponse));
       } else {
-        return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
+        return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]));
       }
     } else {
       config = require('../conf/compiled/conf.js');

@@ -64,7 +64,7 @@
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_loadCurvesModal'));
       this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
-      $.ajax({
+      return $.ajax({
         type: 'GET',
         url: "/api/experiments/resultViewerURL/" + exptCode,
         success: (function(_this) {
@@ -75,16 +75,14 @@
             _this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
             return _this.$('.bv_resultViewerBtn').show();
           };
-        })(this)
-      });
-      return {
+        })(this),
         error: (function(_this) {
           return function(err) {
             return _this.serviceReturn = null;
           };
         })(this),
         dataType: 'json'
-      };
+      });
     };
 
     CurveCuratorAppController.prototype.hideLoadCurvesModal = function() {

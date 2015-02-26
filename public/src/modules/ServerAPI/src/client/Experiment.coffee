@@ -217,10 +217,9 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
-		@model.on 'sync', @modelSyncCallback
-		@model.on 'change', @modelChangeCallback
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@model.getStatus().on 'change', @updateEditable
-
 
 	render: =>
 		unless @model?

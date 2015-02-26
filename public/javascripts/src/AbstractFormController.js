@@ -111,7 +111,8 @@
       this.$(".bv_group_tags input").prop("placeholder", "");
       this.$(".bv_group_tags input").css("background-color", "#eeeeee");
       this.$(".bv_group_tags input").css("color", "#333333");
-      return this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
+      this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
+      return this.$("span.tag.label.label-info span").attr("data-role", "");
     };
 
     AbstractFormController.prototype.enableAllInputs = function() {
