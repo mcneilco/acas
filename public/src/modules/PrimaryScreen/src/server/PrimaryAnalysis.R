@@ -1915,11 +1915,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         # "Fluorescent wells" = sum(resultTable$fluorescent),
-        # "Flagged wells" = sum(!is.na(resultTable$flag)),
+        "Flagged wells" = sum(!is.na(resultTable$flag)),
+        "Number of wells" = nrow(resultTable),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
         # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
+        "Positive Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
+                                            "\nCount: ",nrow(resultTable[wellType == "PC"]),
+                                            "\nMean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\nMedian: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+        "Negative Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
+                                            "\nCount: ",nrow(resultTable[wellType == "NC"]),
+                                            "\nMean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\nMedian: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
