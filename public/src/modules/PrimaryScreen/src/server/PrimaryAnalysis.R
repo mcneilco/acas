@@ -2515,15 +2515,15 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
   ### Melt each group
-  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
+  numericResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
                          variable.name="columnName", value.name="numericValue")
-  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+  stDevResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
                        variable.name="columnName", value.name="uncertainty")
-  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+  numRepResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
                         variable.name="columnName", value.name="numberOfReplicates")
-  codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
+  codeResults <- reshape2::melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
                       variable.name="columnName", value.name="codeValue")
-  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
+  stringResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
   
