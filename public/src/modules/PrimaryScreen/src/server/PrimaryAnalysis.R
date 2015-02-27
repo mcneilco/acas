@@ -1736,7 +1736,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
   resultTable <- performCalculations(resultTable, parameters)
   
-  if(unique(resultTable$normalizedActivity) == "NaN") {
+  if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
   }
   
