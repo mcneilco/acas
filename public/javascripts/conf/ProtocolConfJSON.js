@@ -1,13 +1,13 @@
 (function() {
   (function(exports) {
-    exports.protocolTypes = [
+    exports.protocoltypes = [
       {
         typeName: "Biology"
       }, {
         typeName: "default"
       }
     ];
-    exports.protocolKind = [
+    exports.protocolkind = [
       {
         typeName: "Biology",
         kindName: "Bio Activity"
@@ -16,12 +16,12 @@
         kindName: "default"
       }
     ];
-    exports.stateTypes = [
+    exports.statetypes = [
       {
         typeName: "metadata"
       }
     ];
-    exports.stateKinds = [
+    exports.statekinds = [
       {
         typeName: "metadata",
         kindName: "protocol metadata"
@@ -33,7 +33,7 @@
         kindName: "experiment metadata"
       }
     ];
-    exports.valueTypes = [
+    exports.valuetypes = [
       {
         typeName: "dateValue"
       }, {
@@ -48,7 +48,7 @@
         typeName: "numericValue"
       }
     ];
-    exports.valueKinds = [
+    exports.valuekinds = [
       {
         typeName: "dateValue",
         kindName: "creation date"
@@ -114,18 +114,18 @@
         kindName: "model fit parameters"
       }
     ];
-    exports.labelTypes = [
+    exports.labeltypes = [
       {
         typeName: "name"
       }
     ];
-    exports.labelKinds = [
+    exports.labelkinds = [
       {
         typeName: "name",
         kindName: "protocol name"
       }
     ];
-    exports.ddictTypes = [
+    exports.ddicttypes = [
       {
         typeName: "protocol"
       }, {
@@ -144,7 +144,7 @@
         typeName: "protocol metadata"
       }
     ];
-    exports.ddictKinds = [
+    exports.ddictkinds = [
       {
         typeName: "protocol",
         kindName: "status"
@@ -201,7 +201,7 @@
         kindName: "type"
       }
     ];
-    return exports.ddictValues = [
+    exports.ddictvalues = [
       {
         codeType: "protocol",
         codeKind: "status",
@@ -349,6 +349,16 @@
         code: "4 parameter D-R",
         name: "EC50",
         ignored: false
+      }
+    ];
+    return exports.labelsequences = [
+      {
+        digits: 8,
+        groupDigits: false,
+        labelPrefix: "PROT",
+        labelSeparator: "-",
+        labelTypeAndKind: "id_codeName",
+        thingTypeAndKind: "document_protocol"
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.protocolConfJSON = window.protocolConfJSON || {} : exports));

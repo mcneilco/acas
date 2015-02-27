@@ -2579,3 +2579,16 @@
 2015-01-07T22:13:49.916Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=egao, transactionId=null
 2015-01-07T22:23:46.945Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2015-01-07T22:23:47.213Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:20:04.392Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:20:04.679Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:20:11.511Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-02-27T00:27:10.984Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:27:11.254Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:27:16.141Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-02-27T00:34:13.109Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:34:13.453Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:34:15.733Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-02-27T00:39:28.713Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:39:28.991Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-02-27T00:39:58.972Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-02-27T00:40:01.542Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null

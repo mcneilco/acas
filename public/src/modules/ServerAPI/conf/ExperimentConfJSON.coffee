@@ -1,12 +1,12 @@
 ((exports) ->
-	exports.experimentTypes =
+	exports.experimenttypes =
 		[
 			typeName: "Biology"
 		,
 			typeName: "default"
 		]
 
-	exports.experimentKind =
+	exports.experimentkind =
 		[
 			typeName: "Biology"
 			kindName: "Bio Activity"
@@ -15,12 +15,12 @@
 			kindName: "default"
 		]
 
-	exports.stateTypes =
+	exports.statetypes =
 		[
 			typeName: "metadata"
 		]
 
-	exports.stateKinds =
+	exports.statekinds =
 		[
 			typeName: "metadata"
 			kindName: "experiment metadata"
@@ -32,7 +32,7 @@
 			kindName: "report locations"
 		]
 
-	exports.valueTypes =
+	exports.valuetypes =
 		[
 			typeName: "dateValue"
 		,
@@ -45,7 +45,7 @@
 			typeName: "fileValue"
 		]
 
-	exports.valueKinds =
+	exports.valuekinds =
 		[
 			typeName: "codeValue"
 			kindName: "project"
@@ -108,18 +108,18 @@
 			kindName: "report file"
 		]
 
-	exports.labelTypes =
+	exports.labeltypes =
 		[
 			typeName: "name"
 		]
 
-	exports.labelKinds =
+	exports.labelkinds =
 		[
 			typeName: "name"
 			kindName: "experiment name"
 		]
 
-	exports.ddictTypes =
+	exports.ddicttypes =
 		[
 			typeName: "project"
 		,
@@ -140,7 +140,7 @@
 			typeName: "experiment metadata"
 		]
 
-	exports.ddictKinds =
+	exports.ddictkinds =
 		[
 			typeName: "project"
 			kindName: "biology"
@@ -185,7 +185,7 @@
 			kindName: "type"
 		]
 
-	exports.ddictValues =
+	exports.ddictvalues =
 		[
 			codeType: "project"
 			codeKind: "biology"
@@ -370,5 +370,13 @@
 			ignored: false
 		]
 
-
+	exports.labelsequences =
+		[
+			digits: 8
+			groupDigits: false
+			labelPrefix: "EXPT"
+			labelSeparator: "-"
+			labelTypeAndKind: "id_codeName"
+			thingTypeAndKind: "document_experiment"
+		]
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

@@ -123,7 +123,7 @@ class window.ExampleThingController extends AbstractFormController
 		"keyup .bv_completionDate": "attributeChanged"
 		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 		"keyup .bv_notebook": "attributeChanged"
-		"click .bv_updateThing": "handleUpdateThing"
+		"click .bv_saveThing": "handleUpdateThing"
 		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: =>
@@ -196,13 +196,17 @@ class window.ExampleThingController extends AbstractFormController
 		@$('.bv_notebook').val @model.get('notebook').get('value')
 		if @readOnly is true
 			@displayInReadOnlyMode()
-		@$('.bv_updateThing').attr('disabled','disabled')
+		@$('.bv_saveThing').attr('disabled','disabled')
+		if @model.isNew()
+			@$('.bv_saveThing').html("Save")
+		else
+			@$('.bv_saveThing').html("Update")
 		@
 
 	modelSaveCallback: (method, model) =>
-		@$('.bv_updateThing').show()
-		@$('.bv_updateThing').attr('disabled', 'disabled')
-		@$('.bv_updateThingComplete').show()
+		@$('.bv_saveThing').show()
+		@$('.bv_saveThing').attr('disabled', 'disabled')
+		@$('.bv_saveThingComplete').show()
 		@$('.bv_updatingThing').hide()
 		@trigger 'amClean'
 		@trigger 'thingSaved'
@@ -210,7 +214,7 @@ class window.ExampleThingController extends AbstractFormController
 
 	modelChangeCallback: (method, model) =>
 		@trigger 'amDirty'
-		@$('.bv_updateThingComplete').hide()
+		@$('.bv_saveThingComplete').hide()
 
 	setupStructuralFileController: =>
 		structuralFileValue = @model.get('structural file').get('value')
@@ -274,14 +278,14 @@ class window.ExampleThingController extends AbstractFormController
 
 	validationError: =>
 		super()
-		@$('.bv_updateThing').attr('disabled', 'disabled')
+		@$('.bv_saveThing').attr('disabled', 'disabled')
 
 	clearValidationErrorStyles: =>
 		super()
-		@$('.bv_updateThing').removeAttr('disabled')
+		@$('.bv_saveThing').removeAttr('disabled')
 
 	validateThingName: ->
-		@$('.bv_updateThing').attr('disabled', 'disabled')
+		@$('.bv_saveThing').attr('disabled', 'disabled')
 		lsKind = @model.get('lsKind')
 		name= [@model.get(lsKind+' name').get('labelText')]
 		$.ajax
@@ -304,12 +308,12 @@ class window.ExampleThingController extends AbstractFormController
 	handleUpdateThing: =>
 		@model.reformatBeforeSaving()
 		@$('.bv_updatingThing').show()
-		@$('.bv_updateThingComplete').html('Update Complete.')
-		@$('.bv_updateThing').attr('disabled', 'disabled')
+		@$('.bv_saveThingComplete').html('Update Complete.')
+		@$('.bv_saveThing').attr('disabled', 'disabled')
 		@model.save()
 
 	displayInReadOnlyMode: =>
-		@$(".bv_updateThing").hide()
+		@$(".bv_saveThing").hide()
 		@$('button').attr 'disabled', 'disabled'
 		@$(".bv_completionDateIcon").addClass "uneditable-input"
 		@$(".bv_completionDateIcon").on "click", ->

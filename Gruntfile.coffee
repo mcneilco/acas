@@ -376,6 +376,7 @@ module.exports = (grunt) ->
 			prepare_module_conf_JSON:
 				files: [
 					"public/javascripts/conf/*.js"
+					"public/javascripts/conf/*.json"
 				]
 				tasks: "execute:prepare_module_conf_JSON"
 			prepare_test_JSON:

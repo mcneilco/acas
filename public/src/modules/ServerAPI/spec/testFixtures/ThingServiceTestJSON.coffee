@@ -30,7 +30,7 @@
 		]
 
 	exports.thingParent =
-		className: "ThingParent"
+		className: "CationicBlockParent"
 		codeName: "CB000001"
 		id: 1
 		ignored: false
@@ -55,10 +55,10 @@
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "thing parent"
+			lsKind: "cationic block parent"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_thing parent"
+			lsTypeAndKind: "metadata_cationic block parent"
 			lsValues: [
 				clobValue: null
 				codeOrigin: "ACAS authors"

@@ -1,13 +1,13 @@
 (function() {
   (function(exports) {
-    exports.experimentTypes = [
+    exports.experimenttypes = [
       {
         typeName: "Biology"
       }, {
         typeName: "default"
       }
     ];
-    exports.experimentKind = [
+    exports.experimentkind = [
       {
         typeName: "Biology",
         kindName: "Bio Activity"
@@ -16,12 +16,12 @@
         kindName: "default"
       }
     ];
-    exports.stateTypes = [
+    exports.statetypes = [
       {
         typeName: "metadata"
       }
     ];
-    exports.stateKinds = [
+    exports.statekinds = [
       {
         typeName: "metadata",
         kindName: "experiment metadata"
@@ -33,7 +33,7 @@
         kindName: "report locations"
       }
     ];
-    exports.valueTypes = [
+    exports.valuetypes = [
       {
         typeName: "dateValue"
       }, {
@@ -46,7 +46,7 @@
         typeName: "fileValue"
       }
     ];
-    exports.valueKinds = [
+    exports.valuekinds = [
       {
         typeName: "codeValue",
         kindName: "project"
@@ -109,18 +109,18 @@
         kindName: "report file"
       }
     ];
-    exports.labelTypes = [
+    exports.labeltypes = [
       {
         typeName: "name"
       }
     ];
-    exports.labelKinds = [
+    exports.labelkinds = [
       {
         typeName: "name",
         kindName: "experiment name"
       }
     ];
-    exports.ddictTypes = [
+    exports.ddicttypes = [
       {
         typeName: "project"
       }, {
@@ -141,7 +141,7 @@
         typeName: "experiment metadata"
       }
     ];
-    exports.ddictKinds = [
+    exports.ddictkinds = [
       {
         typeName: "project",
         kindName: "biology"
@@ -186,7 +186,7 @@
         kindName: "type"
       }
     ];
-    return exports.ddictValues = [
+    exports.ddictvalues = [
       {
         codeType: "project",
         codeKind: "biology",
@@ -369,6 +369,16 @@
         code: "4 parameter D-R",
         name: "EC50",
         ignored: false
+      }
+    ];
+    return exports.labelsequences = [
+      {
+        digits: 8,
+        groupDigits: false,
+        labelPrefix: "EXPT",
+        labelSeparator: "-",
+        labelTypeAndKind: "id_codeName",
+        thingTypeAndKind: "document_experiment"
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.experimentConfJSON = window.experimentConfJSON || {} : exports));
