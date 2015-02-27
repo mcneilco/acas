@@ -1931,16 +1931,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
         # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
-        "Positive Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
-                                            "\nCount: ",nrow(resultTable[wellType == "PC"]),
-                                            "\nMean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\nMedian: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
-        "Negative Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
-                                            "\nCount: ",nrow(resultTable[wellType == "NC"]),
-                                            "\nMean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\nMedian: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
+        "Positive Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "PC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+        "Negative Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "NC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
@@ -2001,15 +2001,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      if(!parameters$autoHitSelection) {
+        hitThreshold <- ""
+      } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
         hitThreshold <- parameters$hitEfficacyThreshold
       } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
         hitThreshold <- parameters$hitSDThreshold
       } else {
         hitThreshold <- ""
       }
+      activityName <- instrumentData$userInputReadTable[ activityCol==TRUE ]$userReadName
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
-                               threshold = hitThreshold, experiment, dryRun)
+                               threshold = hitThreshold, experiment, dryRun, activityName) 
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
