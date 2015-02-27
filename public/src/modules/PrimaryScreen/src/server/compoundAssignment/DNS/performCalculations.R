@@ -87,6 +87,39 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMaxLevel=overallMaxLevel, parameters), by= list(assayBarcode,plateRow)]
   } else if (normalization == "plate order and tip") {
     stopUser("Normalization not coded for 'plate order and tip'.")
+  } else if (normalization == "plate order & section by 8") {
+    getLetterInteger <- function(letter) {
+      letter <- gsub("-","",letter)
+      letterInteger <- 0
+      if(nchar(letter) == 2) {
+        firstLetter <- gsub(".{0,1}$","",letter)
+        letterInteger <- letterInteger + which(LETTERS == firstLetter) * 26
+        letter <- gsub("^.{0,1}","",letter)
+      }
+      letterInteger <- letterInteger + which(LETTERS == letter)
+      return(letterInteger)
+    }
+    
+    getRowSectionNumber <- function(letter, rowsPerSection) {
+      letterInteger <- getLetterInteger(letter)
+      sectionNumber <- ceiling(letterInteger/rowsPerSection)
+      return(sectionNumber)
+    }
+    
+    if (ceiling(max(as.numeric(resultTable$column))/12) == 4) {
+      resultTable[ , section := getRowSectionNumber(row, 4), by=row]
+    } else if (ceiling(max(as.numeric(resultTable$column))/12) == 2) {
+      resultTable[ , section := getRowSectionNumber(row, 2), by=row]
+    } else if (ceiling(max(as.numeric(resultTable$column))/12) == 1) {
+      # this normalization is the same as the 'plate order and row' normalization
+      resultTable[ , section := getRowSectionNumber(row, 1), by=row]
+    } else {
+      stopUser("Normalization not coded for this plate dimension.")
+    }
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
+                                                       overallMinLevel=overallMinLevel,
+                                                       overallMaxLevel=overallMaxLevel, parameters), 
+                by= list(assayBarcode,section)]
   } else {
     warnUser("No normalization applied.")
     resultTable$normalizedActivity <- resultTable$activity
@@ -123,7 +156,7 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
   
   return(
     ((values - grpMaxLevel) 
-    * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
+     * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
     + overallMaxLevel)
 }
 
