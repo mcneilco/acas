@@ -1936,7 +1936,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                             "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
                                             "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
                                             "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
-        "Negative Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
+        "Negative Control summary" = paste0("\n  Batch code: ",parameters$negativeControl$batchCode,
                                             "\n  Count: ",nrow(resultTable[wellType == "NC"]),
                                             "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
                                             "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
