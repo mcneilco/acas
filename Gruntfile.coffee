@@ -46,7 +46,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/**/spec/serviceTests/*.coffee"]
+					src: ["public/src/modules/**/spec/serviceTests/*.coffee","public/src/conf/serviceTests/*.coffee"]
 					dest: "public/javascripts/spec/test/"
 					ext: '.js'
 				]
@@ -254,6 +254,9 @@ module.exports = (grunt) ->
 			compileServiceTests:
 				files: "public/src/modules/**/spec/serviceTests/*.coffee"
 				tasks: "coffee:compileServiceTests"
+			compileServiceTests2:
+				files: "public/src/conf/serviceTests/*.coffee"
+				tasks: "coffee:compileServiceTests"
 			compileApp:
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
@@ -281,6 +284,9 @@ module.exports = (grunt) ->
 				tasks: "coffee:custom_compileTestFixtures"
 			custom_compileServiceTests:
 				files: "acas_custom/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:custom_compileServiceTests"
+			custom_compileServiceTests2:
+				files: "acas_custom/public_conf/serviceTests/*.coffee"
 				tasks: "coffee:custom_compileServiceTests"
 			custom_compileApp:
 				files: "acas_custom/*.coffee"

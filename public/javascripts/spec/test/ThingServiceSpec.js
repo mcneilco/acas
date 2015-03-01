@@ -1,5 +1,5 @@
 (function() {
-  var assert, config, fs, parseResponse, request, thingTestJSON, _;
+  var assert, config, fs, parseResponse, request, thingServiceTestJSON, _;
 
   assert = require('assert');
 
@@ -7,7 +7,7 @@
 
   _ = require('underscore');
 
-  thingTestJSON = require('../testFixtures/ThingTestJSON.js');
+  thingServiceTestJSON = require('../testFixtures/thingServiceTestJSON.js');
 
   fs = require('fs');
 
@@ -24,11 +24,11 @@
     }
   };
 
-  describe.only("Thing Service testing", function() {
+  describe("Thing Service testing", function() {
     return describe("Thing CRUD testing", function() {
       describe("when fetching Thing by codename", function() {
         before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/CB000001", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/PT00001", (function(_this) {
             return function(error, response, body) {
               _this.responseJSON = body;
               _this.response = response;
@@ -39,16 +39,20 @@
         return it("should return a thing", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON.codeName, "CB000001");
+          return assert.equal(responseJSON.codeName, "PT00001");
         });
       });
       describe("when saving a new thing parent", function() {
         before(function(done) {
           this.timeout(20000);
+          this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
+          this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
+          fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
+          fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
           return request.post({
             url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing",
             json: true,
-            body: thingTestJSON.thingParent
+            body: thingServiceTestJSON.thingParent
           }, (function(_this) {
             return function(error, response, body) {
               _this.serverError = error;
@@ -57,17 +61,51 @@
             };
           })(this));
         });
-        return it("should return a thing", function() {
+        after(function() {
+          fs.unlink(this.testFile1Path);
+          return fs.unlink(this.testFile2Path);
+        });
+        it("should return a thing", function() {
           return assert.equal(this.responseJSON.codeName === null, false);
+        });
+        it("should return the first fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol");
+        });
+        it("should return the first fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol");
+        });
+        it("should return the second fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv");
+        });
+        it("should return the second fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].comments, "Test.csv");
+        });
+        it("should move the first file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
+        });
+        return it("should move the second file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
         });
       });
       describe("when saving a new thing batch", function() {
         before(function(done) {
           this.timeout(20000);
+          this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
+          this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
+          fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
+          fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/batch/thing/CB000001",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/batch/thing/PT00001",
             json: true,
-            body: thingTestJSON.thingBatch
+            body: thingServiceTestJSON.thingBatch
           }, (function(_this) {
             return function(error, response, body) {
               _this.serverError = error;
@@ -76,17 +114,51 @@
             };
           })(this));
         });
-        return it("should return a thing", function() {
+        after(function() {
+          fs.unlink(this.testFile1Path);
+          return fs.unlink(this.testFile2Path);
+        });
+        it("should return a thing", function() {
           return assert.equal(this.responseJSON.codeName === null, false);
+        });
+        it("should return the first fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[7].fileValue, "entities/parentThings/PT00001-1/TestFile.mol");
+        });
+        it("should return the first fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[7].comments, "TestFile.mol");
+        });
+        it("should return the second fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[8].fileValue, "entities/parentThings/PT00001-1/Test.csv");
+        });
+        it("should return the second fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[8].comments, "Test.csv");
+        });
+        it("should move the first file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/TestFile.mol", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
+        });
+        return it("should move the second file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/Test.csv", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
         });
       });
-      describe("when updating an thing parent", function() {
+      describe("when updating a thing parent", function() {
         before(function(done) {
           this.timeout(20000);
+          this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
+          this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
+          fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
+          fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
           return request.put({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/CB00001",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/PT00001",
             json: true,
-            body: thingTestJSON.thingParent
+            body: thingServiceTestJSON.thingParent
           }, (function(_this) {
             return function(error, response, body) {
               _this.serverError = error;
@@ -95,13 +167,43 @@
             };
           })(this));
         });
-        return it("should return a thing", function() {
+        after(function() {
+          fs.unlink(this.testFile1Path);
+          return fs.unlink(this.testFile2Path);
+        });
+        it("should return a thing", function() {
           return assert.equal(this.responseJSON.codeName === null, false);
+        });
+        it("should return the first fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol");
+        });
+        it("should return the first fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol");
+        });
+        it("should return the second fileValue moved to the correct location", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv");
+        });
+        it("should return the second fileValue with the comment filled with the file name", function() {
+          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].comments, "Test.csv");
+        });
+        it("should move the first file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
+        });
+        return it("should move the second file to the correct location", function() {
+          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (function(_this) {
+            return function(err) {
+              return assert.equal(err, null);
+            };
+          })(this));
         });
       });
       describe("when getting batches by parent codeName", function() {
         before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/batches/thing/parentCodeName/CB000001", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/batches/thing/parentCodeName/PT00001", (function(_this) {
             return function(error, response, body) {
               _this.responseJSON = body;
               _this.response = response;
@@ -112,7 +214,7 @@
         return it("should return a thing", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON[0].codeName, "CB000001-1");
+          return assert.equal(responseJSON[0].codeName, "PT000001-1");
         });
       });
       return describe("when validating thing labelText", function() {

@@ -15,7 +15,7 @@ parseResponse = (jsonStr) ->
 		return null
 
 
-describe.only "CodeTable Service testing", ->
+describe "CodeTable Service testing", ->
 	describe "CodeTable CRUD testing", ->
 		describe "when fetching all codeTables", ->
 			before (done) ->
