@@ -224,7 +224,7 @@ class window.ExampleThingController extends AbstractFormController
 			@$('.bv_deleteSavedFile').hide()
 		else
 			console.log "structural file is not null"
-			@$('.bv_structuralFile').html '<a href='+structuralFileValue+'>'+structuralFileValue+'</a>'
+			@$('.bv_structuralFile').html '<a href="'+window.conf.datafiles.downloadurl.prefix+structuralFileValue+'">'+@model.get('structural file').get('comments')+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
 	setupScientistSelect: ->

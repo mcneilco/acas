@@ -3,6 +3,10 @@
 
   All functions are required with unchanged signatures
 ###
+serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+config = require '../../../conf/compiled/conf.js'
+fs = require 'fs'
+
 
 exports.logUsage = (action, data, username) ->
 	# no ACAS logging service yet
@@ -16,7 +20,6 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -41,7 +44,6 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -63,7 +65,6 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -77,7 +78,6 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			newPasswordAgain: passNewAgain
 		json: false
 	, (error, response, json) =>
-		console.log response.statusCode
 		if !error && response.statusCode == 200
 			retFun JSON.stringify json
 		else
@@ -88,11 +88,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
-	console.log "getting user"
-	config = require '../../../conf/compiled/conf.js'
 	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
-		console.log "getting user from server"
-
 		request = require 'request'
 		request(
 			headers:
@@ -159,8 +155,6 @@ exports.loginStrategy = (username, password, done) ->
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
 
-
-
 exports.getProjects = (resp) ->
 	projects = 	exports.projects = [
 		code: "project1"
@@ -175,7 +169,6 @@ exports.getProjects = (resp) ->
 	resp.end JSON.stringify projects
 
 exports.makeServiceRequestHeaders = (user) ->
-	config = require '../../../conf/compiled/conf.js'
 	username = if user? then user.username else "testmode"
 
 	headers =
@@ -186,8 +179,48 @@ exports.getCustomerMolecularTargetCodes = (resp) ->
 	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
 exports.getAuthors = (resp) ->
-	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
-	console.log baseurl
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+
+
+
+exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
+	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+	oldPath = uploadsPath + fileValue.fileValue
+
+	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
+	if relEntitiesFolder==null
+		callback false
+		return
+	relEntityFolder = relEntitiesFolder + entityCode + "/"
+	absEntitiesFolder = uploadsPath + relEntitiesFolder
+	absEntityFolder = uploadsPath + relEntityFolder
+	newPath = absEntityFolder + fileValue.fileValue
+
+	entitiesFolder = uploadsPath + "entities/"
+	serverUtilityFunctions.ensureExists entitiesFolder, 0o0744, (err) ->
+		if err?
+			console.log "Can't find or create entities folder: " + entitiesFolder
+			callback false
+		else
+			serverUtilityFunctions.ensureExists absEntitiesFolder, 0o0744, (err) ->
+				if err?
+					console.log "Can't find or create : " + absEntitiesFolder
+					callback false
+				else
+					serverUtilityFunctions.ensureExists absEntityFolder, 0o0744, (err) ->
+						if err?
+							console.log "Can't find or create : " + absEntityFolder
+							callback false
+						else
+							fs.rename oldPath, newPath, (err) ->
+								if err?
+									console.log err
+									callback false
+								else
+									fileValue.comments = fileValue.fileValue
+									fileValue.fileValue = relEntityFolder + fileValue.fileValue
+									callback true
+

@@ -1,3 +1,6 @@
+_ = require 'underscore'
+
+
 basicRScriptPreValidation = (payload) ->
 	result =
 		hasError: false
@@ -139,4 +142,54 @@ exports.getFromACASServer = (baseurl, resp) ->
 				console.log response
 	)
 
+
+exports.ensureExists = (path, mask, cb) ->
+	fs = require 'fs'
+	fs.mkdir path, mask, (err) ->
+		if err
+			if err.code is "EEXIST" # ignore the error if the folder already exists
+				cb null
+			else # something else went wrong
+				cb err
+		else # successfully created folder
+			console.log "Created new directory: "+path
+			cb null
+		return
+
+	return
+
+exports.makeAbsolutePath = (relativePath) ->
+	acasPath = process.env.PWD
+	dotMatches = relativePath.match(/\.\.\//g)
+	if dotMatches?
+		numDotDots = relativePath.match(/\.\.\//g).length
+		relativePath = relativePath.replace /\.\.\//g, ''
+		for d in [1..numDotDots]
+			acasPath = acasPath.replace /[^\/]+\/?$/, ''
+	else
+		acasPath+= '/'
+
+	console.log acasPath+relativePath+'/'
+	acasPath+relativePath+'/'
+
+exports.getFileValesFromThing = (thing) ->
+	vals = thing.lsStates[0].lsValues
+	fvs = []
+	for v in vals
+		if v.lsType == 'fileValue' && !v.ignored then fvs.push v
+	fvs
+
+controllerRedirect= require '../conf/ControllerRedirectConf.js'
+exports.getRelativeFolderPathForPrefix = (prefix) ->
+	if controllerRedirect.controllerRedirectConf[prefix]?
+		entityDef = controllerRedirect.controllerRedirectConf[prefix]
+		return entityDef.relatedFilesRelativePath + "/"
+	else
+		return null
+
+exports.getPrefixFromThingCode = (code) ->
+	for pref, redir of controllerRedirect.controllerRedirectConf
+		if code.indexOf(pref) > -1
+			return pref
+	return null
 
