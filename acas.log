@@ -2592,3 +2592,5 @@
 2015-02-27T00:39:28.991Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2015-02-27T00:39:58.972Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
 2015-02-27T00:40:01.542Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-02T00:00:04.308Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-02T00:00:04.560Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
