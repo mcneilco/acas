@@ -26,7 +26,7 @@
     }
   };
 
-  describe.only("CodeTable Service testing", function() {
+  describe("CodeTable Service testing", function() {
     return describe("CodeTable CRUD testing", function() {
       describe("when fetching all codeTables", function() {
         before(function(done) {

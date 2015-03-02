@@ -344,7 +344,7 @@
         return this.$('.bv_deleteSavedFile').hide();
       } else {
         console.log("structural file is not null");
-        this.$('.bv_structuralFile').html('<a href=' + structuralFileValue + '>' + structuralFileValue + '</a>');
+        this.$('.bv_structuralFile').html('<a href="' + window.conf.datafiles.downloadurl.prefix + structuralFileValue + '">' + this.model.get('structural file').get('comments') + '</a>');
         return this.$('.bv_deleteSavedFile').show();
       }
     };

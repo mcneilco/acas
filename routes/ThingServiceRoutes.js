@@ -2,6 +2,7 @@
   var csUtilities, postThing, serverUtilityFunctions, updateThing;
 
   exports.setupAPIRoutes = function(app, loginRoutes) {
+    app.get('/api/things/:lsType/:lsKind', exports.thingsByTypeKind);
     app.get('/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName);
     app.get('/api/things/:lsType/:lsKind/:code', exports.thingByCodeName);
     app.post('/api/things/:lsType/:lsKind', exports.postThingParent);
@@ -12,6 +13,7 @@
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
+    app.get('/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind);
     app.get('/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName);
     app.get('/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName);
     app.post('/api/things/:lsType/:lsKind', exports.postThingParent);
@@ -19,6 +21,20 @@
     app.put('/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing);
     app.get('/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName);
     return app.post('/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName);
+  };
+
+  exports.thingsByTypeKind = function(req, resp) {
+    var baseurl, config, serverUtilityFunctions, thingServiceTestJSON;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
+      return resp.end(JSON.stringify(thingServiceTestJSON.batchList));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+    }
   };
 
   serverUtilityFunctions = require('./ServerUtilityFunctions.js');
