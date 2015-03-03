@@ -49,19 +49,21 @@
       this.clearValidationErrorStyles();
       _.each(errors, (function(_this) {
         return function(err) {
-          _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
-          _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
-          _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
-          _this.$("[data-toggle=tooltip]").tooltip();
-          _this.$("body").tooltip({
-            selector: '.bv_group_' + err.attribute
-          });
-          _this.$('.bv_group_' + err.attribute).addClass('input_error error');
-          return _this.trigger('notifyError', {
-            owner: _this.errorOwnerName,
-            errorLevel: 'error',
-            message: err.message
-          });
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
         };
       })(this));
       return this.trigger('invalid');
@@ -109,7 +111,8 @@
       this.$(".bv_group_tags input").prop("placeholder", "");
       this.$(".bv_group_tags input").css("background-color", "#eeeeee");
       this.$(".bv_group_tags input").css("color", "#333333");
-      return this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
+      this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
+      return this.$("span.tag.label.label-info span").attr("data-role", "");
     };
 
     AbstractFormController.prototype.enableAllInputs = function() {

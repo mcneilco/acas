@@ -54,8 +54,8 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
     # Finds activity columns that match the user input read position. 
     # Assigns new activity column names of format "Rn {userInputReadName}"
     # Filters out calculated read columns since those don't have a position in the raw data files
-    for (order in userInput[calculatedRead == FALSE]$userReadOrder) {
-      userInput[userReadOrder == order, activityColName := activityColNames[[order]]]
+    for (order in userInput[calculatedRead == FALSE]$userReadPosition) {
+      userInput[userReadPosition == order, activityColName := activityColNames[[order]]]
     }
     # Checks to see if data has a generic name (Rn)
     for(name in userInput[calculatedRead == FALSE]$userReadName) {
@@ -83,9 +83,9 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   } 
   
   # these warnings/errors will only happen if matchNames = FALSE
-  if(length(overWrite) > 0) {
-    warnUser(paste0("Overwriting the following column(s) with user input read names: '", paste(overWrite, collapse="','"),"'"))
-  }
+  #   if(length(overWrite) > 0) {
+  #     warnUser(paste0("Overwriting the following column(s) with user input read names: '", paste(overWrite, collapse="','"),"'"))
+  #   }
   
   return(userInput)
 }

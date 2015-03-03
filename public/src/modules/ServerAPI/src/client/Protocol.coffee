@@ -85,7 +85,7 @@ class window.ProtocolBaseController extends BaseEntityController
 
 		)
 
-	initialize: ->
+	initialize: =>
 		if @model?
 			@completeInitialization()
 		else
@@ -102,8 +102,7 @@ class window.ProtocolBaseController extends BaseEntityController
 							if json.length == 0
 								alert 'Could not get protocol for code in this URL, creating new one'
 							else
-								#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-								lsKind = json[0].lsKind
+								lsKind = json.lsKind
 								if lsKind is "default"
 									prot = new Protocol json
 									prot.set prot.parse(prot.attributes)
@@ -119,32 +118,22 @@ class window.ProtocolBaseController extends BaseEntityController
 			else
 				@completeInitialization()
 
-	completeInitialization: ->
+	completeInitialization: =>
 		unless @model?
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@model.on 'sync', =>
-			unless @model.get('subclass')?
-				@model.set subclass: 'protocol'
-			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
-			@render()
-			@trigger 'amClean'
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
-		@model.getStatus().on 'change', @updateEditable
-
 		@render()
-		@trigger 'amClean' #so that module starts off clean when initialized
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
+#		@trigger 'amClean' #so that module starts off clean when initialized
 
 	render: =>
 		unless @model?
@@ -158,6 +147,21 @@ class window.ProtocolBaseController extends BaseEntityController
 		@$('.bv_assayPrinciple').val @model.getAssayPrinciple().get('clobValue')
 		super()
 		@
+
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'protocol'
+		@$('.bv_saving').hide()
+		if @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+		else
+			@$('.bv_updateComplete').show()
+		@render()
+		unless @model.get('lsKind') is "default"
+			@$('.bv_newEntity').hide()
+			@$('.bv_cancel').hide()
+			@$('.bv_save').hide()
+		@trigger 'amClean'
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()

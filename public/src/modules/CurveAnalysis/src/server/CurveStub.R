@@ -3,7 +3,7 @@
 library(racas)
 
 myMessenger <- Messenger$new()
-myMessenger$logger <- logger(logName = "com.acas.doseresponse.fit.curve.stub", logToConsole = FALSE)
+myMessenger$logger <- createLogger(logName = "com.acas.doseresponse.fit.curve.stub", logToConsole = FALSE)
 myMessenger$logger$debug("curve stub initiated")
 
 handle_response <- function(http_response_code, response) {

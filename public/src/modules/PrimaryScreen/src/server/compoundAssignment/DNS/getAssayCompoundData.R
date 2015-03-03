@@ -11,7 +11,7 @@ getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, a
   allAssayCompoundData <- merge(assayData, allCompoundData, all.x=TRUE)
   setkeyv(allAssayCompoundData, c("assayBarcode", "rowName", "wellReference"))
   
-  allAssayCompoundData$assayFileName <- NULL
+  allAssayCompoundData[ , assayFileName := NULL]
   
   colOrder <- c("plateType","assayBarcode","cmpdBarcode","sourceType","wellReference",
                 "rowName","colName","corp_name","batch_number","cmpdConc","supplier","plateOrder")

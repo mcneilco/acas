@@ -110,17 +110,16 @@ exports.liveServiceSpecRunner = (req, res) ->
 	scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
 
 	res.render('LiveServiceSpecRunner', {
-	title: 'SeuratAddOns LiveServiceSpecRunner',
-	scripts: scriptsToLoad
-	appParams:
-		loginUserName: 'jmcneil'
-		loginUser:
-			id: 2,
-			username: "jmcneil",
-			email: "jmcneil@example.com",
-			firstName: "John",
-			lastName: "McNeil"
-		testMode: false
-		liveServiceTest: true
+		title: 'SeuratAddOns LiveServiceSpecRunner',
+		scripts: scriptsToLoad
+		appParams:
+			loginUserName: 'jmcneil'
+			loginUser:
+				id: 2,
+				username: "jmcneil",
+				email: "jmcneil@example.com",
+				firstName: "John",
+				lastName: "McNeil"
+			testMode: false
+			liveServiceTest: true
 	})
-

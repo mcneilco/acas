@@ -216,7 +216,9 @@ class window.ModelFitTypeController extends Backbone.View
 			@$('.bv_analysisParameterForm').empty()
 			@parameterController = null
 			mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
-			mfp.set clobValue: ""
+			unless mfp.get('clobValue') is "" or "[]"
+				console.log "set mfp clobValue"
+				mfp.set clobValue: ""
 
 		else
 			if @model.getModelFitParameters() is {}
@@ -258,7 +260,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		"click .bv_fitModelButton": "launchFit"
 
 	initialize: ->
-		console.log "init drac"
 		@model.on "sync", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@parameterController = null
@@ -268,7 +269,6 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	render: =>
-		console.log "render drac"
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText
@@ -276,7 +276,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 	showExistingResults: ->
 		fitStatus = @model.getModelFitStatus().get('codeValue')
 		@$('.bv_modelFitStatus').html(fitStatus)
-		unless not @analyzedPreviously #unless it has not been analyzed previously
+		if @analyzedPreviously
 			resultValue = @model.getModelFitResultHTML()
 			if resultValue != null
 				res = resultValue.get('clobValue')
@@ -285,34 +285,33 @@ class window.DoseResponseAnalysisController extends Backbone.View
 				else
 					@$('.bv_modelFitResultsHTML').html(res)
 					@$('.bv_resultsContainer').show()
+		else
+			@$('.bv_resultsContainer').hide()
 
 	testReadyForFit: =>
 		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
+			console.log "not ready for fit"
 		else
+			console.log "ready for fit"
 			@setReadyForFit()
 
 	setNotReadyForFit: ->
-		console.log "set not ready for fit"
 		@$('.bv_fitOptionWrapper').hide()
 		@$('.bv_resultsContainer').hide()
 		@$('.bv_analyzeExperimentToFit').show()
 
 	setReadyForFit: =>
-		console.log "set ready for fit"
 		@setupModelFitTypeController()
 		@$('.bv_fitOptionWrapper').show()
 		@$('.bv_analyzeExperimentToFit').hide()
 		@handleStatusChanged()
 
-#	primaryAnalysisCompleted: ->
-#		console.log "primary analysis completed"
-#		@testReadyForFit()
+	primaryAnalysisCompleted: ->
+		@testReadyForFit()
 
 	handleStatusChanged: =>
 		if @parameterController != null and @parameterController != undefined
-			console.log "handle status changed"
-			console.log @parameterController
 			if @model.isEditable()
 				@parameterController.enableAllInputs()
 			else

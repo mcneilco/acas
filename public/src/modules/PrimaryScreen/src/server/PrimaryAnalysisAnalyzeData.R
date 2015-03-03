@@ -4,7 +4,8 @@ require(data.table)
 
 myMessenger <- Messenger$new()
 myMessenger$logger <- logger(logName = "com.acas.reanalysis", logToConsole = FALSE)
-myMessenger$logger$debug("primary reanalysis initiated")
+# This was causing issues... figure out why it ended up in the output text
+#myMessenger$logger$debug("primary reanalysis initiated")
 
 write_csv <- function(x, file, rows = 1000L, ...) {
   passes <- NROW(x) %/% rows
@@ -87,7 +88,7 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   #   experimentCode <- "EXPT-00000887"
   #   wellFlagFile <- "Step2_Renormalize_Input_v2 (4).txt"
   
-  experiment <- getExperimentByCodeName(experimentCode)[[1]]
+  experiment <- getExperimentByCodeName(experimentCode)
   
   experimentStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
   experimentClobValues <- getValuesByTypeAndKind(experimentStates, "clobValue_data analysis parameters")[[1]]
@@ -124,7 +125,7 @@ spotfireWrapperFunction <- function(experimentCode, wellFlagFile) {
   #     "testMode": "false"              
   #   √ "flaggedFile": "Step2_Renormalize_Input_v2 (1).txt"
   
-  analysisResult <- runPrimaryAnalysis(request) # need request
+  analysisResult <- runPrimaryAnalysis(request, externalFlagging=TRUE) # need request
   # do we need to return something different if we're not in dry run?
   # no - we will never run this in !dryRun
   outputText <- analysisResult$results$jsonSummary$dryRunReports$spotfireFile$fileText

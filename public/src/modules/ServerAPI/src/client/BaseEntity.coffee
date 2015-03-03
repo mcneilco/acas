@@ -210,21 +210,15 @@ class window.BaseEntityController extends AbstractFormController
 		"change .bv_notebook": "handleNotebookChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
+		"click .bv_newEntity": "handleNewEntityClicked"
+		"click .bv_cancel": "handleCancelClicked"
 
 
 	initialize: ->
 		unless @model?
 			@model=new BaseEntity()
-		@model.on 'sync', =>
-			@trigger 'amClean'
-			unless @model.get('subclass')?
-				@model.set subclass: 'entity'
-			@$('.bv_saving').hide()
-			@$('.bv_updateComplete').show()
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
 		@errorOwnerName = 'BaseEntityController'
 		@setBindings()
 		$(@el).empty()
@@ -247,17 +241,33 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_scientist').val(@model.getScientist().get('codeValue'))
 		@$('.bv_'+subclass+'Code').html(@model.get('codeName'))
 		@$('.bv_'+subclass+'Kind').html(@model.get('lsKind')) #should get value from protocol create form
-		@$('.bv_details').html(@model.getDetails().get('clobValue'))
-		@$('.bv_comments').html(@model.getComments().get('clobValue'))
+		@$('.bv_details').val(@model.getDetails().get('clobValue'))
+		@$('.bv_comments').val(@model.getComments().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
+			@$('.bv_newEntity').hide()
 		else
 			@$('.bv_save').html("Update")
+			@$('.bv_newEntity').show()
 		@updateEditable()
 
 		@
+
+	modelSyncCallback: =>
+		@trigger 'amClean'
+		unless @model.get('subclass')?
+			@model.set subclass: 'entity'
+		@$('.bv_saving').hide()
+		@$('.bv_updateComplete').show()
+		@render()
+
+	modelChangeCallback: =>
+		@trigger 'amDirty'
+		@$('.bv_updateComplete').hide()
+		@$('.bv_cancel').removeAttr('disabled')
+		@$('.bv_cancelComplete').hide()
 
 	setupStatusSelect: ->
 		statusState = @model.getStatus()
@@ -343,7 +353,6 @@ class window.BaseEntityController extends AbstractFormController
 			recordedDate: new Date().getTime()
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
-		console.log "handle status changed"
 		@model.trigger 'change'
 
 
@@ -353,6 +362,7 @@ class window.BaseEntityController extends AbstractFormController
 			@enableAllInputs()
 			@$('.bv_lock').hide()
 			@$('.bv_save').attr('disabled', 'disabled')
+			@$('.bv_cancel').attr('disabled','disabled')
 		else
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
@@ -370,7 +380,6 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger "noEditablePickLists"
 
 	handleSaveClicked: =>
-		console.log "handle save clicked"
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()
@@ -381,6 +390,31 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_saving').show()
 		@model.save()
 
+	handleNewEntityClicked: =>
+		if @model.get('lsKind') is "default" #base protocol/experiment
+			@model = null
+			@completeInitialization()
+		else
+			@trigger 'reinitialize'
+		@trigger 'amClean'
+
+	handleCancelClicked: =>
+		if @model.isNew()
+			if @model.get('lsKind') is "default" #base protocol/experiment
+				@model = null
+				@completeInitialization()
+			else
+				@trigger 'reinitialize'
+		else
+			@$('.bv_canceling').show()
+			@model.fetch
+				success: @handleCancelComplete
+		@trigger 'amClean'
+
+	handleCancelComplete: =>
+		@$('.bv_canceling').hide()
+		@$('.bv_cancelComplete').show()
+
 	validationError: =>
 		super()
 		@$('.bv_save').attr('disabled', 'disabled')
@@ -390,6 +424,8 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_save').removeAttr('disabled')
 
 	displayInReadOnlyMode: =>
-		@$(".bv_save").addClass "hide"
+		@$(".bv_save").hide()
+		@$(".bv_cancel").hide()
+		@$(".bv_newEntity").hide()
 		@disableAllInputs()
 

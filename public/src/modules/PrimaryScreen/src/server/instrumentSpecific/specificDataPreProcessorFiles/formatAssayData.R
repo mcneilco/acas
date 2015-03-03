@@ -6,7 +6,7 @@
 #         fileName (the name of the assayFile that is being formatted)
 # Output: assayDataDT (a data.table of the assay data in list format)
 
-formatAssayData <- function(headerRowVector, lastDataRowVector, dataTitleRowVector, parseParams, fileName, tempFilePath) {
+formatAssayData <- function(firstDataRowVector, lastDataRowVector, dataTitleRowVector, parseParams, fileName, tempFilePath) {
   
   # runlog
   write.table(paste0(Sys.time(), "\tbegin formatAssayData\tfileName=",fileName), file = file.path(tempFilePath, "runlog.tab"), append=TRUE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
@@ -14,10 +14,10 @@ formatAssayData <- function(headerRowVector, lastDataRowVector, dataTitleRowVect
   firstPass <- TRUE
   
   # Can this loop be replaced by a data.table loop 
-  for(i in 1:length(headerRowVector)) {
+  for(i in 1:length(firstDataRowVector)) {
     
     # Returns the ith headerRow/dataRow that defines a single set of data
-    begRow       <- headerRowVector[i]
+    begRow       <- firstDataRowVector[i]
     endRow       <- lastDataRowVector[i]
     
     if(is.na(unique(dataTitleRowVector)[i])) {

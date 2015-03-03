@@ -40,8 +40,6 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-		console.log "copy protocol attributes"
-		console.log @
 		#cache values I don't want to overwrite
 		scientist = @getScientist().get('codeValue')
 		notebook = @getNotebook().get('stringValue')
@@ -177,7 +175,7 @@ class window.ExperimentBaseController extends BaseEntityController
 								else
 									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 	#								expt = new Experiment json
-									lsKind = json[0].lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
+									lsKind = json.lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 									if lsKind is "default"
 										expt = new Experiment json
 										expt.set expt.parse(expt.attributes)
@@ -213,29 +211,15 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
-		@model.on 'sync', =>
-			unless @model.get('subclass')?
-				@model.set subclass: 'experiment'
-			@$('.bv_saving').hide()
-			if @$('.bv_saveFailed').is(":visible")
-				@$('.bv_updateComplete').hide()
-				@trigger 'amDirty'
-			else
-				@$('.bv_updateComplete').show()
-				@trigger 'amClean'
-			@render()
-		@model.on 'change', =>
-			@trigger 'amDirty'
-			@$('.bv_updateComplete').hide()
-		@$('.bv_save').attr('disabled', 'disabled')
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
-		@model.getStatus().on 'change', @updateEditable
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@render()
-
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
 
 	render: =>
 		unless @model?
@@ -250,6 +234,18 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
 		@
+
+	modelSyncCallback: =>
+		unless @model.get('subclass')?
+			@model.set subclass: 'experiment'
+		@$('.bv_saving').hide()
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
+			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
+		else
+			@$('.bv_updateComplete').show()
+			@trigger 'amClean'
+		@render()
 
 	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null
@@ -334,7 +330,7 @@ class window.ExperimentBaseController extends BaseEntityController
 					if json.length == 0
 						alert("Could not find selected protocol in database")
 					else
-						@model.set protocol: new Protocol(json[0])
+						@model.set protocol: new Protocol(json)
 						@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
 					alert 'got ajax error from getting protocol '+ code

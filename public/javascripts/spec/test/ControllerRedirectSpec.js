@@ -9,7 +9,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe("Controller Redirect service testing", function() {
+  describe.skip("Controller Redirect service testing", function() {
     describe("protocol redirect", function() {
       describe("When user enters in generic protocol", function() {
         before(function(done) {
@@ -55,7 +55,6 @@
       });
     });
     describe("experiment redirect", function() {
-      console.log("yay");
       describe("When user enters in generic experiment", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/entity/edit/codeName/EXPT-generic", (function(_this) {

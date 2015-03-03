@@ -73,7 +73,7 @@
             if (json.length === 0) {
               return alert("Could not find required protocol with code: " + docForBatchesProtocolCode + ". Please seek help from an administrator");
             } else {
-              return _this.protocol = new Protocol(json[0]);
+              return _this.protocol = new Protocol(json);
             }
           };
         })(this),

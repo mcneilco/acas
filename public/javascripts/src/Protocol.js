@@ -142,7 +142,10 @@
       this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
       this.handleCreationDateIconClicked = __bind(this.handleCreationDateIconClicked, this);
       this.handleCreationDateChanged = __bind(this.handleCreationDateChanged, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 
@@ -181,7 +184,7 @@
                   if (json.length === 0) {
                     alert('Could not get protocol for code in this URL, creating new one');
                   } else {
-                    lsKind = json[0].lsKind;
+                    lsKind = json.lsKind;
                     if (lsKind === "default") {
                       prot = new Protocol(json);
                       prot.set(prot.parse(prot.attributes));
@@ -215,33 +218,14 @@
       this.setBindings();
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.model.on('sync', (function(_this) {
-        return function() {
-          if (_this.model.get('subclass') == null) {
-            _this.model.set({
-              subclass: 'protocol'
-            });
-          }
-          _this.$('.bv_saving').hide();
-          _this.$('.bv_updateComplete').show();
-          _this.render();
-          return _this.trigger('amClean');
-        };
-      })(this));
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateComplete').hide();
-        };
-      })(this));
-      this.$('.bv_save').attr('disabled', 'disabled');
       this.setupStatusSelect();
       this.setupScientistSelect();
       this.setupTagList();
       this.setUpAssayStageSelect();
-      this.model.getStatus().on('change', this.updateEditable);
       this.render();
-      return this.trigger('amClean');
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
+      return this.model.getStatus().on('change', this.updateEditable);
     };
 
     ProtocolBaseController.prototype.render = function() {
@@ -258,6 +242,27 @@
       this.$('.bv_assayPrinciple').val(this.model.getAssayPrinciple().get('clobValue'));
       ProtocolBaseController.__super__.render.call(this);
       return this;
+    };
+
+    ProtocolBaseController.prototype.modelSyncCallback = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'protocol'
+        });
+      }
+      this.$('.bv_saving').hide();
+      if (this.$('.bv_cancelComplete').is(":visible")) {
+        this.$('.bv_updateComplete').hide();
+      } else {
+        this.$('.bv_updateComplete').show();
+      }
+      this.render();
+      if (this.model.get('lsKind') !== "default") {
+        this.$('.bv_newEntity').hide();
+        this.$('.bv_cancel').hide();
+        this.$('.bv_save').hide();
+      }
+      return this.trigger('amClean');
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {

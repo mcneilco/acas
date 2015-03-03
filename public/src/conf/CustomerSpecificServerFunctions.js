@@ -6,6 +6,14 @@
  */
 
 (function() {
+  var config, fs, serverUtilityFunctions;
+
+  serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+
+  config = require('../../../conf/compiled/conf.js');
+
+  fs = require('fs');
+
   exports.logUsage = function(action, data, username) {
     console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
     return global.logger.writeToLog("info", "logUsage", action, data, username, null);
@@ -18,8 +26,7 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    var request;
     request = require('request');
     return request({
       headers: {
@@ -50,8 +57,7 @@
   };
 
   exports.resetAuth = function(email, retFun) {
-    var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    var request;
     request = require('request');
     return request({
       headers: {
@@ -79,8 +85,7 @@
   };
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
-    var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    var request;
     request = require('request');
     return request({
       headers: {
@@ -97,7 +102,6 @@
       json: false
     }, (function(_this) {
       return function(error, response, json) {
-        console.log(response.statusCode);
         if (!error && response.statusCode === 200) {
           return retFun(JSON.stringify(json));
         } else {
@@ -112,11 +116,8 @@
   };
 
   exports.getUser = function(username, callback) {
-    var config, request;
-    console.log("getting user");
-    config = require('../../../conf/compiled/conf.js');
+    var request;
     if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
-      console.log("getting user from server");
       request = require('request');
       return request({
         headers: {
@@ -223,8 +224,7 @@
   };
 
   exports.makeServiceRequestHeaders = function(user) {
-    var config, headers, username;
-    config = require('../../../conf/compiled/conf.js');
+    var headers, username;
     username = user != null ? user.username : "testmode";
     return headers = {
       "From": username
@@ -238,12 +238,57 @@
   };
 
   exports.getAuthors = function(resp) {
-    var baseurl, config, serverUtilityFunctions;
-    config = require('../../../conf/compiled/conf.js');
+    var baseurl;
     serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
     baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
-    console.log(baseurl);
     return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+  };
+
+  exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
+    var absEntitiesFolder, absEntityFolder, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
+    uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
+    oldPath = uploadsPath + fileValue.fileValue;
+    relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
+    if (relEntitiesFolder === null) {
+      callback(false);
+      return;
+    }
+    relEntityFolder = relEntitiesFolder + entityCode + "/";
+    absEntitiesFolder = uploadsPath + relEntitiesFolder;
+    absEntityFolder = uploadsPath + relEntityFolder;
+    newPath = absEntityFolder + fileValue.fileValue;
+    entitiesFolder = uploadsPath + "entities/";
+    return serverUtilityFunctions.ensureExists(entitiesFolder, 0x1e4, function(err) {
+      if (err != null) {
+        console.log("Can't find or create entities folder: " + entitiesFolder);
+        return callback(false);
+      } else {
+        return serverUtilityFunctions.ensureExists(absEntitiesFolder, 0x1e4, function(err) {
+          if (err != null) {
+            console.log("Can't find or create : " + absEntitiesFolder);
+            return callback(false);
+          } else {
+            return serverUtilityFunctions.ensureExists(absEntityFolder, 0x1e4, function(err) {
+              if (err != null) {
+                console.log("Can't find or create : " + absEntityFolder);
+                return callback(false);
+              } else {
+                return fs.rename(oldPath, newPath, function(err) {
+                  if (err != null) {
+                    console.log(err);
+                    return callback(false);
+                  } else {
+                    fileValue.comments = fileValue.fileValue;
+                    fileValue.fileValue = relEntityFolder + fileValue.fileValue;
+                    return callback(true);
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
   };
 
 }).call(this);

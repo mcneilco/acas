@@ -51,8 +51,6 @@ describe "Base Entity testing", ->
 					expect(@bem.getStatus().get('codeType')).toEqual "entity"
 					expect(@bem.getStatus().get('codeKind')).toEqual "status"
 					expect(@bem.getStatus().get('codeOrigin')).toEqual "ACAS DDICT"
-#				it 'completionDate should be null ', ->
-#					expect(@bem.getCompletionDate().get('dateValue')).toEqual null
 			describe "other features", ->
 				describe "should tell you if it is editable based on status", ->
 					it "should be locked if status is created", ->
@@ -91,14 +89,10 @@ describe "Base Entity testing", ->
 					expect(@bem.getDetails().get('clobValue')).toEqual "experiment details go here"
 				it 'Should have a notebook value', ->
 					expect(@bem.getNotebook().get('stringValue')).toEqual "911"
-#				it 'Should have a completionDate value', ->
-#					expect(@bem.getCompletionDate().get('dateValue')).toEqual 1342080000000
 				it 'Should have a status value', ->
-					console.log @bem.getStatus()
 					expect(@bem.getStatus().get('codeValue')).toEqual "started"
-
 		describe "model change propogation", ->
-			it "should trigger change when label changed", ->
+			it "should triggprier change when label changed", ->
 				runs ->
 					@bem = new BaseEntity()
 					@baseEntityChanged = false
@@ -172,14 +166,6 @@ describe "Base Entity testing", ->
 					err.attribute=='notebook'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-#			it 'should require that completionDate not be ""', ->
-#				@bem.getCompletionDate().set
-#					dateValue: new Date("").getTime()
-#				expect(@bem.isValid()).toBeFalsy()
-#				filtErrors = _.filter(@bem.validationError, (err) ->
-#					err.attribute=='completionDate'
-#				)
-#				expect(filtErrors.length).toBeGreaterThan 0
 		describe "prepare to save", ->
 			beforeEach ->
 				@bem = new BaseEntity()
@@ -264,8 +250,6 @@ describe "Base Entity testing", ->
 				expect(@copiedEntity.get('recordedBy')).toEqual "jmcneil"
 			it "should have the recorded date be set to now", ->
 				expect(new Date(@copiedEntity.get('recordedDate')).getHours()).toEqual new Date().getHours()
-#			it "should have the completion date be empty", ->
-#				expect(@copiedEntity.getCompletionDate().get('dateValue')).toEqual null
 			it "should have the protocol be duplicated when the entity is an experiment", ->
 				expect(@copiedEntity.get('protocol')).toEqual @bem.get('protocol')
 			xit "should have the same project as the original entity", ->
@@ -301,13 +285,17 @@ describe "Base Entity testing", ->
 			describe "property display", ->
 				it "should show the save button text as Update", ->
 					expect(@bec.$('.bv_save').html()).toEqual "Update"
+				it "should show the create new entity button", ->
+					expect(@bec.$('.bv_newEntity')).toBeVisible()
+				it "should have the cancel button be disabled", ->
+					expect(@bec.$('.bv_newEntity')).toBeVisible()
 				it "should fill the short description field", ->
 					expect(@bec.$('.bv_shortDescription').html()).toEqual "experiment created by generic data parser"
 				xit "should fill the entity details field", ->
 					#test breaks because subclass was set to experiment instead of entity
 					expect(@bec.$('.bv_details').html()).toEqual "experiment details goes here"
 				it "should fill the comments field", ->
-					expect(@bec.$('.bv_comments').html()).toEqual "comments go here"
+					expect(@bec.$('.bv_comments').val()).toEqual "comments go here"
 				#TODO this test breaks because of the weird behavior where new a Model from a json hash
 				# then setting model attribites changes the hash
 				xit "should fill the entity name field", ->
@@ -367,6 +355,9 @@ describe "Base Entity testing", ->
 						@bec.$('.bv_status').change()
 						expect(@bec.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->
+				it "should enable the cancel button", ->
+					@bec.model.trigger 'change'
+					expect(@bec.$('.bv_cancel').attr('disabled')).toBeUndefined()
 				it "should update model when scientist is changed", ->
 					expect(@bec.model.getScientist().get('codeValue')).toEqual "jane"
 					waitsFor ->
@@ -409,10 +400,6 @@ describe "Base Entity testing", ->
 					@bec.$('.bv_entityName').val(" Updated entity name   ")
 					@bec.$('.bv_entityName').change()
 					expect(@bec.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated entity name"
-#				it "should update model when completion date is changed", ->
-#					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
-#					@bec.$('.bv_completionDate').change()
-#					expect(@bec.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@bec.$('.bv_notebook').val(" Updated notebook  ")
 					@bec.$('.bv_notebook').change()
@@ -446,12 +433,14 @@ describe "Base Entity testing", ->
 					expect(@bec.$('.bv_entityCode').val()).toEqual ""
 				it "should have entity name not set", ->
 					expect(@bec.$('.bv_entityName').val()).toEqual ""
-#				it "should not fill the date field", ->
-#					expect(@bec.$('.bv_completionDate').val()).toEqual ""
 				it "should show the save button text as Save", ->
 					expect(@bec.$('.bv_save').html()).toEqual "Save"
 				it "should show the save button disabled", ->
 					expect(@bec.$('.bv_save').attr('disabled')).toEqual 'disabled'
+				it "should hide the create new entity button", ->
+					expect(@bec.$('.bv_newEntity')).toBeHidden()
+				it "should have the cancel button be disabled", ->
+					expect(@bec.$('.bv_cancel').attr('disabled')).toEqual 'disabled'
 				it "should show the status select disabled", ->
 					expect(@bec.$('.bv_status').attr('disabled')).toEqual 'disabled'
 				it "should show status select value as created", ->
@@ -469,22 +458,25 @@ describe "Base Entity testing", ->
 						expect(@bec2.$('.bv_status').val()).toEqual 'created'
 			describe "controller validation rules", ->
 				beforeEach ->
-					@bec.$('.bv_scientist').val("bob")
-					@bec.$('.bv_scientist').change()
-					@bec.$('.bv_shortDescription').val(" New short description   ")
-					@bec.$('.bv_shortDescription').change()
-					@bec.$('.bv_entityName').val(" Updated entity name   ")
-					@bec.$('.bv_entityName').change()
-#					@bec.$('.bv_completionDate').val(" 2013-3-16   ")
-#					@bec.$('.bv_completionDate').change()
-					@bec.$('.bv_notebook').val("my notebook")
-					@bec.$('.bv_notebook').change()
+					waitsFor ->
+						@bec.$('.bv_scientist option').length > 0
+					, 1000
+					runs ->
+						@bec.$('.bv_scientist').val("bob")
+						@bec.$('.bv_scientist').change()
+						@bec.$('.bv_shortDescription').val(" New short description   ")
+						@bec.$('.bv_shortDescription').change()
+						@bec.$('.bv_entityName').val(" Updated entity name   ")
+						@bec.$('.bv_entityName').change()
+						@bec.$('.bv_notebook').val("my notebook")
+						@bec.$('.bv_notebook').change()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
 							expect(@bec.isValid()).toBeTruthy()
 					it "save button should be enabled", ->
 						runs ->
+							console.log @bec.model.validationError
 							expect(@bec.$('.bv_save').attr('disabled')).toBeUndefined()
 				describe "when name field not filled in", ->
 					beforeEach ->
@@ -511,14 +503,6 @@ describe "Base Entity testing", ->
 					it "should show error on scientist dropdown", ->
 						runs ->
 							expect(@bec.$('.bv_group_scientist').hasClass('error')).toBeTruthy()
-#				describe "when date field not filled in", ->
-#					beforeEach ->
-#						runs ->
-#							@bec.$('.bv_completionDate').val("")
-#							@bec.$('.bv_completionDate').change()
-#					it "should show error in date field", ->
-#						runs ->
-#							expect(@bec.$('.bv_group_completionDate').hasClass('error')).toBeTruthy()
 				describe "when notebook not filled", ->
 					beforeEach ->
 						runs ->
@@ -543,4 +527,3 @@ describe "Base Entity testing", ->
 						waits(1000)
 						runs ->
 							expect(@bec.$('.bv_save').html()).toEqual "Update"
-

@@ -7,7 +7,6 @@
     __extends(PrimaryAnalysisRead, _super);
 
     function PrimaryAnalysisRead() {
-      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
       this.validate = __bind(this.validate, this);
       return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
     }
@@ -22,7 +21,7 @@
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null) && attrs.readName.indexOf("Calc:") === -1) {
+      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
         errors.push({
           attribute: 'readPosition',
           message: "Read position must be a number"
@@ -41,10 +40,6 @@
       }
     };
 
-    PrimaryAnalysisRead.prototype.triggerAmDirty = function() {
-      return this.trigger('amDirty', this);
-    };
-
     return PrimaryAnalysisRead;
 
   })(Backbone.Model);
@@ -53,7 +48,7 @@
     __extends(TransformationRule, _super);
 
     function TransformationRule() {
-      this.triggerAmDirty = __bind(this.triggerAmDirty, this);
+      this.validate = __bind(this.validate, this);
       return TransformationRule.__super__.constructor.apply(this, arguments);
     }
 
@@ -75,10 +70,6 @@
       } else {
         return null;
       }
-    };
-
-    TransformationRule.prototype.triggerAmDirty = function() {
-      return this.trigger('amDirty', this);
     };
 
     return TransformationRule;
@@ -189,6 +180,7 @@
     __extends(PrimaryScreenAnalysisParameters, _super);
 
     function PrimaryScreenAnalysisParameters() {
+      this.validate = __bind(this.validate, this);
       this.parse = __bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
@@ -520,7 +512,6 @@
       var status;
       status = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit status");
       if (!status.has('codeValue')) {
-        console.log("new model fit status value");
         status.set({
           codeValue: "not started"
         });
@@ -562,7 +553,6 @@
     PrimaryScreenExperiment.prototype.copyProtocolAttributes = function(protocol) {
       var modelFitStatus;
       modelFitStatus = this.getModelFitStatus().get('codeValue');
-      console.log(modelFitStatus);
       PrimaryScreenExperiment.__super__.copyProtocolAttributes.call(this, protocol);
       return this.getModelFitStatus().set({
         codeValue: modelFitStatus
@@ -578,6 +568,7 @@
 
     function PrimaryAnalysisReadController() {
       this.clear = __bind(this.clear, this);
+      this.handleActivityChanged = __bind(this.handleActivityChanged, this);
       this.handleReadNameChanged = __bind(this.handleReadNameChanged, this);
       this.updateModel = __bind(this.updateModel, this);
       this.render = __bind(this.render, this);
@@ -593,7 +584,7 @@
     PrimaryAnalysisReadController.prototype.events = {
       "change .bv_readPosition": "attributeChanged",
       "change .bv_readName": "handleReadNameChanged",
-      "click .bv_activity": "attributeChanged",
+      "click .bv_activity": "handleActivityChanged",
       "click .bv_delete": "clear"
     };
 
@@ -628,7 +619,7 @@
 
     PrimaryAnalysisReadController.prototype.hideReadPosition = function(readName) {
       var isCalculatedRead;
-      isCalculatedRead = readName.indexOf("Calc:") > -1;
+      isCalculatedRead = readName.slice(0, 5) === "Calc:";
       if (isCalculatedRead === true) {
         this.$('.bv_readPosition').val('');
         this.$('.bv_readPosition').hide();
@@ -648,13 +639,9 @@
     };
 
     PrimaryAnalysisReadController.prototype.updateModel = function() {
-      var activity;
-      activity = this.$('.bv_activity').is(":checked");
       this.model.set({
-        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))),
-        activity: activity
+        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition')))
       });
-      this.model.triggerAmDirty();
       return this.trigger('updateState');
     };
 
@@ -668,9 +655,20 @@
       return this.attributeChanged();
     };
 
+    PrimaryAnalysisReadController.prototype.handleActivityChanged = function() {
+      var activity;
+      activity = this.$('.bv_activity').is(":checked");
+      this.model.set({
+        activity: activity
+      });
+      this.attributeChanged();
+      return this.trigger('updateAllActivities');
+    };
+
     PrimaryAnalysisReadController.prototype.clear = function() {
+      this.model.trigger('amDirty');
       this.model.destroy();
-      return this.model.triggerAmDirty();
+      return this.attributeChanged();
     };
 
     return PrimaryAnalysisReadController;
@@ -711,7 +709,6 @@
       this.model.set({
         transformationRule: this.transformationListController.getSelectedCode()
       });
-      this.model.triggerAmDirty();
       return this.trigger('updateState');
     };
 
@@ -730,7 +727,8 @@
     };
 
     TransformationRuleController.prototype.clear = function() {
-      return this.model.destroy();
+      this.model.destroy();
+      return this.attributeChanged();
     };
 
     return TransformationRuleController;
@@ -741,6 +739,7 @@
     __extends(PrimaryAnalysisReadListController, _super);
 
     function PrimaryAnalysisReadListController() {
+      this.updateAllActivities = __bind(this.updateAllActivities, this);
       this.renumberReads = __bind(this.renumberReads, this);
       this.checkActivity = __bind(this.checkActivity, this);
       this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
@@ -752,7 +751,7 @@
 
     PrimaryAnalysisReadListController.prototype.template = _.template($("#PrimaryAnalysisReadListView").html());
 
-    PrimaryAnalysisReadListController.prototype.matchReadNameChecked = true;
+    PrimaryAnalysisReadListController.prototype.matchReadNameChecked = false;
 
     PrimaryAnalysisReadListController.prototype.nextReadNumber = 1;
 
@@ -794,7 +793,7 @@
         this.checkActivity();
       }
       if (skipAmDirtyTrigger !== true) {
-        return newModel.triggerAmDirty();
+        return newModel.trigger('amDirty');
       }
     };
 
@@ -809,11 +808,12 @@
       });
       this.$('.bv_readInfo').append(parc.render().el);
       parc.setUpReadPosition(this.matchReadNameChecked);
-      return parc.on('updateState', (function(_this) {
+      parc.on('updateState', (function(_this) {
         return function() {
           return _this.trigger('updateState');
         };
       })(this));
+      return parc.on('updateAllActivities', this.updateAllActivities);
     };
 
     PrimaryAnalysisReadListController.prototype.matchReadNameChanged = function(matchReadName) {
@@ -835,7 +835,6 @@
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
       var activitySet, index, _results;
-      console.log("check activity");
       index = this.collection.length - 1;
       activitySet = false;
       _results = [];
@@ -856,8 +855,6 @@
 
     PrimaryAnalysisReadListController.prototype.renumberReads = function() {
       var index, readNumber, _results;
-      console.log("renumber reads");
-      console.log(this.collection);
       this.nextReadNumber = 1;
       index = 0;
       _results = [];
@@ -869,6 +866,20 @@
         this.$('.bv_readNumber:eq(' + index + ')').html(readNumber);
         index++;
         _results.push(this.nextReadNumber++);
+      }
+      return _results;
+    };
+
+    PrimaryAnalysisReadListController.prototype.updateAllActivities = function() {
+      var activity, index, _results;
+      index = this.collection.length - 1;
+      _results = [];
+      while (index >= 0) {
+        activity = this.$('.bv_activity:eq(' + index + ')').is(":checked");
+        this.collection.at(index).set({
+          activity: activity
+        });
+        _results.push(index--);
       }
       return _results;
     };
@@ -928,7 +939,7 @@
       this.collection.add(newModel);
       this.addOneRule(newModel);
       if (skipAmDirtyTrigger !== true) {
-        return newModel.triggerAmDirty();
+        return newModel.trigger('amDirty');
       }
     };
 
@@ -1186,7 +1197,6 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handlePositiveControlBatchChanged = function() {
       var batchCode;
-      console.log("handle pos cont batch changed");
       batchCode = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_positiveControlBatch'));
       return this.getPreferredBatchId(batchCode, 'positiveControl');
     };
@@ -1210,7 +1220,6 @@
     };
 
     PrimaryScreenAnalysisParametersController.prototype.getPreferredBatchId = function(batchId, control) {
-      console.log("beg of getPreferredBatchId");
       if (batchId === "") {
         this.model.get(control).set({
           batchCode: ""
@@ -1235,7 +1244,6 @@
           })(this),
           error: (function(_this) {
             return function(err) {
-              console.log('got ajax error');
               return _this.serviceReturn = null;
             };
           })(this),
@@ -1246,37 +1254,25 @@
 
     PrimaryScreenAnalysisParametersController.prototype.handlePreferredBatchIdReturn = function(json, control) {
       var preferredName, requestName, results;
-      console.log("beg of handle preferred batch id return");
       if (json.results != null) {
         results = json.results[0];
-        console.log(results);
         preferredName = results.preferredName;
         requestName = results.requestName;
         if (preferredName === requestName) {
           this.model.get(control).set({
             batchCode: preferredName
           });
-          console.log("valid id");
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          return this.attributeChanged();
         } else if (preferredName === "") {
           this.model.get(control).set({
             batchCode: "invalid"
           });
-          this.$('.bv_group_' + control + 'Batch').removeClass('input_alias alias');
-          console.log("invalid id");
-          return this.attributeChanged();
         } else {
-          console.log("alias, save full name");
+          this.$('.bv_' + control + 'Batch').val(preferredName);
           this.model.get(control).set({
             batchCode: preferredName
           });
-          this.attributeChanged();
-          this.$('.bv_group_' + control + 'Batch').addClass('input_alias alias');
-          this.$('.bv_group_' + control + 'Batch').attr('data-toggle', 'tooltip');
-          this.$('.bv_group_' + control + 'Batch').attr('data-placement', 'bottom');
-          return this.$('.bv_group_' + control + 'Batch').attr('data-original-title', 'This is an alias for a valid batch number (' + preferredName + ')');
         }
+        return this.attributeChanged();
       }
     };
 
@@ -1455,6 +1451,7 @@
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
+      console.log("handle save return success");
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
       this.$('.bv_loadAnother').html("Re-Analyze");
       return this.trigger('analysis-completed');
@@ -1703,7 +1700,7 @@
             if (json.length === 0) {
               return alert('Could not get experiment for codeName of the model');
             } else {
-              exp = new PrimaryScreenExperiment(json[0]);
+              exp = new PrimaryScreenExperiment(json);
               exp.set(exp.parse(exp.attributes));
               _this.model = exp;
               _this.dataAnalysisController.updateAnalysisParamModel(_this.model);
@@ -1787,6 +1784,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
+      console.log("handle analysis complete");
       this.$('.bv_resultsContainer').hide();
       return this.trigger('analysis-completed');
     };
@@ -1832,6 +1830,9 @@
     __extends(AbstractPrimaryScreenExperimentController, _super);
 
     function AbstractPrimaryScreenExperimentController() {
+      this.updateModelFitTab = __bind(this.updateModelFitTab, this);
+      this.fetchModel = __bind(this.fetchModel, this);
+      this.reinitialize = __bind(this.reinitialize, this);
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
@@ -1952,13 +1953,14 @@
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
-          return _this.modelFitController.setReadyForFit();
+          return _this.fetchModel();
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
       this.experimentBaseController.render();
       this.analysisController.render();
-      return this.modelFitController.render();
+      this.modelFitController.render();
+      return this.$('.bv_cancel').attr('disabled', 'disabled');
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupExperimentBaseController = function() {
@@ -1973,11 +1975,12 @@
           return _this.trigger('amDirty');
         };
       })(this));
-      return this.experimentBaseController.on('amClean', (function(_this) {
+      this.experimentBaseController.on('amClean', (function(_this) {
         return function() {
           return _this.trigger('amClean');
         };
       })(this));
+      return this.experimentBaseController.on('reinitialize', this.reinitialize);
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupModelFitController = function(modelFitControllerName) {
@@ -2053,6 +2056,38 @@
 
     AbstractPrimaryScreenExperimentController.prototype.hideSaveProgressBar = function() {
       return this.$('.bv_saveStatusDropDown').modal("hide");
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.reinitialize = function() {
+      this.model = null;
+      return this.completeInitialization();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.fetchModel = function() {
+      console.log("fetch Model");
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codeName/" + this.model.get('codeName'),
+        success: (function(_this) {
+          return function(json) {
+            _this.model = new PrimaryScreenExperiment(json);
+            return _this.updateModelFitTab();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return alert('Could not get experiment with this codeName');
+          };
+        })(this),
+        dataType: 'json'
+      });
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.updateModelFitTab = function() {
+      console.log("update Model Fit Tab");
+      this.modelFitController.model = this.model;
+      this.modelFitController.setReadyForFit();
+      return this.$('.bv_resultsContainer').hide();
     };
 
     return AbstractPrimaryScreenExperimentController;

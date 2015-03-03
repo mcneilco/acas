@@ -117,7 +117,10 @@ exports.protocolCodeList = (req, resp) ->
 			if shouldFilterByName
 				match = label.labelText.toUpperCase().indexOf(filterString) > -1
 			else if shouldFilterByKind
-				match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
+				if label.protocol.lsKind == "default"
+					match = label.protocol.lsKind.indexOf(filterString) > -1
+				else
+					match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
 			else
 				match = true
 			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
@@ -197,7 +200,7 @@ exports.genericProtocolSearch = (req, res) ->
 			emptyResponse = []
 			res.end JSON.stringify emptyResponse
 		else
-			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol]
+			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm

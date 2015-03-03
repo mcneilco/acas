@@ -167,7 +167,7 @@
       });
       describe("when loaded from stub", function() {
         beforeEach(function() {
-          this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol[0]);
+          this.prot = new Protocol(window.protocolServiceTestJSON.stubSavedProtocol);
           return runs(function() {
             this.fetchReturned = false;
             return this.prot.fetch({
@@ -450,10 +450,10 @@
             return expect(this.pbc.$('.bv_assayPrinciple').val()).toEqual("assay principle goes here");
           });
           it("should fill the protocol details field", function() {
-            return expect(this.pbc.$('.bv_details').html()).toEqual("protocol details go here");
+            return expect(this.pbc.$('.bv_details').val()).toEqual("protocol details go here");
           });
           it("should fill the comments field", function() {
-            return expect(this.pbc.$('.bv_comments').html()).toEqual("protocol comments go here");
+            return expect(this.pbc.$('.bv_comments').val()).toEqual("protocol comments go here");
           });
           xit("should fill the protocol name field", function() {
             return expect(this.pbc.$('.bv_protocolName').val()).toEqual("FLIPR target A biochemical");
@@ -525,7 +525,7 @@
             });
           });
         });
-        return describe("User edits fields", function() {
+        describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.pbc.model.getScientist().get('codeValue')).toEqual("jane");
             waitsFor(function() {
@@ -627,6 +627,31 @@
             });
           });
         });
+        describe("cancel button behavior testing", function() {
+          return it("should call a fetch on the model when cancel is clicked", function() {
+            runs(function() {
+              this.pbc.$('.bv_protocolName').val(" Updated protocol name   ");
+              this.pbc.$('.bv_protocolName').change();
+              expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
+              return this.pbc.$('.bv_cancel').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("FLIPR target A biochemical");
+            });
+          });
+        });
+        return describe("new protocol button behavior testing", function() {
+          return it("should create a new protocol when New Protocol is clicked", function() {
+            runs(function() {
+              return this.pbc.$('.bv_newEntity').click();
+            });
+            waits(1000);
+            return runs(function() {
+              return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
+            });
+          });
+        });
       });
       return describe("When created from a new protocol", function() {
         beforeEach(function() {
@@ -681,20 +706,26 @@
         });
         return describe("controller validation rules", function() {
           beforeEach(function() {
-            this.pbc.$('.bv_scientist').val("bob");
-            this.pbc.$('.bv_scientist').change();
-            this.pbc.$('.bv_shortDescription').val(" New short description   ");
-            this.pbc.$('.bv_shortDescription').change();
-            this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
-            this.pbc.$('.bv_protocolName').change();
-            this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
-            this.pbc.$('.bv_creationDate').change();
-            this.pbc.$('.bv_notebook').val("my notebook");
-            return this.pbc.$('.bv_notebook').change();
+            waitsFor(function() {
+              return this.pbc.$('.bv_scientist option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.pbc.$('.bv_scientist').val("bob");
+              this.pbc.$('.bv_scientist').change();
+              this.pbc.$('.bv_shortDescription').val(" New short description   ");
+              this.pbc.$('.bv_shortDescription').change();
+              this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
+              this.pbc.$('.bv_protocolName').change();
+              this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
+              this.pbc.$('.bv_creationDate').change();
+              this.pbc.$('.bv_notebook').val("my notebook");
+              return this.pbc.$('.bv_notebook').change();
+            });
           });
           describe("form validation setup", function() {
             it("should be valid if form fully filled out", function() {
               return runs(function() {
+                console.log(this.pbc.model.validationError);
                 return expect(this.pbc.isValid()).toBeTruthy();
               });
             });
@@ -769,7 +800,7 @@
               });
             });
           });
-          return describe("expect save to work", function() {
+          describe("expect save to work", function() {
             it("model should be valid and ready to save", function() {
               return runs(function() {
                 return expect(this.pbc.model.isValid()).toBeTruthy();
@@ -792,6 +823,28 @@
               waits(1000);
               return runs(function() {
                 return expect(this.pbc.$('.bv_save').html()).toEqual("Update");
+              });
+            });
+          });
+          describe("cancel button behavior testing", function() {
+            return it("should call a fetch on the model when cancel is clicked", function() {
+              runs(function() {
+                return this.pbc.$('.bv_cancel').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
+              });
+            });
+          });
+          return describe("new protocol button behavior testing", function() {
+            return it("should create a new protocol when New Protocol is clicked", function() {
+              runs(function() {
+                return this.pbc.$('.bv_newEntity').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
               });
             });
           });

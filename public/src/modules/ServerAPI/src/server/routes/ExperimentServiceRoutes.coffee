@@ -157,7 +157,7 @@ exports.genericExperimentSearch = (req, res) ->
 			emptyResponse = []
 			res.end JSON.stringify emptyResponse
 		else
-			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
+			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm
@@ -221,7 +221,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 						resp.statusCode = 404
 						resp.json resultViewerURL
 					else
-						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment[0].protocol.id
+						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment.protocol.id
 						request = require 'request'
 						request(
 							method: 'GET'
@@ -233,11 +233,11 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 								resp.json resultViewerURL
 							else
 								if !error && response.statusCode == 200
-									preferredExperimentLabel = _.filter experiment[0].lsLabels, (lab) ->
+									preferredExperimentLabel = _.filter experiment.lsLabels, (lab) ->
 										lab.preferred && lab.ignored==false
 									preferredExperimentLabelText = preferredExperimentLabel[0].labelText
 									if config.all.client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME"
-										experimentName = experiment[0].codeName + "::" + preferredExperimentLabelText
+										experimentName = experiment.codeName + "::" + preferredExperimentLabelText
 									else
 										experimentName = preferredExperimentLabelText
 									preferredProtocolLabel = _.filter protocol.lsLabels, (lab) ->

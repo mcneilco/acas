@@ -99,7 +99,7 @@
       } else {
         this.autoFetch = true;
       }
-      if (this.autoFetch) {
+      if (this.autoFetch === true) {
         return this.collection.fetch({
           success: this.handleListReset
         });
@@ -170,6 +170,8 @@
       this.selectedCode = code;
       if (this.rendered) {
         return $(this.el).val(this.selectedCode);
+      } else {
+        return "not done";
       }
     };
 
@@ -304,6 +306,7 @@
     __extends(EditablePickListSelectController, _super);
 
     function EditablePickListSelectController() {
+      this.saveNewOption = __bind(this.saveNewOption, this);
       this.handleAddOptionRequested = __bind(this.handleAddOptionRequested, this);
       this.handleShowAddPanel = __bind(this.handleShowAddPanel, this);
       this.setupEditingPrivileges = __bind(this.setupEditingPrivileges, this);
@@ -361,6 +364,10 @@
       return this.pickListController.getSelectedCode();
     };
 
+    EditablePickListSelectController.prototype.setSelectedCode = function(code) {
+      return this.pickListController.setSelectedCode(code);
+    };
+
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
         if (this.addPanelController == null) {
@@ -395,6 +402,7 @@
         });
         this.pickListController.collection.add(newPickList);
         this.pickListController.setSelectedCode(newPickList.get('code'));
+        this.trigger('change');
         this.$('.bv_errorMessage').hide();
         return this.addPanelController.hideModal();
       } else {
@@ -414,22 +422,29 @@
       var code, selectedModel;
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
-      if (selectedModel !== void 0) {
+      if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
         if (selectedModel.get('id') != null) {
           return callback.call();
         } else {
           return $.ajax({
             type: 'POST',
-            url: "/api/codetables/" + selectedModel.get('codeType') + "/" + selectedModel.get('codeKind'),
-            data: selectedModel,
-            success: callback.call(),
+            url: "/api/codetables",
+            data: JSON.stringify({
+              codeEntry: selectedModel
+            }),
+            contentType: 'application/json',
+            dataType: 'json',
+            success: (function(_this) {
+              return function(response) {
+                return callback.call();
+              };
+            })(this),
             error: (function(_this) {
               return function(err) {
                 alert('could not add option to code table');
                 return _this.serviceReturn = null;
               };
-            })(this),
-            dataType: 'json'
+            })(this)
           });
         }
       } else {

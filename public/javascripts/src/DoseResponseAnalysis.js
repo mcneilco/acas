@@ -356,9 +356,12 @@
         this.$('.bv_analysisParameterForm').empty();
         this.parameterController = null;
         mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
-        return mfp.set({
-          clobValue: ""
-        });
+        if (!(mfp.get('clobValue') === "" || "[]")) {
+          console.log("set mfp clobValue");
+          return mfp.set({
+            clobValue: ""
+          });
+        }
       } else {
         if (this.model.getModelFitParameters() === {}) {
           drap = new drapType();
@@ -441,7 +444,6 @@
     };
 
     DoseResponseAnalysisController.prototype.initialize = function() {
-      console.log("init drac");
       this.model.on("sync", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.parameterController = null;
@@ -453,7 +455,6 @@
 
     DoseResponseAnalysisController.prototype.render = function() {
       var buttonText;
-      console.log("render drac");
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
       return this.$('.bv_fitModelButton').html(buttonText);
@@ -463,7 +464,7 @@
       var fitStatus, res, resultValue;
       fitStatus = this.model.getModelFitStatus().get('codeValue');
       this.$('.bv_modelFitStatus').html(fitStatus);
-      if (!!this.analyzedPreviously) {
+      if (this.analyzedPreviously) {
         resultValue = this.model.getModelFitResultHTML();
         if (resultValue !== null) {
           res = resultValue.get('clobValue');
@@ -474,36 +475,40 @@
             return this.$('.bv_resultsContainer').show();
           }
         }
+      } else {
+        return this.$('.bv_resultsContainer').hide();
       }
     };
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
       if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
-        return this.setNotReadyForFit();
+        this.setNotReadyForFit();
+        return console.log("not ready for fit");
       } else {
+        console.log("ready for fit");
         return this.setReadyForFit();
       }
     };
 
     DoseResponseAnalysisController.prototype.setNotReadyForFit = function() {
-      console.log("set not ready for fit");
       this.$('.bv_fitOptionWrapper').hide();
       this.$('.bv_resultsContainer').hide();
       return this.$('.bv_analyzeExperimentToFit').show();
     };
 
     DoseResponseAnalysisController.prototype.setReadyForFit = function() {
-      console.log("set ready for fit");
       this.setupModelFitTypeController();
       this.$('.bv_fitOptionWrapper').show();
       this.$('.bv_analyzeExperimentToFit').hide();
       return this.handleStatusChanged();
     };
 
+    DoseResponseAnalysisController.prototype.primaryAnalysisCompleted = function() {
+      return this.testReadyForFit();
+    };
+
     DoseResponseAnalysisController.prototype.handleStatusChanged = function() {
       if (this.parameterController !== null && this.parameterController !== void 0) {
-        console.log("handle status changed");
-        console.log(this.parameterController);
         if (this.model.isEditable()) {
           return this.parameterController.enableAllInputs();
         } else {

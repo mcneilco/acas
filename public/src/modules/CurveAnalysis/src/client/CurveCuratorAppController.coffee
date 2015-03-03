@@ -20,6 +20,7 @@ class window.CurveCuratorAppController extends Backbone.View
 		#		@user = this.options.user;
 		@ccc = new CurveCuratorController
 			el: @$('.bv_curveCurator')
+		@ccc.on 'getCurvesSuccessful', @hideLoadCurvesModal
 
 		@render()
 
@@ -34,6 +35,7 @@ class window.CurveCuratorAppController extends Backbone.View
 		@
 
 	loadCurvesForExptCode: (exptCode, curveID) =>
+		UtilityFunctions::showProgressModal @$('.bv_loadCurvesModal')
 		@ccc.getCurvesFromExperimentCode(exptCode, curveID)
 		$.ajax
 				type: 'GET'
@@ -46,3 +48,6 @@ class window.CurveCuratorAppController extends Backbone.View
 				error: (err) =>
 					@serviceReturn = null
 				dataType: 'json'
+
+	hideLoadCurvesModal: =>
+		UtilityFunctions::hideProgressModal @$('.bv_loadCurvesModal')

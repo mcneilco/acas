@@ -14,10 +14,10 @@
       comments: null,
       id: 2,
       ignored: false,
-      lsKind: "screening assay",
+      lsKind: "Bio Activity",
       lsTransaction: 1,
       lsType: "metadata",
-      lsTypeAndKind: "metadata_screening assay",
+      lsTypeAndKind: "metadata_Bio Activity",
       lsValues: [
         {
           clobValue: null,

@@ -4,7 +4,7 @@ fs = require 'fs'
 
 
 config = require '../../../../conf/compiled/conf.js'
-describe "Controller Redirect service testing", ->
+describe.skip "Controller Redirect service testing", ->
 	describe "protocol redirect", ->
 		describe "When user enters in generic protocol", ->
 			before (done) ->
@@ -32,7 +32,6 @@ describe "Controller Redirect service testing", ->
 				assert.equal @response.request.uri.href.indexOf('protocol_base')>0, true
 
 	describe "experiment redirect", ->
-		console.log "yay"
 		describe "When user enters in generic experiment", ->
 			before (done) ->
 				request "http://localhost:"+config.all.server.nodeapi.port+"/entity/edit/codeName/EXPT-generic", (error, response, body) =>

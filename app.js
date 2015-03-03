@@ -103,20 +103,22 @@
 	routeSet_15.setupRoutes(app, loginRoutes);
 	routeSet_16 = require("./routes/PreferredBatchIdService.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/PreferredEntityCodeService.js");
+	routeSet_17 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	routeSet_17.setupRoutes(app, loginRoutes);
-	routeSet_18 = require("./routes/PrimaryScreenProtocolRoutes.js");
+	routeSet_18 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_18.setupRoutes(app, loginRoutes);
-	routeSet_19 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_19 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_19.setupRoutes(app, loginRoutes);
-	routeSet_20 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_20 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_20.setupRoutes(app, loginRoutes);
-	routeSet_21 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_21 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_21.setupRoutes(app, loginRoutes);
-	routeSet_22 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_22 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_22.setupRoutes(app, loginRoutes);
-	routeSet_23 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_23 = require("./routes/SetupRoutes.js");
 	routeSet_23.setupRoutes(app, loginRoutes);
+	routeSet_24 = require("./routes/ThingServiceRoutes.js");
+	routeSet_24.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
@@ -148,6 +150,22 @@
       return console.log("app_api.js has exited after 3 restarts");
     });
     child.start();
+    child.on('exit:code', function(code) {
+      console.error('stopping child process with code ');
+      process.exit(0);
+    });
+    process.once('SIGTERM', function() {
+      child.stop(0);
+    });
+    process.once('SIGINT', function() {
+      child.stop(0);
+    });
+    process.once('exit', function() {
+      console.log('clean exit of app');
+    });
+    process.on('uncaughtException', function(err) {
+      console.log('Caught exception: ' + err);
+    });
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 

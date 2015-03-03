@@ -1,1 +1,1 @@
-{"paramList":{"headerRowSearchString":"^,01,02,03,04","dataRowSearchString":"^[A-Z]{1,2},","sepChar":",","headerExists":true,"beginDataColNumber":2,"dataTitleIdentifier":"NA","dataFormat":"plateFormatSingleFile"}}
+{"paramList":{"headerRowSearchString":"NA","dataRowSearchString":"^[A-Z]{1,2},[0-9]","sepChar":",","headerExists":false,"beginDataColNumber":2,"dataTitleIdentifier":"NA","dataFormat":"plateFormatSingleFile"}}

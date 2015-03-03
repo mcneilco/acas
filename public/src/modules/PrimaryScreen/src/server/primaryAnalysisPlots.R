@@ -1,4 +1,4 @@
-createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)) {
+createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8), activityName) {
   # Creates a density plot
   #
   # Args:
@@ -25,8 +25,8 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
 #        xlim = c(-1,2),
        xlim = c(floor(min(values)),ceiling(max(values))),
        ylim = c(0,yHeight*1.04),
-       xlab = "Normalized Activity (rfu)",
-       ylab = "Number per bin",
+       xlab = activityName,
+       ylab = "Count",
        yaxs="i",
        type="n"
   )
@@ -43,11 +43,18 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
   
   # legend
   #"xpd = TRUE" lets the legend go outside the plot
-  legend(x=2.3, y=yHeight, fill=c("blue","black","green","red"), legend=c("- control","test","+ control","threshold"), xpd = TRUE)
+  legendFill <- c("blue","black","green")
+  legendLegend <- c("- control","test","+ control")
+  if (threshold != "") {
+    legendFill <- c(legendFill, "red")
+    legendLegend <- c(legendLegend, "threshold)")
+  } 
+  legend(x=2.3, y=yHeight, fill=legendFill, legend=legendLegend, xpd = TRUE)
 }
+
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
-                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity (rfu)", margins = c(1,1,1,1), 
+                               test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity", margins = c(1,1,1,1), 
                                rotateXLabel = FALSE, colourPalette = NA, threshold = NULL) {
   #error handling
   if (all(!PC,!NC,!test)) {
@@ -167,7 +174,7 @@ createComparison <- function(title, ylim = NULL, norm = FALSE,
            yData[resultTableCopy$wellType == "NC"], 
            col = "green")
   }
-  title(main = title, ylab = "Activity (rfu)") 
+  title(main = title, ylab = "Activity") 
   legend(x=(max(tickLocations)-min(tickLocations))*.7+min(tickLocations), y=2, fill=c("green","red"), legend=c("positive control","negative control"), xpd = TRUE)
   
 }
@@ -201,7 +208,7 @@ createHeatMap <- function(name, plate, margins=c(5,0,0,5)) {
   # margins = c(0,0)
   #dev.off()
 }
-createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
+createGGHeatmap <- function(name, plate, margins=c(1,1,1,1),activityName) {
   require(ggplot2)
   plate$x <- as.numeric(gsub("\\D*","",plate$well))
   plate$y <- as.character(gsub("\\d*","",plate$well))
@@ -233,7 +240,7 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
           axis.text.y = element_text(size = rel(1)),
           axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
-  scale_fill_continuous(name="Activity (rfu)")
+  scale_fill_continuous(name=activityName)
   return(plateHeatmap)
 }
 

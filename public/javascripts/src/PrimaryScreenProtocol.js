@@ -8,6 +8,7 @@
 
     function PrimaryScreenProtocolParameters() {
       this.getCustomerMolecularTargetCodeOrigin = __bind(this.getCustomerMolecularTargetCodeOrigin, this);
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -238,6 +239,7 @@
     __extends(PrimaryScreenProtocol, _super);
 
     function PrimaryScreenProtocol() {
+      this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -377,6 +379,7 @@
         codeKind: "activity",
         roles: ["admin"]
       });
+      this.assayActivityListController.on('change', this.handleAssayActivityChanged);
       return this.assayActivityListController.render();
     };
 
@@ -392,6 +395,7 @@
         codeKind: "origin",
         roles: ["admin"]
       });
+      this.targetOriginListController.on('change', this.handleTargetOriginChanged);
       return this.targetOriginListController.render();
     };
 
@@ -407,6 +411,7 @@
         codeKind: "type",
         roles: ["admin"]
       });
+      this.assayTypeListController.on('change', this.handleAssayTypeChanged);
       return this.assayTypeListController.render();
     };
 
@@ -422,6 +427,7 @@
         codeKind: "technology",
         roles: ["admin"]
       });
+      this.assayTechnologyListController.on('change', this.handleAssayTechnologyChanged);
       return this.assayTechnologyListController.render();
     };
 
@@ -437,6 +443,7 @@
         codeKind: "cell line",
         roles: ["admin"]
       });
+      this.cellLineListController.on('change', this.handleCellLineChanged);
       return this.cellLineListController.render();
     };
 
@@ -459,6 +466,7 @@
         codeKind: "molecular target",
         roles: ["admin"]
       });
+      this.molecularTargetListController.on('change', this.handleMolecularTargetChanged);
       this.molecularTargetListController.render();
       if (checked) {
         return this.molecularTargetListController.hideAddOptionButton();
@@ -607,6 +615,11 @@
           return _this.trigger('prepareToSaveToDatabase');
         };
       })(this));
+      this.protocolBaseController.on('reinitialize', (function(_this) {
+        return function() {
+          return _this.trigger('reinitialize');
+        };
+      })(this));
       return this.protocolBaseController.render();
     };
 
@@ -652,6 +665,10 @@
     __extends(AbstractPrimaryScreenProtocolModuleController, _super);
 
     function AbstractPrimaryScreenProtocolModuleController() {
+      this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
+      this.handleCancelComplete = __bind(this.handleCancelComplete, this);
+      this.handleCancelClicked = __bind(this.handleCancelClicked, this);
+      this.reinitialize = __bind(this.reinitialize, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleFinishSave = __bind(this.handleFinishSave, this);
@@ -659,9 +676,12 @@
       this.handleSaveModule = __bind(this.handleSaveModule, this);
       this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
       this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
+      this.setupModelFitTypeController = __bind(this.setupModelFitTypeController, this);
       this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
       this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
       this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
+      this.modelChangeCallback = __bind(this.modelChangeCallback, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
       this.initialize = __bind(this.initialize, this);
       return AbstractPrimaryScreenProtocolModuleController.__super__.constructor.apply(this, arguments);
@@ -670,7 +690,9 @@
     AbstractPrimaryScreenProtocolModuleController.prototype.template = _.template($("#PrimaryScreenProtocolModuleView").html());
 
     AbstractPrimaryScreenProtocolModuleController.prototype.events = {
-      "click .bv_saveModule": "handleSaveModule"
+      "click .bv_saveModule": "handleSaveModule",
+      "click .bv_cancelModule": "handleCancelClicked",
+      "click .bv_newModule": "handleNewEntityClicked"
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.initialize = function() {
@@ -724,37 +746,8 @@
         this.model = new PrimaryScreenProtocol();
       }
       $(this.el).html(this.template());
-      this.model.on('sync', (function(_this) {
-        return function() {
-          _this.trigger('amClean');
-          if (_this.model.get('subclass') == null) {
-            _this.model.set({
-              subclass: 'protocol'
-            });
-          }
-          _this.$('.bv_savingModule').hide();
-          _this.$('.bv_updateModuleComplete').show();
-          _this.$('.bv_saveModule').attr('disabled', 'disabled');
-          if (_this.model.isNew()) {
-            _this.$('.bv_saveModule').html("Save");
-            return _this.$('.bv_saveInstructions').show();
-          } else {
-            _this.$('.bv_saveModule').html("Update");
-            return _this.$('.bv_saveInstructions').hide();
-          }
-        };
-      })(this));
-      if (this.model.isNew()) {
-        this.$('.bv_saveModule').html("Save");
-      } else {
-        this.$('.bv_saveModule').html("Update");
-      }
-      this.model.on('change', (function(_this) {
-        return function() {
-          _this.trigger('amDirty');
-          return _this.$('.bv_updateModuleComplete').hide();
-        };
-      })(this));
+      this.listenTo(this.model, 'sync', this.modelSyncCallback);
+      this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.model.on('readyToSave', this.handleFinishSave);
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
@@ -762,6 +755,40 @@
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
       this.$('.bv_save').hide();
+      this.$('.bv_cancel').hide();
+      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveModule').attr('disabled', 'disabled');
+      if (this.model.isNew()) {
+        this.$('.bv_saveModule').html("Save");
+        this.$('.bv_saveInstructions').show();
+        this.$('.bv_newModule').hide();
+      } else {
+        this.$('.bv_saveModule').html("Update");
+        this.$('.bv_saveInstructions').hide();
+        this.$('.bv_newModule').show();
+      }
+      this.$('.bv_cancelModule').attr('disabled', 'disabled');
+      return this.trigger('amClean');
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.modelSyncCallback = function() {
+      if (this.model.get('subclass') == null) {
+        this.model.set({
+          subclass: 'protocol'
+        });
+      }
+      this.setupPrimaryScreenProtocolController();
+      this.setupPrimaryScreenAnalysisParametersController();
+      this.setupModelFitTypeController();
+      this.$('.bv_savingModule').hide();
+      this.$('.bv_save').hide();
+      this.$('.bv_cancel').hide();
+      this.$('.bv_newEntity').hide();
+      if (this.$('.bv_cancelModuleComplete').is(":visible")) {
+        this.$('.bv_updateModuleComplete').hide();
+      } else {
+        this.$('.bv_updateModuleComplete').show();
+      }
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
         this.$('.bv_saveModule').html("Save");
@@ -770,7 +797,15 @@
         this.$('.bv_saveModule').html("Update");
         this.$('.bv_saveInstructions').hide();
       }
+      this.$('.bv_cancelModule').attr('disabled', 'disabled');
       return this.trigger('amClean');
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.modelChangeCallback = function() {
+      this.trigger('amDirty');
+      this.$('.bv_updateModuleComplete').hide();
+      this.$('.bv_cancelModule').removeAttr('disabled');
+      return this.$('.bv_cancelModuleComplete').hide();
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleProtocolSaved = function() {
@@ -785,6 +820,9 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenProtocolController = function() {
+      if (this.primaryScreenProtocolController != null) {
+        this.primaryScreenProtocolController.undelegateEvents();
+      }
       this.primaryScreenProtocolController = new PrimaryScreenProtocolController({
         model: this.model,
         el: this.$('.bv_primaryScreenProtocolGeneralInfoWrapper')
@@ -799,11 +837,15 @@
           return _this.trigger('amClean');
         };
       })(this));
+      this.primaryScreenProtocolController.on('reinitialize', this.reinitialize);
       this.primaryScreenProtocolController.render();
       return this.primaryScreenProtocolController.on('prepareToSaveToDatabase', this.prepareToSaveToDatabase);
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupPrimaryScreenAnalysisParametersController = function() {
+      if (this.primaryScreenAnalysisParametersController != null) {
+        this.primaryScreenAnalysisParametersController.undelegateEvents();
+      }
       this.primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController({
         model: this.model.getAnalysisParameters(),
         el: this.$('.bv_primaryScreenAnalysisParameters')
@@ -823,6 +865,9 @@
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.setupModelFitTypeController = function() {
+      if (this.modelFitTypeController != null) {
+        this.modelFitTypeController.undelegateEvents();
+      }
       this.modelFitTypeController = new ModelFitTypeController({
         model: this.model,
         el: this.$('.bv_doseResponseAnalysisParameters')
@@ -895,6 +940,32 @@
       AbstractPrimaryScreenProtocolModuleController.__super__.clearValidationErrorStyles.call(this);
       this.$('.bv_saveModule').removeAttr('disabled');
       return this.$('.bv_saveInstructions').hide();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.reinitialize = function() {
+      this.model = null;
+      return this.completeInitialization();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleCancelClicked = function() {
+      if (this.model.isNew()) {
+        this.reinitialize();
+      } else {
+        this.$('.bv_cancelingModule').show();
+        this.model.fetch({
+          success: this.handleCancelComplete
+        });
+      }
+      return this.trigger('amClean');
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleCancelComplete = function() {
+      this.$('.bv_cancelingModule').hide();
+      return this.$('.bv_cancelModuleComplete').show();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleNewEntityClicked = function() {
+      return this.primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked();
     };
 
     return AbstractPrimaryScreenProtocolModuleController;

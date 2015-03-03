@@ -55,7 +55,7 @@ running() {
 }
 
 start_server() {
-    startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
+    startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --killSignal=SIGTERM --workingDir --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != $ACAS_USER ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
@@ -252,6 +252,7 @@ if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     #echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
+echo "ACAS_USER = $ACAS_USER"
 
 case "$1" in
     start)

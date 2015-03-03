@@ -1217,6 +1217,7 @@
       this.handleFilterChanged = __bind(this.handleFilterChanged, this);
       this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
+      this.getCurvesFromExperimentCode = __bind(this.getCurvesFromExperimentCode, this);
       this.handleCurveUpdateError = __bind(this.handleCurveUpdateError, this);
       this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
       this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
@@ -1312,6 +1313,7 @@
       return this.model.fetch({
         success: (function(_this) {
           return function() {
+            _this.trigger('getCurvesSuccessful');
             return _this.render();
           };
         })(this),

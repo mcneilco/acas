@@ -8,7 +8,7 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null) and attrs.readName.indexOf("Calc:")==-1
+		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -21,14 +21,11 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		else
 			return null
 
-	triggerAmDirty: =>
-		@trigger 'amDirty', @
-
 class window.TransformationRule extends Backbone.Model
 	defaults:
 		transformationRule: "unassigned"
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
 		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
 			errors.push
@@ -40,8 +37,6 @@ class window.TransformationRule extends Backbone.Model
 		else
 			return null
 
-	triggerAmDirty: =>
-		@trigger 'amDirty', @
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
@@ -167,7 +162,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		resp
 
 
-	validate: (attrs) ->
+	validate: (attrs) =>
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
@@ -253,7 +248,6 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
-
 		if errors.length > 0
 			return errors
 		else
@@ -314,7 +308,6 @@ class window.PrimaryScreenExperiment extends Experiment
 	getModelFitStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit status"
 		if !status.has('codeValue')
-			console.log "new model fit status value"
 			status.set codeValue: "not started"
 
 		status
@@ -338,7 +331,6 @@ class window.PrimaryScreenExperiment extends Experiment
 
 	copyProtocolAttributes: (protocol) =>
 		modelFitStatus = @getModelFitStatus().get('codeValue')
-		console.log modelFitStatus
 		super(protocol)
 		@getModelFitStatus().set codeValue: modelFitStatus
 
@@ -349,7 +341,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	events:
 		"change .bv_readPosition": "attributeChanged"
 		"change .bv_readName": "handleReadNameChanged"
-		"click .bv_activity": "attributeChanged"
+		"click .bv_activity": "handleActivityChanged"
 		"click .bv_delete": "clear"
 
 	initialize: ->
@@ -380,7 +372,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 			selectedCode: @model.get('readName')
 
 	hideReadPosition: (readName) ->
-		isCalculatedRead = readName.indexOf("Calc:") > -1
+		isCalculatedRead = readName.slice(0,5) == "Calc:"
 		if isCalculatedRead is true
 			@$('.bv_readPosition').val('')
 			@$('.bv_readPosition').hide()
@@ -397,11 +389,8 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 
 	updateModel: =>
-		activity = @$('.bv_activity').is(":checked")
 		@model.set
 			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
-			activity: activity
-		@model.triggerAmDirty()
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
@@ -411,9 +400,17 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 			readName: readName
 		@attributeChanged()
 
+	handleActivityChanged: =>
+		activity = @$('.bv_activity').is(":checked")
+		@model.set
+			activity: activity
+		@attributeChanged()
+		@trigger 'updateAllActivities'
+
 	clear: =>
+		@model.trigger 'amDirty'
 		@model.destroy()
-		@model.triggerAmDirty()
+		@attributeChanged()
 
 
 class window.TransformationRuleController extends AbstractFormController
@@ -437,7 +434,6 @@ class window.TransformationRuleController extends AbstractFormController
 
 	updateModel: =>
 		@model.set transformationRule: @transformationListController.getSelectedCode()
-		@model.triggerAmDirty()
 		@trigger 'updateState'
 
 
@@ -455,11 +451,12 @@ class window.TransformationRuleController extends AbstractFormController
 
 	clear: =>
 		@model.destroy()
+		@attributeChanged()
 
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
-	matchReadNameChecked: true
+	matchReadNameChecked: false
 	nextReadNumber: 1
 	events:
 		"click .bv_addReadButton": "addNewRead"
@@ -488,10 +485,9 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		if @collection.length ==1
 			@checkActivity()
 		unless skipAmDirtyTrigger is true
-			newModel.triggerAmDirty()
+			newModel.trigger 'amDirty'
 
 	addOneRead: (read) ->
-#		readNumber = 'R' +  @nextReadNumber.toString()
 		read.set readNumber: @nextReadNumber
 		@nextReadNumber++
 		parc = new PrimaryAnalysisReadController
@@ -500,6 +496,7 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 		parc.setUpReadPosition(@matchReadNameChecked)
 		parc.on 'updateState', =>
 			@trigger 'updateState'
+		parc.on 'updateAllActivities', @updateAllActivities
 
 	matchReadNameChanged: (matchReadName) =>
 		@matchReadNameChecked = matchReadName
@@ -512,7 +509,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@$('.bv_readPosition').removeAttr('disabled')
 
 	checkActivity: => #check that at least one activity is set
-		console.log "check activity"
 		index = @collection.length-1
 		activitySet = false
 		while index >= 0 and activitySet == false
@@ -524,8 +520,6 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			index = index - 1
 
 	renumberReads: =>
-		console.log "renumber reads"
-		console.log @collection
 		@nextReadNumber = 1
 		index = 0
 		while index < @collection.length
@@ -534,6 +528,13 @@ class window.PrimaryAnalysisReadListController extends AbstractFormController
 			@$('.bv_readNumber:eq('+index+')').html(readNumber)
 			index++
 			@nextReadNumber++
+
+	updateAllActivities: =>
+		index = @collection.length-1
+		while index >=0
+			activity = @$('.bv_activity:eq('+index+')').is(":checked")
+			@collection.at(index).set activity: activity
+			index--
 
 class window.TransformationRuleListController extends AbstractFormController
 	template: _.template($("#TransformationRuleListView").html())
@@ -560,7 +561,7 @@ class window.TransformationRuleListController extends AbstractFormController
 		@collection.add newModel
 		@addOneRule(newModel)
 		unless skipAmDirtyTrigger is true
-			newModel.triggerAmDirty()
+			newModel.trigger 'amDirty'
 
 
 	addOneRule: (rule) ->
@@ -748,7 +749,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@trigger 'updateState'
 
 	handlePositiveControlBatchChanged: ->
-		console.log "handle pos cont batch changed"
 		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
 		@getPreferredBatchId(batchCode, 'positiveControl')
 
@@ -765,7 +765,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@getPreferredBatchId(batchCode, 'vehicleControl')
 
 	getPreferredBatchId: (batchId, control) ->
-		console.log "beg of getPreferredBatchId"
 		if batchId == ""
 			@model.get(control).set batchCode: ""
 			@attributeChanged()
@@ -782,35 +781,22 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				success: (json) =>
 					@handlePreferredBatchIdReturn(json, control)
 				error: (err) =>
-					console.log 'got ajax error'
 					@serviceReturn = null
 				dataType: 'json'
 
 	handlePreferredBatchIdReturn: (json, control) =>
-		console.log "beg of handle preferred batch id return"
 		if json.results?
 			results = (json.results)[0]
-			console.log results
 			preferredName = results.preferredName
 			requestName = results.requestName
 			if preferredName == requestName
 				@model.get(control).set batchCode: preferredName
-				console.log "valid id"
-				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-				@attributeChanged()
 			else if preferredName == ""
 				@model.get(control).set batchCode: "invalid"
-				@$('.bv_group_'+control+'Batch').removeClass 'input_alias alias'
-				console.log "invalid id"
-				@attributeChanged()
 			else
-				console.log "alias, save full name"
+				@$('.bv_'+control+'Batch').val(preferredName)
 				@model.get(control).set batchCode: preferredName
-				@attributeChanged()
-				@$('.bv_group_'+control+'Batch').addClass 'input_alias alias'
-				@$('.bv_group_'+control+'Batch').attr('data-toggle', 'tooltip')
-				@$('.bv_group_'+control+'Batch').attr('data-placement', 'bottom')
-				@$('.bv_group_'+control+'Batch').attr('data-original-title', 'This is an alias for a valid batch number ('+preferredName+')')
+			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -928,6 +914,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
+		console.log "handle save return success"
 		super(json)
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
@@ -1112,9 +1099,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				if json.length == 0
 					alert 'Could not get experiment for codeName of the model'
 				else
-					#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-#					exp = new PrimaryScreenExperiment json
-					exp = new PrimaryScreenExperiment json[0]
+					exp = new PrimaryScreenExperiment json
 					exp.set exp.parse(exp.attributes)
 					@model = exp
 					@dataAnalysisController.updateAnalysisParamModel(@model)
@@ -1177,6 +1162,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@model.getStatus().on 'change', @handleStatusChanged
 
 	handleAnalysisComplete: =>
+		console.log "handle analysis complete"
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
 		@trigger 'analysis-completed'
@@ -1229,7 +1215,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								if json.length == 0
 									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
 	#								exp = new PrimaryScreenExperiment json
 									lsKind = json.lsKind
 									if lsKind is "Bio Activity"
@@ -1281,11 +1266,12 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@hideSaveProgressBar()
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
-			@modelFitController.setReadyForFit()
+			@fetchModel()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@experimentBaseController.render()
 		@analysisController.render()
 		@modelFitController.render()
+		@$('.bv_cancel').attr('disabled','disabled')
 
 	setupExperimentBaseController: ->
 		@experimentBaseController = new ExperimentBaseController
@@ -1297,6 +1283,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@trigger 'amDirty'
 		@experimentBaseController.on 'amClean', =>
 			@trigger 'amClean'
+		@experimentBaseController.on 'reinitialize', @reinitialize
 
 	setupModelFitController: (modelFitControllerName) ->
 		newArgs =
@@ -1351,6 +1338,33 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	hideSaveProgressBar: ->
 		@$('.bv_saveStatusDropDown').modal("hide")
+
+	reinitialize: =>
+		@model = null
+		@completeInitialization()
+
+	fetchModel: =>
+		console.log "fetch Model"
+#		@model.fetch
+#			success: @updateModelFitTab()
+
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/codeName/"+@model.get('codeName')
+			success: (json) =>
+				@model = new PrimaryScreenExperiment json
+				@updateModelFitTab()
+			error: (err) =>
+				alert 'Could not get experiment with this codeName'
+			dataType: 'json'
+
+	updateModelFitTab: =>
+		console.log "update Model Fit Tab"
+		@modelFitController.model = @model
+		@modelFitController.setReadyForFit()
+		@$('.bv_resultsContainer').hide()
+#		@modelFitController.render()
+
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController
 	uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"

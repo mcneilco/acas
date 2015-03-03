@@ -139,7 +139,11 @@
         if (shouldFilterByName) {
           match = label.labelText.toUpperCase().indexOf(filterString) > -1;
         } else if (shouldFilterByKind) {
-          match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1;
+          if (label.protocol.lsKind === "default") {
+            match = label.protocol.lsKind.indexOf(filterString) > -1;
+          } else {
+            match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1;
+          }
         } else {
           match = true;
         }
@@ -234,7 +238,7 @@
         emptyResponse = [];
         return res.end(JSON.stringify(emptyResponse));
       } else {
-        return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol]));
+        return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]));
       }
     } else {
       config = require('../conf/compiled/conf.js');

@@ -109,10 +109,28 @@ startApp = ->
 		silent: false
 		options: options
 	)
+
 	child.on "exit", ->
 		console.log "app_api.js has exited after 3 restarts"
 
 	child.start()
+
+	child.on 'exit:code', (code) ->
+		console.error 'stopping child process with code '
+		process.exit 0
+		return
+	process.once 'SIGTERM', ->
+		child.stop 0
+		return
+	process.once 'SIGINT', ->
+		child.stop 0
+		return
+	process.once 'exit', ->
+		console.log 'clean exit of app'
+		return
+	process.on 'uncaughtException', (err) ->
+		console.log 'Caught exception: ' + err
+		return
 
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 

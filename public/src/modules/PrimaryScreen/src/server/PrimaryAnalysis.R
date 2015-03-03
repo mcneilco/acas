@@ -48,7 +48,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   #               and no wells are flagged. Also may include information to flag analysis groups.
   
   if(is.null(flaggedWells) || flaggedWells == "") {
-    resultTable[, flag:= as.character(NA)]
+    resultTable[, flag:=NA_character_]
     resultTable[, flagType:=NA_character_]
     resultTable[, flagObservation:=NA_character_]
     resultTable[, flagReason:=NA_character_]
@@ -94,7 +94,8 @@ getWellFlags <- function(flaggedWells, resultTable, flaggingStage, experiment, p
   
   # Remove unneeded columns
   # flagData <- data.table(assayBarcode = validatedFlagData$assayBarcode, well = validatedFlagData$well, flag = validatedFlagData$flag)
-  flagData <- data.table(validatedFlagData)
+  flagData <- as.data.table(validatedFlagData[, list(assayBarcode, well, flagType, 
+                                                flagObservation, flagReason, flagComment)])
   
   return(flagData)
 }
@@ -1078,7 +1079,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
   # Input:  flaggedWells, the name of a file in privateUploads that contains well-flagging information
   #         resultTable, a table containing, among other columns, the barcode, well, and batch code for
   #             every test
-  # Returns: a data.frame containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
+  # Returns: a data.table containing the barcode, batch id, well, user defined hit (userHit), and flag for every test
   #             in the flaggedWells file (which may not include all the tests in resultTable). If the user
   #             didn't define a hit, it is left as NA
   
@@ -1371,6 +1372,9 @@ loadInstrumentReadParameters <- function(instrumentType) {
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
   }
+  if(paramList$headerRowSearchString == "NA") {
+    paramList$headerRowSearchString <- NA
+  }
   
   return(paramList)  
 }
@@ -1381,10 +1385,16 @@ getReadOrderTable <- function(readList) {
   # Input:  readList (list of lists)
   # Output: readsTable (data.table)
   
-  readsTable <- data.table(ldply(readList, data.frame))
-  setnames(readsTable, "readNumber", "userReadOrder")
-  readsTable[ , calculatedRead := FALSE]
-  readsTable[grep("^Calc: ", readName), calculatedRead := TRUE]
+  readsTable <- data.table(ldply(readList, function(item) {
+    data.frame(
+        userReadOrder = item$readNumber,
+        readPosition = ifelse(is.null(item$readPosition), NA_real_, item$readPosition),
+        readName = item$readName,
+        activity = item$activity,
+        calculatedRead = FALSE
+      )
+  }))
+  readsTable[grep("^Calc:", readName), calculatedRead := TRUE]
   
   if(length(unique(readsTable$readName)) != length(readsTable$readName)) {
     stopUser("Some reads have the same name.")
@@ -1440,14 +1450,14 @@ checkControls <- function(resultTable) {
   }
   
   if(!controlsExist$posExists && !controlsExist$negExists) {
-    stopUser("The positive and negative controls were not found in the plates. Make sure all transfers have been loaded 
-             and your controls are defined correctly.")
+    stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
+             and your controls and dilution factor are defined correctly.")
   } else if (!controlsExist$posExists) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control is defined correctly.")
+    stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control (or dilution factor) is defined correctly.")
   } else if (!controlsExist$negExists) {
-    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
-             and your negative control is defined correctly.")
+    stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your negative control (or dilution factor) is defined correctly.")
   }
 }
 
@@ -1618,8 +1628,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
   #                       "analysisGroupFlags" or spotfire "KOandHit"
   
-  require("data.table")
-  library(plyr)
+  library("data.table")
+  library("plyr")
   
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
@@ -1720,7 +1730,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"performCalculations.R"))
   
+  if(length(unique(resultTable$activity)) == 1) {
+    stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
+  }
+    
   resultTable <- performCalculations(resultTable, parameters)
+  
+  if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
+    stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
+  }
+  
+  
   
   ## BLUE SECTION - Auto Well Flagging
 
@@ -1901,19 +1921,30 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       info = list(
         "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
         "Compounds analyzed" = length(unique(resultTable$batchCode)),
-        # "Hits" = sum(analysisGroupData$threshold),
+        "Automatic Hits" = nrow(resultTable[autoFlagType == "HIT"]),
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         # "Fluorescent wells" = sum(resultTable$fluorescent),
-        # "Flagged wells" = sum(!is.na(resultTable$flag)),
+        "Flagged wells" = sum(!is.na(resultTable$flag)),
+        "Number of wells" = nrow(resultTable),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
         # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
+        "Positive Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "PC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+        "Negative Control summary" = paste0("\n  Batch code: ",parameters$negativeControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "NC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
-    if (!is.null(parameters$agonist$batchCode)) {
+    if (!is.null(parameters$agonist$batchCode) && parameters$agonist$batchCode != "") {
       summaryInfo$info$"Agonist" <- parameters$agonist$batchCode
     }
   }
@@ -1926,7 +1957,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     lsTransaction <- 1345
   }
   if (dryRun && !testMode) {
-    saveAcasFileToExperiment(
+    serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
   }
@@ -1970,15 +2001,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      if(!parameters$autoHitSelection) {
+        hitThreshold <- ""
+      } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
         hitThreshold <- parameters$hitEfficacyThreshold
       } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
         hitThreshold <- parameters$hitSDThreshold
       } else {
         hitThreshold <- ""
       }
+      activityName <- instrumentData$userInputReadTable[ activityCol==TRUE ]$userReadName
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
-                               threshold = hitThreshold, experiment, dryRun)
+                               threshold = hitThreshold, experiment, dryRun, activityName) 
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
@@ -2006,6 +2040,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     deleteAnalysisGroupsByExperiment(experiment)
     deleteModelSettings(experiment)
+    
+    serverFileLocation <- saveAcasFileToExperiment(
+      folderToParse, experiment, 
+      "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2116,6 +2154,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     summaryInfo$viewerLink <- viewerLink
   }
   
+  summaryInfo$info$"Original Data File" <- paste0(
+    '<a href="', getAcasFileLink(serverFileLocation, login=T), '" target="_blank">Original Data File</a>')
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
@@ -2293,7 +2333,9 @@ getColNameChangeDataTables <- function(parameters) {
                                                       "transformed_percent efficacy",
                                                       "transformed_sd",
                                                       "zPrimeByPlate",
+                                                      "rawZPrimeByPlate",
                                                       "zPrime",
+                                                      "rawZPrime",
                                                       "activity",
                                                       "normalizedActivity",
                                                       "flagType",  
@@ -2319,7 +2361,9 @@ getColNameChangeDataTables <- function(parameters) {
                                                    "Efficacy",
                                                    "SD Score",
                                                    "Z' By Plate",
+                                                   "Raw Z' By Plate",
                                                    "Z'",
+                                                   "Raw Z'",
                                                    getActivityFullName(parameters),
                                                    "Normalized Activity",
                                                    "Flag Type",
@@ -2361,7 +2405,11 @@ formatColumnNameChangeDT <- function(colDataTable) {
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam Fix for 1.5.1
+  ##### TODO: Sam allow parameters for 1.5.1
+  #
+  # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
+  # parameters: list, currently only used for aggregationMethod
+  # groupBy: character vector of grouping columns for which subjects belong to one treatment group
   
   groupBy <- c(groupBy, "tempParentId")
   
@@ -2377,7 +2425,6 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable), value=TRUE)
   )
-  # TODO: get numberOfReplicates
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = mean,
@@ -2385,11 +2432,18 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
                                 stopUser = stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
-  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget]  
+  sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget] 
+  
+  ### get numberOfReplicates
+  numRep <- batchDataTable[ , lapply(.SD, function(x) {as.numeric(length(x))}), by = groupBy, .SDcols = sdTarget] 
   setnames(sds, sdTarget, paste0("standardDeviation_", sdTarget))
+  setnames(numRep, sdTarget, paste0("numberOfReplicates_", sdTarget))
+  
+  ### combine all tables together by setting keys
   setkeyv(sds, groupBy)
+  setkeyv(numRep, groupBy)
   setkeyv(aggregationResults, groupBy)
-  treatmentData <- sds[aggregationResults]
+  treatmentData <- sds[aggregationResults][numRep]
   setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
@@ -2461,25 +2515,52 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   }
   codeIdVars <- c(idVars, "cmpdConc")
   
-  usedCol <- (resultTypes[, includedColumn, with=F][[1]]) & (resultTypes$columnName %in% names(resultTable))
+  # Get columns that are in resultTypes and are correct for this melt type
+  usedCol <- (resultTypes$columnName %in% names(resultTable)) & (resultTypes[, includedColumn, with=F][[1]])
   
+  # Numeric results include standard deviation and number of replicates, others do not
   numericResultColumns <- resultTypes[valueType=="numericValue" & usedCol, columnName]
+  stDevColumns <- paste0("standardDeviation_", numericResultColumns)
+  stDevColumns <- intersect(stDevColumns, names(resultTable))
+  numRepColumns <- paste0("numberOfReplicates_", numericResultColumns)
+  numRepColumns <- intersect(numRepColumns, names(resultTable))
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
+  ### Melt each group
   numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
                          variable.name="columnName", value.name="numericValue")
+  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+                       variable.name="columnName", value.name="uncertainty")
+  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+                        variable.name="columnName", value.name="numberOfReplicates")
   codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
                       variable.name="columnName", value.name="codeValue")
   stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
   
+  ### Combine numericValues with their standard deviations and number of replicates
+  keyCols <- c(idVars, "columnName")
+  setkeyv(numericResults, keyCols)
+  if (length(stDevColumns) > 0) {
+    stDevResults[, columnName := gsub("standardDeviation_", "", columnName, fixed = TRUE)]
+    stDevResults[, uncertaintyType:="standard deviation"]
+    setkeyv(stDevResults, keyCols)
+    numericResults <- numericResults[stDevResults]
+  }
+  if (length(numRepColumns) > 0) {
+    numRepResults[, columnName := gsub("numberOfReplicates_", "", columnName, fixed = TRUE)]
+    setkeyv(numRepResults, keyCols)
+    numericResults <- numericResults[numRepResults]
+  }
+  
   codeResults[, concentration:=cmpdConc]
   codeResults[, cmpdConc:=NULL]
   codeResults[columnName != "batchCode", concentration:=NA]
   codeResults[!is.na(concentration), concUnit:="uM"]
   
+  # Combines all tables, filling with NA
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
   fullTable <- merge(longResults, resultTypes, by = "columnName")
@@ -2489,7 +2570,6 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
   }
-  
   
   return(fullTable)  
 }
@@ -2508,6 +2588,8 @@ deleteModelSettings <- function(experiment) {
   #   is "not started"
   updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "codeValue", "model fit status")
+  updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
+                           "experiment metadata", "codeValue", "model fit type")
   updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "clobValue", "model fit parameters")
   updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
@@ -2519,11 +2601,17 @@ updateHtsFormat <- function (htsFormat, experiment) {
   updateValueByTypeAndKind(htsFormat, "experiment", experiment$id, "metadata", "experiment metadata",
                            "stringValue", "hts format")
 }
-runPrimaryAnalysis <- function(request) {
-  # Highest level function, runs everything else
+runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
+  # Highest level function, runs everything else 
+  #   externalFlagging should be TRUE when flagging is coming from a service,
+  #   e.g. when called by spotfire
   library('racas')
+  
+  globalMessenger <- messenger()$reset()
+  developmentMode <- FALSE
   options("scipen"=15)
   #save(request, file="request.Rda")
+  
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -2531,86 +2619,54 @@ runPrimaryAnalysis <- function(request) {
   user <- request$user
   testMode <- request$testMode
   inputParameters <- request$inputParameters
-  ## TODO test structure: remove when GUI JSON is fixed
+  ## GUI json is locked into calling the second file a report file...
   request$flaggedFile <- request$reportFile
-  ## TODO end test structure
   flaggedWells <- request$flaggedFile
   flaggingStage <- ifelse(is.null(request$flaggingStage), "KOandHit", request$flaggingStage)
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  # Set up the error handling for non-fatal errors, and add it to the search path (almost like a global variable)
-  errorHandlingBox <- list(errorList = list())
-  attach(errorHandlingBox)
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
   
-  loadResult <- tryCatch.W.E(runMain(folderToParse = folderToParse, 
-                                     user = user, 
-                                     dryRun = dryRun, 
-                                     testMode = testMode, 
-                                     experimentId = experimentId, 
-                                     inputParameters = inputParameters,
-                                     flaggedWells = flaggedWells,
-                                     flaggingStage = flaggingStage))
-  
-  # If the output has class simpleError or is not a list, save it as an error
-  if (sum(class(loadResult$value)=="userStop") > 0) {
-    errorList <- c(errorList,list(loadResult$value$message))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="SQLException") > 0) {
-    errorList <- c(errorList,list(paste0("There was an error in connecting to the SQL server ", 
-                                         racas::applicationSettings$server.database.host, 
-                                         racas::applicationSettings$server.database.port, ":", 
-                                         as.character(loadResult$value), 
-                                         ". Please contact your system administrator.")))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="simpleError") > 0) {
-    errorList <- c(errorList, list(paste0("The system has encountered an internal error: ", 
-                                          as.character(loadResult$value$message))))
-    loadResult$value <- NULL
-  } else if (sum(class(loadResult$value)=="error") > 0 || class(loadResult$value)!="list") {
-    errorList <- c(errorList,list(as.character(loadResult$value)))
-    loadResult$value <- NULL
+  if (developmentMode) {
+    loadResult <- list(value = runMain(folderToParse = folderToParse, 
+                                       user = user, 
+                                       dryRun = dryRun, 
+                                       testMode = testMode, 
+                                       experimentId = experimentId, 
+                                       inputParameters = inputParameters,
+                                       flaggedWells = flaggedWells,
+                                       flaggingStage = flaggingStage))
+  } else {
+    loadResult <- tryCatchLog(runMain(folderToParse = folderToParse, 
+                                      user = user, 
+                                      dryRun = dryRun, 
+                                      testMode = testMode, 
+                                      experimentId = experimentId, 
+                                      inputParameters = inputParameters,
+                                      flaggedWells = flaggedWells,
+                                      flaggingStage = flaggingStage))
   }
   
-  # Save warning messages but not the function call, which is only useful while programming
-  # Paste "Internal Warning: " to the front of errors we didn't intend to throw
-  loadResult$warningList <- lapply(loadResult$warningList,function(x) {
-    if(any(class(x) == "userWarning")) {
-      x$message
-    } else {
-      paste0("The system has encountered an internal warning: ", x$message)
-    }
-  })
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
+  allTextErrors <- c(allTextErrors, errorList)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
-  
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
-  #   
-  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
-  #   
+  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
+  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo))) 
   
   # Create the HTML to display
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
-  
-  # Detach the box for error handling
-  detach(errorHandlingBox)
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
   
   tryCatch({
     if(is.null(loadResult$value$experiment)) {
@@ -2619,7 +2675,6 @@ runPrimaryAnalysis <- function(request) {
       experiment <- loadResult$value$experiment
     }
     saveAnalysisResults(experiment, hasError, htmlSummary, user, dryRun)
-    
   }, error= function(e) {
     htmlSummary <- paste(htmlSummary, "<p>Could not get the experiment</p>")  
   })
@@ -2632,12 +2687,14 @@ runPrimaryAnalysis <- function(request) {
       path= getwd(),
       folderToParse= folderToParse,
       dryRun= dryRun,
-      htmlSummary= htmlSummary,
-      jsonSummary= list(dryRunReports = loadResult$value$dryRunReports)
+      htmlSummary= htmlSummary
     ),
     hasError= hasError,
     hasWarning= hasWarning,
     errorMessages= errorMessages)
+  if (externalFlagging) {
+    response$results$jsonSummary <- list(dryRunReports = loadResult$value$dryRunReports)
+  }
   return(response)
 }
 

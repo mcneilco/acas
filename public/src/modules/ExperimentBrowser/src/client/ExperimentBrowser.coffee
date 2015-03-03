@@ -70,7 +70,6 @@ class window.ExperimentSearchController extends AbstractFormController
 				testMode: false
 				fullObject: true
 			success: (experiment) =>
-				window.fooexperiments = experiment
 				@setupExperimentSummaryTable [experiment]
 
 	setupProtocolSelect: ->
@@ -167,32 +166,18 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
 		$(".bv_searchTerm").val ""
 		if experimentSearchTerm isnt ""
-			if @$(".bv_clearSearchIcon").hasClass "hide"
-				@$(".bv_experimentSearchTerm").attr("disabled", true)
-				@$(".bv_doSearchIcon").addClass "hide"
-				@$(".bv_clearSearchIcon").removeClass "hide"
-				$(".bv_searchingMessage").removeClass "hide"
-				$(".bv_experimentBrowserSearchInstructions").addClass "hide"
-				$(".bv_searchTerm").html experimentSearchTerm
-
-				@doSearch experimentSearchTerm
-
-			else
-				@$(".bv_experimentSearchTerm").val ""
-				@$(".bv_experimentSearchTerm").attr("disabled", false)
-				@$(".bv_clearSearchIcon").addClass "hide"
-				@$(".bv_doSearchIcon").removeClass "hide"
-				$(".bv_searchingMessage").addClass "hide"
-				$(".bv_experimentBrowserSearchInstructions").removeClass "hide"
-				$(".bv_searchStatusIndicator").removeClass "hide"
-
-				@updateExperimentSearchTerm()
-				@trigger "resetSearch"
+			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
+			$(".bv_searchingExperimentsMessage").removeClass "hide"
+			$(".bv_experimentBrowserSearchInstructions").addClass "hide"
+			$(".bv_searchTerm").html experimentSearchTerm
+			$(".bv_searchExperimentsStatusIndicator").removeClass "hide"
+			@doSearch experimentSearchTerm
 
 	doSearch: (experimentSearchTerm) =>
+		# disable the search text field while performing a search
+		@$(".bv_experimentSearchTerm").attr "disabled", true
+		@$(".bv_doSearch").attr "disabled", true
 		@trigger 'find'
-		#$(".bv_experimentTableController").html "Searching..."
-
 		unless experimentSearchTerm is ""
 			$.ajax
 				type: 'GET'
@@ -205,6 +190,11 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 					@trigger "searchReturned", experiment
 				error: (result) =>
 					@trigger "searchReturned", null
+				complete: =>
+					# re-enable the search text field regardless of if any results found
+					@$(".bv_experimentSearchTerm").attr "disabled", false
+					@$(".bv_doSearch").attr "disabled", false
+
 
 
 class window.ExperimentRowSummaryController extends Backbone.View
@@ -222,8 +212,12 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		@template = _.template($('#ExperimentRowSummaryView').html())
 
 	render: =>
+
+		experimentBestName = @model.get('lsLabels').pickBestName()
+		if experimentBestName
+			experimentBestName = @model.get('lsLabels').pickBestName().get('labelText')
 		toDisplay =
-			experimentName: @model.get('lsLabels').pickBestName().get('labelText')
+			experimentName: experimentBestName
 			experimentCode: @model.get('codeName')
 			protocolName: @model.get('protocol').get("codeName")
 			scientist: @model.getScientist().get('codeValue')
@@ -243,13 +237,11 @@ class window.ExperimentSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
-		console.dir @collection
-		window.fooSearchResults = @collection
 		if @collection.models.length is 0
-			@$(".bv_noMatchesFoundMessage").removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
 			# display message indicating no results were found
 		else
-			@$(".bv_noMatchesFoundMessage").addClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
 			@collection.each (exp) =>
 				ersc = new ExperimentRowSummaryController
 					model: exp
@@ -282,18 +274,20 @@ class window.ExperimentBrowserController extends Backbone.View
 			includeDuplicateAndEdit: @includeDuplicateAndEdit
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable
-		@searchController.on "resetSearch", @destroyExperimentSummaryTable
+		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
 
 	setupExperimentSummaryTable: (experiments) =>
-		$(".bv_searchingMessage").addClass "hide"
+		@destroyExperimentSummaryTable()
+
+		$(".bv_searchingExperimentsMessage").addClass "hide"
 		if experiments is null
 			@$(".bv_errorOccurredPerformingSearch").removeClass "hide"
 
 		else if experiments.length is 0
-			@$(".bv_noMatchesFoundMessage").removeClass "hide"
+			@$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
 			@$(".bv_experimentTableController").html ""
 		else
-			$(".bv_searchStatusIndicator").addClass "hide"
+			$(".bv_searchExperimentsStatusIndicator").addClass "hide"
 			@$(".bv_experimentTableController").removeClass "hide"
 			@experimentSummaryTable = new ExperimentSummaryTableController
 				collection: new ExperimentList experiments
@@ -315,6 +309,17 @@ class window.ExperimentBrowserController extends Backbone.View
 		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
+		if experiment.getStatus().get('codeValue') is "deleted"
+			@$('.bv_deleteExperiment').hide()
+			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
+		else
+			@$('.bv_editExperiment').show()
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
+	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+	#				console.log "user is protocol creator"
+			else
+				@$('.bv_deleteExperiment').hide()
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")
@@ -335,7 +340,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@$(".bv_deletingStatusIndicator").removeClass "hide"
 		@$(".bv_deleteButtons").addClass "hide"
 		$.ajax(
-			url: "api/experiments/#{@experimentController.model.get("id")}",
+			url: "/api/experiments/#{@experimentController.model.get("id")}",
 			type: 'DELETE',
 			success: (result) =>
 				@$(".bv_okayButton").removeClass "hide"
@@ -369,7 +374,7 @@ class window.ExperimentBrowserController extends Backbone.View
 			@experimentController.remove()
 		$(".bv_experimentBaseController").addClass("hide")
 		$(".bv_experimentBaseControllerContainer").addClass("hide")
-		$(".bv_noMatchesFoundMessage").addClass("hide")
+		$(".bv_noMatchingExperimentsFoundMessage").addClass("hide")
 
 	render: =>
 

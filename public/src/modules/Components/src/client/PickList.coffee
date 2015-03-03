@@ -49,7 +49,7 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@autoFetch = true
 
-		if @autoFetch
+		if @autoFetch == true
 			@collection.fetch
 				success: @handleListReset
 		else
@@ -96,7 +96,11 @@ class window.PickListSelectController extends Backbone.View
 
 	setSelectedCode: (code) ->
 		@selectedCode = code
-		$(@el).val @selectedCode  if @rendered
+		#		$(@el).val @selectedCode  if @rendered
+		if @rendered
+			$(@el).val @selectedCode
+		else
+			"not done"
 
 	getSelectedCode: ->
 		$(@el).val()
@@ -226,6 +230,9 @@ class window.EditablePickListSelectController extends Backbone.View
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
 
+	setSelectedCode: (code) ->
+		@pickListController.setSelectedCode(code)
+
 	handleShowAddPanel: =>
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
 			unless @addPanelController?
@@ -255,7 +262,7 @@ class window.EditablePickListSelectController extends Backbone.View
 				comments: requestedOptionModel.get('newOptionComments')
 			@pickListController.collection.add newPickList
 			@pickListController.setSelectedCode(newPickList.get('code'))
-
+			@trigger 'change'
 			@$('.bv_errorMessage').hide()
 			@addPanelController.hideModal()
 
@@ -268,27 +275,27 @@ class window.EditablePickListSelectController extends Backbone.View
 	showAddOptionButton: ->
 		@$('.bv_addOptionBtn').show()
 
-	saveNewOption: (callback) ->
+	saveNewOption: (callback) =>
 		code = @pickListController.getSelectedCode()
 		selectedModel = @pickListController.collection.getModelWithCode(code)
-		if selectedModel != undefined
+		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
 			if selectedModel.get('id')?
 				callback.call()
 			else
-				#TODO: check to see this works once the route is set up
 				$.ajax
 					type: 'POST'
-					url: "/api/codetables/"+selectedModel.get('codeType')+"/"+selectedModel.get('codeKind')
-					data: selectedModel
-					success: callback.call()
+					url: "/api/codetables"
+					data:
+						JSON.stringify(codeEntry:(selectedModel))
+					contentType: 'application/json'
+					dataType: 'json'
+					success: (response) =>
+						callback.call()
 					error: (err) =>
 						alert 'could not add option to code table'
 						@serviceReturn = null
-					dataType: 'json'
 		else
 			callback.call()
-
-
 
 #	setupContextMenu: ->
 #		$.fn.contextMenu = (settings) ->

@@ -845,12 +845,13 @@ class window.CurveCuratorController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_badCurveUpdate').modal "show"
 
-	getCurvesFromExperimentCode: (exptCode, curveID) ->
+	getCurvesFromExperimentCode: (exptCode, curveID) =>
 		@initiallySelectedCurveID = curveID
 		@model = new CurveCurationSet
 		@model.setExperimentCode exptCode
 		@model.fetch
 			success: =>
+				@trigger 'getCurvesSuccessful'
 				@render()
 			error: =>
 				@$('.bv_badExperimentCode').modal

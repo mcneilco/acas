@@ -15,7 +15,11 @@ performCalculations <- function(resultTable, parameters) {
   # compute Z' and Z' by plate
   resultTable[, zPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$normalizedActivity,
                                         negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$normalizedActivity)]
+  resultTable[, rawZPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$activity,
+                                           negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$activity)]
   resultTable[, zPrimeByPlate := computeZPrimeByPlate(.SD),
+              by=assayBarcode]
+  resultTable[, rawZPrimeByPlate := computeRawZPrimeByPlate(.SD),
               by=assayBarcode]
   
   resultTable[, index:=1:nrow(resultTable)]
@@ -50,6 +54,13 @@ computeZPrimeByPlate <- function(mainData) {
   return(computeZPrime(positiveControls, negativeControls))
 }
 
+computeRawZPrimeByPlate <- function(mainData) {
+  positiveControls <- mainData[wellType == "PC" & is.na(flag)]$activity
+  negativeControls <- mainData[wellType == "NC" & is.na(flag)]$activity
+  
+  return(computeZPrime(positiveControls, negativeControls))
+}
+
 normalizeData <- function(resultTable, parameters) {
   normalization <- parameters$normalizationRule
   
@@ -76,6 +87,39 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMaxLevel=overallMaxLevel, parameters), by= list(assayBarcode,plateRow)]
   } else if (normalization == "plate order and tip") {
     stopUser("Normalization not coded for 'plate order and tip'.")
+  } else if (normalization == "plate order & section by 8") {
+    getLetterInteger <- function(letter) {
+      letter <- gsub("-","",letter)
+      letterInteger <- 0
+      if(nchar(letter) == 2) {
+        firstLetter <- gsub(".{0,1}$","",letter)
+        letterInteger <- letterInteger + which(LETTERS == firstLetter) * 26
+        letter <- gsub("^.{0,1}","",letter)
+      }
+      letterInteger <- letterInteger + which(LETTERS == letter)
+      return(letterInteger)
+    }
+    
+    getRowSectionNumber <- function(letter, rowsPerSection) {
+      letterInteger <- getLetterInteger(letter)
+      sectionNumber <- ceiling(letterInteger/rowsPerSection)
+      return(sectionNumber)
+    }
+    
+    if (ceiling(max(as.numeric(resultTable$column))/12) == 4) {
+      resultTable[ , section := getRowSectionNumber(row, 4), by=row]
+    } else if (ceiling(max(as.numeric(resultTable$column))/12) == 2) {
+      resultTable[ , section := getRowSectionNumber(row, 2), by=row]
+    } else if (ceiling(max(as.numeric(resultTable$column))/12) == 1) {
+      # this normalization is the same as the 'plate order and row' normalization
+      resultTable[ , section := getRowSectionNumber(row, 1), by=row]
+    } else {
+      stopUser("Normalization not coded for this plate dimension.")
+    }
+    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
+                                                       overallMinLevel=overallMinLevel,
+                                                       overallMaxLevel=overallMaxLevel, parameters), 
+                by= list(assayBarcode,section)]
   } else {
     warnUser("No normalization applied.")
     resultTable$normalizedActivity <- resultTable$activity
@@ -112,7 +156,7 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
   
   return(
     ((values - grpMaxLevel) 
-    * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
+     * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
     + overallMaxLevel)
 }
 
@@ -146,7 +190,16 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
     } else {
       stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
     }
-    return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    
+    # Determine if signal direction is decreasing or increasing
+    if (parameters$signalDirectionRule == "increasing") {
+      return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    } else if (parameters$signalDirectionRule == "decreasing") {
+      return(-(as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+    } else {
+      stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
+    }
+    
   } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)

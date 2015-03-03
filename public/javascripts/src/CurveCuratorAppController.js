@@ -32,6 +32,7 @@
     __extends(CurveCuratorAppController, _super);
 
     function CurveCuratorAppController() {
+      this.hideLoadCurvesModal = __bind(this.hideLoadCurvesModal, this);
       this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
       this.render = __bind(this.render, this);
       return CurveCuratorAppController.__super__.constructor.apply(this, arguments);
@@ -44,6 +45,7 @@
       this.ccc = new CurveCuratorController({
         el: this.$('.bv_curveCurator')
       });
+      this.ccc.on('getCurvesSuccessful', this.hideLoadCurvesModal);
       this.render();
       this.router = new CurveCuratorAppRouter({
         appController: this
@@ -60,6 +62,7 @@
     };
 
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      UtilityFunctions.prototype.showProgressModal(this.$('.bv_loadCurvesModal'));
       this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
       return $.ajax({
         type: 'GET',
@@ -80,6 +83,10 @@
         })(this),
         dataType: 'json'
       });
+    };
+
+    CurveCuratorAppController.prototype.hideLoadCurvesModal = function() {
+      return UtilityFunctions.prototype.hideProgressModal(this.$('.bv_loadCurvesModal'));
     };
 
     return CurveCuratorAppController;
