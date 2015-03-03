@@ -8,24 +8,16 @@ class window.Thing extends Backbone.Model
 		@set lsType: "thing"
 		@set lsKind: "thing"
 #		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
-		@set corpName: "" #TODO: need this?
+		@set corpName: ""
 		@set recordedBy: window.AppLaunchParams.loginUser.username
 		@set recordedDate: new Date().getTime()
 		@set shortDescription: " "
 		@set lsLabels: new LabelList()
 		@set lsStates: new StateList()
-#		@createDefaultLabels() # attrs
-#		@createDefaultStates() # attrs
 
-		#return attrs
 
 	initialize: ->
 		@.set @parse(@.attributes)
-		#Problem, if new() overwrites defaults, I will lose my nested value attribute defaults
-		#solution, save labels and values as base attributes. Only use new and fetch, don't use new, passing in attributes
-		#Or, I will have a hamdle on the value pointer both as a base attribute and in the alue array.
-		# If a new value array is passed in on new or parse, I still have a handle on the old one, I juts need to sub
-		# The good thing about making all the defaults is i never need to use getOrCreate, just get becuase I know the value was made at initializtion
 
 	parse: (resp) =>
 		if resp?
@@ -45,23 +37,6 @@ class window.Thing extends Backbone.Model
 		@createDefaultStates()
 
 		resp
-
-#	sync: =>
-#		console.log "sync in thing"
-#		console.log @
-#		for dLabel in @lsProperties.defaultLabels
-#			@unset dLabel.key
-#
-#		for dValue in @lsProperties.defaultValues
-#			@unset dValue.key
-#		#@set
-#			#recordedDate: new Date().getTime()
-#			#recordedBy: #logged in user
-#			#hide all label, value and value array keys from save
-#		console.log @
-#		Backbone.Model.prototype.sync.call(this)
-#		console.log 'done syncing'
-
 
 	createDefaultLabels: =>
 		# loop over defaultLabels

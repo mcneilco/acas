@@ -1,8 +1,5 @@
 fs = require 'fs'
 glob = require 'glob'
-_ = require "underscore"
-
-console.log "here"
 
 allModuleConfJSFiles = glob.sync "../public/javascripts/conf/*.js"
 for fileName in allModuleConfJSFiles
@@ -39,27 +36,44 @@ typeKinds = [
 	"valuetypes"
 ]
 allModuleConfJSONFiles = glob.sync "../public/javascripts/conf/confJSON/*.json"
-#for fileName in allModuleConfJSONFiles
-#	data = require fileName
-##	console.log typeKinds
-#	console.log typeKinds[6]
-#	test = typeKinds[6]
-#	console.log data[test]
-#	for typeOrKind in typeKinds
-#		for value in data[typeOrKind]
-#			$.ajax
-#				type: 'POST'
-#				url: "/api/setup"+typeOrKind
-#				data:
-#					JSON.stringify value
-##					JSON.stringify(codeEntry:(selectedModel))
-#				contentType: 'application/json'
-#				dataType: 'json'
-#				success: (response) =>
-#					console.log "successful post"
-#				error: (err) =>
-#					alert 'could not add option to code table'
-#					@serviceReturn = null
+for fileName in allModuleConfJSONFiles
+	data = require fileName
+	for typeOrKind in typeKinds
+		if data.typeKindList[typeOrKind]?
+			for value in data.typeKindList[typeOrKind]
+				config = require '../conf/compiled/conf.js'
+				baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
+				request = require 'request'
+				request(
+					method: 'POST'
+					url: baseurl
+					body: JSON.stringify [value]
+					json: true
+					headers:
+						"Content-Type": 'application/json'
+				, (error, response, json) =>
+					if !error && response.statusCode == 201
+						console.log "successfully added type/kind "
+					else
+						console.log 'got ajax error trying to setup type/kind'
+						console.log error
+						console.log json
+
+				)
+
+#				$.ajax
+#					type: 'POST'
+#					url: "/api/setup/"+typeOrKind
+#					data:
+#						JSON.stringify value
+#	#					JSON.stringify(codeEntry:(selectedModel))
+#					contentType: 'application/json'
+#					dataType: 'json'
+#					success: (response) =>
+#						console.log "successful post"
+#					error: (err) =>
+#						alert 'could not add option to code table'
+#						@serviceReturn = null
 
 #allCodeTables = []
 #allCodeTableTypesAndKinds = []
