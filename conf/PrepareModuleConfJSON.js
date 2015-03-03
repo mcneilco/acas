@@ -32,6 +32,13 @@
           config = require('../conf/compiled/conf.js');
           baseurl = config.all.client.service.persistence.fullpath + "setup/" + typeOrKind;
           request = require('request');
+          if ((value.kindName != null) && (value.typeName != null)) {
+            console.log("trying to save typeName: " + value.typeName + " and kindName: " + value.kindName);
+          } else if (value.typeName != null) {
+            console.log("trying to save typeName: " + value.typeName);
+          } else {
+            console.log("trying to save " + typeOrKind);
+          }
           request({
             method: 'POST',
             url: baseurl,
@@ -42,9 +49,7 @@
             }
           }, (function(_this) {
             return function(error, response, json) {
-              if (!error && response.statusCode === 201) {
-                return console.log("successfully added type/kind ");
-              } else {
+              if (!(!error && response.statusCode === 201)) {
                 console.log('got ajax error trying to setup type/kind');
                 console.log(error);
                 return console.log(json);

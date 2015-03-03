@@ -44,6 +44,12 @@ for fileName in allModuleConfJSONFiles
 				config = require '../conf/compiled/conf.js'
 				baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
 				request = require 'request'
+				if value.kindName? and value.typeName?
+					console.log "trying to save typeName: " + value.typeName + " and kindName: " + value.kindName
+				else if value.typeName?
+					console.log "trying to save typeName: " + value.typeName
+				else
+					console.log "trying to save " + typeOrKind
 				request(
 					method: 'POST'
 					url: baseurl
@@ -52,9 +58,7 @@ for fileName in allModuleConfJSONFiles
 					headers:
 						"Content-Type": 'application/json'
 				, (error, response, json) =>
-					if !error && response.statusCode == 201
-						console.log "successfully added type/kind "
-					else
+					unless !error && response.statusCode == 201
 						console.log 'got ajax error trying to setup type/kind'
 						console.log error
 						console.log json

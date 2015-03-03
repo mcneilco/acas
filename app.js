@@ -151,7 +151,7 @@
     });
     child.start();
     child.on('exit:code', function(code) {
-      console.error('stopping app_api.js process');
+      console.error('stopping child process with code ');
       process.exit(0);
     });
     process.once('SIGTERM', function() {
@@ -161,7 +161,7 @@
       child.stop(0);
     });
     process.once('exit', function() {
-      console.log('ACAS exited cleanly');
+      console.log('clean exit of app');
     });
     process.on('uncaughtException', function(err) {
       console.log('Caught exception: ' + err);
