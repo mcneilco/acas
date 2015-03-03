@@ -232,10 +232,10 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
-			prepare_module_conf_JSON:
-				options:
-					cwd: 'conf'
-				src: 'conf/PrepareModuleConfJSON.js'
+#			prepare_module_conf_JSON:
+#				options:
+#					cwd: 'conf'
+#				src: 'conf/PrepareModuleConfJSON.js'
 			prepare_test_JSON:
 				options:
 					cwd: 'conf'
@@ -379,12 +379,12 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
-			prepare_module_conf_JSON:
-				files: [
-					"public/javascripts/conf/*.js"
-					"public/javascripts/conf/*.json"
-				]
-				tasks: "execute:prepare_module_conf_JSON"
+#			prepare_module_conf_JSON:
+#				files: [
+#					"public/javascripts/conf/*.js"
+#					"public/javascripts/conf/*.json"
+#				]
+#				tasks: "execute:prepare_module_conf_JSON"
 			prepare_test_JSON:
 				files: [
 					"public/javascripts/spec/testFixtures/*.js"
