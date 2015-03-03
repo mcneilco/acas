@@ -102,6 +102,22 @@
       return console.log("app_api.js has exited after 3 restarts");
     });
     child.start();
+    child.on('exit:code', function(code) {
+      console.error('stopping child process with code ');
+      process.exit(0);
+    });
+    process.once('SIGTERM', function() {
+      child.stop(0);
+    });
+    process.once('SIGINT', function() {
+      child.stop(0);
+    });
+    process.once('exit', function() {
+      console.log('clean exit of app');
+    });
+    process.on('uncaughtException', function(err) {
+      console.log('Caught exception: ' + err);
+    });
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };
 

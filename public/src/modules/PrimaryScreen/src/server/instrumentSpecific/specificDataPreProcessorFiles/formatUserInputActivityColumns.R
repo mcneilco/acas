@@ -83,9 +83,9 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   } 
   
   # these warnings/errors will only happen if matchNames = FALSE
-  if(length(overWrite) > 0) {
-    warnUser(paste0("Overwriting the following column(s) with user input read names: '", paste(overWrite, collapse="','"),"'"))
-  }
+  #   if(length(overWrite) > 0) {
+  #     warnUser(paste0("Overwriting the following column(s) with user input read names: '", paste(overWrite, collapse="','"),"'"))
+  #   }
   
   return(userInput)
 }
