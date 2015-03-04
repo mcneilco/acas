@@ -55,7 +55,7 @@
 				typeVerb: "contents of first were transferred to second"
 			]
 
-		interactionKinds:
+		interactionkinds:
 			[
 				kindName: "test subject"
 				typeName: "first refers to second"
