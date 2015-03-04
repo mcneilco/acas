@@ -1,5 +1,6 @@
 fs = require 'fs'
 glob = require 'glob'
+_ = require "underscore"
 
 allModuleConfJSFiles = glob.sync "../public/javascripts/conf/*.js"
 for fileName in allModuleConfJSFiles
@@ -35,19 +36,32 @@ typeKinds = [
 	"valuetypes"
 	"valuekinds"
 ]
-allModuleConfJSONFiles = glob.sync "../public/javascripts/conf/confJSON/moduleJSON/*.json"
+
+#name/pattern of confJSON file(s) to compile and store in CompiledModuleConfJSONs.json and to save the contents into the database
+selectedConfJSONFiles = process.argv[2]
+if selectedConfJSONFiles?
+	confJSONFilesToCompile = glob.sync process.argv[2]
+	if confJSONFilesToCompile.length is 0
+		console.log "This file does not exist"
+		console.log "Check the file path. The file should be in /public/javascripts/conf/confJSON/moduleJSON"
+		process.exit -1
+else
+	confJSONFilesToCompile = glob.sync "../public/javascripts/conf/confJSON/moduleJSON/*.json"
+
 allModulesTypesAndKinds = {}
 
-for fileName in allModuleConfJSONFiles
+for fileName in confJSONFilesToCompile
 	moduleData = require fileName
 	for typeOrKind in typeKinds
 		if moduleData.typeKindList[typeOrKind]?
-			value = moduleData.typeKindList[typeOrKind]
+			values = moduleData.typeKindList[typeOrKind]
 			if allModulesTypesAndKinds[typeOrKind]?
 				compiledTypesAndKinds = allModulesTypesAndKinds[typeOrKind]
-				compiledTypesAndKinds.push value...
+				for value in values
+					if _.findWhere(compiledTypesAndKinds, value) is undefined
+						compiledTypesAndKinds.push value...
 			else
-				allModulesTypesAndKinds[typeOrKind] = value
+				allModulesTypesAndKinds[typeOrKind] = values
 jsonfilestring = JSON.stringify allModulesTypesAndKinds
 compiledModuleConfsFileName = "../public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json"
 fs.writeFileSync compiledModuleConfsFileName, jsonfilestring

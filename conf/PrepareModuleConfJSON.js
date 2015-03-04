@@ -1,9 +1,11 @@
 (function() {
-  var allModuleConfJSFiles, allModuleConfJSONFiles, allModulesTypesAndKinds, async, compiledModuleConfsFileName, compiledTypesAndKinds, config, data, fileName, fs, glob, jsonfilestring, moduleData, newFileName, request, typeKinds, typeOrKind, value, _i, _j, _k, _len, _len1, _len2;
+  var allModuleConfJSFiles, allModulesTypesAndKinds, async, compiledModuleConfsFileName, compiledTypesAndKinds, confJSONFilesToCompile, config, data, fileName, fs, glob, jsonfilestring, moduleData, newFileName, request, selectedConfJSONFiles, typeKinds, typeOrKind, value, values, _, _i, _j, _k, _l, _len, _len1, _len2, _len3;
 
   fs = require('fs');
 
   glob = require('glob');
+
+  _ = require("underscore");
 
   allModuleConfJSFiles = glob.sync("../public/javascripts/conf/*.js");
 
@@ -18,22 +20,38 @@
 
   typeKinds = ["codetables", "containertypes", "containerkinds", "ddicttypes", "ddictkinds", "experimenttypes", "experimentkinds", "interactiontypes", "interactionkinds", "labeltypes", "labelkinds", "labelsequences", "operatortypes", "operatorkinds", "protocoltypes", "protocolkinds", "statetypes", "statekinds", "thingtypes", "thingkinds", "unittypes", "unitkinds", "valuetypes", "valuekinds"];
 
-  allModuleConfJSONFiles = glob.sync("../public/javascripts/conf/confJSON/moduleJSON/*.json");
+  selectedConfJSONFiles = process.argv[2];
+
+  if (selectedConfJSONFiles != null) {
+    confJSONFilesToCompile = glob.sync(process.argv[2]);
+    if (confJSONFilesToCompile.length === 0) {
+      console.log("This file does not exist");
+      console.log("Check the file path. The file should be in /public/javascripts/conf/confJSON/moduleJSON");
+      process.exit(-1);
+    }
+  } else {
+    confJSONFilesToCompile = glob.sync("../public/javascripts/conf/confJSON/moduleJSON/*.json");
+  }
 
   allModulesTypesAndKinds = {};
 
-  for (_j = 0, _len1 = allModuleConfJSONFiles.length; _j < _len1; _j++) {
-    fileName = allModuleConfJSONFiles[_j];
+  for (_j = 0, _len1 = confJSONFilesToCompile.length; _j < _len1; _j++) {
+    fileName = confJSONFilesToCompile[_j];
     moduleData = require(fileName);
     for (_k = 0, _len2 = typeKinds.length; _k < _len2; _k++) {
       typeOrKind = typeKinds[_k];
       if (moduleData.typeKindList[typeOrKind] != null) {
-        value = moduleData.typeKindList[typeOrKind];
+        values = moduleData.typeKindList[typeOrKind];
         if (allModulesTypesAndKinds[typeOrKind] != null) {
           compiledTypesAndKinds = allModulesTypesAndKinds[typeOrKind];
-          compiledTypesAndKinds.push.apply(compiledTypesAndKinds, value);
+          for (_l = 0, _len3 = values.length; _l < _len3; _l++) {
+            value = values[_l];
+            if (_.findWhere(compiledTypesAndKinds, value) === void 0) {
+              compiledTypesAndKinds.push.apply(compiledTypesAndKinds, value);
+            }
+          }
         } else {
-          allModulesTypesAndKinds[typeOrKind] = value;
+          allModulesTypesAndKinds[typeOrKind] = values;
         }
       }
     }
