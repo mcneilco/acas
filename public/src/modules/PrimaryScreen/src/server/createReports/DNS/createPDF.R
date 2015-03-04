@@ -29,17 +29,17 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   
   print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$plateOrder,
                            wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate Order", yLabel=activityName,
-                           margins = c(4,2,20,4), rotateXLabel = TRUE, test = FALSE, colourPalette = c("blue","green")))
+                           margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")))
   
   if(!is.null(resultTable$"transformed_percent efficacy")) {
     print(createGGComparison(graphTitle = "Efficacy by Compound Barcode", xColumn=resultTable$batchName,
                              wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Compound Batch", 
                              margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
-                             yLabel="percent efficacy"))
+                             yLabel="percent efficacy", checkXLabel=TRUE))
     
     print(createGGComparison(graphTitle = "Efficacy by Plate Order", xColumn=resultTable$plateOrder,
                              wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Plate Order", 
-                             margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
+                             margins = c(4,2,20,4), rotateXLabel = FALSE, test = TRUE, colourPalette = c("blue","green","black"),
                              yLabel="percent efficacy"))
   }
   
