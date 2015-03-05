@@ -515,7 +515,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
   
   comparisonFrame <- merge(oldValueKindTypeFrame, currentValueKindTypeFrame, by.x = "oldValueKinds", by.y = "currentValueKinds")
-  wrongValueTypes <- comparisonFrame$oldValueKindTypes != comparisonFrame$matchingValueTypes
+  goodValueTypes <- unique(comparisonFrame$oldValueKinds[comparisonFrame$oldValueKindTypes == comparisonFrame$matchingValueTypes])
+  wrongValueTypes <- !(comparisonFrame$oldValueKinds %in% goodValueTypes)
   
   # Throw errors if any values are of types that cannot be entered in SEL
   reservedValueKinds <- comparisonFrame$oldValueKinds[comparisonFrame$matchingValueTypes %in% c("codeValue", "fileValue", "urlValue", "blobValue")]
