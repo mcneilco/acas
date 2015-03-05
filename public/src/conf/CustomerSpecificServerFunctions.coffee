@@ -4,7 +4,6 @@
   All functions are required with unchanged signatures
 ###
 serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
-config = require '../../../conf/compiled/conf.js'
 fs = require 'fs'
 
 
@@ -20,6 +19,7 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -44,6 +44,7 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -65,6 +66,7 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
+	config = require '../../../conf/compiled/conf.js'
 	request = require 'request'
 	request(
 		headers:
@@ -88,6 +90,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
+	config = require '../../../conf/compiled/conf.js'
 	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
 		request = require 'request'
 		request(
@@ -179,6 +182,7 @@ exports.getCustomerMolecularTargetCodes = (resp) ->
 	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
 exports.getAuthors = (resp) ->
+	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
@@ -187,6 +191,7 @@ exports.getAuthors = (resp) ->
 
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
+	config = require '../../../conf/compiled/conf.js'
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
 

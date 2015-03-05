@@ -6,11 +6,9 @@
  */
 
 (function() {
-  var config, fs, serverUtilityFunctions;
+  var fs, serverUtilityFunctions;
 
   serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
-
-  config = require('../../../conf/compiled/conf.js');
 
   fs = require('fs');
 
@@ -26,7 +24,8 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -57,7 +56,8 @@
   };
 
   exports.resetAuth = function(email, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -85,7 +85,8 @@
   };
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -116,7 +117,8 @@
   };
 
   exports.getUser = function(username, callback) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
       request = require('request');
       return request({
@@ -238,14 +240,16 @@
   };
 
   exports.getAuthors = function(resp) {
-    var baseurl;
+    var baseurl, config;
+    config = require('../../../conf/compiled/conf.js');
     serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
     baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
     return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
   exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
-    var absEntitiesFolder, absEntityFolder, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
+    var absEntitiesFolder, absEntityFolder, config, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
+    config = require('../../../conf/compiled/conf.js');
     uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
     oldPath = uploadsPath + fileValue.fileValue;
     relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
