@@ -849,7 +849,6 @@
       experimentCount: 12,
       id: 14325,
       ignored: false,
-      lsKind: null,
       lsTransaction: {
         comments: "protocol 201 transactions",
         id: 179,

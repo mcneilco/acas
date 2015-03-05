@@ -85,7 +85,7 @@ postThing = (isBatch, req, resp) ->
 	else
 
 	checkFilesAndUpdate = (thing) ->
-		fileVals = serverUtilityFunctions.getFileValesFromThing thing
+		fileVals = serverUtilityFunctions.getFileValesFromThing thing, false
 		filesToSave = fileVals.length
 
 		completeThingUpdate = (thingToUpdate)->
@@ -141,7 +141,7 @@ exports.putThing = (req, resp) ->
 #		thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
 #	else
 	thingToSave = req.body
-	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave
+	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave, true
 	filesToSave = fileVals.length
 
 	completeThingUpdate = ->
@@ -155,9 +155,13 @@ exports.putThing = (req, resp) ->
 		if --filesToSave == 0 then completeThingUpdate()
 
 	if filesToSave > 0
-		prefix = serverUtilityFunctions.getPrefixFromThingCode req.params.code
+		prefix = serverUtilityFunctions.getPrefixFromThingCode req.body.codeName
 		for fv in fileVals
-			csUtilities.relocateEntityFile fv, prefix, req.params.code, fileSaveCompleted
+			console.log fv
+			console.log prefix
+			console.log req.body.codeName
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
 		completeThingUpdate()
 

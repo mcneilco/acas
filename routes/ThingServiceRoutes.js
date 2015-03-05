@@ -98,7 +98,7 @@
     }
     checkFilesAndUpdate = function(thing) {
       var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
-      fileVals = serverUtilityFunctions.getFileValesFromThing(thing);
+      fileVals = serverUtilityFunctions.getFileValesFromThing(thing, false);
       filesToSave = fileVals.length;
       completeThingUpdate = function(thingToUpdate) {
         return updateThing(thingToUpdate, req.query.testMode, function(updatedThing) {
@@ -167,7 +167,7 @@
   exports.putThing = function(req, resp) {
     var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, thingToSave, _i, _len, _results;
     thingToSave = req.body;
-    fileVals = serverUtilityFunctions.getFileValesFromThing(thingToSave);
+    fileVals = serverUtilityFunctions.getFileValesFromThing(thingToSave, true);
     filesToSave = fileVals.length;
     completeThingUpdate = function() {
       return updateThing(thingToSave, req.query.testMode, function(updatedThing) {
@@ -184,11 +184,18 @@
       }
     };
     if (filesToSave > 0) {
-      prefix = serverUtilityFunctions.getPrefixFromThingCode(req.params.code);
+      prefix = serverUtilityFunctions.getPrefixFromThingCode(req.body.codeName);
       _results = [];
       for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
         fv = fileVals[_i];
-        _results.push(csUtilities.relocateEntityFile(fv, prefix, req.params.code, fileSaveCompleted));
+        console.log(fv);
+        console.log(prefix);
+        console.log(req.body.codeName);
+        if (fv.id == null) {
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     } else {

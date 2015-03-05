@@ -5,6 +5,10 @@
 
   request = require('request');
 
+  exports.setupAPIRoutes = function(app, loginRoutes) {
+    return app.get('/entity/edit/codeName/:code', exports.redirectToEditor);
+  };
+
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor);
     return app.get('/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences);
@@ -13,7 +17,7 @@
   config = require('../conf/compiled/conf.js');
 
   exports.redirectToEditor = function(req, resp) {
-    var controllerRedirectConf, controllerRedirectConfFile, isStub, prefix, prefixKeyIndex, queryPrefix;
+    var controllerRedirectConf, controllerRedirectConfFile, prefix, prefixKeyIndex, queryPrefix;
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       controllerRedirectConfFile = require('../conf/ControllerRedirectConf.js');
       controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf;
@@ -28,19 +32,13 @@
         }
       }
       if (queryPrefix !== null) {
-        isStub = controllerRedirectConf[queryPrefix]["stub"];
         return request({
           json: true,
           url: "http://localhost:" + config.all.server.nodeapi.port + "/api/" + controllerRedirectConf[queryPrefix]["entityName"] + "/codename/" + req.params.code
         }, (function(_this) {
           return function(error, response, body) {
-            var deepLink, kind, stub;
-            if (isStub) {
-              stub = response.body[0];
-              kind = stub.lsKind;
-            } else {
-              kind = response.body.lsKind;
-            }
+            var deepLink, kind;
+            kind = response.body.lsKind;
             deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"];
             return resp.redirect("/" + deepLink + "/codeName/" + req.params.code);
           };

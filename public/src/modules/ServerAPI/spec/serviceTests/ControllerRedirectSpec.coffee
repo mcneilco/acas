@@ -5,6 +5,7 @@ fs = require 'fs'
 
 config = require '../../../../conf/compiled/conf.js'
 describe.skip "Controller Redirect service testing", ->
+	#specs pass if you run each set (protocol, experiment, and entity type redirect separately using .only)
 	describe "protocol redirect", ->
 		describe "When user enters in generic protocol", ->
 			before (done) ->

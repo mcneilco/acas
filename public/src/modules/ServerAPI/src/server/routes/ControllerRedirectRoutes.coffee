@@ -1,6 +1,8 @@
 _ = require 'underscore'
 request = require 'request'
 
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.get '/entity/edit/codeName/:code', exports.redirectToEditor
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor
@@ -23,16 +25,11 @@ exports.redirectToEditor = (req, resp) ->
 				prefixKeyIndex +=1
 
 		if queryPrefix != null
-			isStub = controllerRedirectConf[queryPrefix]["stub"] #true if getting entity returns a stub
 			request
 				json: true
 				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #redirect route
 			, (error, response, body) =>
-				if isStub
-					stub = response.body[0]
-					kind = stub.lsKind
-				else
-					kind = response.body.lsKind
+				kind = response.body.lsKind
 				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 

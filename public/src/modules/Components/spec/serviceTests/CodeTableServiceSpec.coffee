@@ -25,7 +25,6 @@ describe "CodeTable Service testing", ->
 					done()
 			it "should return all codeTables", ->
 				responseJSON = parseResponse(@response.body)
-				console.log responseJSON
 				assert.equal responseJSON[0].code, "fluorescence"
 				assert.equal responseJSON[0].name, "Fluorescence"
 				assert.equal responseJSON[1].code, "biochemical"
@@ -39,7 +38,6 @@ describe "CodeTable Service testing", ->
 					done()
 			it "should return a single set of codeTables", ->
 				responseJSON = parseResponse(@response.body)
-				console.log responseJSON
 				assert.equal responseJSON[0].code, "outlier"
 				assert.equal responseJSON[0].name, "Outlier"
 				assert.equal responseJSON[1].code, "high"
@@ -61,7 +59,6 @@ describe "CodeTable Service testing", ->
 			it "should return a code value", ->
 				assert.equal @response == null, false
 				results = @response.body
-				console.log results
 				assert.equal results.code, "fluorescence test 2"
 				assert.equal results.name, "Fluorescence TEST 2"
 
@@ -80,6 +77,5 @@ describe "CodeTable Service testing", ->
 			it "should return a code value", ->
 				assert.equal @response == null, false
 				results = @response.body
-				console.log results
 				assert.equal results.code, "fluorescence test modified code"
 				assert.equal results.name, "Fluorescence TEST Modified"

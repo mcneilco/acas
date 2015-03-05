@@ -117,7 +117,6 @@
           it("should return passed", function() {
             return assert.equal(this.passed, true);
           });
-          it("should return a fileValue with base file name in comments", function() {});
           it("should return a fileValue with the correct relative path for Protocol", function() {
             return assert.equal(this.outputFileValue.fileValue, "protocols/PROT12345/test Work List (1).csv");
           });

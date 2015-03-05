@@ -204,14 +204,16 @@
     return acasPath + relativePath + '/';
   };
 
-  exports.getFileValesFromThing = function(thing) {
+  exports.getFileValesFromThing = function(thing, ignoreSaved) {
     var fvs, v, vals, _i, _len;
     vals = thing.lsStates[0].lsValues;
     fvs = [];
     for (_i = 0, _len = vals.length; _i < _len; _i++) {
       v = vals[_i];
-      if (v.lsType === 'fileValue' && !v.ignored) {
-        fvs.push(v);
+      if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+        if (!(ignoreSaved && (v.id != null))) {
+          fvs.push(v);
+        }
       }
     }
     return fvs;

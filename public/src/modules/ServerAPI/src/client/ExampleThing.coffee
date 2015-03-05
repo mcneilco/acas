@@ -259,10 +259,16 @@ class window.ExampleThingController extends AbstractFormController
 		@structuralFileController.on('fileDeleted', @handleFileRemoved) #update model with filename
 
 	handleFileUpload: (nameOnServer) =>
+		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "cationic block parent", "fileValue", "structural file"
+		@model.set "structural file", newFileValue
+		console.log @model
 		@model.get("structural file").set("value", nameOnServer)
 
 	handleFileRemoved: =>
-		@model.get("structural file").set("value", "")
+#		@model.get("structural file").set("value", "")
+#		@model.get("structural file").set("comments","")
+		@model.get("structural file").set("ignored", true)
+		@model.unset "structural file"
 
 	handleDeleteSavedStructuralFile: =>
 		console.log "handle delete saved structural file"

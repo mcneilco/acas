@@ -172,11 +172,13 @@ exports.makeAbsolutePath = (relativePath) ->
 	console.log acasPath+relativePath+'/'
 	acasPath+relativePath+'/'
 
-exports.getFileValesFromThing = (thing) ->
+exports.getFileValesFromThing = (thing, ignoreSaved) ->
 	vals = thing.lsStates[0].lsValues
 	fvs = []
 	for v in vals
-		if v.lsType == 'fileValue' && !v.ignored then fvs.push v
+		if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+			unless (ignoreSaved and v.id?)
+				fvs.push v
 	fvs
 
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
