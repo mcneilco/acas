@@ -1629,7 +1629,7 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #
   # Returns:
-  #   a "data.frame" of the validated calculated results
+  #   a copy of resultTable, with fixed batchCodes
   
   require(data.table)
   
