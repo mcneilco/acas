@@ -2786,6 +2786,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   createTreatmentGroupData <- function(x) {
     uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
     data.table(
+      batchCode = as.character(uniqueOrNA(x$batchCode)),
       numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
       stringValue = as.character(concatUniqNonNA(x$stringValue)),
       valueOperator = as.character(uniqueOrNA(x$valueOperator)),
