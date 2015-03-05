@@ -153,7 +153,7 @@ FROM p_api_analysis_group_results
 WHERE public_data='1';
 
 CREATE OR REPLACE VIEW api_curve_params AS 
-  SELECT lsvalues0_.analysis_state_id AS stateId,
+SELECT lsvalues0_.analysis_state_id AS stateId,
   lsvalues0_.id                     AS valueId,
   lsvalues0_.code_kind              AS codeKind,
   lsvalues0_.code_origin            AS codeOrigin,

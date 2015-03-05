@@ -2,86 +2,97 @@ fs = require 'fs'
 glob = require 'glob'
 _ = require "underscore"
 
-console.log "here"
-
 allModuleConfJSFiles = glob.sync "../public/javascripts/conf/*.js"
 for fileName in allModuleConfJSFiles
 	data = require fileName
 	jsonfilestring = JSON.stringify data
-	newFileName = fileName.replace "conf", "conf/confJSON"
+	newFileName = fileName.replace "conf", "conf/confJSON/moduleJSON"
 	newFileName = newFileName.replace ".js", ".json"
 	fs.writeFileSync newFileName, jsonfilestring
 
 typeKinds = [
 	"codetables"
-	"containerkinds"
 	"containertypes"
-	"ddictkinds"
+	"containerkinds"
 	"ddicttypes"
-	"experimentkinds"
+	"ddictkinds"
 	"experimenttypes"
-	"interactionkinds"
+	"experimentkinds"
 	"interactiontypes"
+	"interactionkinds"
+	"labeltypes"
 	"labelkinds"
 	"labelsequences"
-	"labeltypes"
-	"operatorkinds"
 	"operatortypes"
-	"protocolkinds"
+	"operatorkinds"
 	"protocoltypes"
-	"statekinds"
+	"protocolkinds"
 	"statetypes"
-	"thingkinds"
+	"statekinds"
 	"thingtypes"
-	"unitkinds"
+	"thingkinds"
 	"unittypes"
-	"valuekinds"
+	"unitkinds"
 	"valuetypes"
+	"valuekinds"
 ]
-allModuleConfJSONFiles = glob.sync "../public/javascripts/conf/confJSON/*.json"
-#for fileName in allModuleConfJSONFiles
-#	data = require fileName
-##	console.log typeKinds
-#	console.log typeKinds[6]
-#	test = typeKinds[6]
-#	console.log data[test]
-#	for typeOrKind in typeKinds
-#		for value in data[typeOrKind]
-#			$.ajax
-#				type: 'POST'
-#				url: "/api/setup"+typeOrKind
-#				data:
-#					JSON.stringify value
-##					JSON.stringify(codeEntry:(selectedModel))
-#				contentType: 'application/json'
-#				dataType: 'json'
-#				success: (response) =>
-#					console.log "successful post"
-#				error: (err) =>
-#					alert 'could not add option to code table'
-#					@serviceReturn = null
 
-#allCodeTables = []
-#allCodeTableTypesAndKinds = []
-#currentTypeAndKind = {}
-#
-#for fileName in allCodeTableFiles
-#	codeTableFile = require fileName
-#	for codeTable in codeTableFile['codetableValues']
-#		type = codeTable['type']
-#		kind = codeTable['kind']
-#		currentTypeAndKind['type'] = type
-#		currentTypeAndKind['kind'] = kind
-#		if _.findWhere(allCodeTableTypesAndKinds, currentTypeAndKind) is undefined
-#			allCodeTableTypesAndKinds.push [{type:codeTable['type'], kind:codeTable['kind']}]...
-#			allCodeTables.push codeTable
-#		else
-#			console.log "Error: code table for type: " + type + "and kind: " + kind + " already stored"
-#			process.exit -1
-#
-#jsonallcodetablesstring = JSON.stringify allCodeTables
-#allCodeTablesFileName = "../public/javascripts/spec/testFixtures/CodeTableJSON.js"
-#jsonallcodetablesstring = "exports.codes = " + jsonallcodetablesstring
-#fs.writeFileSync allCodeTablesFileName, jsonallcodetablesstring
+#name/pattern of confJSON file(s) to compile and store in CompiledModuleConfJSONs.json and to save the contents into the database
+selectedConfJSONFiles = process.argv[2]
+if selectedConfJSONFiles?
+	confJSONFilesToCompile = glob.sync process.argv[2]
+	if confJSONFilesToCompile.length is 0
+		console.log "This file does not exist"
+		console.log "Check the file path. The file should be in /public/javascripts/conf/confJSON/moduleJSON"
+		process.exit -1
+else
+	confJSONFilesToCompile = glob.sync "../public/javascripts/conf/confJSON/moduleJSON/*.json"
 
+allModulesTypesAndKinds = {}
 
+for fileName in confJSONFilesToCompile
+	moduleData = require fileName
+	for typeOrKind in typeKinds
+		if moduleData.typeKindList[typeOrKind]?
+			values = moduleData.typeKindList[typeOrKind]
+			if allModulesTypesAndKinds[typeOrKind]?
+				compiledTypesAndKinds = allModulesTypesAndKinds[typeOrKind]
+				for value in values
+					if _.findWhere(compiledTypesAndKinds, value) is undefined
+						compiledTypesAndKinds.push value...
+			else
+				allModulesTypesAndKinds[typeOrKind] = values
+jsonfilestring = JSON.stringify allModulesTypesAndKinds
+compiledModuleConfsFileName = "../public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json"
+fs.writeFileSync compiledModuleConfsFileName, jsonfilestring
+
+async = require 'async'
+request = require 'request'
+data = require '../public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json'
+config = require '../conf/compiled/conf.js'
+
+async.forEachSeries typeKinds, ((typeOrKind, callback) ->
+	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
+	if data[typeOrKind]?
+		console.log "trying to save " + typeOrKind
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify data[typeOrKind]
+			json: true
+			headers:
+				"Content-Type": 'application/json'
+			, (error, response, json) =>
+				if !error && response.statusCode == 201
+					console.log "successfully added " + typeOrKind
+				else
+					console.log 'got ajax error trying to setup type/kind ' + typeOrKind
+					console.log error
+					console.log json
+				callback()
+		)
+	else
+		console.log "no "+typeOrKind+" to save"
+		callback()
+), (err) ->
+	console.log "done adding types and kinds"

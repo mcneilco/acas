@@ -1920,13 +1920,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     summaryInfo <- list(
       info = list(
         "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
-        "Compounds analyzed" = length(unique(resultTable$batchCode)),
-        "Automatic Hits" = nrow(resultTable[autoFlagType == "HIT"]),
+        "Unique compounds analyzed" = length(unique(resultTable$batchName)),
+        "Unique batches analyzed" = length(unique(resultTable$batchCode)),
+        "Automatic hits" = nrow(resultTable[autoFlagType == "HIT"]),
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         # "Fluorescent wells" = sum(resultTable$fluorescent),
         "Flagged wells" = sum(!is.na(resultTable$flag)),
         "Number of wells" = nrow(resultTable),
+        "Hit rate" = round((nrow(resultTable[autoFlagType == "HIT"])/nrow(resultTable))*100,2),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
@@ -2381,7 +2383,7 @@ getColNameChangeDataTables <- function(parameters) {
 getActivityFullName <- function(parameters) {
   # Gets a full activity name with read name and position included
   rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
-  activityReadName <- rot[rot$activity, paste0("R", readPosition, " {", readName, "}")]
+  activityReadName <- rot[rot$activity, paste0("R", userReadOrder, " {", readName, "}")]
   return(paste0("Activity - ", activityReadName))
 }
 formatColumnNameChangeDT <- function(colDataTable) {
