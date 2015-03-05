@@ -1619,6 +1619,61 @@ get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::appl
   return(properties)
 }
 
+validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFakeCorpBatchId="", errorEnv = NULL) {
+  # Valides the calculated results (for now, this only validates the mainCode)
+  #
+  # Args:
+  #   resultTable:	            A "data.frame" of the parsed instrument files with compound information
+  #   dryRun:                   A boolean
+  #   testMode:                 A boolean
+  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
+  #
+  # Returns:
+  #   a "data.frame" of the validated calculated results
+  
+  require(data.table)
+  
+  # Get the current batch Ids
+  batchesToCheck <- resultTable$batchCode != "::"
+  batchIds <- unique(resultTable$batchCode[batchesToCheck])
+  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  
+  # If the preferred Id service does not return anything, errors will already be thrown, just move on
+  if (is.null(newBatchIds)) {
+    return(resultTable)
+  }
+  
+  # Give warning and error messages for changed or missing id's
+  for (batchId in newBatchIds) {
+    if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
+      addError(paste0(mainCode, " '", batchId["requestName"], 
+                      "' has not been registered in the system. Contact your system administrator for help."))
+    } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
+      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
+                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
+                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+    }
+  }
+  
+  # Put the batch id's into a useful format
+  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
+  names(preferredIdFrame) <- names(newBatchIds[[1]])
+  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+  
+  # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
+  if (!is.null(preferredIdFrame$referenceName)) {
+    prefDT <- as.data.table(preferredIdFrame)
+    prefDT[ referenceName == "", referenceName := preferredName ]
+    preferredIdFrame <- as.data.frame(prefDT)
+    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+  } else {
+    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+  }
+  
+  # Return the validated results
+  return(resultTable)
+}
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
@@ -1704,10 +1759,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"getCompoundAssignments.R"))
   
   resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
-
   
-  # TODO: Rmove this when value is in config.properties
+  resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
+  
+  # TODO: Remove this when value is in config.properties
   applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
+  
   # this also performs any calculations from the GUI
   resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
   
