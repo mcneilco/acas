@@ -2278,7 +2278,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, 
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, formatParameters$annotationType, 
                  mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
   }
