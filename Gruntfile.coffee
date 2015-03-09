@@ -46,7 +46,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/**/spec/serviceTests/*.coffee"]
+					src: ["public/src/modules/**/spec/serviceTests/*.coffee","public/src/conf/serviceTests/*.coffee"]
 					dest: "public/javascripts/spec/test/"
 					ext: '.js'
 				]
@@ -232,10 +232,10 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
-			prepare_module_conf_JSON:
-				options:
-					cwd: 'conf'
-				src: 'conf/PrepareModuleConfJSON.js'
+#			prepare_module_conf_JSON:
+#				options:
+#					cwd: 'conf'
+#				src: 'conf/PrepareModuleConfJSON.js'
 			prepare_test_JSON:
 				options:
 					cwd: 'conf'
@@ -274,6 +274,9 @@ module.exports = (grunt) ->
 			compileServiceTests:
 				files: "public/src/modules/**/spec/serviceTests/*.coffee"
 				tasks: "coffee:compileServiceTests"
+			compileServiceTests2:
+				files: "public/src/conf/serviceTests/*.coffee"
+				tasks: "coffee:compileServiceTests"
 			compileApp:
 				files: "./*.coffee"
 				tasks: "coffee:compileApp"
@@ -304,6 +307,9 @@ module.exports = (grunt) ->
 				tasks: "coffee:custom_compileTestFixtures"
 			custom_compileServiceTests:
 				files: "acas_custom/modules/**/spec/serviceTests/*.coffee"
+				tasks: "coffee:custom_compileServiceTests"
+			custom_compileServiceTests2:
+				files: "acas_custom/public_conf/serviceTests/*.coffee"
 				tasks: "coffee:custom_compileServiceTests"
 			custom_compileApp:
 				files: "acas_custom/*.coffee"
@@ -373,11 +379,12 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
-			prepare_module_conf_JSON:
-				files: [
-					"public/javascripts/conf/*.js"
-				]
-				tasks: "execute:prepare_module_conf_JSON"
+#			prepare_module_conf_JSON:
+#				files: [
+#					"public/javascripts/conf/*.js"
+#					"public/javascripts/conf/*.json"
+#				]
+#				tasks: "execute:prepare_module_conf_JSON"
 			prepare_test_JSON:
 				files: [
 					"public/javascripts/spec/testFixtures/*.js"

@@ -19,11 +19,18 @@
   };
 
   exports.protocolByCodename = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions, stubSavedProtocol;
     console.log(req.params.code);
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      stubSavedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      if (req.params.code.indexOf("screening") > -1) {
+        stubSavedProtocol.lsKind = "Bio Activity";
+      } else {
+        stubSavedProtocol.lsKind = "default";
+      }
+      console.log(stubSavedProtocol);
+      return resp.end(JSON.stringify(stubSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;

@@ -218,7 +218,7 @@
         "keyup .bv_completionDate": "attributeChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "keyup .bv_notebook": "attributeChanged",
-        "click .bv_updateThing": "handleUpdateThing",
+        "click .bv_saveThing": "handleUpdateThing",
         "click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
       };
     };
@@ -311,14 +311,19 @@
       if (this.readOnly === true) {
         this.displayInReadOnlyMode();
       }
-      this.$('.bv_updateThing').attr('disabled', 'disabled');
+      this.$('.bv_saveThing').attr('disabled', 'disabled');
+      if (this.model.isNew()) {
+        this.$('.bv_saveThing').html("Save");
+      } else {
+        this.$('.bv_saveThing').html("Update");
+      }
       return this;
     };
 
     ExampleThingController.prototype.modelSaveCallback = function(method, model) {
-      this.$('.bv_updateThing').show();
-      this.$('.bv_updateThing').attr('disabled', 'disabled');
-      this.$('.bv_updateThingComplete').show();
+      this.$('.bv_saveThing').show();
+      this.$('.bv_saveThing').attr('disabled', 'disabled');
+      this.$('.bv_saveThingComplete').show();
       this.$('.bv_updatingThing').hide();
       this.trigger('amClean');
       this.trigger('thingSaved');
@@ -327,7 +332,7 @@
 
     ExampleThingController.prototype.modelChangeCallback = function(method, model) {
       this.trigger('amDirty');
-      return this.$('.bv_updateThingComplete').hide();
+      return this.$('.bv_saveThingComplete').hide();
     };
 
     ExampleThingController.prototype.setupStructuralFileController = function() {
@@ -339,7 +344,7 @@
         return this.$('.bv_deleteSavedFile').hide();
       } else {
         console.log("structural file is not null");
-        this.$('.bv_structuralFile').html('<a href=' + structuralFileValue + '>' + structuralFileValue + '</a>');
+        this.$('.bv_structuralFile').html('<a href="' + window.conf.datafiles.downloadurl.prefix + structuralFileValue + '">' + this.model.get('structural file').get('comments') + '</a>');
         return this.$('.bv_deleteSavedFile').show();
       }
     };
@@ -389,11 +394,16 @@
     };
 
     ExampleThingController.prototype.handleFileUpload = function(nameOnServer) {
+      var newFileValue;
+      newFileValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "cationic block parent", "fileValue", "structural file");
+      this.model.set("structural file", newFileValue);
+      console.log(this.model);
       return this.model.get("structural file").set("value", nameOnServer);
     };
 
     ExampleThingController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      this.model.get("structural file").set("ignored", true);
+      return this.model.unset("structural file");
     };
 
     ExampleThingController.prototype.handleDeleteSavedStructuralFile = function() {
@@ -412,17 +422,17 @@
 
     ExampleThingController.prototype.validationError = function() {
       ExampleThingController.__super__.validationError.call(this);
-      return this.$('.bv_updateThing').attr('disabled', 'disabled');
+      return this.$('.bv_saveThing').attr('disabled', 'disabled');
     };
 
     ExampleThingController.prototype.clearValidationErrorStyles = function() {
       ExampleThingController.__super__.clearValidationErrorStyles.call(this);
-      return this.$('.bv_updateThing').removeAttr('disabled');
+      return this.$('.bv_saveThing').removeAttr('disabled');
     };
 
     ExampleThingController.prototype.validateThingName = function() {
       var lsKind, name;
-      this.$('.bv_updateThing').attr('disabled', 'disabled');
+      this.$('.bv_saveThing').attr('disabled', 'disabled');
       lsKind = this.model.get('lsKind');
       name = [this.model.get(lsKind + ' name').get('labelText')];
       return $.ajax({
@@ -456,13 +466,13 @@
     ExampleThingController.prototype.handleUpdateThing = function() {
       this.model.reformatBeforeSaving();
       this.$('.bv_updatingThing').show();
-      this.$('.bv_updateThingComplete').html('Update Complete.');
-      this.$('.bv_updateThing').attr('disabled', 'disabled');
+      this.$('.bv_saveThingComplete').html('Update Complete.');
+      this.$('.bv_saveThing').attr('disabled', 'disabled');
       return this.model.save();
     };
 
     ExampleThingController.prototype.displayInReadOnlyMode = function() {
-      this.$(".bv_updateThing").hide();
+      this.$(".bv_saveThing").hide();
       this.$('button').attr('disabled', 'disabled');
       this.$(".bv_completionDateIcon").addClass("uneditable-input");
       this.$(".bv_completionDateIcon").on("click", function() {

@@ -1,4 +1,4 @@
-createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)) {
+createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8), activityName) {
   # Creates a density plot
   #
   # Args:
@@ -25,8 +25,8 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
 #        xlim = c(-1,2),
        xlim = c(floor(min(values)),ceiling(max(values))),
        ylim = c(0,yHeight*1.04),
-       xlab = "Normalized Activity",
-       ylab = "Number per bin",
+       xlab = activityName,
+       ylab = "Count",
        yaxs="i",
        type="n"
   )
@@ -41,14 +41,23 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
   polygon(NCdensity$x,NCdensity$y,col="blue")
   polygon(testDensity$x,testDensity$y,col="black",density=120,border="black")
   
+  # Removes threshold from legend if there is no threshold
+  legendFill <- c("blue","black","green")
+  legendLegend <- c("- control","test","+ control")
+  if (threshold != "") {
+    legendFill <- c(legendFill, "red")
+    legendLegend <- c(legendLegend, "threshold)")
+  } 
+
   # legend
   #"xpd = TRUE" lets the legend go outside the plot
-  legend(x=2.3, y=yHeight, fill=c("blue","black","green","red"), legend=c("- control","test","+ control","threshold"), xpd = TRUE)
+  legend(x="topright", fill=legendFill, legend=legendLegend, xpd = TRUE)
 }
+
 createGGComparison <- function(graphTitle, yLimits = NULL, 
                                xColumn, wellType, dataRow, hits = NULL,
                                test = TRUE, PC = TRUE, NC = TRUE, xLabel, yLabel="Activity", margins = c(1,1,1,1), 
-                               rotateXLabel = FALSE, colourPalette = NA, threshold = NULL) {
+                               rotateXLabel = FALSE, colourPalette = NA, threshold = NULL, checkXLabel=FALSE) {
   #error handling
   if (all(!PC,!NC,!test)) {
     print("needs to plot something")
@@ -104,6 +113,12 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
         plot.margin = unit(margins, "lines"),
         axis.text.x = element_text(size = rel(1)),
         axis.text.y = element_text(size = rel(1)))
+  
+  if(length(unique(xColumn)) > 50 && checkXLabel) {
+    g <- g + scale_x_discrete(breaks=NULL)
+  } else if (class(xColumn) == "integer") {
+    g <- g + scale_x_discrete(labels=1:max(xColumn))
+  }
 
   if(rotateXLabel) g <- g + theme(axis.text.x = element_text(angle = -90, vjust=0.5))
   
@@ -201,7 +216,7 @@ createHeatMap <- function(name, plate, margins=c(5,0,0,5)) {
   # margins = c(0,0)
   #dev.off()
 }
-createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
+createGGHeatmap <- function(name, plate, margins=c(1,1,1,1),activityName) {
   require(ggplot2)
   plate$x <- as.numeric(gsub("\\D*","",plate$well))
   plate$y <- as.character(gsub("\\d*","",plate$well))
@@ -233,13 +248,20 @@ createGGHeatmap <- function(name, plate, margins=c(1,1,1,1)) {
           axis.text.y = element_text(size = rel(1)),
           axis.title.x = element_blank(),
           axis.title.y = element_blank()) +
-  scale_fill_continuous(name="Normalized Activity")
+  scale_fill_continuous(name=activityName)
   return(plateHeatmap)
 }
 
 createZPrimeByPlatePlot <- function(resultTable) {
-  plot(resultTable$plateOrder, 
-       resultTable$zPrimeByPlate, 
+  if(ceiling(max(resultTable$zPrimeByPlate)) - floor(min(resultTable$zPrimeByPlate)) <= 2) {
+    yAxisAt <- seq(from = floor(min(resultTable$zPrimeByPlate)), to = ceiling(max(resultTable$zPrimeByPlate)), by = .25)
+  } else {
+    yAxisAt <- floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate))
+  }
+  plottedTable <- data.table(plateOrder=unique(resultTable$plateOrder),zPrimeByPlate=unique(resultTable$zPrimeByPlate))
+  setkey(plottedTable, plateOrder)
+  plot(unique(plottedTable$plateOrder), 
+       unique(plottedTable$zPrimeByPlate), 
        main="Z' By Plate", 
        type="o", 
        col="blue", 
@@ -249,6 +271,6 @@ createZPrimeByPlatePlot <- function(resultTable) {
        axes=FALSE)
   box()
   axis(side=1, at=1:max(resultTable$plateOrder))
-  axis(side=2, at=floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate)))
+  axis(side=2, at=yAxisAt)
   
 }

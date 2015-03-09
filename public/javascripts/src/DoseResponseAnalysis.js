@@ -356,9 +356,12 @@
         this.$('.bv_analysisParameterForm').empty();
         this.parameterController = null;
         mfp = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters");
-        return mfp.set({
-          clobValue: ""
-        });
+        if (!(mfp.get('clobValue') === "" || "[]")) {
+          console.log("set mfp clobValue");
+          return mfp.set({
+            clobValue: ""
+          });
+        }
       } else {
         if (this.model.getModelFitParameters() === {}) {
           drap = new drapType();
@@ -479,8 +482,10 @@
 
     DoseResponseAnalysisController.prototype.testReadyForFit = function() {
       if (this.model.getAnalysisStatus().get('codeValue') === "not started") {
-        return this.setNotReadyForFit();
+        this.setNotReadyForFit();
+        return console.log("not ready for fit");
       } else {
+        console.log("ready for fit");
         return this.setReadyForFit();
       }
     };

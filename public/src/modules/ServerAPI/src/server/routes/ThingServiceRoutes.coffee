@@ -29,112 +29,160 @@ exports.thingsByTypeKind = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+
+
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.thingParent
+		resp.json thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.postThingParent = (req, resp) ->
-	console.log "post thing parent"
-	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.thingParent
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 201
-				resp.end JSON.stringify json
-			else
-				console.log 'got ajax error trying to save lsThing'
-				console.log error
-				console.log json
-				console.log response
-#				if response.body[0].message is "not unique lsThing name"
-#					console.log "ending resp"
-#					resp.end JSON.stringify response.body[0].message
-#
-		)
 
-exports.postThingBatch = (req, resp) ->
-	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.thingBatch
+updateThing = (thing, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback thing
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/?parentIdOrCodeName="+req.params.parentCode
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 201
-				resp.end JSON.stringify json
-			else
-				console.log 'got ajax error trying to save lsThing'
-				console.log error
-				console.log json
-				console.log response
-#				if response.body[0].message is "not unique lsThing name"
-#					console.log "ending resp"
-#					resp.end JSON.stringify response.body[0].message
-#
-		)
-
-exports.putThing = (req, resp) ->
-	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingTestJSON.thingParent
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code
+		console.log baseurl
 		request = require 'request'
 		request(
 			method: 'PUT'
 			url: baseurl
-			body: req.body
+			body: thing
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
+				callback json
 			else
 				console.log 'got ajax error trying to update lsThing'
 				console.log error
 				console.log response
 		)
 
+
+postThing = (isBatch, req, resp) ->
+	console.log "post thing parent"
+#	if req.query.testMode or global.specRunnerTestmode
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+#		if isBatch
+#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingBatch))
+#		else
+#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
+#	else
+	thingToSave = req.body
+	if req.query.testMode or global.specRunnerTestmode
+		unless thingToSave.codeName?
+			if isBatch
+				thingToSave.codeName = "PT00002"
+			else
+				thingToSave.codeName = "PT00002-1"
+	else
+
+	checkFilesAndUpdate = (thing) ->
+		fileVals = serverUtilityFunctions.getFileValesFromThing thing, false
+		filesToSave = fileVals.length
+
+		completeThingUpdate = (thingToUpdate)->
+			updateThing thingToUpdate, req.query.testMode, (updatedThing) ->
+				resp.json updatedThing
+
+		fileSaveCompleted = (passed) ->
+			if !passed
+				resp.statusCode = 500
+				return resp.end "file move failed"
+			if --filesToSave == 0 then completeThingUpdate(thing)
+
+		if filesToSave > 0
+			prefix = serverUtilityFunctions.getPrefixFromThingCode thing.codeName
+			for fv in fileVals
+				console.log "updating file"
+				csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
+		else
+			resp.json thing
+
+	if req.query.testMode or global.specRunnerTestmode
+		checkFilesAndUpdate thingToSave
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+		if isBatch
+			baseurl += "/?parentIdOrCodeName="+req.params.parentCode
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: thingToSave
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 201
+				checkFilesAndUpdate json
+			else
+				console.log 'got ajax error trying to save lsThing'
+				console.log error
+				console.log json
+				console.log response
+		)
+
+exports.postThingParent = (req, resp) ->
+	postThing false, req, resp
+
+exports.postThingBatch = (req, resp) ->
+	postThing true, req, resp
+
+exports.putThing = (req, resp) ->
+#	if req.query.testMode or global.specRunnerTestmode
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+#		thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
+#	else
+	thingToSave = req.body
+	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave, true
+	filesToSave = fileVals.length
+
+	completeThingUpdate = ->
+		updateThing thingToSave, req.query.testMode, (updatedThing) ->
+			resp.json updatedThing
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			resp.statusCode = 500
+			return resp.end "file move failed"
+		if --filesToSave == 0 then completeThingUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromThingCode req.body.codeName
+		for fv in fileVals
+			console.log fv
+			console.log prefix
+			console.log req.body.codeName
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
+	else
+		completeThingUpdate()
+
+
 exports.batchesByParentCodeName = (req, resp) ->
 	console.log "get batches by parent codeName"
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingServiceTestJSON.batchList
+		resp.json thingServiceTestJSON.batchList
 	else
 		if req.params.parentCode is "undefined"
-			resp.end JSON.stringify []
+			resp.json []
 		else
 			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/"+req.params.lsKind+"/getbatches/"+req.params.parentCode
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.validateName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify true
+		resp.json true
 	else
 		console.log "validate name"
 		console.log req
@@ -150,7 +198,7 @@ exports.validateName = (req, resp) ->
 		, (error, response, json) =>
 			console.log error
 			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
+				resp.json json
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error

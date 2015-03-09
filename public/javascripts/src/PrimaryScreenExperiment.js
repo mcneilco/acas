@@ -1451,6 +1451,7 @@
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
+      console.log("handle save return success");
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
       this.$('.bv_loadAnother').html("Re-Analyze");
       return this.trigger('analysis-completed');
@@ -1783,6 +1784,7 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
+      console.log("handle analysis complete");
       this.$('.bv_resultsContainer').hide();
       return this.trigger('analysis-completed');
     };
@@ -1828,6 +1830,8 @@
     __extends(AbstractPrimaryScreenExperimentController, _super);
 
     function AbstractPrimaryScreenExperimentController() {
+      this.updateModelFitTab = __bind(this.updateModelFitTab, this);
+      this.fetchModel = __bind(this.fetchModel, this);
       this.reinitialize = __bind(this.reinitialize, this);
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
@@ -1949,8 +1953,7 @@
       this.setupModelFitController(this.modelFitControllerName);
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
-          _this.modelFitController.render();
-          return _this.modelFitController.setReadyForFit();
+          return _this.fetchModel();
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
@@ -2058,6 +2061,33 @@
     AbstractPrimaryScreenExperimentController.prototype.reinitialize = function() {
       this.model = null;
       return this.completeInitialization();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.fetchModel = function() {
+      console.log("fetch Model");
+      return $.ajax({
+        type: 'GET',
+        url: "/api/experiments/codeName/" + this.model.get('codeName'),
+        success: (function(_this) {
+          return function(json) {
+            _this.model = new PrimaryScreenExperiment(json);
+            return _this.updateModelFitTab();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return alert('Could not get experiment with this codeName');
+          };
+        })(this),
+        dataType: 'json'
+      });
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.updateModelFitTab = function() {
+      console.log("update Model Fit Tab");
+      this.modelFitController.model = this.model;
+      this.modelFitController.setReadyForFit();
+      return this.$('.bv_resultsContainer').hide();
     };
 
     return AbstractPrimaryScreenExperimentController;

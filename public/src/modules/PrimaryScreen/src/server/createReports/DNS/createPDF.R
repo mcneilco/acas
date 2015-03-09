@@ -1,4 +1,4 @@
-createPDF <- function(resultTable, parameters, summaryInfo, threshold, experiment, dryRun=F) {
+createPDF <- function(resultTable, parameters, summaryInfo, threshold, experiment, dryRun=F, activityName) {
   # DNS
   require('data.table')
   require('reshape')
@@ -25,21 +25,21 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   textplot(textToShow, halign="left",valign="top")
   title("Primary Screen")
   
-  createDensityPlot(resultTable$normalized, resultTable$wellType, threshold = threshold, margins = c(25,4,4,8))
+  createDensityPlot(resultTable$normalizedActivity, resultTable$wellType, threshold = threshold, margins = c(25,4,4,8), activityName)
   
-  print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$assayBarcode,
-                           wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate", 
-                           margins = c(4,2,20,4), rotateXLabel = TRUE, test = FALSE, colourPalette = c("blue","green")))
+  print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$plateOrder,
+                           wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate Order", yLabel=activityName,
+                           margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")))
   
   if(!is.null(resultTable$"transformed_percent efficacy")) {
     print(createGGComparison(graphTitle = "Efficacy by Compound Barcode", xColumn=resultTable$batchName,
                              wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Compound Batch", 
                              margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
-                             yLabel="percent efficacy"))
+                             yLabel="percent efficacy", checkXLabel=TRUE))
     
     print(createGGComparison(graphTitle = "Efficacy by Plate Order", xColumn=resultTable$plateOrder,
                              wellType = resultTable$wellType, dataRow = resultTable$"transformed_percent efficacy", xLabel = "Plate Order", 
-                             margins = c(4,2,20,4), rotateXLabel = TRUE, test = TRUE, colourPalette = c("blue","green","black"),
+                             margins = c(4,2,20,4), rotateXLabel = FALSE, test = TRUE, colourPalette = c("blue","green","black"),
                              yLabel="percent efficacy"))
   }
   
@@ -48,7 +48,7 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   plateDataTable <- data.table(normalizedActivity = resultTable$normalizedActivity, 
                                well = resultTable$well)
   plateData <- plateDataTable[,list(normalizedValues = mean(normalizedActivity)), by=well]
-  print(createGGHeatmap("Heatmap of the Average of All Plates", plateData, margins=c(0,0,20,0)))
+  print(createGGHeatmap("Heatmap of the Average of All Plates", plateData, margins=c(0,0,20,0),activityName))
   
 #   rowVector <- gsub("\\d", "", resultTable$well)
 #   columnVector <- gsub("\\D", "", resultTable$well)

@@ -1450,14 +1450,14 @@ checkControls <- function(resultTable) {
   }
   
   if(!controlsExist$posExists && !controlsExist$negExists) {
-    stopUser("The positive and negative controls were not found in the plates. Make sure all transfers have been loaded 
-             and your controls are defined correctly.")
+    stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
+             and your controls and dilution factor are defined correctly.")
   } else if (!controlsExist$posExists) {
-    stopUser("The positive control was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control is defined correctly.")
+    stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your postive control (or dilution factor) is defined correctly.")
   } else if (!controlsExist$negExists) {
-    stopUser("The negative control was not found in the plates. Make sure all transfers have been loaded 
-             and your negative control is defined correctly.")
+    stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+             and your negative control (or dilution factor) is defined correctly.")
   }
 }
 
@@ -1619,6 +1619,61 @@ get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::appl
   return(properties)
 }
 
+validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFakeCorpBatchId="", errorEnv = NULL) {
+  # Valides the calculated results (for now, this only validates the mainCode)
+  #
+  # Args:
+  #   resultTable:	            A "data.frame" of the parsed instrument files with compound information
+  #   dryRun:                   A boolean
+  #   testMode:                 A boolean
+  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
+  #
+  # Returns:
+  #   a copy of resultTable, with fixed batchCodes
+  
+  require(data.table)
+  
+  # Get the current batch Ids
+  batchesToCheck <- resultTable$batchCode != "::"
+  batchIds <- unique(resultTable$batchCode[batchesToCheck])
+  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  
+  # If the preferred Id service does not return anything, errors will already be thrown, just move on
+  if (is.null(newBatchIds)) {
+    return(resultTable)
+  }
+  
+  # Give warning and error messages for changed or missing id's
+  for (batchId in newBatchIds) {
+    if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
+      addError(paste0(mainCode, " '", batchId["requestName"], 
+                      "' has not been registered in the system. Contact your system administrator for help."))
+    } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
+      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
+                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
+                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+    }
+  }
+  
+  # Put the batch id's into a useful format
+  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
+  names(preferredIdFrame) <- names(newBatchIds[[1]])
+  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+  
+  # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
+  if (!is.null(preferredIdFrame$referenceName)) {
+    prefDT <- as.data.table(preferredIdFrame)
+    prefDT[ referenceName == "", referenceName := preferredName ]
+    preferredIdFrame <- as.data.frame(prefDT)
+    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+  } else {
+    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+  }
+  
+  # Return the validated results
+  return(resultTable)
+}
+
 ####### Main function
 runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
   # Runs main functions that are inside the tryCatch.W.E
@@ -1704,10 +1759,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                    clientName,"getCompoundAssignments.R"))
   
   resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
-
   
-  # TODO: Rmove this when value is in config.properties
+  resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
+  
+  # TODO: Remove this when value is in config.properties
   applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
+  
   # this also performs any calculations from the GUI
   resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
   
@@ -1730,7 +1787,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                    clientName,"performCalculations.R"))
   
+  if(length(unique(resultTable$activity)) == 1) {
+    stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
+  }
+    
   resultTable <- performCalculations(resultTable, parameters)
+  
+  if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
+    stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
+  }
+  
+  
   
   ## BLUE SECTION - Auto Well Flagging
 
@@ -1910,27 +1977,29 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     summaryInfo <- list(
       info = list(
         "Plates analyzed" = paste0(length(unique(resultTable$assayBarcode)), " plates:\n  ", paste(unique(resultTable$assayBarcode), collapse = "\n  ")),
-        "Compounds analyzed" = length(unique(resultTable$batchCode)),
-        "Automatic Hits" = nrow(resultTable[autoFlagType == "HIT"]),
+        "Unique compounds analyzed" = length(unique(resultTable$batchName)),
+        "Unique batches analyzed" = length(unique(resultTable$batchCode)),
+        "Automatic hits" = nrow(resultTable[autoFlagType == "HIT"]),
         # "Threshold" = signif(efficacyThreshold, 3),
         # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
         # "Fluorescent wells" = sum(resultTable$fluorescent),
         "Flagged wells" = sum(!is.na(resultTable$flag)),
         "Number of wells" = nrow(resultTable),
+        "Hit rate" = round((nrow(resultTable[autoFlagType == "HIT"])/nrow(resultTable))*100,2),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
         # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
-        "Positive Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
-                                            "\nCount: ",nrow(resultTable[wellType == "PC"]),
-                                            "\nMean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\nMedian: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
-        "Negative Control summary" = paste0("\nBatch code: ",parameters$positiveControl$batchCode,
-                                            "\nCount: ",nrow(resultTable[wellType == "NC"]),
-                                            "\nMean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\nMedian: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\nStandard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
+        "Positive Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "PC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+        "Negative Control summary" = paste0("\n  Batch code: ",parameters$negativeControl$batchCode,
+                                            "\n  Count: ",nrow(resultTable[wellType == "NC"]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
@@ -1991,15 +2060,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_ResultsDRAFT.csv" target="_blank">Results</a>')
     } else { # if (useRdap)
-      if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      if(!parameters$autoHitSelection) {
+        hitThreshold <- ""
+      } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
         hitThreshold <- parameters$hitEfficacyThreshold
       } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
         hitThreshold <- parameters$hitSDThreshold
       } else {
         hitThreshold <- ""
       }
+      activityName <- instrumentData$userInputReadTable[ activityCol==TRUE ]$userReadName
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
-                               threshold = hitThreshold, experiment, dryRun)
+                               threshold = hitThreshold, experiment, dryRun, activityName) 
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
@@ -2368,7 +2440,7 @@ getColNameChangeDataTables <- function(parameters) {
 getActivityFullName <- function(parameters) {
   # Gets a full activity name with read name and position included
   rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
-  activityReadName <- rot[rot$activity, paste0("R", readPosition, " {", readName, "}")]
+  activityReadName <- rot[rot$activity, paste0("R", userReadOrder, " {", readName, "}")]
   return(paste0("Activity - ", activityReadName))
 }
 formatColumnNameChangeDT <- function(colDataTable) {
@@ -2515,15 +2587,15 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
   
   ### Melt each group
-  numericResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
+  numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
                          variable.name="columnName", value.name="numericValue")
-  stDevResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
+  stDevResults <- melt(resultTable, id.vars=idVars, measure.vars=stDevColumns, 
                        variable.name="columnName", value.name="uncertainty")
-  numRepResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
+  numRepResults <- melt(resultTable, id.vars=idVars, measure.vars=numRepColumns, 
                         variable.name="columnName", value.name="numberOfReplicates")
-  codeResults <- reshape2::melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
+  codeResults <- melt(resultTable, id.vars=codeIdVars, measure.vars=codeResultColumns, 
                       variable.name="columnName", value.name="codeValue")
-  stringResults <- reshape2::melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
+  stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
   
