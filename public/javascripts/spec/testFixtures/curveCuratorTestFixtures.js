@@ -719,7 +719,9 @@
         }
       },
       fitSettings: {
+        smartMode: true,
         inactiveThreshold: 20,
+        inactiveThresholdMode: true,
         inverseAgonistMode: true,
         max: {
           limitType: "pin",

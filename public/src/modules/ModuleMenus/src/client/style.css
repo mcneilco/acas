@@ -19,6 +19,10 @@ body {
 	background-color: green;
 }
 
+.bv_modLaunchMenuWrapper .active {
+    font-weight: bold;
+}
+
 /*.bv_GenericDataParserController {
 
     background-color: yellow;

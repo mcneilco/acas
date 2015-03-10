@@ -1,7 +1,7 @@
 .bv_curveCurator .selected {
     border-width: 3px;
     border-style: solid;
-    border-color: #ABAAAB !important;
+    border-color: #0A50CF !important;
 }
 
 .bv_curveCurator .bv_curveList .bv_curveSummaries {
@@ -12,7 +12,7 @@
 
 .bv_curveCurator .bv_curveSummary {
     width: 250px;
-    height: 155px;
+    height: 155px !important;
     margin-bottom: 10px;
     border-color: #e3e3e3;
     border-style: solid;

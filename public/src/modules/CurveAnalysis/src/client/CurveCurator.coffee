@@ -146,7 +146,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 						includePoints([@])
 					return
 
-				p1.on "mouseup", p1.handlePointClicked, p1
+				p1.on "up", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
 					when flag_user != "NA" then flag_user
@@ -253,7 +253,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								else
 									includePoints(selected)
 
-				brd.on 'mouseup', brd.mouseUp, brd
+				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
 					if brd.elementsByName.selection
 						coords = getMouseCoords(e)
@@ -280,7 +280,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 								selected.push(point)
 						selection.selected = selected
 
-				brd.on 'mousemove', brd.followSelection, brd
+				brd.on 'move', brd.followSelection, brd
 				return
 		brd.on "down", createSelection
 		return
@@ -357,7 +357,10 @@ class window.CurveEditorController extends Backbone.View
 			@$el.html "No curve selected"
 
 	setModel: (model)->
+		if @model?
+			@deleteRsession()
 		@model = model
+
 		@render()
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.on 'sync', @handleModelSync
@@ -377,6 +380,7 @@ class window.CurveEditorController extends Backbone.View
 
 	handleResetClicked: =>
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
+		@deleteRsession()
 		@model.fetch
 			success: @handleUpdateSuccess
 			error: @handleUpdateError
@@ -424,6 +428,9 @@ class window.CurveEditorController extends Backbone.View
 		curveid = @model.get 'curveid'
 		dirty = @model.get 'dirty'
 		@trigger 'curveDetailUpdated', curveid, dirty
+
+	deleteRsession: =>
+		@model.save({action: 'deleteSession', user: window.AppLaunchParams.loginUserName})
 
 class window.Curve extends Backbone.Model
 
@@ -771,10 +778,6 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_sortDirection_descending').attr( "checked", true );
 
 			@handleSortChanged()
-#			indexOfRequestedCurve = @curveListController.collection.getIndexByCurveID(requestedCurveIDToSelect)
-#			if indexOfRequestedCurve == -1
-#				indexOfRequestedCurve = 0
-#			@$('.bv_curveSummaries .bv_curveSummary').eq(indexOfRequestedCurve).click()
 
 		@
 

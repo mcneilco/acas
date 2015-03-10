@@ -181,16 +181,21 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
 
 	if Boolean(config.all.client.use.ssl)
+		urlPrefix = 'https'
 		confs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 		confs.push('SSLEngine On')
 		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
 		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
 		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
 		confs.push('SSLPassPhraseDialog ' + '\'|' + path.resolve(acasHome,'conf','executeNodeScript.sh') + ' ' + path.resolve(acasHome,'conf','getSSLPassphrase.js' + '\''))
-
-	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	else
+		urlPrefix = 'http'
 	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	confs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
+	confs.push('RewriteEngine On')
+	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.all.client.host}:#{config.all.client.port}/$1 [L,R,NE]")
+
 	confs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	confs.join('\n')
