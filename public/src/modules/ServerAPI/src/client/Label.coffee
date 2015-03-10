@@ -131,7 +131,7 @@ class window.State extends Backbone.Model
 
 	getValuesByTypeAndKind: (type, kind) ->
 		@get('lsValues').filter (value) ->
-			(not value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
 
 class window.StateList extends Backbone.Collection
 	model: State

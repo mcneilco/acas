@@ -26,7 +26,7 @@
     }
   };
 
-  describe.only("CodeTable Service testing", function() {
+  describe("CodeTable Service testing", function() {
     return describe("CodeTable CRUD testing", function() {
       describe("when fetching all codeTables", function() {
         before(function(done) {
@@ -41,7 +41,6 @@
         return it("should return all codeTables", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          console.log(responseJSON);
           assert.equal(responseJSON[0].code, "fluorescence");
           assert.equal(responseJSON[0].name, "Fluorescence");
           assert.equal(responseJSON[1].code, "biochemical");
@@ -61,7 +60,6 @@
         return it("should return a single set of codeTables", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          console.log(responseJSON);
           assert.equal(responseJSON[0].code, "outlier");
           assert.equal(responseJSON[0].name, "Outlier");
           assert.equal(responseJSON[1].code, "high");
@@ -89,7 +87,6 @@
           var results;
           assert.equal(this.response === null, false);
           results = this.response.body;
-          console.log(results);
           assert.equal(results.code, "fluorescence test 2");
           return assert.equal(results.name, "Fluorescence TEST 2");
         });
@@ -114,7 +111,6 @@
           var results;
           assert.equal(this.response === null, false);
           results = this.response.body;
-          console.log(results);
           assert.equal(results.code, "fluorescence test modified code");
           return assert.equal(results.name, "Fluorescence TEST Modified");
         });

@@ -344,7 +344,7 @@
         return this.$('.bv_deleteSavedFile').hide();
       } else {
         console.log("structural file is not null");
-        this.$('.bv_structuralFile').html('<a href=' + structuralFileValue + '>' + structuralFileValue + '</a>');
+        this.$('.bv_structuralFile').html('<a href="' + window.conf.datafiles.downloadurl.prefix + structuralFileValue + '">' + this.model.get('structural file').get('comments') + '</a>');
         return this.$('.bv_deleteSavedFile').show();
       }
     };
@@ -394,11 +394,16 @@
     };
 
     ExampleThingController.prototype.handleFileUpload = function(nameOnServer) {
+      var newFileValue;
+      newFileValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "cationic block parent", "fileValue", "structural file");
+      this.model.set("structural file", newFileValue);
+      console.log(this.model);
       return this.model.get("structural file").set("value", nameOnServer);
     };
 
     ExampleThingController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      this.model.get("structural file").set("ignored", true);
+      return this.model.unset("structural file");
     };
 
     ExampleThingController.prototype.handleDeleteSavedStructuralFile = function() {

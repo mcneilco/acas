@@ -30,8 +30,8 @@
 		]
 
 	exports.thingParent =
-		className: "CationicBlockParent"
-		codeName: "CB000001"
+		className: "ThingParent"
+		codeName: "PT00001"
 		id: 1
 		ignored: false
 		lsKind: "thing" #should be same as the className
@@ -55,10 +55,10 @@
 			comments: null
 			id: 11
 			ignored: false
-			lsKind: "cationic block parent"
+			lsKind: "thing parent"
 			lsTransaction: 1
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_cationic block parent"
+			lsTypeAndKind: "metadata_thing parent"
 			lsValues: [
 				clobValue: null
 				codeOrigin: "ACAS authors"
@@ -173,6 +173,60 @@
 				codeValue: null
 				comments: null
 				dateValue: null
+				fileValue: "Test.csv"
+				id: 3125000
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "data"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_data"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: "junk.csv"
+				id: 3125000
+				ignored: true
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "data"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_data"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
 				fileValue: null
 				id: 234
 				ignored: false
@@ -215,7 +269,7 @@
 		version: 0
 
 	exports.thingBatch =
-		codeName: "CB000001-1"
+		codeName: "PT00001-1"
 		id: 11
 		ignored: false
 		lsKind: "thing" #should be same as the className
@@ -421,6 +475,60 @@
 				unitType: "percentage"
 				valueUnit: null
 				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: "TestFile.mol"
+				id: 3125
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "structural file"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_structural file"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: "Test.csv"
+				id: 3125000
+				ignored: false
+				lsTransaction:
+					comments: null
+					id: 127
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "data"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_data"
+				valueUnit: null
+				version: 0
 			]
 		,
 			comments: null
@@ -506,7 +614,7 @@
 	exports.batchList =
 		[
 			{
-				codeName: "CB000001-1"
+				codeName: "PT000001-1"
 				id: 11
 				ignored: false
 				lsKind: "thing" #should be same as the className
@@ -795,17 +903,17 @@
 				version: 0
 			},
 			{
-				code: "CB000001-2"
-				codeName: "CB000001-2"
+				code: "PT000001-2"
+				codeName: "PT000001-2"
 				id: 2
-				name: "CB000001-2"
+				name: "PT000001-2"
 				lsKind: 'thing'
 			},
 			{
-				code: "CB000001-3"
-				codeName: "CB000001-3"
+				code: "PT000001-3"
+				codeName: "PT000001-3"
 				id: 3
-				name: "CB000001-3"
+				name: "PT000001-3"
 				lsKind: 'thing'
 			}
 		]

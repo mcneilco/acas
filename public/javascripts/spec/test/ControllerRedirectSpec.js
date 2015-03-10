@@ -9,7 +9,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe("Controller Redirect service testing", function() {
+  describe.skip("Controller Redirect service testing", function() {
     describe("protocol redirect", function() {
       describe("When user enters in generic protocol", function() {
         before(function(done) {

@@ -820,13 +820,11 @@
 		experimentCount: 12
 		id: 14325
 		ignored: false
-		lsKind: null #changed from kind to lsKind
 		lsTransaction:
 			comments: "protocol 201 transactions"
 			id: 179
 			recordedDate: 1361600825000
 			version: 0
-
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jmcneil"

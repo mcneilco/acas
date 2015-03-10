@@ -1,5 +1,7 @@
 (function() {
-  var basicRScriptPreValidation;
+  var basicRScriptPreValidation, controllerRedirect, _;
+
+  _ = require('underscore');
 
   basicRScriptPreValidation = function(payload) {
     var result;
@@ -166,6 +168,79 @@
         }
       };
     })(this));
+  };
+
+  exports.ensureExists = function(path, mask, cb) {
+    var fs;
+    fs = require('fs');
+    fs.mkdir(path, mask, function(err) {
+      if (err) {
+        if (err.code === "EEXIST") {
+          cb(null);
+        } else {
+          cb(err);
+        }
+      } else {
+        console.log("Created new directory: " + path);
+        cb(null);
+      }
+    });
+  };
+
+  exports.makeAbsolutePath = function(relativePath) {
+    var acasPath, d, dotMatches, numDotDots, _i;
+    acasPath = process.env.PWD;
+    dotMatches = relativePath.match(/\.\.\//g);
+    if (dotMatches != null) {
+      numDotDots = relativePath.match(/\.\.\//g).length;
+      relativePath = relativePath.replace(/\.\.\//g, '');
+      for (d = _i = 1; 1 <= numDotDots ? _i <= numDotDots : _i >= numDotDots; d = 1 <= numDotDots ? ++_i : --_i) {
+        acasPath = acasPath.replace(/[^\/]+\/?$/, '');
+      }
+    } else {
+      acasPath += '/';
+    }
+    console.log(acasPath + relativePath + '/');
+    return acasPath + relativePath + '/';
+  };
+
+  exports.getFileValesFromThing = function(thing, ignoreSaved) {
+    var fvs, v, vals, _i, _len;
+    vals = thing.lsStates[0].lsValues;
+    fvs = [];
+    for (_i = 0, _len = vals.length; _i < _len; _i++) {
+      v = vals[_i];
+      if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+        if (!(ignoreSaved && (v.id != null))) {
+          fvs.push(v);
+        }
+      }
+    }
+    return fvs;
+  };
+
+  controllerRedirect = require('../conf/ControllerRedirectConf.js');
+
+  exports.getRelativeFolderPathForPrefix = function(prefix) {
+    var entityDef;
+    if (controllerRedirect.controllerRedirectConf[prefix] != null) {
+      entityDef = controllerRedirect.controllerRedirectConf[prefix];
+      return entityDef.relatedFilesRelativePath + "/";
+    } else {
+      return null;
+    }
+  };
+
+  exports.getPrefixFromThingCode = function(code) {
+    var pref, redir, _ref;
+    _ref = controllerRedirect.controllerRedirectConf;
+    for (pref in _ref) {
+      redir = _ref[pref];
+      if (code.indexOf(pref) > -1) {
+        return pref;
+      }
+    }
+    return null;
   };
 
 }).call(this);
