@@ -64,7 +64,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   
   resultTable[ , flag := as.character(NA)]
   
-  resultTable[flagType=="KO", flag := "KO"]
+  resultTable[flagType=="ko", flag := "KO"]
   
   checkFlags(resultTable)
   
@@ -1091,7 +1091,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
                            flag = c(NA_character_))
   } else {
     flaggedWellPath <- racas::getUploadedFilePath(flaggedWells)
-    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE)
+    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE, fileEncoding="UTF-16LE")
     
     # We want to accept two formats: the file we output, which the user has edited, and a file
     # that contains just the barcode, well, and flag information
