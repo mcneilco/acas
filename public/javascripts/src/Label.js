@@ -322,18 +322,34 @@
       descVals = metaState.getValuesByTypeAndKind(vType, vKind);
       descVal = descVals[0];
       if (descVal == null) {
-        descVal = new Value({
-          lsType: vType,
-          lsKind: vKind
-        });
-        metaState.get('lsValues').add(descVal);
-        descVal.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
+        descVal = this.createValueByTypeAndKind(sType, sKind, vType, vKind);
       }
       return descVal;
+    };
+
+    StateList.prototype.createValueByTypeAndKind = function(sType, sKind, vType, vKind) {
+      var descVal, metaState;
+      descVal = new Value({
+        lsType: vType,
+        lsKind: vKind
+      });
+      metaState = this.getOrCreateStateByTypeAndKind(sType, sKind);
+      metaState.get('lsValues').add(descVal);
+      descVal.on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      return descVal;
+    };
+
+    StateList.prototype.getValueById = function(sType, sKind, id) {
+      var state, value;
+      state = (this.getStatesByTypeAndKind(sType, sKind))[0];
+      value = state.get('lsValues').filter(function(val) {
+        return val.id === id;
+      });
+      return value;
     };
 
     return StateList;

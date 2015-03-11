@@ -150,10 +150,13 @@ class window.AddParameterOptionPanelController extends AbstractFormController
 		@setBindings()
 
 
-
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@$('.bv_addParameterOptionModal').on 'hidden.bs.modal', =>
+			@trigger 'hideModal'
+		@$('.bv_addParameterOptionModal').on 'show.bs.modal', =>
+			@trigger 'showModal'
 		@showModal()
 
 
@@ -243,6 +246,10 @@ class window.EditablePickListSelectController extends Backbone.View
 						codeKind: @options.codeKind
 					el: @$('.bv_addOptionPanel')
 				@addPanelController.on 'addOptionRequested', @handleAddOptionRequested
+				@addPanelController.on 'showModal', =>
+					@trigger 'showModal'
+				@addPanelController.on 'hideModal', =>
+					@trigger 'hideModal'
 			@addPanelController.render()
 
 

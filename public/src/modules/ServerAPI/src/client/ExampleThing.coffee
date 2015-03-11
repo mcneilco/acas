@@ -114,7 +114,7 @@ class window.ExampleThing extends Thing
 		copiedThing
 
 class window.ExampleThingController extends AbstractFormController
-	template: _.template($("#AbstractBaseComponentThingView").html())
+	template: _.template($("#ExampleThingView").html())
 	moduleLaunchName: "cationic_block"
 
 	events: ->
@@ -261,12 +261,9 @@ class window.ExampleThingController extends AbstractFormController
 	handleFileUpload: (nameOnServer) =>
 		newFileValue = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "cationic block parent", "fileValue", "structural file"
 		@model.set "structural file", newFileValue
-		console.log @model
 		@model.get("structural file").set("value", nameOnServer)
 
 	handleFileRemoved: =>
-#		@model.get("structural file").set("value", "")
-#		@model.get("structural file").set("comments","")
 		@model.get("structural file").set("ignored", true)
 		@model.unset "structural file"
 

@@ -205,14 +205,18 @@
   };
 
   exports.getFileValesFromThing = function(thing, ignoreSaved) {
-    var fvs, v, vals, _i, _len;
-    vals = thing.lsStates[0].lsValues;
+    var fvs, state, v, vals, _i, _j, _len, _len1, _ref;
     fvs = [];
-    for (_i = 0, _len = vals.length; _i < _len; _i++) {
-      v = vals[_i];
-      if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
-        if (!(ignoreSaved && (v.id != null))) {
-          fvs.push(v);
+    _ref = thing.lsStates;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      state = _ref[_i];
+      vals = state.lsValues;
+      for (_j = 0, _len1 = vals.length; _j < _len1; _j++) {
+        v = vals[_j];
+        if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+          if (!(ignoreSaved && (v.id != null))) {
+            fvs.push(v);
+          }
         }
       }
     }
