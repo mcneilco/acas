@@ -14,9 +14,13 @@ exports.preferredBatchId = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-
+	possibleServiceTypes = ['SeuratCmpdReg','GeneCodeCheckByR','LabSynchCmpdReg','SingleBatchNameQueryString']
 
 	requests = req.body.requests
+	if serviceType not in possibleServiceTypes
+		errorMessage = "client.service.external.preferred.batchid.type '#{serviceType}' is not in possible service types #{possibleServiceTypes}"
+		console.log errorMessage
+		resp.end errorMessage
 
 	if serviceType == "SeuratCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function

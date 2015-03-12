@@ -366,7 +366,7 @@
 			[
 				digits: 8
 				groupDigits: false
-				labelPrefix: "PROT"
+				labelPrefix: "PRCL"
 				labelSeparator: "-"
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_protocol"

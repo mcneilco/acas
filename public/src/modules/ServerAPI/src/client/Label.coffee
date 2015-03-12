@@ -167,11 +167,21 @@ class window.StateList extends Backbone.Collection
 		descVals = metaState.getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = new Value
-				lsType: vType
-				lsKind: vKind
-			metaState.get('lsValues').add descVal
-			descVal.on 'change', =>
-				@trigger('change')
+			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
 		return descVal
 
+	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+		descVal = new Value
+			lsType: vType
+			lsKind: vKind
+		metaState = @getOrCreateStateByTypeAndKind sType, sKind
+		metaState.get('lsValues').add descVal
+		descVal.on 'change', =>
+			@trigger('change')
+		descVal
+
+	getValueById: (sType, sKind, id) ->
+		state = (@getStatesByTypeAndKind(sType, sKind))[0]
+		value = state.get('lsValues').filter (val) ->
+			val.id == id
+		value

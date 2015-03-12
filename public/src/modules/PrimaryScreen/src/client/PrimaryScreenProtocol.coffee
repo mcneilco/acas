@@ -437,6 +437,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		"click .bv_saveModule": "handleSaveModule"
 		"click .bv_cancelModule": "handleCancelClicked"
 		"click .bv_newModule": "handleNewEntityClicked"
+		"click .bv_cancelClearModule": "handleCancelClearClicked"
+		"click .bv_confirmModuleClear": "handleConfirmClearClicked"
 
 
 	initialize: =>
@@ -643,9 +645,15 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	handleCancelComplete: =>
 		@$('.bv_cancelingModule').hide()
 		@$('.bv_cancelModuleComplete').show()
+
 	handleNewEntityClicked: =>
 		@primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked()
 
+	handleCancelClearClicked: =>
+		@primaryScreenProtocolController.protocolBaseController.handleCancelClearClicked()
+
+	handleConfirmClearClicked: =>
+		@primaryScreenProtocolController.protocolBaseController.handleConfirmClearClicked()
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController
 	moduleLaunchName: "primary_screen_protocol"

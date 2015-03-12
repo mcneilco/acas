@@ -223,7 +223,7 @@
             expect(this.psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy();
             expect(this.psap.get('thresholdType')).toEqual(null);
             expect(this.psap.get('autoHitSelection')).toBeFalsy();
-            expect(this.psap.get('htsFormat')).toBeFalsy();
+            expect(this.psap.get('htsFormat')).toBeTruthy();
             expect(this.psap.get('matchReadName')).toBeFalsy();
             expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
             return expect(this.psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy();
