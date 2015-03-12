@@ -27,7 +27,7 @@ describe "Base Entity testing", ->
 					expect(@bem.get('lsStates').length).toEqual 0
 					expect(@bem.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@bem.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@bem.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 					expect(@bem.getScientist().get('codeType')).toEqual "assay"
 					expect(@bem.getScientist().get('codeKind')).toEqual "scientist"
 					expect(@bem.getScientist().get('codeOrigin')).toEqual "ACAS authors"

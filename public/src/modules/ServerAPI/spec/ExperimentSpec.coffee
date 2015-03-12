@@ -25,7 +25,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsStates').length).toEqual 0
 					expect(@exp.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@exp.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@exp.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 				it 'Should have the recordedBy set to the loginUser username', ->
 					expect(@exp.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
@@ -431,7 +431,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@ebc.model.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@ebc.model.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 					waitsFor ->
 						@ebc.$('.bv_scientist option').length > 0
 					, 1000
