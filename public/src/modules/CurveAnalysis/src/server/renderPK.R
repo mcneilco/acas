@@ -91,8 +91,8 @@ renderCurve <- function(getParams) {
 		}
 	}
 	
-	data <- getCurveData(curveIds, globalConnect=TRUE)
-	
+	data <- racas::getCurveData(curveIds, globalConnect=TRUE)
+
 	setContentType("image/png")
 	setHeader(header="Cache-Control",value="max-age=1000000000000"); 
 	setHeader(header="Expires",value="Thu, 31 Dec 2099 24:24:24 GMT");
