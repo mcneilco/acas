@@ -12,7 +12,7 @@ acasGeneCodeCheck <- function(input) {
 
   tryCatch({
 	response <- fromJSON(getURL(
-	  paste0(configList$client.service.persistence.fullpath, "api/v1/lsthings/getGeneCodeNameFromNameRequest"),
+	  paste0(configList$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
 	  customrequest='POST',
 	  httpheader=c('Content-Type'='application/json'),
 	  postfields=json))
