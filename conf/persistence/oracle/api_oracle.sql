@@ -155,7 +155,7 @@ FROM p_api_analysis_group_results
 WHERE public_data='1';
 
 CREATE OR REPLACE VIEW api_curve_params AS 
-  SELECT lsvalues0_.analysis_state_id AS stateId,
+SELECT lsvalues0_.analysis_state_id AS stateId,
   lsvalues0_.id                     AS valueId,
   lsvalues0_.code_kind              AS codeKind,
   lsvalues0_.code_origin            AS codeOrigin,
@@ -193,11 +193,11 @@ ON analysisgr2_.id=expt_ag_group.analysis_group_id
 INNER JOIN experiment e
 ON expt_ag_group.experiment_id=e.id
 LEFT OUTER JOIN protocol_state ps
-ON e.protocol_id=ps.protocol_id
-LEFT OUTER JOIN protocol_value pv1
-ON ps.id=pv1.protocol_state_id
+ON e.protocol_id=ps.protocol_id AND ps.ls_type = 'metadata' AND ps.ls_kind = 'screening assay'
+LEFT OUTER JOIN protocol_value pv1 
+ON ps.id=pv1.protocol_state_id AND pv1.ls_kind = 'curve display min'
 LEFT OUTER JOIN protocol_value pv2
-ON ps.id=pv2.protocol_state_id
+ON ps.id=pv2.protocol_state_id AND pv2.ls_kind = 'curve display max'
 INNER JOIN analysis_group_value lsvalues0_
 ON analysisgr1_.id=lsvalues0_.analysis_state_id
 WHERE analysisgr0_.ls_type       ='stringValue'
@@ -205,13 +205,11 @@ AND analysisgr0_.ls_kind like '%curve id'
 AND analysisgr0_.ignored= '0'
 AND analysisgr1_.ignored= '0'
 AND analysisgr2_.ignored= '0'
+AND e.ignored = '0'
+AND e.deleted = '0'
 AND analysisgr1_.ls_type ='data'
 AND analysisgr1_.ls_kind ='dose response'
-AND lsvalues0_.ls_kind not like '%curve id'
-AND ps.ls_type = 'metadata'
-AND ps.ls_kind = 'screening assay'
-AND pv1.ls_kind = 'curve display min'
-AND pv2.ls_kind = 'curve display max';
+AND lsvalues0_.ls_kind not like '%curve id';
 
 CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
@@ -247,6 +245,10 @@ INNER JOIN analysis_group analysisgr2_
 ON analysisgr1_.analysis_group_id=analysisgr2_.id
 INNER JOIN analysis_group analysisgr3_
 ON analysisgr1_.analysis_group_id=analysisgr3_.id
+INNER JOIN experiment_analysisgroup expt_ag_group
+ON analysisgr2_.id=expt_ag_group.analysis_group_id
+INNER JOIN experiment e
+ON expt_ag_group.experiment_id=e.id
 INNER JOIN analysisgroup_treatmentgroup treatmentg4_
 ON analysisgr3_.id=treatmentg4_.analysis_group_id
 INNER JOIN treatment_group treatmentg5_
@@ -322,6 +324,8 @@ AND analysisgr0_.ignored        = '0'
 AND analysisgr2_.ignored        = '0'
 AND treatmentg5_.ignored        = '0'
 AND subject7_.ignored           = '0'
+AND e.ignored = '0'
+AND e.deleted = '0'
 AND analysisgr0_.ls_kind LIKE '%curve id';
 
 CREATE OR REPLACE VIEW api_container_contents
