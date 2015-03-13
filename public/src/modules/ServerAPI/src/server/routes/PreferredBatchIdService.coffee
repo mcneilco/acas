@@ -14,7 +14,7 @@ exports.preferredBatchId = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-	possibleServiceTypes = ['SeuratCmpdReg','GeneCodeCheckByR','LabSynchCmpdReg','SingleBatchNameQueryString']
+	possibleServiceTypes = ['SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
 
 	requests = req.body.requests
 	if serviceType not in possibleServiceTypes
@@ -31,11 +31,20 @@ exports.preferredBatchId = (req, resp) ->
 			(rReturn) ->
 				resp.end rReturn
 		)
+	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
+		req.body.user = "" # to bypass validation function
+		serverUtilityFunctions.runRFunction(
+			req,
+			"public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R",
+			"acasCmpdRegBatchCheck",
+		(rReturn) ->
+			resp.end rReturn
+		)
 	else if serviceType == "GeneCodeCheckByR" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function
 		serverUtilityFunctions.runRFunction(
 			req,
-			"public/src/modules/serverAPI/src/server/AcasGeneBatchCheck.R",
+			"public/src/modules/ServerAPI/src/server/AcasGeneBatchCheck.R",
 			"acasGeneCodeCheck",
 		(rReturn) ->
 			resp.end rReturn
