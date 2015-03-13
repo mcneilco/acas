@@ -71,7 +71,7 @@
       scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
       if (scientist.get('codeValue') === void 0) {
         scientist.set({
-          codeValue: "unassigned"
+          codeValue: window.AppLaunchParams.loginUserName
         });
         scientist.set({
           codeType: "assay"
@@ -351,6 +351,8 @@
       this.validationError = __bind(this.validationError, this);
       this.handleCancelComplete = __bind(this.handleCancelComplete, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
+      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
       this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.beginSave = __bind(this.beginSave, this);
@@ -381,7 +383,9 @@
         "change .bv_status": "handleStatusChanged",
         "click .bv_save": "handleSaveClicked",
         "click .bv_newEntity": "handleNewEntityClicked",
-        "click .bv_cancel": "handleCancelClicked"
+        "click .bv_cancel": "handleCancelClicked",
+        "click .bv_cancelClear": "handleCancelClearClicked",
+        "click .bv_confirmClear": "handleConfirmClearClicked"
       };
     };
 
@@ -602,6 +606,15 @@
     };
 
     BaseEntityController.prototype.handleNewEntityClicked = function() {
+      return this.$('.bv_confirmClearEntity').modal('show');
+    };
+
+    BaseEntityController.prototype.handleCancelClearClicked = function() {
+      return this.$('.bv_confirmClearEntity').modal('hide');
+    };
+
+    BaseEntityController.prototype.handleConfirmClearClicked = function() {
+      this.$('.bv_confirmClearEntity').modal('hide');
       if (this.model.get('lsKind') === "default") {
         this.model = null;
         this.completeInitialization();

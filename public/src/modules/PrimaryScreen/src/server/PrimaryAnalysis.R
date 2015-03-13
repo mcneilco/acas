@@ -1091,7 +1091,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
                            flag = c(NA_character_))
   } else {
     flaggedWellPath <- racas::getUploadedFilePath(flaggedWells)
-    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE, fileEncoding="UTF-16LE")
+    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE)
     
     # We want to accept two formats: the file we output, which the user has edited, and a file
     # that contains just the barcode, well, and flag information
@@ -1643,6 +1643,8 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
     return(resultTable)
   }
   
+  mainCode <- "Corporate Batch ID"
+  
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
@@ -1796,8 +1798,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
   }
-  
-  
   
   ## BLUE SECTION - Auto Well Flagging
 

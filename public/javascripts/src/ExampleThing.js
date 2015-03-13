@@ -207,7 +207,7 @@
       return ExampleThingController.__super__.constructor.apply(this, arguments);
     }
 
-    ExampleThingController.prototype.template = _.template($("#AbstractBaseComponentThingView").html());
+    ExampleThingController.prototype.template = _.template($("#ExampleThingView").html());
 
     ExampleThingController.prototype.moduleLaunchName = "cationic_block";
 
@@ -397,7 +397,6 @@
       var newFileValue;
       newFileValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "cationic block parent", "fileValue", "structural file");
       this.model.set("structural file", newFileValue);
-      console.log(this.model);
       return this.model.get("structural file").set("value", nameOnServer);
     };
 

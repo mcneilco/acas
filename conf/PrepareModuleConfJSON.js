@@ -47,9 +47,11 @@
           for (_l = 0, _len3 = values.length; _l < _len3; _l++) {
             value = values[_l];
             if (_.findWhere(compiledTypesAndKinds, value) === void 0) {
-              compiledTypesAndKinds.push.apply(compiledTypesAndKinds, value);
+              compiledTypesAndKinds.push(value);
             }
           }
+          delete allModulesTypesAndKinds[typeOrKind];
+          allModulesTypesAndKinds[typeOrKind] = compiledTypesAndKinds;
         } else {
           allModulesTypesAndKinds[typeOrKind] = values;
         }

@@ -665,6 +665,8 @@
     __extends(AbstractPrimaryScreenProtocolModuleController, _super);
 
     function AbstractPrimaryScreenProtocolModuleController() {
+      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
       this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
       this.handleCancelComplete = __bind(this.handleCancelComplete, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
@@ -692,7 +694,9 @@
     AbstractPrimaryScreenProtocolModuleController.prototype.events = {
       "click .bv_saveModule": "handleSaveModule",
       "click .bv_cancelModule": "handleCancelClicked",
-      "click .bv_newModule": "handleNewEntityClicked"
+      "click .bv_newModule": "handleNewEntityClicked",
+      "click .bv_cancelClearModule": "handleCancelClearClicked",
+      "click .bv_confirmModuleClear": "handleConfirmClearClicked"
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.initialize = function() {
@@ -966,6 +970,14 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleNewEntityClicked = function() {
       return this.primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleCancelClearClicked = function() {
+      return this.primaryScreenProtocolController.protocolBaseController.handleCancelClearClicked();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleConfirmClearClicked = function() {
+      return this.primaryScreenProtocolController.protocolBaseController.handleConfirmClearClicked();
     };
 
     return AbstractPrimaryScreenProtocolModuleController;

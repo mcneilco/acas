@@ -99,6 +99,7 @@ class window.Experiment extends BaseEntity
 					attribute: 'completionDate'
 					meetsage: "Assay completion date must be set"
 
+		console.log errors
 		if errors.length > 0
 			return errors
 		else

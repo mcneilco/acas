@@ -59,7 +59,9 @@ for fileName in confJSONFilesToCompile
 				compiledTypesAndKinds = allModulesTypesAndKinds[typeOrKind]
 				for value in values
 					if _.findWhere(compiledTypesAndKinds, value) is undefined
-						compiledTypesAndKinds.push value...
+						compiledTypesAndKinds.push value
+				delete allModulesTypesAndKinds[typeOrKind]
+				allModulesTypesAndKinds[typeOrKind] = compiledTypesAndKinds
 			else
 				allModulesTypesAndKinds[typeOrKind] = values
 jsonfilestring = JSON.stringify allModulesTypesAndKinds

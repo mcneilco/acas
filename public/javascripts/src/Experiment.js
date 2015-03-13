@@ -161,6 +161,7 @@
           });
         }
       }
+      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {

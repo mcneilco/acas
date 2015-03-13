@@ -35,7 +35,7 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		scientist = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "scientist"
 		if scientist.get('codeValue') is undefined
-			scientist.set codeValue: "unassigned"
+			scientist.set codeValue: window.AppLaunchParams.loginUserName
 			scientist.set codeType: "assay"
 			scientist.set codeKind: "scientist"
 			scientist.set codeOrigin: window.conf.scientistCodeOrigin
@@ -212,7 +212,8 @@ class window.BaseEntityController extends AbstractFormController
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"
 		"click .bv_cancel": "handleCancelClicked"
-
+		"click .bv_cancelClear": "handleCancelClearClicked"
+		"click .bv_confirmClear": "handleConfirmClearClicked"
 
 	initialize: ->
 		unless @model?
@@ -391,6 +392,13 @@ class window.BaseEntityController extends AbstractFormController
 		@model.save()
 
 	handleNewEntityClicked: =>
+		@$('.bv_confirmClearEntity').modal('show')
+
+	handleCancelClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
+
+	handleConfirmClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
 		if @model.get('lsKind') is "default" #base protocol/experiment
 			@model = null
 			@completeInitialization()
