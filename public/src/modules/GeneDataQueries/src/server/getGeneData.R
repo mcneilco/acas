@@ -38,7 +38,7 @@ if (!is.null(postData.list$geneIDs)) {
     requestObject <- list()
     requestObject$requests <- requestList
     geneNameList <- getURL(
-      paste0(racas::applicationSettings$client.service.persistence.fullpath, "api/v1/lsthings/getGeneCodeNameFromNameRequest"),
+      paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
       customrequest='POST',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))

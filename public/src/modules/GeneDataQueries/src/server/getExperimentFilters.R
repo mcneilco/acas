@@ -6,7 +6,7 @@ require('racas')
 
 configList <- racas::applicationSettings
 postData <- rawToChar(receiveBin())
-#postData <- '{"experimentCodes": ["EXPT-00000314", "EXPT-00000002-testingPut-101"]}'
+#postData <- '{"experimentCodes": ["EXPT-00004", "EXPT-00000002-testingPut-101"]}'
 #cat(postData)
 
 
