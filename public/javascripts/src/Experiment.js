@@ -161,7 +161,6 @@
           });
         }
       }
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {
@@ -532,7 +531,8 @@
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
-      return this.render();
+      this.render();
+      return this.model.trigger('change');
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {

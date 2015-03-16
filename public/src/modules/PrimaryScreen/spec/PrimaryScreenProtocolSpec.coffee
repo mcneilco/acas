@@ -71,6 +71,8 @@ describe "Primary Screen Protocol module testing", ->
 				it 'Should have a molecularTarget value with the codeOrigin set to customer ddict', ->
 					expect(@pspp.getMolecularTarget().get('codeValue')).toEqual "test1"
 					expect(@pspp.getMolecularTarget().get('codeOrigin')).toEqual "customer ddict"
+				it 'Should have a clone id value', ->
+					expect(@pspp.getCloneName().get('stringValue')).toEqual "clone1"
 				it 'Should have an targetOrigin value', ->
 					expect(@pspp.getTargetOrigin().get('codeValue')).toEqual "human"
 				it 'Should have an assay type value', ->
@@ -99,7 +101,27 @@ describe "Primary Screen Protocol module testing", ->
 					err.attribute=='minY'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
-
+			it "should be invalid when clone name is 'invalid'", ->
+				@pspp.getCloneName().set stringValue: 'invalid'
+				expect(@pspp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pspp.validationError, (err) ->
+					err.attribute=='cloneName'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when molecular target is 'invalid'", ->
+				@pspp.getMolecularTarget().set codeValue: 'invalid'
+				expect(@pspp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pspp.validationError, (err) ->
+					err.attribute=='molecularTarget'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be invalid when molecular target is 'required'", ->
+				@pspp.getMolecularTarget().set codeValue: 'required'
+				expect(@pspp.isValid()).toBeFalsy()
+				filtErrors = _.filter(@pspp.validationError, (err) ->
+					err.attribute=='molecularTarget'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
 
 	describe "Primary Screen Protocol model testing", ->
 		describe "When loaded from new", ->
@@ -123,7 +145,7 @@ describe "Primary Screen Protocol module testing", ->
 					it 'Should parse primary screen protocol parameters', ->
 						expect(@psp.getPrimaryScreenProtocolParameters().getCurveDisplayMax().get('numericValue')).toEqual 200.0
 						expect(@psp.getPrimaryScreenProtocolParameters().getCurveDisplayMin().get('numericValue')).toEqual 10.0
-				describe "analysis parameters", -> #TODO: Uncomment and check later
+				describe "analysis parameters", ->
 					it 'Should be able to get analysis parameters', ->
 						expect(@psp.getAnalysisParameters() instanceof PrimaryScreenAnalysisParameters).toBeTruthy()
 					it 'Should parse analysis parameters', ->
@@ -165,6 +187,8 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "unassigned"
+				it "should show the clone id as an empty field", ->
+					expect(@psppc.model.getCloneName().get('stringValue')).toEqual ""
 				it "should show the targetOrigin as unassigned", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -193,8 +217,6 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "unassigned"
-				it "should have the customer molecular target ddict checkbox ", ->
-					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toBeUndefined()
 				it "should show the curve display max", ->
 					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 100.0
 					expect(@psppc.$('.bv_maxY').val()).toEqual "100"
@@ -229,6 +251,8 @@ describe "Primary Screen Protocol module testing", ->
 						waits(1000)
 						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "test1"
 						expect(@psppc.molecularTargetListController.getSelectedCode()).toEqual "test1"
+				it "should have the clone name set", ->
+					expect(@psppc.$('.bv_cloneName').val()).toEqual "clone1"
 				it "should have the targetOrigin set", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -257,8 +281,6 @@ describe "Primary Screen Protocol module testing", ->
 					runs ->
 						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "cell line y"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "cell line y"
-				it "should have the customer molecular target ddict checkbox checked ", ->
-					expect(@psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toEqual "checked"
 				it 'should show the maxY', ->
 					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 200.0
 				it 'should show the minY', ->
@@ -278,9 +300,13 @@ describe "Primary Screen Protocol module testing", ->
 						@psppc.$('.bv_molecularTarget option').length > 0
 					, 1000
 					runs ->
-						@psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2')
+						@psppc.$('.bv_molecularTarget').val('test2')
 						@psppc.$('.bv_molecularTarget').change()
 						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "test2"
+				it "should update the clone name", ->
+					@psppc.$('.bv_cloneName').val("  clone2  ")
+					@psppc.$('.bv_cloneName').change()
+					expect(@psppc.model.getCloneName().get('stringValue')).toEqual "clone2"
 				it "should update the target origin", ->
 					waitsFor ->
 						@psppc.$('.bv_targetOrigin option').length > 0
@@ -321,12 +347,6 @@ describe "Primary Screen Protocol module testing", ->
 					@psppc.$('.bv_minY').val(" 13 ")
 					@psppc.$('.bv_minY').change()
 					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 13
-			describe "behavior", ->
-				it "should hide the Molecular Target's add button when the customer molecular target ddict checkbox is checked", ->
-					@psppc.$('.bv_customerMolecularTargetDDictChkbx').click()
-#					@psppc.$('.bv_customerMolecularTargetDDictChkbx').click()
-					expect(@psppc.$('.bv_molecularTarget .bv_addOptionBtn')).toBeHidden()
-				# not sure why this test fails but it works in the GUI
 			describe "controller validation rules", ->
 				it "should show error when maxY is NaN", ->
 					@psppc.$('.bv_maxY').val("b")
@@ -336,6 +356,24 @@ describe "Primary Screen Protocol module testing", ->
 					@psppc.$('.bv_minY').val("b")
 					@psppc.$('.bv_minY').change()
 					expect(@psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
+				it "should show error when clone name is invalid", ->
+					@psppc.$('.bv_cloneName').val("invalid")
+					@psppc.$('.bv_cloneName').change()
+					expect(@psppc.$('.bv_group_cloneName').hasClass('error')).toBeTruthy()
+				it "should show error when the molecular target is invalid", ->
+					waitsFor ->
+						@psppc.$('.bv_molecularTarget option').length > 0
+					, 1000
+					runs ->
+						@psppc.model.getMolecularTarget().set codeValue: 'invalid'
+						expect(@psppc.$('.bv_group_molecularTarget').hasClass('error')).toBeTruthy()
+				it "should show error when the clone id is filled in but the molecular target is unassigned", ->
+					waitsFor ->
+						@psppc.$('.bv_molecularTarget option').length > 0
+					, 1000
+					runs ->
+						@psppc.model.getMolecularTarget().set codeValue: 'required'
+						expect(@psppc.$('.bv_group_molecularTarget').hasClass('error')).toBeTruthy()
 
 	describe "PrimaryScreenProtocolController", ->
 		beforeEach ->
@@ -444,7 +482,9 @@ describe "Primary Screen Protocol module testing", ->
 					it "should create a new protocol when New Protocol is clicked", ->
 						runs ->
 							@pspmc.$('.bv_newModule').click()
-						waits(1000)
+						waits(2000)
+						runs ->
+							@pspmc.$('.bv_confirmClear').click()
 						runs ->
 							expect(@pspmc.$('.bv_protocolName').val()).toEqual ""
 							expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
@@ -535,8 +575,11 @@ describe "Primary Screen Protocol module testing", ->
 				it "should create a new protocol when New Protocol is clicked", ->
 					runs ->
 						@pspmc.$('.bv_newModule').click()
-					waits(1000)
+					waits(2000)
 					runs ->
+						@pspmc.$('.bv_confirmClear').click()
+#					waits(1000)
+#					runs ->
 						expect(@pspmc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
 						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual ""
 

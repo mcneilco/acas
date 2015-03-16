@@ -99,7 +99,6 @@ class window.Experiment extends BaseEntity
 					attribute: 'completionDate'
 					meetsage: "Assay completion date must be set"
 
-		console.log errors
 		if errors.length > 0
 			return errors
 		else
@@ -347,6 +346,7 @@ class window.ExperimentBaseController extends BaseEntityController
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+		@model.trigger 'change' #need to trigger change because render will call updateEditable, which disables the save button
 
 	handleDateChanged: =>
 		@model.getCompletionDate().set

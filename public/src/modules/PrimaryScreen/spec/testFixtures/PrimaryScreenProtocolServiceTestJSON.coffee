@@ -21,4 +21,10 @@
 		name: "Test3"
 		version: 1
 	]
+
+
+	exports.successfulCloneValidation = [
+		"test1"
+	]
+
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenProtocolServiceTestJSON = window.primaryScreenProtocolServiceTestJSON or {} else exports)

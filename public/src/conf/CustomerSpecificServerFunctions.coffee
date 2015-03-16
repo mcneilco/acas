@@ -181,6 +181,10 @@ exports.getCustomerMolecularTargetCodes = (resp) ->
 	molecTargetTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
 	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
+exports.validateCloneAndGetTarget = (req, resp) ->
+	psProtocolServiceTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	resp.json psProtocolServiceTestJSON.successfulCloneValidation
+
 exports.getAuthors = (resp) ->
 	config = require '../../../conf/compiled/conf.js'
 	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
