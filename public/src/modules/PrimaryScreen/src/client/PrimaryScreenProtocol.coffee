@@ -395,12 +395,11 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 
 	saveNewPickListOptions: (callback) =>
 		@assayActivityListController.saveNewOption =>
-			@molecularTargetListController.saveNewOption =>
-				@targetOriginListController.saveNewOption =>
-					@assayTypeListController.saveNewOption =>
-						@assayTechnologyListController.saveNewOption =>
-							@cellLineListController.saveNewOption =>
-								callback.call()
+			@targetOriginListController.saveNewOption =>
+				@assayTypeListController.saveNewOption =>
+					@assayTechnologyListController.saveNewOption =>
+						@cellLineListController.saveNewOption =>
+							callback.call()
 
 
 # controller for the primary screen protocol general information tab

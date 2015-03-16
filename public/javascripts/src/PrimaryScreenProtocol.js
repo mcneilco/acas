@@ -603,13 +603,11 @@
     PrimaryScreenProtocolParametersController.prototype.saveNewPickListOptions = function(callback) {
       return this.assayActivityListController.saveNewOption((function(_this) {
         return function() {
-          return _this.molecularTargetListController.saveNewOption(function() {
-            return _this.targetOriginListController.saveNewOption(function() {
-              return _this.assayTypeListController.saveNewOption(function() {
-                return _this.assayTechnologyListController.saveNewOption(function() {
-                  return _this.cellLineListController.saveNewOption(function() {
-                    return callback.call();
-                  });
+          return _this.targetOriginListController.saveNewOption(function() {
+            return _this.assayTypeListController.saveNewOption(function() {
+              return _this.assayTechnologyListController.saveNewOption(function() {
+                return _this.cellLineListController.saveNewOption(function() {
+                  return callback.call();
                 });
               });
             });

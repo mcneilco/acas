@@ -286,7 +286,7 @@ class window.EditablePickListSelectController extends Backbone.View
 		code = @pickListController.getSelectedCode()
 		selectedModel = @pickListController.collection.getModelWithCode(code)
 		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
-			if selectedModel.get('id')?
+			if selectedModel.get('id')? or selectedModel.get('codeOrigin') != "ACAS DDICT"
 				callback.call()
 			else
 				$.ajax

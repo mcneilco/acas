@@ -5,7 +5,7 @@
         {
           typeName: "data",
           typeName: "dose response",
-          typeName: "metadgiata"
+          typeName: "metadata"
         }
       ],
       statekinds: [

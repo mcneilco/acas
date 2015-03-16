@@ -443,7 +443,7 @@
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
-        if (selectedModel.get('id') != null) {
+        if ((selectedModel.get('id') != null) || selectedModel.get('codeOrigin') !== "ACAS DDICT") {
           return callback.call();
         } else {
           return $.ajax({
