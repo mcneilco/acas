@@ -28,7 +28,14 @@ renderCurve <- function(getParams) {
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
   # GET Cached Curve Data
+  saveSession("/tmp/bl")
   data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
+  data$parameters <- data$parameters[!is.null(category) && category %in% c("inactive","potent"), c("fittedmax", "fittedmin") := {
+                      pts <- data$points[curveId == curveId]
+                      responseMean <- mean(pts[userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+                      list("fittedmax" = responseMean, "fittedmin" = responseMean)
+                    }, by = curveId]
+
   data$parameters <- as.data.frame(data$parameters)
   data$points <- as.data.frame(data$points)
 
