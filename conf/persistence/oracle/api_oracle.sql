@@ -201,7 +201,7 @@ ON ps.id=pv2.protocol_state_id AND pv2.ls_kind = 'curve display max'
 INNER JOIN analysis_group_value lsvalues0_
 ON analysisgr1_.id=lsvalues0_.analysis_state_id
 WHERE analysisgr0_.ls_type       ='stringValue'
-AND analysisgr0_.ls_kind like '%curve id'
+AND analysisgr0_.ls_kind = 'curve id'
 AND analysisgr0_.ignored= '0'
 AND analysisgr1_.ignored= '0'
 AND analysisgr2_.ignored= '0'
@@ -209,7 +209,7 @@ AND e.ignored = '0'
 AND e.deleted = '0'
 AND analysisgr1_.ls_type ='data'
 AND analysisgr1_.ls_kind ='dose response'
-AND lsvalues0_.ls_kind not like '%curve id';
+AND lsvalues0_.ls_kind != 'curve id';
 
 CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
@@ -325,8 +325,7 @@ AND analysisgr2_.ignored        = '0'
 AND treatmentg5_.ignored        = '0'
 AND subject7_.ignored           = '0'
 AND e.ignored = '0'
-AND e.deleted = '0'
-AND analysisgr0_.ls_kind LIKE '%curve id';
+AND e.deleted = '0';
 
 CREATE OR REPLACE VIEW api_container_contents
 AS
