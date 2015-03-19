@@ -35,7 +35,7 @@
             return expect(this.prot.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.prot.getScientist().get('codeValue')).toEqual("unassigned");
+            return expect(this.prot.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
           });
           it('Should have the recordedBy set to the loginUser username', function() {
             return expect(this.prot.get('recordedBy')).toEqual("jmcneil");

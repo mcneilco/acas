@@ -239,6 +239,12 @@
     return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
   };
 
+  exports.validateCloneAndGetTarget = function(req, resp) {
+    var psProtocolServiceTestJSON;
+    psProtocolServiceTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    return resp.json(psProtocolServiceTestJSON.successfulCloneValidation);
+  };
+
   exports.getAuthors = function(resp) {
     var baseurl, config;
     config = require('../../../conf/compiled/conf.js');

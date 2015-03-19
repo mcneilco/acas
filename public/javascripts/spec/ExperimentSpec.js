@@ -33,7 +33,7 @@
             return expect(this.exp.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.exp.getScientist().get('codeValue')).toEqual("unassigned");
+            return expect(this.exp.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
           });
           it('Should have the recordedBy set to the loginUser username', function() {
             return expect(this.exp.get('recordedBy')).toEqual("jmcneil");
@@ -635,7 +635,7 @@
         });
         return describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
-            expect(this.ebc.model.getScientist().get('codeValue')).toEqual("unassigned");
+            expect(this.ebc.model.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
             waitsFor(function() {
               return this.ebc.$('.bv_scientist option').length > 0;
             }, 1000);

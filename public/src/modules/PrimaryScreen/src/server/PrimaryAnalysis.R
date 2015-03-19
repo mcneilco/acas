@@ -1091,7 +1091,7 @@ parseWellFlagFile <- function(flaggedWells, resultTable) {
                            flag = c(NA_character_))
   } else {
     flaggedWellPath <- racas::getUploadedFilePath(flaggedWells)
-    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE, fileEncoding="UTF-16LE")
+    flagData <- readExcelOrCsv(flaggedWellPath, header = FALSE)
     
     # We want to accept two formats: the file we output, which the user has edited, and a file
     # that contains just the barcode, well, and flag information
@@ -1472,7 +1472,7 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
   
   removeList <- list()
   for(name in colNamesToCheck) {
-    if(!grepl("^R[0-9]+ \\{Calc: *", name)) { # check to see if the column name is not a calculated read
+    if(!grepl("^R[0-9]+ \\{Calc: *", name) && !grepl("^Activity*", name)) { # check to see if the column name is not a calculated read
       if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
         inputDataTable[[name]] <- NULL
         removeList[[length(removeList) + 1]] <- name
@@ -1499,7 +1499,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   addList <- list()
   for(column in requiredColNames) {
-    if(!grepl("^R[0-9]+ \\{Calc: *", column)) { # check to see if the column name is not a calculated read
+    if(!grepl("^R[0-9]+ \\{Calc: *", column) && !grepl("^Activity*", column)) { # check to see if the column name is not a calculated read
       if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
         inputDataTable[[column]] <- as.numeric(NA)
         addList[[length(addList) + 1]] <- column
@@ -1643,6 +1643,8 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
     return(resultTable)
   }
   
+  mainCode <- "Corporate Batch ID"
+  
   # Give warning and error messages for changed or missing id's
   for (batchId in newBatchIds) {
     if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
@@ -1700,11 +1702,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   parameters <- getExperimentParameters(inputParameters)
-
-  if(!is.null(parameters$thresholdType) && 
-       length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
-       !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
-    stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
+  
+  if(parameters$autoHitSelection) {
+    if(parameters$thresholdType != "efficacy" && parameters$thresholdType != "sd") {
+      if(length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
+           !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
+        stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
+      }
+    }
   }
   
   ## TODO: test structure for integration 2014-10-06 kcarr
@@ -1796,8 +1801,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
   }
-  
-  
   
   ## BLUE SECTION - Auto Well Flagging
 

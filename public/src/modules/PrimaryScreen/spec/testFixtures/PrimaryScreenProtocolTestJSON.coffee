@@ -83,6 +83,37 @@
 			version: 0
 		,
 			clobValue: null
+			codeType: null
+			codeKind: null
+			codeValue: null
+			codeOrigin: null
+			comments: null
+			dateValue: null
+			fileValue: null
+			id: 8041284
+			ignored: false
+			lsTransaction:
+				comments: "primary analysis protocol transactions"
+				id: 87
+				recordedDate: 1363388477000
+				version: 0
+
+			modifiedDate: null
+			numericValue: 100.0
+			publicData: true
+			recordedDate: 1363388477000
+			sigFigs: 2
+			stringValue: "clone1"
+			uncertainty: null
+			urlValue: null
+			lsKind: "clone name"
+			valueOperator: null
+			lsType: "stringValue"
+			lsTypeAndKind: "stringValue_clone name"
+			valueUnit: null
+			version: 0
+		,
+			clobValue: null
 			codeType: "target"
 			codeKind: "origin"
 			codeValue: "human"

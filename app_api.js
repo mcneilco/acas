@@ -108,6 +108,9 @@
 	routeSet_24 = require("./routes/ThingServiceRoutes.js");
 	if (routeSet_24.setupAPIRoutes) {
 		routeSet_24.setupAPIRoutes(app); }
+	routeSet_25 = require("./routes/ValidateCloneNameService.js");
+	if (routeSet_25.setupAPIRoutes) {
+		routeSet_25.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));

@@ -26,7 +26,7 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').length).toEqual 0
 					expect(@prot.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@prot.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@prot.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 				it 'Should have the recordedBy set to the loginUser username', ->
 					expect(@prot.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->

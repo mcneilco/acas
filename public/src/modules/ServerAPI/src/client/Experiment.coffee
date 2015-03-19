@@ -346,6 +346,7 @@ class window.ExperimentBaseController extends BaseEntityController
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+		@model.trigger 'change' #need to trigger change because render will call updateEditable, which disables the save button
 
 	handleDateChanged: =>
 		@model.getCompletionDate().set
