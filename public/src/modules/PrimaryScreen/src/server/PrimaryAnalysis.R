@@ -2489,9 +2489,9 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   
   aggregationFunction <- switch(parameters$aggregationMethod,
-                                "mean" = mean,
-                                "median" = median,
-                                stopUser = stopUser("Internal error: Aggregation method not defined in system.")
+                                "mean" = function(x) {as.numeric(mean(x))},
+                                "median" = function(x) {as.numeric(median(x))},
+                                stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
   sds <- batchDataTable[ , lapply(.SD, sd), by = groupBy, .SDcols = sdTarget] 

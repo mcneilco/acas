@@ -31,7 +31,7 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
   setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
   
   # apply dilution
-  if (!is.null(parameters$dilutionRatio)) {
+  if (!is.null(parameters$dilutionRatio) && parameters$dilutionRatio != "") {
     resultTable$cmpdConc <- resultTable$cmpdConc / parameters$dilutionRatio
   }
   
