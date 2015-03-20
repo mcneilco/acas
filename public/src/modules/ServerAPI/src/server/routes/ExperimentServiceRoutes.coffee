@@ -246,7 +246,8 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		if config.all.client.service.result && config.all.client.service.result.viewer && config.all.client.service.result.viewer.experimentPrefix? && config.all.client.service.result.viewer.protocolPrefix? && config.all.client.service.result.viewer.experimentNameColumn?
-			resultViewerURL = [resultViewerURL: ""]			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			resultViewerURL = [resultViewerURL: ""]
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
 			request = require 'request'
 			request(
