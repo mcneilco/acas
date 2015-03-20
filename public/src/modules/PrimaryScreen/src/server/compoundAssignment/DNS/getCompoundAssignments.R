@@ -1,8 +1,6 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
   # DNS
-  fileList <- list.files("public/src/modules/PrimaryScreen/src/server/compoundAssignment/DNS", full.names=TRUE)
-  lapply(fileList, source)
   
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
