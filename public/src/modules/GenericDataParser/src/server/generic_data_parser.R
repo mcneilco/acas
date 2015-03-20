@@ -2419,8 +2419,11 @@ parseGenericData <- function(request) {
   #   hasWarning (boolean)
   #   errorMessages (list)
   
-  globalMessenger <- messenger()$reset()
-
+  # In 1.6, remove this and use the "external." function
+  globalMessenger <- messenger()
+  globalMessenger$reset()
+  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
+  
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
@@ -2715,4 +2718,11 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
   gsub(".*\\((.*)\\).*||(.*)", "\\1", columnHeaders)
+}
+external.parseGenericData <- function(request) {
+  # Not in use yet, see ?messenger for future standard
+  globalMessenger <- messenger()
+  globalMessenger$reset()
+  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
+  return(parseGenericData(request))
 }
