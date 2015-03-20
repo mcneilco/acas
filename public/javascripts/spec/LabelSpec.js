@@ -68,7 +68,7 @@
             return expect(this.ell.pickBestName().get('labelText')).toEqual("FLIPR target A biochemical");
           });
         });
-        return describe("setBestName functionality", function() {
+        describe("setBestName functionality", function() {
           return it("should update existing unsaved label when best name changed", function() {
             var oldBestId;
             oldBestId = this.ell.pickBestLabel().id;
@@ -82,6 +82,17 @@
             expect(this.ell.pickBestLabel().get('lsKind')).toEqual("some kind");
             expect(this.ell.pickBestLabel().isNew).toBeTruthy();
             return expect(this.ell.get(oldBestId).get('ignored')).toBeTruthy();
+          });
+        });
+        return describe("get label history", function() {
+          return it("should return a list of labels of a given lsKind", function() {
+            var labels;
+            labels = this.ell.getLabelHistory("experiment name");
+            expect(labels.length).toEqual(2);
+            expect(labels[0].get('ignored')).toEqual(false);
+            expect(labels[0].get('labelText')).toEqual("FLIPR target A biochemical");
+            expect(labels[1].get('ignored')).toEqual(true);
+            return expect(labels[1].get('labelText')).toEqual("FLIPR target A biochemical old");
           });
         });
       });
@@ -244,7 +255,7 @@
             return expect(value.get('stringValue')).toEqual("911");
           });
         });
-        return describe("get or create a state or value", function() {
+        describe("get or create a state or value", function() {
           it("should return an existing state", function() {
             var st;
             st = this.esl.getOrCreateStateByTypeAndKind("metadata", "experiment metadata");
@@ -254,6 +265,25 @@
             var val;
             val = this.esl.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "notebook");
             return expect(val.get('stringValue')).toEqual("911");
+          });
+        });
+        describe("get value by id", function() {
+          return it("should return the correct value when given the id", function() {
+            var val;
+            val = (this.esl.getValueById("metadata", "experiment metadata", 391))[0];
+            expect(val.get('id')).toEqual(391);
+            return expect(val.get('fileValue')).toEqual("TestFile.mol");
+          });
+        });
+        return describe("get value history", function() {
+          return it("should return a list of the value (including the ignored entries)", function() {
+            var vals;
+            vals = this.esl.getStateValueHistory("metadata", "experiment metadata", "stringValue", "notebook");
+            expect(vals.length).toEqual(2);
+            expect(vals[0].get('ignored')).toEqual(false);
+            expect(vals[0].get('stringValue')).toEqual("911");
+            expect(vals[1].get('ignored')).toEqual(true);
+            return expect(vals[1].get('stringValue')).toEqual("ignored notebook");
           });
         });
       });

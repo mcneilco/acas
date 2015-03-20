@@ -458,6 +458,7 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_newEntity').click()
 					waits(1000)
 					runs ->
+						@pbc.$('.bv_confirmClear').click()
 						expect(@pbc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
 		describe "When created from a new protocol", ->
 			beforeEach ->
@@ -589,5 +590,6 @@ describe "Protocol module testing", ->
 							@pbc.$('.bv_newEntity').click()
 						waits(1000)
 						runs ->
+							@pbc.$('.bv_confirmClear').click()
 							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 

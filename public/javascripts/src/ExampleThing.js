@@ -46,19 +46,22 @@
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'dateValue',
-          kind: 'completion date'
+          kind: 'completion date',
+          value: NaN
         }, {
           key: 'notebook',
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'stringValue',
-          kind: 'notebook'
+          kind: 'notebook',
+          value: ""
         }, {
           key: 'structural file',
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'fileValue',
-          kind: 'structural file'
+          kind: 'structural file',
+          value: ""
         }, {
           key: 'batch number',
           stateType: 'metadata',
@@ -289,7 +292,7 @@
     };
 
     ExampleThingController.prototype.render = function() {
-      var bestName, codeName;
+      var bestName, codeName, compDate;
       if (this.model == null) {
         this.model = new ExampleThing();
       }
@@ -304,8 +307,11 @@
       this.$('.bv_scientist').val(this.model.get('scientist').get('value'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
-      if (this.model.get('completion date').get('value') != null) {
-        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('completion date').get('value')));
+      compDate = this.model.get('completion date').get('value');
+      if (compDate != null) {
+        if (!isNaN(compDate)) {
+          this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('completion date').get('value')));
+        }
       }
       this.$('.bv_notebook').val(this.model.get('notebook').get('value'));
       if (this.readOnly === true) {
@@ -339,11 +345,9 @@
       var structuralFileValue;
       structuralFileValue = this.model.get('structural file').get('value');
       if (structuralFileValue === null || structuralFileValue === "" || structuralFileValue === void 0) {
-        console.log("structural file is null");
         this.createNewFileChooser();
         return this.$('.bv_deleteSavedFile').hide();
       } else {
-        console.log("structural file is not null");
         this.$('.bv_structuralFile').html('<a href="' + window.conf.datafiles.downloadurl.prefix + structuralFileValue + '">' + this.model.get('structural file').get('comments') + '</a>');
         return this.$('.bv_deleteSavedFile').show();
       }
@@ -406,7 +410,6 @@
     };
 
     ExampleThingController.prototype.handleDeleteSavedStructuralFile = function() {
-      console.log("handle delete saved structural file");
       this.handleFileRemoved();
       this.$('.bv_deleteSavedFile').hide();
       return this.createNewFileChooser();
@@ -463,6 +466,7 @@
     };
 
     ExampleThingController.prototype.handleUpdateThing = function() {
+      this.model.prepareToSave();
       this.model.reformatBeforeSaving();
       this.$('.bv_updatingThing').show();
       this.$('.bv_saveThingComplete').html('Update Complete.');

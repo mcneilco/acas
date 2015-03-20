@@ -1,11 +1,14 @@
 (function() {
+  var csUtilities, postExperiment, serverUtilityFunctions, updateExpt;
+
   exports.setupAPIRoutes = function(app) {
     app.get('/api/experiments/codename/:code', exports.experimentByCodename);
     app.get('/api/experiments/experimentName/:name', exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
-    return app.put('/api/experiments/:id', exports.putExperiment);
+    app.put('/api/experiments/:id', exports.putExperiment);
+    return app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -21,8 +24,12 @@
     return app.get('/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById);
   };
 
+  serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+
+  csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+
   exports.experimentByCodename = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, expt, fullObjectFlag, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON, expt, fullObjectFlag;
     console.log(req.params.code);
     console.log(req.query.testMode);
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
@@ -49,7 +56,7 @@
   };
 
   exports.experimentByName = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON;
     console.log("exports.experiment by name");
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
@@ -64,7 +71,7 @@
   };
 
   exports.experimentsByProtocolCodename = function(request, response) {
-    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON;
     console.log(request.params.code);
     console.log(request.query.testMode);
     if (request.query.testMode || global.specRunnerTestmode) {
@@ -79,7 +86,7 @@
   };
 
   exports.experimentById = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON;
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
@@ -92,66 +99,25 @@
     }
   };
 
-  exports.postExperiment = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request;
-    if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+  updateExpt = function(expt, testMode, callback) {
+    var baseurl, config, request;
+    if (testMode || global.specRunnerTestmode) {
+      return callback(expt);
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments";
-      request = require('request');
-      return request({
-        method: 'POST',
-        url: baseurl,
-        body: req.body,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to save new experiment');
-            console.log("response");
-            console.log(response);
-            console.log(response.body);
-            console.log(response.body[0]);
-            console.log(response.body[0].message);
-            if (response.body[0].message === "not unique experiment name") {
-              console.log(json);
-              console.log("ending resp");
-              return resp.end(JSON.stringify(response.body[0].message));
-            }
-          }
-        };
-      })(this));
-    }
-  };
-
-  exports.putExperiment = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, putId, request;
-    if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
-    } else {
-      config = require('../conf/compiled/conf.js');
-      putId = req.body.id;
-      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + putId;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + expt.id;
       request = require('request');
       return request({
         method: 'PUT',
         url: baseurl,
-        body: req.body,
+        body: expt,
         json: true
       }, (function(_this) {
         return function(error, response, json) {
-          console.log(response.statusCode);
           if (!error && response.statusCode === 200) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
+            return callback(json);
           } else {
-            console.log('got ajax error trying to save new experiment');
+            console.log('got ajax error trying to update experiment');
             console.log(error);
             return console.log(response);
           }
@@ -160,8 +126,112 @@
     }
   };
 
+  postExperiment = function(req, resp) {
+    var baseurl, checkFilesAndUpdate, config, exptToSave, request;
+    exptToSave = req.body;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      if (exptToSave.codeName == null) {
+        exptToSave.codeName = "EXPT-00000001";
+      }
+    }
+    checkFilesAndUpdate = function(expt) {
+      var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+      fileVals = serverUtilityFunctions.getFileValuesFromEntity(expt, false);
+      filesToSave = fileVals.length;
+      completeExptUpdate = function(exptToUpdate) {
+        return updateExpt(exptToUpdate, req.query.testMode, function(updatedExpt) {
+          return resp.json(updatedExpt);
+        });
+      };
+      fileSaveCompleted = function(passed) {
+        if (!passed) {
+          resp.statusCode = 500;
+          return resp.end("file move failed");
+        }
+        if (--filesToSave === 0) {
+          return completeExptUpdate(expt);
+        }
+      };
+      if (filesToSave > 0) {
+        prefix = serverUtilityFunctions.getPrefixFromEntityCode(expt.codeName);
+        _results = [];
+        for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+          fv = fileVals[_i];
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
+        }
+        return _results;
+      } else {
+        return resp.json(expt);
+      }
+    };
+    if (req.query.testMode || global.specRunnerTestmode) {
+      return checkFilesAndUpdate(exptToSave);
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: exptToSave,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 201) {
+            return checkFilesAndUpdate(json);
+          } else {
+            console.log('got ajax error trying to save experiment');
+            if (response.body[0].message === "not unique experiment name") {
+              return resp.end(JSON.stringify(response.body[0].message));
+            }
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.postExperiment = function(req, resp) {
+    return postExperiment(req, resp);
+  };
+
+  exports.putExperiment = function(req, resp) {
+    var completeExptUpdate, exptToSave, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+    exptToSave = req.body;
+    fileVals = serverUtilityFunctions.getFileValuesFromEntity(exptToSave, true);
+    filesToSave = fileVals.length;
+    completeExptUpdate = function() {
+      return updateExpt(exptToSave, req.query.testMode, function(updatedExpt) {
+        return resp.json(updatedExpt);
+      });
+    };
+    fileSaveCompleted = function(passed) {
+      if (!passed) {
+        resp.statusCode = 500;
+        return resp.end("file move failed");
+      }
+      if (--filesToSave === 0) {
+        return completeExptUpdate();
+      }
+    };
+    if (filesToSave > 0) {
+      prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
+      _results = [];
+      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+        fv = fileVals[_i];
+        if (fv.id == null) {
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
+    } else {
+      return completeExptUpdate();
+    }
+  };
+
   exports.genericExperimentSearch = function(req, res) {
-    var baseurl, config, emptyResponse, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, emptyResponse, experimentServiceTestJSON;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       if (req.params.searchTerm === "no-match") {
@@ -222,7 +292,7 @@
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {
-    var baseurl, config, experimentServiceTestJSON, resultViewerURL, serverUtilityFunctions, _;
+    var baseurl, config, experimentServiceTestJSON, resultViewerURL, _;
     console.log(__dirname);
     _ = require('../public/src/lib/underscore.js');
     if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
@@ -304,7 +374,7 @@
   };
 
   exports.experimentValueById = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, experimentServiceTestJSON;
     console.log(req.params.id);
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');

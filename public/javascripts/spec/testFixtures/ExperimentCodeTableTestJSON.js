@@ -27,6 +27,20 @@
             ignored: false
           }
         ]
+      }, {
+        type: "experiment metadata",
+        kind: "file type",
+        codes: [
+          {
+            code: "reference file",
+            name: "Reference File",
+            ignored: false
+          }, {
+            code: "experiment file",
+            name: "Experiment File",
+            ignored: false
+          }
+        ]
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.experimentCodeTableTestJSON = window.experimentCodeTableTestJSON || {} : exports));

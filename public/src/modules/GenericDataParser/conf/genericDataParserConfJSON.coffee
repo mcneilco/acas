@@ -499,7 +499,7 @@
 			[
 				"digits":8
 				"groupDigits":false
-				"labelPrefix":"PRCL"
+				"labelPrefix":"PROT"
 				"labelSeparator":"-"
 				"labelTypeAndKind":"id_codeName"
 				"latestNumber":1

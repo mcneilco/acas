@@ -801,9 +801,7 @@
       this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
         this.$('.bv_saveModule').html("Save");
@@ -828,9 +826,7 @@
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       if (this.$('.bv_cancelModuleComplete').is(":visible")) {
         this.$('.bv_updateModuleComplete').hide();
       } else {

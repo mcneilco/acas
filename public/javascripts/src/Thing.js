@@ -7,9 +7,11 @@
     __extends(Thing, _super);
 
     function Thing() {
+      this.getStateValueHistory = __bind(this.getStateValueHistory, this);
       this.duplicate = __bind(this.duplicate, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
+      this.createNewValue = __bind(this.createNewValue, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
       this.parse = __bind(this.parse, this);
@@ -58,6 +60,7 @@
           this.createDefaultLabels();
           this.createDefaultStates();
           this.trigger('saveFailed');
+          return;
         } else {
           if (resp.lsLabels != null) {
             if (!(resp.lsLabels instanceof LabelList)) {
@@ -82,9 +85,12 @@
           this.set(resp);
           this.createDefaultLabels();
           this.createDefaultStates();
-          return resp;
         }
+      } else {
+        this.createDefaultLabels();
+        this.createDefaultStates();
       }
+      return resp;
     };
 
     Thing.prototype.createDefaultLabels = function() {
@@ -109,6 +115,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dValue = _ref[_i];
         newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
+        this.listenTo(newValue, 'createNewValue', this.createNewValue);
         if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
           newValue.set({
             unitKind: dValue.unitKind
@@ -141,6 +148,20 @@
         _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
       }
       return _results;
+    };
+
+    Thing.prototype.createNewValue = function(vKind, newVal) {
+      var newValue, valInfo;
+      valInfo = _.where(this.lsProperties.defaultValues, {
+        key: vKind
+      })[0];
+      this.unset(vKind);
+      newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']);
+      newValue.set(valInfo['type'], newVal);
+      newValue.set({
+        value: newVal
+      });
+      return this.set(vKind, newValue);
     };
 
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
@@ -248,6 +269,14 @@
       });
       copiedThing.createDefaultLabels();
       return copiedThing;
+    };
+
+    Thing.prototype.getStateValueHistory = function(vKind) {
+      var valInfo;
+      valInfo = _.where(this.lsProperties.defaultValues, {
+        key: vKind
+      })[0];
+      return this.get('lsStates').getStateValueHistory(valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']);
     };
 
     return Thing;

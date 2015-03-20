@@ -123,12 +123,17 @@ class window.ProtocolBaseController extends BaseEntityController
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
+		@setupAttachFileListController()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -162,6 +167,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_cancel').hide()
 			@$('.bv_save').hide()
 		@trigger 'amClean'
+		@setupAttachFileListController()
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
@@ -175,31 +181,21 @@ class window.ProtocolBaseController extends BaseEntityController
 			selectedCode: @model.getAssayStage().get('codeValue')
 
 	handleCreationDateChanged: =>
-		@model.getCreationDate().set
-			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@model.trigger 'change'
+		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+		@handleValueChanged "CreationDate", value
 
 
 	handleCreationDateIconClicked: =>
 		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
-		@model.getAssayStage().set
-			codeValue: @assayStageListController.getSelectedCode()
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@trigger 'change'
+		value = @assayStageListController.getSelectedCode()
+		@handleValueChanged "AssayStage", value
 
 	handleAssayPrincipleChanged: =>
-		@model.getAssayPrinciple().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
+		@handleValueChanged "AssayPrinciple", value
 
 	handleAssayTreeRuleChanged: =>
-		@model.getAssayTreeRule().set
-			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
+		@handleValueChanged "AssayTreeRule", value

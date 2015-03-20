@@ -12,56 +12,31 @@ config = require '../conf/compiled/conf.js'
 
 
 exports.redirectToEditor = (req, resp) ->
-	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
-		controllerRedirectConfFile = require '../conf/ControllerRedirectConf.js'
-		controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
-		queryPrefix = null
-		prefixKeyIndex = 0
-		while queryPrefix is null and prefixKeyIndex < (Object.keys(controllerRedirectConf)).length
-			prefix = Object.keys(controllerRedirectConf)[prefixKeyIndex] #prefix = possible entity prefix
-			if req.params.code.indexOf(prefix) > -1 #the requested route has a known entity prefix
-				queryPrefix = prefix
-			else
-				prefixKeyIndex +=1
-
-		if queryPrefix != null
-			request
-				json: true
-				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #redirect route
-			, (error, response, body) =>
-				kind = response.body.lsKind
-				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
-				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
-
+	controllerRedirectConfFile = require '../conf/ControllerRedirectConf.js'
+	controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
+	queryPrefix = null
+	prefixKeyIndex = 0
+	while queryPrefix is null and prefixKeyIndex < (Object.keys(controllerRedirectConf)).length
+		prefix = Object.keys(controllerRedirectConf)[prefixKeyIndex] #prefix = possible entity prefix
+		if req.params.code.indexOf(prefix) > -1 #the requested route has a known entity prefix
+			queryPrefix = prefix
 		else
-			resp.redirect "/#"
+			prefixKeyIndex +=1
+
+	if queryPrefix != null
+		request
+			json: true
+			url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
+		, (error, response, body) =>
+			console.log error
+			console.log response
+			console.log body
+			kind = response.body.lsKind
+			deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
+			resp.redirect "/"+deepLink+"/codeName/"+req.params.code
 
 	else
-		controllerRedirectConfFile = require '../conf/ControllerRedirectConf.js'
-		controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
-		queryPrefix = null
-		prefixKeyIndex = 0
-		while queryPrefix is null and prefixKeyIndex < (Object.keys(controllerRedirectConf)).length
-			prefix = Object.keys(controllerRedirectConf)[prefixKeyIndex] #prefix = possible entity prefix
-			if req.params.code.indexOf(prefix) > -1 #the requested route has a known entity prefix
-				queryPrefix = prefix
-			else
-				prefixKeyIndex +=1
-
-		if queryPrefix != null
-			request
-				json: true
-				url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
-			, (error, response, body) =>
-				console.log error
-				console.log response
-				console.log body
-				kind = response.body.lsKind
-				deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
-				resp.redirect "/"+deepLink+"/codeName/"+req.params.code
-
-		else
-			resp.redirect "/#"
+		resp.redirect "/#"
 
 exports.getLabelSequences = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'

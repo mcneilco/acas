@@ -47,7 +47,7 @@ export LD_LIBRARY_PATH=/usr/local/lib:${LD_LIBRARY_PATH:=}
 
 running() {
     runningCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever list 2>/dev/null | grep $ACAS_HOME/app.js 2>&1 >/dev/null"
-    if [ $(whoami) != $ACAS_USER ]; then
+    if [ $(whoami) != "$ACAS_USER" ]; then
         runningCommand="su - $ACAS_USER $suAdd -c \"($runningCommand)\""
     fi
     eval $runningCommand
@@ -56,7 +56,7 @@ running() {
 
 start_server() {
     startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --killSignal=SIGTERM --workingDir --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
-    if [ $(whoami) != $ACAS_USER ]; then
+    if [ $(whoami) != "$ACAS_USER" ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
     eval $startCommand
@@ -64,9 +64,8 @@ start_server() {
 }
 
 stop_server() {
-
     stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
-    if [ $(whoami) != $ACAS_USER ]; then
+    if [ $(whoami) != "$ACAS_USER" ]; then
         stopCommand="su - $ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
     eval $stopCommand
@@ -81,17 +80,29 @@ apache_running() {
 }
 
 start_apache() {
-    /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null
+    startCommand=" /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
+    if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
+        startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
+    fi
+    eval $startCommand
     return $?
 }
 
 stop_apache() {
-    /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null
+    stopCommand="/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null"
+    if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
+        stopCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($stopCommand)\""
+    fi
+    eval $stopCommand
     return $?
 }
 
 apache_reload() {
-    /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null
+    reloadCommand="/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null"
+    if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
+        reloadCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($reloadCommand)\""
+    fi
+    eval $reloadCommand
     return $?
 }
 
@@ -177,16 +188,18 @@ do_start() {
         fi
 
     fi
-    if apache_running ;  then
-        log "apache already running"
-    else
-        action "Starting apache" start_apache
-        RETVAL=$?
-        if [ $RETVAL -eq 0 ]; then
-            log "apache started"
+    if [ $doApache = true ]; then
+        if apache_running ;  then
+            log "apache already running"
         else
-            log "apache startup failure" "failure"
-            RETVAL=1
+            action "Starting apache" start_apache
+            RETVAL=$?
+            if [ $RETVAL -eq 0 ]; then
+                log "apache started"
+            else
+                log "apache startup failure" "failure"
+                RETVAL=1
+            fi
         fi
     fi
     return $RETVAL
@@ -206,13 +219,15 @@ do_stop() {
         log "app.js not running"
         RETVAL=0
     fi
-    if apache_running ;  then
-        action "Stopping apache" stop_apache
-        RETVAL=$?
-    else
-        # If it's not running don't do anything
-        log "apache not running"
-        RETVAL=0
+    if [ $doApache = true ]; then
+        if apache_running ;  then
+            action "Stopping apache" stop_apache
+            RETVAL=$?
+        else
+            # If it's not running don't do anything
+            log "apache not running"
+            RETVAL=0
+        fi
     fi
     return $RETVAL
 }
@@ -239,20 +254,36 @@ get_status() {
 ################################################################################
 ################################################################################
 
+# SETUP ACAS_HOME path
 scriptPath=$(readlink -f ${BASH_SOURCE[0]})
 ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
-echo "ACAS_HOME = $ACAS_HOME"
+echo "ACAS_HOME=$ACAS_HOME"
 cd $ACAS_HOME
+
 #Get ACAS config variables
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
-#Export these variables so that the apache config can pick them up
+# Export these variables so that the apache config can pick them up
 export ACAS_USER=${server_run_user}
 if [ "$ACAS_USER" == "" ] || [ "$ACAS_USER" == "null" ]; then
     #echo "Setting ACAS_USER to $(whoami)"
     export ACAS_USER=$(whoami)
 fi
-echo "ACAS_USER = $ACAS_USER"
+echo "ACAS_USER=$ACAS_USER"
+echo "CLIENT_PORT=${client_port}"
+
+echo "RAPACHE_PORT=${client_service_rapache_port}"
+if [ ${client_service_rapache_port} -lt 1024 ] && [ $(whoami) != "root" ]; then
+    echo "skipping rapache as client.service.rapache.port is set to run on privilaged port '${client_service_rapache_port}' you must be root to stop, start or reload apache on this port"
+    doApache=false
+else
+    doApache=true
+    if [ ${client_service_rapache_port} -lt 1024 ]; then
+        RAPACHE_START_ACAS_USER="root"
+    else
+        RAPACHE_START_ACAS_USER=$ACAS_USER
+    fi
+fi
 
 case "$1" in
     start)
@@ -278,20 +309,22 @@ case "$1" in
         RETVAL=0
     ;;
     reload)
-        if apache_running; then
-            action "reloading apache" apache_reload
-            RETVAL=$?
-            if [ $RETVAL -eq 0 ]; then
-                log "apache reloaded"
+        if [ $doApache = true ];  then
+            if apache_running; then
+                action "reloading apache" apache_reload
+                RETVAL=$?
+                if [ $RETVAL -eq 0 ]; then
+                    log "apache reloaded"
+                else
+                    log "apache reload failure" "failure"
+                    RETVAL=1
+                fi
             else
-                log "apache reload failure" "failure"
-                RETVAL=1
+                log "apache is not running" "failure"
+                REVAL=0
             fi
-        else
-            log "apache is not running" "failure"
-            REVAL=0
+            RETVAL=$RETVAL
         fi
-        RETVAL=$RETVAL
     ;;
     *)
         echo "Usage: ${0} {start|stop|status|restart|reload}"

@@ -504,10 +504,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@errorOwnerName = 'PrimaryScreenProtocolModuleController'
 		@setBindings()
-
-		@$('.bv_save').hide()
-		@$('.bv_cancel').hide()
-		@$('.bv_newEntity').hide()
+		@$('.bv_saveAndCancelButtons').hide()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 
 		if @model.isNew()
@@ -528,9 +525,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@setupPrimaryScreenAnalysisParametersController()
 		@setupModelFitTypeController()
 		@$('.bv_savingModule').hide()
-		@$('.bv_save').hide()
-		@$('.bv_cancel').hide()
-		@$('.bv_newEntity').hide()
+		@$('.bv_saveAndCancelButtons').hide()
 		if @$('.bv_cancelModuleComplete').is(":visible")
 			@$('.bv_updateModuleComplete').hide()
 		else

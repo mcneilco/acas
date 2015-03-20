@@ -25,5 +25,18 @@
 					name: "Rejected"
 					ignored: false
 				]
+		,
+			type: "experiment metadata"
+			kind: "file type"
+			codes:
+				[
+					code: "reference file"
+					name: "Reference File"
+					ignored: false
+				,
+					code: "experiment file"
+					name: "Experiment File"
+					ignored: false
+				]
 		]
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentCodeTableTestJSON = window.experimentCodeTableTestJSON or {} else exports)
