@@ -301,12 +301,13 @@ class window.ExperimentBrowserController extends Backbone.View
 			@experimentController = new ExperimentBaseController
 				protocolKindFilter: "?protocolKind=Bio Activity"
 				model: new PrimaryScreenExperiment experiment.attributes
+				readOnly: true
 		else
 			@experimentController = new ExperimentBaseController
 				model: new Experiment experiment.attributes
+				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
-		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		if experiment.getStatus().get('codeValue') is "deleted"

@@ -37,6 +37,20 @@
             ignored: false
           }
         ]
+      }, {
+        type: "protocol metadata",
+        kind: "file type",
+        codes: [
+          {
+            code: "reference file",
+            name: "Reference File",
+            ignored: false
+          }, {
+            code: "protocol file",
+            name: "Protocol File",
+            ignored: false
+          }
+        ]
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.protocolCodeTableTestJSON = window.protocolCodeTableTestJSON || {} : exports));

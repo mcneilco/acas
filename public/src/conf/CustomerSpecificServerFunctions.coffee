@@ -233,3 +233,6 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 									fileValue.fileValue = relEntityFolder + fileValue.fileValue
 									callback true
 
+exports.getDownloadUrl = (fileValue) ->
+	config = require '../../../conf/compiled/conf.js'
+	return config.all.client.datafiles.downloadurl.prefix+fileValue

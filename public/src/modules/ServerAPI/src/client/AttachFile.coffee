@@ -51,10 +51,10 @@ class window.AttachFileController extends AbstractFormController
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-		if @options.fileTypeListURL?
-			@fileTypeListURL = @options.fileTypeListURL
+		if @options.fileTypeList?
+			@fileTypeList = new PickListList @options.fileTypeList
 		else
-			@fileTypeListURL = alert 'a file type list url must be provided'
+			@fileTypeList = new PickListList()
 
 	render: =>
 		$(@el).empty()
@@ -83,8 +83,6 @@ class window.AttachFileController extends AbstractFormController
 		@
 
 	setUpFileTypeSelect: ->
-		@fileTypeList = new PickListList()
-		@fileTypeList.url = @fileTypeListURL
 		@fileTypeListController = new PickListSelectController
 			el: @$('.bv_fileType')
 			collection: @fileTypeList
@@ -92,6 +90,7 @@ class window.AttachFileController extends AbstractFormController
 				code: "unassigned"
 				name: @firstOptionName
 			selectedCode: @model.get('fileType')
+			autoFetch: false
 
 	handleFileUpload: (nameOnServer) =>
 		if @autoAddAttachFileModel
@@ -143,10 +142,10 @@ class window.AttachFileListController extends Backbone.View
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-		if @options.fileTypeListURL?
-			@fileTypeListURL = @options.fileTypeListURL
+		if @options.fileTypeList?
+			@fileTypeList = @options.fileTypeList
 		else
-			@fileTypeListURL = alert 'a file type list url must be provided'
+			@fileTypeList = new PickListList()
 
 	render: =>
 		$(@el).empty()
@@ -175,7 +174,7 @@ class window.AttachFileListController extends Backbone.View
 			autoAddAttachFileModel: @autoAddAttachFileModel
 			firstOptionName: @options.firstOptionName
 			allowedFileTypes: @allowedFileTypes
-			fileTypeListURL: @fileTypeListURL
+			fileTypeList: @fileTypeList
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
 		@listenTo afc, 'removeFile', @ensureValidCollectionLength
 		afc.on 'amDirty', =>

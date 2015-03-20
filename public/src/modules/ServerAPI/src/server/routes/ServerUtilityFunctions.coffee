@@ -172,7 +172,7 @@ exports.makeAbsolutePath = (relativePath) ->
 	console.log acasPath+relativePath+'/'
 	acasPath+relativePath+'/'
 
-exports.getFileValesFromThing = (thing, ignoreSaved) ->
+exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
 	for state in thing.lsStates
 		vals = state.lsValues
@@ -190,7 +190,7 @@ exports.getRelativeFolderPathForPrefix = (prefix) ->
 	else
 		return null
 
-exports.getPrefixFromThingCode = (code) ->
+exports.getPrefixFromEntityCode = (code) ->
 	for pref, redir of controllerRedirect.controllerRedirectConf
 		if code.indexOf(pref) > -1
 			return pref

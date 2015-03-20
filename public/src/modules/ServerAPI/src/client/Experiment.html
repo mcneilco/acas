@@ -1,6 +1,6 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
-    <div class="span10">
+    <div class="span12">
         <div class="form-horizontal">
             <div class="control-group">
                 <label class="control-label"><i class="icon-lock bv_lock"></i> Status</label>
@@ -81,22 +81,30 @@
     </div>
 
     <div>
-        <div class="span10">Short Description</div>
-        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;" placeholder="Short Description"></textarea>
+        <div style="margin-bottom:5px;">Short Description</div>
+        <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
     </div>
 
     <div>
-        <div class="span10">Experiment Details</div>
-        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;" placeholder="Experiment Details"></textarea>
+        <div style="margin-bottom:5px;">Experiment Details</div>
+        <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Experiment Details"></textarea>
     </div>
 
     <div>
-        <div class="span10">Comments</div>
-        <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;" placeholder="Comments"></textarea>
+        <div style="margin-bottom:5px;">Comments</div>
+        <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Comments"></textarea>
     </div>
 
+    <div class="control-group bv_group_attachFile" style="margin-bottom:30px;">
+        <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
+        <div class="controls" style="margin-left:0px;">
+            <span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
+            <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
+            <div class="bv_attachFileList" style="width:670px;"></div>
+        </div>
+    </div>
     <!-- SAVE AND CANCEL -->
-    <div class="span10" style="width:650px;margin-left:25px;">
+    <div class="span10" style="width:650px;margin-left:25px;margin-top:25px;">
         <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
         <button type="button" class="btn bv_newEntity pull-right" style="margin-right:5px;">Clear Form</button>
         <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>

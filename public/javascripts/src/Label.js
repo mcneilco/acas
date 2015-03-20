@@ -168,6 +168,16 @@
       return label;
     };
 
+    LabelList.prototype.getLabelHistory = function(preferredKind) {
+      var preferred;
+      preferred = this.filter(function(lab) {
+        return lab.get('preferred');
+      });
+      return _.filter(preferred, function(lab) {
+        return lab.get('lsKind') === preferredKind;
+      });
+    };
+
     return LabelList;
 
   })(Backbone.Collection);
@@ -192,9 +202,19 @@
     };
 
     Value.prototype.setValueType = function() {
-      this.set(this.get('lsType'), this.get('value'));
-      this.set('recordedBy', window.AppLaunchParams.loginUser.username);
-      return this.set('recordedDate', new Date().getTime());
+      var newVal, oldVal;
+      oldVal = this.get(this.get('lsType'));
+      newVal = this.get('value');
+      if (!(oldVal === newVal || (Number.isNaN(oldVal) && Number.isNaN(newVal)))) {
+        if (this.isNew()) {
+          return this.set(this.get('lsType'), this.get('value'));
+        } else {
+          this.set({
+            ignored: true
+          });
+          return this.trigger('createNewValue', this.get('lsKind'), newVal);
+        }
+      }
     };
 
     return Value;
@@ -262,6 +282,12 @@
     State.prototype.getValuesByTypeAndKind = function(type, kind) {
       return this.get('lsValues').filter(function(value) {
         return (!value.get('ignored')) && (value.get('lsType') === type) && (value.get('lsKind') === kind);
+      });
+    };
+
+    State.prototype.getValueHistory = function(type, kind) {
+      return this.get('lsValues').filter(function(value) {
+        return (value.get('lsType') === type) && (value.get('lsKind') === kind);
       });
     };
 
@@ -352,8 +378,71 @@
       return value;
     };
 
+    StateList.prototype.getStateValueHistory = function(sType, sKind, vType, vKind) {
+      var states, valueHistory, values;
+      valueHistory = [];
+      states = this.getStatesByTypeAndKind(sType, sKind);
+      if (states.length > 0) {
+        values = states[0].getValueHistory(vType, vKind);
+        if (values.length > 0) {
+          valueHistory = values;
+        }
+      }
+      return valueHistory;
+    };
+
     return StateList;
 
   })(Backbone.Collection);
+
+  exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
+    var absEntitiesFolder, absEntityFolder, config, deepLinkToEntity, entitiesFolder, newPath, relEntitiesFolder, relEntityFolder, relPath, uploadsPath;
+    config = require('../../../conf/compiled/conf.js');
+    relPath = config.all.server.datafiles.relative_path + "/" + fileValue.fileValue;
+    uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
+    deepLinkToEntity = config.all.server.nodeapi.path + "/entity/edit/codeName/" + entityCode;
+    relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
+    if (relEntitiesFolder === null) {
+      callback(false);
+      return;
+    }
+    relEntityFolder = relEntitiesFolder + entityCode + "/";
+    absEntitiesFolder = uploadsPath + relEntitiesFolder;
+    absEntityFolder = uploadsPath + relEntityFolder;
+    newPath = absEntityFolder + fileValue.fileValue;
+    entitiesFolder = uploadsPath + "entities/";
+    return serverUtilityFunctions.ensureExists(entitiesFolder, 0x1e4, function(err) {
+      if (err != null) {
+        console.log("Can't find or create entities folder: " + entitiesFolder);
+        return callback(false);
+      } else {
+        return serverUtilityFunctions.ensureExists(absEntitiesFolder, 0x1e4, function(err) {
+          if (err != null) {
+            console.log("Can't find or create : " + absEntitiesFolder);
+            return callback(false);
+          } else {
+            return serverUtilityFunctions.ensureExists(absEntityFolder, 0x1e4, function(err) {
+              if (err != null) {
+                console.log("Can't find or create : " + absEntityFolder);
+                return callback(false);
+              } else {
+                return exports.postToFileService(relPath, {
+                  username: "unavailable"
+                }, deepLinkToEntity, function(response) {
+                  if (response === null) {
+                    return callback(false);
+                  } else {
+                    fileValue.comments = fileValue.fileValue;
+                    fileValue.fileValue = response;
+                    return callback(true);
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  };
 
 }).call(this);

@@ -103,10 +103,10 @@
       } else {
         this.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];
       }
-      if (this.options.fileTypeListURL != null) {
-        return this.fileTypeListURL = this.options.fileTypeListURL;
+      if (this.options.fileTypeList != null) {
+        return this.fileTypeList = new PickListList(this.options.fileTypeList);
       } else {
-        return this.fileTypeListURL = alert('a file type list url must be provided');
+        return this.fileTypeList = new PickListList();
       }
     };
 
@@ -140,8 +140,6 @@
     };
 
     AttachFileController.prototype.setUpFileTypeSelect = function() {
-      this.fileTypeList = new PickListList();
-      this.fileTypeList.url = this.fileTypeListURL;
       return this.fileTypeListController = new PickListSelectController({
         el: this.$('.bv_fileType'),
         collection: this.fileTypeList,
@@ -149,7 +147,8 @@
           code: "unassigned",
           name: this.firstOptionName
         }),
-        selectedCode: this.model.get('fileType')
+        selectedCode: this.model.get('fileType'),
+        autoFetch: false
       });
     };
 
@@ -235,10 +234,10 @@
       } else {
         this.allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'];
       }
-      if (this.options.fileTypeListURL != null) {
-        return this.fileTypeListURL = this.options.fileTypeListURL;
+      if (this.options.fileTypeList != null) {
+        return this.fileTypeList = this.options.fileTypeList;
       } else {
-        return this.fileTypeListURL = alert('a file type list url must be provided');
+        return this.fileTypeList = new PickListList();
       }
     };
 
@@ -275,7 +274,7 @@
         autoAddAttachFileModel: this.autoAddAttachFileModel,
         firstOptionName: this.options.firstOptionName,
         allowedFileTypes: this.allowedFileTypes,
-        fileTypeListURL: this.fileTypeListURL
+        fileTypeList: this.fileTypeList
       });
       this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
       this.listenTo(afc, 'removeFile', this.ensureValidCollectionLength);

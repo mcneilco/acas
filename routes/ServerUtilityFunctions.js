@@ -204,7 +204,7 @@
     return acasPath + relativePath + '/';
   };
 
-  exports.getFileValesFromThing = function(thing, ignoreSaved) {
+  exports.getFileValuesFromEntity = function(thing, ignoreSaved) {
     var fvs, state, v, vals, _i, _j, _len, _len1, _ref;
     fvs = [];
     _ref = thing.lsStates;
@@ -235,7 +235,7 @@
     }
   };
 
-  exports.getPrefixFromThingCode = function(code) {
+  exports.getPrefixFromEntityCode = function(code) {
     var pref, redir, _ref;
     _ref = controllerRedirect.controllerRedirectConf;
     for (pref in _ref) {

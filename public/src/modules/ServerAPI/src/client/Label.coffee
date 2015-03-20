@@ -90,6 +90,12 @@ class window.LabelList extends Backbone.Collection
 				@trigger('change')
 		return label
 
+	getLabelHistory: (preferredKind) ->
+		preferred = @filter (lab) ->
+			lab.get 'preferred'
+		_.filter preferred, (lab) ->
+			lab.get('lsKind') == preferredKind
+
 class window.Value extends Backbone.Model
 	defaults:
 		ignored: false
@@ -100,9 +106,14 @@ class window.Value extends Backbone.Model
 		@.on "change:value": @setValueType
 
 	setValueType: ->
-		@.set @get('lsType'), @get('value')
-		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
-		@.set 'recordedDate', new Date().getTime()
+		oldVal = @get(@get('lsType'))
+		newVal = @get('value')
+		unless oldVal == newVal or (Number.isNaN(oldVal) and Number.isNaN(newVal))
+			if @isNew()
+				@.set @get('lsType'), @get('value')
+			else
+				@set ignored: true
+				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -132,6 +143,10 @@ class window.State extends Backbone.Model
 	getValuesByTypeAndKind: (type, kind) ->
 		@get('lsValues').filter (value) ->
 			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+
+	getValueHistory: (type, kind) ->
+		@get('lsValues').filter (value) ->
+			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
 class window.StateList extends Backbone.Collection
 	model: State
@@ -185,3 +200,52 @@ class window.StateList extends Backbone.Collection
 		value = state.get('lsValues').filter (val) ->
 			val.id == id
 		value
+
+	getStateValueHistory: (sType, sKind, vType, vKind) ->
+		valueHistory = []
+		states = @getStatesByTypeAndKind sType, sKind
+		if states.length > 0
+			values = states[0].getValueHistory(vType, vKind)
+			if values.length > 0
+				valueHistory = values
+		valueHistory
+
+exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
+	config = require '../../../conf/compiled/conf.js'
+	relPath = config.all.server.datafiles.relative_path + "/" + fileValue.fileValue
+	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+	deepLinkToEntity = config.all.server.nodeapi.path+"/entity/edit/codeName/"+entityCode
+
+	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
+	if relEntitiesFolder==null
+		callback false
+		return
+	relEntityFolder = relEntitiesFolder + entityCode + "/"
+	absEntitiesFolder = uploadsPath + relEntitiesFolder
+	absEntityFolder = uploadsPath + relEntityFolder
+	newPath = absEntityFolder + fileValue.fileValue
+
+	entitiesFolder = uploadsPath + "entities/"
+	serverUtilityFunctions.ensureExists entitiesFolder, 0o0744, (err) ->
+		if err?
+			console.log "Can't find or create entities folder: " + entitiesFolder
+			callback false
+		else
+			serverUtilityFunctions.ensureExists absEntitiesFolder, 0o0744, (err) ->
+				if err?
+					console.log "Can't find or create : " + absEntitiesFolder
+					callback false
+				else
+					serverUtilityFunctions.ensureExists absEntityFolder, 0o0744, (err) ->
+						if err?
+							console.log "Can't find or create : " + absEntityFolder
+							callback false
+						else
+							exports.postToFileService relPath, {username: "unavailable"}, deepLinkToEntity, (response) ->
+								if response is null
+									callback false
+								else
+									fileValue.comments = fileValue.fileValue
+									fileValue.fileValue = response
+									callback true
+
