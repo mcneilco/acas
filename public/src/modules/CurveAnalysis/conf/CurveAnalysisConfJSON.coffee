@@ -167,7 +167,7 @@
 				kindName: "SST",
 				typeName: "numericValue"
 			,
-				kindName: "transformed efficacy",
+				kindName: "efficacy",
 				typeName: "numericValue"
 			,
 				kindName: "category",

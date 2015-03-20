@@ -1258,6 +1258,10 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     }, error = function(e) {
       stopUser("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
+    # Finish if the previous experiment was part of a deleted protocol, we can just delete and reload
+    if (experimentList[[1]]$protocol$deleted) {
+      return(experimentList[[1]])
+    }
     protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
 
     

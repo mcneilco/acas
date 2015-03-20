@@ -29,6 +29,11 @@ renderCurve <- function(getParams) {
 
   # GET FIT DATA
   fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
+  fitData <- fitData[!is.null(category) && category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
+    responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+    list("fittedMax" = responseMean, "fittedMin" = responseMean)
+  }, by = curveId]
+  
   data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
   
   #To be backwards compatable with hill slope example files
