@@ -1677,7 +1677,7 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
 }
 
 ####### Main function
-runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage) {
+runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputParameters, flaggedWells=NULL, flaggingStage, externalFlagging) {
   # Runs main functions that are inside the tryCatch.W.E
   # flaggedWells: the name of a csv or Excel file that lists each well's barcode, 
   #               well number, and if it's flagged. If NULL, the file did not exist,
@@ -1688,6 +1688,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   library("data.table")
   library("plyr")
   
+  # TODO: Test structure
+  clientName <- "DNS"
+  # END: Test structure
+  
+  # TODO: Remove this when value is in config.properties
+  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
+    
+  # Source the client specific compound assignment functions
+  compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
+                                          clientName)
+  compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
+  lapply(compoundAssignmentFileList, source)
+
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(fullPathToParse)) {
@@ -1730,55 +1743,50 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   targetLocation <- file.path(experimentFolderPath, "rawData")
   dryRunFileLocation <- file.path(experimentFolderPath, "dryRun")
   specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
+  parsedInputFileLocation <- file.path(experimentFolderPath, "parsedInput")
   dir.create(dryRunFileLocation, showWarnings = FALSE)
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
+  dir.create(parsedInputFileLocation, showWarnings = FALSE)
   
   if (!file.info(fullPathToParse)$isdir) {
     fullPathToParse <- unzipDataFolder(fullPathToParse, targetLocation, experiment)
   } 
   
-  # GREEN (instrument-specific)
-  instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
-  
-  # TODO: Test structure
-  clientName <- "DNS"
-  # END: Test structure
-  
-  #   source(file.path("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/",
-  #                    instrumentReadParams$dataFormat,"specificDataPreProcessor.R"))
-  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
-                   clientName,"specificDataPreProcessor.R"))
-  
-  instrumentData <- specificDataPreProcessor(parameters=parameters, 
-                                             folderToParse=fullPathToParse, 
-                                             errorEnv=errorEnv, 
-                                             dryRun=dryRun, 
-                                             instrumentClass=instrumentReadParams$dataFormat, 
-                                             testMode=testMode,
-                                             tempFilePath=specDataPrepFileLocation)
-  
-  # RED (client-specific)
-  # getCompoundAssignments
-  
-  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
-                   clientName,"getCompoundAssignments.R"))
-  
-  resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
-  
-  resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
-  
-  # TODO: Remove this when value is in config.properties
-  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
-  
-  # this also performs any calculations from the GUI
-  resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
-  
-  resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
-                                       concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
-                                       positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                       vehicleControl=parameters$vehicleControl, testMode=testMode)
-  resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
-  checkControls(resultTable)
+  if(externalFlagging && file.exists(file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))) { 
+    ## if this is  a spotfire reanalysis and the saved .Rda is found
+    load(file.path(parsedInputFileLocation,"primaryAnalysis-resultTable.Rda"))
+  } else {
+    ## if this is not a spotfire reanalysis and/or the saved .Rda is not found
+    
+    # GREEN (instrument-specific)
+    instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
+    
+    instrumentData <- specificDataPreProcessor(parameters=parameters, 
+                                               folderToParse=fullPathToParse, 
+                                               errorEnv=errorEnv, 
+                                               dryRun=dryRun, 
+                                               instrumentClass=instrumentReadParams$dataFormat, 
+                                               testMode=testMode,
+                                               tempFilePath=specDataPrepFileLocation)
+    
+    # RED (client-specific)
+    # getCompoundAssignments
+    
+    resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
+    
+    resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
+    
+    # this also performs any calculations from the GUI
+    resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
+    
+    resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
+                                         concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
+                                         positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
+                                         vehicleControl=parameters$vehicleControl, testMode=testMode)
+    resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
+    checkControls(resultTable)
+    save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
+  }
   
   ## User Well Flagging Here
   
@@ -1789,13 +1797,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   ## RED SECTION - Client Specific
   #calculations
-  source(file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
-                   clientName,"performCalculations.R"))
-  
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
-    
+  
   resultTable <- performCalculations(resultTable, parameters)
   
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
@@ -1803,7 +1808,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   ## BLUE SECTION - Auto Well Flagging
-
+  
   resultTable <- autoFlagWells(resultTable, parameters)
   resultTable[autoFlagType=="KO", flag := "KO"]
   
@@ -2072,7 +2077,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       } else {
         hitThreshold <- ""
       }
-      activityName <- instrumentData$userInputReadTable[ activityCol==TRUE ]$userReadName
+      activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = hitThreshold, experiment, dryRun, activityName) 
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
@@ -2080,7 +2085,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                            '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                            experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     }
-      
+    
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                                    experiment, parameters, user)
@@ -2088,7 +2093,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
     summaryInfo$info[[singleDryRunReport$title]] <- paste0(
       '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
-  
+    
   } else { #This section is "If not dry run"
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
@@ -2699,7 +2704,8 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
                                        experimentId = experimentId, 
                                        inputParameters = inputParameters,
                                        flaggedWells = flaggedWells,
-                                       flaggingStage = flaggingStage))
+                                       flaggingStage = flaggingStage,
+                                       externalFlagging = externalFlagging))
   } else {
     loadResult <- tryCatchLog(runMain(folderToParse = folderToParse, 
                                       user = user, 
@@ -2708,7 +2714,8 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
                                       experimentId = experimentId, 
                                       inputParameters = inputParameters,
                                       flaggedWells = flaggedWells,
-                                      flaggingStage = flaggingStage))
+                                      flaggingStage = flaggingStage,
+                                      externalFlagging = externalFlagging))
   }
   
   allTextErrors <- getErrorText(loadResult$errorList)
