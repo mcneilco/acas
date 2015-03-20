@@ -89,6 +89,9 @@
 				typeName: "codeValue"
 				kindName: "molecular target"
 			,
+				typeName: "stringValue"
+				kindName: "clone name"
+			,
 				typeName: "codeValue"
 				kindName: "assay type"
 			,

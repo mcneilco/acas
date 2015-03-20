@@ -424,6 +424,7 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_status').removeAttr("disabled")
 
 	beginSave: =>
+		@prepareToSaveAttachedFiles()
 		@tagListController.handleTagsChanged()
 		if @model.checkForNewPickListOptions?
 			@model.checkForNewPickListOptions()

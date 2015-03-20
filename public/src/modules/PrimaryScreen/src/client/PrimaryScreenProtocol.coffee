@@ -406,6 +406,10 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 class window.PrimaryScreenProtocolController extends Backbone.View
 
 	initialize: ->
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		@setupProtocolBaseController()
 		@setupPrimaryScreenProtocolParametersController()
 		@protocolBaseController.model.on "checkForNewPickListOptions", @handleCheckForNewPickListOptions
@@ -416,6 +420,7 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@protocolBaseController = new ProtocolBaseController
 			model: @model
 			el: @el
+			readOnly: @readOnly
 		@protocolBaseController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@protocolBaseController.on 'amClean', =>
@@ -445,6 +450,9 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 
 	displayInReadOnlyMode: =>
 		@protocolBaseController.displayInReadOnlyMode()
+
+	attachFilesAreValid: =>
+		@protocolBaseController.isValid()
 
 # This wraps all the tabs
 class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormController
@@ -639,6 +647,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		super()
 		@$('.bv_saveModule').removeAttr('disabled')
 		@$('.bv_saveInstructions').hide()
+
+	isValid: =>
+		unless @primaryScreenProtocolController.attachFilesAreValid()
+			@$('.bv_saveModule').attr('disabled', 'disabled')
 
 	reinitialize: =>
 		@model = null

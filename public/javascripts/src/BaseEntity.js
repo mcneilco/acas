@@ -671,6 +671,7 @@
     };
 
     BaseEntityController.prototype.beginSave = function() {
+      this.prepareToSaveAttachedFiles();
       this.tagListController.handleTagsChanged();
       if (this.model.checkForNewPickListOptions != null) {
         return this.model.checkForNewPickListOptions();
