@@ -59,7 +59,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 							return sysEnv.USER
 							if !allConf.server.run.user?
 								return sysEnv.USER
-					 	return allConf.server.run.user
+						return allConf.server.run.user
 
 					writeJSONFormat allConf
 					writeClientJSONFormat allConf

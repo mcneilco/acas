@@ -78,8 +78,8 @@
                     if (allConf.server.run.user == null) {
                       return sysEnv.USER;
                     }
-                    return allConf.server.run.user;
                   }
+                  return allConf.server.run.user;
                 };
               })(this)()
             };
