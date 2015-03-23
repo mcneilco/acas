@@ -2342,7 +2342,7 @@ uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=N
     subjectData$lsKind <- "default"
   }
   
-  saveAllViaTsv(analysisGroupData, treatmentGroupData, subjectData, 
+  saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData, 
                 appendCodeName = list(analysisGroup = "curve id"))  
   
   return (lsTransaction)
