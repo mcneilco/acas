@@ -624,6 +624,7 @@
     __extends(PrimaryScreenProtocolController, _super);
 
     function PrimaryScreenProtocolController() {
+      this.attachFilesAreValid = __bind(this.attachFilesAreValid, this);
       this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.handleCheckForNewPickListOptions = __bind(this.handleCheckForNewPickListOptions, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
@@ -633,6 +634,11 @@
     }
 
     PrimaryScreenProtocolController.prototype.initialize = function() {
+      if (this.options.readOnly != null) {
+        this.readOnly = this.options.readOnly;
+      } else {
+        this.readOnly = false;
+      }
       this.setupProtocolBaseController();
       this.setupPrimaryScreenProtocolParametersController();
       return this.protocolBaseController.model.on("checkForNewPickListOptions", this.handleCheckForNewPickListOptions);
@@ -641,7 +647,8 @@
     PrimaryScreenProtocolController.prototype.setupProtocolBaseController = function() {
       this.protocolBaseController = new ProtocolBaseController({
         model: this.model,
-        el: this.el
+        el: this.el,
+        readOnly: this.readOnly
       });
       this.protocolBaseController.on('amDirty', (function(_this) {
         return function() {
@@ -700,6 +707,10 @@
       return this.protocolBaseController.displayInReadOnlyMode();
     };
 
+    PrimaryScreenProtocolController.prototype.attachFilesAreValid = function() {
+      return this.protocolBaseController.isValid();
+    };
+
     return PrimaryScreenProtocolController;
 
   })(Backbone.View);
@@ -714,6 +725,7 @@
       this.handleCancelComplete = __bind(this.handleCancelComplete, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
       this.reinitialize = __bind(this.reinitialize, this);
+      this.isValid = __bind(this.isValid, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleFinishSave = __bind(this.handleFinishSave, this);
@@ -801,9 +813,7 @@
       this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
         this.$('.bv_saveModule').html("Save");
@@ -828,9 +838,7 @@
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       if (this.$('.bv_cancelModuleComplete').is(":visible")) {
         this.$('.bv_updateModuleComplete').hide();
       } else {
@@ -987,6 +995,12 @@
       AbstractPrimaryScreenProtocolModuleController.__super__.clearValidationErrorStyles.call(this);
       this.$('.bv_saveModule').removeAttr('disabled');
       return this.$('.bv_saveInstructions').hide();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.isValid = function() {
+      if (!this.primaryScreenProtocolController.attachFilesAreValid()) {
+        return this.$('.bv_saveModule').attr('disabled', 'disabled');
+      }
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.reinitialize = function() {

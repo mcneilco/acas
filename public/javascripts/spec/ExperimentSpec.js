@@ -874,6 +874,7 @@
             });
             waits(1000);
             return runs(function() {
+              this.ebc.$('.bv_confirmClear').click();
               return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("autofill when saved");
             });
           });

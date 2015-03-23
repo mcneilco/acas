@@ -648,6 +648,7 @@
             });
             waits(1000);
             return runs(function() {
+              this.pbc.$('.bv_confirmClear').click();
               return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
             });
           });
@@ -844,6 +845,7 @@
               });
               waits(1000);
               return runs(function() {
+                this.pbc.$('.bv_confirmClear').click();
                 return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
               });
             });

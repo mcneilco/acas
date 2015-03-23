@@ -90,6 +90,12 @@ class window.LabelList extends Backbone.Collection
 				@trigger('change')
 		return label
 
+	getLabelHistory: (preferredKind) ->
+		preferred = @filter (lab) ->
+			lab.get 'preferred'
+		_.filter preferred, (lab) ->
+			lab.get('lsKind') == preferredKind
+
 class window.Value extends Backbone.Model
 	defaults:
 		ignored: false
@@ -100,9 +106,14 @@ class window.Value extends Backbone.Model
 		@.on "change:value": @setValueType
 
 	setValueType: ->
-		@.set @get('lsType'), @get('value')
-		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
-		@.set 'recordedDate', new Date().getTime()
+		oldVal = @get(@get('lsType'))
+		newVal = @get('value')
+		unless oldVal == newVal or (Number.isNaN(oldVal) and Number.isNaN(newVal))
+			if @isNew()
+				@.set @get('lsType'), @get('value')
+			else
+				@set ignored: true
+				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -132,6 +143,10 @@ class window.State extends Backbone.Model
 	getValuesByTypeAndKind: (type, kind) ->
 		@get('lsValues').filter (value) ->
 			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+
+	getValueHistory: (type, kind) ->
+		@get('lsValues').filter (value) ->
+			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
 class window.StateList extends Backbone.Collection
 	model: State
@@ -185,3 +200,12 @@ class window.StateList extends Backbone.Collection
 		value = state.get('lsValues').filter (val) ->
 			val.id == id
 		value
+
+	getStateValueHistory: (sType, sKind, vType, vKind) ->
+		valueHistory = []
+		states = @getStatesByTypeAndKind sType, sKind
+		if states.length > 0
+			values = states[0].getValueHistory(vType, vKind)
+			if values.length > 0
+				valueHistory = values
+		valueHistory

@@ -168,6 +168,16 @@
       return label;
     };
 
+    LabelList.prototype.getLabelHistory = function(preferredKind) {
+      var preferred;
+      preferred = this.filter(function(lab) {
+        return lab.get('preferred');
+      });
+      return _.filter(preferred, function(lab) {
+        return lab.get('lsKind') === preferredKind;
+      });
+    };
+
     return LabelList;
 
   })(Backbone.Collection);
@@ -192,9 +202,19 @@
     };
 
     Value.prototype.setValueType = function() {
-      this.set(this.get('lsType'), this.get('value'));
-      this.set('recordedBy', window.AppLaunchParams.loginUser.username);
-      return this.set('recordedDate', new Date().getTime());
+      var newVal, oldVal;
+      oldVal = this.get(this.get('lsType'));
+      newVal = this.get('value');
+      if (!(oldVal === newVal || (Number.isNaN(oldVal) && Number.isNaN(newVal)))) {
+        if (this.isNew()) {
+          return this.set(this.get('lsType'), this.get('value'));
+        } else {
+          this.set({
+            ignored: true
+          });
+          return this.trigger('createNewValue', this.get('lsKind'), newVal);
+        }
+      }
     };
 
     return Value;
@@ -262,6 +282,12 @@
     State.prototype.getValuesByTypeAndKind = function(type, kind) {
       return this.get('lsValues').filter(function(value) {
         return (!value.get('ignored')) && (value.get('lsType') === type) && (value.get('lsKind') === kind);
+      });
+    };
+
+    State.prototype.getValueHistory = function(type, kind) {
+      return this.get('lsValues').filter(function(value) {
+        return (value.get('lsType') === type) && (value.get('lsKind') === kind);
       });
     };
 
@@ -350,6 +376,19 @@
         return val.id === id;
       });
       return value;
+    };
+
+    StateList.prototype.getStateValueHistory = function(sType, sKind, vType, vKind) {
+      var states, valueHistory, values;
+      valueHistory = [];
+      states = this.getStatesByTypeAndKind(sType, sKind);
+      if (states.length > 0) {
+        values = states[0].getValueHistory(vType, vKind);
+        if (values.length > 0) {
+          valueHistory = values;
+        }
+      }
+      return valueHistory;
     };
 
     return StateList;

@@ -90,6 +90,9 @@
           typeName: "codeValue",
           kindName: "molecular target"
         }, {
+          typeName: "stringValue",
+          kindName: "clone name"
+        }, {
           typeName: "codeValue",
           kindName: "assay type"
         }, {
@@ -366,7 +369,7 @@
         {
           digits: 8,
           groupDigits: false,
-          labelPrefix: "PRCL",
+          labelPrefix: "PROT",
           labelSeparator: "-",
           labelTypeAndKind: "id_codeName",
           thingTypeAndKind: "document_protocol",

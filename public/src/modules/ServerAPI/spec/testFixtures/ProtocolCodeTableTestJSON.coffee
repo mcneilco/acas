@@ -34,5 +34,19 @@
 					name: "Assay Development"
 					ignored: false
 				]
+		,
+			type: "protocol metadata"
+			kind: "file type"
+			codes:
+				[
+					code: "reference file"
+					name: "Reference File"
+					ignored: false
+				,
+					code: "protocol file"
+					name: "Protocol File"
+					ignored: false
+				]
+
 		]
 ) (if (typeof process is "undefined" or not process.versions) then window.protocolCodeTableTestJSON = window.protocolCodeTableTestJSON or {} else exports)

@@ -41,8 +41,11 @@ class window.Thing extends Backbone.Model
 				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
+		else
+			@createDefaultLabels()
+			@createDefaultStates()
 
-				resp
+		resp
 
 	createDefaultLabels: =>
 		# loop over defaultLabels
@@ -59,7 +62,7 @@ class window.Thing extends Backbone.Model
 		for dValue in @lsProperties.defaultValues
 			#Adding the new state and value to @
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-
+			@listenTo newValue, 'createNewValue', @createNewValue
 			#setting unitType and unitKind in the state, if units are given
 			if dValue.unitKind? and newValue.get('unitKind') is undefined
 				newValue.set unitKind: dValue.unitKind
@@ -81,6 +84,13 @@ class window.Thing extends Backbone.Model
 			# (ie set "value" to equal value in "stringValue")
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
 
+	createNewValue: (vKind, newVal) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		@unset(vKind)
+		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+		newValue.set valInfo['type'], newVal
+		newValue.set value: newVal
+		@set vKind, newValue
 
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files
@@ -156,3 +166,7 @@ class window.Thing extends Backbone.Model
 		copiedThing.createDefaultLabels()
 
 		copiedThing
+
+	getStateValueHistory: (vKind) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']

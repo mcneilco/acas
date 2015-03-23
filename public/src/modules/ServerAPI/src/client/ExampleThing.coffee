@@ -30,18 +30,21 @@ class window.ExampleThing extends Thing
 			stateKind: 'cationic block parent'
 			type: 'dateValue'
 			kind: 'completion date'
+			value: NaN
 		,
 			key: 'notebook'
 			stateType: 'metadata'
 			stateKind: 'cationic block parent'
 			type: 'stringValue'
 			kind: 'notebook'
+			value: ""
 		,
 			key: 'structural file'
 			stateType: 'metadata'
 			stateKind: 'cationic block parent'
 			type: 'fileValue'
 			kind: 'structural file'
+			value: ""
 		,
 			key: 'batch number'
 			stateType: 'metadata'
@@ -191,8 +194,10 @@ class window.ExampleThingController extends AbstractFormController
 		@$('.bv_scientist').val @model.get('scientist').get('value')
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
-		if @model.get('completion date').get('value')?
-			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.get('completion date').get('value'))
+		compDate = @model.get('completion date').get('value')
+		if compDate?
+			unless isNaN(compDate)
+				@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.get('completion date').get('value'))
 		@$('.bv_notebook').val @model.get('notebook').get('value')
 		if @readOnly is true
 			@displayInReadOnlyMode()
@@ -219,11 +224,9 @@ class window.ExampleThingController extends AbstractFormController
 	setupStructuralFileController: =>
 		structuralFileValue = @model.get('structural file').get('value')
 		if structuralFileValue is null or structuralFileValue is "" or structuralFileValue is undefined
-			console.log "structural file is null"
 			@createNewFileChooser()
 			@$('.bv_deleteSavedFile').hide()
 		else
-			console.log "structural file is not null"
 			@$('.bv_structuralFile').html '<a href="'+window.conf.datafiles.downloadurl.prefix+structuralFileValue+'">'+@model.get('structural file').get('comments')+'</a>'
 			@$('.bv_deleteSavedFile').show()
 
@@ -268,7 +271,6 @@ class window.ExampleThingController extends AbstractFormController
 		@model.unset "structural file"
 
 	handleDeleteSavedStructuralFile: =>
-		console.log "handle delete saved structural file"
 		@handleFileRemoved()
 		@$('.bv_deleteSavedFile').hide()
 		@createNewFileChooser()
@@ -309,6 +311,7 @@ class window.ExampleThingController extends AbstractFormController
 			alert 'The requested thing name has already been registered. Please choose a new thing name.'
 
 	handleUpdateThing: =>
+		@model.prepareToSave()
 		@model.reformatBeforeSaving()
 		@$('.bv_updatingThing').show()
 		@$('.bv_saveThingComplete').html('Update Complete.')

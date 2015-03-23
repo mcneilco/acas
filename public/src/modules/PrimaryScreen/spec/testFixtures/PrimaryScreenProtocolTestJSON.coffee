@@ -333,7 +333,6 @@
 
 
 	exports.fullSavedPrimaryScreenProtocol =
-		dnsTargetList: true
 		codeName: "PROT-00000001"
 		id: 1
 		ignored: false

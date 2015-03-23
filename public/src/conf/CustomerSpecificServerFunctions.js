@@ -301,4 +301,10 @@
     });
   };
 
+  exports.getDownloadUrl = function(fileValue) {
+    var config;
+    config = require('../../../conf/compiled/conf.js');
+    return config.all.client.datafiles.downloadurl.prefix + fileValue;
+  };
+
 }).call(this);

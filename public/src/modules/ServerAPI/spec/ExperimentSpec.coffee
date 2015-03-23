@@ -617,6 +617,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_newEntity').click()
 					waits(1000)
 					runs ->
+						@ebc.$('.bv_confirmClear').click()
 						expect(@ebc.$('.bv_experimentCode').html()).toEqual "autofill when saved"
 
 		describe "When created from a new experiment", ->
