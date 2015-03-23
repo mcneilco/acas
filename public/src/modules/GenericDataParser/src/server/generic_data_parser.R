@@ -1960,7 +1960,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData$parentId <- analysisGroupData$experimentID
   analysisGroupData$tempId <- analysisGroupData$analysisGroupID
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes2(analysisGroupData))
   analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concentration <- NA
   if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
     analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
@@ -1980,7 +1980,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$recordedBy <- recordedBy
     
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
-    treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
     treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
     if(length(treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit) != 0) {
       treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
@@ -2006,7 +2006,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData$tempParentId <- subjectData$treatmentGroupID
    
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
-    subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
+    subjectData <- rbind.fill(subjectData, meltBatchCodes2(subjectData))
     subjectData[subjectData$valueKind != "batch code", ]$concentration <- NA
     if(length(subjectData[subjectData$valueKind != "batch code", ]$concUnit) != 0) {
       subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
@@ -2289,33 +2289,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$experimentEntity <- experiment
   
   return(summaryInfo)
-}
-
-gdpMeltBatchCodes <- function(entityData) {
-  # Check for missing batchCode
-  # TODO: this can probably replace meltBatchCodes2 in racas
-  output <- data.frame()
-  if (is.null(entityData$batchCode) || all(is.na(entityData$batchCode))) {
-    return(output)
-  }
-  
-  optionalColumns <- c("lsTransaction", "recordedBy", "concentration", "concUnit", "parentId", "tempParentId")
-  
-  neededColumns <- c("batchCode", "tempStateId", "tempId", "stateType", "stateKind")
-  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
-  
-  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
-  
-  
-  batchCodeValues <- unique(entityData[, usedColumns])
-  
-  names(batchCodeValues)[1] <- "codeValue"
-  batchCodeValues$valueType <- "codeValue"
-  batchCodeValues$valueKind <- "batch code"
-  batchCodeValues$publicData <- TRUE
-  batchCodeValues <- batchCodeValues[!is.na(batchCodeValues$codeValue), ]
-  
-  return(batchCodeValues)
 }
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
