@@ -505,7 +505,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   
   # Check that the value kinds that have been entered before have the correct Datatype (valueType)
   oldValueKindTypes <- neededValueKindTypes[match(oldValueKinds, neededValueKinds)]
-  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob"))]
+  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
   currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
   oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
   
@@ -522,8 +522,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   # Use na.rm = TRUE because any types of NA will already have thrown an error (in validateCalculatedResultDatatypes)
   if(any(wrongValueTypes, na.rm = TRUE)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
-    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
-    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
+    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
+    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
@@ -544,7 +544,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
       valueTypesList <- getAllValueTypes()
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
+      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
       
       # This is for the curveNames, but would catch other added values as well
       valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
@@ -955,8 +955,8 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     concentration = unique(concentration),
     concUnit = unique(concUnit),
     UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
-    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
-    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
+    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA_character_},
+    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA_character_},
     comments = if(any(!isComment)) {UnparsedValue[isComment]} else {NA}),
     keyby="rowID,valueKindAndUnit"]
   
@@ -1099,8 +1099,11 @@ addFileValue <- function(imageLocation, calculatedResults) {
   #          have an entry for "fileValue"
   
   # We have to save the fileValue relative to privateUploads, so we need to remove privateUploads from it
-  uploadedFilePath <- racas::getUploadedFilePath("")
-  imageLocation <- gsub(uploadedFilePath, "", imageLocation)
+  
+  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+    uploadedFilePath <- racas::getUploadedFilePath("")
+    imageLocation <- gsub(uploadedFilePath, "", imageLocation)
+  }
 
   fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
                             NA_character_,
@@ -1127,7 +1130,7 @@ addComment <- function(calculatedResults) {
   return(calculatedResults)
 }
 
-addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun) {
+addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, recordedBy) {
   # Processes the image files that the user (optionally) uploaded with their spreadsheet
   # Unzips the images into the /analysis/uploadedFiles folder, validates them, and
   # adds the full file path to the calculatedResults
@@ -1143,23 +1146,33 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun) {
   experimentFolderLocation <- createExperimentFolder(experiment = experiment, dryRun = dryRun)
   
   if (!is.null(imagesFile)) {
-    if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-      imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
-      listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
-      isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
+    listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
+    isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    calculatedResults <- addComment(calculatedResults = calculatedResults)
+    if (racas::applicationSettings$server.service.external.file.type == "custom") {
+      fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
+                                NA_character_,
+                                file.path(imageLocation, calculatedResults$inlineFileValue))
+      fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
+      if (!dryRun) {
+        fileValuesToAdd <- vapply(fileValuesToAdd, moveFileToFileServer, c(""), experiment=experiment, recordedBy=recordedBy)
+      }
+      calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
+    } else {
       calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
-      calculatedResults <- addComment(calculatedResults = calculatedResults)
-      if (dryRun) {
-        # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
-        # we never moved anything else into it, so we delete it
-        unlink(experimentFolderLocation, recursive = TRUE)
-      } else {
-        # Otherwise, we should move the zip file from privateUploads into the experiment folder
+    }
+    
+    if (dryRun) {
+      # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
+      # we never moved anything else into it, so we delete it
+      unlink(experimentFolderLocation, recursive = TRUE)
+    } else {
+      # Otherwise, we should move the zip file from privateUploads into the experiment folder
+      if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
         file.rename(from = racas::getUploadedFilePath(imagesFile), to = file.path(experimentFolderLocation, basename(imagesFile)))
       }
-    } else {
-      stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
-    } 
+    }
   } else {
     # If no image files were uploaded, we want to make sure they didn't add an Image File column to their data
     if (any(calculatedResults$Class == "Image File")) {
@@ -1552,18 +1565,24 @@ unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimen
     stopUser("The uploaded file must be a zip file")
   }
   
-  # Create the directory that will house the files
-  filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
-  dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
-  
-  # Delete the files and folders that may have been in that directory
-  oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
-  do.call(unlink, list(oldFiles, recursive=T))
-  
-  # Unzip the folder, and get rid of the internal subdirectory structure
-  unzip(zipfile=imagesFile, exdir=filesLocation, junkpaths = TRUE)
-  imageLocation = file.path(experimentFolderLocation, "analysis", "uploadedFiles")
-  
+  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+    # Create the directory that will house the files
+    filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+    dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
+    
+    # Delete the files and folders that may have been in that directory
+    oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
+    do.call(unlink, list(oldFiles, recursive=T))
+    
+    # Unzip the folder, and get rid of the internal subdirectory structure
+    unzip(zipfile=imagesFile, exdir=filesLocation, junkpaths = TRUE)
+    imageLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+  } else if (racas::applicationSettings$server.service.external.file.type == "custom") {
+    unzip(zipfile=imagesFile, exdir=experimentFolderLocation, junkpaths = TRUE)
+    imageLocation <- experimentFolderLocation
+  } else {
+    stop("config server.service.external.file.type not valid")
+  }
   return(imageLocation)
   
 }
@@ -1603,7 +1622,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(subjectData[[mainCode]])
+    batchNameList <- unique(subjectData$batchCode)
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -1727,6 +1746,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
     # resultTypeAndUnit is included only for time data. Try to remove it later.
+        
+    if (is.null(treatmentDataStart$resultTypeAndUnit) && nrow(treatmentDataStart) > 0) {
+      treatmentDataStart$resultTypeAndUnit <- NA
+    }
     treatmentGroupData <- ddply(
       .data = treatmentDataStart, 
       .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex", "resultTypeAndUnit"), 
@@ -2033,20 +2056,16 @@ createExperimentFolder <- function(experiment, dryRun) {
   # Experiment: a list that is an experiment. We particularly care about its code name
   # dryRun: a boolean indicating whether we should skip saving the data to the database. If
   #         we're in dryRun mode, we create this folder in the privateTempFiles instead
-  # Returns: The location of the experiment folder, relative to the working directory
+  # Returns: The location of the experiment folder, relative to the working directory if using blueimp
   
-  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-    if (dryRun) {
-      # We don't necessarily have access to the code name
-      fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
-      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
-    } else {
-      experimentCodeName <- experiment$codeName
-      fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
-      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
-    }
+  if (dryRun) {
+    # We don't necessarily have access to the code name
+    fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
+    dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
   } else {
-    stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
+    experimentCodeName <- experiment$codeName
+    fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
+    dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
   }
   
   return(fullFolderLocation)
@@ -2206,7 +2225,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
 
   if(!is.null(imagesFile) && imagesFile != "") {
-    calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
+    calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun, recordedBy)
   }
 
   # Upload the data if this is not a dry run
@@ -2225,7 +2244,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, 
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, formatParameters$annotationType, 
                  mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
   }
@@ -2560,6 +2579,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   createTreatmentGroupData <- function(x) {
     uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
     data.table(
+      batchCode = as.character(uniqueOrNA(x$batchCode)),
       numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
       stringValue = as.character(concatUniqNonNA(x$stringValue)),
       valueOperator = as.character(uniqueOrNA(x$valueOperator)),

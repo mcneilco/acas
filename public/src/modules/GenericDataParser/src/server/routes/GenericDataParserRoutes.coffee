@@ -13,7 +13,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 
 exports.parseGenericData = (request, response)  ->
-	request.connection.setTimeout 600000
+	request.connection.setTimeout 6000000
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	response.writeHead(200, {'Content-Type': 'application/json'});
