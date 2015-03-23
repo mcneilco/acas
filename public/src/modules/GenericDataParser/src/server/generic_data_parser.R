@@ -1745,14 +1745,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    # resultTypeAndUnit is included only for time data. Try to remove it later.
-        
-    if (is.null(treatmentDataStart$resultTypeAndUnit) && nrow(treatmentDataStart) > 0) {
-      treatmentDataStart$resultTypeAndUnit <- NA
-    }
     treatmentGroupData <- ddply(
       .data = treatmentDataStart, 
-      .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex", "resultTypeAndUnit"), 
+      .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), 
       .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
