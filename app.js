@@ -117,10 +117,12 @@
 	routeSet_22.setupRoutes(app, loginRoutes);
 	routeSet_23 = require("./routes/SetupRoutes.js");
 	routeSet_23.setupRoutes(app, loginRoutes);
-	routeSet_24 = require("./routes/ThingServiceRoutes.js");
+	routeSet_24 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
 	routeSet_24.setupRoutes(app, loginRoutes);
-	routeSet_25 = require("./routes/ValidateCloneNameService.js");
+	routeSet_25 = require("./routes/ThingServiceRoutes.js");
 	routeSet_25.setupRoutes(app, loginRoutes);
+	routeSet_26 = require("./routes/ValidateCloneNameService.js");
+	routeSet_26.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
