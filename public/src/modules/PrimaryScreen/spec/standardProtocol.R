@@ -1,7 +1,4 @@
-# Code to set up basic protocol
-
-#     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
-#source("public/src/modules/serverAPI/src/server/labSynch_JSON_library.R")
+# Code to set up basic protocol OLD
 require(racas)
 require(RCurl)
 lsServerURL <- racas::applicationSettings$client.service.persistence.fullpath
