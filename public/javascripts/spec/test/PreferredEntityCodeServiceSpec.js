@@ -20,7 +20,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe("Preferred Entity code service tests", function() {
+  describe.only("Preferred Entity code service tests", function() {
     this.requestData = {
       requests: [
         {
@@ -48,7 +48,7 @@
         }
       ]
     };
-    return describe.only("available entity list", function() {
+    return describe("available entity list", function() {
       describe("when requested as fully detailed list", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/api/configuredEntityTypes", (function(_this) {

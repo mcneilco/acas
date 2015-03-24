@@ -35,7 +35,7 @@ parseResponse = (jsonStr) ->
 
 
 config = require '../../../../conf/compiled/conf.js'
-describe "Preferred Entity code service tests", ->
+describe.only "Preferred Entity code service tests", ->
 	@requestData =
 		requests: [
 			{requestName: "norm_1234:1"} # easter egg prefix in test service that returns same value
@@ -55,7 +55,7 @@ describe "Preferred Entity code service tests", ->
 			requestName: "none_2222:1"
 			preferredName: ""
 		]
-	describe.only "available entity list", ->
+	describe "available entity list", ->
 		describe "when requested as fully detailed list", ->
 			before (done) ->
 				request "http://localhost:"+config.all.server.nodeapi.port+"/api/configuredEntityTypes", (error, response, body) =>
