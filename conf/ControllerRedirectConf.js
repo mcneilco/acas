@@ -3,7 +3,6 @@
     return exports.controllerRedirectConf = {
       PROT: {
         entityName: "protocols",
-        stub: true,
         "default": {
           deepLink: "protocol_base"
         },
@@ -14,7 +13,6 @@
       },
       EXPT: {
         entityName: "experiments",
-        stub: false,
         "default": {
           deepLink: "experiment_base"
         },
@@ -25,7 +23,6 @@
       },
       PT: {
         entityName: "parent thing",
-        stub: false,
         "default": {
           deepLink: "parent_thing"
         },
@@ -33,6 +30,13 @@
           deepLink: "thing_parent"
         },
         relatedFilesRelativePath: "entities/parentThings"
+      },
+      CB: {
+        entityName: "things/parent/cationic block",
+        "cationic block": {
+          deepLink: "cationic_block"
+        },
+        relatedFilesRelativePath: "entities/cationicBlockParents"
       }
     };
   })((typeof process === "undefined" || !process.versions ? window.controllerRedirectConf = window.controllerRedirectConf || {} : exports));

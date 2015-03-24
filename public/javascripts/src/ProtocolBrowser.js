@@ -270,15 +270,16 @@
       this.trigger("selectedProtocolUpdated");
       if (protocol.get('lsKind') === "Bio Activity") {
         this.protocolController = new PrimaryScreenProtocolController({
-          model: new PrimaryScreenProtocol(protocol.attributes)
+          model: new PrimaryScreenProtocol(protocol.attributes),
+          readOnly: true
         });
       } else {
         this.protocolController = new ProtocolBaseController({
-          model: protocol
+          model: protocol,
+          readOnly: true
         });
       }
       $('.bv_protocolBaseController').html(this.protocolController.render().el);
-      this.protocolController.displayInReadOnlyMode();
       $(".bv_protocolBaseController").removeClass("hide");
       $(".bv_protocolBaseControllerContainer").removeClass("hide");
       if (protocol.getStatus().get('codeValue') === "deleted") {

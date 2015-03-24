@@ -202,6 +202,10 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model = new Experiment()
 		@errorOwnerName = 'ExperimentBaseController'
 		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@model.on 'saveFailed', =>
@@ -216,6 +220,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupTagList()
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
+		@setupAttachFileListController()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -246,6 +251,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
 		@render()
+		@setupAttachFileListController()
 
 	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null
@@ -337,23 +343,17 @@ class window.ExperimentBaseController extends BaseEntityController
 				dataType: 'json'
 
 	handleProjectCodeChanged: =>
-		@model.getProjectCode().set
-			codeValue: @projectListController.getSelectedCode()
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@model.trigger 'change'
+		value = @projectListController.getSelectedCode()
+		@handleValueChanged "ProjectCode", value
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
 		@render()
+		@model.trigger 'change' #need to trigger change because render will call updateEditable, which disables the save button
 
 	handleDateChanged: =>
-		@model.getCompletionDate().set
-			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@model.trigger 'change'
-
+		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
+		@handleValueChanged "CompletionDate", value
 
 	handleCompletionDateIconClicked: =>
 		@$( ".bv_completionDate" ).datepicker( "show" )

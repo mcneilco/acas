@@ -7,9 +7,11 @@
     __extends(Thing, _super);
 
     function Thing() {
+      this.getStateValueHistory = __bind(this.getStateValueHistory, this);
       this.duplicate = __bind(this.duplicate, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
+      this.createNewValue = __bind(this.createNewValue, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
       this.parse = __bind(this.parse, this);
@@ -54,30 +56,40 @@
 
     Thing.prototype.parse = function(resp) {
       if (resp != null) {
-        if (resp.lsLabels != null) {
-          if (!(resp.lsLabels instanceof LabelList)) {
-            resp.lsLabels = new LabelList(resp.lsLabels);
+        if (resp === 'not unique lsThing name') {
+          this.createDefaultLabels();
+          this.createDefaultStates();
+          this.trigger('saveFailed');
+          return;
+        } else {
+          if (resp.lsLabels != null) {
+            if (!(resp.lsLabels instanceof LabelList)) {
+              resp.lsLabels = new LabelList(resp.lsLabels);
+            }
+            resp.lsLabels.on('change', (function(_this) {
+              return function() {
+                return _this.trigger('change');
+              };
+            })(this));
           }
-          resp.lsLabels.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
-        }
-        if (resp.lsStates != null) {
-          if (!(resp.lsStates instanceof StateList)) {
-            resp.lsStates = new StateList(resp.lsStates);
+          if (resp.lsStates != null) {
+            if (!(resp.lsStates instanceof StateList)) {
+              resp.lsStates = new StateList(resp.lsStates);
+            }
+            resp.lsStates.on('change', (function(_this) {
+              return function() {
+                return _this.trigger('change');
+              };
+            })(this));
           }
-          resp.lsStates.on('change', (function(_this) {
-            return function() {
-              return _this.trigger('change');
-            };
-          })(this));
+          this.set(resp);
+          this.createDefaultLabels();
+          this.createDefaultStates();
         }
+      } else {
+        this.createDefaultLabels();
+        this.createDefaultStates();
       }
-      this.set(resp);
-      this.createDefaultLabels();
-      this.createDefaultStates();
       return resp;
     };
 
@@ -103,6 +115,7 @@
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dValue = _ref[_i];
         newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
+        this.listenTo(newValue, 'createNewValue', this.createNewValue);
         if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
           newValue.set({
             unitKind: dValue.unitKind
@@ -137,25 +150,47 @@
       return _results;
     };
 
+    Thing.prototype.createNewValue = function(vKind, newVal) {
+      var newValue, valInfo;
+      valInfo = _.where(this.lsProperties.defaultValues, {
+        key: vKind
+      })[0];
+      this.unset(vKind);
+      newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']);
+      newValue.set(valInfo['type'], newVal);
+      newValue.set({
+        value: newVal
+      });
+      return this.set(vKind, newValue);
+    };
+
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
-      var afm, analyticalFileValue, attachFileList, type, _i, _len;
+      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, type, _i, _j, _len, _len1;
       attachFileList = new AttachFileList();
       for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
         type = fileTypes[_i];
-        analyticalFileValue = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", this.get('lsKind') + " batch", "fileValue", type.code);
-        if (!((analyticalFileValue.get('fileValue') === void 0 || analyticalFileValue.get('fileValue') === "" || analyticalFileValue.get('fileValue') === null) || type.code === "unassigned")) {
-          afm = new AttachFile({
-            fileType: type.code,
-            fileValue: analyticalFileValue.get('fileValue')
-          });
-          attachFileList.add(afm);
+        analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('lsKind') + " batch");
+        analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
+        if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
+          for (_j = 0, _len1 = analyticalFileValues.length; _j < _len1; _j++) {
+            file = analyticalFileValues[_j];
+            if (file.get('ignored') === false) {
+              afm = new AttachFile({
+                fileType: type.code,
+                fileValue: file.get('fileValue'),
+                id: file.get('id'),
+                comments: file.get('comments')
+              });
+              attachFileList.add(afm);
+            }
+          }
         }
       }
       return attachFileList;
     };
 
     Thing.prototype.reformatBeforeSaving = function() {
-      var dLabel, dValue, i, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var dLabel, dValue, i, lsStates, value, _i, _j, _len, _len1, _ref, _ref1, _results;
       _ref = this.lsProperties.defaultLabels;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
@@ -164,7 +199,14 @@
       _ref1 = this.lsProperties.defaultValues;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
         dValue = _ref1[_j];
-        this.unset(dValue.key);
+        if (this.get(dValue.key) != null) {
+          if (this.get(dValue.key).get('value') === void 0) {
+            lsStates = this.get('lsStates').getStatesByTypeAndKind(dValue.stateType, dValue.stateKind);
+            value = lsStates[0].getValuesByTypeAndKind(dValue.type, dValue.kind);
+            lsStates[0].get('lsValues').remove(value);
+          }
+          this.unset(dValue.key);
+        }
       }
       if (this.attributes.attributes != null) {
         delete this.attributes.attributes;
@@ -227,6 +269,14 @@
       });
       copiedThing.createDefaultLabels();
       return copiedThing;
+    };
+
+    Thing.prototype.getStateValueHistory = function(vKind) {
+      var valInfo;
+      valInfo = _.where(this.lsProperties.defaultValues, {
+        key: vKind
+      })[0];
+      return this.get('lsStates').getStateValueHistory(valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']);
     };
 
     return Thing;

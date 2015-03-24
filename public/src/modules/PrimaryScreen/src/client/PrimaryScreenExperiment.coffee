@@ -114,7 +114,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		agonistControl: new Backbone.Model()
 		thresholdType: null
 		volumeType: "dilution"
-		htsFormat: false
+		htsFormat: true
 		autoHitSelection: false
 		matchReadName: false
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()

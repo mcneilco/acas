@@ -385,9 +385,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 88.51
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578652
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -408,9 +408,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 89.826
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578653
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -431,9 +431,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 89.883
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578655
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -454,9 +454,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 79.299
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578656
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -477,9 +477,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 67.286
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578657
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -500,9 +500,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 44.002
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578658
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -523,9 +523,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 38.853
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578659
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -546,9 +546,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 23.75
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578660
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -569,9 +569,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 32.331
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578661
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -592,9 +592,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 11.565
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578662
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -615,9 +615,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 80
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578663
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -638,9 +638,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 95.546
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578664
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -661,9 +661,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 92.743
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578665
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -684,9 +684,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 89.54
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578666
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -707,9 +707,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 71.805
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578667
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -730,9 +730,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 60.993
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578668
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -753,9 +753,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 49.322
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578669
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -776,9 +776,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 32.789
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578670
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -799,9 +799,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 20.146
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578671
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -822,9 +822,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 27.354
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578672
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -845,9 +845,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 82
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578673
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -868,9 +868,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 92.286
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578674
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -891,9 +891,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 90.112
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578675
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -914,9 +914,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 87.423
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578676
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -937,9 +937,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 75.924
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578677
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -960,9 +960,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 50.581
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578678
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -983,9 +983,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 48.864
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578679
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1006,9 +1006,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 37.48
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578680
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1029,9 +1029,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 31.015
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578681
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1052,9 +1052,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 6.4159
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578682
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1075,9 +1075,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 79
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578683
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1098,9 +1098,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 98.922
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578684
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1121,9 +1121,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 91.256
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578685
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1144,9 +1144,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 85.077
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578686
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1167,9 +1167,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 75.295
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578687
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1190,9 +1190,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 60.821
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578688
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1213,9 +1213,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 41.656
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578689
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1236,9 +1236,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 36.965
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578690
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1259,9 +1259,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 25.295
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578691
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
@@ -1282,9 +1282,9 @@
 						preprocessFlagReason: ""
 						preprocessFlagStatus: ""
 						response: 18.086
-						responseKind: "transformed efficacy"
+						responseKind: "efficacy"
 						responseSubjectValueId: 4578692
-						responseUnits: "efficacy"
+						responseUnits: "%"
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""

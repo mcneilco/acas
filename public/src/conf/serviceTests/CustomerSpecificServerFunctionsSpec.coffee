@@ -89,7 +89,6 @@ describe "Base ACAS Customer Specific Function Tests", ->
 					fs.unlink @testFilePath
 				it "should return passed", ->
 					assert.equal @passed, true
-				it "should return a fileValue with base file name in comments", ->
 				it "should return a fileValue with the correct relative path for Protocol", ->
 					assert.equal @outputFileValue.fileValue, "protocols/PROT12345/test Work List (1).csv"
 				it "should return a fileValue with base file name in comments", ->

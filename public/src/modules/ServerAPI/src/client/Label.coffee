@@ -90,6 +90,12 @@ class window.LabelList extends Backbone.Collection
 				@trigger('change')
 		return label
 
+	getLabelHistory: (preferredKind) ->
+		preferred = @filter (lab) ->
+			lab.get 'preferred'
+		_.filter preferred, (lab) ->
+			lab.get('lsKind') == preferredKind
+
 class window.Value extends Backbone.Model
 	defaults:
 		ignored: false
@@ -100,9 +106,14 @@ class window.Value extends Backbone.Model
 		@.on "change:value": @setValueType
 
 	setValueType: ->
-		@.set @get('lsType'), @get('value')
-		@.set 'recordedBy', window.AppLaunchParams.loginUser.username
-		@.set 'recordedDate', new Date().getTime()
+		oldVal = @get(@get('lsType'))
+		newVal = @get('value')
+		unless oldVal == newVal or (Number.isNaN(oldVal) and Number.isNaN(newVal))
+			if @isNew()
+				@.set @get('lsType'), @get('value')
+			else
+				@set ignored: true
+				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
 	model: Value
@@ -131,7 +142,11 @@ class window.State extends Backbone.Model
 
 	getValuesByTypeAndKind: (type, kind) ->
 		@get('lsValues').filter (value) ->
-			(not value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
+
+	getValueHistory: (type, kind) ->
+		@get('lsValues').filter (value) ->
+			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
 class window.StateList extends Backbone.Collection
 	model: State
@@ -167,11 +182,30 @@ class window.StateList extends Backbone.Collection
 		descVals = metaState.getValuesByTypeAndKind vType, vKind
 		descVal = descVals[0] #TODO should do something smart if there are more than one
 		unless descVal?
-			descVal = new Value
-				lsType: vType
-				lsKind: vKind
-			metaState.get('lsValues').add descVal
-			descVal.on 'change', =>
-				@trigger('change')
+			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
 		return descVal
 
+	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
+		descVal = new Value
+			lsType: vType
+			lsKind: vKind
+		metaState = @getOrCreateStateByTypeAndKind sType, sKind
+		metaState.get('lsValues').add descVal
+		descVal.on 'change', =>
+			@trigger('change')
+		descVal
+
+	getValueById: (sType, sKind, id) ->
+		state = (@getStatesByTypeAndKind(sType, sKind))[0]
+		value = state.get('lsValues').filter (val) ->
+			val.id == id
+		value
+
+	getStateValueHistory: (sType, sKind, vType, vKind) ->
+		valueHistory = []
+		states = @getStatesByTypeAndKind sType, sKind
+		if states.length > 0
+			values = states[0].getValueHistory(vType, vKind)
+			if values.length > 0
+				valueHistory = values
+		valueHistory

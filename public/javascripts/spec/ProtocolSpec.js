@@ -35,7 +35,7 @@
             return expect(this.prot.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            return expect(this.prot.getScientist().get('codeValue')).toEqual("unassigned");
+            return expect(this.prot.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
           });
           it('Should have the recordedBy set to the loginUser username', function() {
             return expect(this.prot.get('recordedBy')).toEqual("jmcneil");
@@ -648,6 +648,7 @@
             });
             waits(1000);
             return runs(function() {
+              this.pbc.$('.bv_confirmClear').click();
               return expect(this.pbc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
             });
           });
@@ -844,6 +845,7 @@
               });
               waits(1000);
               return runs(function() {
+                this.pbc.$('.bv_confirmClear').click();
                 return expect(this.pbc.$('.bv_protocolName').val()).toEqual("");
               });
             });

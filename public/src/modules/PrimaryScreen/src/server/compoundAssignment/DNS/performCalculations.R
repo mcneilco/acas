@@ -5,9 +5,8 @@ performCalculations <- function(resultTable, parameters) {
   # get transformed columns
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
-  for (trans in 1:length(parameters$transformationRuleList)) {
-    transformation <- parameters$transformationRuleList[[trans]]$transformationRule
-    if(transformation != "null") {
+  for (transformation in transformationList) {
+    if(transformation != "none") {
       resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters)]
     }
   }
@@ -25,10 +24,10 @@ performCalculations <- function(resultTable, parameters) {
   resultTable[, index:=1:nrow(resultTable)]
   
   #TODO: remove once real data is in place
-  if (any(is.na(resultTable$batchName))) {
-    warnUser("Some wells did not have recorded contents in the database- they will not be saved. Make sure all transfers have been loaded.")
-    # resultTable <- resultTable[!is.na(resultTable$batchName), ]
-  }
+  #   if (any(is.na(resultTable$batchName))) {
+  #     warnUser("Some wells did not have recorded contents in the database- they will not be saved. Make sure all transfers have been loaded.")
+  #     # resultTable <- resultTable[!is.na(resultTable$batchName), ]
+  #   }
   
   return(resultTable)
 }

@@ -7,13 +7,12 @@
     __extends(PrimaryScreenProtocolParameters, _super);
 
     function PrimaryScreenProtocolParameters() {
-      this.getCustomerMolecularTargetCodeOrigin = __bind(this.getCustomerMolecularTargetCodeOrigin, this);
       this.validate = __bind(this.validate, this);
       return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryScreenProtocolParameters.prototype.validate = function(attrs) {
-      var errors, maxY, minY;
+      var cloneName, errors, maxY, minY, molecularTarget;
       errors = [];
       maxY = this.getCurveDisplayMax().get('numericValue');
       if (isNaN(maxY)) {
@@ -39,34 +38,30 @@
           message: "minY must be less than maxY"
         });
       }
+      molecularTarget = this.getMolecularTarget().get('codeValue');
+      if (molecularTarget === "required") {
+        errors.push({
+          attribute: 'molecularTarget',
+          message: "The target for the clone must be selected"
+        });
+      }
+      if (molecularTarget === "invalid") {
+        errors.push({
+          attribute: 'molecularTarget',
+          message: "This target is not associated with the clone below"
+        });
+      }
+      cloneName = this.getCloneName().get('stringValue');
+      if (cloneName === "invalid") {
+        errors.push({
+          attribute: 'cloneName',
+          message: "This clone does not exist"
+        });
+      }
       if (errors.length > 0) {
         return errors;
       } else {
         return null;
-      }
-    };
-
-    PrimaryScreenProtocolParameters.prototype.getCustomerMolecularTargetCodeOrigin = function() {
-      var molecularTarget;
-      molecularTarget = this.getMolecularTarget();
-      if (molecularTarget.get('codeOrigin') === "customer ddict") {
-        return true;
-      } else {
-        return false;
-      }
-    };
-
-    PrimaryScreenProtocolParameters.prototype.setCustomerMolecularTargetCodeOrigin = function(customerCodeOrigin) {
-      var molecularTarget;
-      molecularTarget = this.getMolecularTarget();
-      if (customerCodeOrigin) {
-        return molecularTarget.set({
-          codeOrigin: "customer ddict"
-        });
-      } else {
-        return molecularTarget.set({
-          codeOrigin: "ACAS DDICT"
-        });
       }
     };
 
@@ -130,6 +125,17 @@
         });
       }
       return mt;
+    };
+
+    PrimaryScreenProtocolParameters.prototype.getCloneName = function() {
+      var cloneName;
+      cloneName = this.getOrCreateValueByTypeAndKind("stringValue", "clone name");
+      if (cloneName.get('stringValue') === void 0 || cloneName.get('stringValue') === null) {
+        cloneName.set({
+          stringValue: ""
+        });
+      }
+      return cloneName;
     };
 
     PrimaryScreenProtocolParameters.prototype.getTargetOrigin = function() {
@@ -312,13 +318,16 @@
 
     function PrimaryScreenProtocolParametersController() {
       this.saveNewPickListOptions = __bind(this.saveNewPickListOptions, this);
-      this.handleMolecularTargetDDictChanged = __bind(this.handleMolecularTargetDDictChanged, this);
       this.handleCurveDisplayMinChanged = __bind(this.handleCurveDisplayMinChanged, this);
       this.handleCurveDisplayMaxChanged = __bind(this.handleCurveDisplayMaxChanged, this);
       this.handleCellLineChanged = __bind(this.handleCellLineChanged, this);
       this.handleAssayTechnologyChanged = __bind(this.handleAssayTechnologyChanged, this);
       this.handleAssayTypeChanged = __bind(this.handleAssayTypeChanged, this);
       this.handleTargetOriginChanged = __bind(this.handleTargetOriginChanged, this);
+      this.checkCloneTarget = __bind(this.checkCloneTarget, this);
+      this.handleCloneValidationReturn = __bind(this.handleCloneValidationReturn, this);
+      this.validateClone = __bind(this.validateClone, this);
+      this.handleCloneNameChanged = __bind(this.handleCloneNameChanged, this);
       this.handleMolecularTargetChanged = __bind(this.handleMolecularTargetChanged, this);
       this.handleAssayActivityChanged = __bind(this.handleAssayActivityChanged, this);
       this.render = __bind(this.render, this);
@@ -330,7 +339,6 @@
     PrimaryScreenProtocolParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenProtocolParametersAutofillView").html());
 
     PrimaryScreenProtocolParametersController.prototype.events = {
-      "click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged",
       "change .bv_maxY": "handleCurveDisplayMaxChanged",
       "change .bv_minY": "handleCurveDisplayMinChanged",
       "change .bv_assayActivity": "handleAssayActivityChanged",
@@ -338,7 +346,8 @@
       "change .bv_targetOrigin": "handleTargetOriginChanged",
       "change .bv_assayType": "handleAssayTypeChanged",
       "change .bv_assayTechnology": "handleAssayTechnologyChanged",
-      "change .bv_cellLine": "handleCellLineChanged"
+      "change .bv_cellLine": "handleCellLineChanged",
+      "change .bv_cloneName": "handleCloneNameChanged"
     };
 
     PrimaryScreenProtocolParametersController.prototype.initialize = function() {
@@ -357,12 +366,13 @@
       this.$el.html(this.autofillTemplate(this.model.attributes));
       this.$('.bv_maxY').val(this.model.getCurveDisplayMax().get('numericValue'));
       this.$('.bv_minY').val(this.model.getCurveDisplayMin().get('numericValue'));
+      this.$('.bv_cloneName').val(this.model.getCloneName().get('stringValue'));
       this.setupAssayActivitySelect();
+      this.setupMolecularTargetSelect();
       this.setupTargetOriginSelect();
       this.setupAssayTypeSelect();
       this.setupAssayTechnologySelect();
       this.setupCellLineSelect();
-      this.setupCustomerMolecularTargetDDictChkbx();
       PrimaryScreenProtocolParametersController.__super__.render.call(this);
       return this;
     };
@@ -447,32 +457,18 @@
       return this.cellLineListController.render();
     };
 
-    PrimaryScreenProtocolParametersController.prototype.setupCustomerMolecularTargetDDictChkbx = function() {
-      var checked;
+    PrimaryScreenProtocolParametersController.prototype.setupMolecularTargetSelect = function() {
       this.molecularTargetList = new PickListList();
-      checked = this.model.getCustomerMolecularTargetCodeOrigin();
-      if (checked) {
-        this.$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked");
-        this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
-      } else {
-        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
-      }
-      this.molecularTargetListController = new EditablePickListSelectController({
+      this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
+      return this.molecularTargetListController = new PickListSelectController({
         el: this.$('.bv_molecularTarget'),
         collection: this.molecularTargetList,
-        selectedCode: this.model.getMolecularTarget().get('codeValue'),
-        parameter: "molecularTarget",
-        codeType: "assay",
-        codeKind: "molecular target",
-        roles: ["admin"]
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Target"
+        }),
+        selectedCode: this.model.getMolecularTarget().get('codeValue')
       });
-      this.molecularTargetListController.on('change', this.handleMolecularTargetChanged);
-      this.molecularTargetListController.render();
-      if (checked) {
-        return this.molecularTargetListController.hideAddOptionButton();
-      } else {
-        return this.molecularTargetListController.showAddOptionButton();
-      }
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleAssayActivityChanged = function() {
@@ -484,11 +480,76 @@
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleMolecularTargetChanged = function() {
-      return this.model.getMolecularTarget().set({
+      this.model.getMolecularTarget().set({
         codeValue: this.molecularTargetListController.getSelectedCode(),
         recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime()
       });
+      return this.handleCloneNameChanged();
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleCloneNameChanged = function() {
+      var cloneName;
+      cloneName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_cloneName'));
+      this.model.getCloneName().set({
+        stringValue: cloneName,
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
+      if (cloneName === "") {
+        return this.model.getMolecularTarget().set({
+          codeValue: this.molecularTargetListController.getSelectedCode(),
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
+        });
+      } else {
+        return this.validateClone(cloneName);
+      }
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.validateClone = function(cloneName) {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/cloneValidation/" + cloneName,
+        success: (function(_this) {
+          return function(json) {
+            return _this.handleCloneValidationReturn(json);
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return alert('got error validating clone');
+          };
+        })(this)
+      });
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.handleCloneValidationReturn = function(json) {
+      var cloneTarget;
+      if (json.length === 0) {
+        return this.model.getCloneName().set({
+          stringValue: 'invalid'
+        });
+      } else {
+        cloneTarget = json[0];
+        return this.checkCloneTarget(cloneTarget);
+      }
+    };
+
+    PrimaryScreenProtocolParametersController.prototype.checkCloneTarget = function(cloneTarget) {
+      var selectedTarget;
+      selectedTarget = this.model.getMolecularTarget().get('codeValue');
+      if (selectedTarget !== cloneTarget) {
+        if (this.model.getMolecularTarget().get('codeValue') === "unassigned") {
+          return this.model.getMolecularTarget().set({
+            codeValue: 'required'
+          });
+        } else {
+          return this.model.getMolecularTarget().set({
+            codeValue: 'invalid'
+          });
+        }
+      }
     };
 
     PrimaryScreenProtocolParametersController.prototype.handleTargetOriginChanged = function() {
@@ -539,32 +600,14 @@
       });
     };
 
-    PrimaryScreenProtocolParametersController.prototype.handleMolecularTargetDDictChanged = function() {
-      var customerDDict;
-      customerDDict = this.$('.bv_customerMolecularTargetDDictChkbx').is(":checked");
-      this.model.setCustomerMolecularTargetCodeOrigin(customerDDict);
-      if (customerDDict) {
-        this.molecularTargetList.url = "/api/customerMolecularTargetCodeTable";
-        this.molecularTargetListController.render();
-        this.molecularTargetListController.hideAddOptionButton();
-      } else {
-        this.molecularTargetList.url = "/api/codetables/assay/molecular target";
-        this.molecularTargetListController.render();
-        this.molecularTargetListController.showAddOptionButton();
-      }
-      return this.handleMolecularTargetChanged();
-    };
-
     PrimaryScreenProtocolParametersController.prototype.saveNewPickListOptions = function(callback) {
       return this.assayActivityListController.saveNewOption((function(_this) {
         return function() {
-          return _this.molecularTargetListController.saveNewOption(function() {
-            return _this.targetOriginListController.saveNewOption(function() {
-              return _this.assayTypeListController.saveNewOption(function() {
-                return _this.assayTechnologyListController.saveNewOption(function() {
-                  return _this.cellLineListController.saveNewOption(function() {
-                    return callback.call();
-                  });
+          return _this.targetOriginListController.saveNewOption(function() {
+            return _this.assayTypeListController.saveNewOption(function() {
+              return _this.assayTechnologyListController.saveNewOption(function() {
+                return _this.cellLineListController.saveNewOption(function() {
+                  return callback.call();
                 });
               });
             });
@@ -581,6 +624,7 @@
     __extends(PrimaryScreenProtocolController, _super);
 
     function PrimaryScreenProtocolController() {
+      this.attachFilesAreValid = __bind(this.attachFilesAreValid, this);
       this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
       this.handleCheckForNewPickListOptions = __bind(this.handleCheckForNewPickListOptions, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
@@ -590,6 +634,11 @@
     }
 
     PrimaryScreenProtocolController.prototype.initialize = function() {
+      if (this.options.readOnly != null) {
+        this.readOnly = this.options.readOnly;
+      } else {
+        this.readOnly = false;
+      }
       this.setupProtocolBaseController();
       this.setupPrimaryScreenProtocolParametersController();
       return this.protocolBaseController.model.on("checkForNewPickListOptions", this.handleCheckForNewPickListOptions);
@@ -598,7 +647,8 @@
     PrimaryScreenProtocolController.prototype.setupProtocolBaseController = function() {
       this.protocolBaseController = new ProtocolBaseController({
         model: this.model,
-        el: this.el
+        el: this.el,
+        readOnly: this.readOnly
       });
       this.protocolBaseController.on('amDirty', (function(_this) {
         return function() {
@@ -657,6 +707,10 @@
       return this.protocolBaseController.displayInReadOnlyMode();
     };
 
+    PrimaryScreenProtocolController.prototype.attachFilesAreValid = function() {
+      return this.protocolBaseController.isValid();
+    };
+
     return PrimaryScreenProtocolController;
 
   })(Backbone.View);
@@ -665,10 +719,13 @@
     __extends(AbstractPrimaryScreenProtocolModuleController, _super);
 
     function AbstractPrimaryScreenProtocolModuleController() {
+      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
       this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
       this.handleCancelComplete = __bind(this.handleCancelComplete, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
       this.reinitialize = __bind(this.reinitialize, this);
+      this.isValid = __bind(this.isValid, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleFinishSave = __bind(this.handleFinishSave, this);
@@ -692,7 +749,9 @@
     AbstractPrimaryScreenProtocolModuleController.prototype.events = {
       "click .bv_saveModule": "handleSaveModule",
       "click .bv_cancelModule": "handleCancelClicked",
-      "click .bv_newModule": "handleNewEntityClicked"
+      "click .bv_newModule": "handleNewEntityClicked",
+      "click .bv_cancelClearModule": "handleCancelClearClicked",
+      "click .bv_confirmModuleClear": "handleConfirmClearClicked"
     };
 
     AbstractPrimaryScreenProtocolModuleController.prototype.initialize = function() {
@@ -754,9 +813,7 @@
       this.setupModelFitTypeController();
       this.errorOwnerName = 'PrimaryScreenProtocolModuleController';
       this.setBindings();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       this.$('.bv_saveModule').attr('disabled', 'disabled');
       if (this.model.isNew()) {
         this.$('.bv_saveModule').html("Save");
@@ -781,9 +838,7 @@
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
-      this.$('.bv_save').hide();
-      this.$('.bv_cancel').hide();
-      this.$('.bv_newEntity').hide();
+      this.$('.bv_saveAndCancelButtons').hide();
       if (this.$('.bv_cancelModuleComplete').is(":visible")) {
         this.$('.bv_updateModuleComplete').hide();
       } else {
@@ -942,6 +997,12 @@
       return this.$('.bv_saveInstructions').hide();
     };
 
+    AbstractPrimaryScreenProtocolModuleController.prototype.isValid = function() {
+      if (!this.primaryScreenProtocolController.attachFilesAreValid()) {
+        return this.$('.bv_saveModule').attr('disabled', 'disabled');
+      }
+    };
+
     AbstractPrimaryScreenProtocolModuleController.prototype.reinitialize = function() {
       this.model = null;
       return this.completeInitialization();
@@ -966,6 +1027,14 @@
 
     AbstractPrimaryScreenProtocolModuleController.prototype.handleNewEntityClicked = function() {
       return this.primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleCancelClearClicked = function() {
+      return this.primaryScreenProtocolController.protocolBaseController.handleCancelClearClicked();
+    };
+
+    AbstractPrimaryScreenProtocolModuleController.prototype.handleConfirmClearClicked = function() {
+      return this.primaryScreenProtocolController.protocolBaseController.handleConfirmClearClicked();
     };
 
     return AbstractPrimaryScreenProtocolModuleController;

@@ -164,12 +164,13 @@ class window.ProtocolBrowserController extends Backbone.View
 		if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
+				readOnly: true
 		else
 			@protocolController = new ProtocolBaseController
 				model: protocol
+				readOnly: true
 
 		$('.bv_protocolBaseController').html @protocolController.render().el
-		@protocolController.displayInReadOnlyMode()
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
 		if protocol.getStatus().get('codeValue') is "deleted"

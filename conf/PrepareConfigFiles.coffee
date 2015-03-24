@@ -53,6 +53,14 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 						allConf.server.enableSpecRunner = false
 					else
 						allConf.server.enableSpecRunner = true
+					allConf.server.run = user: do =>
+						if !allConf.server.run?
+							console.log "server.run.user is not set setting as current user #{sysEnv.USER}"
+							return sysEnv.USER
+							if !allConf.server.run.user?
+								return sysEnv.USER
+						return allConf.server.run.user
+
 					writeJSONFormat allConf
 					writeClientJSONFormat allConf
 					writePropertiesFormat allConf

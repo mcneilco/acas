@@ -107,6 +107,9 @@
 			,
 				typeName: "fileValue"
 				kindName: "report file"
+			,
+				typeName: "codeValue"
+				kindName: "model fit type"
 			]
 
 		labeltypes:
@@ -354,6 +357,13 @@
 				codeOrigin: "ACAS DDICT"
 				code: "sd"
 				name: "SD"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "transformation"
+				codeOrigin: "ACAS DDICT"
+				code: "percent efficacy"
+				name: "% efficacy"
 				ignored: false
 			,
 				codeType: "experiment metadata"

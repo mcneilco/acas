@@ -35,7 +35,7 @@
             return expect(this.bem.get('lsStates') instanceof StateList).toBeTruthy();
           });
           it('Should have an empty scientist', function() {
-            expect(this.bem.getScientist().get('codeValue')).toEqual("unassigned");
+            expect(this.bem.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
             expect(this.bem.getScientist().get('codeType')).toEqual("assay");
             expect(this.bem.getScientist().get('codeKind')).toEqual("scientist");
             return expect(this.bem.getScientist().get('codeOrigin')).toEqual("ACAS authors");
@@ -717,7 +717,7 @@
               });
             });
           });
-          describe("when notebook not filled", function() {
+          return describe("when notebook not filled", function() {
             beforeEach(function() {
               return runs(function() {
                 this.bec.$('.bv_notebook').val("");
@@ -727,31 +727,6 @@
             return it("should show error on notebook dropdown", function() {
               return runs(function() {
                 return expect(this.bec.$('.bv_group_notebook').hasClass('error')).toBeTruthy();
-              });
-            });
-          });
-          return describe("expect save to work", function() {
-            it("model should be valid and ready to save", function() {
-              return runs(function() {
-                return expect(this.bec.model.isValid()).toBeTruthy();
-              });
-            });
-            it("should update entity code", function() {
-              runs(function() {
-                return this.bec.$('.bv_save').click();
-              });
-              waits(1000);
-              return runs(function() {
-                return expect(this.bec.$('.bv_entityCode').html()).toEqual("EXPT-00000001");
-              });
-            });
-            return it("should show the save button text as Update", function() {
-              runs(function() {
-                return this.bec.$('.bv_save').click();
-              });
-              waits(1000);
-              return runs(function() {
-                return expect(this.bec.$('.bv_save').html()).toEqual("Update");
               });
             });
           });

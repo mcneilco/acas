@@ -1,5 +1,6 @@
 (function() {
-  var checkBatch_TestMode;
+  var checkBatch_TestMode,
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   exports.setupAPIRoutes = function(app) {
     return app.post('/api/preferredBatchId', exports.preferredBatchId);
@@ -11,7 +12,7 @@
   };
 
   exports.preferredBatchId = function(req, resp) {
-    var config, csUtilities, each, request, requests, serverUtilityFunctions, serviceType, _;
+    var config, csUtilities, each, errorMessage, possibleServiceTypes, request, requests, serverUtilityFunctions, serviceType, _;
     _ = require("underscore");
     each = require("each");
     request = require('request');
@@ -19,15 +20,26 @@
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     serviceType = config.all.client.service.external.preferred.batchid.type;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    possibleServiceTypes = ['SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString'];
     requests = req.body.requests;
+    if (__indexOf.call(possibleServiceTypes, serviceType) < 0) {
+      errorMessage = "client.service.external.preferred.batchid.type '" + serviceType + "' is not in possible service types " + possibleServiceTypes;
+      console.log(errorMessage);
+      resp.end(errorMessage);
+    }
     if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return resp.end(rReturn);
       });
+    } else if (serviceType === "AcasCmpdReg" && !global.specRunnerTestmode) {
+      req.body.user = "";
+      return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R", "acasCmpdRegBatchCheck", function(rReturn) {
+        return resp.end(rReturn);
+      });
     } else if (serviceType === "GeneCodeCheckByR" && !global.specRunnerTestmode) {
       req.body.user = "";
-      return serverUtilityFunctions.runRFunction(req, "public/src/modules/serverAPI/src/server/AcasGeneBatchCheck.R", "acasGeneCodeCheck", function(rReturn) {
+      return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/AcasGeneBatchCheck.R", "acasGeneCodeCheck", function(rReturn) {
         return resp.end(rReturn);
       });
     } else {

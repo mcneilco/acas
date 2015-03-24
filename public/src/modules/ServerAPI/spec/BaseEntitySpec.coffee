@@ -27,7 +27,7 @@ describe "Base Entity testing", ->
 					expect(@bem.get('lsStates').length).toEqual 0
 					expect(@bem.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@bem.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@bem.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 					expect(@bem.getScientist().get('codeType')).toEqual "assay"
 					expect(@bem.getScientist().get('codeKind')).toEqual "scientist"
 					expect(@bem.getScientist().get('codeOrigin')).toEqual "ACAS authors"
@@ -511,19 +511,3 @@ describe "Base Entity testing", ->
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@bec.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
-				describe "expect save to work", ->
-					it "model should be valid and ready to save", ->
-						runs ->
-							expect(@bec.model.isValid()).toBeTruthy()
-					it "should update entity code", ->
-						runs ->
-							@bec.$('.bv_save').click()
-						waits(1000)
-						runs ->
-							expect(@bec.$('.bv_entityCode').html()).toEqual "EXPT-00000001"
-					it "should show the save button text as Update", ->
-						runs ->
-							@bec.$('.bv_save').click()
-						waits(1000)
-						runs ->
-							expect(@bec.$('.bv_save').html()).toEqual "Update"

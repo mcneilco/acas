@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    return exports.customerMolecularTargetCodeTable = [
+    exports.customerMolecularTargetCodeTable = [
       {
         active: true,
         code: "test1",
@@ -24,6 +24,7 @@
         version: 1
       }
     ];
+    return exports.successfulCloneValidation = ["test1"];
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenProtocolServiceTestJSON = window.primaryScreenProtocolServiceTestJSON || {} : exports));
 
 }).call(this);

@@ -23,7 +23,7 @@ getFormatSettings <- function() {
       hideAllData = FALSE,
       extraHeaders = data.frame(),
       sigFigs = 3,
-      curveNames = c("first curve id", "second curve id", "third curve id"),
+      curveNames = c("PO IV pk curve id", "PO pk curve id", "IV pk curve id"),
       stateGroups = list(list(entityKind = "analysis group",
                               stateType = "data",
                               stateKind = "calculated data",

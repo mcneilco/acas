@@ -36,3 +36,13 @@
 .bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.size{
     display:none;
 }
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile{
+    padding: 3px 9px;
+    font-size: 12px;
+    line-height: 18px;
+}
+
+.bv_uploadFile form.fileupload table.table.bv_fileInfo tbody.files tr.template-upload.fade.in td.cancel button.btn.btn-warning.bv_cancelFile i.icon-ban-circle.icon-white{
+    display:none;
+}

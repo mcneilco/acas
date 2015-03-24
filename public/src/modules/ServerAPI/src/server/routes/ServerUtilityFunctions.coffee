@@ -172,11 +172,14 @@ exports.makeAbsolutePath = (relativePath) ->
 	console.log acasPath+relativePath+'/'
 	acasPath+relativePath+'/'
 
-exports.getFileValesFromThing = (thing) ->
-	vals = thing.lsStates[0].lsValues
+exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
-	for v in vals
-		if v.lsType == 'fileValue' && !v.ignored then fvs.push v
+	for state in thing.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
 	fvs
 
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
@@ -187,7 +190,7 @@ exports.getRelativeFolderPathForPrefix = (prefix) ->
 	else
 		return null
 
-exports.getPrefixFromThingCode = (code) ->
+exports.getPrefixFromEntityCode = (code) ->
 	for pref, redir of controllerRedirect.controllerRedirectConf
 		if code.indexOf(pref) > -1
 			return pref

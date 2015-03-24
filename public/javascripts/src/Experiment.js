@@ -336,6 +336,11 @@
       }
       this.errorOwnerName = 'ExperimentBaseController';
       this.setBindings();
+      if (this.options.readOnly != null) {
+        this.readOnly = this.options.readOnly;
+      } else {
+        this.readOnly = false;
+      }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
       this.model.on('saveFailed', (function(_this) {
@@ -352,6 +357,7 @@
       this.setupTagList();
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
+      this.setupAttachFileListController();
       this.render();
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
@@ -390,7 +396,8 @@
         this.$('.bv_updateComplete').show();
         this.trigger('amClean');
       }
-      return this.render();
+      this.render();
+      return this.setupAttachFileListController();
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {
@@ -521,26 +528,21 @@
     };
 
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
-      this.model.getProjectCode().set({
-        codeValue: this.projectListController.getSelectedCode(),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      return this.model.trigger('change');
+      var value;
+      value = this.projectListController.getSelectedCode();
+      return this.handleValueChanged("ProjectCode", value);
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
       this.model.copyProtocolAttributes(this.model.get('protocol'));
-      return this.render();
+      this.render();
+      return this.model.trigger('change');
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
-      this.model.getCompletionDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate'))),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      return this.model.trigger('change');
+      var value;
+      value = UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_completionDate')));
+      return this.handleValueChanged("CompletionDate", value);
     };
 
     ExperimentBaseController.prototype.handleCompletionDateIconClicked = function() {

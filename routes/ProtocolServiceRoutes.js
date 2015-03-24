@@ -1,9 +1,14 @@
 (function() {
+  var csUtilities, postProtocol, serverUtilityFunctions, updateProt;
+
   exports.setupAPIRoutes = function(app) {
     app.get('/api/protocols/codename/:code', exports.protocolByCodename);
     app.get('/api/protocols/:id', exports.protocolById);
     app.post('/api/protocols', exports.postProtocol);
-    return app.put('/api/protocols/:id', exports.putProtocol);
+    app.put('/api/protocols/:id', exports.putProtocol);
+    app.get('/api/protocollabels', exports.lsLabels);
+    app.get('/api/protocolCodes', exports.protocolCodeList);
+    return app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -18,12 +23,21 @@
     return app["delete"]('/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol);
   };
 
+  serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+
+  csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+
   exports.protocolByCodename = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-    console.log(req.params.code);
+    var baseurl, config, protocolServiceTestJSON, stubSavedProtocol;
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      stubSavedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol));
+      if (req.params.code.indexOf("screening") > -1) {
+        stubSavedProtocol.lsKind = "Bio Activity";
+      } else {
+        stubSavedProtocol.lsKind = "default";
+      }
+      return resp.end(JSON.stringify(stubSavedProtocol));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
@@ -33,8 +47,7 @@
   };
 
   exports.protocolById = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
-    console.log(req.params.id);
+    var baseurl, config, protocolServiceTestJSON;
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
@@ -46,11 +59,73 @@
     }
   };
 
-  exports.postProtocol = function(req, resp) {
-    var baseurl, config, experimentServiceTestJSON, request;
-    if (global.specRunnerTestmode) {
-      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullSavedProtocol));
+  updateProt = function(prot, testMode, callback) {
+    var baseurl, config, request;
+    if (testMode || global.specRunnerTestmode) {
+      return callback(prot);
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
+      request = require('request');
+      return request({
+        method: 'PUT',
+        url: baseurl,
+        body: prot,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log('got ajax error trying to update protocol');
+            console.log(error);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
+  };
+
+  postProtocol = function(req, resp) {
+    var baseurl, checkFilesAndUpdate, config, protToSave, request;
+    protToSave = req.body;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      if (protToSave.codeName == null) {
+        protToSave.codeName = "PROT-00000001";
+      }
+    }
+    checkFilesAndUpdate = function(prot) {
+      var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+      fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
+      filesToSave = fileVals.length;
+      completeProtUpdate = function(protToUpdate) {
+        return updateProt(protToUpdate, req.query.testMode, function(updatedProt) {
+          return resp.json(updatedProt);
+        });
+      };
+      fileSaveCompleted = function(passed) {
+        if (!passed) {
+          resp.statusCode = 500;
+          return resp.end("file move failed");
+        }
+        if (--filesToSave === 0) {
+          return completeProtUpdate(prot);
+        }
+      };
+      if (filesToSave > 0) {
+        prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
+        _results = [];
+        for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+          fv = fileVals[_i];
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
+        }
+        return _results;
+      } else {
+        return resp.json(prot);
+      }
+    };
+    if (req.query.testMode || global.specRunnerTestmode) {
+      return checkFilesAndUpdate(protToSave);
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols";
@@ -58,13 +133,12 @@
       return request({
         method: 'POST',
         url: baseurl,
-        body: req.body,
+        body: protToSave,
         json: true
       }, (function(_this) {
         return function(error, response, json) {
           if (!error && response.statusCode === 201) {
-            console.log(JSON.stringify(json));
-            return resp.end(JSON.stringify(json));
+            return checkFilesAndUpdate(json);
           } else {
             console.log('got ajax error trying to save new protocol');
             console.log(error);
@@ -76,38 +150,48 @@
     }
   };
 
+  exports.postProtocol = function(req, resp) {
+    return postProtocol(req, resp);
+  };
+
   exports.putProtocol = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, putId, request;
-    if (global.specRunnerTestmode) {
-      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
-      return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
+    var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, protToSave, _i, _len, _results;
+    protToSave = req.body;
+    fileVals = serverUtilityFunctions.getFileValuesFromEntity(protToSave, true);
+    filesToSave = fileVals.length;
+    completeProtUpdate = function() {
+      return updateProt(protToSave, req.query.testMode, function(updatedProt) {
+        return resp.json(updatedProt);
+      });
+    };
+    fileSaveCompleted = function(passed) {
+      if (!passed) {
+        resp.statusCode = 500;
+        return resp.end("file move failed");
+      }
+      if (--filesToSave === 0) {
+        return completeProtUpdate();
+      }
+    };
+    if (filesToSave > 0) {
+      prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
+      _results = [];
+      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+        fv = fileVals[_i];
+        if (fv.id == null) {
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+        } else {
+          _results.push(void 0);
+        }
+      }
+      return _results;
     } else {
-      config = require('../conf/compiled/conf.js');
-      putId = req.body.id;
-      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + putId;
-      request = require('request');
-      return request({
-        method: 'PUT',
-        url: baseurl,
-        body: req.body,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to save new protocol');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
-          }
-        };
-      })(this));
+      return completeProtUpdate();
     }
   };
 
   exports.lsLabels = function(req, resp) {
-    var baseurl, config, protocolServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, protocolServiceTestJSON;
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.lsLabels));
@@ -231,7 +315,7 @@
   };
 
   exports.genericProtocolSearch = function(req, res) {
-    var baseurl, config, emptyResponse, protocolServiceTestJSON, serverUtilityFunctions;
+    var baseurl, config, emptyResponse, protocolServiceTestJSON;
     if (global.specRunnerTestmode) {
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       if (req.params.searchTerm === "no-match") {

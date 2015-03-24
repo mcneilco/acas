@@ -69,6 +69,20 @@
             } else {
               allConf.server.enableSpecRunner = true;
             }
+            allConf.server.run = {
+              user: (function(_this) {
+                return function() {
+                  if (allConf.server.run == null) {
+                    console.log("server.run.user is not set setting as current user " + sysEnv.USER);
+                    return sysEnv.USER;
+                    if (allConf.server.run.user == null) {
+                      return sysEnv.USER;
+                    }
+                  }
+                  return allConf.server.run.user;
+                };
+              })(this)()
+            };
             writeJSONFormat(allConf);
             writeClientJSONFormat(allConf);
             writePropertiesFormat(allConf);

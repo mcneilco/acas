@@ -104,10 +104,13 @@ describe "Thing Service testing", ->
 				@testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv"
 				fs.writeFileSync @testFile1Path, "key,value\nflavor,sweet"
 				fs.writeFileSync @testFile2Path, "key,value\nmolecule,CCC"
+				updatedData = thingServiceTestJSON.thingParent
+				updatedData.lsStates[0].lsValues[3].id = null
+				updatedData.lsStates[0].lsValues[4].id = null
 				request.put
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/things/parent/thing/PT00001"
 					json: true
-					body: thingServiceTestJSON.thingParent
+					body: updatedData
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body

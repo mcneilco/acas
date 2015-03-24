@@ -19,27 +19,26 @@ class window.PrimaryScreenProtocolParameters extends State
 			errors.push
 				attribute: 'minY'
 				message: "minY must be less than maxY"
+		molecularTarget = @getMolecularTarget().get('codeValue')
+		if molecularTarget is "required"
+			errors.push
+				attribute: 'molecularTarget'
+				message: "The target for the clone must be selected"
+		if molecularTarget is "invalid"
+			errors.push
+				attribute: 'molecularTarget'
+				message: "This target is not associated with the clone below"
+		cloneName = @getCloneName().get('stringValue')
+		if cloneName is "invalid"
+			errors.push
+				attribute: 'cloneName'
+				message: "This clone does not exist"
 
 		if errors.length > 0
 			return errors
 		else
 			return null
 
-	getCustomerMolecularTargetCodeOrigin: =>
-	#returns true if molecular target's codeOrigin is not acas ddict
-		molecularTarget = @getMolecularTarget()
-		if molecularTarget.get('codeOrigin') is "customer ddict"
-			return true
-		else
-			return false
-
-	setCustomerMolecularTargetCodeOrigin: (customerCodeOrigin) ->
-	# customerCodeOrigin is boolean. If true, codeOrigin for molecular target is not acas ddict
-		molecularTarget = @getMolecularTarget()
-		if customerCodeOrigin
-			molecularTarget.set codeOrigin: "customer ddict"
-		else
-			molecularTarget.set codeOrigin: "ACAS DDICT"
 
 	getCurveDisplayMin: ->
 		minY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display min"
@@ -74,6 +73,13 @@ class window.PrimaryScreenProtocolParameters extends State
 			mt.set codeOrigin: "ACAS DDICT"
 
 		mt
+
+	getCloneName: ->
+		cloneName = @.getOrCreateValueByTypeAndKind "stringValue", "clone name"
+		if cloneName.get('stringValue') is undefined or cloneName.get('stringValue') is null
+			cloneName.set stringValue: ""
+
+		cloneName
 
 	getTargetOrigin: ->
 		to = @.getOrCreateValueByTypeAndKind "codeValue", "target origin"
@@ -179,7 +185,6 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 	autofillTemplate: _.template($("#PrimaryScreenProtocolParametersAutofillView").html())
 
 	events:
-		"click .bv_customerMolecularTargetDDictChkbx": "handleMolecularTargetDDictChanged"
 		"change .bv_maxY": "handleCurveDisplayMaxChanged"
 		"change .bv_minY": "handleCurveDisplayMinChanged"
 		"change .bv_assayActivity": "handleAssayActivityChanged"
@@ -188,6 +193,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		"change .bv_assayType": "handleAssayTypeChanged"
 		"change .bv_assayTechnology": "handleAssayTechnologyChanged"
 		"change .bv_cellLine": "handleCellLineChanged"
+		"change .bv_cloneName": "handleCloneNameChanged"
 
 
 	initialize: ->
@@ -207,12 +213,13 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@$el.html @autofillTemplate(@model.attributes)
 		@$('.bv_maxY').val(@model.getCurveDisplayMax().get('numericValue'))
 		@$('.bv_minY').val(@model.getCurveDisplayMin().get('numericValue'))
+		@$('.bv_cloneName').val(@model.getCloneName().get('stringValue'))
 		@setupAssayActivitySelect()
+		@setupMolecularTargetSelect()
 		@setupTargetOriginSelect()
 		@setupAssayTypeSelect()
 		@setupAssayTechnologySelect()
 		@setupCellLineSelect()
-		@setupCustomerMolecularTargetDDictChkbx()
 		super()
 
 		@
@@ -288,28 +295,16 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@cellLineListController.render()
 
 
-	setupCustomerMolecularTargetDDictChkbx: ->
+	setupMolecularTargetSelect: ->
 		@molecularTargetList = new PickListList()
-		checked = @model.getCustomerMolecularTargetCodeOrigin()
-		if checked
-			@$('.bv_customerMolecularTargetDDictChkbx').attr("checked", "checked")
-			@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
-		else
-			@molecularTargetList.url = "/api/codetables/assay/molecular target"
-		@molecularTargetListController = new EditablePickListSelectController
+		@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
+		@molecularTargetListController = new PickListSelectController
 			el: @$('.bv_molecularTarget')
 			collection: @molecularTargetList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Target"
 			selectedCode: @model.getMolecularTarget().get('codeValue')
-			parameter: "molecularTarget"
-			codeType: "assay"
-			codeKind: "molecular target"
-			roles: ["admin"]
-		@molecularTargetListController.on 'change', @handleMolecularTargetChanged
-		@molecularTargetListController.render()
-		if checked
-			@molecularTargetListController.hideAddOptionButton()
-		else
-			@molecularTargetListController.showAddOptionButton()
 
 	handleAssayActivityChanged: =>
 		@model.getAssayActivity().set
@@ -322,6 +317,45 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			codeValue: @molecularTargetListController.getSelectedCode()
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
+		@handleCloneNameChanged()
+
+	handleCloneNameChanged: =>
+		cloneName = UtilityFunctions::getTrimmedInput @$('.bv_cloneName')
+		@model.getCloneName().set
+			stringValue: cloneName
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		if cloneName is ""
+			@model.getMolecularTarget().set
+				codeValue: @molecularTargetListController.getSelectedCode()
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
+		else
+			@validateClone(cloneName)
+
+	validateClone: (cloneName) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/cloneValidation/"+cloneName
+			success: (json) =>
+				@handleCloneValidationReturn(json)
+			error: (err) =>
+				alert 'got error validating clone'
+
+	handleCloneValidationReturn: (json) =>
+		if json.length is 0
+			@model.getCloneName().set stringValue: 'invalid'
+		else
+			cloneTarget = json[0]
+			@checkCloneTarget(cloneTarget)
+
+	checkCloneTarget: (cloneTarget) =>
+		selectedTarget = @model.getMolecularTarget().get('codeValue')
+		unless selectedTarget == cloneTarget
+			if @model.getMolecularTarget().get('codeValue') is "unassigned"
+				@model.getMolecularTarget().set codeValue: 'required'
+			else
+				@model.getMolecularTarget().set codeValue: 'invalid'
 
 	handleTargetOriginChanged: =>
 		@model.getTargetOrigin().set
@@ -359,36 +393,23 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
 
-	handleMolecularTargetDDictChanged: =>
-		customerDDict = @$('.bv_customerMolecularTargetDDictChkbx').is(":checked")
-		@model.setCustomerMolecularTargetCodeOrigin(customerDDict)
-		if customerDDict
-			@molecularTargetList.url = "/api/customerMolecularTargetCodeTable"
-			@molecularTargetListController.render()
-			@molecularTargetListController.hideAddOptionButton()
-		else
-			@molecularTargetList.url = "/api/codetables/assay/molecular target"
-			@molecularTargetListController.render()
-			@molecularTargetListController.showAddOptionButton()
-
-		@handleMolecularTargetChanged()
-
-
 	saveNewPickListOptions: (callback) =>
 		@assayActivityListController.saveNewOption =>
-			@molecularTargetListController.saveNewOption =>
-				@targetOriginListController.saveNewOption =>
-					@assayTypeListController.saveNewOption =>
-						@assayTechnologyListController.saveNewOption =>
-							@cellLineListController.saveNewOption =>
-								callback.call()
-
+			@targetOriginListController.saveNewOption =>
+				@assayTypeListController.saveNewOption =>
+					@assayTechnologyListController.saveNewOption =>
+						@cellLineListController.saveNewOption =>
+							callback.call()
 
 
 # controller for the primary screen protocol general information tab
 class window.PrimaryScreenProtocolController extends Backbone.View
 
 	initialize: ->
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		@setupProtocolBaseController()
 		@setupPrimaryScreenProtocolParametersController()
 		@protocolBaseController.model.on "checkForNewPickListOptions", @handleCheckForNewPickListOptions
@@ -399,6 +420,7 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 		@protocolBaseController = new ProtocolBaseController
 			model: @model
 			el: @el
+			readOnly: @readOnly
 		@protocolBaseController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@protocolBaseController.on 'amClean', =>
@@ -429,6 +451,9 @@ class window.PrimaryScreenProtocolController extends Backbone.View
 	displayInReadOnlyMode: =>
 		@protocolBaseController.displayInReadOnlyMode()
 
+	attachFilesAreValid: =>
+		@protocolBaseController.isValid()
+
 # This wraps all the tabs
 class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormController
 	template: _.template($("#PrimaryScreenProtocolModuleView").html())
@@ -437,6 +462,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		"click .bv_saveModule": "handleSaveModule"
 		"click .bv_cancelModule": "handleCancelClicked"
 		"click .bv_newModule": "handleNewEntityClicked"
+		"click .bv_cancelClearModule": "handleCancelClearClicked"
+		"click .bv_confirmModuleClear": "handleConfirmClearClicked"
 
 
 	initialize: =>
@@ -485,10 +512,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 
 		@errorOwnerName = 'PrimaryScreenProtocolModuleController'
 		@setBindings()
-
-		@$('.bv_save').hide()
-		@$('.bv_cancel').hide()
-		@$('.bv_newEntity').hide()
+		@$('.bv_saveAndCancelButtons').hide()
 		@$('.bv_saveModule').attr('disabled', 'disabled')
 
 		if @model.isNew()
@@ -509,9 +533,7 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@setupPrimaryScreenAnalysisParametersController()
 		@setupModelFitTypeController()
 		@$('.bv_savingModule').hide()
-		@$('.bv_save').hide()
-		@$('.bv_cancel').hide()
-		@$('.bv_newEntity').hide()
+		@$('.bv_saveAndCancelButtons').hide()
 		if @$('.bv_cancelModuleComplete').is(":visible")
 			@$('.bv_updateModuleComplete').hide()
 		else
@@ -626,6 +648,10 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@$('.bv_saveModule').removeAttr('disabled')
 		@$('.bv_saveInstructions').hide()
 
+	isValid: =>
+		unless @primaryScreenProtocolController.attachFilesAreValid()
+			@$('.bv_saveModule').attr('disabled', 'disabled')
+
 	reinitialize: =>
 		@model = null
 		@completeInitialization()
@@ -643,9 +669,15 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 	handleCancelComplete: =>
 		@$('.bv_cancelingModule').hide()
 		@$('.bv_cancelModuleComplete').show()
+
 	handleNewEntityClicked: =>
 		@primaryScreenProtocolController.protocolBaseController.handleNewEntityClicked()
 
+	handleCancelClearClicked: =>
+		@primaryScreenProtocolController.protocolBaseController.handleCancelClearClicked()
+
+	handleConfirmClearClicked: =>
+		@primaryScreenProtocolController.protocolBaseController.handleConfirmClearClicked()
 
 class window.PrimaryScreenProtocolModuleController extends AbstractPrimaryScreenProtocolModuleController
 	moduleLaunchName: "primary_screen_protocol"

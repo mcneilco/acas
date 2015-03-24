@@ -505,7 +505,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   
   # Check that the value kinds that have been entered before have the correct Datatype (valueType)
   oldValueKindTypes <- neededValueKindTypes[match(oldValueKinds, neededValueKinds)]
-  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob"))]
+  oldValueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(oldValueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
   currentValueKindTypeFrame <- data.frame(currentValueKinds,  matchingValueTypes, stringsAsFactors=FALSE)
   oldValueKindTypeFrame <- data.frame(oldValueKinds, oldValueKindTypes, stringsAsFactors=FALSE)
   
@@ -522,8 +522,8 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   # Use na.rm = TRUE because any types of NA will already have thrown an error (in validateCalculatedResultDatatypes)
   if(any(wrongValueTypes, na.rm = TRUE)) {
     problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
-    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
-    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue"))]
+    problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
+    problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
@@ -544,7 +544,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
       valueTypesList <- getAllValueTypes()
       valueTypes <- sapply(valueTypesList, getElement, "typeName")
       valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob"))]
+      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
       
       # This is for the curveNames, but would catch other added values as well
       valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
@@ -955,8 +955,8 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     concentration = unique(concentration),
     concUnit = unique(concUnit),
     UnparsedValue = UnparsedValue[is.na(uncertaintyType) & !isComment],
-    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA},
-    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA},
+    uncertainty = if(any(!is.na(uncertaintyType))) {UnparsedValue[!is.na(uncertaintyType)]} else {NA_character_},
+    uncertaintyType = if(any(!is.na(uncertaintyType))) {uncertaintyType[!is.na(uncertaintyType)]} else {NA_character_},
     comments = if(any(!isComment)) {UnparsedValue[isComment]} else {NA}),
     keyby="rowID,valueKindAndUnit"]
   
@@ -1099,8 +1099,11 @@ addFileValue <- function(imageLocation, calculatedResults) {
   #          have an entry for "fileValue"
   
   # We have to save the fileValue relative to privateUploads, so we need to remove privateUploads from it
-  uploadedFilePath <- racas::getUploadedFilePath("")
-  imageLocation <- gsub(uploadedFilePath, "", imageLocation)
+  
+  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+    uploadedFilePath <- racas::getUploadedFilePath("")
+    imageLocation <- gsub(uploadedFilePath, "", imageLocation)
+  }
 
   fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
                             NA_character_,
@@ -1127,7 +1130,7 @@ addComment <- function(calculatedResults) {
   return(calculatedResults)
 }
 
-addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun) {
+addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, recordedBy) {
   # Processes the image files that the user (optionally) uploaded with their spreadsheet
   # Unzips the images into the /analysis/uploadedFiles folder, validates them, and
   # adds the full file path to the calculatedResults
@@ -1143,23 +1146,33 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun) {
   experimentFolderLocation <- createExperimentFolder(experiment = experiment, dryRun = dryRun)
   
   if (!is.null(imagesFile)) {
-    if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-      imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
-      listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
-      isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    imageLocation <- unzipUploadedImages(imagesFile = racas::getUploadedFilePath(imagesFile), experimentFolderLocation = experimentFolderLocation)
+    listedImageFiles <- calculatedResults[!is.na(calculatedResults$inlineFileValue),]$inlineFileValue
+    isValid <- validateUploadedImages(imageLocation = imageLocation, listedImageFiles = listedImageFiles, experimentFolderLocation = experimentFolderLocation)
+    calculatedResults <- addComment(calculatedResults = calculatedResults)
+    if (racas::applicationSettings$server.service.external.file.type == "custom") {
+      fileValueVector <- ifelse(is.na(calculatedResults$inlineFileValue),
+                                NA_character_,
+                                file.path(imageLocation, calculatedResults$inlineFileValue))
+      fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
+      if (!dryRun) {
+        fileValuesToAdd <- vapply(fileValuesToAdd, moveFileToFileServer, c(""), experiment=experiment, recordedBy=recordedBy)
+      }
+      calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
+    } else {
       calculatedResults <- addFileValue(imageLocation = imageLocation, calculatedResults = calculatedResults)
-      calculatedResults <- addComment(calculatedResults = calculatedResults)
-      if (dryRun) {
-        # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
-        # we never moved anything else into it, so we delete it
-        unlink(experimentFolderLocation, recursive = TRUE)
-      } else {
-        # Otherwise, we should move the zip file from privateUploads into the experiment folder
+    }
+    
+    if (dryRun) {
+      # We created the experiment folder in order to have a place to unzip the files -- in dryRun mode
+      # we never moved anything else into it, so we delete it
+      unlink(experimentFolderLocation, recursive = TRUE)
+    } else {
+      # Otherwise, we should move the zip file from privateUploads into the experiment folder
+      if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
         file.rename(from = racas::getUploadedFilePath(imagesFile), to = file.path(experimentFolderLocation, basename(imagesFile)))
       }
-    } else {
-      stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
-    } 
+    }
   } else {
     # If no image files were uploaded, we want to make sure they didn't add an Image File column to their data
     if (any(calculatedResults$Class == "Image File")) {
@@ -1258,6 +1271,10 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
     }, error = function(e) {
       stopUser("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
+    # Finish if the previous experiment was part of a deleted protocol, we can just delete and reload
+    if (experimentList[[1]]$protocol$deleted) {
+      return(experimentList[[1]])
+    }
     protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
 
     
@@ -1548,18 +1565,24 @@ unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimen
     stopUser("The uploaded file must be a zip file")
   }
   
-  # Create the directory that will house the files
-  filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
-  dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
-  
-  # Delete the files and folders that may have been in that directory
-  oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
-  do.call(unlink, list(oldFiles, recursive=T))
-  
-  # Unzip the folder, and get rid of the internal subdirectory structure
-  unzip(zipfile=imagesFile, exdir=filesLocation, junkpaths = TRUE)
-  imageLocation = file.path(experimentFolderLocation, "analysis", "uploadedFiles")
-  
+  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
+    # Create the directory that will house the files
+    filesLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+    dir.create(filesLocation, showWarnings = FALSE, recursive = TRUE)
+    
+    # Delete the files and folders that may have been in that directory
+    oldFiles <- as.list(paste0(filesLocation,"/",list.files(filesLocation)))
+    do.call(unlink, list(oldFiles, recursive=T))
+    
+    # Unzip the folder, and get rid of the internal subdirectory structure
+    unzip(zipfile=imagesFile, exdir=filesLocation, junkpaths = TRUE)
+    imageLocation <- file.path(experimentFolderLocation, "analysis", "uploadedFiles")
+  } else if (racas::applicationSettings$server.service.external.file.type == "custom") {
+    unzip(zipfile=imagesFile, exdir=experimentFolderLocation, junkpaths = TRUE)
+    imageLocation <- experimentFolderLocation
+  } else {
+    stop("config server.service.external.file.type not valid")
+  }
   return(imageLocation)
   
 }
@@ -1599,7 +1622,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(subjectData[[mainCode]])
+    batchNameList <- unique(subjectData$batchCode)
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -1722,7 +1745,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                       & !(subjectData$subjectID %in% excludedSubjects),]
     
     # Note: createRawOnlyTreatmentGroupData can be found in customFunctions.R
-    treatmentGroupData <- ddply(.data = treatmentDataStart, .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
+    treatmentGroupData <- ddply(
+      .data = treatmentDataStart, 
+      .variables = c("treatmentGroupID", "valueKindAndUnit", "stateGroupIndex"), 
+      .fun = createRawOnlyTreatmentGroupData, sigFigs=sigFigs, inputFormat=inputFormat)
     treatmentGroupIndices <- c(treatmentGroupIndex,othersGroupIndex)
     if (nrow(treatmentGroupData) > 0) {
       stateAndVersion <- saveStatesFromLongFormat(entityData = treatmentGroupData, 
@@ -1934,7 +1960,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   analysisGroupData$parentId <- analysisGroupData$experimentID
   analysisGroupData$tempId <- analysisGroupData$analysisGroupID
   analysisGroupData <- rbind.fill(analysisGroupData, meltTimes2(analysisGroupData))
-  analysisGroupData <- rbind.fill(analysisGroupData, gdpMeltBatchCodes(analysisGroupData))
+  analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes2(analysisGroupData))
   analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concentration <- NA
   if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
     analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
@@ -1954,7 +1980,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$recordedBy <- recordedBy
     
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
-    treatmentGroupData <- rbind.fill(treatmentGroupData, gdpMeltBatchCodes(treatmentGroupData))
+    treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
     treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
     if(length(treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit) != 0) {
       treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concUnit <- NA
@@ -1980,7 +2006,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     subjectData$tempParentId <- subjectData$treatmentGroupID
    
     subjectData <- rbind.fill(subjectData, meltTimes2(subjectData))
-    subjectData <- rbind.fill(subjectData, gdpMeltBatchCodes(subjectData))
+    subjectData <- rbind.fill(subjectData, meltBatchCodes2(subjectData))
     subjectData[subjectData$valueKind != "batch code", ]$concentration <- NA
     if(length(subjectData[subjectData$valueKind != "batch code", ]$concUnit) != 0) {
       subjectData[subjectData$valueKind != "batch code", ]$concUnit <- NA
@@ -2025,107 +2051,19 @@ createExperimentFolder <- function(experiment, dryRun) {
   # Experiment: a list that is an experiment. We particularly care about its code name
   # dryRun: a boolean indicating whether we should skip saving the data to the database. If
   #         we're in dryRun mode, we create this folder in the privateTempFiles instead
-  # Returns: The location of the experiment folder, relative to the working directory
+  # Returns: The location of the experiment folder, relative to the working directory if using blueimp
   
-  if (racas::applicationSettings$server.service.external.file.type == "blueimp") {
-    if (dryRun) {
-      # We don't necessarily have access to the code name
-      fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
-      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
-    } else {
-      experimentCodeName <- experiment$codeName
-      fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
-      dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
-    }
+  if (dryRun) {
+    # We don't necessarily have access to the code name
+    fullFolderLocation <- file.path("privateTempFiles", "uploadedExperimentFiles")
+    dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
   } else {
-    stopUser("Internal Error: Saving image files for this server.service.external.file.type has not been implemented")
+    experimentCodeName <- experiment$codeName
+    fullFolderLocation <- racas::getUploadedFilePath(file.path("experiments", experimentCodeName))
+    dir.create(fullFolderLocation, showWarnings = FALSE, recursive = TRUE)
   }
   
   return(fullFolderLocation)
-}
-
-saveFullEntityData <- function(entityData, entityKind, appendCodeName = c()) {
-  # appendCodeName is a vector of lsKinds that should have 
-  # Does not work for containers
-  
-  ### local names
-  # entityData[[paste0(entityKind, "ID")]] must be numeric
-  acasEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  entityID <- paste0(entityKind, "ID")
-  entityCodeName <- paste0(entityKind, "CodeName")
-  tempIds <- c()
-  
-  ### Error checking
-  if (!(entityID %in% names(entityData))) {
-    stop(paste0("Internal Error: Column ", entityID, " is missing from entityData"))
-  }
-  
-  ### main code
-  thingTypeAndKind <- paste0("document_", changeEntityMode(entityKind, "camel", "space"))
-  entityCodeNameList <- unlist(getAutoLabels(thingTypeAndKind=thingTypeAndKind, 
-                                                    labelTypeAndKind="id_codeName", 
-                                                    numberOfLabels=max(entityData[[entityID]])),
-                                      use.names=FALSE)
-  
-  entityData[[entityCodeName]] <- entityCodeNameList[entityData[[entityID]]]
-  
-  entityData$stringValue[entityData$valueKind %in% appendCodeName] <- paste0(entityData$stringValue[entityData$valueKind %in% appendCodeName], "_", entityData[entityData$valueKind == appendCodeName, entityCodeName])
-  
-  createEntity <- function(codeName, lsType, lsKind, recordedBy, lsTransaction) {
-    return(list(
-      codeName=codeName,
-      lsType=lsType,
-      lsKind=lsKind,
-      recordedBy=recordedBy,
-      lsTransaction=lsTransaction))
-  }
-  
-  createEntityFromDF <- function(dfData, currentEntity) {
-    entity <- createEntity(
-      lsType = "default",
-      lsKind = "default",
-      codeName=dfData[[paste0(currentEntity, "CodeName")]][1],
-      recordedBy=dfData$recordedBy[1],
-      lsTransaction=dfData$lsTransaction[1])
-    upperAcasEntity <- acasEntityHierarchyCamel[which(currentEntity == acasEntityHierarchyCamel) - 1]
-    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop(paste0("Internal Error: No ", paste0(upperAcasEntity, "ID"), " found in data"))
-    }
-    if (is.null(dfData[[paste0(upperAcasEntity, "ID")]][1])) {
-      stop(paste0("Internal Error: No ", paste0(upperAcasEntity, "Version"), " found in data"))
-    }
-    entity[[upperAcasEntity]] <- list(id=dfData[[paste0(upperAcasEntity, "ID")]][1],
-                                      version=dfData[[paste0(upperAcasEntity, "Version")]][1])
-    return(entity)
-  }
-  
-  entities <- dlply(.data=entityData, .variables = paste0(entityKind, "ID"), createEntityFromDF, currentEntity=entityKind)
-  tempIds <- as.numeric(names(entities))
-  
-  names(entities) <- NULL
-  savedEntities <- saveAcasEntities(entities, paste0(acasEntity, "s"))
-  
-  if (length(savedEntities) != length(entities)) {
-    stop(paste0("Internal Error: roo server did not respond with the same number of ", acasEntity, "s after a post"))
-  }
-  
-  entityIds <- sapply(savedEntities, getElement, "id")
-  entityVersions <- sapply(savedEntities, getElement, "version")
-  
-  entityData[[entityID]] <- entityIds[match(entityData[[entityID]], tempIds)]
-  
-  ###### entity States #######
-  
-  stateAndVersion <- saveStatesFromExplicitFormat(entityData, entityKind)
-  entityData$stateID <- stateAndVersion$entityStateId
-  entityData$stateVersion <- stateAndVersion$entityStateVersion
-  
-  ### entity Values ======================================================================= 
-  
-  savedEntityValues <- saveValuesFromExplicitFormat(entityData, entityKind)
-  #
-  
-  return(data.frame(tempID = tempIds, entityID = entityIds, entityVersion = entityVersions))
 }
 splitOnSemicolon <- function(x) {
   # splits a semicolon delimited list
@@ -2282,7 +2220,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
 
   if(!is.null(imagesFile) && imagesFile != "") {
-    calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun)
+    calculatedResults <- addImageFiles(imagesFile = imagesFile, calculatedResults = calculatedResults, experiment = experiment, dryRun = dryRun, recordedBy)
   }
 
   # Upload the data if this is not a dry run
@@ -2301,7 +2239,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
       uploadData(metaData = validatedMetaData,lsTransaction,calculatedResults,treatmentGroupData, subjectData,
                  xLabel,yLabel,tempIdLabel,testOutputLocation,developmentMode,protocol,experiment, 
                  fileStartLocation = pathToGenericDataFormatExcelFile, configList=configList, 
-                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, annotationType, 
+                 reportFilePath=reportFilePath, reportFileSummary=reportFileSummary, recordedBy, formatParameters$annotationType, 
                  mainCode, appendCodeNameList = list(analysisGroup = "curve id"))
     }
   }
@@ -2351,33 +2289,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   summaryInfo$experimentEntity <- experiment
   
   return(summaryInfo)
-}
-
-gdpMeltBatchCodes <- function(entityData) {
-  # Check for missing batchCode
-  # TODO: this can probably replace meltBatchCodes2 in racas
-  output <- data.frame()
-  if (is.null(entityData$batchCode) || all(is.na(entityData$batchCode))) {
-    return(output)
-  }
-  
-  optionalColumns <- c("lsTransaction", "recordedBy", "concentration", "concUnit", "parentId", "tempParentId")
-  
-  neededColumns <- c("batchCode", "tempStateId", "tempId", "stateType", "stateKind")
-  if (!all(neededColumns %in% names(entityData))) {stop("Internal error: missing needed columns")}
-  
-  usedColumns <- c(neededColumns, optionalColumns[optionalColumns %in% names(entityData)])
-  
-  
-  batchCodeValues <- unique(entityData[, usedColumns])
-  
-  names(batchCodeValues)[1] <- "codeValue"
-  batchCodeValues$valueType <- "codeValue"
-  batchCodeValues$valueKind <- "batch code"
-  batchCodeValues$publicData <- TRUE
-  batchCodeValues <- batchCodeValues[!is.na(batchCodeValues$codeValue), ]
-  
-  return(batchCodeValues)
 }
 getStateGroups <- function(formatSettings) {
   #Gets stateGroups from configuration list
@@ -2495,8 +2406,11 @@ parseGenericData <- function(request) {
   #   hasWarning (boolean)
   #   errorMessages (list)
   
-  globalMessenger <- messenger()$reset()
-
+  # In 1.6, remove this and use the "external." function
+  globalMessenger <- messenger()
+  globalMessenger$reset()
+  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
+  
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
@@ -2593,214 +2507,7 @@ parseGenericData <- function(request) {
 }
 
 
-#' Save states from a long format
-#'
-#' This function saves states to the database specified in \code{\link{applicationSettings}}
-#' 
-#'
-#' @param entityData a data.frame, including one column named 'stateGroupIndex', one that matches idColumn, and one of the form 'entityID'
-#' @param entityKind a string, the kind of the state, limited to "protocol", "experiment", "analysisgroup", "treatmentgroup", "subject", "container", "itxcontainercontainer"
-#' @param stateGroups a list of lists, each of which includes details about how to save states (TODO link later)
-#' @param stateGroupIndices an integer vector of indices to use from stateGroups
-#' @param idColumn a string, the name of the column used to separate states (often stateID)
-#' @param recordedBy a string, the name of the person recording the data
-#' @param lsTransaction an integer, the id of the lsTransaction
-#' @param  testMode A boolean marking if the function should return JSON instead of saving values
-#' @return A data.frame with columns "entityStateId" and "entityStateVersion", which are often added back to the original data.frame
-#' @keywords save, format, stateGroups
-#' @details Assumes all higher level entities are new, i.e. version = 0.
-#' Does not allow containers or interactions
-#' @export
 
-saveStatesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
-  #TODO: should allow containers or interactions
-  idColumn = "stateID"
-  entityID = paste0(entityKind, "ID")
-  entityVersion = paste0(entityKind, "Version")
-  
-  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  
-  
-  # If no version given, assume version 0
-  if (!(entityVersion %in% names(entityData))) {
-    entityData[[entityVersion]] <- 0
-  }
-  
-  if (!(idColumn %in% names(entityData))) {
-    stop(paste0("Internal Error: ", idColumn, " must be a column in entityData"))
-  }
-  
-  if (!(entityKind %in% racas::acasEntityHierarchyCamel)) {
-    stop("Internal Error: entityKind must be in racas::acasEntityHierarchyCamel")
-  }
-  
-  if (!(entityID %in% names(entityData))) {
-    stop(paste0("Internal Error: ", entityID, " must be included in entityData"))
-  }
-  
-  createExplicitLsState <- function(entityData, entityKind) {
-    # TODO: add stateType and StateKind to meltBatchCodes
-    lsType <- entityData$stateType[1]
-    lsKind <- entityData$stateKind[1]
-    lsState <- list(lsType = entityData$stateType[1],
-                    lsKind = entityData$stateKind[1],
-                    recordedBy = entityData$recordedBy[1],
-                    lsTransaction = entityData$lsTransaction[1])
-    # e.g. lsState$analysisGroup <- list(id=entityData$analysisGroupID[1], version=0)
-    lsState[[entityKind]] <- list(id = entityData[[entityID]][[1]], version = entityData[[entityVersion]][1])
-    return(lsState)
-  }
-  
-  lsStates <- dlply(.data=entityData, .variables=idColumn, .fun=createExplicitLsState, entityKind=entityKind)
-  originalStateIds <- names(lsStates)
-  names(lsStates) <- NULL
-  if (testMode) {
-    lsStates <- lapply(lsStates, function(x) {x$recordedDate <- 1381939115000; return (x)})
-    return(toJSON(lsStates))
-  } else {
-    savedLsStates <- saveAcasEntities(lsStates, paste0(acasServerEntity, "states"))
-  }
-  
-  if (!is.list(savedLsStates) || length(savedLsStates) != length(lsStates)) {
-    stop("Internal error: the roo server did not respond correctly to saving states")
-  }
-  
-  lsStateIds <- sapply(savedLsStates, getElement, "id")
-  lsStateVersions <- sapply(savedLsStates, getElement, "version")
-  entityStateTranslation <- data.frame(entityStateId = lsStateIds, 
-                                       originalStateId = originalStateIds, 
-                                       entityStateVersion = lsStateVersions)
-  stateIdAndVersion <- entityStateTranslation[match(entityData[[idColumn]], 
-                                                    entityStateTranslation$originalStateId),
-                                              c("entityStateId", "entityStateVersion")]
-  return(stateIdAndVersion)
-}
-
-#' saves "raw only" values
-#' 
-#' Saves values from a specific format
-#' 
-#' @param entityData A data frame that includes columns:
-#'    \describe{
-#'    \item{stateGroupIndex}{Integer vector marking the index of the state group for each row}
-#'    \item{operatorType}{String: the type of the operator}
-#'    \item{unitType}{String: the type of the unit}
-#'     \item{stateID}{An integer that is the ID of the state for each value}
-#'     \item{valueType}{A string of "stringValue", "dateValue", or "numericValue"}
-#'     \item{valueKind}{A string value ofthe kind of value}
-#'     \item{publicData}{Boolean: Marks if each value should be hidden}
-#'     \item{stateVersion}{An integer that is the version of the state for each value}
-#'     \item{stringValue}{String: a string value (optional)}
-#'     \item{codeValue}{String: a code, such as a batch code (optional)}
-#'     \item{fileValue}{String: a code that refers to a file}
-#'     \item{inlineFileValue}{String: similar to a file value, but intended to be shown to users in result viewers (optional)}
-#'     \item{urlValue}{String: a url (optional)}
-#'     \item{numericValue}{Number: a number (optional)}
-#'     \item{dateValue}{Number: date in milliseconds or String in "YYYY-MM-DD" (optional)}
-#'     \item{valueOperator}{String: The operator for each value (optional)}
-#'     \item{valueUnit}{String: The units for each value (optional)}
-#'     \item{clobValue}{String: for very long strings (optional)}
-#'     \item{blobValue}{Anything: no case that exists right now (optional)}
-#'     \item{numberOfReplicates}{Integer: The number of replicates (optional)}
-#'     \item{uncertainty}{Numeric: the uncertainty (optional)}
-#'     \item{uncertaintyType}{String: the type of uncertainty, such as standard deviation (optional)}
-#'     \item{comments}{String: mainly used for filenames (fileValue is filled with codes) (optional)}
-#'     }
-#' @param  entityKind          String: the kind of the state, allowed values are: "protocol", "experiment", "analysisgroup", 
-#' "subject", "treatmentgroup", "container", "itxcontainercontainer", "itxsubjectcontainer"
-#' @param  stateGroups          A list of lists, each of which includes details about how to save states
-#' @param  stateGroupIndices    An integer vector of the indices to use from stateGroups (others are removed)
-#' @param  lsTransaction        An id of an lsTransaction
-#' @param  testMode             A boolean marking if the function should return JSON instead of saving values
-#' @param recordedBy String: the username recording the data
-#' @return A list of value objects (lists)
-#' @details In longFormatSave.R
-#' Will coerce all factors to character
-saveValuesFromExplicitFormat <- function(entityData, entityKind, testMode=FALSE) {
-  ### static variables
-  #TODO: should allow containers or interactions
-  idColumn = "stateID"
-  acasServerEntity <- changeEntityMode(entityKind, "camel", "lowercase")
-  
-  #create a uniqueID to split on
-  entityData$uniqueID <- 1:(nrow(entityData))
-  
-  optionalColumns <- c("fileValue", "inlineFileValue", "urlValue", "codeValue", "numericValue", "dateValue",
-                       "valueOperator", "valueUnit", "clobValue", "blobValue", "numberOfReplicates",
-                       "uncertainty", "uncertaintyType", "comments")
-  missingOptionalColumns <- Filter(function(x) !(x %in% names(entityData)),
-                                   optionalColumns)
-  entityData[missingOptionalColumns] <- NA
-  
-  ### Error Checking
-  requiredColumns <- c("valueType", "valueKind", "publicData", "stateVersion", "stateID")
-  if (any(!(requiredColumns %in% names(entityData)))) {
-    stop(paste0("Internal Error: Missing input columns in entityData, must have ", paste(requiredColumns, collapse = ", ")))
-  }
-  
-  # Turns factors to character
-  factorColumns <- vapply(entityData, is.factor, c(TRUE))
-  entityData[factorColumns] <- lapply(entityData[factorColumns], as.character)
-  
-  if (is.character(entityData$dateValue)) {
-    entityData$dateValue[entityData$dateValue == ""] <- NA
-    entityData$dateValue <- as.numeric(format(as.Date(entityData$dateValue,origin="1970-01-01"), "%s"))*1000
-  } else if (is.numeric(entityData$dateValue)) {
-    # No change
-  } else if (is.null(entityData$dateValue) || all(is.na(entityData$dateValue))) {
-    entityData$dateValue <- as.character(NA)
-  } else {
-    stop(paste0("Internal Error: unrecognized class of entityData$dateValue: ", class(entityData$dateValue)))
-  }
-  
-  
-  
-  ### Helper function
-  createLocalStateValue <- function(valueData) {
-    stateValue <- with(valueData, {
-      createStateValue(
-        lsState = list(id = stateID, version = stateVersion),
-        lsType = if (valueType %in% c("stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "numericValue", "codeValue")) {
-          valueType
-        } else {"numericValue"},
-        lsKind = valueKind,
-        stringValue = if (is.character(stringValue) && !is.na(stringValue)) {stringValue} else {NULL},
-        dateValue = if(is.numeric(dateValue) && !is.na(dateValue)) {dateValue} else {NULL},
-        clobValue = if(is.character(clobValue) && !is.na(clobValue)) {clobValue} else {NULL},
-        blobValue = if(!is.null(blobValue) && !is.na(blobValue)) {blobValue} else {NULL},
-        codeValue = if(is.character(codeValue) && !is.na(codeValue)) {codeValue} else {NULL},
-        fileValue = if(is.character(fileValue) && !is.na(fileValue)) {fileValue} else {NULL},
-        urlValue = if(is.character(urlValue) && !is.na(urlValue)) {urlValue} else {NULL},
-        valueOperator = if(is.character(valueOperator) && !is.na(valueOperator)) {valueOperator} else {NULL},
-        operatorType = if(is.character(operatorType) && !is.na(operatorType)) {operatorType} else {NULL},
-        numericValue = if(is.numeric(numericValue) && !is.na(numericValue)) {numericValue} else {NULL},
-        valueUnit = if(is.character(valueUnit) && !is.na(valueUnit)) {valueUnit} else {NULL},
-        unitType = if(is.character(unitType) && !is.na(unitType)) {unitType} else {NULL},
-        publicData = publicData,
-        lsTransaction = lsTransaction,
-        numberOfReplicates = if(is.numeric(numberOfReplicates) && !is.na(numberOfReplicates)) {numberOfReplicates} else {NULL},
-        uncertainty = if(is.numeric(uncertainty) && !is.na(uncertainty)) {uncertainty} else {NULL},
-        uncertaintyType = if(is.character(uncertaintyType) && !is.na(uncertaintyType)) {uncertaintyType} else {NULL},
-        recordedBy = recordedBy,
-        comments = if(is.character(comments) && !is.na(comments)) {comments} else {NULL}
-      )
-    })
-    return(stateValue)
-  }
-  entityValues <- plyr::dlply(.data = entityData, 
-                              .variables = .(uniqueID), 
-                              .fun = createLocalStateValue)
-  
-  names(entityValues) <- NULL
-  
-  if (testMode) {
-    entityValues <- lapply(entityValues, function(x) {x$recordedDate <- 42; return (x)})
-    return(toJSON(entityValues))
-  } else {
-    savedEntityValues <- saveAcasEntities(entityValues, paste0(acasServerEntity, "values"))
-    return(savedEntityValues)
-  }
-}
 
 organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv, formatParameters, concColumn) {
   # Returns two data.frames: subjectData and treatmentGroupData
@@ -2840,6 +2547,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   createTreatmentGroupData <- function(x) {
     uncertainty <- as.numeric(sd(x$numericValue, na.rm=T))
     data.table(
+      batchCode = as.character(uniqueOrNA(x$batchCode)),
       numericValue = as.numeric(mean(x$numericValue, na.rm=T)),
       stringValue = as.character(concatUniqNonNA(x$stringValue)),
       valueOperator = as.character(uniqueOrNA(x$valueOperator)),
@@ -2998,4 +2706,11 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
   gsub(".*\\((.*)\\).*||(.*)", "\\1", columnHeaders)
+}
+external.parseGenericData <- function(request) {
+  # Not in use yet, see ?messenger for future standard
+  globalMessenger <- messenger()
+  globalMessenger$reset()
+  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
+  return(parseGenericData(request))
 }

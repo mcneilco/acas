@@ -23,7 +23,7 @@ case $1 in
         logerr=$server_log_path/${dirname}${server_log_suffix}_stderr.log
 
         echo "starting $ACAS_HOME/app.js"
-        startCommand="cd $ACAS_HOME && forever start --append -l $logname -o $logout -e $logerr app.js"
+        startCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever start --killSignal=SIGTERM --workingDir --append -l $logname -o $logout -e $logerr $ACAS_HOME/app.js 2>&1 >/dev/null"
         if [ $(whoami) == $ACAS_USER ]; then
           eval $startCommand
         else
@@ -41,7 +41,7 @@ case $1 in
 
         echo "stopping $ACAS_HOME/app.js"
 
-        stopCommand="cd $ACAS_HOME && forever stop app.js"
+        stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
         if [ $(whoami) == $ACAS_USER ]; then
           eval $stopCommand
         else

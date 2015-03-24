@@ -37,7 +37,7 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
     for(name in userInput[calculatedRead == FALSE]$userReadName) {
       columnCount <- 0
       for(activity in activityColNames) {
-        if(name == activity) {
+        if(tolower(name) == tolower(activity)) {
           userInput[userReadName==name, activityColName := activity]
           userInput[userReadName==name, newActivityColName := paste0("R",userInput[userReadName==name, ]$userReadOrder, " {",activity,"}")]
           columnCount <- columnCount + 1

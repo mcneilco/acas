@@ -35,7 +35,7 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		scientist = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "scientist"
 		if scientist.get('codeValue') is undefined
-			scientist.set codeValue: "unassigned"
+			scientist.set codeValue: window.AppLaunchParams.loginUserName
 			scientist.set codeType: "assay"
 			scientist.set codeKind: "scientist"
 			scientist.set codeOrigin: window.conf.scientistCodeOrigin
@@ -74,6 +74,26 @@ class window.BaseEntity extends Backbone.Model
 			status.set codeOrigin: "ACAS DDICT"
 
 		status
+
+	getAttachedFiles: (fileTypes) =>
+		#get list of possible kinds of analytical files
+		attachFileList = new AttachFileList()
+		for type in fileTypes
+			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
+			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
+			if analyticalFileValues.length > 0 and type.code != "unassigned"
+				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+				#add new afm to attach file list
+				for file in analyticalFileValues
+					if file.get('ignored') is false
+						afm = new AttachFile
+							fileType: type.code
+							fileValue: file.get('fileValue')
+							id: file.get('id')
+							comments: file.get('comments')
+						attachFileList.add afm
+
+		attachFileList
 
 	getAnalysisParameters: =>
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
@@ -212,7 +232,8 @@ class window.BaseEntityController extends AbstractFormController
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"
 		"click .bv_cancel": "handleCancelClicked"
-
+		"click .bv_cancelClear": "handleCancelClearClicked"
+		"click .bv_confirmClear": "handleConfirmClearClicked"
 
 	initialize: ->
 		unless @model?
@@ -221,6 +242,10 @@ class window.BaseEntityController extends AbstractFormController
 		@listenTo @model, 'change', @modelChangeCallback
 		@errorOwnerName = 'BaseEntityController'
 		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_save').attr('disabled', 'disabled')
@@ -252,6 +277,8 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
 		@updateEditable()
+		if @readOnly is true
+			@displayInReadOnlyMode()
 
 		@
 
@@ -289,6 +316,40 @@ class window.BaseEntityController extends AbstractFormController
 				name: "Select Scientist"
 			selectedCode: @model.getScientist().get('codeValue')
 
+	setupAttachFileListController: =>
+		$.ajax
+			type: 'GET'
+			url: "/api/codetables/"+@model.get('subclass')+" metadata/file type"
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get list of file types'
+			success: (json) =>
+				if json.length == 0
+					alert 'Got empty list of file types'
+				else
+					attachFileList = @model.getAttachedFiles(json)
+					@finishSetupAttachFileListController(attachFileList,json)
+
+	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
+		if @attachFileListController?
+			@attachFileListController.undelegateEvents()
+		@attachFileListController= new AttachFileListController
+			autoAddAttachFileModel: false
+			el: @$('.bv_attachFileList')
+			collection: attachFileList
+			firstOptionName: "Select Method"
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			fileTypeList: fileTypeList
+			required: false
+		@attachFileListController.on 'amClean', =>
+			@trigger 'amClean'
+		@attachFileListController.on 'renderComplete', =>
+			@checkDisplayMode()
+		@attachFileListController.render()
+		@attachFileListController.on 'amDirty', =>
+			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
+			@model.trigger 'change'
+
 	setupTagList: ->
 		@$('.bv_tags').val ""
 		@tagListController = new TagListController
@@ -298,35 +359,23 @@ class window.BaseEntityController extends AbstractFormController
 
 
 	handleScientistChanged: =>
-		@model.getScientist().set
-			codeValue: @scientistListController.getSelectedCode()
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = @scientistListController.getSelectedCode()
+		@handleValueChanged "Scientist", value
 
 	handleShortDescriptionChanged: =>
 		trimmedDesc = UtilityFunctions::getTrimmedInput @$('.bv_shortDescription')
-		if trimmedDesc != ""
-			@model.set
-				shortDescription: trimmedDesc
-				recordedBy: window.AppLaunchParams.loginUser.username
-				recordedDate: new Date().getTime()
-		else
-			@model.set
-				shortDescription: " " #fix for oracle persistance bug
-				recordedBy: window.AppLaunchParams.loginUser.username
-				recordedDate: new Date().getTime()
+		if trimmedDesc == ""
+			trimmedDesc = " " #fix for oracle persistance bug
+		@model.set
+			shortDescription: trimmedDesc
 
 	handleDetailsChanged: =>
-		@model.getDetails().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_details')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_details')
+		@handleValueChanged "Details", value
 
 	handleCommentsChanged: =>
-		@model.getComments().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_comments')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_comments')
+		@handleValueChanged "Comments", value
 
 	handleNameChanged: =>
 		subclass = @model.get('subclass')
@@ -340,22 +389,24 @@ class window.BaseEntityController extends AbstractFormController
 		@model.trigger 'change'
 
 	handleNotebookChanged: =>
-		@model.getNotebook().set
-			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_notebook')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@model.trigger 'change'
+		value = UtilityFunctions::getTrimmedInput @$('.bv_notebook')
+		@handleValueChanged "Notebook", value
 
 	handleStatusChanged: =>
-		@model.getStatus().set
-			codeValue: @statusListController.getSelectedCode()
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = @statusListController.getSelectedCode()
+		@handleValueChanged "Status", value
 		# this is required in addition to model change event watcher only for spec. real app works without it
 		@updateEditable()
+
+	handleValueChanged: (vKind, value) =>
+		currentVal = @model["get"+vKind]()
+		unless currentVal.isNew()
+			currentVal.set ignored: true
+			currentVal = @model["get"+vKind]() #this will create a new value
+#		currentVal.set vType, value
+		currentVal.set currentVal.get('lsType'), value
+		# this is required only for spec. real app works without it
 		@model.trigger 'change'
-
-
 
 	updateEditable: =>
 		if @model.isEditable()
@@ -373,6 +424,7 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_status').removeAttr("disabled")
 
 	beginSave: =>
+		@prepareToSaveAttachedFiles()
 		@tagListController.handleTagsChanged()
 		if @model.checkForNewPickListOptions?
 			@model.checkForNewPickListOptions()
@@ -380,6 +432,7 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger "noEditablePickLists"
 
 	handleSaveClicked: =>
+		@prepareToSaveAttachedFiles()
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		if @model.isNew()
@@ -390,7 +443,25 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_saving').show()
 		@model.save()
 
+	prepareToSaveAttachedFiles: =>
+		@attachFileListController.collection.each (file) =>
+			unless file.get('fileType') is "unassigned"
+				if file.get('id') is null
+					newFile = @model.get('lsStates').createValueByTypeAndKind "metadata", @model.get('subclass')+" metadata", "fileValue", file.get('fileType')
+					newFile.set fileValue: file.get('fileValue')
+				else
+					if file.get('ignored') is true
+						value = @model.get('lsStates').getValueById "metadata", @model.get('subclass')+" metadata", file.get('id')
+						value[0].set "ignored", true
+
 	handleNewEntityClicked: =>
+		@$('.bv_confirmClearEntity').modal('show')
+
+	handleCancelClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
+
+	handleConfirmClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
 		if @model.get('lsKind') is "default" #base protocol/experiment
 			@model = null
 			@completeInitialization()
@@ -423,9 +494,24 @@ class window.BaseEntityController extends AbstractFormController
 		super()
 		@$('.bv_save').removeAttr('disabled')
 
+	checkDisplayMode: =>
+		if @readOnly is true
+			@displayInReadOnlyMode()
+
 	displayInReadOnlyMode: =>
 		@$(".bv_save").hide()
 		@$(".bv_cancel").hide()
 		@$(".bv_newEntity").hide()
+		@$(".bv_addFileInfo").hide()
 		@disableAllInputs()
 
+	isValid: =>
+		validCheck = super()
+		if @attachFileListController?
+			if @attachFileListController.isValid() is true
+				return validCheck
+			else
+				@$('.bv_save').attr('disabled', 'disabled')
+				return false
+		else
+			return validCheck

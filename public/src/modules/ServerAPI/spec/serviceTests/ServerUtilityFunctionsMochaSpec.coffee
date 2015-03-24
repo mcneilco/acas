@@ -18,7 +18,7 @@ describe "Server Utiilty Function Tests", ->
 	describe "File Value filtering", ->
 		describe "get fileValues from thing", ->
 			before (done) ->
-				@fileVals = servUtilities.getFileValesFromThing thingServiceTestJSON.thingParent
+				@fileVals = servUtilities.getFileValuesFromEntity thingServiceTestJSON.thingParent
 				done()
 			it "should return an array", ->
 				assert.equal (@fileVals.length > 0), true
@@ -35,10 +35,10 @@ describe "Server Utiilty Function Tests", ->
 				assert.equal servUtilities.getRelativeFolderPathForPrefix("fred"), null
 		describe "get prefix from code", ->
 			it "should return the prot prefix from a prot code", ->
-				assert.equal servUtilities.getPrefixFromThingCode("PROT00000123"), "PROT"
+				assert.equal servUtilities.getPrefixFromEntityCode("PROT00000123"), "PROT"
 			it "should return the pt prefix from a parent thing code", ->
-				assert.equal servUtilities.getPrefixFromThingCode("PT00000123"), "PT"
+				assert.equal servUtilities.getPrefixFromEntityCode("PT00000123"), "PT"
 			it "should return the expt prefix from an experiment code", ->
-				assert.equal servUtilities.getPrefixFromThingCode("EXPT00000123"), "EXPT"
+				assert.equal servUtilities.getPrefixFromEntityCode("EXPT00000123"), "EXPT"
 			it "should return null with bad code", ->
-				assert.equal servUtilities.getPrefixFromThingCode("FRED0001343"), null
+				assert.equal servUtilities.getPrefixFromEntityCode("FRED0001343"), null

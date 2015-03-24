@@ -3,6 +3,9 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocols/:id', exports.protocolById
 	app.post '/api/protocols', exports.postProtocol
 	app.put '/api/protocols/:id', exports.putProtocol
+	app.get '/api/protocollabels', exports.lsLabels
+	app.get '/api/protocolCodes', exports.protocolCodeList
+	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -16,13 +19,19 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/protocols/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
 
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 
 exports.protocolByCodename = (req, resp) ->
-	console.log req.params.code
 
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.stubSavedProtocol
+		stubSavedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.stubSavedProtocol))
+		if req.params.code.indexOf("screening") > -1
+			stubSavedProtocol.lsKind = "Bio Activity"
+		else
+			stubSavedProtocol.lsKind = "default"
+		resp.end JSON.stringify stubSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
@@ -30,7 +39,6 @@ exports.protocolByCodename = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.protocolById = (req, resp) ->
-	console.log req.params.id
 
 	if global.specRunnerTestmode
 		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
@@ -41,10 +49,56 @@ exports.protocolById = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.postProtocol = (req, resp) ->
-	if global.specRunnerTestmode
-		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify experimentServiceTestJSON.fullSavedProtocol
+updateProt = (prot, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback prot
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/"+prot.id
+		request = require 'request'
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: prot
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to update protocol'
+				console.log error
+				console.log response
+		)
+
+postProtocol = (req, resp) ->
+	protToSave = req.body
+	if req.query.testMode or global.specRunnerTestmode
+		unless protToSave.codeName?
+			protToSave.codeName = "PROT-00000001"
+
+	checkFilesAndUpdate = (prot) ->
+		fileVals = serverUtilityFunctions.getFileValuesFromEntity prot, false
+		filesToSave = fileVals.length
+
+		completeProtUpdate = (protToUpdate)->
+			updateProt protToUpdate, req.query.testMode, (updatedProt) ->
+				resp.json updatedProt
+
+		fileSaveCompleted = (passed) ->
+			if !passed
+				resp.statusCode = 500
+				return resp.end "file move failed"
+			if --filesToSave == 0 then completeProtUpdate(prot)
+
+		if filesToSave > 0
+			prefix = serverUtilityFunctions.getPrefixFromEntityCode prot.codeName
+			for fv in fileVals
+				csUtilities.relocateEntityFile fv, prefix, prot.codeName, fileSaveCompleted
+		else
+			resp.json prot
+
+	if req.query.testMode or global.specRunnerTestmode
+		checkFilesAndUpdate protToSave
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols"
@@ -52,12 +106,11 @@ exports.postProtocol = (req, resp) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body
+			body: protToSave
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 201
-				console.log JSON.stringify json
-				resp.end JSON.stringify json
+				checkFilesAndUpdate json
 			else
 				console.log 'got ajax error trying to save new protocol'
 				console.log error
@@ -65,29 +118,32 @@ exports.postProtocol = (req, resp) ->
 				console.log response
 		)
 
+
+exports.postProtocol = (req, resp) ->
+	postProtocol req, resp
+
 exports.putProtocol = (req, resp) ->
-	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
-		resp.end JSON.stringify protocolServiceTestJSON.fullSavedProtocol
+	protToSave = req.body
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity protToSave, true
+	filesToSave = fileVals.length
+
+	completeProtUpdate = ->
+		updateProt protToSave, req.query.testMode, (updatedProt) ->
+			resp.json updatedProt
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			resp.statusCode = 500
+			return resp.end "file move failed"
+		if --filesToSave == 0 then completeProtUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode req.body.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
-		config = require '../conf/compiled/conf.js'
-		putId = req.body.id
-		baseurl = config.all.client.service.persistence.fullpath+"protocols/"+putId
-		request = require 'request'
-		request(
-			method: 'PUT'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
-			else
-				console.log 'got ajax error trying to save new protocol'
-				console.log error
-				console.log json
-				console.log response
-		)
+		completeProtUpdate()
 
 exports.lsLabels = (req, resp) ->
 	if global.specRunnerTestmode

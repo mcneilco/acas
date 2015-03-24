@@ -30,7 +30,7 @@
     describe("File Value filtering", function() {
       return describe("get fileValues from thing", function() {
         before(function(done) {
-          this.fileVals = servUtilities.getFileValesFromThing(thingServiceTestJSON.thingParent);
+          this.fileVals = servUtilities.getFileValuesFromEntity(thingServiceTestJSON.thingParent);
           return done();
         });
         it("should return an array", function() {
@@ -55,16 +55,16 @@
       });
       return describe("get prefix from code", function() {
         it("should return the prot prefix from a prot code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("PROT00000123"), "PROT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("PROT00000123"), "PROT");
         });
         it("should return the pt prefix from a parent thing code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("PT00000123"), "PT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("PT00000123"), "PT");
         });
         it("should return the expt prefix from an experiment code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("EXPT00000123"), "EXPT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("EXPT00000123"), "EXPT");
         });
         return it("should return null with bad code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("FRED0001343"), null);
+          return assert.equal(servUtilities.getPrefixFromEntityCode("FRED0001343"), null);
         });
       });
     });

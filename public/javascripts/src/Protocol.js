@@ -216,12 +216,18 @@
       }
       this.errorOwnerName = 'ProtocolBaseController';
       this.setBindings();
+      if (this.options.readOnly != null) {
+        this.readOnly = this.options.readOnly;
+      } else {
+        this.readOnly = false;
+      }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
       this.setupStatusSelect();
       this.setupScientistSelect();
       this.setupTagList();
       this.setUpAssayStageSelect();
+      this.setupAttachFileListController();
       this.render();
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
@@ -262,7 +268,8 @@
         this.$('.bv_cancel').hide();
         this.$('.bv_save').hide();
       }
-      return this.trigger('amClean');
+      this.trigger('amClean');
+      return this.setupAttachFileListController();
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
@@ -280,12 +287,9 @@
     };
 
     ProtocolBaseController.prototype.handleCreationDateChanged = function() {
-      this.model.getCreationDate().set({
-        dateValue: UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_creationDate'))),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      return this.model.trigger('change');
+      var value;
+      value = UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_creationDate')));
+      return this.handleValueChanged("CreationDate", value);
     };
 
     ProtocolBaseController.prototype.handleCreationDateIconClicked = function() {
@@ -293,28 +297,21 @@
     };
 
     ProtocolBaseController.prototype.handleAssayStageChanged = function() {
-      this.model.getAssayStage().set({
-        codeValue: this.assayStageListController.getSelectedCode(),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      return this.trigger('change');
+      var value;
+      value = this.assayStageListController.getSelectedCode();
+      return this.handleValueChanged("AssayStage", value);
     };
 
     ProtocolBaseController.prototype.handleAssayPrincipleChanged = function() {
-      return this.model.getAssayPrinciple().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple')),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
+      var value;
+      value = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayPrinciple'));
+      return this.handleValueChanged("AssayPrinciple", value);
     };
 
     ProtocolBaseController.prototype.handleAssayTreeRuleChanged = function() {
-      return this.model.getAssayTreeRule().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule')),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
+      var value;
+      value = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayTreeRule'));
+      return this.handleValueChanged("AssayTreeRule", value);
     };
 
     return ProtocolBaseController;

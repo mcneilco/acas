@@ -49,7 +49,6 @@ updateThing = (thing, testMode, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code
-		console.log baseurl
 		request = require 'request'
 		request(
 			method: 'PUT'
@@ -67,14 +66,6 @@ updateThing = (thing, testMode, callback) ->
 
 
 postThing = (isBatch, req, resp) ->
-	console.log "post thing parent"
-#	if req.query.testMode or global.specRunnerTestmode
-#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-#		if isBatch
-#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingBatch))
-#		else
-#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
-#	else
 	thingToSave = req.body
 	if req.query.testMode or global.specRunnerTestmode
 		unless thingToSave.codeName?
@@ -85,7 +76,7 @@ postThing = (isBatch, req, resp) ->
 	else
 
 	checkFilesAndUpdate = (thing) ->
-		fileVals = serverUtilityFunctions.getFileValesFromThing thing
+		fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
 		filesToSave = fileVals.length
 
 		completeThingUpdate = (thingToUpdate)->
@@ -99,9 +90,8 @@ postThing = (isBatch, req, resp) ->
 			if --filesToSave == 0 then completeThingUpdate(thing)
 
 		if filesToSave > 0
-			prefix = serverUtilityFunctions.getPrefixFromThingCode thing.codeName
+			prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
 			for fv in fileVals
-				console.log "updating file"
 				csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
 		else
 			resp.json thing
@@ -141,7 +131,7 @@ exports.putThing = (req, resp) ->
 #		thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
 #	else
 	thingToSave = req.body
-	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
 
 	completeThingUpdate = ->
@@ -155,15 +145,18 @@ exports.putThing = (req, resp) ->
 		if --filesToSave == 0 then completeThingUpdate()
 
 	if filesToSave > 0
-		prefix = serverUtilityFunctions.getPrefixFromThingCode req.params.code
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode req.body.codeName
 		for fv in fileVals
-			csUtilities.relocateEntityFile fv, prefix, req.params.code, fileSaveCompleted
+			console.log fv
+			console.log prefix
+			console.log req.body.codeName
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
 		completeThingUpdate()
 
 
 exports.batchesByParentCodeName = (req, resp) ->
-	console.log "get batches by parent codeName"
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingServiceTestJSON.batchList
@@ -180,9 +173,6 @@ exports.validateName = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json true
 	else
-		console.log "validate name"
-		console.log req
-		console.log JSON.stringify req.body.requestName
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validatename?lsKind="+req.params.lsKind
 		request = require 'request'
