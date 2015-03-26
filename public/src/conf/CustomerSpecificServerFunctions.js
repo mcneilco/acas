@@ -307,4 +307,34 @@
     return config.all.client.datafiles.downloadurl.prefix + fileValue;
   };
 
+  exports.getTestedEntityProperties = function(propertyList, entityList, callback) {
+    var ents, i, j, out, prop, prop2, _i, _j, _k, _len, _len1, _ref;
+    if (propertyList.indexOf('ERROR') > -1) {
+      callback(null);
+      return;
+    }
+    ents = entityList.split('\n');
+    out = "id,";
+    for (_i = 0, _len = propertyList.length; _i < _len; _i++) {
+      prop = propertyList[_i];
+      out += prop + ",";
+    }
+    out = out.slice(0, -1) + '\n';
+    for (i = _j = 0, _ref = ents.length - 2; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
+      out += ents[i] + ",";
+      j = 0;
+      for (_k = 0, _len1 = propertyList.length; _k < _len1; _k++) {
+        prop2 = propertyList[_k];
+        if (ents[i].indexOf('ERROR') < 0) {
+          out += i + j++;
+        } else {
+          out += "";
+        }
+        out += ',';
+      }
+      out = out.slice(0, -1) + '\n';
+    }
+    return callback(out);
+  };
+
 }).call(this);

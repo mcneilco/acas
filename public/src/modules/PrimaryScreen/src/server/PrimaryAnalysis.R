@@ -1619,47 +1619,41 @@ get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::appl
   return(properties)
 }
 
-validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFakeCorpBatchId="", errorEnv = NULL) {
-  # Valides the calculated results (for now, this only validates the mainCode)
+validateBatchCodes <- function(batchCodes, testMode = FALSE) {
+  # Valides a vector of batch codes
   #
   # Args:
-  #   resultTable:	            A "data.frame" of the parsed instrument files with compound information
-  #   dryRun:                   A boolean
+  #   batchCodes:	              A vector of batch codes
   #   testMode:                 A boolean
-  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #
   # Returns:
-  #   a copy of resultTable, with fixed batchCodes
-  
-  require(data.table)
+  #   a vector of fixed batchCodes
   
   # Get the current batch Ids
-  batchesToCheck <- resultTable$batchCode != "::"
-  batchIds <- unique(resultTable$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  #batchesToCheck <- resultTable$batchCode != "::"
+  uBatchCodes <- unique(batchCodes)
+  newBatchCodes <- getPreferredId(uBatchCodes, testMode=testMode)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
-  if (is.null(newBatchIds)) {
-    return(resultTable)
+  if (is.null(newBatchCodes)) {
+    return(batchCodes)
   }
   
-  mainCode <- "Corporate Batch ID"
-  
   # Give warning and error messages for changed or missing id's
-  for (batchId in newBatchIds) {
+  for (batchId in newBatchCodes) {
     if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
-      addError(paste0(mainCode, " '", batchId["requestName"], 
+      addError(paste0("Corporate Batch ID", " '", batchId["requestName"], 
                       "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
-                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
-                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      warnUser(paste0("A ", "Corporate Batch ID", " that you entered, '", batchId["requestName"], 
+                      "', was replaced by preferred ", "Corporate Batch ID", " '", batchId["preferredName"], 
+                      "'. If this is not what you intended, replace the ", "Corporate Batch ID", " with the correct ID."))
     }
   }
   
   # Put the batch id's into a useful format
-  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
-  names(preferredIdFrame) <- names(newBatchIds[[1]])
+  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchCodes), stringsAsFactors=FALSE)
+  names(preferredIdFrame) <- names(newBatchCodes[[1]])
   preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
   
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
@@ -1667,13 +1661,10 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
     prefDT <- as.data.table(preferredIdFrame)
     prefDT[ referenceName == "", referenceName := preferredName ]
     preferredIdFrame <- as.data.frame(prefDT)
-    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
-  } else {
-    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   }
   
   # Return the validated results
-  return(resultTable)
+  return(preferredIdFrame$preferredName[match(batchCodes, preferredIdFrame$requestName)])
 }
 
 ####### Main function
@@ -1725,11 +1716,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
   }
   
+  parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
+  parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
+  
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
   ## END test structure
     
-  # TODO: store this in protocol
+  # TODO in 1.6: store this in protocol
   parameters$latePeakTime <- 80
     
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
@@ -1773,8 +1767,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # getCompoundAssignments
     
     resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
-    
-    resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
     
     # this also performs any calculations from the GUI
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
