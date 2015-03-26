@@ -252,6 +252,7 @@ class window.ExampleThingController extends AbstractFormController
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
+			allowedFileTypes: ['png', 'jpeg']
 			hideDelete: false
 		@structuralFileController.on 'amDirty', =>
 			@trigger 'amDirty'

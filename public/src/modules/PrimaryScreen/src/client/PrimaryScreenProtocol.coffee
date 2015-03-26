@@ -200,6 +200,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 		@errorOwnerName = 'PrimaryScreenProtocolParametersController'
 		@setBindings()
 		super()
+		@htsAdmin = window.conf.roles.htsAdmin
 		@setupAssayActivitySelect()
 		@setupTargetOriginSelect()
 		@setupAssayTypeSelect()
@@ -234,7 +235,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			parameter: "assayActivity"
 			codeType: "assay"
 			codeKind: "activity"
-			roles: ["admin"]
+			roles: [@htsAdmin]
 		@assayActivityListController.on 'change', @handleAssayActivityChanged
 		@assayActivityListController.render()
 
@@ -248,7 +249,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			parameter: "targetOrigin"
 			codeType: "target"
 			codeKind: "origin"
-			roles: ["admin"]
+			roles: [@htsAdmin]
 		@targetOriginListController.on 'change', @handleTargetOriginChanged
 		@targetOriginListController.render()
 
@@ -262,7 +263,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			parameter: "assayType"
 			codeType: "assay"
 			codeKind: "type"
-			roles: ["admin"]
+			roles: [@htsAdmin]
 		@assayTypeListController.on 'change', @handleAssayTypeChanged
 		@assayTypeListController.render()
 
@@ -276,7 +277,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			parameter: "assayTechnology"
 			codeType: "assay"
 			codeKind: "technology"
-			roles: ["admin"]
+			roles: [@htsAdmin]
 		@assayTechnologyListController.on 'change', @handleAssayTechnologyChanged
 		@assayTechnologyListController.render()
 
@@ -290,7 +291,7 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 			parameter: "cellLine"
 			codeType: "reagent"
 			codeKind: "cell line"
-			roles: ["admin"]
+			roles: [@htsAdmin]
 		@cellLineListController.on 'change', @handleCellLineChanged
 		@cellLineListController.render()
 

@@ -380,6 +380,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['png', 'jpeg'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {

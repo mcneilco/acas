@@ -174,15 +174,18 @@
         <div class="control-group bv_group_normalizationRule">
             <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
             <div class="controls">
-                <!--<div class="bv_normalizationRule"></div>-->
                 <select class="bv_normalizationRule" style="width:349px;">
                 </select>
             </div>
         </div>
+
+        <div class="control-group">
+            <label class="control-label" style="width:100px;margin-left:40px;">*Transformation</label>
+            <div class="controls">
+                <span class="bv_transformationList"></span>
+            </div>
+        </div>
     </div>
-    <span style="margin-left:39px;">*Transformation
-    <span class="bv_transformationList"></span>
-    </span>
 
     <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:25px;" />
 
@@ -214,29 +217,13 @@
         </div>
     </div>
 
-
-    <!--<hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:6px;" />-->
-    <!---->
-    <!--<h5 style="margin-bottom:27px;">Upload Data and Analyze</h5>-->
-
-
 </script>
 
 
 <script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
 
-    <!--<h5>-->
-    <!--<span>Analysis Status:</span>-->
-    <!--<span class="bv_analysisStatus"></span>-->
-    <!--</h5>-->
     <div class="bv_fileUploadWrapper"></div>
 
-    <!--<div class="bv_resultsContainer">-->
-    <!--<h5>Results:</h5>-->
-    <!--<div class="bv_analysisResults span10 well well-small" style="padding-left:20px;">-->
-    <!--<div class="bv_analysisResultsHTML"></div>-->
-    <!--</div>-->
-    <!--</div>-->
     <div class="bv_saveExperimentToAnalyze span10">To analyze data, save the experiment.</div>
 
     <div class='modal bv_invalidAnalysisStates hide'>
@@ -275,7 +262,7 @@
             </label>
         </span>
         <button class="close bv_delete" style="margin-top:1px;">&times;</button>
-
+        </span>
     </div>
 </script>
 
@@ -288,13 +275,13 @@
 <script type="text/template" id="TransformationRuleView" xmlns="http://www.w3.org/1999/html">
     <div class="span5" style="width:510px;">
         <span class="control-group bv_group_transformationRule">
-            <select class="bv_transformationRule" style="margin-right:10px;width:347px;display: inline-block;"></select>
+            <select class="bv_transformationRule" style="margin-right:10px;margin-bottom:9px;width:347px;display: inline-block;"></select>
+            <button class="close bv_deleteRule" style="margin-right:130px;margin-top:3px;">&times;</button>
         </span>
-        <button class="close bv_deleteRule" style="margin-right:130px;margin-top:3px;">&times;</button>
     </div>
 </script>
 
 <script type="text/template" id="TransformationRuleListView" xmlns="http://www.w3.org/1999/html">
     <span class="bv_transformationInfo pull-right"></span>
-    <button class="btn bv_addTransformationButton" style="margin-left:388px;">Add Transformation</button>
+    <button class="btn bv_addTransformationButton" style="margin-left: 228px;">Add Transformation</button>
 </script>

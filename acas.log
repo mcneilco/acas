@@ -3229,3 +3229,28 @@
 2015-03-20T20:31:13.566Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
 2015-03-20T20:31:13.845Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
 2015-03-20T20:31:25.213Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-24T17:35:45.543Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-24T17:35:45.837Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-24T17:40:26.042Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-24T19:37:38.094Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-24T19:37:38.374Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-24T19:37:45.496Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-24T19:41:44.550Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-24T20:44:21.535Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-24T20:44:21.805Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-24T20:45:01.908Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-24T22:51:52.403Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-24T22:51:52.696Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-24T22:51:58.049Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-25T17:47:00.731Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-25T17:47:17.421Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-25T17:47:17.693Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-25T17:47:38.878Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-26T15:56:50.301Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-26T15:56:52.829Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-26T15:56:58.626Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
+2015-03-26T16:03:27.167Z - info:  sourceApp=logUsage, action=About to call R function: runPrimaryAnalysis, data={"fileToParse":"Archive (28).zip","reportFile":"","imagesFile":"","dryRunMode":"true","user":"bob","inputParameters":"{\"instrumentReader\":\"unassigned\",\"signalDirectionRule\":\"increasing\",\"aggregateBy\":\"cmpd batch conc\",\"aggregationMethod\":\"mean\",\"normalizationRule\":\"none\",\"assayVolume\":\"\",\"transferVolume\":\"\",\"dilutionFactor\":\"\",\"hitEfficacyThreshold\":null,\"hitSDThreshold\":null,\"positiveControl\":{\"batchCode\":\"sadf\",\"concentration\":12},\"negativeControl\":{\"batchCode\":\"adf\",\"concentration\":12},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":null,\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":true,\"primaryAnalysisReadList\":[{\"readPosition\":\"\",\"readName\":\"Calc: (maximum-minimum)/minimum\",\"activity\":true,\"readNumber\":1}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"}]}","primaryAnalysisExperimentId":"1176932","testMode":"false"}, user=bob, transactionId=null
+2015-03-26T16:03:39.227Z - info:  sourceApp=logUsage, action=Returned success from R function with trapped errors: runPrimaryAnalysis, data={"commit":false,"transactionId":null,"results":{"path":"/Users/evagao/Documents/McNeilCo/acas","folderToParse":"Archive (28).zip","dryRun":true,"htmlSummary":"<p>Please fix the following errors and use the 'Back' button at the bottom of this screen to upload a new version of the file.</p>\n  <h4 style=\"color:red\">Errors: 1 </h4>\n                         <ul><li> Configuration error: Instrument not loaded in system. </li></ul>\n  "},"hasError":true,"hasWarning":false,"errorMessages":[]}, user=bob, transactionId=null
+2015-03-26T17:34:36.412Z - info:  sourceApp=logUsage, action=ACAS Node server started, data=started, user=acas_system, transactionId=null
+2015-03-26T17:34:36.784Z - info:  sourceApp=logUsage, action=ACAS API server started, data=started, user=acas_system, transactionId=null
+2015-03-26T17:34:55.419Z - info:  sourceApp=logUsage, action=User logged in succesfully: , data=, user=bob, transactionId=null
