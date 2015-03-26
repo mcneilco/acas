@@ -236,3 +236,26 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 exports.getDownloadUrl = (fileValue) ->
 	config = require '../../../conf/compiled/conf.js'
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
+
+exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
+	# This is a stub implementation that returns empty results
+
+	if propertyList.indexOf('ERROR') > -1
+		callback null
+		return
+
+	ents = entityList.split '\n'
+	out = "id,"
+	for prop in propertyList
+		out += prop+","
+	out = out.slice(0,-1) + '\n'
+	for i in [0..ents.length-2]
+		out += ents[i]+","
+		j=0
+		for prop2 in propertyList
+			if ents[i].indexOf('ERROR') < 0 then out += i + j++
+			else out += ""
+			out += ','
+		out = out.slice(0,-1) + '\n'
+
+	callback out
