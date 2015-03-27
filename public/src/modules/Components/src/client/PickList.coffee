@@ -6,6 +6,10 @@ class window.PickListList extends Backbone.Collection
 	setType: (type) ->
 		@type = type
 
+	getModelWithId: (id) ->
+		@detect (enu) ->
+			enu.get("id") is id
+
 	getModelWithCode: (code) ->
 		@detect (enu) ->
 			enu.get("code") is code
@@ -21,6 +25,21 @@ class window.PickListOptionController extends Backbone.View
 	render: =>
 		$(@el).attr("value", @model.get("code")).text @model.get("name")
 		@
+
+class window.PickListOptionControllerForLsThing extends Backbone.View
+	tagName: "option"
+	initialize: ->
+
+	render: =>
+		displayValue = ""
+		_.each(@model.get('lsLabels'), (label) ->
+			if label.preferred
+				displayValue = label.labelText
+		)
+		$(@el).attr("value", @model.get("id")).text displayValue
+		@
+
+
 
 class window.PickListSelectController extends Backbone.View
 	initialize: ->
@@ -110,6 +129,22 @@ class window.PickListSelectController extends Backbone.View
 
 	checkOptionInCollection: (code) => #checks to see if option already exists in the picklist list
 		return @collection.findWhere({code: code})
+
+class window.PickListForLsThingsSelectController extends PickListSelectController
+	addOne: (enm) =>
+		shouldRender = @showIgnored
+		if enm.get 'ignored'
+			if @selectedCode?
+				if @selectedCode is enm.get 'code'
+					shouldRender = true
+		else
+			shouldRender = true
+
+		if shouldRender
+			$(@el).append new PickListOptionControllerForLsThing(model: enm).render().el
+
+	getSelectedModel: ->
+		@collection.getModelWithId parseInt(@getSelectedCode())
 
 
 class window.AddParameterOptionPanel extends Backbone.Model
@@ -286,14 +321,14 @@ class window.EditablePickListSelectController extends Backbone.View
 		code = @pickListController.getSelectedCode()
 		selectedModel = @pickListController.collection.getModelWithCode(code)
 		if selectedModel != undefined and selectedModel.get('code') != "unassigned"
-			if selectedModel.get('id')? or selectedModel.get('codeOrigin') != "ACAS DDICT"
+			if selectedModel.get('id')?
 				callback.call()
 			else
 				$.ajax
 					type: 'POST'
 					url: "/api/codetables"
 					data:
-						JSON.stringify(codeEntry:(selectedModel))
+					JSON.stringify(codeEntry:(selectedModel))
 					contentType: 'application/json'
 					dataType: 'json'
 					success: (response) =>
