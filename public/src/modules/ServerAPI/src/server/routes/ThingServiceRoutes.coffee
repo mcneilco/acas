@@ -7,6 +7,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
 	app.post '/api/validateName/:lsKind', exports.validateName
+	app.get '/api/thingsascodetables/:type/:kind', exports.getLSThingsFormattedAsCodeTableValues
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -17,6 +18,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 	app.post '/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName
+	app.get '/api/thingsascodetables/:type/:kind', loginRoutes.ensureAuthenticated, exports.getLSThingsFormattedAsCodeTableValues
+
 
 exports.thingsByTypeKind = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -49,6 +52,7 @@ updateThing = (thing, testMode, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code
+		console.log baseurl
 		request = require 'request'
 		request(
 			method: 'PUT'
@@ -66,6 +70,14 @@ updateThing = (thing, testMode, callback) ->
 
 
 postThing = (isBatch, req, resp) ->
+	console.log "post thing parent"
+	#	if req.query.testMode or global.specRunnerTestmode
+	#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+	#		if isBatch
+	#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingBatch))
+	#		else
+	#			thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
+	#	else
 	thingToSave = req.body
 	if req.query.testMode or global.specRunnerTestmode
 		unless thingToSave.codeName?
@@ -76,7 +88,7 @@ postThing = (isBatch, req, resp) ->
 	else
 
 	checkFilesAndUpdate = (thing) ->
-		fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
+		fileVals = serverUtilityFunctions.getFileValesFromThing thing, false
 		filesToSave = fileVals.length
 
 		completeThingUpdate = (thingToUpdate)->
@@ -90,8 +102,9 @@ postThing = (isBatch, req, resp) ->
 			if --filesToSave == 0 then completeThingUpdate(thing)
 
 		if filesToSave > 0
-			prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
+			prefix = serverUtilityFunctions.getPrefixFromThingCode thing.codeName
 			for fv in fileVals
+				console.log "updating file"
 				csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
 		else
 			resp.json thing
@@ -131,7 +144,7 @@ exports.putThing = (req, resp) ->
 #		thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
 #	else
 	thingToSave = req.body
-	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
+	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave, true
 	filesToSave = fileVals.length
 
 	completeThingUpdate = ->
@@ -145,7 +158,7 @@ exports.putThing = (req, resp) ->
 		if --filesToSave == 0 then completeThingUpdate()
 
 	if filesToSave > 0
-		prefix = serverUtilityFunctions.getPrefixFromEntityCode req.body.codeName
+		prefix = serverUtilityFunctions.getPrefixFromThingCode req.body.codeName
 		for fv in fileVals
 			console.log fv
 			console.log prefix
@@ -157,6 +170,7 @@ exports.putThing = (req, resp) ->
 
 
 exports.batchesByParentCodeName = (req, resp) ->
+	console.log "get batches by parent codeName"
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingServiceTestJSON.batchList
@@ -173,6 +187,9 @@ exports.validateName = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json true
 	else
+		console.log "validate name"
+		console.log req
+		console.log JSON.stringify req.body.requestName
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validatename?lsKind="+req.params.lsKind
 		request = require 'request'
@@ -187,6 +204,32 @@ exports.validateName = (req, resp) ->
 				resp.json json
 			else
 				console.log 'got ajax error trying to save thing parent'
+				console.log error
+				console.log json
+				console.log response
+		)
+
+
+exports.getLSThingsFormattedAsCodeTableValues = (req, resp) ->
+	if global.specRunnerTestmode
+		fullCodeTableJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
+		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:req.params.type, kind:req.params.kind})
+		resp.end JSON.stringify correctCodeTable['codes']
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = "#{config.all.client.service.persistence.fullpath}lsthings/codetable?lsType=#{req.params.type}&lsKind=#{req.params.kind}"
+		console.log "baseurl"
+		console.log baseurl
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.log 'got ajax error trying to get code table entries'
 				console.log error
 				console.log json
 				console.log response
