@@ -60,94 +60,103 @@
   };
 
   updateProt = function(prot, testMode, callback) {
-    var baseurl, config, request;
-    if (testMode || global.specRunnerTestmode) {
-      return callback(prot);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
-      request = require('request');
-      return request({
-        method: 'PUT',
-        url: baseurl,
-        body: prot,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            return callback(json);
-          } else {
-            console.log('got ajax error trying to update protocol');
-            console.log(error);
-            return console.log(response);
-          }
-        };
-      })(this));
-    }
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    return serverUtilityFunctions.createLSTransaction(prot.recordedDate, "updated protocol", function(transaction) {
+      var baseurl, config, request;
+      prot = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, prot);
+      if (testMode || global.specRunnerTestmode) {
+        return callback(prot);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
+        request = require('request');
+        return request({
+          method: 'PUT',
+          url: baseurl,
+          body: prot,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (!error && response.statusCode === 200) {
+              return callback(json);
+            } else {
+              console.log('got ajax error trying to update protocol');
+              console.log(error);
+              return console.log(response);
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   postProtocol = function(req, resp) {
-    var baseurl, checkFilesAndUpdate, config, protToSave, request;
+    var protToSave;
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     protToSave = req.body;
-    if (req.query.testMode || global.specRunnerTestmode) {
-      if (protToSave.codeName == null) {
-        protToSave.codeName = "PROT-00000001";
+    return serverUtilityFunctions.createLSTransaction(protToSave.recordedDate, "new protocol", function(transaction) {
+      var baseurl, checkFilesAndUpdate, config, request;
+      protToSave = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, protToSave);
+      if (req.query.testMode || global.specRunnerTestmode) {
+        if (protToSave.codeName == null) {
+          protToSave.codeName = "PROT-00000001";
+        }
       }
-    }
-    checkFilesAndUpdate = function(prot) {
-      var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
-      fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
-      filesToSave = fileVals.length;
-      completeProtUpdate = function(protToUpdate) {
-        return updateProt(protToUpdate, req.query.testMode, function(updatedProt) {
-          return resp.json(updatedProt);
-        });
-      };
-      fileSaveCompleted = function(passed) {
-        if (!passed) {
-          resp.statusCode = 500;
-          return resp.end("file move failed");
-        }
-        if (--filesToSave === 0) {
-          return completeProtUpdate(prot);
-        }
-      };
-      if (filesToSave > 0) {
-        prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
-        _results = [];
-        for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-          fv = fileVals[_i];
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
-        }
-        return _results;
-      } else {
-        return resp.json(prot);
-      }
-    };
-    if (req.query.testMode || global.specRunnerTestmode) {
-      return checkFilesAndUpdate(protToSave);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocols";
-      request = require('request');
-      return request({
-        method: 'POST',
-        url: baseurl,
-        body: protToSave,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
-            return checkFilesAndUpdate(json);
-          } else {
-            console.log('got ajax error trying to save new protocol');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
+      checkFilesAndUpdate = function(prot) {
+        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
+        filesToSave = fileVals.length;
+        completeProtUpdate = function(protToUpdate) {
+          return updateProt(protToUpdate, req.query.testMode, function(updatedProt) {
+            return resp.json(updatedProt);
+          });
+        };
+        fileSaveCompleted = function(passed) {
+          if (!passed) {
+            resp.statusCode = 500;
+            return resp.end("file move failed");
+          }
+          if (--filesToSave === 0) {
+            return completeProtUpdate(prot);
           }
         };
-      })(this));
-    }
+        if (filesToSave > 0) {
+          prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
+          }
+          return _results;
+        } else {
+          return resp.json(prot);
+        }
+      };
+      if (req.query.testMode || global.specRunnerTestmode) {
+        return checkFilesAndUpdate(protToSave);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "protocols";
+        request = require('request');
+        return request({
+          method: 'POST',
+          url: baseurl,
+          body: protToSave,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (!error && response.statusCode === 201) {
+              return checkFilesAndUpdate(json);
+            } else {
+              console.log('got ajax error trying to save new protocol');
+              console.log(error);
+              console.log(json);
+              return console.log(response);
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   exports.postProtocol = function(req, resp) {

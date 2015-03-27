@@ -81,34 +81,50 @@
           fs.unlink(this.testFile1Path);
           return fs.unlink(this.testFile2Path);
         });
-        it("should return a protocol", function() {
-          return assert.equal(this.responseJSON.codeName === null, false);
+        describe("basic saving", function() {
+          it("should return a protocol", function() {
+            return assert.equal(this.responseJSON.codeName === null, false);
+          });
+          it("should have a trans at the top level", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsTransaction)), false);
+          });
+          it("should have a trans in the labels", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsLabels[0].lsTransaction)), false);
+          });
+          it("should have a trans in the states", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
+          });
+          return it("should have a trans in the values", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
+          });
         });
-        it("should return the first fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol");
-        });
-        it("should return the first fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol");
-        });
-        it("should return the second fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv");
-        });
-        it("should return the second fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[2].comments, "Test.csv");
-        });
-        it("should move the first file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
-        });
-        return it("should move the second file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
+        return describe("file handling", function() {
+          it("should return the first fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol");
+          });
+          it("should return the first fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol");
+          });
+          it("should return the second fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv");
+          });
+          it("should return the second fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[2].comments, "Test.csv");
+          });
+          it("should move the first file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
+          return it("should move the second file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
         });
       });
       return describe("when updating a protocol", function() {
@@ -122,6 +138,7 @@
           updatedData = protocolServiceTestJSON.fullSavedProtocol;
           updatedData.lsStates[0].lsValues[1].id = null;
           updatedData.lsStates[0].lsValues[2].id = null;
+          this.originalTransatcionId = updatedData.lsTransaction;
           return request.put({
             url: "http://localhost:" + config.all.server.nodeapi.port + "/api/protocols/1234",
             json: true,
@@ -138,34 +155,50 @@
           fs.unlink(this.testFile1Path);
           return fs.unlink(this.testFile2Path);
         });
-        it("should return a protocol", function() {
-          return assert.equal(this.responseJSON.codeName === null, false);
+        describe("basic saving", function() {
+          it("should return a protocol", function() {
+            return assert.equal(this.responseJSON.codeName === null, false);
+          });
+          it("should have a new trans at the top level", function() {
+            return assert.equal(this.responseJSON.lsTransaction === this.originalTransatcionId, false);
+          });
+          it("should have a trans in the labels", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsLabels[0].lsTransaction)), false);
+          });
+          it("should have a trans in the states", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
+          });
+          return it("should have a trans in the values", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
+          });
         });
-        it("should return the first fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol");
-        });
-        it("should return the first fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol");
-        });
-        it("should return the second fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv");
-        });
-        it("should return the second fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[2].comments, "Test.csv");
-        });
-        it("should move the first file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
-        });
-        return it("should move the second file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
+        return describe("file handling", function() {
+          it("should return the first fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol");
+          });
+          it("should return the first fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol");
+          });
+          it("should return the second fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv");
+          });
+          it("should return the second fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[2].comments, "Test.csv");
+          });
+          it("should move the first file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
+          return it("should move the second file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
         });
       });
     });

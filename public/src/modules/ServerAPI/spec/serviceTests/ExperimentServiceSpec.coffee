@@ -74,22 +74,32 @@ describe "Experiment Service testing", ->
 			after ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
-			it "should return a experiment", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[0].fileValue, "experiments/EXPT-00000001/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[0].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].fileValue, "experiments/EXPT-00000001/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
+			describe "basic saving", ->
+				it "should return a experiment", ->
+					assert.equal @responseJSON.codeName == null, false
+				it "should have a trans at the top level", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsTransaction)), false
+				it "should have a trans in the labels", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsLabels[0].lsTransaction)), false
+				it "should have a trans in the states", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+				it "should have a trans in the values", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+			describe "file handling", ->
+				it "should return the first fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[0].fileValue, "experiments/EXPT-00000001/TestFile.mol"
+				it "should return the first fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[0].comments, "TestFile.mol"
+				it "should return the second fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[1].fileValue, "experiments/EXPT-00000001/Test.csv"
+				it "should return the second fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[1].comments, "Test.csv"
+				it "should move the first file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
+				it "should move the second file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
 
 		describe "when updating a experiment", ->
 			before (done) ->
@@ -101,6 +111,7 @@ describe "Experiment Service testing", ->
 				updatedData = experimentServiceTestJSON.fullExperimentFromServer
 				updatedData.lsStates[1].lsValues[1].id = null
 				updatedData.lsStates[1].lsValues[2].id = null
+				@originalTransatcionId = updatedData.lsTransaction
 				request.put
 					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/experiments/1234"
 					json: true
@@ -113,22 +124,32 @@ describe "Experiment Service testing", ->
 			after ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
-			it "should return a experiment", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[1].lsValues[1].fileValue, "experiments/EXPT-00000001/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[1].lsValues[1].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[1].lsValues[2].fileValue, "experiments/EXPT-00000001/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[1].lsValues[2].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
+			describe "basic saving", ->
+				it "should return a experiment", ->
+					assert.equal @responseJSON.codeName == null, false
+				it "should have a new trans at the top level", ->
+					assert.equal @responseJSON.lsTransaction==@originalTransatcionId, false
+				it "should have a trans in the labels", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsLabels[0].lsTransaction)), false
+				it "should have a trans in the states", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+				it "should have a trans in the values", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+			describe "file handling", ->
+				it "should return the first fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[1].lsValues[1].fileValue, "experiments/EXPT-00000001/TestFile.mol"
+				it "should return the first fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[1].lsValues[1].comments, "TestFile.mol"
+				it "should return the second fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[1].lsValues[2].fileValue, "experiments/EXPT-00000001/Test.csv"
+				it "should return the second fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[1].lsValues[2].comments, "Test.csv"
+				it "should move the first file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
+				it "should move the second file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
 
 	describe "Experiment status code", ->
 		describe 'when experiment status code service called', ->
