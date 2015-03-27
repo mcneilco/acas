@@ -7,14 +7,15 @@ class window.Thing extends Backbone.Model
 		#attrs =
 		@set lsType: "thing"
 		@set lsKind: "thing"
-#		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
+		#		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
 		@set corpName: ""
 		@set recordedBy: window.AppLaunchParams.loginUser.username
 		@set recordedDate: new Date().getTime()
 		@set shortDescription: " "
 		@set lsLabels: new LabelList()
 		@set lsStates: new StateList()
-
+		@set firstLsThings: new FirstLsThingItxList()
+		@set secondLsThings: new SecondLsThingItxList()
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -41,10 +42,13 @@ class window.Thing extends Backbone.Model
 				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
+				@createDefaultFirstLsThingItx()
+				@createDefaultSecondLsThingItx()
 		else
 			@createDefaultLabels()
 			@createDefaultStates()
-
+			@createDefaultFirstLsThingItx()
+			@createDefaultSecondLsThingItx()
 		resp
 
 	createDefaultLabels: =>
@@ -54,7 +58,7 @@ class window.Thing extends Backbone.Model
 		for dLabel in @lsProperties.defaultLabels
 			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 			@set dLabel.key, newLabel
-#			if newLabel.get('preferred') is undefined
+			#			if newLabel.get('preferred') is undefined
 			newLabel.set preferred: dLabel.preferred
 
 
@@ -92,6 +96,20 @@ class window.Thing extends Backbone.Model
 		newValue.set value: newVal
 		@set vKind, newValue
 
+	createDefaultFirstLsThingItx: =>
+		# loop over defaultFirstLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultFirstLsThingItx
+			thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
+
+	createDefaultSecondLsThingItx: =>
+		# loop over defaultSecondLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultSecondLsThingItx
+			thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
+
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
@@ -117,6 +135,12 @@ class window.Thing extends Backbone.Model
 		for dLabel in @lsProperties.defaultLabels
 			@unset(dLabel.key)
 
+		for itx in @lsProperties.defaultFirstLsThingItx
+			@unset(itx.key)
+		@get('firstLsThings').reformatBeforeSaving()
+		for itx in @lsProperties.defaultSecondLsThingItx
+			@unset(itx.key)
+
 		for dValue in @lsProperties.defaultValues
 			if @get(dValue.key)?
 				if @get(dValue.key).get('value') is undefined
@@ -134,7 +158,7 @@ class window.Thing extends Backbone.Model
 
 	duplicate: =>
 		copiedThing = @.clone()
-#		copiedThing.unset 'lsLabels'
+		#		copiedThing.unset 'lsLabels'
 		copiedThing.unset 'lsStates'
 		copiedThing.unset 'id'
 		copiedThing.unset 'codeName'
@@ -170,3 +194,148 @@ class window.Thing extends Backbone.Model
 	getStateValueHistory: (vKind) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
 		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+
+
+#class window.DocumentModel extends Thing
+#	urlRoot:"/api/things/legalDocument/MTA"
+#	className: "DocumentManagerTermType"
+#	initialize: ->
+#		@.set
+#			lsType: "legalDocument"
+#			lsKind: "MTA"
+#		super()
+#
+#	lsProperties:
+#		defaultLabels: [
+#			key: 'document name'
+#			type: 'name'
+#			kind: 'document name'
+#			preferred: true
+##			labelText: "" #gets created when createDefaultLabels is called
+#		]
+#		defaultValues: [
+#			key: 'document file'
+#			stateType: 'metadata'
+#			stateKind: 'documentMetadata'
+#			type: 'fileValue'
+#			kind: 'document file'
+#		,
+#			key: 'owner'
+#			stateType: 'metadata'
+#			stateKind: 'legalDocument metadata'
+#			type: 'stringValue'
+#			kind: 'owner'
+#		,
+#			key: 'amount'
+#			stateType: 'metadata'
+#			stateKind: 'documentMetadata'
+#			type: 'numberValue'
+#			kind: 'amount'
+#		,
+#			key: 'active'
+#			stateType: 'metadata'
+#			stateKind: 'documentMetadata'
+#			type: 'stringValue'
+#			kind: 'active'
+#		,
+#			key: 'restricted material name'
+#			stateType: 'array'
+#			stateKind: 'restricted materials'
+#			type: 'stringValue'
+#			kind: 'restricted material name'
+#		]
+#		defaultFirstLsThingItx: [
+#
+#		]
+#		defaultSecondLsThingItx: [
+#			key: 'contactInteraction'
+#			itxType: 'incorporates'
+#			itxKind: 'document_contact'
+#		,
+#			key: 'termInteraction'
+#			itxType: 'incorporates'
+#			itxKind: 'document_term'
+#		,
+#			key: 'projectInteraction'
+#			itxType: 'incorporates'
+#			itxKind: 'document_project'
+#		]
+#
+#
+#	validate: (attrs) ->
+#		console.log "attrs"
+#		console.log attrs
+#		errors = []
+#		if attrs["document name"]?
+#			documentTitle = attrs["document name"].get('labelText')
+#			if documentTitle is "" or documentTitle is undefined
+#				errors.push
+#					attribute: 'documentTitle'
+#					message: "Title must be set"
+#		if attrs.documentType?
+#			documentType = attrs.documentType.get('value')
+#			if documentType is "unassigned" or documentType is undefined
+#				errors.push
+#					attribute: 'documentType'
+#					message: "Type must be set"
+#		if attrs.documentOwner?
+#			documentOwner = attrs.documentOwner.get('value')
+#			if documentOwner is "unassigned" or documentOwner is undefined
+#				errors.push
+#					attribute: 'documentOwner'
+#					message: "Owner must be set"
+#		if attrs.documentProject?
+#			documentProject = attrs.documentProject.get('value')
+#			if documentProject is "unassigned" or documentProject is undefined
+#				errors.push
+#					attribute: 'documentProject'
+#					message: "Type must be set"
+#		if attrs.documentAmount?
+#			documentAmount = attrs.documentAmount.get('value')
+#			if documentAmount is "" or documentAmount is undefined
+#				errors.push
+#					attribute: 'documentAmount'
+#					message: "Amount must be set"
+#		if attrs.documentContact?
+#			documentContact = attrs.documentContact.get('value')
+#			if documentContact is "unassigned" or documentContact is undefined
+#				errors.push
+#					attribute: 'documentContact'
+#					message: "Contact must be set"
+#
+#		if errors.length > 0
+#			return errors
+#		else
+#			return null
+#
+#	prepareToSave: ->
+#		rBy = @get('recordedBy')
+#		rDate = new Date().getTime()
+#		@set recordedDate: rDate
+#		@get('lsStates').each (state) ->
+#			unless state.get('recordedBy') != ""
+#				state.set recordedBy: rBy
+#			unless state.get('recordedDate') != null
+#				state.set recordedDate: rDate
+#			state.get('lsValues').each (val) ->
+#				unless val.get('recordedBy') != ""
+#					val.set recordedBy: rBy
+#				unless val.get('recordedDate') != null
+#					val.set recordedDate: rDate
+#
+#		@get('lsLabels').each (label) ->
+#			unless label.get('recordedBy') != ""
+#				label.set recordedBy: rBy
+#			unless label.get('recordedDate') != null
+#				label.set recordedDate: rDate
+#
+#		delete @attributes._changing
+#		delete @attributes._previousAttributes
+#		delete @attributes.cid
+#		delete @attributes.changed
+#		delete @attributes._pending
+#		delete @attributes.lsProperties
+#		delete @attributes.urlRoot
+#		delete @attributes.className
+#		delete @attributes.validationError
+#		delete @attributes.idAttribute
