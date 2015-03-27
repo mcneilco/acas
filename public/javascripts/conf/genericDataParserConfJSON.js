@@ -330,7 +330,7 @@
           kindName: "fluorescent",
           typeName: "stringValue"
         }, {
-          kindName: "transformed efficacy",
+          kindName: "efficacy",
           typeName: "numericValue"
         }, {
           kindName: "normalized efficacy",
