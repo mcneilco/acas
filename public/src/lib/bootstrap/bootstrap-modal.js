@@ -37,13 +37,13 @@
 
       constructor: Modal
 
-    , toggle: function () {
-        return this[!this.isShown ? 'show' : 'hide']()
+    , toggle: function (_eventSource) {
+        return this[!this.isShown ? 'show' : 'hide'](_eventSource)
       }
 
-    , show: function () {
+    , show: function (_eventSource) {
         var that = this
-          , e = $.Event('show')
+          , e = $.Event('show', { relatedTarget: _eventSource })
 
         this.$element.trigger(e)
 
@@ -113,7 +113,9 @@
 
     , enforceFocus: function () {
         var that = this
-        $(document).on('focusin.modal', function (e) {
+        $(document)
+            .off('focusin.modal') // guard against infinite focus loop
+            .on('focusin.modal', function (e) {
           if (that.$element[0] !== e.target && !that.$element.has(e.target).length) {
             that.$element.focus()
           }
@@ -196,14 +198,14 @@
  /* MODAL PLUGIN DEFINITION
   * ======================= */
 
-  $.fn.modal = function (option) {
+  $.fn.modal = function (option, _eventSource) {
     return this.each(function () {
       var $this = $(this)
         , data = $this.data('modal')
         , options = $.extend({}, $.fn.modal.defaults, $this.data(), typeof option == 'object' && option)
       if (!data) $this.data('modal', (data = new Modal(this, options)))
-      if (typeof option == 'string') data[option]()
-      else if (options.show) data.show()
+      if (typeof option == 'string') data[option](_eventSource)
+      else if (options.show) data.show(_eventSource)
     })
   }
 
@@ -229,7 +231,7 @@
       e.preventDefault()
 
       $target
-        .modal(option)
+        .modal(option, this)
         .one('hide', function () {
           $this.focus()
         })
