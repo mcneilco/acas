@@ -2167,7 +2167,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
   
   # If there are errors, do not allow an upload
-  errorFree <- length(errorList)==0
+  errorFree <- length(c(errorList, messenger()$errors))==0
   
   # When not on a dry run, creates a transaction for all of these
   lsTransaction <- NULL
@@ -2203,7 +2203,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
-  errorFree <- length(errorList)==0
+  errorFree <- length(c(errorList, messenger()$errors))==0
   
   # Delete any old data under the same experiment name (delete and reload)
   deletedExperimentCodes <- NULL
@@ -2477,7 +2477,7 @@ parseGenericData <- function(request) {
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
   errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
   
@@ -2709,8 +2709,8 @@ getUnitFromParentheses <- function(columnHeaders) {
 }
 external.parseGenericData <- function(request) {
   # Not in use yet, see ?messenger for future standard
-  globalMessenger <- messenger()
-  globalMessenger$reset()
-  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
+  racasMessenger <- messenger()
+  racasMessenger$reset()
+  racasMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
   return(parseGenericData(request))
 }

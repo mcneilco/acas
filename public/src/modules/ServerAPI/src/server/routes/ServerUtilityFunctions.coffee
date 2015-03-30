@@ -197,7 +197,7 @@ exports.getPrefixFromEntityCode = (code) ->
 	return null
 
 exports.createLSTransaction = (date, comments, callback) ->
-	if global.specRunnerTestmode?
+	if global.specRunnerTestmode
 		console.log "create lsTransaction stubsMode"
 		callback
 			comments: "test transaction"

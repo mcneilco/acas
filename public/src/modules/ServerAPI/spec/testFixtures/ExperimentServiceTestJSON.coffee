@@ -232,33 +232,23 @@
 	]
 
 	exports.experimentToSave =
-		ignored: false
-		lsKind: "primary screen experiment" #changed from kind to lsKind
-		modifiedBy: null
-		modifiedDate: null
-		recordedBy: "jmcneil"
-		recordedDate: 1361600860000
-		shortDescription: "experiment short description goes here"
+		analysisGroups: []
+		lsKind: "default" #changed from kind to lsKind
 		lsLabels: [
 			ignored: false
 			imageFile: null
+			labelText: "testing eg experiment for experiment service spec"
 			lsKind: "experiment name"
-			labelText: "FLIPR target A biochemical"
 			lsType: "name"
-			lsTypeAndKind: "name_experiment name"
-			modifiedDate: null
 			physicallyLabled: false
 			preferred: true
-			recordedBy: "jmcneil"
-			recordedDate: 1362435678000
-			version: 0
+			recordedBy: "bob"
+			recordedDate: 1427743629793
 		]
 		lsStates: [
-			comments: null
 			ignored: false
 			lsKind: "experiment metadata"
 			lsType: "metadata"
-			lsTypeAndKind: "metadata_experiment metadata"
 			lsValues: [
 				clobValue: null
 				codeValue: null
@@ -318,437 +308,273 @@
 				urlValue: null
 				version: 0
 			,
-				clobValue: "<p>Analysis not yet completed</p>"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "analysis result html"
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_analysis result html"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: "<p>Dry Run not started</p>"
-#				clobValue: "<p>Dry Run complete</p>"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "dry run result html"
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_dry run result html"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: "<p>Model fit not yet completed</p>"
-#				clobValue: "<p>Model fit completed</p>"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "model fit result html"
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_model fit result html"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: null
-				codeType: "dry run"
-				codeKind: "status"
-				codeValue: "not started"
-#				codeValue: "running"
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "dry run status"
-				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_dry run status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: null
-				codeType: "analysis"
-				codeKind: "status"
-				codeOrigin: "ACAS DDICT"
-				codeValue: "not started"
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "analysis status"
-				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_analysis status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-#				stringValue: "running"
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: null
-				codeValue: "not started"
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "model fit status"
-				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_model fit status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-#				stringValue: "complete"
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: '{"positiveControl":{"batchCode":"CMPD-12345678-01","concentration":10,"concentrationUnits":"uM"},"negativeControl":{"batchCode":"CMPD-87654321-01","concentration":1,"concentrationUnits":"uM"},"agonistControl":{"batchCode":"CMPD-87654399-01","concentration":250753.77,"concentrationUnits":"uM"},"vehicleControl":{"batchCode":"CMPD-00000001-01","concentration":null,"concentrationUnits":null},"instrumentReader":"flipr","signalDirectionRule":"increasing","aggregateBy":"compound batch concentration","aggregationMethod":"median","normalizationRule":"plate order only","hitEfficacyThreshold":42,"hitSDThreshold":5,"thresholdType":"sd","transferVolume":12,"dilutionFactor":21,"volumeType":"dilution","assayVolume":24,"htsFormat":false,"autoHitSelection":false,"matchReadName":false,"primaryAnalysisReadList":[{"readNumber":1,"readPosition":11,"readName":"none","activity":false},{"readNumber":2,"readPosition":12,"readName":"fluorescence","activity":true},{"readNumber":3,"readPosition":13,"readName":"luminescence","activity":false}],"transformationRuleList":[{"transformationRule":"% efficacy"},{"transformationRule":"sd"},{"transformationRule":"null"}]}'
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "data analysis parameters"
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_data analysis parameters"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: '{ "max": { "limitType": "pin", "value": 100 }, "min": { "limitType": "none", "value": null }, "slope": { "limitType": "limit", "value": 1.5 }, "inactiveThreshold": 20, "inverseAgonistMode": true}'
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
-				ignored: false
-				lsKind: "model fit parameters"
-				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_model fit parameters"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
-			,
-				clobValue: null
+				codeKind: "scientist"
 				codeOrigin: "ACAS authors"
-				codeValue: "jane"
-				comments: null
-				dateValue: null
-				fileValue: null
+				codeType: "assay"
+				codeValue: "egao"
 				ignored: false
 				lsKind: "scientist"
 				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_scientist"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
 				ignored: false
 				lsKind: "notebook"
 				lsType: "stringValue"
-				lsTypeAndKind: "stringValue_notebook"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 				stringValue: "911"
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
 			,
-				clobValue: null
-				codeValue: null
-				comments: null
-				dateValue: 1342080000000
-				fileValue: null
+				dateValue: 1427698800000
 				ignored: false
 				lsKind: "completion date"
 				lsType: "dateValue"
-				lsTypeAndKind: "dateValue_completion date"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 			,
-				clobValue: null
 				codeKind: "status"
 				codeOrigin: "ACAS DDICT"
 				codeType: "experiment"
-				codeValue: "started"
-				comments: null
-				dateValue: null
-				fileValue: null
+				codeValue: "created"
 				ignored: false
 				lsKind: "experiment status"
 				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_experiment status"
-				modifiedBy: null
-				modifiedDate: null
-				numberOfReplicates: null
-				numericValue: null
-				operatorKind: null
-				operatorType: "comparison"
-				operatorTypeAndKind: "comparison_null"
-				publicData: true
-				recordedBy: "smeyer"
-				recordedDate: 1375889487000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				uncertaintyType: null
-				unitKind: null
-				unitType: null
-				unitTypeAndKind: "null_null"
-				urlValue: null
-				version: 0
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 			,
 				clobValue: "experiment details go here"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
 				ignored: false
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				urlValue: null
 				lsKind: "experiment details"
-				valueOperator: null
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_experiment details"
-				valueUnit: null
-				version: 0
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 			,
 				clobValue: "comments go here"
-				codeValue: null
-				comments: null
-				dateValue: null
-				fileValue: null
 				ignored: false
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				urlValue: null
 				lsKind: "comments"
-				valueOperator: null
 				lsType: "clobValue"
-				lsTypeAndKind: "clobValue_comments"
-				valueUnit: null
-				version: 0
+				recordedBy: "bob"
+				recordedDate: 1427743654063
 			,
-				clobValue: null
+				codeKind: "biology"
+				codeOrigin: "ACAS DDICT"
+				codeType: "project"
 				codeValue: "project1"
-				comments: null
-				dateValue: null
-				fileValue: null
 				ignored: false
-				modifiedDate: null
-				numericValue: null
-				publicData: true
-				recordedDate: 1363388477000
-				sigFigs: null
-				stringValue: null
-				uncertainty: null
-				urlValue: null
 				lsKind: "project"
-				valueOperator: null
 				lsType: "codeValue"
-				lsTypeAndKind: "codeValue_project"
-				valueUnit: null
+				recordedBy: "bob"
+				recordedDate: 1427743654063
+			]
+			recordedBy: "smeyer"
+			recordedDate: 1427743654063
+		]
+		lsTags: []
+		lsType: "default"
+		protocol:
+			codeName: "PROT-00000143"
+			deleted: false
+			experiments: []
+			id: 1494668
+			ignored: false
+			lsKind: "default"
+			lsLabels: [
+				deleted: false
+				id: 297613
+				ignored: false
+				imageFile: null
+				labelText: "testing eg march24 pb2"
+				lsKind: "protocol name"
+				lsType: "name"
+				lsTypeAndKind: "name_protocol name"
+				physicallyLabled: false
+				preferred: true
+				recordedBy: "bob"
+				recordedDate: 1427237626820
 				version: 0
 			]
-			modifiedBy: null
-			modifiedDate: null
-			recordedBy: "smeyer"
-			recordedDate: 1375889487000
-			version: 1
-		]
+			lsStates: [
+				deleted: false
+				id: 2635088
+				ignored: false
+				lsKind: "protocol metadata"
+				lsType: "metadata"
+				lsTypeAndKind: "metadata_protocol metadata"
+				lsValues: [
+					codeKind: "status"
+					codeOrigin: "ACAS DDICT"
+					codeType: "protocol"
+					codeTypeAndKind: "protocol_status"
+					codeValue: "created"
+					deleted: false
+					id: 5927838
+					ignored: false
+					lsKind: "protocol status"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_protocol status"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					clobValue: ""
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 5927839
+					ignored: false
+					lsKind: "comments"
+					lsType: "clobValue"
+					lsTypeAndKind: "clobValue_comments"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "stage"
+					codeOrigin: "ACAS DDICT"
+					codeType: "assay"
+					codeTypeAndKind: "assay_stage"
+					codeValue: "unassigned"
+					deleted: false
+					id: 5927837
+					ignored: false
+					lsKind: "assay stage"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_assay stage"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					clobValue: ""
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 5927841
+					ignored: false
+					lsKind: "protocol details"
+					lsType: "clobValue"
+					lsTypeAndKind: "clobValue_protocol details"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					dateValue: 1427180400000
+					deleted: false
+					id: 5927840
+					ignored: false
+					lsKind: "creation date"
+					lsType: "dateValue"
+					lsTypeAndKind: "dateValue_creation date"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 5927835
+					ignored: false
+					lsKind: "notebook"
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_notebook"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					stringValue: "testing"
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 5927836
+					ignored: false
+					lsKind: "assay tree rule"
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_assay tree rule"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					stringValue: ""
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					deleted: false
+					fileValue: "Testing (1).pdf"
+					id: 5927844
+					ignored: false
+					lsKind: "experiment file"
+					lsType: "fileValue"
+					lsTypeAndKind: "fileValue_experiment file"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "scientist"
+					codeOrigin: "ACAS authors"
+					codeType: "assay"
+					codeTypeAndKind: "assay_scientist"
+					codeValue: "egao"
+					deleted: false
+					id: 5927843
+					ignored: false
+					lsKind: "scientist"
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_scientist"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					clobValue: ""
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 5927842
+					ignored: false
+					lsKind: "assay principle"
+					lsType: "clobValue"
+					lsTypeAndKind: "clobValue_assay principle"
+					operatorTypeAndKind: "null_null"
+					publicData: false
+					recordedBy: "bob"
+					recordedDate: 1427237638381
+					unitTypeAndKind: "null_null"
+					version: 0
+				]
+				recordedBy: "bob"
+				recordedDate: 1427237638381
+				version: 1
+			]
+			lsTags: []
+			lsType: "default"
+			lsTypeAndKind: "default_default"
+			modifiedBy: ""
+			recordedBy: "bob"
+			recordedDate: 1427237638000
+			shortDescription: " "
+			version: 2
+		recordedBy: "jmcneil"
+		recordedDate: 1361600860000
+		shortDescription: "experiment short description goes here"
 
 
 
@@ -2968,7 +2794,7 @@
 		]
 		codeName: "EXPT-00000002"
 		id: 112
-		ignored: false
+		ignored: true
 		lsKind: "default"
 		lsLabels: [
 			id: 34

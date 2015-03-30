@@ -28,7 +28,7 @@
     describe("Experiment CRUD testing", function() {
       describe("when fetching Experiment stub by codename", function() {
         before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/codeName/EXPT-00000124", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/codeName/EXPT-00000018", (function(_this) {
             return function(error, response, body) {
               _this.responseJSON = body;
               _this.response = response;
@@ -39,7 +39,7 @@
         return it("should return a experiment", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON.codeName, "EXPT-00000001");
+          return assert.equal(responseJSON.codeName === "EXPT-00000001" || responseJSON.codeName === "EXPT-00000018", true);
         });
       });
       describe("when fetching Experiment stub by name", function() {
@@ -54,29 +54,13 @@
         });
         return it("should return a experiment", function() {
           var responseJSON;
-          responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON.codeName, "EXPT-00000001");
-        });
-      });
-      describe("when fetching Experiment stub by protocol code", function() {
-        before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/protocolCodename/PROT-00000005", (function(_this) {
-            return function(error, response, body) {
-              _this.responseJSON = body;
-              _this.response = response;
-              return done();
-            };
-          })(this));
-        });
-        return it("should return a experiment", function() {
-          var responseJSON;
-          responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON.codeName, "EXPT-00000001");
+          responseJSON = parseResponse(this.responseJSON)[0];
+          return assert.equal(responseJSON.codeName === "EXPT-00000001" || responseJSON.codeName === "EXPT-00000018", true);
         });
       });
       describe("when fetching full Experiment by id", function() {
         before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/1", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/2183", (function(_this) {
             return function(error, response, body) {
               _this.responseJSON = body;
               _this.response = response;
@@ -87,10 +71,10 @@
         return it("should return a experiment", function() {
           var responseJSON;
           responseJSON = parseResponse(this.response.body);
-          return assert.equal(responseJSON.codeName, "EXPT-00000001");
+          return assert.equal(responseJSON.codeName === "EXPT-00000001" || responseJSON.codeName === "EXPT-00000018", true);
         });
       });
-      describe("when saving a new experiment", function() {
+      return describe("when saving a new experiment", function() {
         before(function(done) {
           this.timeout(20000);
           this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
@@ -105,6 +89,8 @@
             return function(error, response, body) {
               _this.serverError = error;
               _this.responseJSON = body;
+              _this.codeName = _this.responseJSON.codeName;
+              _this.id = _this.responseJSON.id;
               return done();
             };
           })(this));
@@ -130,106 +116,179 @@
             return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
           });
         });
-        return describe("file handling", function() {
+        describe("file handling", function() {
           it("should return the first fileValue moved to the correct location", function() {
-            return assert.equal(this.responseJSON.lsStates[0].lsValues[0].fileValue, "experiments/EXPT-00000001/TestFile.mol");
+            var correctVal, fileVals;
+            correctVal = "experiments/" + this.codeName + "/TestFile.mol";
+            fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+              return (value.fileValue != null) && value.fileValue === correctVal;
+            });
+            return assert.equal(fileVals.length > 0, true);
           });
           it("should return the first fileValue with the comment filled with the file name", function() {
-            return assert.equal(this.responseJSON.lsStates[0].lsValues[0].comments, "TestFile.mol");
+            var fileVals;
+            fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+              return (value.fileValue != null) && value.comments === "TestFile.mol";
+            });
+            return assert.equal(fileVals.length > 0, true);
           });
           it("should return the second fileValue moved to the correct location", function() {
-            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].fileValue, "experiments/EXPT-00000001/Test.csv");
+            var correctVal, fileVals;
+            correctVal = "experiments/" + this.codeName + "/Test.csv";
+            fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+              return (value.fileValue != null) && value.fileValue === correctVal;
+            });
+            return assert.equal(fileVals.length > 0, true);
           });
           it("should return the second fileValue with the comment filled with the file name", function() {
-            return assert.equal(this.responseJSON.lsStates[0].lsValues[1].comments, "Test.csv");
+            var fileVals;
+            fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+              return (value.fileValue != null) && value.comments === "Test.csv";
+            });
+            return assert.equal(fileVals.length > 0, true);
           });
           it("should move the first file to the correct location", function() {
-            return fs.unlink(config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (function(_this) {
+            var correctVal;
+            correctVal = "/experiments/" + this.codeName + "/TestFile.mol";
+            return fs.unlink(config.all.server.datafiles.relative_path + correctVal, (function(_this) {
               return function(err) {
                 return assert.equal(err, null);
               };
             })(this));
           });
           return it("should move the second file to the correct location", function() {
-            return fs.unlink(config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (function(_this) {
+            var correctVal;
+            correctVal = "/experiments/" + this.codeName + "/Test.csv";
+            return fs.unlink(config.all.server.datafiles.relative_path + correctVal, (function(_this) {
               return function(err) {
                 return assert.equal(err, null);
               };
             })(this));
           });
         });
-      });
-      return describe("when updating a experiment", function() {
-        before(function(done) {
-          var updatedData;
-          this.timeout(20000);
-          this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
-          this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
-          fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
-          fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
-          updatedData = experimentServiceTestJSON.fullExperimentFromServer;
-          updatedData.lsStates[1].lsValues[1].id = null;
-          updatedData.lsStates[1].lsValues[2].id = null;
-          this.originalTransatcionId = updatedData.lsTransaction;
-          return request.put({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/1234",
-            json: true,
-            body: updatedData
-          }, (function(_this) {
-            return function(error, response, body) {
-              _this.serverError = error;
-              _this.responseJSON = body;
-              return done();
-            };
-          })(this));
-        });
-        after(function() {
-          fs.unlink(this.testFile1Path);
-          return fs.unlink(this.testFile2Path);
-        });
-        describe("basic saving", function() {
-          it("should return a experiment", function() {
-            return assert.equal(this.responseJSON.codeName === null, false);
-          });
-          it("should have a new trans at the top level", function() {
-            return assert.equal(this.responseJSON.lsTransaction === this.originalTransatcionId, false);
-          });
-          it("should have a trans in the labels", function() {
-            return assert.equal(isNaN(parseInt(this.responseJSON.lsLabels[0].lsTransaction)), false);
-          });
-          it("should have a trans in the states", function() {
-            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
-          });
-          return it("should have a trans in the values", function() {
-            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
-          });
-        });
-        return describe("file handling", function() {
-          it("should return the first fileValue moved to the correct location", function() {
-            return assert.equal(this.responseJSON.lsStates[1].lsValues[1].fileValue, "experiments/EXPT-00000001/TestFile.mol");
-          });
-          it("should return the first fileValue with the comment filled with the file name", function() {
-            return assert.equal(this.responseJSON.lsStates[1].lsValues[1].comments, "TestFile.mol");
-          });
-          it("should return the second fileValue moved to the correct location", function() {
-            return assert.equal(this.responseJSON.lsStates[1].lsValues[2].fileValue, "experiments/EXPT-00000001/Test.csv");
-          });
-          it("should return the second fileValue with the comment filled with the file name", function() {
-            return assert.equal(this.responseJSON.lsStates[1].lsValues[2].comments, "Test.csv");
-          });
-          it("should move the first file to the correct location", function() {
-            return fs.unlink(config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/TestFile.mol", (function(_this) {
-              return function(err) {
-                return assert.equal(err, null);
+        describe("when updating a experiment", function() {
+          before(function(done) {
+            var fileVals, val, _i, _len;
+            this.timeout(20000);
+            this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
+            this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
+            fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
+            fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
+            fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+              return value.fileValue != null;
+            });
+            for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+              val = fileVals[_i];
+              val.fileValue = val.comments;
+              val.comments = null;
+              val.id = null;
+              val.version = null;
+            }
+            this.responseJSON.lsTransaction = 1;
+            this.originalTransatcionId = this.responseJSON.lsTransaction;
+            return request.put({
+              url: "http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/" + this.responseJSON.id,
+              json: true,
+              body: this.responseJSON
+            }, (function(_this) {
+              return function(error, response, body) {
+                _this.serverError = error;
+                _this.responseJSON = body;
+                return done();
               };
             })(this));
           });
-          return it("should move the second file to the correct location", function() {
-            return fs.unlink(config.all.server.datafiles.relative_path + "/experiments/EXPT-00000001/Test.csv", (function(_this) {
-              return function(err) {
-                return assert.equal(err, null);
+          after(function() {
+            fs.unlink(this.testFile1Path);
+            return fs.unlink(this.testFile2Path);
+          });
+          describe("basic saving", function() {
+            it("should return a experiment", function() {
+              return assert.equal(this.responseJSON.codeName === null, false);
+            });
+            it("should have a new trans at the top level", function() {
+              console.log(this.responseJSON);
+              return assert.equal(this.responseJSON.lsTransaction === this.originalTransatcionId, false);
+            });
+            it("should have a trans in the labels", function() {
+              return assert.equal(isNaN(parseInt(this.responseJSON.lsLabels[0].lsTransaction)), false);
+            });
+            it("should have a trans in the states", function() {
+              return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
+            });
+            return it("should have a trans in the values", function() {
+              return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
+            });
+          });
+          return describe("file handling", function() {
+            it("should return the first fileValue moved to the correct location", function() {
+              var correctVal, fileVals;
+              correctVal = "experiments/" + this.codeName + "/TestFile.mol";
+              fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+                return (value.fileValue != null) && value.fileValue === correctVal;
+              });
+              return assert.equal(fileVals.length > 0, true);
+            });
+            it("should return the first fileValue with the comment filled with the file name", function() {
+              var fileVals;
+              fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+                return (value.fileValue != null) && value.comments === "TestFile.mol";
+              });
+              return assert.equal(fileVals.length > 0, true);
+            });
+            it("should return the second fileValue moved to the correct location", function() {
+              var correctVal, fileVals;
+              correctVal = "experiments/" + this.codeName + "/Test.csv";
+              fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+                return (value.fileValue != null) && value.fileValue === correctVal;
+              });
+              return assert.equal(fileVals.length > 0, true);
+            });
+            it("should return the second fileValue with the comment filled with the file name", function() {
+              var fileVals;
+              fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
+                return (value.fileValue != null) && value.comments === "Test.csv";
+              });
+              return assert.equal(fileVals.length > 0, true);
+            });
+            it("should move the first file to the correct location", function() {
+              var correctVal;
+              correctVal = "/experiments/" + this.codeName + "/TestFile.mol";
+              return fs.unlink(config.all.server.datafiles.relative_path + correctVal, (function(_this) {
+                return function(err) {
+                  return assert.equal(err, null);
+                };
+              })(this));
+            });
+            return it("should move the second file to the correct location", function() {
+              var correctVal;
+              correctVal = "/experiments/" + this.codeName + "/Test.csv";
+              return fs.unlink(config.all.server.datafiles.relative_path + correctVal, (function(_this) {
+                return function(err) {
+                  return assert.equal(err, null);
+                };
+              })(this));
+            });
+          });
+        });
+        return describe("when deleting a protocol", function() {
+          before(function(done) {
+            return request.del({
+              url: "http://localhost:" + config.all.server.nodeapi.port + "/api/experiments/" + this.id,
+              json: true
+            }, (function(_this) {
+              return function(error, response, body) {
+                _this.serverError = error;
+                _this.response = response;
+                _this.responseJSON = body;
+                return done();
               };
             })(this));
+          });
+          return it("should delete the experiment", function() {
+            var responseJSON;
+            responseJSON = parseResponse(this.responseJSON);
+            return assert.equal(this.responseJSON.codeValue === 'deleted' || this.responseJSON.ignored === true, true);
           });
         });
       });

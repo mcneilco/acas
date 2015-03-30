@@ -8,7 +8,8 @@
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
     app.put('/api/experiments/:id', exports.putExperiment);
-    return app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
+    app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
+    return app["delete"]('/api/experiments/:id', exports.deleteExperiment);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -60,7 +61,7 @@
     console.log("exports.experiment by name");
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+      return resp.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -275,29 +276,35 @@
   };
 
   exports.deleteExperiment = function(req, res) {
-    var baseurl, config, experimentId, request;
-    config = require('../conf/compiled/conf.js');
-    experimentId = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
-    console.log(baseurl);
-    request = require('request');
-    return request({
-      method: 'DELETE',
-      url: baseurl,
-      json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error && response.statusCode === 200) {
-          console.log(JSON.stringify(json));
-          return res.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          return console.log(response);
-        }
-      };
-    })(this));
+    var baseurl, config, deletedExperiment, experimentId, experimentServiceTestJSON, request;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment));
+      return res.end(JSON.stringify(deletedExperiment));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      experimentId = req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
+      console.log(baseurl);
+      request = require('request');
+      return request({
+        method: 'DELETE',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return res.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save new experiment');
+            console.log(error);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {

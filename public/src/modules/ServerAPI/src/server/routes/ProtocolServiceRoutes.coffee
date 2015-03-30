@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocollabels', exports.lsLabels
 	app.get '/api/protocolCodes', exports.protocolCodeList
 	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
+	app.delete '/api/protocols/browser/:id', exports.deleteProtocol
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -228,10 +229,10 @@ exports.protocolKindCodeList = (req, resp) ->
 	translateToCodes = (kinds) ->
 		kindCodes = []
 		for kind in kinds
-				kindCodes.push
-					code: kind.kindName
-					name: kind.kindName
-					ignored: false
+			kindCodes.push
+				code: kind.kindName
+				name: kind.kindName
+				ignored: false
 		kindCodes
 
 	if global.specRunnerTestmode
@@ -272,24 +273,29 @@ exports.genericProtocolSearch = (req, res) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, res)
 
 exports.deleteProtocol = (req, res) ->
-	config = require '../conf/compiled/conf.js'
-	protocolID = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
-	console.log "baseurl"
-	console.log baseurl
-	request = require 'request'
+	if global.specRunnerTestmode
+		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		deletedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.fullDeletedProtocol))
+		res.end JSON.stringify deletedProtocol
+	else
+		config = require '../conf/compiled/conf.js'
+		protocolID = req.params.id
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/browser/"+protocolID
+		console.log "baseurl"
+		console.log baseurl
+		request = require 'request'
 
-	request(
-		method: 'DELETE'
-		url: baseurl
-		json: true
-	, (error, response, json) =>
-		console.log response.statusCode
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			res.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to delete protocol'
-			console.log error
-			console.log response
-	)
+		request(
+			method: 'DELETE'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error && response.statusCode == 200
+				console.log JSON.stringify json
+				res.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to delete protocol'
+				console.log error
+				console.log response
+		)

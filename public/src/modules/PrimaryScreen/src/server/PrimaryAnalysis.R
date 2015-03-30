@@ -2721,7 +2721,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
   errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo))) 
   

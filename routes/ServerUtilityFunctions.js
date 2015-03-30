@@ -249,7 +249,7 @@
 
   exports.createLSTransaction = function(date, comments, callback) {
     var config, request;
-    if (global.specRunnerTestmode != null) {
+    if (global.specRunnerTestmode) {
       console.log("create lsTransaction stubsMode");
       return callback({
         comments: "test transaction",
