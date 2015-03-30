@@ -8,7 +8,8 @@
     app.put('/api/protocols/:id', exports.putProtocol);
     app.get('/api/protocollabels', exports.lsLabels);
     app.get('/api/protocolCodes', exports.protocolCodeList);
-    return app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
+    app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
+    return app["delete"]('/api/protocols/browser/:id', exports.deleteProtocol);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -335,30 +336,36 @@
   };
 
   exports.deleteProtocol = function(req, res) {
-    var baseurl, config, protocolID, request;
-    config = require('../conf/compiled/conf.js');
-    protocolID = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
-    console.log("baseurl");
-    console.log(baseurl);
-    request = require('request');
-    return request({
-      method: 'DELETE',
-      url: baseurl,
-      json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error && response.statusCode === 200) {
-          console.log(JSON.stringify(json));
-          return res.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to delete protocol');
-          console.log(error);
-          return console.log(response);
-        }
-      };
-    })(this));
+    var baseurl, config, deletedProtocol, protocolID, protocolServiceTestJSON, request;
+    if (global.specRunnerTestmode) {
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      deletedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.fullDeletedProtocol));
+      return res.end(JSON.stringify(deletedProtocol));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      protocolID = req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
+      console.log("baseurl");
+      console.log(baseurl);
+      request = require('request');
+      return request({
+        method: 'DELETE',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return res.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to delete protocol');
+            console.log(error);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
   };
 
 }).call(this);

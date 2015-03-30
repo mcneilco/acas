@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
+	app.delete '/api/experiments/:id', exports.deleteExperiment
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -55,7 +56,7 @@ exports.experimentByName = (req, resp) ->
 	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
-		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		resp.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 
 	else
 		config = require '../conf/compiled/conf.js'
@@ -216,26 +217,31 @@ exports.editExperimentLookupAndRedirect = (req, res) ->
 exports.deleteExperiment = (req, res) ->
 	# route to handle deleting experiments
 	#curl -i -X DELETE -H Accept:application/json -H Content-Type:application/json  http://host4.labsynch.com:8080/acas/experiments/406773
-	config = require '../conf/compiled/conf.js'
-	experimentId = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
-	console.log baseurl
-	request = require 'request'
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment))
+		res.end JSON.stringify deletedExperiment
+	else
+		config = require '../conf/compiled/conf.js'
+		experimentId = req.params.id
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
+		console.log baseurl
+		request = require 'request'
 
-	request(
-		method: 'DELETE'
-		url: baseurl
-		json: true
-	, (error, response, json) =>
-		console.log response.statusCode
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			res.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to save new experiment'
-			console.log error
-			console.log response
-	)
+		request(
+			method: 'DELETE'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error && response.statusCode == 200
+				console.log JSON.stringify json
+				res.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to save new experiment'
+				console.log error
+				console.log response
+		)
 
 exports.resultViewerURLByExperimentCodename = (request, resp) ->
 	console.log __dirname
@@ -289,7 +295,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-							)
+						)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error
