@@ -1462,7 +1462,7 @@ checkControls <- function(resultTable) {
 }
 
 removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
-  # This function cycles through the column names in an data.table and removes 
+  # This function diffs the column names in an data.table and removes 
   # the columns not in a list of columns to keep.
   #
   # Input:  colNamesToCheck (list)
@@ -1470,14 +1470,9 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
   #         inputDataTable (data.table)
   # Output: inputDataTable (data.table)
   
-  removeList <- list()
-  for(name in colNamesToCheck) {
-    if(!grepl("^R[0-9]+ \\{Calc: *", name) && !grepl("^Activity*", name)) { # check to see if the column name is not a calculated read
-      if(!grepl(paste0("(",paste(gsub("\\{","\\\\{",colNamesToKeep), collapse="|"), ")"), name)) {
-        inputDataTable[[name]] <- NULL
-        removeList[[length(removeList) + 1]] <- name
-      }
-    }
+  removeList <- setdiff(colNamesToCheck, colNamesToKeep)
+  if(length(removeList) > 0) {
+    inputDataTable[ , (removeList) := NULL]
   }
   
   # No need to warn user when not using some of the data columns.
