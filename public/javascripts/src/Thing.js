@@ -11,6 +11,8 @@
       this.duplicate = __bind(this.duplicate, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
+      this.createDefaultSecondLsThingItx = __bind(this.createDefaultSecondLsThingItx, this);
+      this.createDefaultFirstLsThingItx = __bind(this.createDefaultFirstLsThingItx, this);
       this.createNewValue = __bind(this.createNewValue, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
@@ -45,8 +47,14 @@
       this.set({
         lsLabels: new LabelList()
       });
-      return this.set({
+      this.set({
         lsStates: new StateList()
+      });
+      this.set({
+        firstLsThings: new FirstLsThingItxList()
+      });
+      return this.set({
+        secondLsThings: new SecondLsThingItxList()
       });
     };
 
@@ -85,10 +93,14 @@
           this.set(resp);
           this.createDefaultLabels();
           this.createDefaultStates();
+          this.createDefaultFirstLsThingItx();
+          this.createDefaultSecondLsThingItx();
         }
       } else {
         this.createDefaultLabels();
         this.createDefaultStates();
+        this.createDefaultFirstLsThingItx();
+        this.createDefaultSecondLsThingItx();
       }
       return resp;
     };
@@ -164,6 +176,30 @@
       return this.set(vKind, newValue);
     };
 
+    Thing.prototype.createDefaultFirstLsThingItx = function() {
+      var itx, thingItx, _i, _len, _ref, _results;
+      _ref = this.lsProperties.defaultFirstLsThingItx;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        itx = _ref[_i];
+        thingItx = this.get('firstLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
+        _results.push(this.set(itx.key, thingItx));
+      }
+      return _results;
+    };
+
+    Thing.prototype.createDefaultSecondLsThingItx = function() {
+      var itx, thingItx, _i, _len, _ref, _results;
+      _ref = this.lsProperties.defaultSecondLsThingItx;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        itx = _ref[_i];
+        thingItx = this.get('secondLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
+        _results.push(this.set(itx.key, thingItx));
+      }
+      return _results;
+    };
+
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
       var afm, analyticalFileState, analyticalFileValues, attachFileList, file, type, _i, _j, _len, _len1;
       attachFileList = new AttachFileList();
@@ -190,15 +226,26 @@
     };
 
     Thing.prototype.reformatBeforeSaving = function() {
-      var dLabel, dValue, i, lsStates, value, _i, _j, _len, _len1, _ref, _ref1, _results;
+      var dLabel, dValue, i, itx, lsStates, value, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _results;
       _ref = this.lsProperties.defaultLabels;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         dLabel = _ref[_i];
         this.unset(dLabel.key);
       }
-      _ref1 = this.lsProperties.defaultValues;
+      _ref1 = this.lsProperties.defaultFirstLsThingItx;
       for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        dValue = _ref1[_j];
+        itx = _ref1[_j];
+        this.unset(itx.key);
+      }
+      this.get('firstLsThings').reformatBeforeSaving();
+      _ref2 = this.lsProperties.defaultSecondLsThingItx;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        itx = _ref2[_k];
+        this.unset(itx.key);
+      }
+      _ref3 = this.lsProperties.defaultValues;
+      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+        dValue = _ref3[_l];
         if (this.get(dValue.key) != null) {
           if (this.get(dValue.key).get('value') === void 0) {
             lsStates = this.get('lsStates').getStatesByTypeAndKind(dValue.stateType, dValue.stateKind);

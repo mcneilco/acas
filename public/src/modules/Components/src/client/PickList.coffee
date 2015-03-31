@@ -29,16 +29,23 @@ class window.PickListOptionController extends Backbone.View
 class window.PickListOptionControllerForLsThing extends Backbone.View
 	tagName: "option"
 	initialize: ->
+		if @options.insertFirstOption?
+			@insertFirstOption = @options.insertFirstOption
+		else
+			@insertFirstOption = null
 
 	render: =>
-		displayValue = ""
-		_.each(@model.get('lsLabels'), (label) ->
-			if label.preferred
-				displayValue = label.labelText
-		)
+		preferredNames = _.filter @model.get('lsLabels'), (lab) ->
+			lab.preferred && (lab.lsType == "name") && !lab.ignored
+		bestName = _.max preferredNames, (lab) ->
+			rd = lab.recordedDate
+			(if (rd is "") then Infinity else rd)
+		if bestName?
+			displayValue = bestName.labelText
+		else
+			displayValue = @insertFirstOption.get('name')
 		$(@el).attr("value", @model.get("id")).text displayValue
 		@
-
 
 
 class window.PickListSelectController extends Backbone.View
@@ -141,7 +148,7 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 			shouldRender = true
 
 		if shouldRender
-			$(@el).append new PickListOptionControllerForLsThing(model: enm).render().el
+			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption).render().el
 
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
@@ -328,7 +335,7 @@ class window.EditablePickListSelectController extends Backbone.View
 					type: 'POST'
 					url: "/api/codetables"
 					data:
-					JSON.stringify(codeEntry:(selectedModel))
+						JSON.stringify(codeEntry:(selectedModel))
 					contentType: 'application/json'
 					dataType: 'json'
 					success: (response) =>

@@ -27,6 +27,12 @@
       return this.type = type;
     };
 
+    PickListList.prototype.getModelWithId = function(id) {
+      return this.detect(function(enu) {
+        return enu.get("id") === id;
+      });
+    };
+
     PickListList.prototype.getModelWithCode = function(code) {
       return this.detect(function(enu) {
         return enu.get("code") === code;
@@ -61,6 +67,51 @@
     };
 
     return PickListOptionController;
+
+  })(Backbone.View);
+
+  window.PickListOptionControllerForLsThing = (function(_super) {
+    __extends(PickListOptionControllerForLsThing, _super);
+
+    function PickListOptionControllerForLsThing() {
+      this.render = __bind(this.render, this);
+      return PickListOptionControllerForLsThing.__super__.constructor.apply(this, arguments);
+    }
+
+    PickListOptionControllerForLsThing.prototype.tagName = "option";
+
+    PickListOptionControllerForLsThing.prototype.initialize = function() {
+      if (this.options.insertFirstOption != null) {
+        return this.insertFirstOption = this.options.insertFirstOption;
+      } else {
+        return this.insertFirstOption = null;
+      }
+    };
+
+    PickListOptionControllerForLsThing.prototype.render = function() {
+      var bestName, displayValue, preferredNames;
+      preferredNames = _.filter(this.model.get('lsLabels'), function(lab) {
+        return lab.preferred && (lab.lsType === "name") && !lab.ignored;
+      });
+      bestName = _.max(preferredNames, function(lab) {
+        var rd;
+        rd = lab.recordedDate;
+        if (rd === "") {
+          return Infinity;
+        } else {
+          return rd;
+        }
+      });
+      if (bestName != null) {
+        displayValue = bestName.labelText;
+      } else {
+        displayValue = this.insertFirstOption.get('name');
+      }
+      $(this.el).attr("value", this.model.get("id")).text(displayValue);
+      return this;
+    };
+
+    return PickListOptionControllerForLsThing;
 
   })(Backbone.View);
 
@@ -192,6 +243,42 @@
     return PickListSelectController;
 
   })(Backbone.View);
+
+  window.PickListForLsThingsSelectController = (function(_super) {
+    __extends(PickListForLsThingsSelectController, _super);
+
+    function PickListForLsThingsSelectController() {
+      this.addOne = __bind(this.addOne, this);
+      return PickListForLsThingsSelectController.__super__.constructor.apply(this, arguments);
+    }
+
+    PickListForLsThingsSelectController.prototype.addOne = function(enm) {
+      var shouldRender;
+      shouldRender = this.showIgnored;
+      if (enm.get('ignored')) {
+        if (this.selectedCode != null) {
+          if (this.selectedCode === enm.get('code')) {
+            shouldRender = true;
+          }
+        }
+      } else {
+        shouldRender = true;
+      }
+      if (shouldRender) {
+        return $(this.el).append(new PickListOptionControllerForLsThing({
+          model: enm,
+          insertFirstOption: this.insertFirstOption
+        }).render().el);
+      }
+    };
+
+    PickListForLsThingsSelectController.prototype.getSelectedModel = function() {
+      return this.collection.getModelWithId(parseInt(this.getSelectedCode()));
+    };
+
+    return PickListForLsThingsSelectController;
+
+  })(PickListSelectController);
 
   window.AddParameterOptionPanel = (function(_super) {
     __extends(AddParameterOptionPanel, _super);
@@ -443,7 +530,7 @@
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
-        if ((selectedModel.get('id') != null) || selectedModel.get('codeOrigin') !== "ACAS DDICT") {
+        if (selectedModel.get('id') != null) {
           return callback.call();
         } else {
           return $.ajax({

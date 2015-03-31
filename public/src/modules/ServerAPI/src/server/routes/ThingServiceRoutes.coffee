@@ -7,7 +7,6 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
 	app.post '/api/validateName/:lsKind', exports.validateName
-	app.get '/api/thingsascodetables/:type/:kind', exports.getLSThingsFormattedAsCodeTableValues
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -18,7 +17,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 	app.post '/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName
-	app.get '/api/thingsascodetables/:type/:kind', loginRoutes.ensureAuthenticated, exports.getLSThingsFormattedAsCodeTableValues
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -29,6 +27,9 @@ exports.thingsByTypeKind = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+		stubFlag = "with=stub"
+		if req.query.stub
+			baseurl += "?#{stubFlag}"
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -210,27 +211,3 @@ exports.validateName = (req, resp) ->
 		)
 
 
-exports.getLSThingsFormattedAsCodeTableValues = (req, resp) ->
-	if global.specRunnerTestmode
-		fullCodeTableJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
-		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:req.params.type, kind:req.params.kind})
-		resp.end JSON.stringify correctCodeTable['codes']
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = "#{config.all.client.service.persistence.fullpath}lsthings/codetable?lsType=#{req.params.type}&lsKind=#{req.params.kind}"
-		console.log "baseurl"
-		console.log baseurl
-		request = require 'request'
-		request(
-			method: 'GET'
-			url: baseurl
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				resp.json json
-			else
-				console.log 'got ajax error trying to get code table entries'
-				console.log error
-				console.log json
-				console.log response
-		)

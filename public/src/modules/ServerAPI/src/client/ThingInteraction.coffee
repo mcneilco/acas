@@ -5,11 +5,23 @@ class window.ThingItx extends Backbone.Model
 		@set lsType: "interaction"
 		@set lsKind: "interaction"
 		@set lsTypeAndKind: @_lsTypeAndKind()
+		@set lsStates: new StateList()
 		@set recordedBy: window.AppLaunchParams.loginUser.username
 		@set recordedDate: new Date().getTime()
 
 	_lsTypeAndKind: ->
 		@get('lsType') + '_' + @get('lsKind')
+
+	initialize: ->
+		@set @parse(@attributes)
+
+	parse: (resp) =>
+		if resp.lsStates?
+			if resp.lsStates not instanceof StateList
+				resp.lsStates = new StateList(resp.lsStates)
+			resp.lsStates.on 'change', =>
+				@trigger 'change'
+		resp
 
 	reformatBeforeSaving: ->
 		if @attributes.attributes?
@@ -47,17 +59,14 @@ class window.LsThingItxList extends Backbone.Collection
 		@filter (itx) ->
 			(not itx.get('ignored')) and (itx.get('lsType')==type) and (itx.get('lsKind')==kind)
 
-	getOrCreateItxByTypeAndKind: (itxType, itxKind) ->
-		itxs = @getItxByTypeAndKind itxType, itxKind
-		itx = itxs[0] #TODO should do something smart if there are more than one
-		unless itx?
-			itx = new @model
-				lsType: itxType
-				lsKind: itxKind
-				lsTypeAndKind: "#{itxType}_#{itxKind}"
-			@.add itx
-			itx.on 'change', =>
-				@trigger('change')
+	createItxByTypeAndKind: (itxType, itxKind) ->
+		itx = new @model
+			lsType: itxType
+			lsKind: itxKind
+			lsTypeAndKind: "#{itxType}_#{itxKind}"
+		@.add itx
+		itx.on 'change', =>
+			@trigger('change')
 		return itx
 
 	reformatBeforeSaving: ->

@@ -63,7 +63,8 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
-	"/javascripts/src/TagList.js"
+	"/javascripts/src/TagList.js",
+	"/javascripts/src/ThingInteraction.js"
 ];
 
 exports.jasmineScripts = [
@@ -106,6 +107,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
+	"/javascripts/spec/testFixtures/ThingInteractionTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingTestJSON.js",
 	"/javascripts/spec/testFixtures/codeTablePostTestJSON.js",
@@ -153,6 +155,7 @@ exports.specScripts = [
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/ThingInteractionSpec.js",
 	"/javascripts/spec/ThingSpec.js",
 	"/javascripts/spec/UtilityFunctionsSpec.js",
 	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
