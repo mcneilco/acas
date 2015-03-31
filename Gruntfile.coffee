@@ -103,7 +103,7 @@ module.exports = (grunt) ->
 				files: [
 						expand: true
 						flatten: true
-						src: ["acas_custom/modules/**/src/client/*.coffee"]
+						src: ["acas_custom/modules/**/src/client/**/*.coffee"]
 						dest: "acas_custom/javascripts/src/"
 						ext: '.js'
 					]
@@ -232,10 +232,6 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareConfigFiles.js'
-#			prepare_module_conf_JSON:
-#				options:
-#					cwd: 'conf'
-#				src: 'conf/PrepareModuleConfJSON.js'
 			prepare_test_JSON:
 				options:
 					cwd: 'conf'
@@ -358,10 +354,6 @@ module.exports = (grunt) ->
 						'public/src/modules/*/src/client/*.js'
 						#appScriptsInJavascripts
 						'public/javascripts/src/*.js'
-#						#confScriptsInModules
-#						'public/src/modules/*/conf/*.js'
-#						#confScriptsInJavascripts
-#						'public/javascripts/conf/*.js'
 						#testJSONInModules
 						'public/src/modules/*/spec/testFixtures/*.js'
 						#testJSONInJavascripts
@@ -379,12 +371,6 @@ module.exports = (grunt) ->
 					"public/src/modules/*/src/server/*.R"
 				]
 				tasks: "execute:prepare_config_files"
-#			prepare_module_conf_JSON:
-#				files: [
-#					"public/javascripts/conf/*.js"
-#					"public/javascripts/conf/*.json"
-#				]
-#				tasks: "execute:prepare_module_conf_JSON"
 			prepare_test_JSON:
 				files: [
 					"public/javascripts/spec/testFixtures/*.js"

@@ -9,8 +9,8 @@
 
   prepIncludes = function() {
     var includeLines, includeStr, path, styleFiles, templateFiles, _i, _j, _len, _len1;
-    styleFiles = glob.sync('../public/src/modules/*/src/client/*.css');
-    templateFiles = glob.sync('../public/src/modules/*/src/client/*.html');
+    styleFiles = glob.sync('../public/src/modules/*/src/client/**/*.css');
+    templateFiles = glob.sync('../public/src/modules/*/src/client/**/*.html');
     includeLines = "";
     for (_i = 0, _len = styleFiles.length; _i < _len; _i++) {
       path = styleFiles[_i];
