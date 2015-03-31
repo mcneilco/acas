@@ -293,7 +293,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     prefDT <- as.data.table(preferredIdFrame)
     prefDT[ referenceName == "", referenceName := preferredName ]
     preferredIdFrame <- as.data.frame(prefDT)
-    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   } else {
     calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   }
