@@ -247,4 +247,60 @@
     return null;
   };
 
+  exports.createLSTransaction = function(date, comments, callback) {
+    var config, request;
+    if (global.specRunnerTestmode) {
+      console.log("create lsTransaction stubsMode");
+      return callback({
+        comments: "test transaction",
+        date: 1427414400000,
+        id: 1234,
+        version: 0
+      });
+    } else {
+      config = require('../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.client.service.persistence.fullpath + "lstransactions",
+        json: true,
+        body: {
+          recordedDate: date,
+          comments: comments
+        }
+      }, function(error, response, json) {
+        if (!error && response.statusCode === 201) {
+          return callback(json);
+        } else {
+          console.log('got connection error trying to create an lsTransaction');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(null);
+        }
+      });
+    }
+  };
+
+  exports.insertTransactionIntoEntity = function(transactionid, entity) {
+    var lab, state, val, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+    entity.lsTransaction = transactionid;
+    _ref = entity.lsLabels;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      lab = _ref[_i];
+      lab.lsTransaction = transactionid;
+    }
+    _ref1 = entity.lsStates;
+    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+      state = _ref1[_j];
+      state.lsTransaction = transactionid;
+      _ref2 = state.lsValues;
+      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+        val = _ref2[_k];
+        val.lsTransaction = transactionid;
+      }
+    }
+    return entity;
+  };
+
 }).call(this);

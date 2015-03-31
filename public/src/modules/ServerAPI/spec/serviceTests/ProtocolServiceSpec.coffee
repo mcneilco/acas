@@ -5,7 +5,6 @@ protocolServiceTestJSON = require '../testFixtures/ProtocolServiceTestJSON.js'
 fs = require 'fs'
 config = require '../../../../conf/compiled/conf.js'
 
-
 parseResponse = (jsonStr) ->
 	try
 		return JSON.parse jsonStr
@@ -18,7 +17,7 @@ describe "Protocol Service testing", ->
 	describe "Protocol CRUD testing", ->
 		describe "when fetching Protocol stub by codename", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/codeName/PROT-00000124", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/codeName/PROT-00000001", (error, response, body) =>
 					@responseJSON = body
 					@response = response
 					done()
@@ -28,13 +27,14 @@ describe "Protocol Service testing", ->
 
 		describe "when fetching full Protocol by id", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/1", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/723631", (error, response, body) =>
 					@responseJSON = body
 					@response = response
 					done()
 			it "should return a protocol", ->
 				responseJSON = parseResponse(@response.body)
-				assert.equal responseJSON.codeName, "PROT-00000001"
+				assert.equal responseJSON.codeName == "PROT-00000001" or responseJSON.codeName == "PROT-00000014", true
+		#should equal PROT-00000001 in stubsMode and PROT-00000014 in non-stubsMode
 
 		describe "when saving a new protocol", ->
 			before (done) ->
@@ -50,66 +50,131 @@ describe "Protocol Service testing", ->
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body
+					@codeName = @responseJSON.codeName
+					@id = @responseJSON.id
 					done()
 			after ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
-			it "should return a protocol", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[2].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
+			describe "basic saving", ->
+				it "should return a protocol", ->
+					assert.equal @responseJSON.codeName == null, false
+				it "should have a trans at the top level", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsTransaction)), false
+				it "should have a trans in the labels", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsLabels[0].lsTransaction)), false
+				it "should have a trans in the states", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+				it "should have a trans in the values", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+			describe "file handling", ->
+				it "should return the first fileValue moved to the correct location", ->
+					correctVal = "protocols/"+@codeName+"/TestFile.mol"
+					fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+						value.fileValue? and value.fileValue == correctVal
+					assert.equal fileVals.length>0, true
+				it "should return the first fileValue with the comment filled with the file name", ->
+					fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+						value.fileValue? and value.comments == "TestFile.mol"
+					assert.equal fileVals.length>0, true
+				it "should return the second fileValue moved to the correct location", ->
+					correctVal = "protocols/"+@codeName+"/Test.csv"
+					fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+						value.fileValue? and value.fileValue == correctVal
+					assert.equal fileVals.length>0, true
+				it "should return the second fileValue with the comment filled with the file name", ->
+					fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+						value.fileValue? and value.comments == "Test.csv"
+					assert.equal fileVals.length>0, true
+				it "should move the first file to the correct location", ->
+					correctVal = "/protocols/"+@codeName+"/TestFile.mol"
+					fs.unlink config.all.server.datafiles.relative_path + correctVal, (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
+				it "should move the second file to the correct location", ->
+					correctVal = "/protocols/"+@codeName+"/Test.csv"
+					fs.unlink config.all.server.datafiles.relative_path + correctVal, (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
 
-		describe "when updating a protocol", ->
-			before (done) ->
-				@.timeout(20000)
-				@testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol"
-				@testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv"
-				fs.writeFileSync @testFile1Path, "key,value\nflavor,sweet"
-				fs.writeFileSync @testFile2Path, "key,value\nmolecule,CCC"
-				updatedData = protocolServiceTestJSON.fullSavedProtocol
-				updatedData.lsStates[0].lsValues[1].id = null
-				updatedData.lsStates[0].lsValues[2].id = null
-				request.put
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/1234"
-					json: true
-					body: updatedData
-				, (error, response, body) =>
-					@serverError = error
-					@responseJSON = body
-					done()
+			describe "when updating a protocol", -> #this is put under saving a protocol so that the protocol that was just saved can be updated
+				before (done) ->
+					@.timeout(20000)
+					@testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol"
+					@testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv"
+					fs.writeFileSync @testFile1Path, "key,value\nflavor,sweet"
+					fs.writeFileSync @testFile2Path, "key,value\nmolecule,CCC"
+					fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+						value.fileValue?
+					for val in fileVals
+						val.fileValue = val.comments
+						val.comments = null
+						val.id = null
+						val.version = null
+					@responseJSON.lsTransaction = 1
+					@originalTransatcionId = @responseJSON.lsTransaction
+					request.put
+						url: "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/"+@responseJSON.id
+						json: true
+						body: @responseJSON
+					, (error, response, body) =>
+						@serverError = error
+						@responseJSON = body
+						done()
 
-			after ->
-				fs.unlink @testFile1Path #in case it fails, don't leave a mess
-				fs.unlink @testFile2Path
-			it "should return a protocol", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].fileValue, "protocols/PROT-00000001/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[1].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[2].fileValue, "protocols/PROT-00000001/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[2].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/protocols/PROT-00000001/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-
+				after ->
+					fs.unlink @testFile1Path #in case it fails, don't leave a mess
+					fs.unlink @testFile2Path
+				describe "basic saving", ->
+					it "should return a protocol", ->
+						assert.equal @responseJSON.codeName == null, false
+					it "should have a new trans at the top level", ->
+						assert.equal @responseJSON.lsTransaction==@originalTransatcionId, false
+					it "should have a trans in the labels", ->
+						assert.equal isNaN(parseInt(@responseJSON.lsLabels[0].lsTransaction)), false
+					it "should have a trans in the states", ->
+						assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+					it "should have a trans in the values", ->
+						assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+				describe "file handling", ->
+					it "should return the first fileValue moved to the correct location", ->
+						correctVal = "protocols/"+@codeName+"/TestFile.mol"
+						fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+							value.fileValue? and value.fileValue == correctVal
+						assert.equal fileVals.length>0, true
+					it "should return the first fileValue with the comment filled with the file name", ->
+						fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+							value.fileValue? and value.comments == "TestFile.mol"
+						assert.equal fileVals.length>0, true
+					it "should return the second fileValue moved to the correct location", ->
+						correctVal = "protocols/"+@codeName+"/Test.csv"
+						fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+							value.fileValue? and value.fileValue == correctVal
+						assert.equal fileVals.length>0, true
+					it "should return the second fileValue with the comment filled with the file name", ->
+						fileVals = @responseJSON.lsStates[0].lsValues.filter (value) ->
+							value.fileValue? and value.comments == "Test.csv"
+						assert.equal fileVals.length>0, true
+					it "should move the first file to the correct location", ->
+						correctVal = "/protocols/"+@codeName+"/TestFile.mol"
+						fs.unlink config.all.server.datafiles.relative_path + correctVal, (err) =>
+							assert.equal err, null #it should be there to unlink, and we've cleaned up
+					it "should move the second file to the correct location", ->
+						correctVal = "/protocols/"+@codeName+"/Test.csv"
+						fs.unlink config.all.server.datafiles.relative_path + correctVal, (err) =>
+							assert.equal err, null #it should be there to unlink, and we've cleaned up
+				describe "when deleting a protocol", ->
+					before (done) ->
+						request.del
+							url: "http://localhost:"+config.all.server.nodeapi.port+"/api/protocols/browser/"+@id
+							json: true
+						, (error, response, body) =>
+							@serverError = error
+							@response = response
+							@responseJSON = body
+							done()
+					it "should delete the protocol", ->
+						console.log @responseJSON
+						console.log @response
+						assert.equal @responseJSON.codeValue == 'deleted' or @responseJSON.ignored == true, true
 	describe "Protocol related services", ->
 		describe 'when protocol labels service called', ->
 			before (done) ->
