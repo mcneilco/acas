@@ -1979,6 +1979,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$lsTransaction <- lsTransaction
     treatmentGroupData$recordedBy <- recordedBy
     
+    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
+    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
+    
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltTimes2(treatmentGroupData))
     treatmentGroupData <- rbind.fill(treatmentGroupData, meltBatchCodes2(treatmentGroupData))
     treatmentGroupData[treatmentGroupData$valueKind != "batch code", ]$concentration <- NA
@@ -1991,8 +1994,6 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
       treatmentGroupData$operatorKind <- treatmentGroupData$valueOperator
     } 
     treatmentGroupData$stateID <- NULL
-    treatmentGroupData$tempId <- treatmentGroupData$treatmentGroupID
-    treatmentGroupData$tempParentId <- treatmentGroupData$analysisGroupID
     treatmentGroupData$lsType <- "default"
     treatmentGroupData$lsKind <- "default"
   }
