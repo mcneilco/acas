@@ -2697,9 +2697,9 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
         formatParameters = formatParameters, concColumn = "Dose (uM)")
       
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"
-      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Response"] <- "transformed efficacy"
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Response"] <- "efficacy"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Dose"] <- "concentration"
-      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "transformed efficacy"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "efficacy"
     }
   }
   return(intermedList)
