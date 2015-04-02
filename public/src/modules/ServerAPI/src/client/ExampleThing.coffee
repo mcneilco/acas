@@ -54,6 +54,15 @@ class window.ExampleThing extends Thing
 			value: 0
 		]
 
+		defaultFirstLsThingItx: [
+
+		]
+
+		defaultSecondLsThingItx: [
+
+		]
+
+
 
 	validate: (attrs) ->
 		errors = []

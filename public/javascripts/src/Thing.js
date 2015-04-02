@@ -11,6 +11,8 @@
       this.duplicate = __bind(this.duplicate, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
+      this.createDefaultSecondLsThingItx = __bind(this.createDefaultSecondLsThingItx, this);
+      this.createDefaultFirstLsThingItx = __bind(this.createDefaultFirstLsThingItx, this);
       this.createNewValue = __bind(this.createNewValue, this);
       this.createDefaultStates = __bind(this.createDefaultStates, this);
       this.createDefaultLabels = __bind(this.createDefaultLabels, this);
@@ -162,6 +164,33 @@
         value: newVal
       });
       return this.set(vKind, newValue);
+    };
+
+    Thing.prototype.createDefaultFirstLsThingItx = function() {
+      var itx, thingItx, _i, _len, _ref, _results;
+      _ref = this.lsProperties.defaultFirstLsThingItx;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        itx = _ref[_i];
+        thingItx = this.get('firstLsThings').getItxByTypeAndKind(itx.itxType, itx.itxKind);
+        if (thingItx == null) {
+          thingItx = this.get('firstLsThings').createItxByTypeAndKind(itx.itxType, itx.itxKind);
+        }
+        _results.push(this.set(itx.key, thingItx));
+      }
+      return _results;
+    };
+
+    Thing.prototype.createDefaultSecondLsThingItx = function() {
+      var itx, thingItx, _i, _len, _ref, _results;
+      _ref = this.lsProperties.defaultSecondLsThingItx;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        itx = _ref[_i];
+        thingItx = this.get('secondLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
+        _results.push(this.set(itx.key, thingItx));
+      }
+      return _results;
     };
 
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {

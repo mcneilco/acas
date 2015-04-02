@@ -63,8 +63,7 @@
         beforeEach(function() {
           this.afc = new AttachFileController({
             model: new AttachFile(window.attachFileTestJSON.attachFileInfo[0]),
-            el: $('#fixture'),
-            fileTypeListURL: "/api/codetables/analytical method/file type"
+            el: $('#fixture')
           });
           return this.afc.render();
         });
@@ -105,8 +104,7 @@
         beforeEach(function() {
           this.aflc = new AttachFileListController({
             el: $('#fixture'),
-            collection: new AttachFileList(),
-            fileTypeListURL: "/api/codetables/analytical method/file type"
+            collection: new AttachFileList()
           });
           return this.aflc.render();
         });
