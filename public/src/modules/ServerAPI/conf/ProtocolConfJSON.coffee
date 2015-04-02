@@ -253,6 +253,13 @@
 				ignored: false
 			,
 				codeType: "assay"
+				codeKind: "stage"
+				codeOrigin: "ACAS DDICT"
+				code: "production"
+				name: "Production"
+				ignored: false
+			,
+				codeType: "assay"
 				codeKind: "activity"
 				codeOrigin: "ACAS DDICT"
 				code: "atp levels"

@@ -76,10 +76,10 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_protocolName": "handleNameChanged"
-			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
+			"keyup .bv_protocolName": "handleNameChanged"
+			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
-			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 

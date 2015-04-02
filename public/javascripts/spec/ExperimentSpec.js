@@ -647,18 +647,18 @@
           });
           it("should update model when shortDescription is changed", function() {
             this.ebc.$('.bv_shortDescription').val(" New short description   ");
-            this.ebc.$('.bv_shortDescription').change();
+            this.ebc.$('.bv_shortDescription').keyup();
             return expect(this.ebc.model.get('shortDescription')).toEqual("New short description");
           });
           it("should set model shortDescription to a space when shortDescription is set to empty", function() {
             this.ebc.$('.bv_shortDescription').val("");
-            this.ebc.$('.bv_shortDescription').change();
+            this.ebc.$('.bv_shortDescription').keyup();
             return expect(this.ebc.model.get('shortDescription')).toEqual(" ");
           });
           it("should update model when experimentDetails is changed", function() {
             var desc, states, values;
             this.ebc.$('.bv_details').val(" New experiment details   ");
-            this.ebc.$('.bv_details').change();
+            this.ebc.$('.bv_details').keyup();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "experiment details");
@@ -669,7 +669,7 @@
           it("should update model when comments is changed", function() {
             var desc, states, values;
             this.ebc.$('.bv_comments').val(" New comments   ");
-            this.ebc.$('.bv_comments').change();
+            this.ebc.$('.bv_comments').keyup();
             states = this.ebc.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "comments");
@@ -679,7 +679,7 @@
           });
           it("should update model when name is changed", function() {
             this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
-            this.ebc.$('.bv_experimentName').change();
+            this.ebc.$('.bv_experimentName').keyup();
             return expect(this.ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated experiment name");
           });
           it("should update model when completion date is changed", function() {
@@ -689,7 +689,7 @@
           });
           it("should update model when notebook is changed", function() {
             this.ebc.$('.bv_notebook').val(" Updated notebook  ");
-            this.ebc.$('.bv_notebook').change();
+            this.ebc.$('.bv_notebook').keyup();
             return expect(this.ebc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
           });
           it("should update model when protocol is changed", function() {
@@ -857,7 +857,7 @@
           return it("should call a fetch on the model when cancel is clicked", function() {
             runs(function() {
               this.ebc.$('.bv_experimentName').val("new experiment name");
-              this.ebc.$('.bv_experimentName').change();
+              this.ebc.$('.bv_experimentName').keyup();
               expect(this.ebc.$('.bv_experimentName').val()).toEqual("new experiment name");
               return this.ebc.$('.bv_cancel').click();
             });
@@ -986,11 +986,11 @@
             }, 1000);
             runs(function() {
               this.ebc.$('.bv_shortDescription').val(" New short description   ");
-              this.ebc.$('.bv_shortDescription').change();
+              this.ebc.$('.bv_shortDescription').keyup();
               this.ebc.$('.bv_protocolCode').val("PROT-00000001");
               this.ebc.$('.bv_protocolCode').change();
               this.ebc.$('.bv_experimentName').val(" Updated experiment name   ");
-              this.ebc.$('.bv_experimentName').change();
+              this.ebc.$('.bv_experimentName').keyup();
               this.ebc.$('.bv_scientist').val("bob");
               return this.ebc.$('.bv_scientist').change();
             });
@@ -1001,7 +1001,7 @@
               this.ebc.$('.bv_projectCode').val("project1");
               this.ebc.$('.bv_projectCode').change();
               this.ebc.$('.bv_notebook').val("my notebook");
-              this.ebc.$('.bv_notebook').change();
+              this.ebc.$('.bv_notebook').keyup();
               this.ebc.$('.bv_completionDate').val(" 2013-3-16   ");
               return this.ebc.$('.bv_completionDate').change();
             });
@@ -1024,7 +1024,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_experimentName').val("");
-                return this.ebc.$('.bv_experimentName').change();
+                return this.ebc.$('.bv_experimentName').keyup();
               });
             });
             it("should be invalid if experiment name not filled in", function() {
@@ -1100,7 +1100,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.ebc.$('.bv_notebook').val("");
-                return this.ebc.$('.bv_notebook').change();
+                return this.ebc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook dropdown", function() {
