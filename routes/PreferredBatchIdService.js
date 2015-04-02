@@ -20,14 +20,23 @@
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     serviceType = config.all.client.service.external.preferred.batchid.type;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-    possibleServiceTypes = ['SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString'];
+    possibleServiceTypes = ['NewLineSepBulkPost', 'SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString'];
     requests = req.body.requests;
     if (__indexOf.call(possibleServiceTypes, serviceType) < 0) {
       errorMessage = "client.service.external.preferred.batchid.type '" + serviceType + "' is not in possible service types " + possibleServiceTypes;
       console.log(errorMessage);
       resp.end(errorMessage);
     }
-    if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
+    if (serviceType === "NewLineSepBulkPost" && !global.specRunnerTestmode) {
+      req.body.user = "";
+      return csUtilities.getPreferredBatchIds(requests, function(preferredResp) {
+        return resp.json({
+          error: false,
+          errorMessages: [],
+          results: preferredResp
+        });
+      });
+    } else if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return resp.end(rReturn);
