@@ -996,7 +996,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	template: _.template($("#PrimaryScreenAnalysisView").html())
 
 	initialize: ->
-		@model.on "sync", @handleExperimentSaved
+		@model.on "saveSuccess", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@dataAnalysisController = null
 		$(@el).empty()
@@ -1344,7 +1344,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@completeInitialization()
 
 	fetchModel: =>
-		console.log "fetch Model"
 #		@model.fetch
 #			success: @updateModelFitTab()
 
@@ -1359,7 +1358,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			dataType: 'json'
 
 	updateModelFitTab: =>
-		console.log "update Model Fit Tab"
 		@modelFitController.model = @model
 		@modelFitController.setReadyForFit()
 		@$('.bv_resultsContainer').hide()

@@ -250,6 +250,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
+			@model.trigger 'saveSuccess'
 		@render()
 		@setupAttachFileListController()
 

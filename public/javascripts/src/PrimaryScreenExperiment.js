@@ -1578,7 +1578,7 @@
     PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
-      this.model.on("sync", this.handleExperimentSaved);
+      this.model.on("saveSuccess", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.dataAnalysisController = null;
       $(this.el).empty();
@@ -2064,7 +2064,6 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.fetchModel = function() {
-      console.log("fetch Model");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/codeName/" + this.model.get('codeName'),
@@ -2084,7 +2083,6 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.updateModelFitTab = function() {
-      console.log("update Model Fit Tab");
       this.modelFitController.model = this.model;
       this.modelFitController.setReadyForFit();
       return this.$('.bv_resultsContainer').hide();

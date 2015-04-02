@@ -395,6 +395,7 @@
       } else {
         this.$('.bv_updateComplete').show();
         this.trigger('amClean');
+        this.model.trigger('saveSuccess');
       }
       this.render();
       return this.setupAttachFileListController();

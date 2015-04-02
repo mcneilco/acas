@@ -262,14 +262,16 @@
       } else {
         this.$('.bv_updateComplete').show();
       }
-      this.render();
       if (this.model.get('lsKind') !== "default") {
         this.$('.bv_newEntity').hide();
         this.$('.bv_cancel').hide();
         this.$('.bv_save').hide();
       }
       this.trigger('amClean');
-      return this.setupAttachFileListController();
+      this.render();
+      if (this.model.get('lsType') === "default") {
+        return this.setupAttachFileListController();
+      }
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {
