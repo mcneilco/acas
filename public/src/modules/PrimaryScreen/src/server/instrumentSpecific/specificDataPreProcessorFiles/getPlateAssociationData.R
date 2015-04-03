@@ -23,6 +23,9 @@ getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
 
   plateAssociationData <- read.csv(fileName, header=header, stringsAsFactors=FALSE)
   
+  # Removes blank rows from plate association file
+  plateAssociationData <- plateAssociationData[do.call(paste0, plateAssociationData) != "", ]
+  
   if (ncol(plateAssociationData) == 3) {
     compoundColumns <- c("sidecarBarcode", paste0("compoundBarcode_", 1:(ncol(plateAssociationData)-2)))
     
@@ -30,13 +33,17 @@ getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
     # third is not. This is adjusted by moving the third value in to the second column.
     for(i in 1:nrow(plateAssociationData)) {
       if(plateAssociationData[i, 2] == "") {
-        warnUser("Blank sidecar Barcode")
+        warnUser("Blank sidecar barcode found in plate association file, adjusting barcodes to compensate.")
         plateAssociationData[i, 2] <- plateAssociationData[i, 3]
         plateAssociationData[i, 3] <- ""
       }
     }
   } else if (ncol(plateAssociationData) == 2) {
     compoundColumns <- "compoundBarcode_1"
+  } else { 
+    # Currently not coded for more than 3 columns because the potential
+    # of a blank sidecar is not handled for 'n' columns.
+    stopUser("More than three columns found in the plate association file. Contact your administrator.")
   }
   colnames(plateAssociationData) <- c("assayBarcode", compoundColumns)
   plateAssociationData$plateOrder <- (1:nrow(plateAssociationData))
