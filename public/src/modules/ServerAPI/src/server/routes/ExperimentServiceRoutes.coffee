@@ -111,7 +111,11 @@ updateExpt = (expt, testMode, callback) ->
 				body: expt
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200
+				if response.statusCode == 409
+					console.log 'got ajax error trying to update experiment - not unique name'
+					if response.body[0].message is "not unique experiment name"
+						callback JSON.stringify response.body[0].message
+				else if !error && response.statusCode == 200
 					callback json
 				else
 					console.log 'got ajax error trying to update experiment'
@@ -164,7 +168,7 @@ postExperiment = (req, resp) ->
 				if !error && response.statusCode == 201
 					checkFilesAndUpdate json
 				else
-					console.log 'got ajax error trying to save experiment'
+					console.log 'got ajax error trying to save experiment - not unique name'
 					if response.body[0].message is "not unique experiment name"
 						resp.end JSON.stringify response.body[0].message
 			)

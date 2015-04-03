@@ -118,7 +118,12 @@
           json: true
         }, (function(_this) {
           return function(error, response, json) {
-            if (!error && response.statusCode === 200) {
+            if (response.statusCode === 409) {
+              console.log('got ajax error trying to update experiment - not unique name');
+              if (response.body[0].message === "not unique experiment name") {
+                return callback(JSON.stringify(response.body[0].message));
+              }
+            } else if (!error && response.statusCode === 200) {
               return callback(json);
             } else {
               console.log('got ajax error trying to update experiment');
@@ -189,7 +194,7 @@
             if (!error && response.statusCode === 201) {
               return checkFilesAndUpdate(json);
             } else {
-              console.log('got ajax error trying to save experiment');
+              console.log('got ajax error trying to save experiment - not unique name');
               if (response.body[0].message === "not unique experiment name") {
                 return resp.end(JSON.stringify(response.body[0].message));
               }

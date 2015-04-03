@@ -116,7 +116,7 @@ class window.BaseEntity extends Backbone.Model
 			when "created" then return true
 			when "started" then return true
 			when "complete" then return true
-			when "finalized" then return false
+			when "approved" then return false
 			when "rejected" then return false
 		return true
 
@@ -275,6 +275,9 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
 		@updateEditable()
+		console.log "render"
+		@$('.bv_save').attr('disabled', 'disabled')
+		@$('.bv_cancel').attr('disabled','disabled')
 		if @readOnly is true
 			@displayInReadOnlyMode()
 
@@ -392,9 +395,19 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleStatusChanged: =>
 		value = @statusListController.getSelectedCode()
-		@handleValueChanged "Status", value
-		# this is required in addition to model change event watcher only for spec. real app works without it
-		@updateEditable()
+		console.log "handle status changed"
+		console.log @model.isValid()
+		console.log @isValid()
+		if (value is "approved" or value is "rejected") and !@isValid()
+			value = value.charAt(0).toUpperCase() + value.substring(1);
+			alert 'All fields must be valid before changing the status to "'+ value + '"'
+			@statusListController.setSelectedCode @model.getStatus().get('codeValue')
+			console.log "reverted status to " + @model.getStatus().get('codeValue')
+		else
+			@handleValueChanged "Status", value
+			# this is required in addition to model change event watcher only for spec. real app works without it
+			@updateEditable()
+			@model.trigger 'change'
 
 	handleValueChanged: (vKind, value) =>
 		currentVal = @model["get"+vKind]()
@@ -410,12 +423,15 @@ class window.BaseEntityController extends AbstractFormController
 		if @model.isEditable()
 			@enableAllInputs()
 			@$('.bv_lock').hide()
-			@$('.bv_save').attr('disabled', 'disabled')
-			@$('.bv_cancel').attr('disabled','disabled')
+#			@$('.bv_save').attr('disabled', 'disabled')
+#			@$('.bv_cancel').attr('disabled','disabled')
 		else
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
 			@$('.bv_lock').show()
+#			@$('.bv_save').removeAttr('disabled')
+			@$('.bv_newEntity').removeAttr('disabled')
+#			@$('.bv')
 		if @model.isNew()
 			@$('.bv_status').attr("disabled", "disabled")
 		else
@@ -439,6 +455,8 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
+		console.log "model to save"
+		console.log @model
 		@model.save()
 
 	prepareToSaveAttachedFiles: =>
