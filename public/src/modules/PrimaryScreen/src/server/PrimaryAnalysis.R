@@ -2086,7 +2086,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: loop or lapply to get all
     singleReport <- summaryInfo$reports[[1]]
     summaryInfo$info[[singleReport$title]] <- paste0(
-      '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
+      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
     
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
