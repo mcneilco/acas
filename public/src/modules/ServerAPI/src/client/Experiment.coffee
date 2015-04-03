@@ -11,7 +11,7 @@ class window.Experiment extends BaseEntity
 		super()
 
 	parse: (resp) =>
-		if resp is "not unique experiment name"
+		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
 			@trigger 'saveFailed'
 			resp
 		else

@@ -78,7 +78,12 @@
           json: true
         }, (function(_this) {
           return function(error, response, json) {
-            if (!error && response.statusCode === 200) {
+            if (response.statusCode === 409) {
+              console.log('got ajax error trying to update protocol - not unique name');
+              if (response.body[0].message === "not unique protocol name") {
+                return callback(JSON.stringify(response.body[0].message));
+              }
+            } else if (!error && response.statusCode === 200) {
               return callback(json);
             } else {
               console.log('got ajax error trying to update protocol');
@@ -151,8 +156,11 @@
             } else {
               console.log('got ajax error trying to save new protocol');
               console.log(error);
-              console.log(json);
-              return console.log(response);
+              console.log(response.statusCode);
+              console.log(response);
+              if (response.body[0].message === "not unique experiment name") {
+                return resp.end(JSON.stringify(response.body[0].message));
+              }
             }
           };
         })(this));
