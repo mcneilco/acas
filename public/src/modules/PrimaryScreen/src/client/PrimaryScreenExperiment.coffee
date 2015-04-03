@@ -339,7 +339,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 	tagName: "div"
 	className: "form-inline"
 	events:
-		"change .bv_readPosition": "attributeChanged"
+		"keyup .bv_readPosition": "attributeChanged"
 		"change .bv_readName": "handleReadNameChanged"
 		"click .bv_activity": "handleActivityChanged"
 		"click .bv_delete": "clear"
@@ -587,18 +587,18 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_aggregateBy": "attributeChanged"
 		"change .bv_aggregationMethod": "attributeChanged"
 		"change .bv_normalizationRule": "attributeChanged"
-		"change .bv_assayVolume": "handleAssayVolumeChanged"
-		"change .bv_dilutionFactor": "handleDilutionFactorChanged"
-		"change .bv_transferVolume": "handleTransferVolumeChanged"
-		"change .bv_hitEfficacyThreshold": "attributeChanged"
-		"change .bv_hitSDThreshold": "attributeChanged"
-		"change .bv_positiveControlBatch": "handlePositiveControlBatchChanged"
-		"change .bv_positiveControlConc": "attributeChanged"
-		"change .bv_negativeControlBatch": "handleNegativeControlBatchChanged"
-		"change .bv_negativeControlConc": "attributeChanged"
-		"change .bv_vehicleControlBatch": "handleVehicleControlBatchChanged"
-		"change .bv_agonistControlBatch": "handleAgonistControlBatchChanged"
-		"change .bv_agonistControlConc": "attributeChanged"
+		"keyup .bv_assayVolume": "handleAssayVolumeChanged"
+		"keyup .bv_dilutionFactor": "handleDilutionFactorChanged"
+		"keyup .bv_transferVolume": "handleTransferVolumeChanged"
+		"keyup .bv_hitEfficacyThreshold": "attributeChanged"
+		"keyup .bv_hitSDThreshold": "attributeChanged"
+		"keyup .bv_positiveControlBatch": "handlePositiveControlBatchChanged"
+		"keyup .bv_positiveControlConc": "attributeChanged"
+		"keyup .bv_negativeControlBatch": "handleNegativeControlBatchChanged"
+		"keyup .bv_negativeControlConc": "attributeChanged"
+		"keyup .bv_vehicleControlBatch": "handleVehicleControlBatchChanged"
+		"keyup .bv_agonistControlBatch": "handleAgonistControlBatchChanged"
+		"keyup .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
 		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
@@ -996,7 +996,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	template: _.template($("#PrimaryScreenAnalysisView").html())
 
 	initialize: ->
-		@model.on "sync", @handleExperimentSaved
+		@model.on "saveSuccess", @handleExperimentSaved
 		@model.getStatus().on 'change', @handleStatusChanged
 		@dataAnalysisController = null
 		$(@el).empty()
@@ -1344,7 +1344,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@completeInitialization()
 
 	fetchModel: =>
-		console.log "fetch Model"
 #		@model.fetch
 #			success: @updateModelFitTab()
 
@@ -1359,7 +1358,6 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			dataType: 'json'
 
 	updateModelFitTab: =>
-		console.log "update Model Fit Tab"
 		@modelFitController.model = @model
 		@modelFitController.setReadyForFit()
 		@$('.bv_resultsContainer').hide()

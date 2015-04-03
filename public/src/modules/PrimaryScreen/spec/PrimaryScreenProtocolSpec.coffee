@@ -305,7 +305,7 @@ describe "Primary Screen Protocol module testing", ->
 						expect(@psppc.model.getMolecularTarget().get('codeValue')).toEqual "test2"
 				it "should update the clone name", ->
 					@psppc.$('.bv_cloneName').val("  clone2  ")
-					@psppc.$('.bv_cloneName').change()
+					@psppc.$('.bv_cloneName').keyup()
 					expect(@psppc.model.getCloneName().get('stringValue')).toEqual "clone2"
 				it "should update the target origin", ->
 					waitsFor ->
@@ -341,24 +341,24 @@ describe "Primary Screen Protocol module testing", ->
 						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "unassigned"
 				it "should update the curve display max", ->
 					@psppc.$('.bv_maxY').val("130 ")
-					@psppc.$('.bv_maxY').change()
+					@psppc.$('.bv_maxY').keyup()
 					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 130
 				it "should update the curve display min", ->
 					@psppc.$('.bv_minY').val(" 13 ")
-					@psppc.$('.bv_minY').change()
+					@psppc.$('.bv_minY').keyup()
 					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 13
 			describe "controller validation rules", ->
 				it "should show error when maxY is NaN", ->
 					@psppc.$('.bv_maxY').val("b")
-					@psppc.$('.bv_maxY').change()
+					@psppc.$('.bv_maxY').keyup()
 					expect(@psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy()
 				it "should show error when minY is NaN", ->
 					@psppc.$('.bv_minY').val("b")
-					@psppc.$('.bv_minY').change()
+					@psppc.$('.bv_minY').keyup()
 					expect(@psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy()
 				it "should show error when clone name is invalid", ->
 					@psppc.$('.bv_cloneName').val("invalid")
-					@psppc.$('.bv_cloneName').change()
+					@psppc.$('.bv_cloneName').keyup()
 					expect(@psppc.$('.bv_group_cloneName').hasClass('error')).toBeTruthy()
 				it "should show error when the molecular target is invalid", ->
 					waitsFor ->
@@ -426,22 +426,22 @@ describe "Primary Screen Protocol module testing", ->
 					beforeEach ->
 						runs ->
 							@pspmc.$('.bv_protocolName').val(" example protocol name   ")
-							@pspmc.$('.bv_protocolName').change()
-							@pspmc.$('.bv_recordedBy').val("nxm7557")
-							@pspmc.$('.bv_recordedBy').change()
+							@pspmc.$('.bv_protocolName').keyup()
+							@pspmc.$('.bv_scientist').val("nxm7557")
+							@pspmc.$('.bv_scientist').change()
 							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
 							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
 							@pspmc.$('.bv_creationDate').change()
 							@pspmc.$('.bv_notebook').val("my notebook")
-							@pspmc.$('.bv_notebook').change()
+							@pspmc.$('.bv_notebook').keyup()
 							@pspmc.$('.bv_positiveControlBatch').val("test")
-							@pspmc.$('.bv_positiveControlBatch').change()
+							@pspmc.$('.bv_positiveControlBatch').keyup()
 							@pspmc.$('.bv_positiveControlConc').val(" 123 ")
-							@pspmc.$('.bv_positiveControlConc').change()
+							@pspmc.$('.bv_positiveControlConc').keyup()
 							@pspmc.$('.bv_negativeControlBatch').val("test2")
-							@pspmc.$('.bv_negativeControlBatch').change()
+							@pspmc.$('.bv_negativeControlBatch').keyup()
 							@pspmc.$('.bv_negativeControlConc').val(" 1231 ")
-							@pspmc.$('.bv_negativeControlConc').change()
+							@pspmc.$('.bv_negativeControlConc').keyup()
 							@pspmc.$('.bv_readName').val("luminescence")
 							@pspmc.$('.bv_readName').change()
 							@pspmc.$('.bv_signalDirectionRule').val("increasing")
@@ -521,21 +521,21 @@ describe "Primary Screen Protocol module testing", ->
 					beforeEach ->
 						runs ->
 							@pspmc.$('.bv_protocolName').val(" example protocol name   ")
-							@pspmc.$('.bv_protocolName').change()
-							@pspmc.$('.bv_recordedBy').val("nxm7557")
-							@pspmc.$('.bv_recordedBy').change()
+							@pspmc.$('.bv_protocolName').keyup()
+							@pspmc.$('.bv_scientist').val("nxm7557")
+							@pspmc.$('.bv_scientist').change()
 							@pspmc.$('.bv_creationDate').val(" 2013-3-16   ")
 							@pspmc.$('.bv_creationDate').change()
 							@pspmc.$('.bv_notebook').val("my notebook")
-							@pspmc.$('.bv_notebook').change()
+							@pspmc.$('.bv_notebook').keyup()
 							@pspmc.$('.bv_positiveControlBatch').val("test")
-							@pspmc.$('.bv_positiveControlBatch').change()
+							@pspmc.$('.bv_positiveControlBatch').keyup()
 							@pspmc.$('.bv_positiveControlConc').val(" 123 ")
-							@pspmc.$('.bv_positiveControlConc').change()
+							@pspmc.$('.bv_positiveControlConc').keyup()
 							@pspmc.$('.bv_negativeControlBatch').val("test2")
-							@pspmc.$('.bv_negativeControlBatch').change()
+							@pspmc.$('.bv_negativeControlBatch').keyup()
 							@pspmc.$('.bv_negativeControlConc').val(" 1231 ")
-							@pspmc.$('.bv_negativeControlConc').change()
+							@pspmc.$('.bv_negativeControlConc').keyup()
 							@pspmc.$('.bv_readName').val("luminescence")
 							@pspmc.$('.bv_readName').change()
 							@pspmc.$('.bv_signalDirectionRule').val("increasing")
@@ -561,10 +561,10 @@ describe "Primary Screen Protocol module testing", ->
 				it "should call a fetch on the model when cancel is clicked", ->
 					runs ->
 						@pspmc.$('.bv_protocolName').val(" Updated protocol name   ")
-						@pspmc.$('.bv_protocolName').change()
+						@pspmc.$('.bv_protocolName').keyup()
 						expect(@pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
 						@pspmc.$('.bv_positiveControlBatch').val('blah')
-						@pspmc.$('.bv_positiveControlBatch').change()
+						@pspmc.$('.bv_positiveControlBatch').keyup()
 						expect(@pspmc.$('.bv_positiveControlBatch').val()).toEqual "blah"
 						@pspmc.$('.bv_cancel').click()
 					waits(1000)

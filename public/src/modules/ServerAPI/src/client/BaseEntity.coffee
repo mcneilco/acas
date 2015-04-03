@@ -221,13 +221,11 @@ class window.BaseEntityController extends AbstractFormController
 
 	events: ->
 		"change .bv_scientist": "handleScientistChanged"
-		"change .bv_shortDescription": "handleShortDescriptionChanged"
-		"change .bv_details": "handleDetailsChanged"
-		"change .bv_comments": "handleCommentsChanged"
-		"change .bv_entityName": "handleNameChanged"
-#		"change .bv_completionDate": "handleDateChanged"
-#		"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
-		"change .bv_notebook": "handleNotebookChanged"
+		"keyup .bv_shortDescription": "handleShortDescriptionChanged"
+		"keyup .bv_details": "handleDetailsChanged"
+		"keyup .bv_comments": "handleCommentsChanged"
+		"keyup .bv_entityName": "handleNameChanged"
+		"keyup .bv_notebook": "handleNotebookChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"

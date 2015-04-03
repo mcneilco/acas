@@ -24,7 +24,7 @@
   };
 
   exports.thingsByTypeKind = function(req, resp) {
-    var baseurl, config, serverUtilityFunctions, thingServiceTestJSON;
+    var baseurl, config, serverUtilityFunctions, stubFlag, thingServiceTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingServiceTestJSON.batchList));
@@ -32,6 +32,10 @@
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
+      stubFlag = "with=stub";
+      if (req.query.stub) {
+        baseurl += "?" + stubFlag;
+      }
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -42,13 +46,22 @@
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
   exports.thingByCodeName = function(req, resp) {
-    var baseurl, config, thingTestJSON;
+    var baseurl, config, nestedfull, nestedstub, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingTestJSON.thingParent);
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/" + req.params.code;
+      if (req.query.nestedstub) {
+        nestedstub = "with=nestedstub";
+        baseurl += "?" + nestedstub;
+      } else if (req.query.nestedfull) {
+        nestedfull = "with=nestedfull";
+        baseurl += "?" + nestedfull;
+      } else {
+
+      }
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };

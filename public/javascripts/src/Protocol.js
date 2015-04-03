@@ -155,10 +155,10 @@
 
     ProtocolBaseController.prototype.events = function() {
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
-        "change .bv_protocolName": "handleNameChanged",
-        "change .bv_assayTreeRule": "handleAssayTreeRuleChanged",
+        "keyup .bv_protocolName": "handleNameChanged",
+        "keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged",
         "change .bv_assayStage": "handleAssayStageChanged",
-        "change .bv_assayPrinciple": "handleAssayPrincipleChanged",
+        "keyup .bv_assayPrinciple": "handleAssayPrincipleChanged",
         "change .bv_creationDate": "handleCreationDateChanged",
         "click .bv_creationDateIcon": "handleCreationDateIconClicked"
       });
@@ -262,14 +262,16 @@
       } else {
         this.$('.bv_updateComplete').show();
       }
-      this.render();
       if (this.model.get('lsKind') !== "default") {
         this.$('.bv_newEntity').hide();
         this.$('.bv_cancel').hide();
         this.$('.bv_save').hide();
       }
       this.trigger('amClean');
-      return this.setupAttachFileListController();
+      this.render();
+      if (this.model.get('lsType') === "default") {
+        return this.setupAttachFileListController();
+      }
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {

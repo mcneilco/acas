@@ -26,6 +26,9 @@ exports.thingsByTypeKind = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+		stubFlag = "with=stub"
+		if req.query.stub
+			baseurl += "?#{stubFlag}"
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -40,6 +43,13 @@ exports.thingByCodeName = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
+		if req.query.nestedstub
+			nestedstub = "with=nestedstub"
+			baseurl += "?#{nestedstub}"
+		else if req.query.nestedfull
+			nestedfull = "with=nestedfull"
+			baseurl += "?#{nestedfull}"
+		else
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 

@@ -92,6 +92,22 @@ class window.Thing extends Backbone.Model
 		newValue.set value: newVal
 		@set vKind, newValue
 
+	createDefaultFirstLsThingItx: =>
+		# loop over defaultFirstLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultFirstLsThingItx
+			thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+			unless thingItx?
+				thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
+
+	createDefaultSecondLsThingItx: =>
+		# loop over defaultSecondLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultSecondLsThingItx
+			thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
+
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()

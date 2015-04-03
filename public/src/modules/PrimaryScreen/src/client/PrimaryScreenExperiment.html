@@ -107,10 +107,11 @@
         </div>
         <div class="control-group bv_group_transferVolume">
             <label class="control-label radio" style="width:110px;padding-left:30px;">
-                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Transfer Volume
+                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Compound Transfer Volume
             </label>
             <div class="controls" style="padding-left:0;">
                 <input class="bv_transferVolume" style="width:335px;" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
+                <span style="margin-left:5px;">nl</span>
             </div>
         </div>
     </div>
@@ -120,6 +121,7 @@
             <label class="control-label">Assay Volume</label>
             <div class="controls">
                 <input class="bv_assayVolume" value="<%=assayVolume%>" type="text" style="width:335px;"> </input>
+                <span style="margin-left:5px;">nl</span>
             </div>
         </div>
     </div>
@@ -150,10 +152,10 @@
 
     <h5>Analysis Parameters</h5>
     <div class="form-horizontal">
-        <div class="control-group bv_group_signalDirectionRule">
-            <label class="control-label">*Signal Direction</label>
+        <div class="control-group bv_group_signalDirectionRule" style="margin-bottom: 10px;">
+            <label class="control-label">*Positive Control Signal Direction</label>
             <div class="controls">
-                <select class="bv_signalDirectionRule" style="width:349px;"></select>
+                <select class="bv_signalDirectionRule" style="width:349px;margin-top:10px;"></select>
             </div>
         </div>
         <div class="control-group bv_group_aggregateBy">

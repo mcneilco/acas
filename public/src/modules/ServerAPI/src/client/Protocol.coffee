@@ -76,10 +76,10 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_protocolName": "handleNameChanged"
-			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
+			"keyup .bv_protocolName": "handleNameChanged"
+			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
-			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 
@@ -161,13 +161,14 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_updateComplete').hide()
 		else
 			@$('.bv_updateComplete').show()
-		@render()
 		unless @model.get('lsKind') is "default"
 			@$('.bv_newEntity').hide()
 			@$('.bv_cancel').hide()
 			@$('.bv_save').hide()
 		@trigger 'amClean'
-		@setupAttachFileListController()
+		@render()
+		if @model.get('lsType') is "default"
+			@setupAttachFileListController()
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()

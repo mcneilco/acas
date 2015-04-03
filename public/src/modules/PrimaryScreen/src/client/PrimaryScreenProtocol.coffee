@@ -185,15 +185,15 @@ class window.PrimaryScreenProtocolParametersController extends AbstractFormContr
 	autofillTemplate: _.template($("#PrimaryScreenProtocolParametersAutofillView").html())
 
 	events:
-		"change .bv_maxY": "handleCurveDisplayMaxChanged"
-		"change .bv_minY": "handleCurveDisplayMinChanged"
+		"keyup .bv_maxY": "handleCurveDisplayMaxChanged"
+		"keyup .bv_minY": "handleCurveDisplayMinChanged"
 		"change .bv_assayActivity": "handleAssayActivityChanged"
 		"change .bv_molecularTarget": "handleMolecularTargetChanged"
 		"change .bv_targetOrigin": "handleTargetOriginChanged"
 		"change .bv_assayType": "handleAssayTypeChanged"
 		"change .bv_assayTechnology": "handleAssayTechnologyChanged"
 		"change .bv_cellLine": "handleCellLineChanged"
-		"change .bv_cloneName": "handleCloneNameChanged"
+		"keyup .bv_cloneName": "handleCloneNameChanged"
 
 
 	initialize: ->

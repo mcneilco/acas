@@ -70,7 +70,9 @@
           kind: 'batch number',
           value: 0
         }
-      ]
+      ],
+      defaultFirstLsThingItx: [],
+      defaultSecondLsThingItx: []
     };
 
     ExampleThing.prototype.validate = function(attrs) {

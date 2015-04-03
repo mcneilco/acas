@@ -260,7 +260,7 @@
 
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
-        "change .bv_experimentName": "handleNameChanged",
+        "keyup .bv_experimentName": "handleNameChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
         "change .bv_projectCode": "handleProjectCodeChanged",
@@ -395,6 +395,7 @@
       } else {
         this.$('.bv_updateComplete').show();
         this.trigger('amClean');
+        this.model.trigger('saveSuccess');
       }
       this.render();
       return this.setupAttachFileListController();

@@ -143,7 +143,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_experimentName": "handleNameChanged"
+			"keyup .bv_experimentName": "handleNameChanged"
 			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 			"change .bv_protocolCode": "handleProtocolCodeChanged"
 			"change .bv_projectCode": "handleProjectCodeChanged"
@@ -250,6 +250,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
+			@model.trigger 'saveSuccess'
 		@render()
 		@setupAttachFileListController()
 
