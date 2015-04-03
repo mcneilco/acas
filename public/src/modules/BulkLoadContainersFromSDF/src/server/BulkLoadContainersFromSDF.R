@@ -21,7 +21,7 @@
 #   Example:
 #     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/Shipment_8242_Update_cutoff.sdf", dryRun= "true",user="smeyer"))
 #     bulkLoadContainersFromSDF(request=list(fileToParse="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/control_cmpds.sdf", dryRun= "true",user="smeyer"))
-#     runMain(fileName="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf", dryRun= TRUE,recordedBy="smeyer")
+#     runMain(fileName="public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/redactedCustomer_Mock data_Confirmation_Update.sdf", dryRun= TRUE,recordedBy="smeyer")
 
 # Random notes on container and interaction creation:
 # yellowContainer <- createContainer(kind = "No, yellow!")
@@ -47,7 +47,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   
   testMode <- FALSE
   
-  # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
+  # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/redactedCustomer_Mock data_Confirmation_Update.sdf"
   
   if (!grepl("\\.sdf$|\\.csv$",fileName)) {
     stop("The input file must have extension .sdf or .csv")

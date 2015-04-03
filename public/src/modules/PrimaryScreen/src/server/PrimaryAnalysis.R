@@ -2030,7 +2030,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
 
       #       source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-      #                        "IFF","createPDF.R"))
+      #                        clientName,"createPDF.R"))
       
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment, dryRun)
