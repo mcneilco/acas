@@ -28,11 +28,11 @@ exports.testedEntityProperties = (req, resp) ->
 				out += ','
 			out = out.slice(0,-1) + '\n'
 
-		resp.end out
+		resp.json resultCSV:out
 	else
 		csUtilities.getTestedEntityProperties req.body.properties, req.body.entityIdStringLines, (properties) ->
 			if properties?
-				resp.end properties
+				resp.json resultCSV: properties
 			else
 				resp.statusCode = 500
 				resp.end "problem with propery request, check log"
