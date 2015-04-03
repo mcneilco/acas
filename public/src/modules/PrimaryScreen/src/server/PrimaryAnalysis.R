@@ -2059,7 +2059,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+    summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                                    experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
@@ -2067,6 +2067,27 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
     
   } else { #This section is "If not dry run"
+    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
+    dir.create(reportLocation, showWarnings = FALSE)
+    
+    # Create the actual PDF
+    activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
+    pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+                             threshold = hitThreshold, experiment, dryRun, activityName) 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+                                         experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
+    
+    # Create the final Spotfire File
+    ## TODO: decide if "resultTable" is the correct object to write
+    summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
+                                       experiment, parameters, user)
+    # TODO: loop or lapply to get all
+    singleReport <- summaryInfo$reports[[1]]
+    summaryInfo$info[[singleReport$title]] <- paste0(
+      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
                   paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/rawData/", 
