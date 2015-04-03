@@ -1589,28 +1589,16 @@ removeNonCurves <- function(analysisData) {
   return(rbind(doseRespData, newSingle))
 }
 
-get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::applicationSettings$service.external.compound.calculatedProperties.url) {
-  namedProperties <- propertyNames
-  names(namedProperties) <- rep("propertyName",length(propertyNames))
-  response <- do.call(postForm, 
-                      as.list(
-                        c(uri = serviceUrl,
-                          inFormat = "ids", 
-                          namedProperties,
-                          compoundPayload = paste0(ids, collapse = '\n'),
-                          style = 'HTTPPOST'
-                        )
-                      )
-  )
-  if(length(propertyNames) == 1) {
-    lines <- paste0(strsplit(response,'\n')[[1]])
-    blanks <- lines == ""
-    lines[blanks] <- NA
-    properties <- fread(paste0(lines,collapse = "\n"))
-  } else {
-    properties <- fread(response, header = F)
-  }
-  setnames(properties, propertyNames)
+get_compound_properties <- function(ids, propertyNames) {
+  # ids: vector of compound ids
+  # propertyNames: vector of property names
+  # example input (works in node stubsMode): 
+  #   get_compound_properties(c("FRD76", "FRD2", "FRD78"), c("HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"))
+  
+  requestBody <- list(properties = as.list(propertyNames), entityIdStringLines=paste(ids, collapse="\n"))
+  url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/testedEntities/properties")
+  response <- fromJSON(postURLcheckStatus(url, toJSON(requestBody)))
+  properties <- fread(response$resultCSV)
   return(properties)
 }
 
@@ -1677,9 +1665,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO: Test structure
   clientName <- "DNS"
   # END: Test structure
-  
-  # TODO: Remove this when value is in config.properties
-  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
     
   # Source the client specific compound assignment functions
   compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
@@ -2030,7 +2015,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
 
       #       source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-      #                        "IFF","createPDF.R"))
+      #                        clientName,"createPDF.R"))
       
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment, dryRun)

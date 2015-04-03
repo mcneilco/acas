@@ -37,11 +37,15 @@
         }
         out = out.slice(0, -1) + '\n';
       }
-      return resp.end(out);
+      return resp.json({
+        resultCSV: out
+      });
     } else {
       return csUtilities.getTestedEntityProperties(req.body.properties, req.body.entityIdStringLines, function(properties) {
         if (properties != null) {
-          return resp.end(properties);
+          return resp.json({
+            resultCSV: properties
+          });
         } else {
           resp.statusCode = 500;
           return resp.end("problem with propery request, check log");
