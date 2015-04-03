@@ -2074,6 +2074,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
     dir.create(reportLocation, showWarnings = FALSE)
     
+    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+                     clientName,"createPDF.R"))
+    
     # Create the actual PDF
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
