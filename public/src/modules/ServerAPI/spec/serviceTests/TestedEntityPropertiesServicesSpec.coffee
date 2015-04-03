@@ -9,6 +9,7 @@ describe "Tested Entity Properties Services", ->
 			body =
 				properties: ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
 				entityIdStringLines: "FRD76\nFRD2\nFRD78\n"
+			console.log body
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -24,15 +25,15 @@ describe "Tested Entity Properties Services", ->
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 5 rows including a trailing \n", ->
-				assert.equal @responseJSON.split('\n').length, 5
+				assert.equal @responseJSON.resultCSV.split('\n').length, 5
 			it "should have 3 columns", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[0].split(',').length, 3
 			it "should have a header row", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS"
 			it "should have a number in the first result row", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal isNaN(parseFloat(res[1].split(',')[1])),false
 		describe "when valid compounds sent with invalid properties", ->
 			propertyList = ["ERROR", "deep_fred"]
@@ -73,13 +74,13 @@ describe "Tested Entity Properties Services", ->
 			it "should return an success status code", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return 5 rows including a trailing \n", ->
-				assert.equal @responseJSON.split('\n').length, 5
+				assert.equal @responseJSON.resultCSV.split('\n').length, 5
 			it "should have 3 columns", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[0].split(',').length, 3
 			it "should have a header row", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS"
 			it "should have an empty string in the first result", ->
-				res = @responseJSON.split('\n')
+				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[1],""

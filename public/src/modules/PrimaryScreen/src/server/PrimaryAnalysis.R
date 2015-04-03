@@ -1589,28 +1589,16 @@ removeNonCurves <- function(analysisData) {
   return(rbind(doseRespData, newSingle))
 }
 
-get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::applicationSettings$service.external.compound.calculatedProperties.url) {
-  namedProperties <- propertyNames
-  names(namedProperties) <- rep("propertyName",length(propertyNames))
-  response <- do.call(postForm, 
-                      as.list(
-                        c(uri = serviceUrl,
-                          inFormat = "ids", 
-                          namedProperties,
-                          compoundPayload = paste0(ids, collapse = '\n'),
-                          style = 'HTTPPOST'
-                        )
-                      )
-  )
-  if(length(propertyNames) == 1) {
-    lines <- paste0(strsplit(response,'\n')[[1]])
-    blanks <- lines == ""
-    lines[blanks] <- NA
-    properties <- fread(paste0(lines,collapse = "\n"))
-  } else {
-    properties <- fread(response, header = F)
-  }
-  setnames(properties, propertyNames)
+get_compound_properties <- function(ids, propertyNames) {
+  # ids: vector of compound ids
+  # propertyNames: vector of property names
+  # example input (works in node stubsMode): 
+  #   get_compound_properties(c("FRD76", "FRD2", "FRD78"), c("HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"))
+  
+  requestBody <- list(properties = as.list(propertyNames), entityIdStringLines=paste(ids, collapse="\n"))
+  url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/testedEntities/properties")
+  response <- fromJSON(postURLcheckStatus(url, toJSON(requestBody)))
+  properties <- fread(response$resultCSV)
   return(properties)
 }
 
@@ -1677,9 +1665,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO: Test structure
   clientName <- "DNS"
   # END: Test structure
-  
-  # TODO: Remove this when value is in config.properties
-  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
     
   # Source the client specific compound assignment functions
   compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
@@ -2030,7 +2015,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
 
       #       source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-      #                        "IFF","createPDF.R"))
+      #                        clientName,"createPDF.R"))
       
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment, dryRun)
@@ -2074,7 +2059,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+    summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                                    experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
@@ -2082,6 +2067,27 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
     
   } else { #This section is "If not dry run"
+    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
+    dir.create(reportLocation, showWarnings = FALSE)
+    
+    # Create the actual PDF
+    activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
+    pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+                             threshold = hitThreshold, experiment, dryRun, activityName) 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+                                         experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
+    
+    # Create the final Spotfire File
+    ## TODO: decide if "resultTable" is the correct object to write
+    summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
+                                       experiment, parameters, user)
+    # TODO: loop or lapply to get all
+    singleReport <- summaryInfo$reports[[1]]
+    summaryInfo$info[[singleReport$title]] <- paste0(
+      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
                   paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/rawData/", 

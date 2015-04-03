@@ -1207,7 +1207,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
 					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual 0
-				#TODO this spec is not running because prod IFF does not include a fit module yet
+				#TODO this spec is not running because prod redactedCustomer does not include a fit module yet
 				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 
