@@ -25,7 +25,7 @@ ALIQUOT_DATE            5-Nov-12
 
 #Service call data with good data:
 goodDataRequest =
-	fileToParse: "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/IFF_Mock data_Confirmation_Update.sdf"
+	fileToParse: "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/redactedCustomer_Mock data_Confirmation_Update.sdf"
 	dryRun: true
 	user: 'jmcneil'
 
