@@ -7,7 +7,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe("Tested Entity Properties Services", function() {
+  describe.only("Tested Entity Properties Services", function() {
     return describe("get calculated compound properties", function() {
       describe("when valid compounds sent with valid properties ONLY PASSES IN STUBS MODE", function() {
         var body;
@@ -15,6 +15,7 @@
           properties: ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"],
           entityIdStringLines: "FRD76\nFRD2\nFRD78\n"
         };
+        console.log(body);
         before(function(done) {
           this.timeout(20000);
           return request.post({
@@ -35,21 +36,21 @@
           return assert.equal(this.serverResponse.statusCode, 200);
         });
         it("should return 5 rows including a trailing \n", function() {
-          return assert.equal(this.responseJSON.split('\n').length, 5);
+          return assert.equal(this.responseJSON.resultCSV.split('\n').length, 5);
         });
         it("should have 3 columns", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[0].split(',').length, 3);
         });
         it("should have a header row", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS");
         });
         return it("should have a number in the first result row", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(isNaN(parseFloat(res[1].split(',')[1])), false);
         });
       });
@@ -107,21 +108,21 @@
           return assert.equal(this.serverResponse.statusCode, 200);
         });
         it("should return 5 rows including a trailing \n", function() {
-          return assert.equal(this.responseJSON.split('\n').length, 5);
+          return assert.equal(this.responseJSON.resultCSV.split('\n').length, 5);
         });
         it("should have 3 columns", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[0].split(',').length, 3);
         });
         it("should have a header row", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS");
         });
         return it("should have an empty string in the first result", function() {
           var res;
-          res = this.responseJSON.split('\n');
+          res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[1].split(',')[1], "");
         });
       });
