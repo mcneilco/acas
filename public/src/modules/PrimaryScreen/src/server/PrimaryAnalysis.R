@@ -1686,7 +1686,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-
+  
+  if (folderToParse == "") {
+    stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
+  }
+  
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(fullPathToParse)) {
