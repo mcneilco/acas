@@ -2078,6 +2078,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                      clientName,"createPDF.R"))
     
     # Create the actual PDF
+    if(!parameters$autoHitSelection) {
+      hitThreshold <- ""
+    } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      hitThreshold <- parameters$hitEfficacyThreshold
+    } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
+      hitThreshold <- parameters$hitSDThreshold
+    } else {
+      hitThreshold <- ""
+    }
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                              threshold = hitThreshold, experiment, dryRun, activityName) 
