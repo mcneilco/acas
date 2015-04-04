@@ -7,7 +7,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe.only("Tested Entity Properties Services", function() {
+  describe("Tested Entity Properties Services", function() {
     return describe("get calculated compound properties", function() {
       describe("when valid compounds sent with valid properties ONLY PASSES IN STUBS MODE", function() {
         var body;

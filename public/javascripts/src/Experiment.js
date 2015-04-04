@@ -389,6 +389,7 @@
         });
       }
       this.$('.bv_saving').hide();
+      console.log(this.$('.bv_saveFailed').is(":visible"));
       if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
         this.$('.bv_updateComplete').hide();
         this.trigger('amDirty');
@@ -396,6 +397,7 @@
         this.$('.bv_updateComplete').show();
         this.trigger('amClean');
         this.model.trigger('saveSuccess');
+        console.log("trigger save success");
       }
       this.render();
       return this.setupAttachFileListController();

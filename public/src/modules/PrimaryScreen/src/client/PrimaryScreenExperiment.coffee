@@ -914,7 +914,6 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analysisParameterController.disableAllInputs()
 
 	handleSaveReturnSuccess: (json) =>
-		console.log "handle save return success"
 		super(json)
 		@$('.bv_loadAnother').html("Re-Analyze")
 		@trigger 'analysis-completed'
@@ -1126,10 +1125,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@$('.bv_htmlSummary').html(resultHTML)
 
 	showDryRunResults: (dryRunStatus) ->
-		if dryRunStatus is "complete"
-			resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
-		else
-			resultStatus = "Dry Run Results: Failed"
 		resultHTML = @model.getDryRunResultHTML().get('clobValue')
 		if @dataAnalysisController?
 			@dataAnalysisController.parseFileUploaded = true
@@ -1137,6 +1132,11 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@dataAnalysisController.showFileUploadPhase()
 			@dataAnalysisController.handleFormValid()
 			@dataAnalysisController.disableAllInputs()
+		if dryRunStatus is "complete"
+			resultStatus = "Dry Run Results: Success" #warnings are not stored so status will just be successful even if there are warnings
+		else
+			resultStatus = "Dry Run Results: Failed"
+			@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
 
@@ -1162,7 +1162,6 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@model.getStatus().on 'change', @handleStatusChanged
 
 	handleAnalysisComplete: =>
-		console.log "handle analysis complete"
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
 		@$('.bv_resultsContainer').hide()
 		@trigger 'analysis-completed'
@@ -1244,8 +1243,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 			@model = new PrimaryScreenExperiment()
 
 		$(@el).html @template()
-		@model.on 'sync', @handleExperimentSaved
 		@setupExperimentBaseController()
+		@model.on 'sync', @handleExperimentSaved
 		@analysisController = new PrimaryScreenAnalysisController
 			model: @model
 			el: @$('.bv_primaryScreenDataAnalysis')
@@ -1274,6 +1273,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@$('.bv_cancel').attr('disabled','disabled')
 
 	setupExperimentBaseController: ->
+		if @experimentBaseController?
+			@experimentBaseController.remove()
 		@experimentBaseController = new ExperimentBaseController
 			model: @model
 			el: @$('.bv_experimentBase')

@@ -1451,7 +1451,6 @@
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
-      console.log("handle save return success");
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
       this.$('.bv_loadAnother').html("Re-Analyze");
       return this.trigger('analysis-completed');
@@ -1739,11 +1738,6 @@
 
     PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
       var resultHTML, resultStatus;
-      if (dryRunStatus === "complete") {
-        resultStatus = "Dry Run Results: Success";
-      } else {
-        resultStatus = "Dry Run Results: Failed";
-      }
       resultHTML = this.model.getDryRunResultHTML().get('clobValue');
       if (this.dataAnalysisController != null) {
         this.dataAnalysisController.parseFileUploaded = true;
@@ -1751,6 +1745,12 @@
         this.dataAnalysisController.showFileUploadPhase();
         this.dataAnalysisController.handleFormValid();
         this.dataAnalysisController.disableAllInputs();
+      }
+      if (dryRunStatus === "complete") {
+        resultStatus = "Dry Run Results: Success";
+      } else {
+        resultStatus = "Dry Run Results: Failed";
+        this.$('.bv_save').attr('disabled', 'disabled');
       }
       this.$('.bv_resultStatus').html(resultStatus);
       return this.$('.bv_htmlSummary').html(resultHTML);
@@ -1784,7 +1784,6 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
-      console.log("handle analysis complete");
       this.$('.bv_resultsContainer').hide();
       return this.trigger('analysis-completed');
     };
@@ -1908,8 +1907,8 @@
         this.model = new PrimaryScreenExperiment();
       }
       $(this.el).html(this.template());
-      this.model.on('sync', this.handleExperimentSaved);
       this.setupExperimentBaseController();
+      this.model.on('sync', this.handleExperimentSaved);
       this.analysisController = new PrimaryScreenAnalysisController({
         model: this.model,
         el: this.$('.bv_primaryScreenDataAnalysis'),
@@ -1964,6 +1963,9 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupExperimentBaseController = function() {
+      if (this.experimentBaseController != null) {
+        this.experimentBaseController.remove();
+      }
       this.experimentBaseController = new ExperimentBaseController({
         model: this.model,
         el: this.$('.bv_experimentBase'),

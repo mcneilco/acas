@@ -475,11 +475,7 @@
         return this.$('.bv_editExperiment').hide();
       } else {
         this.$('.bv_editExperiment').show();
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-          return this.$('.bv_deleteExperiment').show();
-        } else {
-          return this.$('.bv_deleteExperiment').hide();
-        }
+        return this.$('.bv_deleteExperiment').show();
       }
     };
 
