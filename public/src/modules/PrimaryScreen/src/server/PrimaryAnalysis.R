@@ -1671,7 +1671,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-
+  
+  if (folderToParse == "") {
+    stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
+  }
+  
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(fullPathToParse)) {
@@ -2070,7 +2074,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
     dir.create(reportLocation, showWarnings = FALSE)
     
+    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+                     clientName,"createPDF.R"))
+    
     # Create the actual PDF
+    if(!parameters$autoHitSelection) {
+      hitThreshold <- ""
+    } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      hitThreshold <- parameters$hitEfficacyThreshold
+    } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
+      hitThreshold <- parameters$hitSDThreshold
+    } else {
+      hitThreshold <- ""
+    }
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                              threshold = hitThreshold, experiment, dryRun, activityName) 
