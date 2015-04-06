@@ -24,7 +24,6 @@
 #########################################################################assert = require 'assert'
 assert = require 'assert'
 request = require 'request'
-fs = require 'fs'
 
 parseResponse = (jsonStr) ->
 	try
@@ -33,32 +32,12 @@ parseResponse = (jsonStr) ->
 		console.log "response unparsable: " + error
 		return null
 
-
 config = require '../../../../conf/compiled/conf.js'
 describe.only "Preferred Entity code service tests", ->
-	@requestData =
-		requests: [
-			{requestName: "norm_1234:1"} # easter egg prefix in test service that returns same value
-			{requestName: "alias_1111:1"} # easter egg prefix in test service that returns alias
-			{requestName: "none_2222:1"} # easter egg prefix in test service that returns none
-		]
-	@expectedResponse =
-		error: false
-		errorMessages: []
-		results: [
-			requestName: "norm_1234:1"
-			preferredName: "norm_1234:1"
-		,
-			requestName: "alias_1111:1"
-			preferredName: "norm_1111:1A"
-		,
-			requestName: "none_2222:1"
-			preferredName: ""
-		]
-	describe "available entity list", ->
+	describe "available entity type list", ->
 		describe "when requested as fully detailed list", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/configuredEntityTypes", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes", (error, response, body) =>
 					@responseJSON = parseResponse(body)
 					done()
 			it "should return an array of entity types", ->
@@ -71,7 +50,7 @@ describe.only "Preferred Entity code service tests", ->
 				assert.equal @responseJSON[0].sourceExternal?, true
 		describe "when requested as list of codes", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/configuredEntityTypes?asCodes=true", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes?asCodes=true", (error, response, body) =>
 					@responseJSON = parseResponse(body)
 					done()
 			it "should return an array of entity types", ->
@@ -81,13 +60,91 @@ describe.only "Preferred Entity code service tests", ->
 				assert.equal @responseJSON[0].name?, true
 				assert.equal @responseJSON[0].ignored?, true
 
+	describe "get preferred entity codeName for supplied name or codeName", ->
+		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", ->
+			body =
+				type: "parent"
+				kind: "protein"
+				codeOrigin: "ACAS LSThing"
+				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
+				assert.equal @serverResponse.statusCode,200
+			it "should return 5 rows including a trailing \n", ->
+				assert.equal @responseJSON.resultCSV.split('\n').length, 5
+			it "should have 2 columns", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[0].split(',').length, 2
+			it "should have a header row", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[0], "Requested Name,Preferred Code"
+			it "should have the query first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "PROT1"
 
-#	describe "testing Corporate Batch IDs", ->
-#		describe "When run with valid input", ->
-#			before (done) ->
-#				request "http://localhost:"+config.all.server.nodeapi.port+"/entity/edit/codeName/PROT-generic", (error, response, body) =>
-#					@responseJSON = body
-#					@response = response
-#					done()
-#			it "should return redirect", ->
-#				assert.equal @response.request.uri.href.indexOf('protocol_base')>0, true
+		describe "when valid compounds sent with invalid type info", ->
+			body =
+				type: "ERROR"
+				kind: "protein"
+				codeOrigin: "ACAS LSThing"
+				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return a failure status code", ->
+				assert.equal @serverResponse.statusCode,500
+
+		describe "when invalid compounds sent with valid type info", ->
+			body =
+				type: "parent"
+				kind: "protein"
+				codeOrigin: "ACAS LSThing"
+				entityIdStringLines: "PROT1\nERROR\nPROT3\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
+				assert.equal @serverResponse.statusCode,200
+			it "should return 5 rows including a trailing \n", ->
+				assert.equal @responseJSON.resultCSV.split('\n').length, 5
+			it "should have 2 columns", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[0].split(',').length, 2
+			it "should have a header row", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[0], "Requested Name,Preferred Code"
+			it "should have the query first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "ERROR"
+			it "should have blank second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], ""

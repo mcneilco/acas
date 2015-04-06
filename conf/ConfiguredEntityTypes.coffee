@@ -1,4 +1,5 @@
 exports.entityTypes = [
+	#displayName must be unique for any given deployed system beciase SEL uses it to lookup the code type
 	type: "compound"
 	kind: "batch name"
 	codeOrigin: "ACAS CmpdReg"
