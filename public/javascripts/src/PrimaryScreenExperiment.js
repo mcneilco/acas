@@ -1751,6 +1751,7 @@
       } else {
         resultStatus = "Dry Run Results: Failed";
         this.$('.bv_save').attr('disabled', 'disabled');
+        this.$('.bv_save').prop('disabled', true);
       }
       this.$('.bv_resultStatus').html(resultStatus);
       return this.$('.bv_htmlSummary').html(resultHTML);
