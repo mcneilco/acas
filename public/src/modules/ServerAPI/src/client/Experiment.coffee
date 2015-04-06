@@ -11,7 +11,7 @@ class window.Experiment extends BaseEntity
 		super()
 
 	parse: (resp) =>
-		if resp is "not unique experiment name"
+		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
 			@trigger 'saveFailed'
 			resp
 		else
@@ -143,7 +143,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_experimentName": "handleNameChanged"
+			"keyup .bv_experimentName": "handleNameChanged"
 			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 			"change .bv_protocolCode": "handleProtocolCodeChanged"
 			"change .bv_projectCode": "handleProjectCodeChanged"
@@ -244,12 +244,15 @@ class window.ExperimentBaseController extends BaseEntityController
 		unless @model.get('subclass')?
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
+		console.log @$('.bv_saveFailed').is(":visible")
 		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
 		else
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
+			@model.trigger 'saveSuccess'
+			console.log "trigger save success"
 		@render()
 		@setupAttachFileListController()
 

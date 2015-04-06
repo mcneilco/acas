@@ -369,16 +369,16 @@ describe "Base Entity testing", ->
 						expect(@bec.model.getScientist().get('codeValue')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@bec.$('.bv_shortDescription').val(" New short description   ")
-					@bec.$('.bv_shortDescription').change()
+					@bec.$('.bv_shortDescription').keyup()
 					expect(@bec.model.get 'shortDescription').toEqual "New short description"
 				it "should set model shortDescription to a space when shortDescription is set to empty", ->
 					@bec.$('.bv_shortDescription').val("")
-					@bec.$('.bv_shortDescription').change()
+					@bec.$('.bv_shortDescription').keyup()
 					expect(@bec.model.get 'shortDescription').toEqual " "
 				xit "should update model when entity details is changed", ->
 					#test breaks because subclass is set to experiment
 					@bec.$('.bv_details').val(" New experiment details   ")
-					@bec.$('.bv_details').change()
+					@bec.$('.bv_details').keyup()
 					states = @bec.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "experiment details")
@@ -387,7 +387,7 @@ describe "Base Entity testing", ->
 					expect(@bec.model.getDetails().get('clobValue')).toEqual "New experiment details"
 				it "should update model when comments is changed", ->
 					@bec.$('.bv_comments').val(" New comments   ")
-					@bec.$('.bv_comments').change()
+					@bec.$('.bv_comments').keyup()
 					states = @bec.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
@@ -398,11 +398,11 @@ describe "Base Entity testing", ->
 					@bem.set subclass: "entity" # work around for the spec to pass. In a subclass, the dom element would be .bv_[subclass]Name not .bv_entityName
 					@bec.render()
 					@bec.$('.bv_entityName').val(" Updated entity name   ")
-					@bec.$('.bv_entityName').change()
+					@bec.$('.bv_entityName').keyup()
 					expect(@bec.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated entity name"
 				it "should update model when notebook is changed", ->
 					@bec.$('.bv_notebook').val(" Updated notebook  ")
-					@bec.$('.bv_notebook').change()
+					@bec.$('.bv_notebook').keyup()
 					expect(@bec.model.getNotebook().get('stringValue')).toEqual "Updated notebook"
 				it "should update model when tag added", ->
 					@bec.$('.bv_tags').tagsinput 'add', "lucy"
@@ -465,11 +465,11 @@ describe "Base Entity testing", ->
 						@bec.$('.bv_scientist').val("bob")
 						@bec.$('.bv_scientist').change()
 						@bec.$('.bv_shortDescription').val(" New short description   ")
-						@bec.$('.bv_shortDescription').change()
+						@bec.$('.bv_shortDescription').keyup()
 						@bec.$('.bv_entityName').val(" Updated entity name   ")
-						@bec.$('.bv_entityName').change()
+						@bec.$('.bv_entityName').keyup()
 						@bec.$('.bv_notebook').val("my notebook")
-						@bec.$('.bv_notebook').change()
+						@bec.$('.bv_notebook').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -482,7 +482,7 @@ describe "Base Entity testing", ->
 					beforeEach ->
 						runs ->
 							@bec.$('.bv_entityName').val("")
-							@bec.$('.bv_entityName').change()
+							@bec.$('.bv_entityName').keyup()
 					it "should be invalid if entity name not filled in", ->
 						runs ->
 							expect(@bec.isValid()).toBeFalsy()
@@ -507,7 +507,7 @@ describe "Base Entity testing", ->
 					beforeEach ->
 						runs ->
 							@bec.$('.bv_notebook').val("")
-							@bec.$('.bv_notebook').change()
+							@bec.$('.bv_notebook').keyup()
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@bec.$('.bv_group_notebook').hasClass('error')).toBeTruthy()

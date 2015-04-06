@@ -70,7 +70,9 @@
           kind: 'batch number',
           value: 0
         }
-      ]
+      ],
+      defaultFirstLsThingItx: [],
+      defaultSecondLsThingItx: []
     };
 
     ExampleThing.prototype.validate = function(attrs) {
@@ -380,6 +382,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['png', 'jpeg'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {

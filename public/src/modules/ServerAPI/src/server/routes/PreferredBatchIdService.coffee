@@ -14,7 +14,7 @@ exports.preferredBatchId = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-	possibleServiceTypes = ['SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
+	possibleServiceTypes = ['NewLineSepBulkPost','SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
 
 	requests = req.body.requests
 	if serviceType not in possibleServiceTypes
@@ -22,14 +22,21 @@ exports.preferredBatchId = (req, resp) ->
 		console.log errorMessage
 		resp.end errorMessage
 
-	if serviceType == "SeuratCmpdReg" && !global.specRunnerTestmode
+	if serviceType == "NewLineSepBulkPost" && !global.specRunnerTestmode
+		req.body.user = "" # to bypass validation function
+		csUtilities.getPreferredBatchIds requests, (preferredResp) ->
+			resp.json
+				error: false
+				errorMessages: []
+				results: preferredResp
+	else if serviceType == "SeuratCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function
 		serverUtilityFunctions.runRFunction(
 			req,
 			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
-			(rReturn) ->
-				resp.end rReturn
+		(rReturn) ->
+			resp.end rReturn
 		)
 	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function

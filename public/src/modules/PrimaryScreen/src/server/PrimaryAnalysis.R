@@ -1462,7 +1462,7 @@ checkControls <- function(resultTable) {
 }
 
 removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
-  # This function cycles through the column names in an data.table and removes 
+  # This function diffs the column names in an data.table and removes 
   # the columns not in a list of columns to keep.
   #
   # Input:  colNamesToCheck (list)
@@ -1589,72 +1589,54 @@ removeNonCurves <- function(analysisData) {
   return(rbind(doseRespData, newSingle))
 }
 
-get_compound_properties <- function(ids, propertyNames, serviceUrl = racas::applicationSettings$service.external.compound.calculatedProperties.url) {
-  namedProperties <- propertyNames
-  names(namedProperties) <- rep("propertyName",length(propertyNames))
-  response <- do.call(postForm, 
-                      as.list(
-                        c(uri = serviceUrl,
-                          inFormat = "ids", 
-                          namedProperties,
-                          compoundPayload = paste0(ids, collapse = '\n'),
-                          style = 'HTTPPOST'
-                        )
-                      )
-  )
-  if(length(propertyNames) == 1) {
-    lines <- paste0(strsplit(response,'\n')[[1]])
-    blanks <- lines == ""
-    lines[blanks] <- NA
-    properties <- fread(paste0(lines,collapse = "\n"))
-  } else {
-    properties <- fread(response, header = F)
-  }
-  setnames(properties, propertyNames)
+get_compound_properties <- function(ids, propertyNames) {
+  # ids: vector of compound ids
+  # propertyNames: vector of property names
+  # example input (works in node stubsMode): 
+  #   get_compound_properties(c("FRD76", "FRD2", "FRD78"), c("HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"))
+  
+  requestBody <- list(properties = as.list(propertyNames), entityIdStringLines=paste(ids, collapse="\n"))
+  url <- paste0(racas::applicationSettings$server.nodeapi.path, "/api/testedEntities/properties")
+  response <- fromJSON(postURLcheckStatus(url, toJSON(requestBody)))
+  properties <- fread(response$resultCSV)
   return(properties)
 }
 
-validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFakeCorpBatchId="", errorEnv = NULL) {
-  # Valides the calculated results (for now, this only validates the mainCode)
+validateBatchCodes <- function(batchCodes, testMode = FALSE) {
+  # Valides a vector of batch codes
   #
   # Args:
-  #   resultTable:	            A "data.frame" of the parsed instrument files with compound information
-  #   dryRun:                   A boolean
+  #   batchCodes:	              A vector of batch codes
   #   testMode:                 A boolean
-  #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #
   # Returns:
-  #   a copy of resultTable, with fixed batchCodes
-  
-  require(data.table)
+  #   a vector of fixed batchCodes
   
   # Get the current batch Ids
-  batchesToCheck <- resultTable$batchCode != "::"
-  batchIds <- unique(resultTable$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  #batchesToCheck <- resultTable$batchCode != "::"
+  uBatchCodes <- unique(batchCodes)
+  newBatchCodes <- getPreferredId(uBatchCodes, testMode=testMode)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
-  if (is.null(newBatchIds)) {
-    return(resultTable)
+  if (is.null(newBatchCodes)) {
+    return(batchCodes)
   }
   
-  mainCode <- "Corporate Batch ID"
-  
   # Give warning and error messages for changed or missing id's
-  for (batchId in newBatchIds) {
+  for (batchId in newBatchCodes) {
     if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
-      addError(paste0(mainCode, " '", batchId["requestName"], 
+      addError(paste0("Corporate Batch ID", " '", batchId["requestName"], 
                       "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
-                      "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
-                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      warnUser(paste0("A ", "Corporate Batch ID", " that you entered, '", batchId["requestName"], 
+                      "', was replaced by preferred ", "Corporate Batch ID", " '", batchId["preferredName"], 
+                      "'. If this is not what you intended, replace the ", "Corporate Batch ID", " with the correct ID."))
     }
   }
   
   # Put the batch id's into a useful format
-  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
-  names(preferredIdFrame) <- names(newBatchIds[[1]])
+  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchCodes), stringsAsFactors=FALSE)
+  names(preferredIdFrame) <- names(newBatchCodes[[1]])
   preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
   
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
@@ -1662,13 +1644,10 @@ validateBatchCodes <- function(resultTable, dryRun, testMode = FALSE, replaceFak
     prefDT <- as.data.table(preferredIdFrame)
     prefDT[ referenceName == "", referenceName := preferredName ]
     preferredIdFrame <- as.data.frame(prefDT)
-    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
-  } else {
-    resultTable$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(resultTable$batchCode[batchesToCheck],preferredIdFrame$requestName)]
   }
   
   # Return the validated results
-  return(resultTable)
+  return(preferredIdFrame$preferredName[match(batchCodes, preferredIdFrame$requestName)])
 }
 
 ####### Main function
@@ -1686,16 +1665,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO: Test structure
   clientName <- "DNS"
   # END: Test structure
-  
-  # TODO: Remove this when value is in config.properties
-  applicationSettings$service.external.compound.calculatedProperties.url <- "http://imapp01-d:8080/compserv-rest/api/Compounds/CalculatedProperties/v2"
     
   # Source the client specific compound assignment functions
   compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-
+  
+  if (folderToParse == "") {
+    stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
+  }
+  
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(fullPathToParse)) {
@@ -1720,11 +1700,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
   }
   
+  parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
+  parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
+  
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
   ## END test structure
     
-  # TODO: store this in protocol
+  # TODO in 1.6: store this in protocol
   parameters$latePeakTime <- 80
     
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
@@ -1768,8 +1751,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # getCompoundAssignments
     
     resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
-    
-    resultTable <- validateBatchCodes(resultTable, dryRun, testMode)
     
     # this also performs any calculations from the GUI
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
@@ -2038,7 +2019,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
 
       #       source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-      #                        "IFF","createPDF.R"))
+      #                        clientName,"createPDF.R"))
       
       pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment, dryRun)
@@ -2082,7 +2063,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+    summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                                    experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
@@ -2090,6 +2071,39 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
     
   } else { #This section is "If not dry run"
+    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
+    dir.create(reportLocation, showWarnings = FALSE)
+    
+    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+                     clientName,"createPDF.R"))
+    
+    # Create the actual PDF
+    if(!parameters$autoHitSelection) {
+      hitThreshold <- ""
+    } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      hitThreshold <- parameters$hitEfficacyThreshold
+    } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
+      hitThreshold <- parameters$hitSDThreshold
+    } else {
+      hitThreshold <- ""
+    }
+    activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
+    pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+                             threshold = hitThreshold, experiment, dryRun, activityName) 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+                                         experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
+    
+    # Create the final Spotfire File
+    ## TODO: decide if "resultTable" is the correct object to write
+    summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
+                                       experiment, parameters, user)
+    # TODO: loop or lapply to get all
+    singleReport <- summaryInfo$reports[[1]]
+    summaryInfo$info[[singleReport$title]] <- paste0(
+      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
                   paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/rawData/", 
@@ -2724,7 +2738,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  errorMessages <- c(errorMessages, lapply(errorList, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
   errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo))) 
   

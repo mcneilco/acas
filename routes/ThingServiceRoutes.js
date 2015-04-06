@@ -46,13 +46,22 @@
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
   exports.thingByCodeName = function(req, resp) {
-    var baseurl, config, thingTestJSON;
+    var baseurl, config, nestedfull, nestedstub, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingTestJSON.thingParent);
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/" + req.params.code;
+      if (req.query.nestedstub) {
+        nestedstub = "with=nestedstub";
+        baseurl += "?" + nestedstub;
+      } else if (req.query.nestedfull) {
+        nestedfull = "with=nestedfull";
+        baseurl += "?" + nestedfull;
+      } else {
+
+      }
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };

@@ -64,6 +64,7 @@ AS
   WHERE e.ignored ='0'
   AND el.preferred='1'
   AND el.ignored  ='0'
+  AND ev.ignored = '0'
   AND es.ls_kind='experiment metadata' Group By E.Id, E.Code_Name, E.Ls_Type_And_Kind, E.Recorded_By, E.Recorded_Date, E.Short_Description, E.Protocol_Id, El.Label_Text;
 
 CREATE OR REPLACE VIEW p_api_analysis_group_results AS 
@@ -235,7 +236,8 @@ SELECT lsvalues9_.id        AS responseSubjectValueId,
   lsvalues23_.code_value    AS userFlagObservation,
   lsvalues24_.code_value    AS userFlagReason,
   lsvalues25_.string_value  AS userFlagComment,
-  analysisgr0_.string_value AS curveId
+  analysisgr0_.string_value AS curveId,
+  analysisgr0_.id	     AS curveValueId
 FROM analysis_group_value analysisgr0_
 INNER JOIN analysis_group_state analysisgr1_
 ON analysisgr0_.analysis_state_id=analysisgr1_.id
@@ -323,7 +325,9 @@ AND analysisgr2_.ignored        = '0'
 AND treatmentg5_.ignored        = '0'
 AND subject7_.ignored           = '0'
 AND e.ignored = '0'
-AND e.deleted = '0';
+AND e.deleted = '0'
+AND analysisgr1_.ls_type ='data'
+AND analysisgr1_.ls_kind ='dose response';
 
 CREATE OR REPLACE VIEW api_container_contents
 AS

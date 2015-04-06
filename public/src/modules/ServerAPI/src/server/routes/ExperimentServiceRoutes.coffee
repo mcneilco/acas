@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
+	app.delete '/api/experiments/:id', exports.deleteExperiment
 
 
 exports.setupRoutes = (app, loginRoutes) ->
@@ -55,7 +56,7 @@ exports.experimentByName = (req, resp) ->
 	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		#		response.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
-		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+		resp.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
 
 	else
 		config = require '../conf/compiled/conf.js'
@@ -95,72 +96,82 @@ exports.experimentById = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 updateExpt = (expt, testMode, callback) ->
-	if testMode or global.specRunnerTestmode
-		callback expt
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
-		request = require 'request'
-		request(
-			method: 'PUT'
-			url: baseurl
-			body: expt
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				callback json
-			else
-				console.log 'got ajax error trying to update experiment'
-				console.log error
-				console.log response
-		)
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	serverUtilityFunctions.createLSTransaction expt.recordedDate, "updated experiment", (transaction) ->
+		expt = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, expt
+		if testMode or global.specRunnerTestmode
+			callback expt
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
+			request = require 'request'
+			request(
+				method: 'PUT'
+				url: baseurl
+				body: expt
+				json: true
+			, (error, response, json) =>
+				if response.statusCode == 409
+					console.log 'got ajax error trying to update experiment - not unique name'
+					if response.body[0].message is "not unique experiment name"
+						callback JSON.stringify response.body[0].message
+				else if !error && response.statusCode == 200
+					callback json
+				else
+					console.log 'got ajax error trying to update experiment'
+					console.log error
+					console.log response
+			)
 
 postExperiment = (req, resp) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	exptToSave = req.body
-	if req.query.testMode or global.specRunnerTestmode
-		unless exptToSave.codeName?
-			exptToSave.codeName = "EXPT-00000001"
+	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
+		exptToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, exptToSave
+		if req.query.testMode or global.specRunnerTestmode
+			unless exptToSave.codeName?
+				exptToSave.codeName = "EXPT-00000001"
 
-	checkFilesAndUpdate = (expt) ->
-		fileVals = serverUtilityFunctions.getFileValuesFromEntity expt, false
-		filesToSave = fileVals.length
+		checkFilesAndUpdate = (expt) ->
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity expt, false
+			filesToSave = fileVals.length
 
-		completeExptUpdate = (exptToUpdate)->
-			updateExpt exptToUpdate, req.query.testMode, (updatedExpt) ->
-				resp.json updatedExpt
+			completeExptUpdate = (exptToUpdate)->
+				updateExpt exptToUpdate, req.query.testMode, (updatedExpt) ->
+					resp.json updatedExpt
 
-		fileSaveCompleted = (passed) ->
-			if !passed
-				resp.statusCode = 500
-				return resp.end "file move failed"
-			if --filesToSave == 0 then completeExptUpdate(expt)
+			fileSaveCompleted = (passed) ->
+				if !passed
+					resp.statusCode = 500
+					return resp.end "file move failed"
+				if --filesToSave == 0 then completeExptUpdate(expt)
 
-		if filesToSave > 0
-			prefix = serverUtilityFunctions.getPrefixFromEntityCode expt.codeName
-			for fv in fileVals
-				csUtilities.relocateEntityFile fv, prefix, expt.codeName, fileSaveCompleted
-		else
-			resp.json expt
-
-	if req.query.testMode or global.specRunnerTestmode
-		checkFilesAndUpdate exptToSave
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments"
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: exptToSave
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 201
-				checkFilesAndUpdate json
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode expt.codeName
+				for fv in fileVals
+					csUtilities.relocateEntityFile fv, prefix, expt.codeName, fileSaveCompleted
 			else
-				console.log 'got ajax error trying to save experiment'
-				if response.body[0].message is "not unique experiment name"
-					resp.end JSON.stringify response.body[0].message
-		)
+				resp.json expt
+
+		if req.query.testMode or global.specRunnerTestmode
+			checkFilesAndUpdate exptToSave
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"experiments"
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: exptToSave
+				json: true
+			, (error, response, json) =>
+				if !error && response.statusCode == 201
+					checkFilesAndUpdate json
+				else
+					console.log 'got ajax error trying to save experiment - not unique name'
+					if response.body[0].message is "not unique experiment name"
+						resp.end JSON.stringify response.body[0].message
+			)
 
 exports.postExperiment = (req, resp) ->
 	postExperiment req, resp
@@ -216,26 +227,31 @@ exports.editExperimentLookupAndRedirect = (req, res) ->
 exports.deleteExperiment = (req, res) ->
 	# route to handle deleting experiments
 	#curl -i -X DELETE -H Accept:application/json -H Content-Type:application/json  http://host4.labsynch.com:8080/acas/experiments/406773
-	config = require '../conf/compiled/conf.js'
-	experimentId = req.params.id
-	baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
-	console.log baseurl
-	request = require 'request'
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment))
+		res.end JSON.stringify deletedExperiment
+	else
+		config = require '../conf/compiled/conf.js'
+		experimentId = req.params.id
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/browser/"+experimentId
+		console.log baseurl
+		request = require 'request'
 
-	request(
-		method: 'DELETE'
-		url: baseurl
-		json: true
-	, (error, response, json) =>
-		console.log response.statusCode
-		if !error && response.statusCode == 200
-			console.log JSON.stringify json
-			res.end JSON.stringify json
-		else
-			console.log 'got ajax error trying to save new experiment'
-			console.log error
-			console.log response
-	)
+		request(
+			method: 'DELETE'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			if !error && response.statusCode == 200
+				console.log JSON.stringify json
+				res.end JSON.stringify json
+			else
+				console.log 'got ajax error trying to save new experiment'
+				console.log error
+				console.log response
+		)
 
 exports.resultViewerURLByExperimentCodename = (request, resp) ->
 	console.log __dirname
@@ -289,7 +305,7 @@ exports.resultViewerURLByExperimentCodename = (request, resp) ->
 									console.log error
 									console.log json
 									console.log response
-							)
+						)
 				else
 					console.log 'got ajax error trying to save new experiment'
 					console.log error

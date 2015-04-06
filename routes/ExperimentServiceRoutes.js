@@ -8,7 +8,8 @@
     app.get('/api/experiments/:id', exports.experimentById);
     app.post('/api/experiments', exports.postExperiment);
     app.put('/api/experiments/:id', exports.putExperiment);
-    return app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
+    app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
+    return app["delete"]('/api/experiments/:id', exports.deleteExperiment);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -60,7 +61,7 @@
     console.log("exports.experiment by name");
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
+      return resp.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
     } else {
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -100,94 +101,108 @@
   };
 
   updateExpt = function(expt, testMode, callback) {
-    var baseurl, config, request;
-    if (testMode || global.specRunnerTestmode) {
-      return callback(expt);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments/" + expt.id;
-      request = require('request');
-      return request({
-        method: 'PUT',
-        url: baseurl,
-        body: expt,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            return callback(json);
-          } else {
-            console.log('got ajax error trying to update experiment');
-            console.log(error);
-            return console.log(response);
-          }
-        };
-      })(this));
-    }
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    return serverUtilityFunctions.createLSTransaction(expt.recordedDate, "updated experiment", function(transaction) {
+      var baseurl, config, request;
+      expt = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, expt);
+      if (testMode || global.specRunnerTestmode) {
+        return callback(expt);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "experiments/" + expt.id;
+        request = require('request');
+        return request({
+          method: 'PUT',
+          url: baseurl,
+          body: expt,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (response.statusCode === 409) {
+              console.log('got ajax error trying to update experiment - not unique name');
+              if (response.body[0].message === "not unique experiment name") {
+                return callback(JSON.stringify(response.body[0].message));
+              }
+            } else if (!error && response.statusCode === 200) {
+              return callback(json);
+            } else {
+              console.log('got ajax error trying to update experiment');
+              console.log(error);
+              return console.log(response);
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   postExperiment = function(req, resp) {
-    var baseurl, checkFilesAndUpdate, config, exptToSave, request;
+    var exptToSave;
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     exptToSave = req.body;
-    if (req.query.testMode || global.specRunnerTestmode) {
-      if (exptToSave.codeName == null) {
-        exptToSave.codeName = "EXPT-00000001";
+    return serverUtilityFunctions.createLSTransaction(exptToSave.recordedDate, "new experiment", function(transaction) {
+      var baseurl, checkFilesAndUpdate, config, request;
+      exptToSave = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, exptToSave);
+      if (req.query.testMode || global.specRunnerTestmode) {
+        if (exptToSave.codeName == null) {
+          exptToSave.codeName = "EXPT-00000001";
+        }
       }
-    }
-    checkFilesAndUpdate = function(expt) {
-      var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
-      fileVals = serverUtilityFunctions.getFileValuesFromEntity(expt, false);
-      filesToSave = fileVals.length;
-      completeExptUpdate = function(exptToUpdate) {
-        return updateExpt(exptToUpdate, req.query.testMode, function(updatedExpt) {
-          return resp.json(updatedExpt);
-        });
-      };
-      fileSaveCompleted = function(passed) {
-        if (!passed) {
-          resp.statusCode = 500;
-          return resp.end("file move failed");
-        }
-        if (--filesToSave === 0) {
-          return completeExptUpdate(expt);
-        }
-      };
-      if (filesToSave > 0) {
-        prefix = serverUtilityFunctions.getPrefixFromEntityCode(expt.codeName);
-        _results = [];
-        for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-          fv = fileVals[_i];
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
-        }
-        return _results;
-      } else {
-        return resp.json(expt);
-      }
-    };
-    if (req.query.testMode || global.specRunnerTestmode) {
-      return checkFilesAndUpdate(exptToSave);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments";
-      request = require('request');
-      return request({
-        method: 'POST',
-        url: baseurl,
-        body: exptToSave,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
-            return checkFilesAndUpdate(json);
-          } else {
-            console.log('got ajax error trying to save experiment');
-            if (response.body[0].message === "not unique experiment name") {
-              return resp.end(JSON.stringify(response.body[0].message));
-            }
+      checkFilesAndUpdate = function(expt) {
+        var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        fileVals = serverUtilityFunctions.getFileValuesFromEntity(expt, false);
+        filesToSave = fileVals.length;
+        completeExptUpdate = function(exptToUpdate) {
+          return updateExpt(exptToUpdate, req.query.testMode, function(updatedExpt) {
+            return resp.json(updatedExpt);
+          });
+        };
+        fileSaveCompleted = function(passed) {
+          if (!passed) {
+            resp.statusCode = 500;
+            return resp.end("file move failed");
+          }
+          if (--filesToSave === 0) {
+            return completeExptUpdate(expt);
           }
         };
-      })(this));
-    }
+        if (filesToSave > 0) {
+          prefix = serverUtilityFunctions.getPrefixFromEntityCode(expt.codeName);
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
+          }
+          return _results;
+        } else {
+          return resp.json(expt);
+        }
+      };
+      if (req.query.testMode || global.specRunnerTestmode) {
+        return checkFilesAndUpdate(exptToSave);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "experiments";
+        request = require('request');
+        return request({
+          method: 'POST',
+          url: baseurl,
+          body: exptToSave,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (!error && response.statusCode === 201) {
+              return checkFilesAndUpdate(json);
+            } else {
+              console.log('got ajax error trying to save experiment - not unique name');
+              if (response.body[0].message === "not unique experiment name") {
+                return resp.end(JSON.stringify(response.body[0].message));
+              }
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   exports.postExperiment = function(req, resp) {
@@ -266,29 +281,35 @@
   };
 
   exports.deleteExperiment = function(req, res) {
-    var baseurl, config, experimentId, request;
-    config = require('../conf/compiled/conf.js');
-    experimentId = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
-    console.log(baseurl);
-    request = require('request');
-    return request({
-      method: 'DELETE',
-      url: baseurl,
-      json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error && response.statusCode === 200) {
-          console.log(JSON.stringify(json));
-          return res.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to save new experiment');
-          console.log(error);
-          return console.log(response);
-        }
-      };
-    })(this));
+    var baseurl, config, deletedExperiment, experimentId, experimentServiceTestJSON, request;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment));
+      return res.end(JSON.stringify(deletedExperiment));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      experimentId = req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
+      console.log(baseurl);
+      request = require('request');
+      return request({
+        method: 'DELETE',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return res.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to save new experiment');
+            console.log(error);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {

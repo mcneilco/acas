@@ -533,18 +533,18 @@
           });
           it("should update model when shortDescription is changed", function() {
             this.bec.$('.bv_shortDescription').val(" New short description   ");
-            this.bec.$('.bv_shortDescription').change();
+            this.bec.$('.bv_shortDescription').keyup();
             return expect(this.bec.model.get('shortDescription')).toEqual("New short description");
           });
           it("should set model shortDescription to a space when shortDescription is set to empty", function() {
             this.bec.$('.bv_shortDescription').val("");
-            this.bec.$('.bv_shortDescription').change();
+            this.bec.$('.bv_shortDescription').keyup();
             return expect(this.bec.model.get('shortDescription')).toEqual(" ");
           });
           xit("should update model when entity details is changed", function() {
             var desc, states, values;
             this.bec.$('.bv_details').val(" New experiment details   ");
-            this.bec.$('.bv_details').change();
+            this.bec.$('.bv_details').keyup();
             states = this.bec.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "experiment details");
@@ -555,7 +555,7 @@
           it("should update model when comments is changed", function() {
             var desc, states, values;
             this.bec.$('.bv_comments').val(" New comments   ");
-            this.bec.$('.bv_comments').change();
+            this.bec.$('.bv_comments').keyup();
             states = this.bec.model.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "comments");
@@ -569,12 +569,12 @@
             });
             this.bec.render();
             this.bec.$('.bv_entityName').val(" Updated entity name   ");
-            this.bec.$('.bv_entityName').change();
+            this.bec.$('.bv_entityName').keyup();
             return expect(this.bec.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated entity name");
           });
           it("should update model when notebook is changed", function() {
             this.bec.$('.bv_notebook').val(" Updated notebook  ");
-            this.bec.$('.bv_notebook').change();
+            this.bec.$('.bv_notebook').keyup();
             return expect(this.bec.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
           });
           it("should update model when tag added", function() {
@@ -658,11 +658,11 @@
               this.bec.$('.bv_scientist').val("bob");
               this.bec.$('.bv_scientist').change();
               this.bec.$('.bv_shortDescription').val(" New short description   ");
-              this.bec.$('.bv_shortDescription').change();
+              this.bec.$('.bv_shortDescription').keyup();
               this.bec.$('.bv_entityName').val(" Updated entity name   ");
-              this.bec.$('.bv_entityName').change();
+              this.bec.$('.bv_entityName').keyup();
               this.bec.$('.bv_notebook').val("my notebook");
-              return this.bec.$('.bv_notebook').change();
+              return this.bec.$('.bv_notebook').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -682,7 +682,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.bec.$('.bv_entityName').val("");
-                return this.bec.$('.bv_entityName').change();
+                return this.bec.$('.bv_entityName').keyup();
               });
             });
             it("should be invalid if entity name not filled in", function() {
@@ -721,7 +721,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.bec.$('.bv_notebook').val("");
-                return this.bec.$('.bv_notebook').change();
+                return this.bec.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook dropdown", function() {

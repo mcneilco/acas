@@ -420,7 +420,7 @@
           });
           it("should update the clone name", function() {
             this.psppc.$('.bv_cloneName').val("  clone2  ");
-            this.psppc.$('.bv_cloneName').change();
+            this.psppc.$('.bv_cloneName').keyup();
             return expect(this.psppc.model.getCloneName().get('stringValue')).toEqual("clone2");
           });
           it("should update the target origin", function() {
@@ -465,29 +465,29 @@
           });
           it("should update the curve display max", function() {
             this.psppc.$('.bv_maxY').val("130 ");
-            this.psppc.$('.bv_maxY').change();
+            this.psppc.$('.bv_maxY').keyup();
             return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(130);
           });
           return it("should update the curve display min", function() {
             this.psppc.$('.bv_minY').val(" 13 ");
-            this.psppc.$('.bv_minY').change();
+            this.psppc.$('.bv_minY').keyup();
             return expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(13);
           });
         });
         return describe("controller validation rules", function() {
           it("should show error when maxY is NaN", function() {
             this.psppc.$('.bv_maxY').val("b");
-            this.psppc.$('.bv_maxY').change();
+            this.psppc.$('.bv_maxY').keyup();
             return expect(this.psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy();
           });
           it("should show error when minY is NaN", function() {
             this.psppc.$('.bv_minY').val("b");
-            this.psppc.$('.bv_minY').change();
+            this.psppc.$('.bv_minY').keyup();
             return expect(this.psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
           });
           it("should show error when clone name is invalid", function() {
             this.psppc.$('.bv_cloneName').val("invalid");
-            this.psppc.$('.bv_cloneName').change();
+            this.psppc.$('.bv_cloneName').keyup();
             return expect(this.psppc.$('.bv_group_cloneName').hasClass('error')).toBeTruthy();
           });
           it("should show error when the molecular target is invalid", function() {
@@ -587,22 +587,22 @@
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
-                this.pspmc.$('.bv_protocolName').change();
-                this.pspmc.$('.bv_recordedBy').val("nxm7557");
-                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_protocolName').keyup();
+                this.pspmc.$('.bv_scientist').val("nxm7557");
+                this.pspmc.$('.bv_scientist').change();
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
-                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_notebook').keyup();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
-                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlBatch').keyup();
                 this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
-                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_positiveControlConc').keyup();
                 this.pspmc.$('.bv_negativeControlBatch').val("test2");
-                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlBatch').keyup();
                 this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
-                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_negativeControlConc').keyup();
                 this.pspmc.$('.bv_readName').val("luminescence");
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
@@ -717,21 +717,21 @@
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
-                this.pspmc.$('.bv_protocolName').change();
-                this.pspmc.$('.bv_recordedBy').val("nxm7557");
-                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_protocolName').keyup();
+                this.pspmc.$('.bv_scientist').val("nxm7557");
+                this.pspmc.$('.bv_scientist').change();
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
-                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_notebook').keyup();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
-                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlBatch').keyup();
                 this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
-                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_positiveControlConc').keyup();
                 this.pspmc.$('.bv_negativeControlBatch').val("test2");
-                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlBatch').keyup();
                 this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
-                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_negativeControlConc').keyup();
                 this.pspmc.$('.bv_readName').val("luminescence");
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
@@ -764,10 +764,10 @@
           return it("should call a fetch on the model when cancel is clicked", function() {
             runs(function() {
               this.pspmc.$('.bv_protocolName').val(" Updated protocol name   ");
-              this.pspmc.$('.bv_protocolName').change();
+              this.pspmc.$('.bv_protocolName').keyup();
               expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
               this.pspmc.$('.bv_positiveControlBatch').val('blah');
-              this.pspmc.$('.bv_positiveControlBatch').change();
+              this.pspmc.$('.bv_positiveControlBatch').keyup();
               expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("blah");
               return this.pspmc.$('.bv_cancel').click();
             });

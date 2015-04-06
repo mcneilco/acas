@@ -180,12 +180,14 @@ class window.ProtocolBrowserController extends Backbone.View
 		else
 			@$('.bv_editProtocol').show()
 			@$('.bv_duplicateProtocol').show()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-				@$('.bv_deleteProtocol').show()
-	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-	#				console.log "user is protocol creator"
-			else
-				@$('.bv_deleteProtocol').hide()
+			@$('.bv_deleteProtocol').show()
+	#TODO: make deleting protocol privilege a config
+#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+#				@$('.bv_deleteProtocol').show()
+#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+#	#				console.log "user is protocol creator"
+#			else
+#				@$('.bv_deleteProtocol').hide()
 
 
 	handleDeleteProtocolClicked: =>

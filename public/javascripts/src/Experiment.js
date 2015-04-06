@@ -30,7 +30,7 @@
     };
 
     Experiment.prototype.parse = function(resp) {
-      if (resp === "not unique experiment name") {
+      if (resp === "not unique experiment name" || resp === '"not unique experiment name"') {
         this.trigger('saveFailed');
         return resp;
       } else {
@@ -260,7 +260,7 @@
 
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
-        "change .bv_experimentName": "handleNameChanged",
+        "keyup .bv_experimentName": "handleNameChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
         "change .bv_projectCode": "handleProjectCodeChanged",
@@ -389,12 +389,15 @@
         });
       }
       this.$('.bv_saving').hide();
+      console.log(this.$('.bv_saveFailed').is(":visible"));
       if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
         this.$('.bv_updateComplete').hide();
         this.trigger('amDirty');
       } else {
         this.$('.bv_updateComplete').show();
         this.trigger('amClean');
+        this.model.trigger('saveSuccess');
+        console.log("trigger save success");
       }
       this.render();
       return this.setupAttachFileListController();

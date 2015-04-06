@@ -539,18 +539,18 @@
           });
           it("should update model when shortDescription is changed", function() {
             this.pbc.$('.bv_shortDescription').val(" New short description   ");
-            this.pbc.$('.bv_shortDescription').change();
+            this.pbc.$('.bv_shortDescription').keyup();
             return expect(this.pbc.model.get('shortDescription')).toEqual("New short description");
           });
           it("should set model shortDescription to a space when shortDescription is set to empty", function() {
             this.pbc.$('.bv_shortDescription').val("");
-            this.pbc.$('.bv_shortDescription').change();
+            this.pbc.$('.bv_shortDescription').keyup();
             return expect(this.pbc.model.get('shortDescription')).toEqual(" ");
           });
           it("should update model when assay tree rule changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ");
-            this.pbc.$('.bv_assayTreeRule').change();
+            this.pbc.$('.bv_assayTreeRule').keyup();
             states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("stringValue", "assay tree rule");
@@ -566,7 +566,7 @@
           it("should update model when assay principle is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_assayPrinciple').val(" New assay principle   ");
-            this.pbc.$('.bv_assayPrinciple').change();
+            this.pbc.$('.bv_assayPrinciple').keyup();
             states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "assay principle");
@@ -577,7 +577,7 @@
           it("should update model when protocol details is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_details').val(" New protocol details   ");
-            this.pbc.$('.bv_details').change();
+            this.pbc.$('.bv_details').keyup();
             states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "protocol details");
@@ -588,7 +588,7 @@
           it("should update model when comments is changed", function() {
             var desc, states, values;
             this.pbc.$('.bv_comments').val(" New comments   ");
-            this.pbc.$('.bv_comments').change();
+            this.pbc.$('.bv_comments').keyup();
             states = this.pbc.model.get('lsStates').getStatesByTypeAndKind("metadata", "protocol metadata");
             expect(states.length).toEqual(1);
             values = states[0].getValuesByTypeAndKind("clobValue", "comments");
@@ -598,7 +598,7 @@
           });
           it("should update model when protocol name is changed", function() {
             this.pbc.$('.bv_protocolName').val(" Updated protocol name   ");
-            this.pbc.$('.bv_protocolName').change();
+            this.pbc.$('.bv_protocolName').keyup();
             return expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
           });
           it("should update model when creation date is changed", function() {
@@ -608,7 +608,7 @@
           });
           it("should update model when notebook is changed", function() {
             this.pbc.$('.bv_notebook').val(" Updated notebook  ");
-            this.pbc.$('.bv_notebook').change();
+            this.pbc.$('.bv_notebook').keyup();
             return expect(this.pbc.model.getNotebook().get('stringValue')).toEqual("Updated notebook");
           });
           it("should update model when tag added", function() {
@@ -631,7 +631,7 @@
           return it("should call a fetch on the model when cancel is clicked", function() {
             runs(function() {
               this.pbc.$('.bv_protocolName').val(" Updated protocol name   ");
-              this.pbc.$('.bv_protocolName').change();
+              this.pbc.$('.bv_protocolName').keyup();
               expect(this.pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
               return this.pbc.$('.bv_cancel').click();
             });
@@ -714,13 +714,13 @@
               this.pbc.$('.bv_scientist').val("bob");
               this.pbc.$('.bv_scientist').change();
               this.pbc.$('.bv_shortDescription').val(" New short description   ");
-              this.pbc.$('.bv_shortDescription').change();
+              this.pbc.$('.bv_shortDescription').keyup();
               this.pbc.$('.bv_protocolName').val(" Updated entity name   ");
-              this.pbc.$('.bv_protocolName').change();
+              this.pbc.$('.bv_protocolName').keyup();
               this.pbc.$('.bv_creationDate').val(" 2013-3-16   ");
               this.pbc.$('.bv_creationDate').change();
               this.pbc.$('.bv_notebook').val("my notebook");
-              return this.pbc.$('.bv_notebook').change();
+              return this.pbc.$('.bv_notebook').keyup();
             });
           });
           describe("form validation setup", function() {
@@ -740,7 +740,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_protocolName').val("");
-                return this.pbc.$('.bv_protocolName').change();
+                return this.pbc.$('.bv_protocolName').keyup();
               });
             });
             it("should be invalid if protocol name not filled in", function() {
@@ -792,7 +792,7 @@
             beforeEach(function() {
               return runs(function() {
                 this.pbc.$('.bv_notebook').val("");
-                return this.pbc.$('.bv_notebook').change();
+                return this.pbc.$('.bv_notebook').keyup();
               });
             });
             return it("should show error on notebook dropdown", function() {

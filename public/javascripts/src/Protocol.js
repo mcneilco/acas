@@ -8,6 +8,7 @@
 
     function Protocol() {
       this.duplicateEntity = __bind(this.duplicateEntity, this);
+      this.parse = __bind(this.parse, this);
       return Protocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -18,6 +19,43 @@
         subclass: "protocol"
       });
       return Protocol.__super__.initialize.call(this);
+    };
+
+    Protocol.prototype.parse = function(resp) {
+      if (resp === "not unique protocol name" || resp === '"not unique protocol name"') {
+        this.trigger('saveFailed');
+        return resp;
+      } else {
+        if (resp.lsLabels != null) {
+          if (!(resp.lsLabels instanceof LabelList)) {
+            resp.lsLabels = new LabelList(resp.lsLabels);
+          }
+          resp.lsLabels.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+        if (resp.lsStates != null) {
+          if (!(resp.lsStates instanceof StateList)) {
+            resp.lsStates = new StateList(resp.lsStates);
+          }
+          resp.lsStates.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
+        }
+        if (!(resp.lsTags instanceof TagList)) {
+          resp.lsTags = new TagList(resp.lsTags);
+        }
+        resp.lsTags.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        return resp;
+      }
     };
 
     Protocol.prototype.getCreationDate = function() {
@@ -155,10 +193,10 @@
 
     ProtocolBaseController.prototype.events = function() {
       return _(ProtocolBaseController.__super__.events.call(this)).extend({
-        "change .bv_protocolName": "handleNameChanged",
-        "change .bv_assayTreeRule": "handleAssayTreeRuleChanged",
+        "keyup .bv_protocolName": "handleNameChanged",
+        "keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged",
         "change .bv_assayStage": "handleAssayStageChanged",
-        "change .bv_assayPrinciple": "handleAssayPrincipleChanged",
+        "keyup .bv_assayPrinciple": "handleAssayPrincipleChanged",
         "change .bv_creationDate": "handleCreationDateChanged",
         "click .bv_creationDateIcon": "handleCreationDateIconClicked"
       });
@@ -223,6 +261,15 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
+      this.model.on('saveFailed', (function(_this) {
+        return function() {
+          _this.$('.bv_protocolSaveFailed').modal('show');
+          _this.$('.bv_saveFailed').show();
+          return _this.$('.bv_protocolSaveFailed').on('hide.bs.modal', function() {
+            return _this.$('.bv_saveFailed').hide();
+          });
+        };
+      })(this));
       this.setupStatusSelect();
       this.setupScientistSelect();
       this.setupTagList();
@@ -257,19 +304,22 @@
         });
       }
       this.$('.bv_saving').hide();
-      if (this.$('.bv_cancelComplete').is(":visible")) {
+      if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
         this.$('.bv_updateComplete').hide();
+        this.trigger('amDirty');
       } else {
         this.$('.bv_updateComplete').show();
       }
-      this.render();
       if (this.model.get('lsKind') !== "default") {
         this.$('.bv_newEntity').hide();
         this.$('.bv_cancel').hide();
         this.$('.bv_save').hide();
       }
       this.trigger('amClean');
-      return this.setupAttachFileListController();
+      this.render();
+      if (this.model.get('lsType') === "default") {
+        return this.setupAttachFileListController();
+      }
     };
 
     ProtocolBaseController.prototype.setUpAssayStageSelect = function() {

@@ -8,7 +8,8 @@
     app.put('/api/protocols/:id', exports.putProtocol);
     app.get('/api/protocollabels', exports.lsLabels);
     app.get('/api/protocolCodes', exports.protocolCodeList);
-    return app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
+    app.get('/api/protocolKindCodes', exports.protocolKindCodeList);
+    return app["delete"]('/api/protocols/browser/:id', exports.deleteProtocol);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -60,94 +61,111 @@
   };
 
   updateProt = function(prot, testMode, callback) {
-    var baseurl, config, request;
-    if (testMode || global.specRunnerTestmode) {
-      return callback(prot);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
-      request = require('request');
-      return request({
-        method: 'PUT',
-        url: baseurl,
-        body: prot,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            return callback(json);
-          } else {
-            console.log('got ajax error trying to update protocol');
-            console.log(error);
-            return console.log(response);
-          }
-        };
-      })(this));
-    }
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    return serverUtilityFunctions.createLSTransaction(prot.recordedDate, "updated protocol", function(transaction) {
+      var baseurl, config, request;
+      prot = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, prot);
+      if (testMode || global.specRunnerTestmode) {
+        return callback(prot);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
+        request = require('request');
+        return request({
+          method: 'PUT',
+          url: baseurl,
+          body: prot,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (response.statusCode === 409) {
+              console.log('got ajax error trying to update protocol - not unique name');
+              if (response.body[0].message === "not unique protocol name") {
+                return callback(JSON.stringify(response.body[0].message));
+              }
+            } else if (!error && response.statusCode === 200) {
+              return callback(json);
+            } else {
+              console.log('got ajax error trying to update protocol');
+              console.log(error);
+              return console.log(response);
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   postProtocol = function(req, resp) {
-    var baseurl, checkFilesAndUpdate, config, protToSave, request;
+    var protToSave;
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     protToSave = req.body;
-    if (req.query.testMode || global.specRunnerTestmode) {
-      if (protToSave.codeName == null) {
-        protToSave.codeName = "PROT-00000001";
+    return serverUtilityFunctions.createLSTransaction(protToSave.recordedDate, "new protocol", function(transaction) {
+      var baseurl, checkFilesAndUpdate, config, request;
+      protToSave = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, protToSave);
+      if (req.query.testMode || global.specRunnerTestmode) {
+        if (protToSave.codeName == null) {
+          protToSave.codeName = "PROT-00000001";
+        }
       }
-    }
-    checkFilesAndUpdate = function(prot) {
-      var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
-      fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
-      filesToSave = fileVals.length;
-      completeProtUpdate = function(protToUpdate) {
-        return updateProt(protToUpdate, req.query.testMode, function(updatedProt) {
-          return resp.json(updatedProt);
-        });
-      };
-      fileSaveCompleted = function(passed) {
-        if (!passed) {
-          resp.statusCode = 500;
-          return resp.end("file move failed");
-        }
-        if (--filesToSave === 0) {
-          return completeProtUpdate(prot);
-        }
-      };
-      if (filesToSave > 0) {
-        prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
-        _results = [];
-        for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-          fv = fileVals[_i];
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
-        }
-        return _results;
-      } else {
-        return resp.json(prot);
-      }
-    };
-    if (req.query.testMode || global.specRunnerTestmode) {
-      return checkFilesAndUpdate(protToSave);
-    } else {
-      config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.persistence.fullpath + "protocols";
-      request = require('request');
-      return request({
-        method: 'POST',
-        url: baseurl,
-        body: protToSave,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 201) {
-            return checkFilesAndUpdate(json);
-          } else {
-            console.log('got ajax error trying to save new protocol');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
+      checkFilesAndUpdate = function(prot) {
+        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
+        filesToSave = fileVals.length;
+        completeProtUpdate = function(protToUpdate) {
+          return updateProt(protToUpdate, req.query.testMode, function(updatedProt) {
+            return resp.json(updatedProt);
+          });
+        };
+        fileSaveCompleted = function(passed) {
+          if (!passed) {
+            resp.statusCode = 500;
+            return resp.end("file move failed");
+          }
+          if (--filesToSave === 0) {
+            return completeProtUpdate(prot);
           }
         };
-      })(this));
-    }
+        if (filesToSave > 0) {
+          prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
+          }
+          return _results;
+        } else {
+          return resp.json(prot);
+        }
+      };
+      if (req.query.testMode || global.specRunnerTestmode) {
+        return checkFilesAndUpdate(protToSave);
+      } else {
+        config = require('../conf/compiled/conf.js');
+        baseurl = config.all.client.service.persistence.fullpath + "protocols";
+        request = require('request');
+        return request({
+          method: 'POST',
+          url: baseurl,
+          body: protToSave,
+          json: true
+        }, (function(_this) {
+          return function(error, response, json) {
+            if (!error && response.statusCode === 201) {
+              return checkFilesAndUpdate(json);
+            } else {
+              console.log('got ajax error trying to save new protocol');
+              console.log(error);
+              console.log(response.statusCode);
+              console.log(response);
+              if (response.body[0].message === "not unique experiment name") {
+                return resp.end(JSON.stringify(response.body[0].message));
+              }
+            }
+          };
+        })(this));
+      }
+    });
   };
 
   exports.postProtocol = function(req, resp) {
@@ -335,30 +353,36 @@
   };
 
   exports.deleteProtocol = function(req, res) {
-    var baseurl, config, protocolID, request;
-    config = require('../conf/compiled/conf.js');
-    protocolID = req.params.id;
-    baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
-    console.log("baseurl");
-    console.log(baseurl);
-    request = require('request');
-    return request({
-      method: 'DELETE',
-      url: baseurl,
-      json: true
-    }, (function(_this) {
-      return function(error, response, json) {
-        console.log(response.statusCode);
-        if (!error && response.statusCode === 200) {
-          console.log(JSON.stringify(json));
-          return res.end(JSON.stringify(json));
-        } else {
-          console.log('got ajax error trying to delete protocol');
-          console.log(error);
-          return console.log(response);
-        }
-      };
-    })(this));
+    var baseurl, config, deletedProtocol, protocolID, protocolServiceTestJSON, request;
+    if (global.specRunnerTestmode) {
+      protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
+      deletedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.fullDeletedProtocol));
+      return res.end(JSON.stringify(deletedProtocol));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      protocolID = req.params.id;
+      baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
+      console.log("baseurl");
+      console.log(baseurl);
+      request = require('request');
+      return request({
+        method: 'DELETE',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          if (!error && response.statusCode === 200) {
+            console.log(JSON.stringify(json));
+            return res.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error trying to delete protocol');
+            console.log(error);
+            return console.log(response);
+          }
+        };
+      })(this));
+    }
   };
 
 }).call(this);

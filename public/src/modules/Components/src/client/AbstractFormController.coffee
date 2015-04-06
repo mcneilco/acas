@@ -85,3 +85,6 @@ class window.AbstractFormController extends Backbone.View
 		@$('select').removeAttr 'disabled'
 		@$("textarea").removeAttr 'disabled'
 		@$('button').removeAttr 'disabled'
+		@$(".bv_group_tags input").prop "placeholder", "Add tags"
+		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
+		@$(".bv_group_tags input").css "background-color", "transparent"

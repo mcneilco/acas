@@ -182,7 +182,10 @@
       _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         itx = _ref[_i];
-        thingItx = this.get('firstLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
+        thingItx = this.get('firstLsThings').getItxByTypeAndKind(itx.itxType, itx.itxKind);
+        if (thingItx == null) {
+          thingItx = this.get('firstLsThings').createItxByTypeAndKind(itx.itxType, itx.itxKind);
+        }
         _results.push(this.set(itx.key, thingItx));
       }
       return _results;

@@ -289,11 +289,7 @@
       } else {
         this.$('.bv_editProtocol').show();
         this.$('.bv_duplicateProtocol').show();
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-          return this.$('.bv_deleteProtocol').show();
-        } else {
-          return this.$('.bv_deleteProtocol').hide();
-        }
+        return this.$('.bv_deleteProtocol').show();
       }
     };
 

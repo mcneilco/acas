@@ -751,7 +751,7 @@
         return describe("model updates", function() {
           it("should update the readPosition ", function() {
             this.parc.$('.bv_readPosition').val('42');
-            this.parc.$('.bv_readPosition').change();
+            this.parc.$('.bv_readPosition').keyup();
             return expect(this.parc.model.get('readPosition')).toEqual(42);
           });
           return it("should update the read name", function() {
@@ -1174,43 +1174,43 @@
           it("should update the assayVolume and recalculate the transfer volume if the dilution factor is set ", function() {
             this.psapc.$('.bv_volumeTypeDilution').click();
             this.psapc.$('.bv_dilutionFactor').val(' 3 ');
-            this.psapc.$('.bv_dilutionFactor').change();
+            this.psapc.$('.bv_dilutionFactor').keyup();
             expect(this.psapc.model.get('dilutionFactor')).toEqual(3);
             this.psapc.$('.bv_assayVolume').val(' 27 ');
-            this.psapc.$('.bv_assayVolume').change();
+            this.psapc.$('.bv_assayVolume').keyup();
             expect(this.psapc.model.get('assayVolume')).toEqual(27);
             return expect(this.psapc.model.get('transferVolume')).toEqual(9);
           });
           it("should update the transferVolume and autocalculate the dilution factor based on assay and transfer volumes", function() {
             this.psapc.$('.bv_volumeTypeTransfer').click();
             this.psapc.$('.bv_transferVolume').val(' 12 ');
-            this.psapc.$('.bv_transferVolume').change();
+            this.psapc.$('.bv_transferVolume').keyup();
             expect(this.psapc.model.get('transferVolume')).toEqual(12);
             this.psapc.$('.bv_assayVolume').val(' 24 ');
-            this.psapc.$('.bv_assayVolume').change();
+            this.psapc.$('.bv_assayVolume').keyup();
             return expect(this.psapc.model.get('dilutionFactor')).toEqual(2);
           });
           it("should update the dilution factor and autocalculate the transfer volume based on assay volume and dilution factor ", function() {
             this.psapc.$('.bv_dilutionFactor').val(' 4 ');
-            this.psapc.$('.bv_dilutionFactor').change();
+            this.psapc.$('.bv_dilutionFactor').keyup();
             expect(this.psapc.model.get('dilutionFactor')).toEqual(4);
             this.psapc.$('.bv_assayVolume').val(' 24 ');
-            this.psapc.$('.bv_assayVolume').change();
+            this.psapc.$('.bv_assayVolume').keyup();
             return expect(this.psapc.model.get('transferVolume')).toEqual(6);
           });
           it("should update the hitSDThreshold ", function() {
             this.psapc.$('.bv_hitSDThreshold').val(' 24 ');
-            this.psapc.$('.bv_hitSDThreshold').change();
+            this.psapc.$('.bv_hitSDThreshold').keyup();
             return expect(this.psapc.model.get('hitSDThreshold')).toEqual(24);
           });
           it("should update the hitEfficacyThreshold ", function() {
             this.psapc.$('.bv_hitEfficacyThreshold').val(' 25 ');
-            this.psapc.$('.bv_hitEfficacyThreshold').change();
+            this.psapc.$('.bv_hitEfficacyThreshold').keyup();
             return expect(this.psapc.model.get('hitEfficacyThreshold')).toEqual(25);
           });
           it("should update the positiveControl ", function() {
             this.psapc.$('.bv_positiveControlBatch').val(' pos cont ');
-            this.psapc.$('.bv_positiveControlBatch').change();
+            this.psapc.$('.bv_positiveControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.model.get('positiveControl').get('batchCode')).toEqual("pos cont");
@@ -1218,12 +1218,12 @@
           });
           it("should update the positiveControl conc ", function() {
             this.psapc.$('.bv_positiveControlConc').val(' 250753.77 ');
-            this.psapc.$('.bv_positiveControlConc').change();
+            this.psapc.$('.bv_positiveControlConc').keyup();
             return expect(this.psapc.model.get('positiveControl').get('concentration')).toEqual(250753.77);
           });
           it("should update the negativeControl ", function() {
             this.psapc.$('.bv_negativeControlBatch').val(' neg cont ');
-            this.psapc.$('.bv_negativeControlBatch').change();
+            this.psapc.$('.bv_negativeControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.model.get('negativeControl').get('batchCode')).toEqual("neg cont");
@@ -1231,12 +1231,12 @@
           });
           it("should update the negativeControl conc ", function() {
             this.psapc.$('.bv_negativeControlConc').val(' 62 ');
-            this.psapc.$('.bv_negativeControlConc').change();
+            this.psapc.$('.bv_negativeControlConc').keyup();
             return expect(this.psapc.model.get('negativeControl').get('concentration')).toEqual(62);
           });
           it("should update the vehicleControl ", function() {
             this.psapc.$('.bv_vehicleControlBatch').val(' veh cont ');
-            this.psapc.$('.bv_vehicleControlBatch').change();
+            this.psapc.$('.bv_vehicleControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.model.get('vehicleControl').get('batchCode')).toEqual("veh cont");
@@ -1244,7 +1244,7 @@
           });
           it("should update the agonistControl", function() {
             this.psapc.$('.bv_agonistControlBatch').val(' ag cont ');
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.model.get('agonistControl').get('batchCode')).toEqual("ag cont");
@@ -1252,7 +1252,7 @@
           });
           it("should update the agonistControl conc", function() {
             this.psapc.$('bv_agonistControlConc').val(' 2 ');
-            this.psapc.$('.bv_agonistControlConc').change();
+            this.psapc.$('.bv_agonistControlConc').keyup();
             return expect(this.psapc.model.get('agonistControl').get('concentration')).toEqual(250753.77);
           });
           it("should update the thresholdType ", function() {
@@ -1321,7 +1321,7 @@
         return describe("error notification", function() {
           it("should show error if positiveControl batch is not set", function() {
             this.psapc.$('.bv_positiveControlBatch').val("");
-            this.psapc.$('.bv_positiveControlBatch').change();
+            this.psapc.$('.bv_positiveControlBatch').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
@@ -1330,7 +1330,7 @@
           });
           it("should show error if positiveControl batch is not a preferred batch", function() {
             this.psapc.$('.bv_positiveControlBatch').val("none");
-            this.psapc.$('.bv_positiveControlBatch').change();
+            this.psapc.$('.bv_positiveControlBatch').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy();
@@ -1339,12 +1339,12 @@
           });
           it("should show error if positiveControl conc is not set", function() {
             this.psapc.$('.bv_positiveControlConc').val("");
-            this.psapc.$('.bv_positiveControlConc').change();
+            this.psapc.$('.bv_positiveControlConc').keyup();
             return expect(this.psapc.$('.bv_group_positiveControlConc').hasClass("error")).toBeTruthy();
           });
           it("should show error if negativeControl batch is not set", function() {
             this.psapc.$('.bv_negativeControlBatch').val("");
-            this.psapc.$('.bv_negativeControlBatch').change();
+            this.psapc.$('.bv_negativeControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
@@ -1352,7 +1352,7 @@
           });
           it("should show error if negativeControl batch is not a preferred batch", function() {
             this.psapc.$('.bv_negativeControlBatch').val("none");
-            this.psapc.$('.bv_negativeControlBatch').change();
+            this.psapc.$('.bv_negativeControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy();
@@ -1360,14 +1360,14 @@
           });
           it("should show error if negativeControl conc is not set", function() {
             this.psapc.$('.bv_negativeControlConc').val("");
-            this.psapc.$('.bv_negativeControlConc').change();
+            this.psapc.$('.bv_negativeControlConc').keyup();
             return expect(this.psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy();
           });
           it("should not show error if agonistControl batch and conc are not set", function() {
             this.psapc.$('.bv_agonistControlBatch').val("");
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             this.psapc.$('.bv_agonistControlConc').val("");
-            this.psapc.$('.bv_agonistControlConc').change();
+            this.psapc.$('.bv_agonistControlConc').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
@@ -1376,9 +1376,9 @@
           });
           it("should not show error if agonistControl batch and conc are set correctly", function() {
             this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             this.psapc.$('.bv_agonistControlConc').val(12);
-            this.psapc.$('.bv_agonistControlConc').change();
+            this.psapc.$('.bv_agonistControlConc').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
@@ -1387,9 +1387,9 @@
           });
           it("should show error if agonistControl batch is correct but conc is NaN or empty", function() {
             this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             this.psapc.$('.bv_agonistControlConc').val("");
-            this.psapc.$('.bv_agonistControlConc').change();
+            this.psapc.$('.bv_agonistControlConc').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
@@ -1398,9 +1398,9 @@
           });
           it("should show error if agonistControl batch is empty but conc is a number", function() {
             this.psapc.$('.bv_agonistControlBatch').val("");
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             this.psapc.$('.bv_agonistControlConc').val(23);
-            this.psapc.$('.bv_agonistControlConc').change();
+            this.psapc.$('.bv_agonistControlConc').keyup();
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
@@ -1409,7 +1409,7 @@
           });
           it("should show error if agonistControl batch is not a preferred batch", function() {
             this.psapc.$('.bv_agonistControlBatch').val("none");
-            this.psapc.$('.bv_agonistControlBatch').change();
+            this.psapc.$('.bv_agonistControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy();
@@ -1417,7 +1417,7 @@
           });
           it("should show error if vehicleControl batch is not a preferred batch", function() {
             this.psapc.$('.bv_vehicleControlBatch').val("none");
-            this.psapc.$('.bv_vehicleControlBatch').change();
+            this.psapc.$('.bv_vehicleControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy();
@@ -1425,7 +1425,7 @@
           });
           it("should not show error if vehicleControl is not set", function() {
             this.psapc.$('.bv_vehicleControlBatch').val("");
-            this.psapc.$('.bv_vehicleControlBatch').change();
+            this.psapc.$('.bv_vehicleControlBatch').keyup();
             waits(1000);
             return runs(function() {
               return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy();
@@ -1485,52 +1485,52 @@
             this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeEfficacy').click();
             this.psapc.$('.bv_hitEfficacyThreshold').val("");
-            this.psapc.$('.bv_hitEfficacyThreshold').change();
+            this.psapc.$('.bv_hitEfficacyThreshold').keyup();
             return expect(this.psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy();
           });
           it("should show error if threshold type is sd and sd threshold not a number", function() {
             this.psapc.$('.bv_autoHitSelection').click();
             this.psapc.$('.bv_thresholdTypeSD').click();
             this.psapc.$('.bv_hitSDThreshold').val("");
-            this.psapc.$('.bv_hitSDThreshold').change();
+            this.psapc.$('.bv_hitSDThreshold').keyup();
             return expect(this.psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy();
           });
           it("should show error if volume type is transferVolume and transferVolume not a number (but can be empty)", function() {
             this.psapc.$('.bv_volumeTypeTransfer').click();
             this.psapc.$('.bv_transferVolume').val("hello");
-            this.psapc.$('.bv_transferVolume').change();
+            this.psapc.$('.bv_transferVolume').keyup();
             return expect(this.psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy();
           });
           it("should not show error if volume type is transferVolume and transferVolume is empty", function() {
             this.psapc.$('.bv_volumeTypeTransfer').click();
             this.psapc.$('.bv_transferVolume').val("");
-            this.psapc.$('.bv_transferVolume').change();
+            this.psapc.$('.bv_transferVolume').keyup();
             return expect(this.psapc.$('.bv_group_transferVolume').hasClass("error")).toBeFalsy();
           });
           it("should show error if volume type is dilutionFactor and dilutionFactor not a number (but can be empty)", function() {
             this.psapc.$('.bv_volumeTypeDilution').click();
             this.psapc.$('.bv_dilutionFactor').val("hello again");
-            this.psapc.$('.bv_dilutionFactor').change();
+            this.psapc.$('.bv_dilutionFactor').keyup();
             return expect(this.psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy();
           });
           it("should not show error if volume type is dilutionFactor and dilutionFactor is empty", function() {
             this.psapc.$('.bv_volumeTypeDilution').click();
             this.psapc.$('.bv_dilutionFactor').val("");
-            this.psapc.$('.bv_dilutionFactor').change();
+            this.psapc.$('.bv_dilutionFactor').keyup();
             return expect(this.psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeFalsy();
           });
           it("should show error if assayVolume is NaN", function() {
             this.psapc.$('.bv_assayVolume').val("b");
-            this.psapc.$('.bv_assayVolume').change();
+            this.psapc.$('.bv_assayVolume').keyup();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
           });
           it("should not show error if assayVolume, dilutionFactor, and transferVolume are empty", function() {
             this.psapc.$('.bv_assayVolume').val("");
-            this.psapc.$('.bv_assayVolume').change();
+            this.psapc.$('.bv_assayVolume').keyup();
             this.psapc.$('.bv_dilutionFactor').val("");
-            this.psapc.$('.bv_dilutionFactor').change();
+            this.psapc.$('.bv_dilutionFactor').keyup();
             this.psapc.$('.bv_transferVolume').val("");
-            this.psapc.$('.bv_transferVolume').change();
+            this.psapc.$('.bv_transferVolume').keyup();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy();
           });
           it("should not show error on read position if match read name is checked", function() {
@@ -1539,7 +1539,7 @@
           });
           it("should show error if readPosition is NaN", function() {
             this.psapc.$('.bv_readPosition:eq(0)').val("");
-            this.psapc.$('.bv_readPosition:eq(0)').change();
+            this.psapc.$('.bv_readPosition:eq(0)').keyup();
             return expect(this.psapc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy();
           });
           it("should show error if read name is unassigned", function() {

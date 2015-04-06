@@ -339,21 +339,22 @@
     PrimaryScreenProtocolParametersController.prototype.autofillTemplate = _.template($("#PrimaryScreenProtocolParametersAutofillView").html());
 
     PrimaryScreenProtocolParametersController.prototype.events = {
-      "change .bv_maxY": "handleCurveDisplayMaxChanged",
-      "change .bv_minY": "handleCurveDisplayMinChanged",
+      "keyup .bv_maxY": "handleCurveDisplayMaxChanged",
+      "keyup .bv_minY": "handleCurveDisplayMinChanged",
       "change .bv_assayActivity": "handleAssayActivityChanged",
       "change .bv_molecularTarget": "handleMolecularTargetChanged",
       "change .bv_targetOrigin": "handleTargetOriginChanged",
       "change .bv_assayType": "handleAssayTypeChanged",
       "change .bv_assayTechnology": "handleAssayTechnologyChanged",
       "change .bv_cellLine": "handleCellLineChanged",
-      "change .bv_cloneName": "handleCloneNameChanged"
+      "keyup .bv_cloneName": "handleCloneNameChanged"
     };
 
     PrimaryScreenProtocolParametersController.prototype.initialize = function() {
       this.errorOwnerName = 'PrimaryScreenProtocolParametersController';
       this.setBindings();
       PrimaryScreenProtocolParametersController.__super__.initialize.call(this);
+      this.htsAdmin = window.conf.roles.htsAdmin;
       this.setupAssayActivitySelect();
       this.setupTargetOriginSelect();
       this.setupAssayTypeSelect();
@@ -387,7 +388,7 @@
         parameter: "assayActivity",
         codeType: "assay",
         codeKind: "activity",
-        roles: ["admin"]
+        roles: [this.htsAdmin]
       });
       this.assayActivityListController.on('change', this.handleAssayActivityChanged);
       return this.assayActivityListController.render();
@@ -403,7 +404,7 @@
         parameter: "targetOrigin",
         codeType: "target",
         codeKind: "origin",
-        roles: ["admin"]
+        roles: [this.htsAdmin]
       });
       this.targetOriginListController.on('change', this.handleTargetOriginChanged);
       return this.targetOriginListController.render();
@@ -419,7 +420,7 @@
         parameter: "assayType",
         codeType: "assay",
         codeKind: "type",
-        roles: ["admin"]
+        roles: [this.htsAdmin]
       });
       this.assayTypeListController.on('change', this.handleAssayTypeChanged);
       return this.assayTypeListController.render();
@@ -435,7 +436,7 @@
         parameter: "assayTechnology",
         codeType: "assay",
         codeKind: "technology",
-        roles: ["admin"]
+        roles: [this.htsAdmin]
       });
       this.assayTechnologyListController.on('change', this.handleAssayTechnologyChanged);
       return this.assayTechnologyListController.render();
@@ -451,7 +452,7 @@
         parameter: "cellLine",
         codeType: "reagent",
         codeKind: "cell line",
-        roles: ["admin"]
+        roles: [this.htsAdmin]
       });
       this.cellLineListController.on('change', this.handleCellLineChanged);
       return this.cellLineListController.render();

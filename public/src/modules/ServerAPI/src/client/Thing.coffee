@@ -100,7 +100,9 @@ class window.Thing extends Backbone.Model
 		# loop over defaultFirstLsThingItx
 		# add key as attribute of model
 		for itx in @lsProperties.defaultFirstLsThingItx
-			thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+			thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+			unless thingItx?
+				thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
 			@set itx.key, thingItx
 
 	createDefaultSecondLsThingItx: =>

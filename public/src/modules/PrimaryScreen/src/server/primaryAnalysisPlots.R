@@ -258,10 +258,12 @@ createZPrimeByPlatePlot <- function(resultTable) {
   } else {
     yAxisAt <- floor(min(resultTable$zPrimeByPlate)):ceiling(max(resultTable$zPrimeByPlate))
   }
-  plottedTable <- data.table(plateOrder=unique(resultTable$plateOrder),zPrimeByPlate=unique(resultTable$zPrimeByPlate))
-  setkey(plottedTable, plateOrder)
-  plot(unique(plottedTable$plateOrder), 
-       unique(plottedTable$zPrimeByPlate), 
+  #plottedTable <- data.table(plateOrder=unique(resultTable$plateOrder),zPrimeByPlate=unique(resultTable$zPrimeByPlate))
+  plottedTable <- resultTable[ , list(zPrimeByPlate, plateOrder)]
+  setkeyv(plottedTable, c("plateOrder", "zPrimeByPlate"))
+  plottedTable <- unique(plottedTable)
+  plot(plottedTable$plateOrder, 
+       plottedTable$zPrimeByPlate, 
        main="Z' By Plate", 
        type="o", 
        col="blue", 

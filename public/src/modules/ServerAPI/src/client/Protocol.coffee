@@ -5,6 +5,27 @@ class window.Protocol extends BaseEntity
 		@.set subclass: "protocol"
 		super()
 
+	parse: (resp) =>
+		if resp == "not unique protocol name" or resp == '"not unique protocol name"'
+			@trigger 'saveFailed'
+			resp
+		else
+			if resp.lsLabels?
+				if resp.lsLabels not instanceof LabelList
+					resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
+					@trigger 'change'
+			if resp.lsStates?
+				if resp.lsStates not instanceof StateList
+					resp.lsStates = new StateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
+					@trigger 'change'
+			if resp.lsTags not instanceof TagList
+				resp.lsTags = new TagList(resp.lsTags)
+			resp.lsTags.on 'change', =>
+				@trigger 'change'
+			resp
+
 	getCreationDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "dateValue", "creation date"
 
@@ -76,10 +97,10 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_protocolName": "handleNameChanged"
-			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
+			"keyup .bv_protocolName": "handleNameChanged"
+			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
-			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 
@@ -129,6 +150,11 @@ class window.ProtocolBaseController extends BaseEntityController
 			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		@model.on 'saveFailed', =>
+			@$('.bv_protocolSaveFailed').modal('show')
+			@$('.bv_saveFailed').show()
+			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+				@$('.bv_saveFailed').hide()
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
@@ -157,17 +183,19 @@ class window.ProtocolBaseController extends BaseEntityController
 		unless @model.get('subclass')?
 			@model.set subclass: 'protocol'
 		@$('.bv_saving').hide()
-		if @$('.bv_cancelComplete').is(":visible")
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
 		else
 			@$('.bv_updateComplete').show()
-		@render()
 		unless @model.get('lsKind') is "default"
 			@$('.bv_newEntity').hide()
 			@$('.bv_cancel').hide()
 			@$('.bv_save').hide()
 		@trigger 'amClean'
-		@setupAttachFileListController()
+		@render()
+		if @model.get('lsType') is "default"
+			@setupAttachFileListController()
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
