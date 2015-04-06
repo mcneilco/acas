@@ -19,9 +19,20 @@ describe "Primary Screen Protocol Routes testing", ->
 				console.log "after request sent"
 				@responseJSON = parseResponse(body)
 				done()
-		it "should return an array of dns codes", ->
+		it "should return an array of codes", ->
 			assert.equal @responseJSON instanceof Array, true
 		it 'should have elements that be a hash with code defined', ->
 			assert.equal @responseJSON[0].code?, true
 		it 'should have elements that be a hash with name defined', ->
 			assert.equal @responseJSON[0].name?, true
+	describe "Clone validation", ->
+		describe "valid clone name", ->
+			before (done) ->
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/cloneValidation/test", (error, response, body) =>
+					console.log "after request sent"
+					@responseJSON = parseResponse(body)
+					done()
+			it "should return an array", ->
+				assert.equal @responseJSON instanceof Array, true
+			it 'should return a json with the crystal target code', ->
+				assert.equal @responseJSON[0], "test1"

@@ -21,20 +21,29 @@ class window.Thing extends Backbone.Model
 
 	parse: (resp) =>
 		if resp?
-			if resp.lsLabels?
-				if resp.lsLabels not instanceof LabelList
-					resp.lsLabels = new LabelList(resp.lsLabels)
-				resp.lsLabels.on 'change', =>
-					@trigger 'change'
+			if resp == 'not unique lsThing name'
+				@createDefaultLabels()
+				@createDefaultStates()
+				@trigger 'saveFailed'
+				return
+			else
+				if resp.lsLabels?
+					if resp.lsLabels not instanceof LabelList
+						resp.lsLabels = new LabelList(resp.lsLabels)
+					resp.lsLabels.on 'change', =>
+						@trigger 'change'
 
-			if resp.lsStates?
-				if resp.lsStates not instanceof StateList
-					resp.lsStates = new StateList(resp.lsStates)
-				resp.lsStates.on 'change', =>
-					@trigger 'change'
-		@.set resp
-		@createDefaultLabels()
-		@createDefaultStates()
+				if resp.lsStates?
+					if resp.lsStates not instanceof StateList
+						resp.lsStates = new StateList(resp.lsStates)
+					resp.lsStates.on 'change', =>
+						@trigger 'change'
+				@.set resp
+				@createDefaultLabels()
+				@createDefaultStates()
+		else
+			@createDefaultLabels()
+			@createDefaultStates()
 
 		resp
 
@@ -53,7 +62,7 @@ class window.Thing extends Backbone.Model
 		for dValue in @lsProperties.defaultValues
 			#Adding the new state and value to @
 			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-
+			@listenTo newValue, 'createNewValue', @createNewValue
 			#setting unitType and unitKind in the state, if units are given
 			if dValue.unitKind? and newValue.get('unitKind') is undefined
 				newValue.set unitKind: dValue.unitKind
@@ -75,23 +84,47 @@ class window.Thing extends Backbone.Model
 			# (ie set "value" to equal value in "stringValue")
 			@get(dValue.kind).set("value", newValue.get(dValue.type))
 
+	createNewValue: (vKind, newVal) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		@unset(vKind)
+		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+		newValue.set valInfo['type'], newVal
+		newValue.set value: newVal
+		@set vKind, newValue
+
+	createDefaultFirstLsThingItx: =>
+		# loop over defaultFirstLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultFirstLsThingItx
+			thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+			unless thingItx?
+				thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
+
+	createDefaultSecondLsThingItx: =>
+		# loop over defaultSecondLsThingItx
+		# add key as attribute of model
+		for itx in @lsProperties.defaultSecondLsThingItx
+			thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+			@set itx.key, thingItx
 
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
 		for type in fileTypes
-			#get lsState metadata, [component] batch
-			#get lsValues with lsType of fileValue and lsKind of each kind of analytical file
-			analyticalFileValue = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", @get('lsKind')+" batch", "fileValue", type.code
-#			if type.code is "nmr"
-#				analyticalFileValue.set fileValue: "test fileValue"
-			unless (analyticalFileValue.get('fileValue') is undefined or analyticalFileValue.get('fileValue') is "" or analyticalFileValue.get('fileValue') is null) or type.code is "unassigned"
+			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('lsKind')+" batch"
+			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
+			if analyticalFileValues.length > 0 and type.code != "unassigned"
 				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
 				#add new afm to attach file list
-				afm = new AttachFile
-					fileType: type.code
-					fileValue: analyticalFileValue.get('fileValue')
-				attachFileList.add afm
+				for file in analyticalFileValues
+					if file.get('ignored') is false
+						afm = new AttachFile
+							fileType: type.code
+							fileValue: file.get('fileValue')
+							id: file.get('id')
+							comments: file.get('comments')
+						attachFileList.add afm
 
 		attachFileList
 
@@ -101,7 +134,12 @@ class window.Thing extends Backbone.Model
 			@unset(dLabel.key)
 
 		for dValue in @lsProperties.defaultValues
-			@unset(dValue.key)
+			if @get(dValue.key)?
+				if @get(dValue.key).get('value') is undefined
+					lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+					value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+					lsStates[0].get('lsValues').remove value
+				@unset(dValue.key)
 		if @attributes.attributes?
 			delete @attributes.attributes
 		for i of @attributes
@@ -144,3 +182,7 @@ class window.Thing extends Backbone.Model
 		copiedThing.createDefaultLabels()
 
 		copiedThing
+
+	getStateValueHistory: (vKind) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']

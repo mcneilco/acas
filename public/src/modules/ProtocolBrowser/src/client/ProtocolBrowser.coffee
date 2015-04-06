@@ -164,12 +164,13 @@ class window.ProtocolBrowserController extends Backbone.View
 		if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
+				readOnly: true
 		else
 			@protocolController = new ProtocolBaseController
 				model: protocol
+				readOnly: true
 
 		$('.bv_protocolBaseController').html @protocolController.render().el
-		@protocolController.displayInReadOnlyMode()
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
 		if protocol.getStatus().get('codeValue') is "deleted"
@@ -179,12 +180,14 @@ class window.ProtocolBrowserController extends Backbone.View
 		else
 			@$('.bv_editProtocol').show()
 			@$('.bv_duplicateProtocol').show()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-				@$('.bv_deleteProtocol').show()
-	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-	#				console.log "user is protocol creator"
-			else
-				@$('.bv_deleteProtocol').hide()
+			@$('.bv_deleteProtocol').show()
+	#TODO: make deleting protocol privilege a config
+#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+#				@$('.bv_deleteProtocol').show()
+#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+#	#				console.log "user is protocol creator"
+#			else
+#				@$('.bv_deleteProtocol').hide()
 
 
 	handleDeleteProtocolClicked: =>

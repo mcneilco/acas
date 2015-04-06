@@ -30,7 +30,7 @@
     describe("File Value filtering", function() {
       return describe("get fileValues from thing", function() {
         before(function(done) {
-          this.fileVals = servUtilities.getFileValesFromThing(thingServiceTestJSON.thingParent);
+          this.fileVals = servUtilities.getFileValuesFromEntity(thingServiceTestJSON.thingParent);
           return done();
         });
         it("should return an array", function() {
@@ -41,7 +41,7 @@
         });
       });
     });
-    return describe("Entity attribute from ControllerRedirect.conf functions", function() {
+    describe("Entity attribute from ControllerRedirect.conf functions", function() {
       describe("get file path for entity prefix", function() {
         it("should return the relative path for PROT", function() {
           return assert.equal(servUtilities.getRelativeFolderPathForPrefix("PROT"), "protocols/");
@@ -55,17 +55,62 @@
       });
       return describe("get prefix from code", function() {
         it("should return the prot prefix from a prot code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("PROT00000123"), "PROT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("PROT00000123"), "PROT");
         });
         it("should return the pt prefix from a parent thing code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("PT00000123"), "PT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("PT00000123"), "PT");
         });
         it("should return the expt prefix from an experiment code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("EXPT00000123"), "EXPT");
+          return assert.equal(servUtilities.getPrefixFromEntityCode("EXPT00000123"), "EXPT");
         });
         return it("should return null with bad code", function() {
-          return assert.equal(servUtilities.getPrefixFromThingCode("FRED0001343"), null);
+          return assert.equal(servUtilities.getPrefixFromEntityCode("FRED0001343"), null);
         });
+      });
+    });
+    describe("Create a new lsTransaction", function() {
+      before(function(done) {
+        var comments, date;
+        comments = "test transaction";
+        date = 1427414400000;
+        return servUtilities.createLSTransaction(date, comments, (function(_this) {
+          return function(transaction) {
+            _this.newTransaction = transaction;
+            console.log(_this.newTransaction);
+            return done();
+          };
+        })(this));
+      });
+      return it("should return a transaction with an id", function() {
+        return assert.equal(isNaN(parseInt(this.newTransaction.id)), false);
+      });
+    });
+    return describe("add transaction to ls entity", function() {
+      var protocolServiceTestJSON;
+      protocolServiceTestJSON = require('../testFixtures/ProtocolServiceTestJSON.js');
+      before(function(done) {
+        var ent, trans;
+        trans = {
+          comments: 'test transaction',
+          id: 8354,
+          recordedDate: 1427414400000,
+          version: 0
+        };
+        ent = JSON.parse(JSON.stringify(protocolServiceTestJSON.protocolToSave));
+        this.modEnt = servUtilities.insertTransactionIntoEntity(trans.id, ent);
+        return done();
+      });
+      it("should have a trans at the top level", function() {
+        return assert.equal(this.modEnt.lsTransaction, 8354);
+      });
+      it("should have a trans in the labels", function() {
+        return assert.equal(this.modEnt.lsLabels[0].lsTransaction, 8354);
+      });
+      it("should have a trans in the states", function() {
+        return assert.equal(this.modEnt.lsStates[0].lsTransaction, 8354);
+      });
+      return it("should have a trans in the values", function() {
+        return assert.equal(this.modEnt.lsStates[0].lsValues[0].lsTransaction, 8354);
       });
     });
   });

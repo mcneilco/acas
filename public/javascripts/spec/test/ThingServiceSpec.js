@@ -150,15 +150,19 @@
       });
       describe("when updating a thing parent", function() {
         before(function(done) {
+          var updatedData;
           this.timeout(20000);
           this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
           this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
           fs.writeFileSync(this.testFile1Path, "key,value\nflavor,sweet");
           fs.writeFileSync(this.testFile2Path, "key,value\nmolecule,CCC");
+          updatedData = thingServiceTestJSON.thingParent;
+          updatedData.lsStates[0].lsValues[3].id = null;
+          updatedData.lsStates[0].lsValues[4].id = null;
           return request.put({
             url: "http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/PT00001",
             json: true,
-            body: thingServiceTestJSON.thingParent
+            body: updatedData
           }, (function(_this) {
             return function(error, response, body) {
               _this.serverError = error;

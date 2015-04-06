@@ -10,6 +10,7 @@
       this.duplicateEntity = __bind(this.duplicateEntity, this);
       this.getModelFitParameters = __bind(this.getModelFitParameters, this);
       this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
+      this.getAttachedFiles = __bind(this.getAttachedFiles, this);
       this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
     }
@@ -71,7 +72,7 @@
       scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
       if (scientist.get('codeValue') === void 0) {
         scientist.set({
-          codeValue: "unassigned"
+          codeValue: window.AppLaunchParams.loginUserName
         });
         scientist.set({
           codeType: "assay"
@@ -139,6 +140,31 @@
       return status;
     };
 
+    BaseEntity.prototype.getAttachedFiles = function(fileTypes) {
+      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, type, _i, _j, _len, _len1;
+      attachFileList = new AttachFileList();
+      for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
+        type = fileTypes[_i];
+        analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('subclass') + " metadata");
+        analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
+        if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
+          for (_j = 0, _len1 = analyticalFileValues.length; _j < _len1; _j++) {
+            file = analyticalFileValues[_j];
+            if (file.get('ignored') === false) {
+              afm = new AttachFile({
+                fileType: type.code,
+                fileValue: file.get('fileValue'),
+                id: file.get('id'),
+                comments: file.get('comments')
+              });
+              attachFileList.add(afm);
+            }
+          }
+        }
+      }
+      return attachFileList;
+    };
+
     BaseEntity.prototype.getAnalysisParameters = function() {
       var ap;
       ap = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters");
@@ -169,7 +195,7 @@
           return true;
         case "complete":
           return true;
-        case "finalized":
+        case "approved":
           return false;
         case "rejected":
           return false;
@@ -346,15 +372,21 @@
     __extends(BaseEntityController, _super);
 
     function BaseEntityController() {
+      this.isValid = __bind(this.isValid, this);
       this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
+      this.checkDisplayMode = __bind(this.checkDisplayMode, this);
       this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
       this.validationError = __bind(this.validationError, this);
       this.handleCancelComplete = __bind(this.handleCancelComplete, this);
       this.handleCancelClicked = __bind(this.handleCancelClicked, this);
+      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
       this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
+      this.prepareToSaveAttachedFiles = __bind(this.prepareToSaveAttachedFiles, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.beginSave = __bind(this.beginSave, this);
       this.updateEditable = __bind(this.updateEditable, this);
+      this.handleValueChanged = __bind(this.handleValueChanged, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
       this.handleNameChanged = __bind(this.handleNameChanged, this);
@@ -362,6 +394,7 @@
       this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
       this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
       this.handleScientistChanged = __bind(this.handleScientistChanged, this);
+      this.setupAttachFileListController = __bind(this.setupAttachFileListController, this);
       this.modelChangeCallback = __bind(this.modelChangeCallback, this);
       this.modelSyncCallback = __bind(this.modelSyncCallback, this);
       this.render = __bind(this.render, this);
@@ -373,15 +406,17 @@
     BaseEntityController.prototype.events = function() {
       return {
         "change .bv_scientist": "handleScientistChanged",
-        "change .bv_shortDescription": "handleShortDescriptionChanged",
-        "change .bv_details": "handleDetailsChanged",
-        "change .bv_comments": "handleCommentsChanged",
-        "change .bv_entityName": "handleNameChanged",
-        "change .bv_notebook": "handleNotebookChanged",
+        "keyup .bv_shortDescription": "handleShortDescriptionChanged",
+        "keyup .bv_details": "handleDetailsChanged",
+        "keyup .bv_comments": "handleCommentsChanged",
+        "keyup .bv_entityName": "handleNameChanged",
+        "keyup .bv_notebook": "handleNotebookChanged",
         "change .bv_status": "handleStatusChanged",
         "click .bv_save": "handleSaveClicked",
         "click .bv_newEntity": "handleNewEntityClicked",
-        "click .bv_cancel": "handleCancelClicked"
+        "click .bv_cancel": "handleCancelClicked",
+        "click .bv_cancelClear": "handleCancelClearClicked",
+        "click .bv_confirmClear": "handleConfirmClearClicked"
       };
     };
 
@@ -393,6 +428,11 @@
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.errorOwnerName = 'BaseEntityController';
       this.setBindings();
+      if (this.options.readOnly != null) {
+        this.readOnly = this.options.readOnly;
+      } else {
+        this.readOnly = false;
+      }
       $(this.el).empty();
       $(this.el).html(this.template());
       this.$('.bv_save').attr('disabled', 'disabled');
@@ -430,6 +470,11 @@
         this.$('.bv_newEntity').show();
       }
       this.updateEditable();
+      this.$('.bv_save').attr('disabled', 'disabled');
+      this.$('.bv_cancel').attr('disabled', 'disabled');
+      if (this.readOnly === true) {
+        this.displayInReadOnlyMode();
+      }
       return this;
     };
 
@@ -478,6 +523,60 @@
       });
     };
 
+    BaseEntityController.prototype.setupAttachFileListController = function() {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/codetables/" + this.model.get('subclass') + " metadata/file type",
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get list of file types');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var attachFileList;
+            if (json.length === 0) {
+              return alert('Got empty list of file types');
+            } else {
+              attachFileList = _this.model.getAttachedFiles(json);
+              return _this.finishSetupAttachFileListController(attachFileList, json);
+            }
+          };
+        })(this)
+      });
+    };
+
+    BaseEntityController.prototype.finishSetupAttachFileListController = function(attachFileList, fileTypeList) {
+      if (this.attachFileListController != null) {
+        this.attachFileListController.undelegateEvents();
+      }
+      this.attachFileListController = new AttachFileListController({
+        autoAddAttachFileModel: false,
+        el: this.$('.bv_attachFileList'),
+        collection: attachFileList,
+        firstOptionName: "Select Method",
+        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'],
+        fileTypeList: fileTypeList,
+        required: false
+      });
+      this.attachFileListController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.attachFileListController.on('renderComplete', (function(_this) {
+        return function() {
+          return _this.checkDisplayMode();
+        };
+      })(this));
+      this.attachFileListController.render();
+      return this.attachFileListController.on('amDirty', (function(_this) {
+        return function() {
+          _this.trigger('amDirty');
+          return _this.model.trigger('change');
+        };
+      })(this));
+    };
+
     BaseEntityController.prototype.setupTagList = function() {
       this.$('.bv_tags').val("");
       this.tagListController = new TagListController({
@@ -488,45 +587,32 @@
     };
 
     BaseEntityController.prototype.handleScientistChanged = function() {
-      return this.model.getScientist().set({
-        codeValue: this.scientistListController.getSelectedCode(),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
+      var value;
+      value = this.scientistListController.getSelectedCode();
+      return this.handleValueChanged("Scientist", value);
     };
 
     BaseEntityController.prototype.handleShortDescriptionChanged = function() {
       var trimmedDesc;
       trimmedDesc = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription'));
-      if (trimmedDesc !== "") {
-        return this.model.set({
-          shortDescription: trimmedDesc,
-          recordedBy: window.AppLaunchParams.loginUser.username,
-          recordedDate: new Date().getTime()
-        });
-      } else {
-        return this.model.set({
-          shortDescription: " ",
-          recordedBy: window.AppLaunchParams.loginUser.username,
-          recordedDate: new Date().getTime()
-        });
+      if (trimmedDesc === "") {
+        trimmedDesc = " ";
       }
+      return this.model.set({
+        shortDescription: trimmedDesc
+      });
     };
 
     BaseEntityController.prototype.handleDetailsChanged = function() {
-      return this.model.getDetails().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details')),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
+      var value;
+      value = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_details'));
+      return this.handleValueChanged("Details", value);
     };
 
     BaseEntityController.prototype.handleCommentsChanged = function() {
-      return this.model.getComments().set({
-        clobValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments')),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
+      var value;
+      value = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_comments'));
+      return this.handleValueChanged("Comments", value);
     };
 
     BaseEntityController.prototype.handleNameChanged = function() {
@@ -543,21 +629,35 @@
     };
 
     BaseEntityController.prototype.handleNotebookChanged = function() {
-      this.model.getNotebook().set({
-        stringValue: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook')),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      return this.model.trigger('change');
+      var value;
+      value = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_notebook'));
+      return this.handleValueChanged("Notebook", value);
     };
 
     BaseEntityController.prototype.handleStatusChanged = function() {
-      this.model.getStatus().set({
-        codeValue: this.statusListController.getSelectedCode(),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
-      });
-      this.updateEditable();
+      var value;
+      value = this.statusListController.getSelectedCode();
+      if ((value === "approved" || value === "rejected") && !this.isValid()) {
+        value = value.charAt(0).toUpperCase() + value.substring(1);
+        alert('All fields must be valid before changing the status to "' + value + '"');
+        return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
+      } else {
+        this.handleValueChanged("Status", value);
+        this.updateEditable();
+        return this.model.trigger('change');
+      }
+    };
+
+    BaseEntityController.prototype.handleValueChanged = function(vKind, value) {
+      var currentVal;
+      currentVal = this.model["get" + vKind]();
+      if (!currentVal.isNew()) {
+        currentVal.set({
+          ignored: true
+        });
+        currentVal = this.model["get" + vKind]();
+      }
+      currentVal.set(currentVal.get('lsType'), value);
       return this.model.trigger('change');
     };
 
@@ -565,12 +665,11 @@
       if (this.model.isEditable()) {
         this.enableAllInputs();
         this.$('.bv_lock').hide();
-        this.$('.bv_save').attr('disabled', 'disabled');
-        this.$('.bv_cancel').attr('disabled', 'disabled');
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');
         this.$('.bv_lock').show();
+        this.$('.bv_newEntity').removeAttr('disabled');
       }
       if (this.model.isNew()) {
         return this.$('.bv_status').attr("disabled", "disabled");
@@ -580,6 +679,7 @@
     };
 
     BaseEntityController.prototype.beginSave = function() {
+      this.prepareToSaveAttachedFiles();
       this.tagListController.handleTagsChanged();
       if (this.model.checkForNewPickListOptions != null) {
         return this.model.checkForNewPickListOptions();
@@ -589,6 +689,7 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
+      this.prepareToSaveAttachedFiles();
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       if (this.model.isNew()) {
@@ -601,7 +702,37 @@
       return this.model.save();
     };
 
+    BaseEntityController.prototype.prepareToSaveAttachedFiles = function() {
+      return this.attachFileListController.collection.each((function(_this) {
+        return function(file) {
+          var newFile, value;
+          if (file.get('fileType') !== "unassigned") {
+            if (file.get('id') === null) {
+              newFile = _this.model.get('lsStates').createValueByTypeAndKind("metadata", _this.model.get('subclass') + " metadata", "fileValue", file.get('fileType'));
+              return newFile.set({
+                fileValue: file.get('fileValue')
+              });
+            } else {
+              if (file.get('ignored') === true) {
+                value = _this.model.get('lsStates').getValueById("metadata", _this.model.get('subclass') + " metadata", file.get('id'));
+                return value[0].set("ignored", true);
+              }
+            }
+          }
+        };
+      })(this));
+    };
+
     BaseEntityController.prototype.handleNewEntityClicked = function() {
+      return this.$('.bv_confirmClearEntity').modal('show');
+    };
+
+    BaseEntityController.prototype.handleCancelClearClicked = function() {
+      return this.$('.bv_confirmClearEntity').modal('hide');
+    };
+
+    BaseEntityController.prototype.handleConfirmClearClicked = function() {
+      this.$('.bv_confirmClearEntity').modal('hide');
       if (this.model.get('lsKind') === "default") {
         this.model = null;
         this.completeInitialization();
@@ -643,11 +774,33 @@
       return this.$('.bv_save').removeAttr('disabled');
     };
 
+    BaseEntityController.prototype.checkDisplayMode = function() {
+      if (this.readOnly === true) {
+        return this.displayInReadOnlyMode();
+      }
+    };
+
     BaseEntityController.prototype.displayInReadOnlyMode = function() {
       this.$(".bv_save").hide();
       this.$(".bv_cancel").hide();
       this.$(".bv_newEntity").hide();
+      this.$(".bv_addFileInfo").hide();
       return this.disableAllInputs();
+    };
+
+    BaseEntityController.prototype.isValid = function() {
+      var validCheck;
+      validCheck = BaseEntityController.__super__.isValid.call(this);
+      if (this.attachFileListController != null) {
+        if (this.attachFileListController.isValid() === true) {
+          return validCheck;
+        } else {
+          this.$('.bv_save').attr('disabled', 'disabled');
+          return false;
+        }
+      } else {
+        return validCheck;
+      }
     };
 
     return BaseEntityController;

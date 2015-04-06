@@ -2,33 +2,23 @@
 # ROUTE: /curve/render/dr
 
 renderCurve <- function(getParams) {
-  # Redirect to Curator if inTable is false
-  if(!is.null(getParams$inTable)) {
-    if(!as.logical(getParams$inTable)) {
-      if(length(curveIds == 1)) {
-        experimentCode <- query(paste0("SELECT e.code_name
-                                       FROM experiment e
-                                       JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
-                                       JOIN analysis_group ag ON ag.id = eag.analysis_group_id
-                                       JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
-                                       JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
-                                       WHERE agv.string_value = ",sqliz(GET$curveIds),"
-                                       AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
-        link <- paste(getSSLString(), racas::applicationSettings$client.host, ":",
-                      racas::applicationSettings$client.port,
-                      "/curveCurator/",experimentCode,"/",curveIds,
-                      sep = "")
-        setHeader("Location", link)
-        return(HTTP_MOVED_TEMPORARILY)
-        DONE
-      }
-    }
+  # Redirect to Curator if applicable
+  redirectInfo <- racas::api_get_curve_curator_url(getParams$curveIds, getParams$inTable, globalConnect = TRUE)
+  if(redirectInfo$shouldRedirect == TRUE) {
+    setHeader("Location", redirectInfo$url)
+    return(HTTP_MOVED_TEMPORARILY)
+    DONE
   }
   # Parse GET Parameters
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
   # GET FIT DATA
   fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
+  fitData <- fitData[!is.null(category) && category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
+    responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+    list("fittedMax" = responseMean, "fittedMin" = responseMean)
+  }, by = curveId]
+  
   data <- list(parameters = as.data.frame(fitData), points = as.data.frame(rbindlist(fitData$points)))
   
   #To be backwards compatable with hill slope example files

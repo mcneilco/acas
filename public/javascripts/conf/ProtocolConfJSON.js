@@ -90,6 +90,9 @@
           typeName: "codeValue",
           kindName: "molecular target"
         }, {
+          typeName: "stringValue",
+          kindName: "clone name"
+        }, {
           typeName: "codeValue",
           kindName: "assay type"
         }, {
@@ -113,6 +116,9 @@
         }, {
           typeName: "clobValue",
           kindName: "model fit parameters"
+        }, {
+          typeName: "codeValue",
+          kindName: "model fit type"
         }
       ],
       labeltypes: [
@@ -247,6 +253,13 @@
           ignored: false
         }, {
           codeType: "assay",
+          codeKind: "stage",
+          codeOrigin: "ACAS DDICT",
+          code: "production",
+          name: "Production",
+          ignored: false
+        }, {
+          codeType: "assay",
           codeKind: "activity",
           codeOrigin: "ACAS DDICT",
           code: "atp levels",
@@ -335,6 +348,13 @@
           codeOrigin: "ACAS DDICT",
           code: "sd",
           name: "SD",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "percent efficacy",
+          name: "% efficacy",
           ignored: false
         }, {
           codeType: "protocol metadata",

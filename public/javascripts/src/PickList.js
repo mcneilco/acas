@@ -260,6 +260,16 @@
     AddParameterOptionPanelController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
+      this.$('.bv_addParameterOptionModal').on('hidden.bs.modal', (function(_this) {
+        return function() {
+          return _this.trigger('hideModal');
+        };
+      })(this));
+      this.$('.bv_addParameterOptionModal').on('show.bs.modal', (function(_this) {
+        return function() {
+          return _this.trigger('showModal');
+        };
+      })(this));
       this.showModal();
       return this;
     };
@@ -380,6 +390,16 @@
             el: this.$('.bv_addOptionPanel')
           });
           this.addPanelController.on('addOptionRequested', this.handleAddOptionRequested);
+          this.addPanelController.on('showModal', (function(_this) {
+            return function() {
+              return _this.trigger('showModal');
+            };
+          })(this));
+          this.addPanelController.on('hideModal', (function(_this) {
+            return function() {
+              return _this.trigger('hideModal');
+            };
+          })(this));
         }
         return this.addPanelController.render();
       }
@@ -423,7 +443,7 @@
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
-        if (selectedModel.get('id') != null) {
+        if ((selectedModel.get('id') != null) || selectedModel.get('codeOrigin') !== "ACAS DDICT") {
           return callback.call();
         } else {
           return $.ajax({

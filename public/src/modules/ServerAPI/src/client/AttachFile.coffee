@@ -2,6 +2,8 @@ class window.AttachFile extends Backbone.Model
 	defaults:
 		fileType: "unassigned"
 		fileValue: ""
+		id: null
+		comments: null
 		required: false
 
 	validate: (attrs) ->
@@ -34,12 +36,12 @@ class window.AttachFileController extends AbstractFormController
 	events:
 		"change .bv_fileType": "handleFileTypeChanged"
 		"click .bv_delete": "clear"
-		"click .bv_deleteSavedFile": "handleDeleteSavedStructuralFile"
 
 	initialize: ->
 		@errorOwnerName = 'AttachFileController'
 		@setBindings()
 		@model.on "destroy", @remove, @
+		@model.on "removeFile", @trigger 'removeFile'
 		@autoAddAttachFileModel = @options.autoAddAttachFileModel
 		if @options.firstOptionName?
 			@firstOptionName = @options.firstOptionName
@@ -49,10 +51,10 @@ class window.AttachFileController extends AbstractFormController
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-		if @options.fileTypeListURL?
-			@fileTypeListURL = @options.fileTypeListURL
+		if @options.fileTypeList?
+			@fileTypeList = new PickListList @options.fileTypeList
 		else
-			@fileTypeListURL = alert 'a file type list url must be provided'
+			@fileTypeList = new PickListList()
 
 	render: =>
 		$(@el).empty()
@@ -61,9 +63,8 @@ class window.AttachFileController extends AbstractFormController
 		fileValue = @model.get('fileValue')
 		if fileValue is null or fileValue is "" or fileValue is undefined
 			@createNewFileChooser()
-			@$('.bv_deleteSavedFile').hide()
 		else
-			@$('.bv_uploadFile').html '<a href='+fileValue+'>'+fileValue+'</a>'
+			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.get('comments')+'</a></div>'
 		@
 
 	createNewFileChooser: =>
@@ -74,16 +75,14 @@ class window.AttachFileController extends AbstractFormController
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
 			allowedFileTypes: @allowedFileTypes
-			hideDelete: @autoAddAttachFileModel
+			hideDelete: true
 		});
 		@lsFileChooser.render()
 		@lsFileChooser.on('fileUploader:uploadComplete', @handleFileUpload) #update model with filename
-		@lsFileChooser.on('fileDeleted', @handleFileRemoved) #update model with filename
+		#		@lsFileChooser.on('fileDeleted', @handleFileRemoved) #update model with filename
 		@
 
 	setUpFileTypeSelect: ->
-		@fileTypeList = new PickListList()
-		@fileTypeList.url = @fileTypeListURL
 		@fileTypeListController = new PickListSelectController
 			el: @$('.bv_fileType')
 			collection: @fileTypeList
@@ -91,6 +90,7 @@ class window.AttachFileController extends AbstractFormController
 				code: "unassigned"
 				name: @firstOptionName
 			selectedCode: @model.get('fileType')
+			autoFetch: false
 
 	handleFileUpload: (nameOnServer) =>
 		if @autoAddAttachFileModel
@@ -100,55 +100,52 @@ class window.AttachFileController extends AbstractFormController
 		@trigger 'fileUploaded'
 		@trigger 'amDirty'
 
-	handleFileRemoved: =>
-		@model.set fileValue: ""
-		@trigger 'amDirty'
-
 	handleFileTypeChanged: =>
 		@updateModel()
 		@trigger 'amDirty'
-
-	handleDeleteSavedStructuralFile: =>
-		@handleFileRemoved()
-		@$('.bv_deleteSavedFile').hide()
-		@createNewFileChooser()
 
 	updateModel: =>
 		@model.set
 			fileType: @$('.bv_fileType').val()
 
 	clear: =>
-		@model.destroy()
+		if @model.get('id') is null
+			@model.destroy()
+		else
+			@model.set "ignored", true
+			@$('.bv_fileInfoWrapper').hide()
+		@trigger 'removeFile'
+		@trigger 'amDirty'
 
 class window.AttachFileListController extends Backbone.View
 	template: _.template($("#AttachFileListView").html())
+
+	events:
+		"click .bv_addFileInfo": "uploadNewAttachFile"
 
 	initialize: ->
 		if @options.required?
 			@required = @options.required
 		else
 			@required = false
-		console.log "@required in file list controller"
-		console.log @required
 		unless @collection?
 			@collection = new AttachFileList()
 			newModel = new AttachFile
-			#				required: @required
 			@collection.add newModel
 		if @options.autoAddAttachFileModel?
 			@autoAddAttachFileModel = @options.autoAddAttachFileModel
 		else
 			@autoAddAttachFileModel = true
 		if @autoAddAttachFileModel
-			@collection.bind 'remove', @ensureValidCollectionLength
+			@collection.on 'removeFile', @ensureValidCollectionLength
 		if @options.allowedFileTypes?
 			@allowedFileTypes = @options.allowedFileTypes
 		else
 			@allowedFileTypes = ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
-		if @options.fileTypeListURL?
-			@fileTypeListURL = @options.fileTypeListURL
+		if @options.fileTypeList?
+			@fileTypeList = @options.fileTypeList
 		else
-			@fileTypeListURL = alert 'a file type list url must be provided'
+			@fileTypeList = new PickListList()
 
 	render: =>
 		$(@el).empty()
@@ -164,33 +161,30 @@ class window.AttachFileListController extends Backbone.View
 	# For uploading new files
 	uploadNewAttachFile: =>
 		newModel = new AttachFile
-		#			required: @required
 		@collection.add newModel
 		@addAttachFile(newModel)
+		@trigger 'amDirty'
 
 
 	# For uploading existing attached files
 	addAttachFile: (fileInfo) =>
-		console.log "add Attach File, fileInfo"
-		console.log fileInfo
-		console.log fileInfo.get('required')
 		fileInfo.set required: @required
 		afc = new AttachFileController
 			model: fileInfo
 			autoAddAttachFileModel: @autoAddAttachFileModel
 			firstOptionName: @options.firstOptionName
 			allowedFileTypes: @allowedFileTypes
-			fileTypeListURL: @fileTypeListURL
+			fileTypeList: @fileTypeList
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
-		#		afc.on 'fileUploaded', =>
-		#			if @autoAddAttachFileModel
-		#				@uploadNewAttachFile()
+		@listenTo afc, 'removeFile', @ensureValidCollectionLength
 		afc.on 'amDirty', =>
 			@trigger 'amDirty'
 		@$('.bv_attachFileInfo').append afc.render().el
 
 	ensureValidCollectionLength: =>
-		if @collection.length == 0
+		notIgnoredFiles = @collection.filter (model) ->
+			model.get('ignored') == false or model.get('ignored') is undefined
+		if notIgnoredFiles.length == 0
 			@uploadNewAttachFile()
 
 	checkIfNeedToAddNew: =>

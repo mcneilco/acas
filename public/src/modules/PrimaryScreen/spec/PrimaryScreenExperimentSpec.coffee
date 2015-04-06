@@ -152,7 +152,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('agonistControl') instanceof Backbone.Model).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
-					expect(@psap.get('htsFormat')).toBeFalsy()
+					expect(@psap.get('htsFormat')).toBeTruthy()
 					expect(@psap.get('matchReadName')).toBeFalsy()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
 					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
@@ -454,7 +454,7 @@ describe "Primary Screen Experiment module testing", ->
 			describe "model updates", ->
 				it "should update the readPosition ", ->
 					@parc.$('.bv_readPosition').val( '42' )
-					@parc.$('.bv_readPosition').change()
+					@parc.$('.bv_readPosition').keyup()
 					expect(@parc.model.get('readPosition')).toEqual 42
 				it "should update the read name", ->
 					waitsFor ->
@@ -771,70 +771,70 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the assayVolume and recalculate the transfer volume if the dilution factor is set ", ->
 					@psapc.$('.bv_volumeTypeDilution').click()
 					@psapc.$('.bv_dilutionFactor').val(' 3 ')
-					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_dilutionFactor').keyup()
 					expect(@psapc.model.get('dilutionFactor')).toEqual 3
 					@psapc.$('.bv_assayVolume').val(' 27 ')
-					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.model.get('assayVolume')).toEqual 27
 					expect(@psapc.model.get('transferVolume')).toEqual 9
 				it "should update the transferVolume and autocalculate the dilution factor based on assay and transfer volumes", ->
 					@psapc.$('.bv_volumeTypeTransfer').click()
 					@psapc.$('.bv_transferVolume').val(' 12 ')
-					@psapc.$('.bv_transferVolume').change()
+					@psapc.$('.bv_transferVolume').keyup()
 					expect(@psapc.model.get('transferVolume')).toEqual 12
 					@psapc.$('.bv_assayVolume').val(' 24 ')
-					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.model.get('dilutionFactor')).toEqual 2
 				it "should update the dilution factor and autocalculate the transfer volume based on assay volume and dilution factor ", ->
 					@psapc.$('.bv_dilutionFactor').val(' 4 ')
-					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_dilutionFactor').keyup()
 					expect(@psapc.model.get('dilutionFactor')).toEqual 4
 					@psapc.$('.bv_assayVolume').val(' 24 ')
-					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.model.get('transferVolume')).toEqual 6
 				it "should update the hitSDThreshold ", ->
 					@psapc.$('.bv_hitSDThreshold').val(' 24 ')
-					@psapc.$('.bv_hitSDThreshold').change()
+					@psapc.$('.bv_hitSDThreshold').keyup()
 					expect(@psapc.model.get('hitSDThreshold')).toEqual 24
 				it "should update the hitEfficacyThreshold ", ->
 					@psapc.$('.bv_hitEfficacyThreshold').val(' 25 ')
-					@psapc.$('.bv_hitEfficacyThreshold').change()
+					@psapc.$('.bv_hitEfficacyThreshold').keyup()
 					expect(@psapc.model.get('hitEfficacyThreshold')).toEqual 25
 				it "should update the positiveControl ", ->
 					@psapc.$('.bv_positiveControlBatch').val(' pos cont ')
-					@psapc.$('.bv_positiveControlBatch').change()
+					@psapc.$('.bv_positiveControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.model.get('positiveControl').get('batchCode')).toEqual "pos cont"
 				it "should update the positiveControl conc ", ->
 					@psapc.$('.bv_positiveControlConc').val(' 250753.77 ')
-					@psapc.$('.bv_positiveControlConc').change()
+					@psapc.$('.bv_positiveControlConc').keyup()
 					expect(@psapc.model.get('positiveControl').get('concentration')).toEqual 250753.77
 				it "should update the negativeControl ", ->
 					@psapc.$('.bv_negativeControlBatch').val(' neg cont ')
-					@psapc.$('.bv_negativeControlBatch').change()
+					@psapc.$('.bv_negativeControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.model.get('negativeControl').get('batchCode')).toEqual "neg cont"
 				it "should update the negativeControl conc ", ->
 					@psapc.$('.bv_negativeControlConc').val(' 62 ')
-					@psapc.$('.bv_negativeControlConc').change()
+					@psapc.$('.bv_negativeControlConc').keyup()
 					expect(@psapc.model.get('negativeControl').get('concentration')).toEqual 62
 				it "should update the vehicleControl ", ->
 					@psapc.$('.bv_vehicleControlBatch').val(' veh cont ')
-					@psapc.$('.bv_vehicleControlBatch').change()
+					@psapc.$('.bv_vehicleControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.model.get('vehicleControl').get('batchCode')).toEqual "veh cont"
 				it "should update the agonistControl", ->
 					@psapc.$('.bv_agonistControlBatch').val(' ag cont ')
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.model.get('agonistControl').get('batchCode')).toEqual "ag cont"
 				it "should update the agonistControl conc", ->
 					@psapc.$('bv_agonistControlConc').val(' 2 ')
-					@psapc.$('.bv_agonistControlConc').change()
+					@psapc.$('.bv_agonistControlConc').keyup()
 					expect(@psapc.model.get('agonistControl').get('concentration')).toEqual 250753.77
 				it "should update the thresholdType ", ->
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
@@ -887,89 +887,89 @@ describe "Primary Screen Experiment module testing", ->
 			describe "error notification", ->
 				it "should show error if positiveControl batch is not set", ->
 					@psapc.$('.bv_positiveControlBatch').val ""
-					@psapc.$('.bv_positiveControlBatch').change()
+					@psapc.$('.bv_positiveControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
 						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl batch is not a preferred batch", ->
 					@psapc.$('.bv_positiveControlBatch').val "none"
-					@psapc.$('.bv_positiveControlBatch').change()
+					@psapc.$('.bv_positiveControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_positiveControlBatch').hasClass("error")).toBeTruthy()
 						expect(@psapc.$('.bv_group_positiveControlBatch').attr('data-toggle')).toEqual "tooltip"
 				it "should show error if positiveControl conc is not set", ->
 					@psapc.$('.bv_positiveControlConc').val ""
-					@psapc.$('.bv_positiveControlConc').change()
+					@psapc.$('.bv_positiveControlConc').keyup()
 					expect(@psapc.$('.bv_group_positiveControlConc').hasClass("error")).toBeTruthy()
 				it "should show error if negativeControl batch is not set", ->
 					@psapc.$('.bv_negativeControlBatch').val ""
-					@psapc.$('.bv_negativeControlBatch').change()
+					@psapc.$('.bv_negativeControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
 				it "should show error if negativeControl batch is not a preferred batch", ->
 					@psapc.$('.bv_negativeControlBatch').val "none"
-					@psapc.$('.bv_negativeControlBatch').change()
+					@psapc.$('.bv_negativeControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_negativeControlBatch').hasClass("error")).toBeTruthy()
 				it "should show error if negativeControl conc is not set", ->
 					@psapc.$('.bv_negativeControlConc').val ""
-					@psapc.$('.bv_negativeControlConc').change()
+					@psapc.$('.bv_negativeControlConc').keyup()
 					expect(@psapc.$('.bv_group_negativeControlConc').hasClass("error")).toBeTruthy()
 				it "should not show error if agonistControl batch and conc are not set", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					@psapc.$('.bv_agonistControlConc').val ""
-					@psapc.$('.bv_agonistControlConc').change()
+					@psapc.$('.bv_agonistControlConc').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
 						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should not show error if agonistControl batch and conc are set correctly", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					@psapc.$('.bv_agonistControlConc').val 12
-					@psapc.$('.bv_agonistControlConc').change()
+					@psapc.$('.bv_agonistControlConc').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
 						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should show error if agonistControl batch is correct but conc is NaN or empty", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					@psapc.$('.bv_agonistControlConc').val ""
-					@psapc.$('.bv_agonistControlConc').change()
+					@psapc.$('.bv_agonistControlConc').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
 						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
 				it "should show error if agonistControl batch is empty but conc is a number", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					@psapc.$('.bv_agonistControlConc').val 23
-					@psapc.$('.bv_agonistControlConc').change()
+					@psapc.$('.bv_agonistControlConc').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
 						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should show error if agonistControl batch is not a preferred batch", ->
 					@psapc.$('.bv_agonistControlBatch').val "none"
-					@psapc.$('.bv_agonistControlBatch').change()
+					@psapc.$('.bv_agonistControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeTruthy()
 				it "should show error if vehicleControl batch is not a preferred batch", ->
 					@psapc.$('.bv_vehicleControlBatch').val "none"
-					@psapc.$('.bv_vehicleControlBatch').change()
+					@psapc.$('.bv_vehicleControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeTruthy()
 				it "should not show error if vehicleControl is not set", ->
 					@psapc.$('.bv_vehicleControlBatch').val ""
-					@psapc.$('.bv_vehicleControlBatch').change()
+					@psapc.$('.bv_vehicleControlBatch').keyup()
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
@@ -1017,52 +1017,52 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_autoHitSelection').click()
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
 					@psapc.$('.bv_hitEfficacyThreshold').val ""
-					@psapc.$('.bv_hitEfficacyThreshold').change()
+					@psapc.$('.bv_hitEfficacyThreshold').keyup()
 					expect(@psapc.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy()
 				it "should show error if threshold type is sd and sd threshold not a number", ->
 					@psapc.$('.bv_autoHitSelection').click()
 					@psapc.$('.bv_thresholdTypeSD').click()
 					@psapc.$('.bv_hitSDThreshold').val ""
-					@psapc.$('.bv_hitSDThreshold').change()
+					@psapc.$('.bv_hitSDThreshold').keyup()
 					expect(@psapc.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
 				it "should show error if volume type is transferVolume and transferVolume not a number (but can be empty)", ->
 					@psapc.$('.bv_volumeTypeTransfer').click()
 					@psapc.$('.bv_transferVolume').val "hello"
-					@psapc.$('.bv_transferVolume').change()
+					@psapc.$('.bv_transferVolume').keyup()
 					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeTruthy()
 				it "should not show error if volume type is transferVolume and transferVolume is empty", ->
 					@psapc.$('.bv_volumeTypeTransfer').click()
 					@psapc.$('.bv_transferVolume').val ""
-					@psapc.$('.bv_transferVolume').change()
+					@psapc.$('.bv_transferVolume').keyup()
 					expect(@psapc.$('.bv_group_transferVolume').hasClass("error")).toBeFalsy()
 				it "should show error if volume type is dilutionFactor and dilutionFactor not a number (but can be empty)", ->
 					@psapc.$('.bv_volumeTypeDilution').click()
 					@psapc.$('.bv_dilutionFactor').val "hello again"
-					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_dilutionFactor').keyup()
 					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeTruthy()
 				it "should not show error if volume type is dilutionFactor and dilutionFactor is empty", ->
 					@psapc.$('.bv_volumeTypeDilution').click()
 					@psapc.$('.bv_dilutionFactor').val ""
-					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_dilutionFactor').keyup()
 					expect(@psapc.$('.bv_group_dilutionFactor').hasClass("error")).toBeFalsy()
 				it "should show error if assayVolume is NaN", ->
 					@psapc.$('.bv_assayVolume').val "b"
-					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
 				it "should not show error if assayVolume, dilutionFactor, and transferVolume are empty", ->
 					@psapc.$('.bv_assayVolume').val ""
-					@psapc.$('.bv_assayVolume').change()
+					@psapc.$('.bv_assayVolume').keyup()
 					@psapc.$('.bv_dilutionFactor').val ""
-					@psapc.$('.bv_dilutionFactor').change()
+					@psapc.$('.bv_dilutionFactor').keyup()
 					@psapc.$('.bv_transferVolume').val ""
-					@psapc.$('.bv_transferVolume').change()
+					@psapc.$('.bv_transferVolume').keyup()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeFalsy()
 				it "should not show error on read position if match read name is checked", ->
 					@psapc.$('.bv_matchReadName').click()
 					expect(@psapc.$('bv_group_readPosition').hasClass("error")).toBeFalsy()
 				it "should show error if readPosition is NaN", ->
 					@psapc.$('.bv_readPosition:eq(0)').val ""
-					@psapc.$('.bv_readPosition:eq(0)').change()
+					@psapc.$('.bv_readPosition:eq(0)').keyup()
 					expect(@psapc.$('.bv_group_readPosition:eq(0)').hasClass("error")).toBeTruthy()
 				it "should show error if read name is unassigned", ->
 					waitsFor ->
@@ -1207,7 +1207,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psec.$('.bv_experimentBase .bv_experimentName').length).toNotEqual 0
 				it "Should load an analysis controller", ->
 					expect(@psec.$('.bv_primaryScreenDataAnalysis .bv_fileUploadWrapper').length).toNotEqual 0
-				#TODO this spec is not running because prod IFF does not include a fit module yet
+				#TODO this spec is not running because prod redactedCustomer does not include a fit module yet
 				xit "Should load a dose response controller", ->
 					expect(@psec.$('.bv_doseResponseAnalysis .bv_fitModelButton').length).toNotEqual 0
 

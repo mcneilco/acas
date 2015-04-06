@@ -2,7 +2,7 @@
 
 # file.copy(from="public/src/modules/BulkLoadSampleTransfers/spec/specFiles/shortTransferNew.csv", to="serverOnlyModules/blueimp-file-upload-node/public/files", overwrite = TRUE)
 # bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransferNew.csv", dryRun=FALSE, user = "smeyer"))
-# bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/IFF Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
+# bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/redactedCustomer Primary Screen Transfer Log 2013_4_18_edited_barcodes.csv", dryRun=TRUE, user = "smeyer"))
 # bulkLoadSampleTransfers(request=list(fileToParse="serverOnlyModules/blueimp-file-upload-node/public/files/shortTransfer.csv", dryRun=TRUE, user = "smeyer"))
 #
 # test case

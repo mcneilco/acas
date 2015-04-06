@@ -58,6 +58,60 @@
 				version: 0
 			,
 				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: "TestFile.mol"
+				id: 14257
+				ignored: false
+				lsTransaction:
+					comments: "base protocol transactions"
+					id: 823
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "protocol file"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_protocol file"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
+				codeValue: null
+				comments: null
+				dateValue: null
+				fileValue: "Test.csv"
+				id: 14223157
+				ignored: false
+				lsTransaction:
+					comments: "base protocol transactions"
+					id: 823
+					recordedDate: 1363388477000
+					version: 0
+				modifiedDate: null
+				numericValue: null
+				publicData: true
+				recordedDate: 1363388477000
+				sigFigs: null
+				stringValue: null
+				uncertainty: null
+				urlValue: null
+				lsKind: "protocol file"
+				valueOperator: null
+				lsType: "fileValue"
+				lsTypeAndKind: "fileValue_protocol file"
+				valueUnit: null
+				version: 0
+			,
+				clobValue: null
 				codeKind: "stage"
 				codeType: "assay"
 				codeValue: "assay development"
@@ -430,7 +484,7 @@
 		codeName: "PROT-00000002"
 		experimentCount: 12
 		id: 11
-		ignored: false
+		ignored: true
 		lsKind: "default"
 		lsLabels: [
 			id: 1
@@ -820,13 +874,11 @@
 		experimentCount: 12
 		id: 14325
 		ignored: false
-		lsKind: null #changed from kind to lsKind
 		lsTransaction:
 			comments: "protocol 201 transactions"
 			id: 179
 			recordedDate: 1361600825000
 			version: 0
-
 		modifiedBy: null
 		modifiedDate: null
 		recordedBy: "jmcneil"
@@ -834,33 +886,120 @@
 		shortDescription: "protocol short description goes here"
 		version: 0
 
-	exports.protocolToSave = [
-		codeName: "PROT-00000066"
-		experimentCount: 12
-		ignored: false
-		lsKind: null #changed from kind to lsKind
+	exports.protocolToSave =
+		lsKind: "default"
 		lsLabels: [
 			ignored: false
 			imageFile: null
-			labelKind: "protocol name"
-			labelText: "FLIPR target A biochemical"
-			labelType: "name"
-			labelTypeAndKind: "name_protocol name"
-			modifiedDate: null
+			labelText: "testing eg created for protocol service spec"
+			lsKind: "protocol name"
+			lsType: "name"
 			physicallyLabled: false
 			preferred: true
-			recordedBy: "userName"
+			recordedBy: "bob"
 			recordedDate: 1363388477000
-			version: 0
 		]
-		lslStates: []
-		modifiedBy: null
-		modifiedDate: null
-		recordedBy: "jmcneil"
+		lsStates: [
+			ignored: false
+			lsKind: "protocol metadata"
+			lsType: "metadata"
+			lsValues: [
+				ignored: false
+				lsKind: "assay tree rule"
+				lsType: "stringValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+				stringValue: "/assayTreeRule"
+			,
+				fileValue: "TestFile.mol"
+				ignored: false
+				lsKind: "protocol file"
+				lsType: "fileValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+			,
+				fileValue: "Test.csv"
+				ignored: false
+				lsKind: "protocol file"
+				lsType: "fileValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+			,
+				clobValue: "assay principle goes here"
+				ignored: false
+				lsKind: "assay principle"
+				lsType: "clobValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+			,
+				clobValue: "protocol details go here"
+				ignored: false
+				lsKind: "protocol details"
+				lsType: "clobValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+			,
+				clobValue: "protocol comments go here"
+				ignored: false
+				lsKind: "comments"
+				lsType: "clobValue"
+				recordedBy: "bob"
+				recordedDate: 1363388477000
+			,
+				codeKind: "scientist"
+				codeOrigin: "ACAS authors"
+				codeType: "assay"
+				codeValue: "jane"
+				ignored: false
+				lsKind: "scientist"
+				lsType: "codeValue"
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+			,
+				codeKind: "stage"
+				codeOrigin: "ACAS authors"
+				codeType: "assay"
+				codeValue: "unassigned"
+				ignored: false
+				lsKind: "assay stage"
+				lsType: "codeValue"
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+			,
+				ignored: false
+				lsKind: "notebook"
+				lsType: "stringValue"
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+				stringValue: "912"
+			,
+				dateValue: 1342080000000
+				ignored: false
+				lsKind: "creation date"
+				lsType: "dateValue"
+				recordedBy: "smeyer"
+				recordedDate: 1375889487000
+			,
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "protocol"
+				codeValue: "created"
+				ignored: false
+				lsKind: "protocol status"
+				lsType: "codeValue"
+				recordedBy: "egao"
+				recordedDate: 1375889487000
+			]
+			recordedBy: "bob"
+			recordedDate: 1375141460000
+		]
+		lsTags: [
+
+		]
+		lsType: "default"
+		recordedBy: "bob"
 		recordedDate: 1361600860000
 		shortDescription: "protocol to save description goes here"
-		version: 0
-	]
 
 	exports.lsLabels = [
 		id: 67

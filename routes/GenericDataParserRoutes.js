@@ -16,7 +16,7 @@
 
   exports.parseGenericData = function(request, response) {
     var serverUtilityFunctions;
-    request.connection.setTimeout(600000);
+    request.connection.setTimeout(6000000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     response.writeHead(200, {
       'Content-Type': 'application/json'

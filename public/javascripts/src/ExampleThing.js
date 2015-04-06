@@ -46,19 +46,22 @@
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'dateValue',
-          kind: 'completion date'
+          kind: 'completion date',
+          value: NaN
         }, {
           key: 'notebook',
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'stringValue',
-          kind: 'notebook'
+          kind: 'notebook',
+          value: ""
         }, {
           key: 'structural file',
           stateType: 'metadata',
           stateKind: 'cationic block parent',
           type: 'fileValue',
-          kind: 'structural file'
+          kind: 'structural file',
+          value: ""
         }, {
           key: 'batch number',
           stateType: 'metadata',
@@ -67,7 +70,9 @@
           kind: 'batch number',
           value: 0
         }
-      ]
+      ],
+      defaultFirstLsThingItx: [],
+      defaultSecondLsThingItx: []
     };
 
     ExampleThing.prototype.validate = function(attrs) {
@@ -207,7 +212,7 @@
       return ExampleThingController.__super__.constructor.apply(this, arguments);
     }
 
-    ExampleThingController.prototype.template = _.template($("#AbstractBaseComponentThingView").html());
+    ExampleThingController.prototype.template = _.template($("#ExampleThingView").html());
 
     ExampleThingController.prototype.moduleLaunchName = "cationic_block";
 
@@ -229,7 +234,6 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
-          console.log("has module launch params");
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             launchCode = window.AppLaunchParams.moduleLaunchParams.code;
             if (launchCode.indexOf("-") === -1) {
@@ -289,7 +293,7 @@
     };
 
     ExampleThingController.prototype.render = function() {
-      var bestName, codeName;
+      var bestName, codeName, compDate;
       if (this.model == null) {
         this.model = new ExampleThing();
       }
@@ -304,8 +308,11 @@
       this.$('.bv_scientist').val(this.model.get('scientist').get('value'));
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
-      if (this.model.get('completion date').get('value') != null) {
-        this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('completion date').get('value')));
+      compDate = this.model.get('completion date').get('value');
+      if (compDate != null) {
+        if (!isNaN(compDate)) {
+          this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('completion date').get('value')));
+        }
       }
       this.$('.bv_notebook').val(this.model.get('notebook').get('value'));
       if (this.readOnly === true) {
@@ -339,11 +346,9 @@
       var structuralFileValue;
       structuralFileValue = this.model.get('structural file').get('value');
       if (structuralFileValue === null || structuralFileValue === "" || structuralFileValue === void 0) {
-        console.log("structural file is null");
         this.createNewFileChooser();
         return this.$('.bv_deleteSavedFile').hide();
       } else {
-        console.log("structural file is not null");
         this.$('.bv_structuralFile').html('<a href="' + window.conf.datafiles.downloadurl.prefix + structuralFileValue + '">' + this.model.get('structural file').get('comments') + '</a>');
         return this.$('.bv_deleteSavedFile').show();
       }
@@ -376,6 +381,7 @@
         maxNumberOfFiles: 1,
         requiresValidation: false,
         url: UtilityFunctions.prototype.getFileServiceURL(),
+        allowedFileTypes: ['png', 'jpeg'],
         hideDelete: false
       });
       this.structuralFileController.on('amDirty', (function(_this) {
@@ -394,15 +400,18 @@
     };
 
     ExampleThingController.prototype.handleFileUpload = function(nameOnServer) {
+      var newFileValue;
+      newFileValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "cationic block parent", "fileValue", "structural file");
+      this.model.set("structural file", newFileValue);
       return this.model.get("structural file").set("value", nameOnServer);
     };
 
     ExampleThingController.prototype.handleFileRemoved = function() {
-      return this.model.get("structural file").set("value", "");
+      this.model.get("structural file").set("ignored", true);
+      return this.model.unset("structural file");
     };
 
     ExampleThingController.prototype.handleDeleteSavedStructuralFile = function() {
-      console.log("handle delete saved structural file");
       this.handleFileRemoved();
       this.$('.bv_deleteSavedFile').hide();
       return this.createNewFileChooser();
@@ -459,6 +468,7 @@
     };
 
     ExampleThingController.prototype.handleUpdateThing = function() {
+      this.model.prepareToSave();
       this.model.reformatBeforeSaving();
       this.$('.bv_updatingThing').show();
       this.$('.bv_saveThingComplete').html('Update Complete.');
@@ -477,9 +487,7 @@
     };
 
     ExampleThingController.prototype.updateBatchNumber = function() {
-      return this.model.fetch({
-        success: console.log(this.model)
-      });
+      return this.model.fetch();
     };
 
     return ExampleThingController;

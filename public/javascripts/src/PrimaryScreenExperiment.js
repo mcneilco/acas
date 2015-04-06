@@ -203,7 +203,7 @@
         agonistControl: new Backbone.Model(),
         thresholdType: null,
         volumeType: "dilution",
-        htsFormat: false,
+        htsFormat: true,
         autoHitSelection: false,
         matchReadName: false,
         primaryAnalysisReadList: new PrimaryAnalysisReadList(),
@@ -582,7 +582,7 @@
     PrimaryAnalysisReadController.prototype.className = "form-inline";
 
     PrimaryAnalysisReadController.prototype.events = {
-      "change .bv_readPosition": "attributeChanged",
+      "keyup .bv_readPosition": "attributeChanged",
       "change .bv_readName": "handleReadNameChanged",
       "click .bv_activity": "handleActivityChanged",
       "click .bv_delete": "clear"
@@ -993,18 +993,18 @@
       "change .bv_aggregateBy": "attributeChanged",
       "change .bv_aggregationMethod": "attributeChanged",
       "change .bv_normalizationRule": "attributeChanged",
-      "change .bv_assayVolume": "handleAssayVolumeChanged",
-      "change .bv_dilutionFactor": "handleDilutionFactorChanged",
-      "change .bv_transferVolume": "handleTransferVolumeChanged",
-      "change .bv_hitEfficacyThreshold": "attributeChanged",
-      "change .bv_hitSDThreshold": "attributeChanged",
-      "change .bv_positiveControlBatch": "handlePositiveControlBatchChanged",
-      "change .bv_positiveControlConc": "attributeChanged",
-      "change .bv_negativeControlBatch": "handleNegativeControlBatchChanged",
-      "change .bv_negativeControlConc": "attributeChanged",
-      "change .bv_vehicleControlBatch": "handleVehicleControlBatchChanged",
-      "change .bv_agonistControlBatch": "handleAgonistControlBatchChanged",
-      "change .bv_agonistControlConc": "attributeChanged",
+      "keyup .bv_assayVolume": "handleAssayVolumeChanged",
+      "keyup .bv_dilutionFactor": "handleDilutionFactorChanged",
+      "keyup .bv_transferVolume": "handleTransferVolumeChanged",
+      "keyup .bv_hitEfficacyThreshold": "attributeChanged",
+      "keyup .bv_hitSDThreshold": "attributeChanged",
+      "keyup .bv_positiveControlBatch": "handlePositiveControlBatchChanged",
+      "keyup .bv_positiveControlConc": "attributeChanged",
+      "keyup .bv_negativeControlBatch": "handleNegativeControlBatchChanged",
+      "keyup .bv_negativeControlConc": "attributeChanged",
+      "keyup .bv_vehicleControlBatch": "handleVehicleControlBatchChanged",
+      "keyup .bv_agonistControlBatch": "handleAgonistControlBatchChanged",
+      "keyup .bv_agonistControlConc": "attributeChanged",
       "change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged",
       "change .bv_thresholdTypeSD": "handleThresholdTypeChanged",
       "change .bv_volumeTypeTransfer": "handleVolumeTypeChanged",
@@ -1451,7 +1451,6 @@
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.handleSaveReturnSuccess = function(json) {
-      console.log("handle save return success");
       AbstractUploadAndRunPrimaryAnalsysisController.__super__.handleSaveReturnSuccess.call(this, json);
       this.$('.bv_loadAnother').html("Re-Analyze");
       return this.trigger('analysis-completed');
@@ -1578,7 +1577,7 @@
     PrimaryScreenAnalysisController.prototype.template = _.template($("#PrimaryScreenAnalysisView").html());
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
-      this.model.on("sync", this.handleExperimentSaved);
+      this.model.on("saveSuccess", this.handleExperimentSaved);
       this.model.getStatus().on('change', this.handleStatusChanged);
       this.dataAnalysisController = null;
       $(this.el).empty();
@@ -1739,11 +1738,6 @@
 
     PrimaryScreenAnalysisController.prototype.showDryRunResults = function(dryRunStatus) {
       var resultHTML, resultStatus;
-      if (dryRunStatus === "complete") {
-        resultStatus = "Dry Run Results: Success";
-      } else {
-        resultStatus = "Dry Run Results: Failed";
-      }
       resultHTML = this.model.getDryRunResultHTML().get('clobValue');
       if (this.dataAnalysisController != null) {
         this.dataAnalysisController.parseFileUploaded = true;
@@ -1751,6 +1745,13 @@
         this.dataAnalysisController.showFileUploadPhase();
         this.dataAnalysisController.handleFormValid();
         this.dataAnalysisController.disableAllInputs();
+      }
+      if (dryRunStatus === "complete") {
+        resultStatus = "Dry Run Results: Success";
+      } else {
+        resultStatus = "Dry Run Results: Failed";
+        this.$('.bv_save').attr('disabled', 'disabled');
+        this.$('.bv_save').prop('disabled', true);
       }
       this.$('.bv_resultStatus').html(resultStatus);
       return this.$('.bv_htmlSummary').html(resultHTML);
@@ -1784,7 +1785,6 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
-      console.log("handle analysis complete");
       this.$('.bv_resultsContainer').hide();
       return this.trigger('analysis-completed');
     };
@@ -1908,8 +1908,8 @@
         this.model = new PrimaryScreenExperiment();
       }
       $(this.el).html(this.template());
-      this.model.on('sync', this.handleExperimentSaved);
       this.setupExperimentBaseController();
+      this.model.on('sync', this.handleExperimentSaved);
       this.analysisController = new PrimaryScreenAnalysisController({
         model: this.model,
         el: this.$('.bv_primaryScreenDataAnalysis'),
@@ -1964,6 +1964,9 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.setupExperimentBaseController = function() {
+      if (this.experimentBaseController != null) {
+        this.experimentBaseController.remove();
+      }
       this.experimentBaseController = new ExperimentBaseController({
         model: this.model,
         el: this.$('.bv_experimentBase'),
@@ -2064,7 +2067,6 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.fetchModel = function() {
-      console.log("fetch Model");
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/codeName/" + this.model.get('codeName'),
@@ -2084,7 +2086,6 @@
     };
 
     AbstractPrimaryScreenExperimentController.prototype.updateModelFitTab = function() {
-      console.log("update Model Fit Tab");
       this.modelFitController.model = this.model;
       this.modelFitController.setReadyForFit();
       return this.$('.bv_resultsContainer').hide();

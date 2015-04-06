@@ -55,7 +55,7 @@ createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs, inputFormat) {
       "publicData" = subjectData$publicData[1],
       treatmentGroupID = subjectData$treatmentGroupID[1],
       stateGroupIndex = subjectData$stateGroupIndex[1],
-      stateID = subjectData$stateID[1],
+      stateID = if(all(is.na(subjectData$stateID))) NA else max(subjectData$stateID, na.rm = T),
       stateVersion = subjectData$stateVersion[1],
       valueType = subjectData$valueType[1],
       numberOfReplicates = sum(!is.na(subjectData$numericValue)),

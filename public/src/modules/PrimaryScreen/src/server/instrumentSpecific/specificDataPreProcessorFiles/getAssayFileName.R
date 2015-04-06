@@ -11,9 +11,13 @@ getAssayFileName <- function(barcode="barcode text", filePath=".", tempFilePath)
   if (length(assayFileNames) == 1){
     assayFileNames <- data.table(assayFileName=assayFileNames[1])
   } else if (length(assayFileNames) > 1) { 
-    stopUser(paste0("Multiple assay files found for barcode: ", barcode))
-    # save this for instrument specific file plateFormatMultiFile (and perhaps stat1stat2seq1 formats)
-    # assayFileNames <- data.table(assayFileName=assayFileNames, readOrder=(seq.int(1, length(assayFileNames))))
+    if (barcode == "") {
+      stopUser("Blank assay barcode found in plate association file.")
+    } else {
+      stopUser(paste0("Multiple assay files found for barcode: ", barcode))
+      # save this for instrument specific file plateFormatMultiFile (and perhaps stat1stat2seq1 formats)
+      # assayFileNames <- data.table(assayFileName=assayFileNames, readOrder=(seq.int(1, length(assayFileNames))))
+    }
   } else {
     stopUser(paste0("Assay file not found for barcode: ", barcode))
   }

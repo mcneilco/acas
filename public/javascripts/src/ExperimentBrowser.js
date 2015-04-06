@@ -458,15 +458,16 @@
       if (experiment.get('lsKind') === "Bio Activity") {
         this.experimentController = new ExperimentBaseController({
           protocolKindFilter: "?protocolKind=Bio Activity",
-          model: new PrimaryScreenExperiment(experiment.attributes)
+          model: new PrimaryScreenExperiment(experiment.attributes),
+          readOnly: true
         });
       } else {
         this.experimentController = new ExperimentBaseController({
-          model: new Experiment(experiment.attributes)
+          model: new Experiment(experiment.attributes),
+          readOnly: true
         });
       }
       $('.bv_experimentBaseController').html(this.experimentController.render().el);
-      this.experimentController.displayInReadOnlyMode();
       $(".bv_experimentBaseController").removeClass("hide");
       $(".bv_experimentBaseControllerContainer").removeClass("hide");
       if (experiment.getStatus().get('codeValue') === "deleted") {
@@ -474,11 +475,7 @@
         return this.$('.bv_editExperiment').hide();
       } else {
         this.$('.bv_editExperiment').show();
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-          return this.$('.bv_deleteExperiment').show();
-        } else {
-          return this.$('.bv_deleteExperiment').hide();
-        }
+        return this.$('.bv_deleteExperiment').show();
       }
     };
 

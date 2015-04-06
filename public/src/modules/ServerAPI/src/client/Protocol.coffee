@@ -5,6 +5,27 @@ class window.Protocol extends BaseEntity
 		@.set subclass: "protocol"
 		super()
 
+	parse: (resp) =>
+		if resp == "not unique protocol name" or resp == '"not unique protocol name"'
+			@trigger 'saveFailed'
+			resp
+		else
+			if resp.lsLabels?
+				if resp.lsLabels not instanceof LabelList
+					resp.lsLabels = new LabelList(resp.lsLabels)
+				resp.lsLabels.on 'change', =>
+					@trigger 'change'
+			if resp.lsStates?
+				if resp.lsStates not instanceof StateList
+					resp.lsStates = new StateList(resp.lsStates)
+				resp.lsStates.on 'change', =>
+					@trigger 'change'
+			if resp.lsTags not instanceof TagList
+				resp.lsTags = new TagList(resp.lsTags)
+			resp.lsTags.on 'change', =>
+				@trigger 'change'
+			resp
+
 	getCreationDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "dateValue", "creation date"
 
@@ -76,10 +97,10 @@ class window.ProtocolBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
-			"change .bv_protocolName": "handleNameChanged"
-			"change .bv_assayTreeRule": "handleAssayTreeRuleChanged"
+			"keyup .bv_protocolName": "handleNameChanged"
+			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
-			"change .bv_assayPrinciple": "handleAssayPrincipleChanged"
+			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
 
@@ -123,12 +144,22 @@ class window.ProtocolBaseController extends BaseEntityController
 			@model = new Protocol()
 		@errorOwnerName = 'ProtocolBaseController'
 		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		@model.on 'saveFailed', =>
+			@$('.bv_protocolSaveFailed').modal('show')
+			@$('.bv_saveFailed').show()
+			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+				@$('.bv_saveFailed').hide()
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
 		@setUpAssayStageSelect()
+		@setupAttachFileListController()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -152,16 +183,19 @@ class window.ProtocolBaseController extends BaseEntityController
 		unless @model.get('subclass')?
 			@model.set subclass: 'protocol'
 		@$('.bv_saving').hide()
-		if @$('.bv_cancelComplete').is(":visible")
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
+			@trigger 'amDirty'
 		else
 			@$('.bv_updateComplete').show()
-		@render()
 		unless @model.get('lsKind') is "default"
 			@$('.bv_newEntity').hide()
 			@$('.bv_cancel').hide()
 			@$('.bv_save').hide()
 		@trigger 'amClean'
+		@render()
+		if @model.get('lsType') is "default"
+			@setupAttachFileListController()
 
 	setUpAssayStageSelect: ->
 		@assayStageList = new PickListList()
@@ -175,31 +209,21 @@ class window.ProtocolBaseController extends BaseEntityController
 			selectedCode: @model.getAssayStage().get('codeValue')
 
 	handleCreationDateChanged: =>
-		@model.getCreationDate().set
-			dateValue: UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@model.trigger 'change'
+		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
+		@handleValueChanged "CreationDate", value
 
 
 	handleCreationDateIconClicked: =>
 		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
-		@model.getAssayStage().set
-			codeValue: @assayStageListController.getSelectedCode()
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
-		@trigger 'change'
+		value = @assayStageListController.getSelectedCode()
+		@handleValueChanged "AssayStage", value
 
 	handleAssayPrincipleChanged: =>
-		@model.getAssayPrinciple().set
-			clobValue: UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
+		@handleValueChanged "AssayPrinciple", value
 
 	handleAssayTreeRuleChanged: =>
-		@model.getAssayTreeRule().set
-			stringValue: UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
+		value = UtilityFunctions::getTrimmedInput @$('.bv_assayTreeRule')
+		@handleValueChanged "AssayTreeRule", value

@@ -55,7 +55,7 @@
         });
       });
     });
-    return describe("entity file handling", function() {
+    describe("entity file handling", function() {
       var inputFileValue;
       inputFileValue = {
         'clobValue': null,
@@ -117,7 +117,6 @@
           it("should return passed", function() {
             return assert.equal(this.passed, true);
           });
-          it("should return a fileValue with base file name in comments", function() {});
           it("should return a fileValue with the correct relative path for Protocol", function() {
             return assert.equal(this.outputFileValue.fileValue, "protocols/PROT12345/test Work List (1).csv");
           });
@@ -249,6 +248,89 @@
         });
       });
       return describe("get current download URL for a given file, give a fileValue", function() {});
+    });
+    return describe("get calculated compound properties", function() {
+      describe("when valid compounds sent with valid properties", function() {
+        var entityList, propertyList;
+        propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"];
+        entityList = "DNS76\nDNS2\nDNS78\n";
+        before(function(done) {
+          this.timeout(20000);
+          return csUtilities.getTestedEntityProperties(propertyList, entityList, (function(_this) {
+            return function(properties) {
+              _this.propertyList = properties;
+              return done();
+            };
+          })(this));
+        });
+        it("should return 5 rows including a trailing \n", function() {
+          return assert.equal(this.propertyList.split('\n').length, 5);
+        });
+        it("should have 3 columns", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(res[0].split(',').length, 3);
+        });
+        it("should have a header row", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS");
+        });
+        return it("should have a number in the first result row", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(isNaN(parseFloat(res[1].split(',')[1])), false);
+        });
+      });
+      describe("when valid compounds sent with invalid property", function() {
+        var entityList, propertyList;
+        propertyList = ["ERROR", "deep_fred"];
+        entityList = "DNS76\nDNS2\nDNS78\n";
+        before(function(done) {
+          this.timeout(20000);
+          return csUtilities.getTestedEntityProperties(propertyList, entityList, (function(_this) {
+            return function(properties) {
+              _this.propertyList = properties;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return null \n", function() {
+          return assert.equal(this.propertyList, null);
+        });
+      });
+      return describe("when invalid compounds sent with valid properties", function() {
+        var entityList, propertyList;
+        propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"];
+        entityList = "ERROR1\nERROR2\nERROR3\n";
+        before(function(done) {
+          this.timeout(20000);
+          return csUtilities.getTestedEntityProperties(propertyList, entityList, (function(_this) {
+            return function(properties) {
+              _this.propertyList = properties;
+              return done();
+            };
+          })(this));
+        });
+        it("should return 5 rows including a trailing \n", function() {
+          return assert.equal(this.propertyList.split('\n').length, 5);
+        });
+        it("should have 3 columns", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(res[0].split(',').length, 3);
+        });
+        it("should have a header row", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS");
+        });
+        return it("should have no number in the first result row", function() {
+          var res;
+          res = this.propertyList.split('\n');
+          return assert.equal(res[1].split(',')[1], "");
+        });
+      });
     });
   });
 

@@ -301,12 +301,13 @@ class window.ExperimentBrowserController extends Backbone.View
 			@experimentController = new ExperimentBaseController
 				protocolKindFilter: "?protocolKind=Bio Activity"
 				model: new PrimaryScreenExperiment experiment.attributes
+				readOnly: true
 		else
 			@experimentController = new ExperimentBaseController
 				model: new Experiment experiment.attributes
+				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
-		@experimentController.displayInReadOnlyMode()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		if experiment.getStatus().get('codeValue') is "deleted"
@@ -314,12 +315,14 @@ class window.ExperimentBrowserController extends Backbone.View
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
 			@$('.bv_editExperiment').show()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
-	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-	#				console.log "user is protocol creator"
-			else
-				@$('.bv_deleteExperiment').hide()
+			@$('.bv_deleteExperiment').show()
+			#TODO: make deleting experiment privilege a config
+#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+#				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
+#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
+#	#				console.log "user is protocol creator"
+#			else
+#				@$('.bv_deleteExperiment').hide()
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")

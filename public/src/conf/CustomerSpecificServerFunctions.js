@@ -6,11 +6,9 @@
  */
 
 (function() {
-  var config, fs, serverUtilityFunctions;
+  var fs, serverUtilityFunctions;
 
   serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
-
-  config = require('../../../conf/compiled/conf.js');
 
   fs = require('fs');
 
@@ -26,7 +24,8 @@
   };
 
   exports.authCheck = function(user, pass, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -57,7 +56,8 @@
   };
 
   exports.resetAuth = function(email, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -85,7 +85,8 @@
   };
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     request = require('request');
     return request({
       headers: {
@@ -116,7 +117,8 @@
   };
 
   exports.getUser = function(username, callback) {
-    var request;
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
     if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
       request = require('request');
       return request({
@@ -237,15 +239,23 @@
     return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
   };
 
+  exports.validateCloneAndGetTarget = function(req, resp) {
+    var psProtocolServiceTestJSON;
+    psProtocolServiceTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    return resp.json(psProtocolServiceTestJSON.successfulCloneValidation);
+  };
+
   exports.getAuthors = function(resp) {
-    var baseurl;
+    var baseurl, config;
+    config = require('../../../conf/compiled/conf.js');
     serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
     baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
     return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
   exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
-    var absEntitiesFolder, absEntityFolder, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
+    var absEntitiesFolder, absEntityFolder, config, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
+    config = require('../../../conf/compiled/conf.js');
     uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
     oldPath = uploadsPath + fileValue.fileValue;
     relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
@@ -289,6 +299,42 @@
         });
       }
     });
+  };
+
+  exports.getDownloadUrl = function(fileValue) {
+    var config;
+    config = require('../../../conf/compiled/conf.js');
+    return config.all.client.datafiles.downloadurl.prefix + fileValue;
+  };
+
+  exports.getTestedEntityProperties = function(propertyList, entityList, callback) {
+    var ents, i, j, out, prop, prop2, _i, _j, _k, _len, _len1, _ref;
+    if (propertyList.indexOf('ERROR') > -1) {
+      callback(null);
+      return;
+    }
+    ents = entityList.split('\n');
+    out = "id,";
+    for (_i = 0, _len = propertyList.length; _i < _len; _i++) {
+      prop = propertyList[_i];
+      out += prop + ",";
+    }
+    out = out.slice(0, -1) + '\n';
+    for (i = _j = 0, _ref = ents.length - 2; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
+      out += ents[i] + ",";
+      j = 0;
+      for (_k = 0, _len1 = propertyList.length; _k < _len1; _k++) {
+        prop2 = propertyList[_k];
+        if (ents[i].indexOf('ERROR') < 0) {
+          out += i + j++;
+        } else {
+          out += "";
+        }
+        out += ',';
+      }
+      out = out.slice(0, -1) + '\n';
+    }
+    return callback(out);
   };
 
 }).call(this);

@@ -172,11 +172,14 @@ exports.makeAbsolutePath = (relativePath) ->
 	console.log acasPath+relativePath+'/'
 	acasPath+relativePath+'/'
 
-exports.getFileValesFromThing = (thing) ->
-	vals = thing.lsStates[0].lsValues
+exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
-	for v in vals
-		if v.lsType == 'fileValue' && !v.ignored then fvs.push v
+	for state in thing.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
 	fvs
 
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
@@ -187,9 +190,50 @@ exports.getRelativeFolderPathForPrefix = (prefix) ->
 	else
 		return null
 
-exports.getPrefixFromThingCode = (code) ->
+exports.getPrefixFromEntityCode = (code) ->
 	for pref, redir of controllerRedirect.controllerRedirectConf
 		if code.indexOf(pref) > -1
 			return pref
 	return null
+
+exports.createLSTransaction = (date, comments, callback) ->
+	if global.specRunnerTestmode
+		console.log "create lsTransaction stubsMode"
+		callback
+			comments: "test transaction"
+			date: 1427414400000
+			id: 1234
+			version: 0
+	else
+		config = require '../conf/compiled/conf.js'
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: config.all.client.service.persistence.fullpath+"lstransactions"
+			json: true
+			body:
+				recordedDate: date
+				comments: comments
+		, (error, response, json) ->
+			if !error && response.statusCode == 201
+				callback json
+			else
+				console.log 'got connection error trying to create an lsTransaction'
+				console.log error
+				console.log json
+				console.log response
+				callback null
+		)
+
+exports.insertTransactionIntoEntity = (transactionid, entity) ->
+	entity.lsTransaction = transactionid
+	for lab in entity.lsLabels
+		lab.lsTransaction = transactionid
+	for state in entity.lsStates
+		state.lsTransaction = transactionid
+		for val in state.lsValues
+			val.lsTransaction = transactionid
+
+	entity
+
 

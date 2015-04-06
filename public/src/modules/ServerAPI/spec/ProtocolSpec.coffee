@@ -26,7 +26,7 @@ describe "Protocol module testing", ->
 					expect(@prot.get('lsStates').length).toEqual 0
 					expect(@prot.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@prot.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@prot.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 				it 'Should have the recordedBy set to the loginUser username', ->
 					expect(@prot.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
@@ -370,15 +370,15 @@ describe "Protocol module testing", ->
 						expect(@pbc.model.getScientist().get('codeValue')).toEqual "unassigned"
 				it "should update model when shortDescription is changed", ->
 					@pbc.$('.bv_shortDescription').val(" New short description   ")
-					@pbc.$('.bv_shortDescription').change()
+					@pbc.$('.bv_shortDescription').keyup()
 					expect(@pbc.model.get 'shortDescription').toEqual "New short description"
 				it "should set model shortDescription to a space when shortDescription is set to empty", ->
 					@pbc.$('.bv_shortDescription').val("")
-					@pbc.$('.bv_shortDescription').change()
+					@pbc.$('.bv_shortDescription').keyup()
 					expect(@pbc.model.get 'shortDescription').toEqual " "
 				it "should update model when assay tree rule changed", ->
 					@pbc.$('.bv_assayTreeRule').val(" Updated assay tree rule  ")
-					@pbc.$('.bv_assayTreeRule').change()
+					@pbc.$('.bv_assayTreeRule').keyup()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("stringValue", "assay tree rule")
@@ -391,7 +391,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.model.getAssayStage().get('codeValue')).toEqual "unassigned"
 				it "should update model when assay principle is changed", ->
 					@pbc.$('.bv_assayPrinciple').val(" New assay principle   ")
-					@pbc.$('.bv_assayPrinciple').change()
+					@pbc.$('.bv_assayPrinciple').keyup()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "assay principle")
@@ -400,7 +400,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.model.getAssayPrinciple().get('clobValue')).toEqual "New assay principle"
 				it "should update model when protocol details is changed", ->
 					@pbc.$('.bv_details').val(" New protocol details   ")
-					@pbc.$('.bv_details').change()
+					@pbc.$('.bv_details').keyup()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "protocol details")
@@ -409,7 +409,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.model.getDetails().get('clobValue')).toEqual "New protocol details"
 				it "should update model when comments is changed", ->
 					@pbc.$('.bv_comments').val(" New comments   ")
-					@pbc.$('.bv_comments').change()
+					@pbc.$('.bv_comments').keyup()
 					states = @pbc.model.get('lsStates').getStatesByTypeAndKind "metadata", "protocol metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
@@ -418,7 +418,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.model.getComments().get('clobValue')).toEqual "New comments"
 				it "should update model when protocol name is changed", ->
 					@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
-					@pbc.$('.bv_protocolName').change()
+					@pbc.$('.bv_protocolName').keyup()
 					expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
 				it "should update model when creation date is changed", ->
 					@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
@@ -426,7 +426,7 @@ describe "Protocol module testing", ->
 					expect(@pbc.model.getCreationDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@pbc.$('.bv_notebook').val(" Updated notebook  ")
-					@pbc.$('.bv_notebook').change()
+					@pbc.$('.bv_notebook').keyup()
 					expect(@pbc.model.getNotebook().get('stringValue')).toEqual "Updated notebook"
 				it "should update model when tag added", ->
 					@pbc.$('.bv_tags').tagsinput 'add', "lucy"
@@ -446,7 +446,7 @@ describe "Protocol module testing", ->
 				it "should call a fetch on the model when cancel is clicked", ->
 					runs ->
 						@pbc.$('.bv_protocolName').val(" Updated protocol name   ")
-						@pbc.$('.bv_protocolName').change()
+						@pbc.$('.bv_protocolName').keyup()
 						expect(@pbc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated protocol name"
 						@pbc.$('.bv_cancel').click()
 					waits(1000)
@@ -458,6 +458,7 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_newEntity').click()
 					waits(1000)
 					runs ->
+						@pbc.$('.bv_confirmClear').click()
 						expect(@pbc.$('.bv_protocolCode').html()).toEqual "autofill when saved"
 		describe "When created from a new protocol", ->
 			beforeEach ->
@@ -503,13 +504,13 @@ describe "Protocol module testing", ->
 						@pbc.$('.bv_scientist').val("bob")
 						@pbc.$('.bv_scientist').change()
 						@pbc.$('.bv_shortDescription').val(" New short description   ")
-						@pbc.$('.bv_shortDescription').change()
+						@pbc.$('.bv_shortDescription').keyup()
 						@pbc.$('.bv_protocolName').val(" Updated entity name   ")
-						@pbc.$('.bv_protocolName').change()
+						@pbc.$('.bv_protocolName').keyup()
 						@pbc.$('.bv_creationDate').val(" 2013-3-16   ")
 						@pbc.$('.bv_creationDate').change()
 						@pbc.$('.bv_notebook').val("my notebook")
-						@pbc.$('.bv_notebook').change()
+						@pbc.$('.bv_notebook').keyup()
 				describe "form validation setup", ->
 					it "should be valid if form fully filled out", ->
 						runs ->
@@ -522,7 +523,7 @@ describe "Protocol module testing", ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_protocolName').val("")
-							@pbc.$('.bv_protocolName').change()
+							@pbc.$('.bv_protocolName').keyup()
 					it "should be invalid if protocol name not filled in", ->
 						runs ->
 							expect(@pbc.isValid()).toBeFalsy()
@@ -555,7 +556,7 @@ describe "Protocol module testing", ->
 					beforeEach ->
 						runs ->
 							@pbc.$('.bv_notebook').val("")
-							@pbc.$('.bv_notebook').change()
+							@pbc.$('.bv_notebook').keyup()
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@pbc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
@@ -589,5 +590,6 @@ describe "Protocol module testing", ->
 							@pbc.$('.bv_newEntity').click()
 						waits(1000)
 						runs ->
+							@pbc.$('.bv_confirmClear').click()
 							expect(@pbc.$('.bv_protocolName').val()).toEqual ""
 

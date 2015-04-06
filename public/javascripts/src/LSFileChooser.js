@@ -114,7 +114,6 @@
     };
 
     LSFileChooserController.prototype.events = {
-      'click .bv_deleteFile': 'handleFileValueChanged',
       'click .bv_cancelFile': 'handleDeleteFileUIChanges'
     };
 
@@ -138,11 +137,6 @@
       }
     };
 
-    LSFileChooserController.prototype.handleFileValueChanged = function() {
-      console.log("handle file value changed");
-      return this.trigger('fileDeleted');
-    };
-
     LSFileChooserController.prototype.handleDeleteFileUIChanges = function() {
       this.$('.bv_manualFileSelect').show("slide");
       this.currentNumberOfFiles--;
@@ -158,9 +152,6 @@
 
     LSFileChooserController.prototype.fileUploadComplete = function(e, data) {
       var self;
-      console.log("file upload complete");
-      console.log(e);
-      console.log(data);
       self = this;
       if (!this.options.hideDelete) {
         this.$('.delete').show();

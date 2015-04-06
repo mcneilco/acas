@@ -24,7 +24,7 @@
   };
 
   exports.thingsByTypeKind = function(req, resp) {
-    var baseurl, config, serverUtilityFunctions, thingServiceTestJSON;
+    var baseurl, config, serverUtilityFunctions, stubFlag, thingServiceTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingServiceTestJSON.batchList));
@@ -32,6 +32,10 @@
       config = require('../conf/compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
+      stubFlag = "with=stub";
+      if (req.query.stub) {
+        baseurl += "?" + stubFlag;
+      }
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
@@ -42,13 +46,22 @@
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
   exports.thingByCodeName = function(req, resp) {
-    var baseurl, config, thingTestJSON;
+    var baseurl, config, nestedfull, nestedstub, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingTestJSON.thingParent);
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/" + req.params.code;
+      if (req.query.nestedstub) {
+        nestedstub = "with=nestedstub";
+        baseurl += "?" + nestedstub;
+      } else if (req.query.nestedfull) {
+        nestedfull = "with=nestedfull";
+        baseurl += "?" + nestedfull;
+      } else {
+
+      }
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
@@ -60,7 +73,6 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code;
-      console.log(baseurl);
       request = require('request');
       return request({
         method: 'PUT',
@@ -83,7 +95,6 @@
 
   postThing = function(isBatch, req, resp) {
     var baseurl, checkFilesAndUpdate, config, request, thingToSave;
-    console.log("post thing parent");
     thingToSave = req.body;
     if (req.query.testMode || global.specRunnerTestmode) {
       if (thingToSave.codeName == null) {
@@ -98,7 +109,7 @@
     }
     checkFilesAndUpdate = function(thing) {
       var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
-      fileVals = serverUtilityFunctions.getFileValesFromThing(thing);
+      fileVals = serverUtilityFunctions.getFileValuesFromEntity(thing, false);
       filesToSave = fileVals.length;
       completeThingUpdate = function(thingToUpdate) {
         return updateThing(thingToUpdate, req.query.testMode, function(updatedThing) {
@@ -115,11 +126,10 @@
         }
       };
       if (filesToSave > 0) {
-        prefix = serverUtilityFunctions.getPrefixFromThingCode(thing.codeName);
+        prefix = serverUtilityFunctions.getPrefixFromEntityCode(thing.codeName);
         _results = [];
         for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
           fv = fileVals[_i];
-          console.log("updating file");
           _results.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
         }
         return _results;
@@ -167,7 +177,7 @@
   exports.putThing = function(req, resp) {
     var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, thingToSave, _i, _len, _results;
     thingToSave = req.body;
-    fileVals = serverUtilityFunctions.getFileValesFromThing(thingToSave);
+    fileVals = serverUtilityFunctions.getFileValuesFromEntity(thingToSave, true);
     filesToSave = fileVals.length;
     completeThingUpdate = function() {
       return updateThing(thingToSave, req.query.testMode, function(updatedThing) {
@@ -184,11 +194,18 @@
       }
     };
     if (filesToSave > 0) {
-      prefix = serverUtilityFunctions.getPrefixFromThingCode(req.params.code);
+      prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
       _results = [];
       for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
         fv = fileVals[_i];
-        _results.push(csUtilities.relocateEntityFile(fv, prefix, req.params.code, fileSaveCompleted));
+        console.log(fv);
+        console.log(prefix);
+        console.log(req.body.codeName);
+        if (fv.id == null) {
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+        } else {
+          _results.push(void 0);
+        }
       }
       return _results;
     } else {
@@ -198,7 +215,6 @@
 
   exports.batchesByParentCodeName = function(req, resp) {
     var baseurl, config, thingServiceTestJSON;
-    console.log("get batches by parent codeName");
     if (req.query.testMode || global.specRunnerTestmode) {
       thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingServiceTestJSON.batchList);
@@ -219,9 +235,6 @@
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(true);
     } else {
-      console.log("validate name");
-      console.log(req);
-      console.log(JSON.stringify(req.body.requestName));
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/validatename?lsKind=" + req.params.lsKind;
       request = require('request');

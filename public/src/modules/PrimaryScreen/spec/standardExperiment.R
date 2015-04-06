@@ -1,6 +1,4 @@
-# Code to set up basic experiment
-
-#     setwd("~/Documents/clients/Wellspring/SeuratAddOns/")
+# Code to set up basic experiment OLD
 require(RCurl)
 require(rjson)
 require(racas)

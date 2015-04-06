@@ -2,33 +2,24 @@
 # ROUTE: /curve/render/dr-cache
 
 renderCurve <- function(getParams) {
-  # Redirect to Curator if inTable is false
-  if(!is.null(getParams$inTable)) {
-    if(!as.logical(getParams$inTable)) {
-      if(length(curveIds == 1)) {
-        experimentCode <- query(paste0("SELECT e.code_name
-                                       FROM experiment e
-                                       JOIN experiment_analysisgroup eag ON e.id = eag.experiment_id
-                                       JOIN analysis_group ag ON ag.id = eag.analysis_group_id
-                                       JOIN analysis_group_state ags on ags.analysis_group_id=ag.id
-                                       JOIN analysis_group_value agv on agv.analysis_state_id=ags.id
-                                       WHERE agv.string_value = ",sqliz(GET$curveIds),"
-                                       AND agv.ls_kind        = 'curve id'"),globalConnect= TRUE)
-        link <- paste(getSSLString(), racas::applicationSettings$client.host, ":",
-                      racas::applicationSettings$client.port,
-                      "/curveCurator/",experimentCode,"/",curveIds,
-                      sep = "")
-        setHeader("Location", link)
-        return(HTTP_MOVED_TEMPORARILY)
-        DONE
-      }
-    }
+  # Redirect to Curator if applicable
+  redirectInfo <- racas::api_get_curve_curator_url(getParams$curveIds, getParams$inTable, globalConnect = TRUE)
+  if(redirectInfo$shouldRedirect == TRUE) {
+    setHeader("Location", redirectInfo$url)
+    return(HTTP_MOVED_TEMPORARILY)
+    DONE
   }
   # Parse GET Parameters
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
 
   # GET Cached Curve Data
   data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
+  data$parameters <- data$parameters[!is.null(category) && category %in% c("inactive","potent"), c("fittedmax", "fittedmin") := {
+                      pts <- data$points[curveId == curveId]
+                      responseMean <- mean(pts[userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+                      list("fittedmax" = responseMean, "fittedmin" = responseMean)
+                    }, by = curveId]
+
   data$parameters <- as.data.frame(data$parameters)
   data$points <- as.data.frame(data$points)
 
@@ -57,7 +48,7 @@ renderCurve <- function(getParams) {
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
   t <- tempfile()
-  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend)
+  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = "green")
   sendBin(readBin(t,'raw',n=file.info(t)$size))
   unlink(t)
   DONE

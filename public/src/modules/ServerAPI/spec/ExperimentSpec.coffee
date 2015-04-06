@@ -25,7 +25,7 @@ describe "Experiment module testing", ->
 					expect(@exp.get('lsStates').length).toEqual 0
 					expect(@exp.get('lsStates') instanceof StateList).toBeTruthy()
 				it 'Should have an empty scientist', ->
-					expect(@exp.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@exp.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 				it 'Should have the recordedBy set to the loginUser username', ->
 					expect(@exp.get('recordedBy')).toEqual "jmcneil"
 				it 'Should have an recordedDate set to now', ->
@@ -431,7 +431,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
-					expect(@ebc.model.getScientist().get('codeValue')).toEqual "unassigned"
+					expect(@ebc.model.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
 					waitsFor ->
 						@ebc.$('.bv_scientist option').length > 0
 					, 1000
@@ -441,15 +441,15 @@ describe "Experiment module testing", ->
 						expect(@ebc.model.getScientist().get('codeValue')).toEqual "bob"
 				it "should update model when shortDescription is changed", ->
 					@ebc.$('.bv_shortDescription').val(" New short description   ")
-					@ebc.$('.bv_shortDescription').change()
+					@ebc.$('.bv_shortDescription').keyup()
 					expect(@ebc.model.get 'shortDescription').toEqual "New short description"
 				it "should set model shortDescription to a space when shortDescription is set to empty", ->
 					@ebc.$('.bv_shortDescription').val("")
-					@ebc.$('.bv_shortDescription').change()
+					@ebc.$('.bv_shortDescription').keyup()
 					expect(@ebc.model.get 'shortDescription').toEqual " "
 				it "should update model when experimentDetails is changed", ->
 					@ebc.$('.bv_details').val(" New experiment details   ")
-					@ebc.$('.bv_details').change()
+					@ebc.$('.bv_details').keyup()
 					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "experiment details")
@@ -458,7 +458,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.model.getDetails().get('clobValue')).toEqual "New experiment details"
 				it "should update model when comments is changed", ->
 					@ebc.$('.bv_comments').val(" New comments   ")
-					@ebc.$('.bv_comments').change()
+					@ebc.$('.bv_comments').keyup()
 					states = @ebc.model.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
 					expect(states.length).toEqual 1
 					values = states[0].getValuesByTypeAndKind("clobValue", "comments")
@@ -467,7 +467,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.model.getComments().get('clobValue')).toEqual "New comments"
 				it "should update model when name is changed", ->
 					@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
-					@ebc.$('.bv_experimentName').change()
+					@ebc.$('.bv_experimentName').keyup()
 					expect(@ebc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual "Updated experiment name"
 				it "should update model when completion date is changed", ->
 					@ebc.$('.bv_completionDate').val(" 2013-3-16   ")
@@ -475,7 +475,7 @@ describe "Experiment module testing", ->
 					expect(@ebc.model.getCompletionDate().get('dateValue')).toEqual new Date(2013,2,16).getTime()
 				it "should update model when notebook is changed", ->
 					@ebc.$('.bv_notebook').val(" Updated notebook  ")
-					@ebc.$('.bv_notebook').change()
+					@ebc.$('.bv_notebook').keyup()
 					expect(@ebc.model.getNotebook().get('stringValue')).toEqual "Updated notebook"
 				it "should update model when protocol is changed", ->
 					waitsFor ->
@@ -605,7 +605,7 @@ describe "Experiment module testing", ->
 				it "should call a fetch on the model when cancel is clicked", ->
 					runs ->
 						@ebc.$('.bv_experimentName').val("new experiment name")
-						@ebc.$('.bv_experimentName').change()
+						@ebc.$('.bv_experimentName').keyup()
 						expect(@ebc.$('.bv_experimentName').val()).toEqual "new experiment name"
 						@ebc.$('.bv_cancel').click()
 					waits(1000)
@@ -617,6 +617,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_newEntity').click()
 					waits(1000)
 					runs ->
+						@ebc.$('.bv_confirmClear').click()
 						expect(@ebc.$('.bv_experimentCode').html()).toEqual "autofill when saved"
 
 		describe "When created from a new experiment", ->
@@ -693,11 +694,11 @@ describe "Experiment module testing", ->
 					, 1000
 					runs ->
 						@ebc.$('.bv_shortDescription').val(" New short description   ")
-						@ebc.$('.bv_shortDescription').change()
+						@ebc.$('.bv_shortDescription').keyup()
 						@ebc.$('.bv_protocolCode').val("PROT-00000001")
 						@ebc.$('.bv_protocolCode').change()
 						@ebc.$('.bv_experimentName').val(" Updated experiment name   ")
-						@ebc.$('.bv_experimentName').change()
+						@ebc.$('.bv_experimentName').keyup()
 						@ebc.$('.bv_scientist').val("bob")
 						@ebc.$('.bv_scientist').change()
 #					waits(1000)
@@ -710,7 +711,7 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_projectCode').val("project1")
 						@ebc.$('.bv_projectCode').change()
 						@ebc.$('.bv_notebook').val("my notebook")
-						@ebc.$('.bv_notebook').change()
+						@ebc.$('.bv_notebook').keyup()
 						@ebc.$('.bv_completionDate').val(" 2013-3-16   ")
 						@ebc.$('.bv_completionDate').change()
 					waits(1000)
@@ -732,7 +733,7 @@ describe "Experiment module testing", ->
 					beforeEach ->
 						runs ->
 							@ebc.$('.bv_experimentName').val("")
-							@ebc.$('.bv_experimentName').change()
+							@ebc.$('.bv_experimentName').keyup()
 					it "should be invalid if experiment name not filled in", ->
 						runs ->
 							expect(@ebc.isValid()).toBeFalsy()
@@ -782,7 +783,7 @@ describe "Experiment module testing", ->
 					beforeEach ->
 						runs ->
 							@ebc.$('.bv_notebook').val("")
-							@ebc.$('.bv_notebook').change()
+							@ebc.$('.bv_notebook').keyup()
 					it "should show error on notebook dropdown", ->
 						runs ->
 							expect(@ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()

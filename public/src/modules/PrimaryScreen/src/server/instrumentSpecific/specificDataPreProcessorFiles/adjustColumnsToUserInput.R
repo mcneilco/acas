@@ -69,8 +69,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
           # Call the service to get the heavy atom count
           heavyAtomCount <- data.table(batchCode=unique(inputDataTable$batchCode),
                                        heavyAtomCount=get_compound_properties(unique(inputDataTable$batchCode), 
-                                                                              propertyNames = c("HEAVY_ATOM_COUNT"), 
-                                                                              applicationSettings$service.external.compound.calculatedProperties.url)$HEAVY_ATOM_COUNT)
+                                                                              propertyNames = c("HEAVY_ATOM_COUNT"))$HEAVY_ATOM_COUNT)
           
           
           # Merge the HAC data table with the overall data table

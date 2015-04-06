@@ -92,6 +92,9 @@
             expect(this.pspp.getMolecularTarget().get('codeValue')).toEqual("test1");
             return expect(this.pspp.getMolecularTarget().get('codeOrigin')).toEqual("customer ddict");
           });
+          it('Should have a clone id value', function() {
+            return expect(this.pspp.getCloneName().get('stringValue')).toEqual("clone1");
+          });
           it('Should have an targetOrigin value', function() {
             return expect(this.pspp.getTargetOrigin().get('codeValue')).toEqual("human");
           });
@@ -124,7 +127,7 @@
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
-        return it("should be invalid when minY is NaN", function() {
+        it("should be invalid when minY is NaN", function() {
           var filtErrors;
           this.pspp.getCurveDisplayMin().set({
             numericValue: NaN
@@ -132,6 +135,39 @@
           expect(this.pspp.isValid()).toBeFalsy();
           filtErrors = _.filter(this.pspp.validationError, function(err) {
             return err.attribute === 'minY';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when clone name is 'invalid'", function() {
+          var filtErrors;
+          this.pspp.getCloneName().set({
+            stringValue: 'invalid'
+          });
+          expect(this.pspp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.pspp.validationError, function(err) {
+            return err.attribute === 'cloneName';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        it("should be invalid when molecular target is 'invalid'", function() {
+          var filtErrors;
+          this.pspp.getMolecularTarget().set({
+            codeValue: 'invalid'
+          });
+          expect(this.pspp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.pspp.validationError, function(err) {
+            return err.attribute === 'molecularTarget';
+          });
+          return expect(filtErrors.length).toBeGreaterThan(0);
+        });
+        return it("should be invalid when molecular target is 'required'", function() {
+          var filtErrors;
+          this.pspp.getMolecularTarget().set({
+            codeValue: 'required'
+          });
+          expect(this.pspp.isValid()).toBeFalsy();
+          filtErrors = _.filter(this.pspp.validationError, function(err) {
+            return err.attribute === 'molecularTarget';
           });
           return expect(filtErrors.length).toBeGreaterThan(0);
         });
@@ -230,6 +266,9 @@
               return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("unassigned");
             });
           });
+          it("should show the clone id as an empty field", function() {
+            return expect(this.psppc.model.getCloneName().get('stringValue')).toEqual("");
+          });
           it("should show the targetOrigin as unassigned", function() {
             waitsFor(function() {
               return this.psppc.$('.bv_targetOrigin option').length > 0;
@@ -265,9 +304,6 @@
               expect(this.psppc.model.getCellLine().get('codeValue')).toEqual("unassigned");
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("unassigned");
             });
-          });
-          it("should have the customer molecular target ddict checkbox ", function() {
-            return expect(this.psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toBeUndefined();
           });
           it("should show the curve display max", function() {
             expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(100.0);
@@ -315,6 +351,9 @@
               return expect(this.psppc.molecularTargetListController.getSelectedCode()).toEqual("test1");
             });
           });
+          it("should have the clone name set", function() {
+            return expect(this.psppc.$('.bv_cloneName').val()).toEqual("clone1");
+          });
           it("should have the targetOrigin set", function() {
             waitsFor(function() {
               return this.psppc.$('.bv_targetOrigin option').length > 0;
@@ -351,9 +390,6 @@
               return expect(this.psppc.cellLineListController.getSelectedCode()).toEqual("cell line y");
             });
           });
-          it("should have the customer molecular target ddict checkbox checked ", function() {
-            return expect(this.psppc.$('.bv_customerMolecularTargetDDictChkbx').attr("checked")).toEqual("checked");
-          });
           it('should show the maxY', function() {
             return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(200.0);
           });
@@ -377,10 +413,15 @@
               return this.psppc.$('.bv_molecularTarget option').length > 0;
             }, 1000);
             return runs(function() {
-              this.psppc.$('.bv_molecularTarget .bv_parameterSelectList').val('test2');
+              this.psppc.$('.bv_molecularTarget').val('test2');
               this.psppc.$('.bv_molecularTarget').change();
               return expect(this.psppc.model.getMolecularTarget().get('codeValue')).toEqual("test2");
             });
+          });
+          it("should update the clone name", function() {
+            this.psppc.$('.bv_cloneName').val("  clone2  ");
+            this.psppc.$('.bv_cloneName').keyup();
+            return expect(this.psppc.model.getCloneName().get('stringValue')).toEqual("clone2");
           });
           it("should update the target origin", function() {
             waitsFor(function() {
@@ -424,31 +465,52 @@
           });
           it("should update the curve display max", function() {
             this.psppc.$('.bv_maxY').val("130 ");
-            this.psppc.$('.bv_maxY').change();
+            this.psppc.$('.bv_maxY').keyup();
             return expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(130);
           });
           return it("should update the curve display min", function() {
             this.psppc.$('.bv_minY').val(" 13 ");
-            this.psppc.$('.bv_minY').change();
+            this.psppc.$('.bv_minY').keyup();
             return expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(13);
-          });
-        });
-        describe("behavior", function() {
-          return it("should hide the Molecular Target's add button when the customer molecular target ddict checkbox is checked", function() {
-            this.psppc.$('.bv_customerMolecularTargetDDictChkbx').click();
-            return expect(this.psppc.$('.bv_molecularTarget .bv_addOptionBtn')).toBeHidden();
           });
         });
         return describe("controller validation rules", function() {
           it("should show error when maxY is NaN", function() {
             this.psppc.$('.bv_maxY').val("b");
-            this.psppc.$('.bv_maxY').change();
+            this.psppc.$('.bv_maxY').keyup();
             return expect(this.psppc.$('.bv_group_maxY').hasClass('error')).toBeTruthy();
           });
-          return it("should show error when minY is NaN", function() {
+          it("should show error when minY is NaN", function() {
             this.psppc.$('.bv_minY').val("b");
-            this.psppc.$('.bv_minY').change();
+            this.psppc.$('.bv_minY').keyup();
             return expect(this.psppc.$('.bv_group_minY').hasClass('error')).toBeTruthy();
+          });
+          it("should show error when clone name is invalid", function() {
+            this.psppc.$('.bv_cloneName').val("invalid");
+            this.psppc.$('.bv_cloneName').keyup();
+            return expect(this.psppc.$('.bv_group_cloneName').hasClass('error')).toBeTruthy();
+          });
+          it("should show error when the molecular target is invalid", function() {
+            waitsFor(function() {
+              return this.psppc.$('.bv_molecularTarget option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psppc.model.getMolecularTarget().set({
+                codeValue: 'invalid'
+              });
+              return expect(this.psppc.$('.bv_group_molecularTarget').hasClass('error')).toBeTruthy();
+            });
+          });
+          return it("should show error when the clone id is filled in but the molecular target is unassigned", function() {
+            waitsFor(function() {
+              return this.psppc.$('.bv_molecularTarget option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.psppc.model.getMolecularTarget().set({
+                codeValue: 'required'
+              });
+              return expect(this.psppc.$('.bv_group_molecularTarget').hasClass('error')).toBeTruthy();
+            });
           });
         });
       });
@@ -525,22 +587,22 @@
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
-                this.pspmc.$('.bv_protocolName').change();
-                this.pspmc.$('.bv_recordedBy').val("nxm7557");
-                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_protocolName').keyup();
+                this.pspmc.$('.bv_scientist').val("nxm7557");
+                this.pspmc.$('.bv_scientist').change();
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
-                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_notebook').keyup();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
-                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlBatch').keyup();
                 this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
-                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_positiveControlConc').keyup();
                 this.pspmc.$('.bv_negativeControlBatch').val("test2");
-                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlBatch').keyup();
                 this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
-                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_negativeControlConc').keyup();
                 this.pspmc.$('.bv_readName').val("luminescence");
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
@@ -596,7 +658,10 @@
               runs(function() {
                 return this.pspmc.$('.bv_newModule').click();
               });
-              waits(1000);
+              waits(2000);
+              runs(function() {
+                return this.pspmc.$('.bv_confirmClear').click();
+              });
               return runs(function() {
                 expect(this.pspmc.$('.bv_protocolName').val()).toEqual("");
                 return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
@@ -652,21 +717,21 @@
             beforeEach(function() {
               runs(function() {
                 this.pspmc.$('.bv_protocolName').val(" example protocol name   ");
-                this.pspmc.$('.bv_protocolName').change();
-                this.pspmc.$('.bv_recordedBy').val("nxm7557");
-                this.pspmc.$('.bv_recordedBy').change();
+                this.pspmc.$('.bv_protocolName').keyup();
+                this.pspmc.$('.bv_scientist').val("nxm7557");
+                this.pspmc.$('.bv_scientist').change();
                 this.pspmc.$('.bv_creationDate').val(" 2013-3-16   ");
                 this.pspmc.$('.bv_creationDate').change();
                 this.pspmc.$('.bv_notebook').val("my notebook");
-                this.pspmc.$('.bv_notebook').change();
+                this.pspmc.$('.bv_notebook').keyup();
                 this.pspmc.$('.bv_positiveControlBatch').val("test");
-                this.pspmc.$('.bv_positiveControlBatch').change();
+                this.pspmc.$('.bv_positiveControlBatch').keyup();
                 this.pspmc.$('.bv_positiveControlConc').val(" 123 ");
-                this.pspmc.$('.bv_positiveControlConc').change();
+                this.pspmc.$('.bv_positiveControlConc').keyup();
                 this.pspmc.$('.bv_negativeControlBatch').val("test2");
-                this.pspmc.$('.bv_negativeControlBatch').change();
+                this.pspmc.$('.bv_negativeControlBatch').keyup();
                 this.pspmc.$('.bv_negativeControlConc').val(" 1231 ");
-                this.pspmc.$('.bv_negativeControlConc').change();
+                this.pspmc.$('.bv_negativeControlConc').keyup();
                 this.pspmc.$('.bv_readName').val("luminescence");
                 this.pspmc.$('.bv_readName').change();
                 this.pspmc.$('.bv_signalDirectionRule').val("increasing");
@@ -699,10 +764,10 @@
           return it("should call a fetch on the model when cancel is clicked", function() {
             runs(function() {
               this.pspmc.$('.bv_protocolName').val(" Updated protocol name   ");
-              this.pspmc.$('.bv_protocolName').change();
+              this.pspmc.$('.bv_protocolName').keyup();
               expect(this.pspmc.model.get('lsLabels').pickBestLabel().get('labelText')).toEqual("Updated protocol name");
               this.pspmc.$('.bv_positiveControlBatch').val('blah');
-              this.pspmc.$('.bv_positiveControlBatch').change();
+              this.pspmc.$('.bv_positiveControlBatch').keyup();
               expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("blah");
               return this.pspmc.$('.bv_cancel').click();
             });
@@ -718,8 +783,9 @@
             runs(function() {
               return this.pspmc.$('.bv_newModule').click();
             });
-            waits(1000);
+            waits(2000);
             return runs(function() {
+              this.pspmc.$('.bv_confirmClear').click();
               expect(this.pspmc.$('.bv_protocolCode').html()).toEqual("autofill when saved");
               return expect(this.pspmc.$('.bv_positiveControlBatch').val()).toEqual("");
             });

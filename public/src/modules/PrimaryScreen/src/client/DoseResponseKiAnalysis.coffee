@@ -24,7 +24,6 @@ class window.DoseResponseKiAnalysisParameters extends Backbone.Model
 
 
 	validate: (attrs) ->
-		console.log "validate Ki analysis"
 		errors = []
 		limitType = attrs.min.get('limitType')
 		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.min.get('value')) or attrs.min.get('value') == null)
@@ -49,7 +48,6 @@ class window.DoseResponseKiAnalysisParameters extends Backbone.Model
 				attribute: 'inactiveThreshold'
 				message: "Inactive threshold value must be set to a number"
 
-		console.log errors
 		if errors.length > 0
 			return errors
 		else

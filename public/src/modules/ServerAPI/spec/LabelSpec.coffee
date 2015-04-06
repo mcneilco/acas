@@ -60,6 +60,14 @@ describe "Label module testing", ->
 					expect(@ell.pickBestLabel().get('lsKind')).toEqual "some kind"
 					expect(@ell.pickBestLabel().isNew).toBeTruthy()
 					expect(@ell.get(oldBestId).get 'ignored').toBeTruthy()
+			describe "get label history", ->
+				it "should return a list of labels of a given lsKind", ->
+					labels = @ell.getLabelHistory("experiment name")
+					expect(labels.length).toEqual 2
+					expect(labels[0].get('ignored')).toEqual false
+					expect(labels[0].get('labelText')).toEqual "FLIPR target A biochemical"
+					expect(labels[1].get('ignored')).toEqual true
+					expect(labels[1].get('labelText')).toEqual "FLIPR target A biochemical old"
 		describe "label list features when new and empty", ->
 			beforeEach ->
 				@ell = new LabelList()
@@ -177,6 +185,19 @@ describe "Label module testing", ->
 				it "return an existing value", ->
 					val = @esl.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "notebook"
 					expect(val.get('stringValue')).toEqual "911"
+			describe "get value by id", ->
+				it "should return the correct value when given the id", ->
+					val = (@esl.getValueById "metadata", "experiment metadata", 391)[0]
+					expect(val.get('id')).toEqual 391
+					expect(val.get('fileValue')).toEqual "TestFile.mol"
+			describe "get value history", ->
+				it "should return a list of the value (including the ignored entries)", ->
+					vals = (@esl.getStateValueHistory "metadata", "experiment metadata", "stringValue", "notebook")
+					expect(vals.length).toEqual 2
+					expect(vals[0].get('ignored')).toEqual false
+					expect(vals[0].get('stringValue')).toEqual "911"
+					expect(vals[1].get('ignored')).toEqual true
+					expect(vals[1].get('stringValue')).toEqual "ignored notebook"
 		describe "when created empty", ->
 			beforeEach ->
 				@esl = new StateList()

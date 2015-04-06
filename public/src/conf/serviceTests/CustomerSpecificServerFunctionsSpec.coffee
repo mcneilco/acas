@@ -89,7 +89,6 @@ describe "Base ACAS Customer Specific Function Tests", ->
 					fs.unlink @testFilePath
 				it "should return passed", ->
 					assert.equal @passed, true
-				it "should return a fileValue with base file name in comments", ->
 				it "should return a fileValue with the correct relative path for Protocol", ->
 					assert.equal @outputFileValue.fileValue, "protocols/PROT12345/test Work List (1).csv"
 				it "should return a fileValue with base file name in comments", ->
@@ -164,3 +163,54 @@ describe "Base ACAS Customer Specific Function Tests", ->
 
 #TODO
 		describe "get current download URL for a given file, give a fileValue", ->
+
+
+	describe "get calculated compound properties", ->
+		describe "when valid compounds sent with valid properties", ->
+			propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
+			entityList = "DNS76\nDNS2\nDNS78\n"
+			before (done) ->
+				@.timeout(20000)
+				csUtilities.getTestedEntityProperties propertyList, entityList, (properties) =>
+					@propertyList = properties
+					done()
+			it "should return 5 rows including a trailing \n", ->
+				assert.equal @propertyList.split('\n').length, 5
+			it "should have 3 columns", ->
+				res = @propertyList.split('\n')
+				assert.equal res[0].split(',').length, 3
+			it "should have a header row", ->
+				res = @propertyList.split('\n')
+				assert.equal res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS"
+			it "should have a number in the first result row", ->
+				res = @propertyList.split('\n')
+				assert.equal isNaN(parseFloat(res[1].split(',')[1])),false
+		describe "when valid compounds sent with invalid property", ->
+			propertyList = ["ERROR", "deep_fred"]
+			entityList = "DNS76\nDNS2\nDNS78\n"
+			before (done) ->
+				@.timeout(20000)
+				csUtilities.getTestedEntityProperties propertyList, entityList, (properties) =>
+					@propertyList = properties
+					done()
+			it "should return null \n", ->
+				assert.equal @propertyList, null
+		describe "when invalid compounds sent with valid properties", ->
+			propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
+			entityList = "ERROR1\nERROR2\nERROR3\n"
+			before (done) ->
+				@.timeout(20000)
+				csUtilities.getTestedEntityProperties propertyList, entityList, (properties) =>
+					@propertyList = properties
+					done()
+			it "should return 5 rows including a trailing \n", ->
+				assert.equal @propertyList.split('\n').length, 5
+			it "should have 3 columns", ->
+				res = @propertyList.split('\n')
+				assert.equal res[0].split(',').length, 3
+			it "should have a header row", ->
+				res = @propertyList.split('\n')
+				assert.equal res[0], "id,HEAVY_ATOM_COUNT,MONOISOTOPIC_MASS"
+			it "should have no number in the first result row", ->
+				res = @propertyList.split('\n')
+				assert.equal res[1].split(',')[1],""
