@@ -55,7 +55,6 @@
 
     DoseResponseKiAnalysisParameters.prototype.validate = function(attrs) {
       var errors, limitType;
-      console.log("validate Ki analysis");
       errors = [];
       limitType = attrs.min.get('limitType');
       if ((limitType === "pin" || limitType === "limit") && (_.isNaN(attrs.min.get('value')) || attrs.min.get('value') === null)) {
@@ -89,7 +88,6 @@
           message: "Inactive threshold value must be set to a number"
         });
       }
-      console.log(errors);
       if (errors.length > 0) {
         return errors;
       } else {

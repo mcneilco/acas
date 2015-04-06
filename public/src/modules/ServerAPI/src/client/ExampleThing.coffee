@@ -143,7 +143,6 @@ class window.ExampleThingController extends AbstractFormController
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
-				console.log "has module launch params"
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					launchCode = window.AppLaunchParams.moduleLaunchParams.code
 					if launchCode.indexOf("-") == -1
@@ -338,5 +337,5 @@ class window.ExampleThingController extends AbstractFormController
 
 	updateBatchNumber: =>
 		@model.fetch
-			success: console.log @model
+			success: callback.call()
 

@@ -234,7 +234,6 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
-          console.log("has module launch params");
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             launchCode = window.AppLaunchParams.moduleLaunchParams.code;
             if (launchCode.indexOf("-") === -1) {
@@ -489,7 +488,7 @@
 
     ExampleThingController.prototype.updateBatchNumber = function() {
       return this.model.fetch({
-        success: console.log(this.model)
+        success: callback.call()
       });
     };
 
