@@ -336,6 +336,4 @@ class window.ExampleThingController extends AbstractFormController
 		@disableAllInputs()
 
 	updateBatchNumber: =>
-		@model.fetch
-			success: callback.call()
-
+		@model.fetch()

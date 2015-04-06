@@ -487,9 +487,7 @@
     };
 
     ExampleThingController.prototype.updateBatchNumber = function() {
-      return this.model.fetch({
-        success: callback.call()
-      });
+      return this.model.fetch();
     };
 
     return ExampleThingController;
