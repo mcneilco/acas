@@ -195,7 +195,7 @@
           return true;
         case "complete":
           return true;
-        case "finalized":
+        case "approved":
           return false;
         case "rejected":
           return false;
@@ -470,6 +470,8 @@
         this.$('.bv_newEntity').show();
       }
       this.updateEditable();
+      this.$('.bv_save').attr('disabled', 'disabled');
+      this.$('.bv_cancel').attr('disabled', 'disabled');
       if (this.readOnly === true) {
         this.displayInReadOnlyMode();
       }
@@ -635,8 +637,15 @@
     BaseEntityController.prototype.handleStatusChanged = function() {
       var value;
       value = this.statusListController.getSelectedCode();
-      this.handleValueChanged("Status", value);
-      return this.updateEditable();
+      if ((value === "approved" || value === "rejected") && !this.isValid()) {
+        value = value.charAt(0).toUpperCase() + value.substring(1);
+        alert('All fields must be valid before changing the status to "' + value + '"');
+        return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
+      } else {
+        this.handleValueChanged("Status", value);
+        this.updateEditable();
+        return this.model.trigger('change');
+      }
     };
 
     BaseEntityController.prototype.handleValueChanged = function(vKind, value) {
@@ -656,12 +665,11 @@
       if (this.model.isEditable()) {
         this.enableAllInputs();
         this.$('.bv_lock').hide();
-        this.$('.bv_save').attr('disabled', 'disabled');
-        this.$('.bv_cancel').attr('disabled', 'disabled');
       } else {
         this.disableAllInputs();
         this.$('.bv_status').removeAttr('disabled');
         this.$('.bv_lock').show();
+        this.$('.bv_newEntity').removeAttr('disabled');
       }
       if (this.model.isNew()) {
         return this.$('.bv_status').attr("disabled", "disabled");

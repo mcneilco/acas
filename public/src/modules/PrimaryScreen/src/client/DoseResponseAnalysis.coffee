@@ -217,7 +217,6 @@ class window.ModelFitTypeController extends Backbone.View
 			@parameterController = null
 			mfp = @model.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters"
 			unless mfp.get('clobValue') is "" or "[]"
-				console.log "set mfp clobValue"
 				mfp.set clobValue: ""
 
 		else
@@ -291,9 +290,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 	testReadyForFit: =>
 		if @model.getAnalysisStatus().get('codeValue') == "not started"
 			@setNotReadyForFit()
-			console.log "not ready for fit"
 		else
-			console.log "ready for fit"
 			@setReadyForFit()
 
 	setNotReadyForFit: ->

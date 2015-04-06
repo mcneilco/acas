@@ -1671,7 +1671,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-
+  
+  if (folderToParse == "") {
+    stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
+  }
+  
   fullPathToParse <- racas::getUploadedFilePath(folderToParse)
   
   if (!file.exists(fullPathToParse)) {
@@ -2059,7 +2063,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     ## TODO: decide if "resultTable" is the correct object to write
-    summaryInfo$dryRunReports <- saveDryRunReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
+    summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                                    experiment, parameters, user)
     # TODO: loop or lapply to get all
     singleDryRunReport <- summaryInfo$dryRunReports[[1]]
@@ -2067,6 +2071,39 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
     
   } else { #This section is "If not dry run"
+    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
+    dir.create(reportLocation, showWarnings = FALSE)
+    
+    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+                     clientName,"createPDF.R"))
+    
+    # Create the actual PDF
+    if(!parameters$autoHitSelection) {
+      hitThreshold <- ""
+    } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
+      hitThreshold <- parameters$hitEfficacyThreshold
+    } else if (!is.null(parameters$hitSDThreshold) && parameters$hitSDThreshold != "") {
+      hitThreshold <- parameters$hitSDThreshold
+    } else {
+      hitThreshold <- ""
+    }
+    activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
+    pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+                             threshold = hitThreshold, experiment, dryRun, activityName) 
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+                                         racas::applicationSettings$client.port,
+                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+                                         experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
+    
+    # Create the final Spotfire File
+    ## TODO: decide if "resultTable" is the correct object to write
+    summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
+                                       experiment, parameters, user)
+    # TODO: loop or lapply to get all
+    singleReport <- summaryInfo$reports[[1]]
+    summaryInfo$info[[singleReport$title]] <- paste0(
+      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
                   paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName,"/rawData/", 

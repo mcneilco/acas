@@ -66,7 +66,11 @@ updateProt = (prot, testMode, callback) ->
 				body: prot
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200
+				if response.statusCode == 409
+					console.log 'got ajax error trying to update protocol - not unique name'
+					if response.body[0].message is "not unique protocol name"
+						callback JSON.stringify response.body[0].message
+				else if !error && response.statusCode == 200
 					callback json
 				else
 					console.log 'got ajax error trying to update protocol'
@@ -121,8 +125,12 @@ postProtocol = (req, resp) ->
 				else
 					console.log 'got ajax error trying to save new protocol'
 					console.log error
-					console.log json
+#					console.log json
+#					console.log response
+					console.log response.statusCode
 					console.log response
+					if response.body[0].message is "not unique experiment name"
+						resp.end JSON.stringify response.body[0].message
 			)
 
 

@@ -30,7 +30,7 @@
     };
 
     Experiment.prototype.parse = function(resp) {
-      if (resp === "not unique experiment name") {
+      if (resp === "not unique experiment name" || resp === '"not unique experiment name"') {
         this.trigger('saveFailed');
         return resp;
       } else {

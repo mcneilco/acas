@@ -119,7 +119,10 @@
       this.$('input').removeAttr('disabled');
       this.$('select').removeAttr('disabled');
       this.$("textarea").removeAttr('disabled');
-      return this.$('button').removeAttr('disabled');
+      this.$('button').removeAttr('disabled');
+      this.$(".bv_group_tags input").prop("placeholder", "Add tags");
+      this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#ffffff");
+      return this.$(".bv_group_tags input").css("background-color", "transparent");
     };
 
     return AbstractFormController;
