@@ -23,7 +23,7 @@ class window.ThingItx extends Backbone.Model
 				@trigger 'change'
 		resp
 
-	reformatBeforeSaving: ->
+	reformatBeforeSaving: =>
 		if @attributes.attributes?
 			delete @attributes.attributes
 		for i of @attributes
@@ -37,8 +37,11 @@ class window.ThingItx extends Backbone.Model
 		delete @attributes.cid
 		delete @attributes.changed
 		delete @attributes._pending
+		delete @attributes.collection
 
 class window.FirstThingItx extends ThingItx
+	className: "FirstThingItx"
+
 	defaults: () =>
 		super()
 		@set firstLsThing: {}
@@ -47,6 +50,8 @@ class window.FirstThingItx extends ThingItx
 		@set firstLsThing: thing
 
 class window.SecondThingItx extends ThingItx
+	className: "SecondThingItx"
+
 	defaults: () =>
 		super()
 		@set secondLsThing: {}
@@ -69,9 +74,20 @@ class window.LsThingItxList extends Backbone.Collection
 			@trigger('change')
 		return itx
 
-	reformatBeforeSaving: ->
+	getOrderedItxList: (type, kind) ->
+		itxs = @getItxByTypeAndKind(type, kind)
+		orderedItx = []
+		i = 1
+		while i <= itxs.length
+			nextItx =  _.filter itxs, (itx) ->
+				order = itx.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'composition', 'numericValue', 'order'
+				order.get('numericValue') == i
+			orderedItx.push nextItx...
+			i++
+		orderedItx
+
+	reformatBeforeSaving: =>
 		@each((model) ->
-			console.log model
 			model.reformatBeforeSaving()
 		)
 

@@ -122,7 +122,7 @@ class window.Thing extends Backbone.Model
 				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
 				#add new afm to attach file list
 				for file in analyticalFileValues
-					if file.get('ignored') is false
+					unless file.get('ignored')
 						afm = new AttachFile
 							fileType: type.code
 							fileValue: file.get('fileValue')
@@ -132,16 +132,18 @@ class window.Thing extends Backbone.Model
 
 		attachFileList
 
-
 	reformatBeforeSaving: =>
 		for dLabel in @lsProperties.defaultLabels
 			@unset(dLabel.key)
 
 		for itx in @lsProperties.defaultFirstLsThingItx
 			@unset(itx.key)
-		@get('firstLsThings').reformatBeforeSaving()
+		if @get('firstLsThings')?
+			@get('firstLsThings').reformatBeforeSaving()
 		for itx in @lsProperties.defaultSecondLsThingItx
 			@unset(itx.key)
+		if @get('secondLsThings')?
+			@get('secondLsThings').reformatBeforeSaving()
 
 		for dValue in @lsProperties.defaultValues
 			if @get(dValue.key)?
@@ -157,6 +159,10 @@ class window.Thing extends Backbone.Model
 				delete @attributes[i]
 			else if !isNaN(i)
 				delete @attributes[i]
+
+	deleteInteractions : =>
+		delete @attributes.firstLsThings
+		delete @attributes.secondLsThings
 
 	duplicate: =>
 		copiedThing = @.clone()

@@ -42,6 +42,8 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 			(if (rd is "") then Infinity else rd)
 		if bestName?
 			displayValue = bestName.labelText
+		else if @model.get('codeName')?
+			displayValue = @model.get('codeName')
 		else
 			displayValue = @insertFirstOption.get('name')
 		$(@el).attr("value", @model.get("id")).text displayValue
@@ -138,6 +140,20 @@ class window.PickListSelectController extends Backbone.View
 		return @collection.findWhere({code: code})
 
 class window.PickListForLsThingsSelectController extends PickListSelectController
+
+	handleListReset: =>
+		if @insertFirstOption
+			@collection.add @insertFirstOption,
+				at: 0
+				silent: true
+			unless (@selectedCode is @insertFirstOption.get('code'))
+				if (@collection.where({id: @selectedCode})).length is 0
+					newOption = new PickList
+						id: @selectedCode
+						name: @selectedCode
+					@collection.add newOption
+		@render()
+
 	addOne: (enm) =>
 		shouldRender = @showIgnored
 		if enm.get 'ignored'

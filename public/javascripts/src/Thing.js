@@ -9,6 +9,7 @@
     function Thing() {
       this.getStateValueHistory = __bind(this.getStateValueHistory, this);
       this.duplicate = __bind(this.duplicate, this);
+      this.deleteInteractions = __bind(this.deleteInteractions, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
       this.createDefaultSecondLsThingItx = __bind(this.createDefaultSecondLsThingItx, this);
@@ -213,7 +214,7 @@
         if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
           for (_j = 0, _len1 = analyticalFileValues.length; _j < _len1; _j++) {
             file = analyticalFileValues[_j];
-            if (file.get('ignored') === false) {
+            if (!file.get('ignored')) {
               afm = new AttachFile({
                 fileType: type.code,
                 fileValue: file.get('fileValue'),
@@ -240,11 +241,16 @@
         itx = _ref1[_j];
         this.unset(itx.key);
       }
-      this.get('firstLsThings').reformatBeforeSaving();
+      if (this.get('firstLsThings') != null) {
+        this.get('firstLsThings').reformatBeforeSaving();
+      }
       _ref2 = this.lsProperties.defaultSecondLsThingItx;
       for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
         itx = _ref2[_k];
         this.unset(itx.key);
+      }
+      if (this.get('secondLsThings') != null) {
+        this.get('secondLsThings').reformatBeforeSaving();
       }
       _ref3 = this.lsProperties.defaultValues;
       for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
@@ -272,6 +278,11 @@
         }
       }
       return _results;
+    };
+
+    Thing.prototype.deleteInteractions = function() {
+      delete this.attributes.firstLsThings;
+      return delete this.attributes.secondLsThings;
     };
 
     Thing.prototype.duplicate = function() {

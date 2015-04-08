@@ -7,6 +7,7 @@
     __extends(ThingItx, _super);
 
     function ThingItx() {
+      this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       this.parse = __bind(this.parse, this);
       this.defaults = __bind(this.defaults, this);
       return ThingItx.__super__.constructor.apply(this, arguments);
@@ -73,7 +74,8 @@
       delete this.attributes._previousAttributes;
       delete this.attributes.cid;
       delete this.attributes.changed;
-      return delete this.attributes._pending;
+      delete this.attributes._pending;
+      return delete this.attributes.collection;
     };
 
     return ThingItx;
@@ -88,6 +90,8 @@
       this.defaults = __bind(this.defaults, this);
       return FirstThingItx.__super__.constructor.apply(this, arguments);
     }
+
+    FirstThingItx.prototype.className = "FirstThingItx";
 
     FirstThingItx.prototype.defaults = function() {
       FirstThingItx.__super__.defaults.call(this);
@@ -115,6 +119,8 @@
       return SecondThingItx.__super__.constructor.apply(this, arguments);
     }
 
+    SecondThingItx.prototype.className = "SecondThingItx";
+
     SecondThingItx.prototype.defaults = function() {
       SecondThingItx.__super__.defaults.call(this);
       return this.set({
@@ -136,6 +142,7 @@
     __extends(LsThingItxList, _super);
 
     function LsThingItxList() {
+      this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
       return LsThingItxList.__super__.constructor.apply(this, arguments);
     }
 
@@ -161,9 +168,25 @@
       return itx;
     };
 
+    LsThingItxList.prototype.getOrderedItxList = function(type, kind) {
+      var i, itxs, nextItx, orderedItx;
+      itxs = this.getItxByTypeAndKind(type, kind);
+      orderedItx = [];
+      i = 1;
+      while (i <= itxs.length) {
+        nextItx = _.filter(itxs, function(itx) {
+          var order;
+          order = itx.get('lsStates').getOrCreateValueByTypeAndKind('metadata', 'composition', 'numericValue', 'order');
+          return order.get('numericValue') === i;
+        });
+        orderedItx.push.apply(orderedItx, nextItx);
+        i++;
+      }
+      return orderedItx;
+    };
+
     LsThingItxList.prototype.reformatBeforeSaving = function() {
       return this.each(function(model) {
-        console.log(model);
         return model.reformatBeforeSaving();
       });
     };

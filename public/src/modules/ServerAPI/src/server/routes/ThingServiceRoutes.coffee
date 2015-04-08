@@ -6,7 +6,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
-	app.post '/api/validateName/:lsKind', exports.validateName
+	app.post '/api/validateName/:componentOrAssembly', exports.validateName
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -16,7 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
-	app.post '/api/validateName/:lsKind', loginRoutes.ensureAuthenticated, exports.validateName
+	app.post '/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -50,7 +50,12 @@ exports.thingByCodeName = (req, resp) ->
 		else if req.query.nestedfull
 			nestedfull = "with=nestedfull"
 			baseurl += "?#{nestedfull}"
-		else
+		else if req.query.prettyjson
+			prettyjson = "with=prettyjson"
+			baseurl += "?#{prettyjson}"
+		else if req.query.stub
+			stub = "with=stub"
+			baseurl += "?#{stub}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 
@@ -60,7 +65,6 @@ updateThing = (thing, testMode, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code
-		console.log baseurl
 		request = require 'request'
 		request(
 			method: 'PUT'
@@ -96,7 +100,7 @@ postThing = (isBatch, req, resp) ->
 	else
 
 	checkFilesAndUpdate = (thing) ->
-		fileVals = serverUtilityFunctions.getFileValesFromThing thing, false
+		fileVals = serverUtilityFunctions.getFileValuesFromEntity thing, false
 		filesToSave = fileVals.length
 
 		completeThingUpdate = (thingToUpdate)->
@@ -110,7 +114,7 @@ postThing = (isBatch, req, resp) ->
 			if --filesToSave == 0 then completeThingUpdate(thing)
 
 		if filesToSave > 0
-			prefix = serverUtilityFunctions.getPrefixFromThingCode thing.codeName
+			prefix = serverUtilityFunctions.getPrefixFromEntityCode thing.codeName
 			for fv in fileVals
 				console.log "updating file"
 				csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
@@ -152,7 +156,7 @@ exports.putThing = (req, resp) ->
 #		thingToSave = JSON.parse(JSON.stringify(thingTestJSON.thingParent))
 #	else
 	thingToSave = req.body
-	fileVals = serverUtilityFunctions.getFileValesFromThing thingToSave, true
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
 
 	completeThingUpdate = ->
@@ -166,11 +170,8 @@ exports.putThing = (req, resp) ->
 		if --filesToSave == 0 then completeThingUpdate()
 
 	if filesToSave > 0
-		prefix = serverUtilityFunctions.getPrefixFromThingCode req.body.codeName
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode req.body.codeName
 		for fv in fileVals
-			console.log fv
-			console.log prefix
-			console.log req.body.codeName
 			if !fv.id?
 				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
@@ -188,6 +189,18 @@ exports.batchesByParentCodeName = (req, resp) ->
 		else
 			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"lsthings/batch/"+req.params.lsKind+"/getbatches/"+req.params.parentCode
+			if req.query.nestedstub
+				nestedstub = "with=nestedstub"
+				baseurl += "?#{nestedstub}"
+			else if req.query.nestedfull
+				nestedfull = "with=nestedfull"
+				baseurl += "?#{nestedfull}"
+			else if req.query.prettyjson
+				prettyjson = "with=prettyjson"
+				baseurl += "?#{prettyjson}"
+			else if req.query.stub
+				stub = "with=stub"
+				baseurl += "?#{stub}"
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.validateName = (req, resp) ->
@@ -195,21 +208,23 @@ exports.validateName = (req, resp) ->
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json true
 	else
-		console.log "validate name"
-		console.log req
-		console.log JSON.stringify req.body.requestName
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validatename?lsKind="+req.params.lsKind
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validate"
+		if req.params.componentOrAssembly is "component"
+			baseurl += "?uniqueName=true"
+		else #is assembly
+			baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true"
 		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body.requestName
+			body: req.body.modelToSave
 			json: true
 		, (error, response, json) =>
-			console.log error
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 202
 				resp.json json
+			else if response.statusCode == 409
+				resp.json "not unique name"
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error

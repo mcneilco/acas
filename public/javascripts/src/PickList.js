@@ -104,6 +104,8 @@
       });
       if (bestName != null) {
         displayValue = bestName.labelText;
+      } else if (this.model.get('codeName') != null) {
+        displayValue = this.model.get('codeName');
       } else {
         displayValue = this.insertFirstOption.get('name');
       }
@@ -249,8 +251,31 @@
 
     function PickListForLsThingsSelectController() {
       this.addOne = __bind(this.addOne, this);
+      this.handleListReset = __bind(this.handleListReset, this);
       return PickListForLsThingsSelectController.__super__.constructor.apply(this, arguments);
     }
+
+    PickListForLsThingsSelectController.prototype.handleListReset = function() {
+      var newOption;
+      if (this.insertFirstOption) {
+        this.collection.add(this.insertFirstOption, {
+          at: 0,
+          silent: true
+        });
+        if (!(this.selectedCode === this.insertFirstOption.get('code'))) {
+          if ((this.collection.where({
+            id: this.selectedCode
+          })).length === 0) {
+            newOption = new PickList({
+              id: this.selectedCode,
+              name: this.selectedCode
+            });
+            this.collection.add(newOption);
+          }
+        }
+      }
+      return this.render();
+    };
 
     PickListForLsThingsSelectController.prototype.addOne = function(enm) {
       var shouldRender;
