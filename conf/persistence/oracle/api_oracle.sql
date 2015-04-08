@@ -214,7 +214,8 @@ AND lsvalues0_.ls_kind != 'curve id';
 
 CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
-SELECT lsvalues9_.id        AS responseSubjectValueId,
+SELECT /*+ FIRST_ROWS(1) */
+	lsvalues9_.id        AS responseSubjectValueId,
   analysisgr2_.code_name	AS analysisGroupCode,
   lsvalues9_.recorded_by    AS recorded_by,
   lsvalues9_.ls_transaction AS lsTransaction,
