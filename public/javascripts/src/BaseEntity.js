@@ -470,7 +470,6 @@
         this.$('.bv_newEntity').show();
       }
       this.updateEditable();
-      console.log("render");
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_cancel').attr('disabled', 'disabled');
       if (this.readOnly === true) {
@@ -638,14 +637,10 @@
     BaseEntityController.prototype.handleStatusChanged = function() {
       var value;
       value = this.statusListController.getSelectedCode();
-      console.log("handle status changed");
-      console.log(this.model.isValid());
-      console.log(this.isValid());
       if ((value === "approved" || value === "rejected") && !this.isValid()) {
         value = value.charAt(0).toUpperCase() + value.substring(1);
         alert('All fields must be valid before changing the status to "' + value + '"');
-        this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
-        return console.log("reverted status to " + this.model.getStatus().get('codeValue'));
+        return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
       } else {
         this.handleValueChanged("Status", value);
         this.updateEditable();
@@ -704,8 +699,6 @@
       }
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_saving').show();
-      console.log("model to save");
-      console.log(this.model);
       return this.model.save();
     };
 

@@ -244,7 +244,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		unless @model.get('subclass')?
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
-		console.log @$('.bv_saveFailed').is(":visible")
 		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
@@ -252,7 +251,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
 			@model.trigger 'saveSuccess'
-			console.log "trigger save success"
 		@render()
 		@setupAttachFileListController()
 

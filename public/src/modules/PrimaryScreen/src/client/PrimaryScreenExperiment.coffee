@@ -1137,6 +1137,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			resultStatus = "Dry Run Results: Failed"
 			@$('.bv_save').attr('disabled', 'disabled')
+			@$('.bv_save').prop('disabled', true);
 		@$('.bv_resultStatus').html(resultStatus)
 		@$('.bv_htmlSummary').html(resultHTML)
 

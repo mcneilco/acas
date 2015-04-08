@@ -1388,7 +1388,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     recordedBy = recordedBy,
     lsType = "codeValue",
     lsKind = "experiment status",
-    codeValue = "Approved",
+    codeValue = "approved",
     codeType = "experiment",
     codeKind = "status",
     codeOrigin = "ACAS DDICT",

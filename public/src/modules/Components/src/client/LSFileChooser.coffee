@@ -101,9 +101,6 @@ class window.LSFileChooserController extends Backbone.View
 			@$('.bv_manualFileSelect').hide("slide")
 
 	fileUploadComplete:(e, data) ->
-		console.log "file upload complete"
-		console.log e
-		console.log data
 		self = @
 		# this is a work around for hiding the delete button after files are uploaded
 		unless @options.hideDelete

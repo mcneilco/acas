@@ -275,7 +275,6 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_save').html("Update")
 			@$('.bv_newEntity').show()
 		@updateEditable()
-		console.log "render"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
 		if @readOnly is true
@@ -395,14 +394,10 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleStatusChanged: =>
 		value = @statusListController.getSelectedCode()
-		console.log "handle status changed"
-		console.log @model.isValid()
-		console.log @isValid()
 		if (value is "approved" or value is "rejected") and !@isValid()
 			value = value.charAt(0).toUpperCase() + value.substring(1);
 			alert 'All fields must be valid before changing the status to "'+ value + '"'
 			@statusListController.setSelectedCode @model.getStatus().get('codeValue')
-			console.log "reverted status to " + @model.getStatus().get('codeValue')
 		else
 			@handleValueChanged "Status", value
 			# this is required in addition to model change event watcher only for spec. real app works without it
@@ -455,8 +450,6 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
-		console.log "model to save"
-		console.log @model
 		@model.save()
 
 	prepareToSaveAttachedFiles: =>
