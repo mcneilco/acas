@@ -233,6 +233,13 @@
 				name: "Rejected"
 				ignored: false
 			,
+				codeType: "experiment"
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				code: "deleted"
+				name: "Deleted"
+				ignored: false
+			,
 				codeType: "analysis"
 				codeKind: "status"
 				codeOrigin: "ACAS DDICT"
