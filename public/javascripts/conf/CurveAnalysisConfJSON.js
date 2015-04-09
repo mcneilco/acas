@@ -74,10 +74,7 @@
           kindName: "reportedValuesClob",
           typeName: "clobValue"
         }, {
-          kindName: "algorithm flag observation",
-          typeName: "codeValue"
-        }, {
-          kindName: "algorithm flag reason",
+          kindName: "user flag status",
           typeName: "codeValue"
         }, {
           kindName: "algorithm flag status",
@@ -92,31 +89,13 @@
           kindName: "flag observation",
           typeName: "codeValue"
         }, {
-          kindName: "flag reason",
+          kindName: "flag cause",
           typeName: "codeValue"
         }, {
           kindName: "flag status",
           typeName: "codeValue"
         }, {
-          kindName: "preprocess flag observation",
-          typeName: "codeValue"
-        }, {
-          kindName: "preprocess flag reason",
-          typeName: "codeValue"
-        }, {
-          kindName: "preprocess flag status",
-          typeName: "codeValue"
-        }, {
           kindName: "protocol status",
-          typeName: "codeValue"
-        }, {
-          kindName: "user flag observation",
-          typeName: "codeValue"
-        }, {
-          kindName: "user flag reason",
-          typeName: "codeValue"
-        }, {
-          kindName: "user flag status",
           typeName: "codeValue"
         }, {
           kindName: "EC50",
@@ -204,11 +183,15 @@
         }, {
           typeName: "compound"
         }, {
+          typeName: "user flags"
+        }, {
+          typeName: "algorithm flags"
+        }, {
           typeName: "user well flags"
         }, {
           typeName: "algorithm well flags"
         }, {
-          typeName: "compound"
+          typeName: "preprocess well flags"
         }
       ],
       ddictkinds: [
@@ -222,11 +205,17 @@
           typeName: "compound",
           kindName: "batch name"
         }, {
+          typeName: "user flags",
+          kindName: "flag status"
+        }, {
+          typeName: "algorithm flags",
+          kindName: "flag status"
+        }, {
           typeName: "user well flags",
           kindName: "flag status"
         }, {
           typeName: "user well flags",
-          kindName: "flag reason"
+          kindName: "flag cause"
         }, {
           typeName: "user well flags",
           kindName: "flag observation"
@@ -235,9 +224,18 @@
           kindName: "flag status"
         }, {
           typeName: "algorithm well flags",
-          kindName: "flag reason"
+          kindName: "flag cause"
         }, {
           typeName: "algorithm well flags",
+          kindName: "flag observation"
+        }, {
+          typeName: "preprocess well flags",
+          kindName: "flag status"
+        }, {
+          typeName: "preprocess well flags",
+          kindName: "flag cause"
+        }, {
+          typeName: "preprocess well flags",
           kindName: "flag observation"
         }
       ],
@@ -297,34 +295,6 @@
           codeOrigin: "ACAS DDICT",
           code: "no fit",
           name: "No Fit",
-          ignored: false
-        }, {
-          codeType: "user well flags",
-          codeKind: "flag observation",
-          codeOrigin: "ACAS DDICT",
-          code: "high",
-          name: "High Signal",
-          ignored: false
-        }, {
-          codeType: "user well flags",
-          codeKind: "flag observation",
-          codeOrigin: "ACAS DDICT",
-          code: "low",
-          name: "Low Signal",
-          ignored: false
-        }, {
-          codeType: "user well flags",
-          codeKind: "flag observation",
-          codeOrigin: "ACAS DDICT",
-          code: "gradient",
-          name: "Gradient (slope/trend)",
-          ignored: false
-        }, {
-          codeType: "user well flags",
-          codeKind: "flag status",
-          codeOrigin: "ACAS DDICT",
-          code: "knocked out",
-          name: "Knocked Out",
           ignored: false
         }
       ]
