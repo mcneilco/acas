@@ -182,6 +182,7 @@ SELECT lsvalues0_.analysis_state_id AS stateId,
   lsvalues0_.url_value              AS urlValue,
   lsvalues0_.version                AS version,
   analysisgr0_.string_value	     AS curveId,
+  analysisgr0_.id	     AS curveValueId,
   pv1.numeric_value as curveDisplayMin,
   pv2.numeric_value as curveDisplayMax
 FROM analysis_group_value analysisgr0_
