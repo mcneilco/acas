@@ -614,7 +614,7 @@ getExcelColumnFromNumber <- function(number) {
 }
 extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaintyType, uncertaintyCodeWord, 
                               commentCol, commentCodeWord, stateAssignments, hiddenColumns, linkColumns, classRow,
-                              stateKindRow, stateTypeRow) {
+                              stateKindRow, stateTypeRow, codeAssignments = NULL) {
   # Extracts result types, units, conc, and conc units from a data frame
   #
   # Args:
@@ -693,6 +693,13 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
     returnDataFrame[is.na(returnDataFrame$stateType), "stateType"] <- "data"
   }
   
+  # Add code types, kinds and origins
+  if (!is.null(codeAssignments)) {
+    returnDataFrame <- merge(returnDataFrame, codeAssignments)
+  } else {
+    returnDataFrame[, c("codeType", "codeKind", "codeOrigin")] <- NA
+  }
+  
   returnDataFrame$publicData <- !hiddenColumns[!ignoredHeadersBool]
   returnDataFrame$linkColumn <- linkColumns[!ignoredHeadersBool]
   
@@ -703,7 +710,7 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
 organizeCalculatedResults <- function(calculatedResults, inputFormat, formatParameters, mainCode, 
                                       lockCorpBatchId = TRUE, rawOnlyFormat = FALSE, 
                                       errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
-                                      stateAssignments = NULL, concColumn = NULL) {
+                                      stateAssignments = NULL, concColumn = NULL, codeAssignments = NULL) {
   # Organizes the calculated results section
   #
   # Args:
@@ -836,7 +843,8 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   # Call the function that extracts valueKinds, units, conc, concunits from the headers
   valueKinds <- extractValueKinds(calculatedResultsValueKindRow, ignoreTheseAsValueKinds, uncertaintyType, 
                                   uncertaintyCodeWord, commentCol, commentCodeWord, stateAssignments, 
-                                  hiddenColumns, linkColumns, classRow, stateKindRow, stateTypeRow)
+                                  hiddenColumns, linkColumns, classRow, stateKindRow, stateTypeRow, 
+                                  codeAssignments = codeAssignments)
   
   if (any(duplicated(valueKinds$reshapeText[!is.na(valueKinds$uncertaintyType)]))) {
     stopUser("Only one standard deviation may be assigned for a column. Remove the duplicate standard deviation.")
@@ -989,6 +997,9 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   longResults$stateKind <- valueKinds$stateKind[matchOrder]
   longResults$linkColumn <- valueKinds$linkColumn[matchOrder]
   longResults$valueKindAndUnit <- valueKinds$DataColumn[matchOrder]
+  longResults$codeType <- valueKinds$codeType[matchOrder]
+  longResults$codeKind <- valueKinds$codeKind[matchOrder]
+  longResults$codeOrigin <- valueKinds$codeOrigin[matchOrder]
   
   longResults$"UnparsedValue" <- trim(as.character(longResults$"UnparsedValue"))
   
@@ -1067,7 +1078,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
                                  "urlValue", "fileValue", "inlineFileValue", "codeValue",
                                  "Class", "valueType", "valueKindAndUnit","publicData", "originalMainID", 
                                  "groupingID", "groupingID_2", "rowID", "stateType", "stateKind", "linkColumn", "linkID",
-                                 "uncertainty", "uncertaintyType", "comments")]
+                                 "uncertainty", "uncertaintyType", "comments", "codeType", "codeKind", "codeOrigin")]
   
   # Turn empty string into NA
   organizedData[organizedData==" " | organizedData=="" | is.na(organizedData)] <- NA
@@ -1997,7 +2008,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$lsType <- "default"
     treatmentGroupData$lsKind <- "default"
   }
-
+  
   ### subject Data
   if (!is.null(subjectData)) {
     subjectData$lsTransaction <- lsTransaction
@@ -2510,7 +2521,10 @@ parseGenericData <- function(request) {
 
 
 
-organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments, keepColumn, errorEnv, formatParameters, concColumn) {
+organizeSubjectData <- function(
+  subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, 
+  precise, stateAssignments, keepColumn, errorEnv, formatParameters, concColumn, 
+  codeAssignments=NULL) {
   # Returns two data.frames: subjectData and treatmentGroupData
   
   createPtgFunction <- function (groupByColumns) {
@@ -2528,7 +2542,8 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   subjectData2 <- organizeCalculatedResults(subjectData, inputFormat, formatParameters, mainCode, 
                                             lockCorpBatchId= F, errorEnv= errorEnv, precise = precise, link = link, 
                                             calculateGroupingID = preciseTreatmentGroupID, 
-                                            stateAssignments = stateAssignments, concColumn = concColumn)
+                                            stateAssignments = stateAssignments, concColumn = concColumn,
+                                            codeAssignments = codeAssignments)
   subjectData2 <- as.data.table(subjectData2)
   
   subjectData2[, treatmentGroupID := groupingID]
@@ -2567,7 +2582,7 @@ organizeSubjectData <- function(subjectData, groupByColumns, excludedRowKinds, i
   
   groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
   excludedSubjects <- subjectData2$subjectID[subjectData2$valueKind %in% excludedRowKinds]
-  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit)]
+  subjectData3 <- subjectData2[valueKind %in% c(keepColumn, groupByColumnsNoUnit) & !(subjectID %in% excludedSubjects)]
   treatmentGroupData <- subjectData3[!is.na(groupingID), createTreatmentGroupData(.SD), 
                                      by = list(groupingID, valueType, valueKind, concentration, 
                                                concUnit, time, timeUnit, valueUnit, 
@@ -2672,21 +2687,40 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
         stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
       }
-      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Comments")
-      
       if (subjectData[2, 1] != "curve id") {
         stopUser("The second row in Raw Results must start with curve id")
       }
+      
+      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+      
       subjectData[2, 1] <- "link"
       
-      subjectData$Col5 <- ifelse(is.na(subjectData[[4]]), NA_character_, "on load")
-      subjectData$Col5[1] <- "Text"
-      subjectData$Col5[2] <- "flag"
+      subjectData[[5]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "knocked out")
+      subjectData[[5]][1] <- "Code"
+      subjectData[[5]][2] <- "flag status"
+      
+      subjectData[[6]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "sel ko")
+      subjectData[[6]][1] <- "Code"
+      subjectData[[6]][2] <- "flag cause"
+      
+      subjectData[[7]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "sel ko")
+      subjectData[[7]][1] <- "Code"
+      subjectData[[7]][2] <- "flag observation"
+      
+      
       
       stateAssignments <- data.frame(
-        valueKind = c("Dose", "Response", "flag"), 
-        stateType = c("data", "data", "data"), 
-        stateKind = c("results", "results", "results"),
+        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        stateType = c("data", "data", "data", "data", "data", "data"), 
+        stateKind = c("results", "results", "preprocess flag", "preprocess flag", "preprocess flag", "preprocess flag"),
+        stringsAsFactors = FALSE
+      )
+      
+      codeAssignments <- data.frame(
+        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        codeType = c(NA, NA, NA, rep("preprocess well flags", 3)), 
+        codeKind = c(NA, NA, NA, "flag status", "flag cause", "flag observation"),
+        codeOrigin = c(NA, NA, NA, rep("ACAS DDICT", 3)),
         stringsAsFactors = FALSE
       )
       
@@ -2694,12 +2728,15 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
         link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
-        formatParameters = formatParameters, concColumn = "Dose (uM)")
+        formatParameters = formatParameters, concColumn = "Dose (uM)",
+        codeAssignments = codeAssignments)
       
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Response"] <- "efficacy"
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "flag"] <- "comment"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Dose"] <- "concentration"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "efficacy"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "flag"] <- "comment"
     }
   }
   return(intermedList)
