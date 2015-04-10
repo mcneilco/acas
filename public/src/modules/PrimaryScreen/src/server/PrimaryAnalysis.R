@@ -62,6 +62,9 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
+  # Sort the data
+  setkeyv(resultTable, c("assayBarcode","row","column"))
+  
   resultTable[ , flag := as.character(NA)]
   
   resultTable[flagType=="ko", flag := "KO"]
