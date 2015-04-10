@@ -259,37 +259,37 @@ describe "Curve Curator Module testing", ->
 		describe "basic plumbing", ->
 			it "should have controller defined", ->
 				expect(DoseResponseKnockoutPanelController).toBeDefined()
-			it "should setup a reason pick list list", ->
+			it "should setup a cause pick list list", ->
 				expect(@kpc.knockoutReasonList).toBeDefined
 			it "should have a set of pick list models", ->
 				expect(@kpc.knockoutReasonList.models.length) > 1
-		describe "should trigger event when ok button is clicked and return a reason", ->
+		describe "should trigger event when ok button is clicked and return an observation", ->
 			beforeEach ->
 				runs ->
-					@kpc.on 'reasonSelected', (reason) =>
-						@reasonSelected = reason
+					@kpc.on 'observationSelected', (observation) =>
+						@observationSelected = observation
 					@kpc.show()
 				waitsFor =>
 					@kpc.$("option").length > 0
-			it "should return a reason when the ok button is clicked", ->
+			it "should return an observation when the ok button is clicked", ->
 				runs ->
 					$('.bv_doseResponseKnockoutPanelOKBtn').click()
 				,1000
 				waitsFor =>
-					@reasonSelected?
+					@observationSelected?
 				,1000
 				runs =>
-					expect(@reasonSelected).toEqual 'knocked out'
+					expect(@observationSelected).toEqual 'knocked out'
 			it "should return a different value if the options is changed", ->
 				runs ->
 					@kpc.$('.bv_dataDictPicklist').val "knocked out"
 					@kpc.$('.bv_doseResponseKnockoutPanelOKBtn').click()
 				,1000
 				waitsFor =>
-					@reasonSelected?
+					@observationSelected?
 				,1000
 				runs =>
-					expect(@reasonSelected).toEqual 'knocked out'
+					expect(@observationSelected).toEqual 'knocked out'
 
 	describe "Curve Editor Controller tests", ->
 			beforeEach ->

@@ -386,19 +386,19 @@
         it("should have controller defined", function() {
           return expect(DoseResponseKnockoutPanelController).toBeDefined();
         });
-        it("should setup a reason pick list list", function() {
+        it("should setup a cause pick list list", function() {
           return expect(this.kpc.knockoutReasonList).toBeDefined;
         });
         return it("should have a set of pick list models", function() {
           return expect(this.kpc.knockoutReasonList.models.length) > 1;
         });
       });
-      return describe("should trigger event when ok button is clicked and return a reason", function() {
+      return describe("should trigger event when ok button is clicked and return an observation", function() {
         beforeEach(function() {
           runs(function() {
-            this.kpc.on('reasonSelected', (function(_this) {
-              return function(reason) {
-                return _this.reasonSelected = reason;
+            this.kpc.on('observationSelected', (function(_this) {
+              return function(observation) {
+                return _this.observationSelected = observation;
               };
             })(this));
             return this.kpc.show();
@@ -409,18 +409,18 @@
             };
           })(this));
         });
-        it("should return a reason when the ok button is clicked", function() {
+        it("should return an observation when the ok button is clicked", function() {
           runs(function() {
             return $('.bv_doseResponseKnockoutPanelOKBtn').click();
           }, 1000);
           waitsFor((function(_this) {
             return function() {
-              return _this.reasonSelected != null;
+              return _this.observationSelected != null;
             };
           })(this), 1000);
           return runs((function(_this) {
             return function() {
-              return expect(_this.reasonSelected).toEqual('knocked out');
+              return expect(_this.observationSelected).toEqual('knocked out');
             };
           })(this));
         });
@@ -431,12 +431,12 @@
           }, 1000);
           waitsFor((function(_this) {
             return function() {
-              return _this.reasonSelected != null;
+              return _this.observationSelected != null;
             };
           })(this), 1000);
           return runs((function(_this) {
             return function() {
-              return expect(_this.reasonSelected).toEqual('knocked out');
+              return expect(_this.observationSelected).toEqual('knocked out');
             };
           })(this));
         });

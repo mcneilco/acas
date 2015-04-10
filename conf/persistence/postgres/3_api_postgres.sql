@@ -269,13 +269,13 @@ AND (lsstates11_.ls_kind='auto flag'
 AND lsstates11_.ignored = '0')
 LEFT OUTER JOIN subject_value lsvalues12_
 ON lsstates11_.id       =lsvalues12_.subject_state_id
-AND (lsvalues12_.ls_kind='algorithm flag status')
+AND (lsvalues12_.ls_kind='flag status')
 LEFT OUTER JOIN subject_value lsvalues13_
 ON lsstates11_.id       =lsvalues13_.subject_state_id
-AND (lsvalues13_.ls_kind='algorithm flag observation')
+AND (lsvalues13_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues14_
 ON lsstates11_.id       =lsvalues14_.subject_state_id
-AND (lsvalues14_.ls_kind='algorithm flag reason')
+AND (lsvalues14_.ls_kind='flag reason')
 LEFT OUTER JOIN subject_value lsvalues15_
 ON lsstates11_.id       =lsvalues15_.subject_state_id
 AND (lsvalues15_.ls_kind='comment')
@@ -285,13 +285,13 @@ AND (lsstates16_.ls_kind='preprocess flag'
 AND lsstates16_.ignored = '0')
 LEFT OUTER JOIN subject_value lsvalues17_
 ON lsstates16_.id       =lsvalues17_.subject_state_id
-AND (lsvalues17_.ls_kind='preprocess flag status')
+AND (lsvalues17_.ls_kind='flag status')
 LEFT OUTER JOIN subject_value lsvalues18_
 ON lsstates16_.id       =lsvalues18_.subject_state_id
-AND (lsvalues18_.ls_kind='preprocess flag observation')
+AND (lsvalues18_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues19_
 ON lsstates16_.id       =lsvalues19_.subject_state_id
-AND (lsvalues19_.ls_kind='preprocess flag reason')
+AND (lsvalues19_.ls_kind='flag reason')
 LEFT OUTER JOIN subject_value lsvalues20_
 ON lsstates16_.id       =lsvalues20_.subject_state_id
 AND (lsvalues20_.ls_kind='comment')
@@ -301,13 +301,13 @@ AND (lsstates21_.ls_kind='user flag'
 AND lsstates21_.ignored = '0')
 LEFT OUTER JOIN subject_value lsvalues22_
 ON lsstates21_.id       =lsvalues22_.subject_state_id
-AND (lsvalues22_.ls_kind='user flag status')
+AND (lsvalues22_.ls_kind='flag status')
 LEFT OUTER JOIN subject_value lsvalues23_
 ON lsstates21_.id       =lsvalues23_.subject_state_id
-AND (lsvalues23_.ls_kind='user flag observation')
+AND (lsvalues23_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues24_
 ON lsstates21_.id       =lsvalues24_.subject_state_id
-AND (lsvalues24_.ls_kind='user flag reason')
+AND (lsvalues24_.ls_kind='flag reason')
 LEFT OUTER JOIN subject_value lsvalues25_
 ON lsstates21_.id               =lsvalues25_.subject_state_id
 AND (lsvalues25_.ls_kind        ='comment')
