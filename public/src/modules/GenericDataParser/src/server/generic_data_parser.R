@@ -2362,6 +2362,7 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
       protocol <- getProtocolById(protocol$id)
       
       protocolName <- getPreferredName(protocol)
+      protocolName <- paste0(protocolName, protocolPostfix)
     }
     
     if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
