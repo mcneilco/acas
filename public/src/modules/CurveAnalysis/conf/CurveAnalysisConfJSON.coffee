@@ -296,6 +296,13 @@
 				code: "no fit"
 				name: "No Fit"
 				ignored: false
+			,
+				codeType: "user well flags"
+				codeKind: "flag cause"
+				codeOrigin: "ACAS DDICT"
+				code: "curvefit ko"
+				name: "Exclude from CurveFits"
+				ignored: false
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.curveAnalysisConfJSON = window.curveAnalysisConfJSON or {} else exports)
