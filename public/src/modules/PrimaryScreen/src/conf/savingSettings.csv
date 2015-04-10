@@ -1,17 +1,1 @@
-columnName,valueKind,valueType,stateType,stateKind,publicData,saveAsSubject,saveAsTreatment,saveAsAnalysis,unitKind,codeType,codeKind,codeOrigin
-assayBarcode,barcode,codeValue,metadata,plate information,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NA
-well,well name,stringValue,metadata,plate information,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NA
-wellType,well type,stringValue,metadata,plate information,TRUE,TRUE,TRUE,FALSE,NA,NA,NA,NA
-normalizedActivity,normalized activity,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NA
-transformed_percent efficacy,efficacy,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,%,NA,NA,NA
-transformed_sd,transformed standard deviation,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NA
-flagType,flag status,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag status,ACAS DDICT
-flagObservation,flag observation,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag reason,ACAS DDICT
-flagReason,flag reason,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag observation,ACAS DDICT
-flagComment,comment,stringValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NA
-autoFlagType,flag status,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag status,ACAS DDICT
-autoFlagObservation,flag observation,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag reason,ACAS DDICT
-autoFlagReason,flag reason,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag observation,ACAS DDICT
-batchCode,batch code,codeValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NA
-curveId,curve id,stringValue,data,dose response,TRUE,FALSE,FALSE,TRUE,NA,NA,NA,NA
-renderingHint,Rendering Hint,stringValue,data,dose response,FALSE,FALSE,FALSE,TRUE,NA,NA,NA,NA
+columnName,valueKind,valueType,stateType,stateKind,publicData,saveAsSubject,saveAsTreatment,saveAsAnalysis,unitKind,codeType,codeKind,codeOriginassayBarcode,barcode,codeValue,metadata,plate information,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NAwell,well name,stringValue,metadata,plate information,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NAwellType,well type,stringValue,metadata,plate information,TRUE,TRUE,TRUE,FALSE,NA,NA,NA,NAnormalizedActivity,normalized activity,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NAtransformed_percent efficacy,efficacy,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,%,NA,NA,NAtransformed_sd,transformed standard deviation,numericValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NAflagType,flag status,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag status,ACAS DDICTflagObservation,flag observation,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag observation,ACAS DDICTflagReason,flag cause,codeValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,user well flags,flag cause,ACAS DDICTflagComment,comment,stringValue,data,user flag,TRUE,TRUE,FALSE,FALSE,NA,NA,NA,NAautoFlagType,flag status,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,algorithm well flags,flag status,ACAS DDICTautoFlagObservation,flag observation,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,algorithm well flags,flag observation,ACAS DDICTautoFlagReason,flag cause,codeValue,data,auto flag,TRUE,TRUE,FALSE,FALSE,NA,algorithm well flags,flag cause,ACAS DDICTbatchCode,batch code,codeValue,data,results,TRUE,TRUE,TRUE,TRUE,NA,NA,NA,NAcurveId,curve id,stringValue,data,dose response,TRUE,FALSE,FALSE,TRUE,NA,NA,NA,NArenderingHint,Rendering Hint,stringValue,data,dose response,FALSE,FALSE,FALSE,TRUE,NA,NA,NA,NA

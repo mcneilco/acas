@@ -2189,6 +2189,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
       }
       
+      # Change subject hits to be saved in lowercase
+      subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
+      subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                   subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
