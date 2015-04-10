@@ -81,6 +81,12 @@ class window.ProtocolRowSummaryController extends Backbone.View
 		@template = _.template($('#ProtocolRowSummaryView').html())
 
 	render: =>
+		date = @model.getCreationDate()
+		if date.isNew()
+			date = "not recorded"
+		else
+			date = UtilityFunctions::convertMSToYMDDate(date.get('dateValue'))
+
 		toDisplay =
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
 			protocolCode: @model.get('codeName')
@@ -89,7 +95,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			assayStage: @model.getAssayStage().get("codeValue")
 			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
-			creationDate: @model.getCreationDate().get('dateValue')
+			creationDate: date
 		$(@el).html(@template(toDisplay))
 
 		@

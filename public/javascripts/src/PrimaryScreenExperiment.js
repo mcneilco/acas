@@ -347,6 +347,12 @@
           message: "A registered batch number must be provided."
         });
       }
+      if (attrs.instrumentReader === "unassigned" || attrs.instrumentReader === null) {
+        errors.push({
+          attribute: 'instrumentReader',
+          message: "Instrument Reader must be assigned"
+        });
+      }
       if (attrs.signalDirectionRule === "unassigned" || attrs.signalDirectionRule === null) {
         errors.push({
           attribute: 'signalDirectionRule',
@@ -1370,8 +1376,9 @@
     PrimaryScreenAnalysisParametersController.prototype.enableAllInputs = function() {
       PrimaryScreenAnalysisParametersController.__super__.enableAllInputs.call(this);
       if (this.$('.bv_matchReadName').is(":checked")) {
-        return this.$('.bv_readPosition').attr('disabled', 'disabled');
+        this.$('.bv_readPosition').attr('disabled', 'disabled');
       }
+      return this.$('.bv_loadAnother').prop('disabled', false);
     };
 
     return PrimaryScreenAnalysisParametersController;
@@ -1383,6 +1390,8 @@
 
     function AbstractUploadAndRunPrimaryAnalsysisController() {
       this.validateParseFile = __bind(this.validateParseFile, this);
+      this.enableFields = __bind(this.enableFields, this);
+      this.disableAll = __bind(this.disableAll, this);
       this.loadAnother = __bind(this.loadAnother, this);
       this.backToUpload = __bind(this.backToUpload, this);
       this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
@@ -1492,17 +1501,30 @@
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.disableAll = function() {
       this.analysisParameterController.disableAllInputs();
-      this.$('.bv_htmlSummary').hide();
-      this.$('.bv_fileUploadWrapper').hide();
-      this.$('.bv_nextControlContainer').hide();
-      this.$('.bv_saveControlContainer').hide();
-      this.$('.bv_completeControlContainer').hide();
-      return this.$('.bv_notifications').hide();
+      this.$('.bv_next').attr('disabled', 'disabled');
+      this.$('.bv_next').prop('disabled', true);
+      this.$('.bv_back').attr('disabled', 'disabled');
+      this.$('.bv_back').prop('disabled', true);
+      this.$('.bv_loadAnother').removeAttr('disabled');
+      return this.$('.bv_loadAnother').attr('disabled', 'disabled');
     };
 
-    AbstractUploadAndRunPrimaryAnalsysisController.prototype.enableAll = function() {
-      this.analysisParameterController.enableAllInputs();
-      return this.showFileSelectPhase();
+    AbstractUploadAndRunPrimaryAnalsysisController.prototype.enableFields = function() {
+      this.$('.bv_back').removeAttr('disabled');
+      this.$('.bv_back').prop('disabled', false);
+      this.$('.bv_next').removeAttr('disabled');
+      this.$('.bv_next').prop('disabled', false);
+      if (this.$('.bv_outerContainer .bv_flowControl .bv_nextControlContainer').css('display') !== 'none') {
+        return this.analysisParameterController.enableAllInputs();
+      } else {
+        if (this.analysisParameterController.model.isValid()) {
+          this.$('.bv_loadAnother').removeAttr('disabled');
+          return this.$('.bv_loadAnother').prop('disabled', false);
+        } else {
+          this.$('.bv_loadAnother').removeAttr('disabled');
+          return this.$('.bv_loadAnother').attr('disabled', 'disabled');
+        }
+      }
     };
 
     AbstractUploadAndRunPrimaryAnalsysisController.prototype.validateParseFile = function() {
@@ -1578,7 +1600,7 @@
 
     PrimaryScreenAnalysisController.prototype.initialize = function() {
       this.model.on("saveSuccess", this.handleExperimentSaved);
-      this.model.getStatus().on('change', this.handleStatusChanged);
+      this.model.on('statusChanged', this.handleStatusChanged);
       this.dataAnalysisController = null;
       $(this.el).empty();
       $(this.el).html(this.template());
@@ -1779,9 +1801,8 @@
     PrimaryScreenAnalysisController.prototype.handleExperimentSaved = function() {
       this.setExperimentSaved();
       if (this.dataAnalysisController == null) {
-        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
       }
-      return this.model.getStatus().on('change', this.handleStatusChanged);
     };
 
     PrimaryScreenAnalysisController.prototype.handleAnalysisComplete = function() {
@@ -1792,9 +1813,11 @@
     PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
       if (this.dataAnalysisController !== null) {
         if (this.model.isEditable()) {
-          return this.dataAnalysisController.enableAll();
+          return this.dataAnalysisController.enableFields();
         } else {
-          return this.dataAnalysisController.disableAll();
+          this.dataAnalysisController.disableAll();
+          this.$('.bv_loadAnother').attr('disabled', 'disabled');
+          return this.$('.bv_loadAnother').prop('disabled', true);
         }
       }
     };
@@ -1833,6 +1856,7 @@
       this.updateModelFitTab = __bind(this.updateModelFitTab, this);
       this.fetchModel = __bind(this.fetchModel, this);
       this.reinitialize = __bind(this.reinitialize, this);
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
       this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
       this.completeInitialization = __bind(this.completeInitialization, this);
@@ -1957,6 +1981,7 @@
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
+      this.model.on('statusChanged', this.handleStatusChanged);
       this.experimentBaseController.render();
       this.analysisController.render();
       this.modelFitController.render();
@@ -2016,6 +2041,11 @@
 
     AbstractPrimaryScreenExperimentController.prototype.handleProtocolAttributesCopied = function() {
       return this.analysisController.render();
+    };
+
+    AbstractPrimaryScreenExperimentController.prototype.handleStatusChanged = function() {
+      this.analysisController.handleStatusChanged();
+      return this.modelFitController.handleModelStatusChanged();
     };
 
     AbstractPrimaryScreenExperimentController.prototype.showWarningModal = function() {

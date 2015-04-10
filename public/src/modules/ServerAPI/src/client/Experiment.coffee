@@ -35,8 +35,8 @@ class window.Experiment extends BaseEntity
 					resp.protocol = new Protocol(resp.protocol)
 			if resp.lsTags not instanceof TagList
 				resp.lsTags = new TagList(resp.lsTags)
-			resp.lsTags.on 'change', =>
-				@trigger 'change'
+				resp.lsTags.on 'change', =>
+					@trigger 'change'
 			resp
 
 	copyProtocolAttributes: (protocol) =>
@@ -212,6 +212,7 @@ class window.ExperimentBaseController extends BaseEntityController
 #			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
 			#TODO: redirect user to experiment browser with a list of experiments with same name
 			@$('.bv_experimentSaveFailed').modal('show')
+			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()

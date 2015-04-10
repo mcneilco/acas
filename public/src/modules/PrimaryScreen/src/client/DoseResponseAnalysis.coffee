@@ -314,6 +314,18 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			else
 				@parameterController.disableAllInputs()
 
+	handleModelStatusChanged: =>
+		if @model.isEditable()
+			@$('.bv_fitModelButton').removeAttr('disabled')
+			@$('select').removeAttr('disabled')
+			if @parameterController?
+				@parameterController.enableAllInputs()
+		else
+			@$('.bv_fitModelButton').attr('disabled','disabled')
+			@$('select').attr('disabled','disabled')
+			if @parameterController?
+				@parameterController.disableAllInputs()
+
 	setupModelFitTypeController: ->
 		@modelFitTypeController = new ModelFitTypeController
 			model: @model

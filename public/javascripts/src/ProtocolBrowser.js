@@ -144,7 +144,13 @@
     };
 
     ProtocolRowSummaryController.prototype.render = function() {
-      var toDisplay;
+      var date, toDisplay;
+      date = this.model.getCreationDate();
+      if (date.isNew()) {
+        date = "not recorded";
+      } else {
+        date = UtilityFunctions.prototype.convertMSToYMDDate(date.get('dateValue'));
+      }
       toDisplay = {
         protocolName: this.model.get('lsLabels').pickBestName().get('labelText'),
         protocolCode: this.model.get('codeName'),
@@ -153,7 +159,7 @@
         assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
-        creationDate: this.model.getCreationDate().get('dateValue')
+        creationDate: date
       };
       $(this.el).html(this.template(toDisplay));
       return this;

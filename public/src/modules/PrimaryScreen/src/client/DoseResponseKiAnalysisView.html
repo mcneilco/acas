@@ -42,7 +42,7 @@
                         <input type="radio" name="bv_min_limitType" class="bv_min_limitType_limit" value="limit" style="margin-right:5px;margin-bottom:5px;" <%if (min.limitType=="limit"){%>checked="checked"<%}%>  />
                         <label class="control-label" style="margin-right:15px;">Limit</label>
                         <span class="control-group bv_group_min_value">
-                            <input type="text" class="bv_group_min_value bv_min_value" style="width:50px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
+                            <input type="text" class="bv_min_value" style="width:50px;" value="<%= min.value%>" <% if (min.limitType=="none"){ %> disabled="disabled"<% }%> />
                         </span>
                     </div>
                 </div>

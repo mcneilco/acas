@@ -69,8 +69,8 @@ describe "Protocol module testing", ->
 					it "should be locked if status is complete", ->
 						@prot.getStatus().set codeValue: "complete"
 						expect(@prot.isEditable()).toBeTruthy()
-					it "should be locked if status is finalized", ->
-						@prot.getStatus().set codeValue: "finalized"
+					it "should be locked if status is approved", ->
+						@prot.getStatus().set codeValue: "approved"
 						expect(@prot.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
 						@prot.getStatus().set codeValue: "rejected"
@@ -331,17 +331,17 @@ describe "Protocol module testing", ->
 				it "should show the status select enabled", ->
 					expect(@pbc.$('.bv_status').attr('disabled')).toBeUndefined()
 			describe "Protocol status behavior", ->
-				it "should disable all fields if protocol is finalized", ->
+				it "should disable all fields if protocol is approved", ->
 					waitsFor ->
 						@pbc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@pbc.$('.bv_status').val('finalized')
+						@pbc.$('.bv_status').val('approved')
 						@pbc.$('.bv_status').change()
 						expect(@pbc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
 						expect(@pbc.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should enable all fields if entity is started", ->
-					@pbc.$('.bv_status').val('finalized')
+					@pbc.$('.bv_status').val('approved')
 					@pbc.$('.bv_status').change()
 					@pbc.$('.bv_status').val('started')
 					@pbc.$('.bv_status').change()
@@ -350,12 +350,12 @@ describe "Protocol module testing", ->
 					@pbc.$('.bv_status').val('created')
 					@pbc.$('.bv_status').change()
 					expect(@pbc.$('.bv_lock')).toBeHidden()
-				it "should show lock icon if protocol is finalized", ->
+				it "should show lock icon if protocol is approved", ->
 					waitsFor ->
 						@pbc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@pbc.$('.bv_status').val('finalized')
+						@pbc.$('.bv_status').val('approved')
 						@pbc.$('.bv_status').change()
 						expect(@pbc.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->

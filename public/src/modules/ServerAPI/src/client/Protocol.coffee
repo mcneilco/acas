@@ -22,8 +22,8 @@ class window.Protocol extends BaseEntity
 					@trigger 'change'
 			if resp.lsTags not instanceof TagList
 				resp.lsTags = new TagList(resp.lsTags)
-			resp.lsTags.on 'change', =>
-				@trigger 'change'
+				resp.lsTags.on 'change', =>
+					@trigger 'change'
 			resp
 
 	getCreationDate: ->
@@ -152,6 +152,7 @@ class window.ProtocolBaseController extends BaseEntityController
 		$(@el).html @template(@model.attributes)
 		@model.on 'saveFailed', =>
 			@$('.bv_protocolSaveFailed').modal('show')
+			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
 			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()

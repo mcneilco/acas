@@ -74,7 +74,8 @@
         insertFirstOption: new PickList({
           code: "unassigned",
           name: "Select Model Fit Type"
-        })
+        }),
+        selectedCode: "unassigned"
       });
     };
 

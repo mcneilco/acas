@@ -416,11 +416,11 @@ describe "Dose Response Analysis Module Testing", ->
 				@drac.primaryAnalysisCompleted()
 				@drac.render()
 			describe "experiment status change handling", ->
-				it "Should disable model fit parameter editing if status is Finalized", ->
-					@drac.model.getStatus().set codeValue: "finalized"
+				it "Should disable model fit parameter editing if status is approved", ->
+					@drac.model.getStatus().set codeValue: "approved"
 					expect(@drac.$('.bv_max_limitType_none').attr('disabled')).toEqual 'disabled'
 				it "Should enable analsyis parameter editing if status is Started", ->
-					@drac.model.getStatus().set codeValue: "finalized"
+					@drac.model.getStatus().set codeValue: "approved"
 					@drac.model.getStatus().set codeValue: "started"
 					expect(@drac.$('.bv_max_limitType').attr('disabled')).toBeUndefined()
 				it "should show fit button as Re-Fit since status is ' Curves not fit'", ->

@@ -212,6 +212,11 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		@template = _.template($('#ExperimentRowSummaryView').html())
 
 	render: =>
+		date = @model.getCompletionDate()
+		if date.isNew()
+			date = "not recorded"
+		else
+			date = UtilityFunctions::convertMSToYMDDate(date.get('dateValue'))
 
 		experimentBestName = @model.get('lsLabels').pickBestName()
 		if experimentBestName
@@ -223,7 +228,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
-			completionDate: @model.getCompletionDate().get('dateValue')
+			completionDate: date
 		$(@el).html(@template(toDisplay))
 
 		@

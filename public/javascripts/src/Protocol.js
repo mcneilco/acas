@@ -48,12 +48,12 @@
         }
         if (!(resp.lsTags instanceof TagList)) {
           resp.lsTags = new TagList(resp.lsTags);
+          resp.lsTags.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.lsTags.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
         return resp;
       }
     };
@@ -264,6 +264,7 @@
       this.model.on('saveFailed', (function(_this) {
         return function() {
           _this.$('.bv_protocolSaveFailed').modal('show');
+          _this.$('.bv_closeSaveFailedModal').removeAttr('disabled');
           _this.$('.bv_saveFailed').show();
           return _this.$('.bv_protocolSaveFailed').on('hide.bs.modal', function() {
             return _this.$('.bv_saveFailed').hide();

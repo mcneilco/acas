@@ -17,8 +17,8 @@
 					name: "Complete"
 					ignored: false
 				,
-					code: "finalized"
-					name: "Finalized"
+					code: "approved"
+					name: "Approved"
 					ignored: false
 				,
 					code: "rejected"

@@ -101,9 +101,9 @@
               });
               return expect(this.prot.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is finalized", function() {
+            it("should be locked if status is approved", function() {
               this.prot.getStatus().set({
-                codeValue: "finalized"
+                codeValue: "approved"
               });
               return expect(this.prot.isEditable()).toBeFalsy();
             });
@@ -491,19 +491,19 @@
           });
         });
         describe("Protocol status behavior", function() {
-          it("should disable all fields if protocol is finalized", function() {
+          it("should disable all fields if protocol is approved", function() {
             waitsFor(function() {
               return this.pbc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.pbc.$('.bv_status').val('finalized');
+              this.pbc.$('.bv_status').val('approved');
               this.pbc.$('.bv_status').change();
               expect(this.pbc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
               return expect(this.pbc.$('.bv_status').attr('disabled')).toBeUndefined();
             });
           });
           it("should enable all fields if entity is started", function() {
-            this.pbc.$('.bv_status').val('finalized');
+            this.pbc.$('.bv_status').val('approved');
             this.pbc.$('.bv_status').change();
             this.pbc.$('.bv_status').val('started');
             this.pbc.$('.bv_status').change();
@@ -514,12 +514,12 @@
             this.pbc.$('.bv_status').change();
             return expect(this.pbc.$('.bv_lock')).toBeHidden();
           });
-          return it("should show lock icon if protocol is finalized", function() {
+          return it("should show lock icon if protocol is approved", function() {
             waitsFor(function() {
               return this.pbc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.pbc.$('.bv_status').val('finalized');
+              this.pbc.$('.bv_status').val('approved');
               this.pbc.$('.bv_status').change();
               return expect(this.pbc.$('.bv_lock')).toBeVisible();
             });

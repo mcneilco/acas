@@ -325,7 +325,13 @@
     };
 
     ExperimentRowSummaryController.prototype.render = function() {
-      var experimentBestName, toDisplay;
+      var date, experimentBestName, toDisplay;
+      date = this.model.getCompletionDate();
+      if (date.isNew()) {
+        date = "not recorded";
+      } else {
+        date = UtilityFunctions.prototype.convertMSToYMDDate(date.get('dateValue'));
+      }
       experimentBestName = this.model.get('lsLabels').pickBestName();
       if (experimentBestName) {
         experimentBestName = this.model.get('lsLabels').pickBestName().get('labelText');
@@ -337,7 +343,7 @@
         scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
-        completionDate: this.model.getCompletionDate().get('dateValue')
+        completionDate: date
       };
       $(this.el).html(this.template(toDisplay));
       return this;
