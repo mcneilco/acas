@@ -2129,6 +2129,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
+    serverFlagFileLocation <- saveAcasFileToExperiment(
+      flaggedWells, experiment, 
+      "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+    
+    summaryInfo$info$"Original Flag File" <- paste0(
+      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     
     #     if (!useRdap) {
     if (FALSE) {
