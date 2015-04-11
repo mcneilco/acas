@@ -1815,8 +1815,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
   
   batchDataTable <- resultTable[is.na(flag)]
+  allFlaggedTable <- resultTable[!is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  # allFlaggedTable is only for treatment groups mising from treatmentGroupData
+  allFlaggedTable <- allFlaggedTable[!(tempParentId %in% treatmentGroupData$tempId)]
+  # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
+  flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
+  treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
@@ -2187,6 +2193,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows
+      treatmentGroupDataLong <- treatmentGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       if (parameters$htsFormat) {
         analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
@@ -2511,6 +2518,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x))},
                                 "median" = function(x) {as.numeric(median(x))},
+                                "returnNA" = function(x) {NA_real_},
                                 stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]
