@@ -28,7 +28,7 @@ getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
   
   if (ncol(plateAssociationData) == 3) {
     # Removes the third column if it is blank
-    if(length(unique(plateAssociationData[ , 3])) == 1 && is.na(unique(plateAssociationData[ , 3]))) {
+    if(all(is.na(plateAssociationData[ , 3]))) {
       plateAssociationData[ , 3] <- NULL
       compoundColumns <- "compoundBarcode_1"
     } else {
