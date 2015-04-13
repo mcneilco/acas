@@ -153,6 +153,13 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
   #find max of subgroup (median of unflagged Positive Controls)
   grpMaxLevel <- useAggregationMethod(values[(wellType=='PC' & is.na(flag))], parameters)
   
+  # If the min and max are the same, it causes a divide by zero error
+  if ((grpMinLevel - grpMaxLevel) == 0) {
+    stopUser(paste0("For at least normalization group, the positive control and the negative ", 
+                    "control are the same. Either check your data or change your ", 
+                    "normalization rule."))
+  }
+  
   return(
     ((values - grpMaxLevel) 
      * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
