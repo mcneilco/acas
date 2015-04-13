@@ -43,14 +43,14 @@ class window.PrimaryScreenProtocolParameters extends State
 	getCurveDisplayMin: ->
 		minY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display min"
 		if minY.get('numericValue') is undefined or minY.get('numericValue') is ""
-			minY.set numericValue: 0.0
+			minY.set numericValue: -20.0
 
 		minY
 
 	getCurveDisplayMax: ->
 		maxY = @.getOrCreateValueByTypeAndKind "numericValue", "curve display max"
 		if maxY.get('numericValue') is undefined or maxY.get('numericValue') is ""
-			maxY.set numericValue: 100.0
+			maxY.set numericValue: 120.0
 
 		maxY
 

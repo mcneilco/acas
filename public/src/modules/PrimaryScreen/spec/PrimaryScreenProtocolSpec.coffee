@@ -11,12 +11,12 @@ describe "Primary Screen Protocol module testing", ->
 			beforeEach ->
 				@pspp = new PrimaryScreenProtocolParameters()
 			describe "Defaults", ->
-				it 'Should have an default maxY curve display of 100', ->
+				it 'Should have an default maxY curve display of 120', ->
 					expect(@pspp.getCurveDisplayMax() instanceof Value).toBeTruthy()
-					expect(@pspp.getCurveDisplayMax().get('numericValue')).toEqual 100.0
-				it 'Should have an default minY curve display of 0', ->
+					expect(@pspp.getCurveDisplayMax().get('numericValue')).toEqual 120.0
+				it 'Should have an default minY curve display of -20', ->
 					expect(@pspp.getCurveDisplayMin() instanceof Value).toBeTruthy()
-					expect(@pspp.getCurveDisplayMin().get('numericValue')).toEqual 0
+					expect(@pspp.getCurveDisplayMin().get('numericValue')).toEqual -20
 			describe "required states and values", ->
 				it "should have an assay activity value", ->
 					expect(@pspp.getAssayActivity() instanceof Value).toBeTruthy()
@@ -218,11 +218,11 @@ describe "Primary Screen Protocol module testing", ->
 						expect(@psppc.model.getCellLine().get('codeValue')).toEqual "unassigned"
 						expect(@psppc.cellLineListController.getSelectedCode()).toEqual "unassigned"
 				it "should show the curve display max", ->
-					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 100.0
-					expect(@psppc.$('.bv_maxY').val()).toEqual "100"
+					expect(@psppc.model.getCurveDisplayMax().get('numericValue')).toEqual 120.0
+					expect(@psppc.$('.bv_maxY').val()).toEqual "120"
 				it "should show the curve display min", ->
-					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual 0.0
-					expect(@psppc.$('.bv_minY').val()).toEqual "0"
+					expect(@psppc.model.getCurveDisplayMin().get('numericValue')).toEqual -20.0
+					expect(@psppc.$('.bv_minY').val()).toEqual "-20"
 
 		describe "when instantiated with data", ->
 			beforeEach ->

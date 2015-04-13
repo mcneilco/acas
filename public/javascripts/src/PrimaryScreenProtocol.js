@@ -70,7 +70,7 @@
       minY = this.getOrCreateValueByTypeAndKind("numericValue", "curve display min");
       if (minY.get('numericValue') === void 0 || minY.get('numericValue') === "") {
         minY.set({
-          numericValue: 0.0
+          numericValue: -20.0
         });
       }
       return minY;
@@ -81,7 +81,7 @@
       maxY = this.getOrCreateValueByTypeAndKind("numericValue", "curve display max");
       if (maxY.get('numericValue') === void 0 || maxY.get('numericValue') === "") {
         maxY.set({
-          numericValue: 100.0
+          numericValue: 120.0
         });
       }
       return maxY;
