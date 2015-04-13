@@ -31,6 +31,9 @@
 
     Experiment.prototype.parse = function(resp) {
       if (resp === "not unique experiment name" || resp === '"not unique experiment name"') {
+        this.trigger('notUniqueName');
+        return resp;
+      } else if (resp === "saveFailed" || resp === '"saveFailed"') {
         this.trigger('saveFailed');
         return resp;
       } else {
@@ -343,7 +346,7 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.model.on('saveFailed', (function(_this) {
+      this.model.on('notUniqueName', (function(_this) {
         return function() {
           _this.$('.bv_experimentSaveFailed').modal('show');
           _this.$('.bv_closeSaveFailedModal').removeAttr('disabled');
@@ -351,6 +354,11 @@
           return _this.$('.bv_experimentSaveFailed').on('hide.bs.modal', function() {
             return _this.$('.bv_saveFailed').hide();
           });
+        };
+      })(this));
+      this.model.on('saveFailed', (function(_this) {
+        return function() {
+          return _this.$('.bv_saveFailed').show();
         };
       })(this));
       this.setupStatusSelect();

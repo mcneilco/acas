@@ -88,7 +88,8 @@
             } else {
               console.log('got ajax error trying to update protocol');
               console.log(error);
-              return console.log(response);
+              console.log(response);
+              return callback(JSON.stringify("saveFailed"));
             }
           };
         })(this));
@@ -158,8 +159,10 @@
               console.log(error);
               console.log(response.statusCode);
               console.log(response);
-              if (response.body[0].message === "not unique experiment name") {
+              if (response.body[0].message === "not unique protocol name") {
                 return resp.end(JSON.stringify(response.body[0].message));
+              } else {
+                return resp.end(JSON.stringify("saveFailed"));
               }
             }
           };

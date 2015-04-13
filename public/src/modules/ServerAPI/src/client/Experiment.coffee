@@ -12,6 +12,9 @@ class window.Experiment extends BaseEntity
 
 	parse: (resp) =>
 		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
+			@trigger 'notUniqueName'
+			resp
+		else if resp == "saveFailed" or resp == '"saveFailed"'
 			@trigger 'saveFailed'
 			resp
 		else
@@ -208,7 +211,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@model.on 'saveFailed', =>
+		@model.on 'notUniqueName', =>
 #			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
 			#TODO: redirect user to experiment browser with a list of experiments with same name
 			@$('.bv_experimentSaveFailed').modal('show')
@@ -216,6 +219,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_saveFailed').show()
 			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
 				@$('.bv_saveFailed').hide()
+		@model.on 'saveFailed', =>
+			@$('.bv_saveFailed').show()
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()
