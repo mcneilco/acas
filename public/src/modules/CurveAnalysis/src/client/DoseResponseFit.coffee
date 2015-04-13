@@ -40,6 +40,7 @@ class window.DoseResponseFitController extends Backbone.View
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Model Fit Type"
+			selectedCode: "unassigned"
 
 	setupParameterController: (modelFitType) =>
 		drapType = switch modelFitType

@@ -155,6 +155,9 @@
         }, {
           typeName: "status",
           kindName: "solvent content"
+        }, {
+          typeName: "data",
+          kindName: "preprocess flag"
         }
       ],
       valuetypes: [
@@ -371,6 +374,21 @@
         }, {
           kindName: "hts format",
           typeName: "stringValue"
+        }, {
+          kindName: "comment",
+          typeName: "stringValue"
+        }, {
+          kindName: "flag cause",
+          typeName: "codeValue"
+        }, {
+          kindName: "flag observation",
+          typeName: "codeValue"
+        }, {
+          kindName: "flag status",
+          typeName: "codeValue"
+        }, {
+          kindName: "flag file",
+          typeName: "fileValue"
         }
       ],
       labeltypes: [
@@ -561,6 +579,30 @@
           "labelTypeAndKind": "id_codeName",
           "latestNumber": 1,
           "thingTypeAndKind": "interaction_subjectContainer"
+        }
+      ],
+      codetables: [
+        {
+          codeType: "preprocess well flags",
+          codeKind: "flag observation",
+          codeOrigin: "ACAS DDICT",
+          code: "sel ko",
+          name: "Knocked Out by Simple Experiment Loader",
+          ignored: false
+        }, {
+          codeType: "preprocess well flags",
+          codeKind: "flag cause",
+          codeOrigin: "ACAS DDICT",
+          code: "sel ko",
+          name: "Knocked Out by Simple Experiment Loader",
+          ignored: false
+        }, {
+          codeType: "preprocess well flags",
+          codeKind: "flag status",
+          codeOrigin: "ACAS DDICT",
+          code: "knocked out",
+          name: "Knocked Out",
+          ignored: false
         }
       ]
     };

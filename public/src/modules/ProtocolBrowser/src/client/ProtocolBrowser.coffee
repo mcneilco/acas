@@ -36,11 +36,15 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		$(".bv_searchTerm").val ""
 		if protocolSearchTerm isnt ""
 			$(".bv_noMatchesFoundMessage").addClass "hide"
-			$(".bv_searchingProtocolsMessage").removeClass "hide"
 			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchTerm").html protocolSearchTerm
 			$(".bv_searchProtocolsStatusIndicator").removeClass "hide"
-			@doSearch protocolSearchTerm
+			if !window.conf.browser.enableSearchAll and protocolSearchTerm is "*"
+				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingProtocolsMessage").removeClass "hide"
+				$(".bv_searchTerm").html protocolSearchTerm
+				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
+				@doSearch protocolSearchTerm
 
 	doSearch: (protocolSearchTerm) =>
 		@trigger 'find'
@@ -81,6 +85,12 @@ class window.ProtocolRowSummaryController extends Backbone.View
 		@template = _.template($('#ProtocolRowSummaryView').html())
 
 	render: =>
+		date = @model.getCreationDate()
+		if date.isNew()
+			date = "not recorded"
+		else
+			date = UtilityFunctions::convertMSToYMDDate(date.get('dateValue'))
+
 		toDisplay =
 			protocolName: @model.get('lsLabels').pickBestName().get('labelText')
 			protocolCode: @model.get('codeName')
@@ -89,7 +99,7 @@ class window.ProtocolRowSummaryController extends Backbone.View
 			assayStage: @model.getAssayStage().get("codeValue")
 			status: @model.getStatus().get("codeValue")
 			experimentCount: @model.get('experimentCount')
-			creationDate: @model.getCreationDate().get('dateValue')
+			creationDate: date
 		$(@el).html(@template(toDisplay))
 
 		@

@@ -89,9 +89,9 @@
               });
               return expect(this.bem.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is finalized", function() {
+            it("should be locked if status is approved", function() {
               this.bem.getStatus().set({
-                codeValue: "finalized"
+                codeValue: "approved"
               });
               return expect(this.bem.isEditable()).toBeFalsy();
             });
@@ -481,19 +481,19 @@
           });
         });
         describe("Entity status behavior", function() {
-          it("should disable all fields if entity is finalized", function() {
+          it("should disable all fields if entity is approved", function() {
             waitsFor(function() {
               return this.bec.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.bec.$('.bv_status').val('finalized');
+              this.bec.$('.bv_status').val('approved');
               this.bec.$('.bv_status').change();
               expect(this.bec.$('.bv_notebook').attr('disabled')).toEqual('disabled');
               return expect(this.bec.$('.bv_status').attr('disabled')).toBeUndefined();
             });
           });
           it("should enable all fields if entity is started", function() {
-            this.bec.$('.bv_status').val('finalized');
+            this.bec.$('.bv_status').val('approved');
             this.bec.$('.bv_status').change();
             this.bec.$('.bv_status').val('started');
             this.bec.$('.bv_status').change();
@@ -504,12 +504,12 @@
             this.bec.$('.bv_status').change();
             return expect(this.bec.$('.bv_lock')).toBeHidden();
           });
-          return it("should show lock icon if entity is finalized", function() {
+          return it("should show lock icon if entity is approved", function() {
             waitsFor(function() {
               return this.bec.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.bec.$('.bv_status').val('finalized');
+              this.bec.$('.bv_status').val('approved');
               this.bec.$('.bv_status').change();
               return expect(this.bec.$('.bv_lock')).toBeVisible();
             });

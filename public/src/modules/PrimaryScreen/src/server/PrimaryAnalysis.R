@@ -62,6 +62,9 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
+  # Sort the data
+  setkeyv(resultTable, c("assayBarcode","row","column"))
+  
   resultTable[ , flag := as.character(NA)]
   
   resultTable[flagType=="ko", flag := "KO"]
@@ -1812,8 +1815,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
   
   batchDataTable <- resultTable[is.na(flag)]
+  allFlaggedTable <- resultTable[!is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  # allFlaggedTable is only for treatment groups mising from treatmentGroupData
+  allFlaggedTable <- allFlaggedTable[!(tempParentId %in% treatmentGroupData$tempId)]
+  # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
+  flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
+  treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
@@ -2120,6 +2129,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
+    serverFlagFileLocation <- saveAcasFileToExperiment(
+      flaggedWells, experiment, 
+      "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+    
+    summaryInfo$info$"Original Flag File" <- paste0(
+      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2184,11 +2199,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows
+      treatmentGroupDataLong <- treatmentGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       if (parameters$htsFormat) {
         analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
       }
       
+      # Change subject hits to be saved in lowercase
+      subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
+      subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                   subjectData=subjectDataLong,
                                   recordedBy=user, lsTransaction=lsTransaction)
@@ -2505,6 +2524,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x))},
                                 "median" = function(x) {as.numeric(median(x))},
+                                "returnNA" = function(x) {NA_real_},
                                 stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]

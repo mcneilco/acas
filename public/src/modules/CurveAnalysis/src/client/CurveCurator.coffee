@@ -4,7 +4,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
-		@setupKnockoutReasonPicklist()
+		@setupKnockoutPicklist()
 		@$('.bv_doseResponseKnockoutPanel').on "show", =>
 			@$('.bv_dataDictPicklist').focus()
 		@$('.bv_doseResponseKnockoutPanel').on "keypress", (key)=>
@@ -19,19 +19,19 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_doseResponseKnockoutPanel').modal "show"
 
-	setupKnockoutReasonPicklist: =>
-		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/codetables/user well flags/flag observation"
-		@knockoutReasonListController = new PickListSelectController
+	setupKnockoutPicklist: =>
+		@knockoutObservationList = new PickListList()
+		@knockoutObservationList.url = "/api/codetables/user well flags/flag observation"
+		@knockoutObservationListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
-			collection: @knockoutReasonList
+			collection: @knockoutObservationList
 
 	handleDoseResponseKnockoutPanelHidden: =>
 		status = "knocked out"
-		reason = @knockoutReasonListController.getSelectedCode()
-		observation = reason
-		comment = @knockoutReasonListController.getSelectedModel().get 'name'
-		@trigger 'reasonSelected', status, observation, reason, comment
+		observation = @knockoutObservationListController.getSelectedCode()
+		cause = "curvefit ko"
+		comment = @knockoutObservationListController.getSelectedModel().get 'name'
+		@trigger 'observationSelected', status, observation, cause, comment
 
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
@@ -53,23 +53,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 	showDoseResponseKnockoutPanel: (selectedPoints) =>
 		@doseResponseKnockoutPanelController.show()
-		@doseResponseKnockoutPanelController.on 'reasonSelected', (status, observation, reason, comment) =>
-			@knockoutPoints(selectedPoints, status, observation, reason, comment)
+		@doseResponseKnockoutPanelController.on 'observationSelected', (status, observation, cause, comment) =>
+			@knockoutPoints(selectedPoints, status, observation, cause, comment)
 		return
 
-	knockoutPoints: (selectedPoints, status, observation, reason, comment) =>
+	knockoutPoints: (selectedPoints, status, observation, cause, comment) =>
 		selectedPoints.forEach (selectedPoint) =>
 			@points[selectedPoint.idx].algorithmFlagStatus = ""
 			@points[selectedPoint.idx].algorithmFlagObservation = ""
-			@points[selectedPoint.idx].algorithmFlagReason = ""
+			@points[selectedPoint.idx].algorithmFlagCause = ""
 			@points[selectedPoint.idx].algorithmFlagComment = ""
 			@points[selectedPoint.idx].preprocessFlagStatus = ""
 			@points[selectedPoint.idx].preprocessFlagObservation = ""
-			@points[selectedPoint.idx].preprocessFlagReason = ""
+			@points[selectedPoint.idx].preprocessFlagCause = ""
 			@points[selectedPoint.idx].preprocessFlagComment = ""
 			@points[selectedPoint.idx].userFlagStatus = status
 			@points[selectedPoint.idx].userFlagObservation = observation
-			@points[selectedPoint.idx].userFlagReason = reason
+			@points[selectedPoint.idx].userFlagCause = cause
 			@points[selectedPoint.idx].userFlagComment = comment
 
 			selectedPoint.drawAsKnockedOut()
@@ -85,7 +85,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
-				axis: false #we do this later (log axis reasons)
+				axis: false #we do this later (log axis causes)
 				showCopyright: false
 				zoom : {
 					wheel: false
@@ -99,15 +99,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 				selectedPoints.forEach (selectedPoint) =>
 					@points[selectedPoint.idx].algorithmFlagStatus = ""
 					@points[selectedPoint.idx].algorithmFlagObservation = ""
-					@points[selectedPoint.idx].algorithmFlagReason = ""
+					@points[selectedPoint.idx].algorithmFlagCause = ""
 					@points[selectedPoint.idx].algorithmFlagComment = ""
 					@points[selectedPoint.idx].preprocessFlagStatus = ""
 					@points[selectedPoint.idx].preprocessFlagObservation = ""
-					@points[selectedPoint.idx].preprocessFlagReason = ""
+					@points[selectedPoint.idx].preprocessFlagCause = ""
 					@points[selectedPoint.idx].preprocessFlagComment = ""
 					@points[selectedPoint.idx].userFlagStatus = ""
 					@points[selectedPoint.idx].userFlagObservation = ""
-					@points[selectedPoint.idx].userFlagReason = ""
+					@points[selectedPoint.idx].userFlagCause = ""
 					@points[selectedPoint.idx].userFlagComment = ""
 
 					selectedPoint.drawAsIncluded()
@@ -123,7 +123,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 				preprocessFlagStatus = points[ii].preprocessFlagStatus
 				algorithmFlagStatus = points[ii].algorithmFlagStatus
 				userFlagComment = points[ii].userFlagComment
-				preprocessFlagComment = points[ii].preprocessFlagReason
+				preprocessFlagComment = points[ii].preprocessFlagComment
 				algorithmFlagComment = points[ii].algorithmFlagComment
 				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
@@ -567,13 +567,6 @@ class window.CurveEditorDirtyPanelController extends Backbone.View
 		@$('.bv_curveEditorDirtyPanel').modal
 			backdrop: "static"
 		@$('.bv_curveEditorDirtyPanel').modal "show"
-
-	hide: =>
-		status = "knocked out"
-		reason = @knockoutReasonListController.getSelectedCode()
-		observation = reason
-		comment = @knockoutReasonListController.getSelectedModel().get 'name'
-		@trigger 'reasonSelected', status, observation, reason comment
 
 class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())

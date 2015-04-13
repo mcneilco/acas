@@ -72,9 +72,6 @@
       scientist = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", metadataKind, "codeValue", "scientist");
       if (scientist.get('codeValue') === void 0) {
         scientist.set({
-          codeValue: window.AppLaunchParams.loginUserName
-        });
-        scientist.set({
           codeType: "assay"
         });
         scientist.set({
@@ -83,6 +80,15 @@
         scientist.set({
           codeOrigin: window.conf.scientistCodeOrigin
         });
+        if (this.isNew()) {
+          scientist.set({
+            codeValue: window.AppLaunchParams.loginUserName
+          });
+        } else {
+          scientist.set({
+            codeValue: "unassigned"
+          });
+        }
       }
       return scientist;
     };
@@ -644,7 +650,8 @@
       } else {
         this.handleValueChanged("Status", value);
         this.updateEditable();
-        return this.model.trigger('change');
+        this.model.trigger('change');
+        return this.model.trigger('statusChanged');
       }
     };
 
@@ -672,10 +679,11 @@
         this.$('.bv_newEntity').removeAttr('disabled');
       }
       if (this.model.isNew()) {
-        return this.$('.bv_status').attr("disabled", "disabled");
+        this.$('.bv_status').attr("disabled", "disabled");
       } else {
-        return this.$('.bv_status').removeAttr("disabled");
+        this.$('.bv_status').removeAttr("disabled");
       }
+      return this.model.trigger('statusChanged');
     };
 
     BaseEntityController.prototype.beginSave = function() {
@@ -724,7 +732,10 @@
     };
 
     BaseEntityController.prototype.handleNewEntityClicked = function() {
-      return this.$('.bv_confirmClearEntity').modal('show');
+      this.$('.bv_confirmClearEntity').modal('show');
+      this.$('.bv_confirmClear').removeAttr('disabled');
+      this.$('.bv_cancelClear').removeAttr('disabled');
+      return this.$('.bv_closeModalButton').removeAttr('disabled');
     };
 
     BaseEntityController.prototype.handleCancelClearClicked = function() {

@@ -429,6 +429,7 @@
       this.paramsInvalid = __bind(this.paramsInvalid, this);
       this.paramsValid = __bind(this.paramsValid, this);
       this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
+      this.handleModelStatusChanged = __bind(this.handleModelStatusChanged, this);
       this.handleStatusChanged = __bind(this.handleStatusChanged, this);
       this.setReadyForFit = __bind(this.setReadyForFit, this);
       this.testReadyForFit = __bind(this.testReadyForFit, this);
@@ -509,6 +510,22 @@
         if (this.model.isEditable()) {
           return this.parameterController.enableAllInputs();
         } else {
+          return this.parameterController.disableAllInputs();
+        }
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.handleModelStatusChanged = function() {
+      if (this.model.isEditable()) {
+        this.$('.bv_fitModelButton').removeAttr('disabled');
+        this.$('select').removeAttr('disabled');
+        if (this.parameterController != null) {
+          return this.parameterController.enableAllInputs();
+        }
+      } else {
+        this.$('.bv_fitModelButton').attr('disabled', 'disabled');
+        this.$('select').attr('disabled', 'disabled');
+        if (this.parameterController != null) {
           return this.parameterController.disableAllInputs();
         }
       }

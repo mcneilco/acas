@@ -253,11 +253,16 @@
       $(".bv_searchTerm").val("");
       if (experimentSearchTerm !== "") {
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
-        $(".bv_searchingExperimentsMessage").removeClass("hide");
         $(".bv_experimentBrowserSearchInstructions").addClass("hide");
-        $(".bv_searchTerm").html(experimentSearchTerm);
         $(".bv_searchExperimentsStatusIndicator").removeClass("hide");
-        return this.doSearch(experimentSearchTerm);
+        if (!window.conf.browser.enableSearchAll && experimentSearchTerm === "*") {
+          return $(".bv_moreSpecificExperimentSearchNeeded").removeClass("hide");
+        } else {
+          $(".bv_searchingExperimentsMessage").removeClass("hide");
+          $(".bv_searchTerm").html(experimentSearchTerm);
+          $(".bv_moreSpecificExperimentSearchNeeded").addClass("hide");
+          return this.doSearch(experimentSearchTerm);
+        }
       }
     };
 
@@ -325,7 +330,13 @@
     };
 
     ExperimentRowSummaryController.prototype.render = function() {
-      var experimentBestName, toDisplay;
+      var date, experimentBestName, toDisplay;
+      date = this.model.getCompletionDate();
+      if (date.isNew()) {
+        date = "not recorded";
+      } else {
+        date = UtilityFunctions.prototype.convertMSToYMDDate(date.get('dateValue'));
+      }
       experimentBestName = this.model.get('lsLabels').pickBestName();
       if (experimentBestName) {
         experimentBestName = this.model.get('lsLabels').pickBestName().get('labelText');
@@ -337,7 +348,7 @@
         scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
-        completionDate: this.model.getCompletionDate().get('dateValue')
+        completionDate: date
       };
       $(this.el).html(this.template(toDisplay));
       return this;

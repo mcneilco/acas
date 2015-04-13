@@ -8,7 +8,7 @@
 
     function DoseResponseKnockoutPanelController() {
       this.handleDoseResponseKnockoutPanelHidden = __bind(this.handleDoseResponseKnockoutPanelHidden, this);
-      this.setupKnockoutReasonPicklist = __bind(this.setupKnockoutReasonPicklist, this);
+      this.setupKnockoutPicklist = __bind(this.setupKnockoutPicklist, this);
       this.show = __bind(this.show, this);
       this.render = __bind(this.render, this);
       return DoseResponseKnockoutPanelController.__super__.constructor.apply(this, arguments);
@@ -19,7 +19,7 @@
     DoseResponseKnockoutPanelController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
-      this.setupKnockoutReasonPicklist();
+      this.setupKnockoutPicklist();
       this.$('.bv_doseResponseKnockoutPanel').on("show", (function(_this) {
         return function() {
           return _this.$('.bv_dataDictPicklist').focus();
@@ -47,22 +47,22 @@
       return this.$('.bv_doseResponseKnockoutPanel').modal("show");
     };
 
-    DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
-      this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/codetables/user well flags/flag observation";
-      return this.knockoutReasonListController = new PickListSelectController({
+    DoseResponseKnockoutPanelController.prototype.setupKnockoutPicklist = function() {
+      this.knockoutObservationList = new PickListList();
+      this.knockoutObservationList.url = "/api/codetables/user well flags/flag observation";
+      return this.knockoutObservationListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
-        collection: this.knockoutReasonList
+        collection: this.knockoutObservationList
       });
     };
 
     DoseResponseKnockoutPanelController.prototype.handleDoseResponseKnockoutPanelHidden = function() {
-      var comment, observation, reason, status;
+      var cause, comment, observation, status;
       status = "knocked out";
-      reason = this.knockoutReasonListController.getSelectedCode();
-      observation = reason;
-      comment = this.knockoutReasonListController.getSelectedModel().get('name');
-      return this.trigger('reasonSelected', status, observation, reason, comment);
+      observation = this.knockoutObservationListController.getSelectedCode();
+      cause = "curvefit ko";
+      comment = this.knockoutObservationListController.getSelectedModel().get('name');
+      return this.trigger('observationSelected', status, observation, cause, comment);
     };
 
     return DoseResponseKnockoutPanelController;
@@ -104,27 +104,27 @@
 
     DoseResponsePlotController.prototype.showDoseResponseKnockoutPanel = function(selectedPoints) {
       this.doseResponseKnockoutPanelController.show();
-      this.doseResponseKnockoutPanelController.on('reasonSelected', (function(_this) {
-        return function(status, observation, reason, comment) {
-          return _this.knockoutPoints(selectedPoints, status, observation, reason, comment);
+      this.doseResponseKnockoutPanelController.on('observationSelected', (function(_this) {
+        return function(status, observation, cause, comment) {
+          return _this.knockoutPoints(selectedPoints, status, observation, cause, comment);
         };
       })(this));
     };
 
-    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, status, observation, reason, comment) {
+    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, status, observation, cause, comment) {
       selectedPoints.forEach((function(_this) {
         return function(selectedPoint) {
           _this.points[selectedPoint.idx].algorithmFlagStatus = "";
           _this.points[selectedPoint.idx].algorithmFlagObservation = "";
-          _this.points[selectedPoint.idx].algorithmFlagReason = "";
+          _this.points[selectedPoint.idx].algorithmFlagCause = "";
           _this.points[selectedPoint.idx].algorithmFlagComment = "";
           _this.points[selectedPoint.idx].preprocessFlagStatus = "";
           _this.points[selectedPoint.idx].preprocessFlagObservation = "";
-          _this.points[selectedPoint.idx].preprocessFlagReason = "";
+          _this.points[selectedPoint.idx].preprocessFlagCause = "";
           _this.points[selectedPoint.idx].preprocessFlagComment = "";
           _this.points[selectedPoint.idx].userFlagStatus = status;
           _this.points[selectedPoint.idx].userFlagObservation = observation;
-          _this.points[selectedPoint.idx].userFlagReason = reason;
+          _this.points[selectedPoint.idx].userFlagCause = cause;
           _this.points[selectedPoint.idx].userFlagComment = comment;
           return selectedPoint.drawAsKnockedOut();
         };
@@ -160,15 +160,15 @@
             selectedPoints.forEach(function(selectedPoint) {
               _this.points[selectedPoint.idx].algorithmFlagStatus = "";
               _this.points[selectedPoint.idx].algorithmFlagObservation = "";
-              _this.points[selectedPoint.idx].algorithmFlagReason = "";
+              _this.points[selectedPoint.idx].algorithmFlagCause = "";
               _this.points[selectedPoint.idx].algorithmFlagComment = "";
               _this.points[selectedPoint.idx].preprocessFlagStatus = "";
               _this.points[selectedPoint.idx].preprocessFlagObservation = "";
-              _this.points[selectedPoint.idx].preprocessFlagReason = "";
+              _this.points[selectedPoint.idx].preprocessFlagCause = "";
               _this.points[selectedPoint.idx].preprocessFlagComment = "";
               _this.points[selectedPoint.idx].userFlagStatus = "";
               _this.points[selectedPoint.idx].userFlagObservation = "";
-              _this.points[selectedPoint.idx].userFlagReason = "";
+              _this.points[selectedPoint.idx].userFlagCause = "";
               _this.points[selectedPoint.idx].userFlagComment = "";
               return selectedPoint.drawAsIncluded();
             });
@@ -186,7 +186,7 @@
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
           algorithmFlagStatus = points[ii].algorithmFlagStatus;
           userFlagComment = points[ii].userFlagComment;
-          preprocessFlagComment = points[ii].preprocessFlagReason;
+          preprocessFlagComment = points[ii].preprocessFlagComment;
           algorithmFlagComment = points[ii].algorithmFlagComment;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
@@ -865,7 +865,6 @@
     __extends(CurveEditorDirtyPanelController, _super);
 
     function CurveEditorDirtyPanelController() {
-      this.hide = __bind(this.hide, this);
       this.show = __bind(this.show, this);
       this.render = __bind(this.render, this);
       return CurveEditorDirtyPanelController.__super__.constructor.apply(this, arguments);
@@ -899,15 +898,6 @@
         backdrop: "static"
       });
       return this.$('.bv_curveEditorDirtyPanel').modal("show");
-    };
-
-    CurveEditorDirtyPanelController.prototype.hide = function() {
-      var comment, observation, reason, status;
-      status = "knocked out";
-      reason = this.knockoutReasonListController.getSelectedCode();
-      observation = reason;
-      comment = this.knockoutReasonListController.getSelectedModel().get('name');
-      return this.trigger('reasonSelected', status, observation, reason(comment));
     };
 
     return CurveEditorDirtyPanelController;

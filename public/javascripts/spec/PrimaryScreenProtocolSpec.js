@@ -15,13 +15,13 @@
           return this.pspp = new PrimaryScreenProtocolParameters();
         });
         describe("Defaults", function() {
-          it('Should have an default maxY curve display of 100', function() {
+          it('Should have an default maxY curve display of 120', function() {
             expect(this.pspp.getCurveDisplayMax() instanceof Value).toBeTruthy();
-            return expect(this.pspp.getCurveDisplayMax().get('numericValue')).toEqual(100.0);
+            return expect(this.pspp.getCurveDisplayMax().get('numericValue')).toEqual(120.0);
           });
-          return it('Should have an default minY curve display of 0', function() {
+          return it('Should have an default minY curve display of -20', function() {
             expect(this.pspp.getCurveDisplayMin() instanceof Value).toBeTruthy();
-            return expect(this.pspp.getCurveDisplayMin().get('numericValue')).toEqual(0);
+            return expect(this.pspp.getCurveDisplayMin().get('numericValue')).toEqual(-20);
           });
         });
         return describe("required states and values", function() {
@@ -306,12 +306,12 @@
             });
           });
           it("should show the curve display max", function() {
-            expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(100.0);
-            return expect(this.psppc.$('.bv_maxY').val()).toEqual("100");
+            expect(this.psppc.model.getCurveDisplayMax().get('numericValue')).toEqual(120.0);
+            return expect(this.psppc.$('.bv_maxY').val()).toEqual("120");
           });
           return it("should show the curve display min", function() {
-            expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(0.0);
-            return expect(this.psppc.$('.bv_minY').val()).toEqual("0");
+            expect(this.psppc.model.getCurveDisplayMin().get('numericValue')).toEqual(-20.0);
+            return expect(this.psppc.$('.bv_minY').val()).toEqual("-20");
           });
         });
       });
