@@ -138,11 +138,11 @@ class window.Thing extends Backbone.Model
 
 		for itx in @lsProperties.defaultFirstLsThingItx
 			@unset(itx.key)
-		if @get('firstLsThings')?
+		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
 			@get('firstLsThings').reformatBeforeSaving()
 		for itx in @lsProperties.defaultSecondLsThingItx
 			@unset(itx.key)
-		if @get('secondLsThings')?
+		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
 			@get('secondLsThings').reformatBeforeSaving()
 
 		for dValue in @lsProperties.defaultValues

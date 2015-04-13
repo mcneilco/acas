@@ -241,7 +241,7 @@
         itx = _ref1[_j];
         this.unset(itx.key);
       }
-      if (this.get('firstLsThings') != null) {
+      if ((this.get('firstLsThings') != null) && this.get('firstLsThings') instanceof FirstLsThingItxList) {
         this.get('firstLsThings').reformatBeforeSaving();
       }
       _ref2 = this.lsProperties.defaultSecondLsThingItx;
@@ -249,7 +249,7 @@
         itx = _ref2[_k];
         this.unset(itx.key);
       }
-      if (this.get('secondLsThings') != null) {
+      if ((this.get('secondLsThings') != null) && this.get('secondLsThings') instanceof SecondLsThingItxList) {
         this.get('secondLsThings').reformatBeforeSaving();
       }
       _ref3 = this.lsProperties.defaultValues;
