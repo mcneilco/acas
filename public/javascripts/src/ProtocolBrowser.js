@@ -72,11 +72,16 @@
       $(".bv_searchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
-        $(".bv_searchingProtocolsMessage").removeClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
-        $(".bv_searchTerm").html(protocolSearchTerm);
         $(".bv_searchProtocolsStatusIndicator").removeClass("hide");
-        return this.doSearch(protocolSearchTerm);
+        if (!window.conf.browser.enableSearchAll && protocolSearchTerm === "*") {
+          return $(".bv_moreSpecificProtocolSearchNeeded").removeClass("hide");
+        } else {
+          $(".bv_searchingProtocolsMessage").removeClass("hide");
+          $(".bv_searchTerm").html(protocolSearchTerm);
+          $(".bv_moreSpecificProtocolSearchNeeded").addClass("hide");
+          return this.doSearch(protocolSearchTerm);
+        }
       }
     };
 

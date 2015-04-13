@@ -36,11 +36,15 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		$(".bv_searchTerm").val ""
 		if protocolSearchTerm isnt ""
 			$(".bv_noMatchesFoundMessage").addClass "hide"
-			$(".bv_searchingProtocolsMessage").removeClass "hide"
 			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchTerm").html protocolSearchTerm
 			$(".bv_searchProtocolsStatusIndicator").removeClass "hide"
-			@doSearch protocolSearchTerm
+			if !window.conf.browser.enableSearchAll and protocolSearchTerm is "*"
+				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingProtocolsMessage").removeClass "hide"
+				$(".bv_searchTerm").html protocolSearchTerm
+				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
+				@doSearch protocolSearchTerm
 
 	doSearch: (protocolSearchTerm) =>
 		@trigger 'find'

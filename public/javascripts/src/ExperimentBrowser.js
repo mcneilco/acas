@@ -253,11 +253,16 @@
       $(".bv_searchTerm").val("");
       if (experimentSearchTerm !== "") {
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
-        $(".bv_searchingExperimentsMessage").removeClass("hide");
         $(".bv_experimentBrowserSearchInstructions").addClass("hide");
-        $(".bv_searchTerm").html(experimentSearchTerm);
         $(".bv_searchExperimentsStatusIndicator").removeClass("hide");
-        return this.doSearch(experimentSearchTerm);
+        if (!window.conf.browser.enableSearchAll && experimentSearchTerm === "*") {
+          return $(".bv_moreSpecificExperimentSearchNeeded").removeClass("hide");
+        } else {
+          $(".bv_searchingExperimentsMessage").removeClass("hide");
+          $(".bv_searchTerm").html(experimentSearchTerm);
+          $(".bv_moreSpecificExperimentSearchNeeded").addClass("hide");
+          return this.doSearch(experimentSearchTerm);
+        }
       }
     };
 
