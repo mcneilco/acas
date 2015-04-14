@@ -185,9 +185,9 @@
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
           algorithmFlagStatus = points[ii].algorithmFlagStatus;
-          userFlagComment = points[ii].userFlagComment;
+          userFlagComment = points[ii].userFlagObservation;
           preprocessFlagComment = points[ii].preprocessFlagComment;
-          algorithmFlagComment = points[ii].algorithmFlagComment;
+          algorithmFlagComment = points[ii].algorithmFlagObservation;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
