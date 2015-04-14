@@ -2138,7 +2138,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
-    if (!is.null(flaggedWells) || flaggedWells != "") {
+    if (!is.null(flaggedWells) && flaggedWells != "") {
       serverFlagFileLocation <- saveAcasFileToExperiment(
         flaggedWells, experiment, 
         "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
