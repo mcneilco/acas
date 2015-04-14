@@ -155,9 +155,11 @@ class window.ProtocolBaseController extends BaseEntityController
 		$(@el).html @template(@model.attributes)
 		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
-			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
+			$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
-			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+#			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+#				@$('.bv_saveFailed').hide()
+			$('.bv_protocolSaveFailed').on 'hidden', =>
 				@$('.bv_saveFailed').hide()
 		@model.on 'saveFailed', =>
 			@$('.bv_saveFailed').show()
