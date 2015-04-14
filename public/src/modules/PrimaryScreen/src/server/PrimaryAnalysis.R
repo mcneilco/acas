@@ -1823,9 +1823,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
   flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
   treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
-  treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
+  # If one concentration, no problem, if three or more, it's a curve, with two... split them
+  treatmentGroupData[, concIndex := seq(1, .N), by = groupBy]
+  treatmentGroupData[, secondConc := (.N == 2 && concIndex == 2), by = groupBy]
+  treatmentGroupData[, concIndex := NULL]
+  analysisGroupBy <- c(groupBy, "secondConc")
+  treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
-
+  analysisGroupData[, secondConc := NULL]
+  treatmentGroupData[, secondConc := NULL]
   
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
