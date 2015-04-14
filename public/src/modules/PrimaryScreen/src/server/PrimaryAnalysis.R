@@ -67,7 +67,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   
   resultTable[ , flag := as.character(NA)]
   
-  resultTable[flagType=="ko", flag := "KO"]
+  resultTable[flagType=="knocked out", flag := "KO"]
   
   checkFlags(resultTable)
   
@@ -1541,7 +1541,7 @@ autoFlagWells <- function(resultTable, parameters) {
     thresholdType <- "percent efficacy"
     
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
-    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "ko"), autoFlagType := "HIT"]
+    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
   } else if(parameters$thresholdType == "sd") {
     hitThreshold <- parameters$hitSDThreshold
