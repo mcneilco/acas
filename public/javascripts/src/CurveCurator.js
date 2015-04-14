@@ -136,7 +136,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagComment, userFlagStatus, x, y;
+      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, flagLabels, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
       this.points = points;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
@@ -185,12 +185,17 @@
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
           algorithmFlagStatus = points[ii].algorithmFlagStatus;
-          userFlagComment = points[ii].userFlagComment;
+          userFlagComment = points[ii].userFlagObservation;
           preprocessFlagComment = points[ii].preprocessFlagComment;
-          algorithmFlagComment = points[ii].algorithmFlagComment;
+          algorithmFlagComment = points[ii].algorithmFlagObservation;
+          userFlagCause = points[ii].userFlagCause;
+          algorithmFlagCause = points[ii].algorithmFlagCause;
+          preprocessFlagCause = points[ii].preprocessFlagCause;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
+                case userFlagCause !== "curvefit ko":
+                  return 'orange';
                 case userFlagStatus !== "knocked out":
                   return 'red';
                 case preprocessFlagStatus !== "knocked out":
@@ -209,13 +214,19 @@
             });
             p1.knockedOut = true;
           } else {
+            if (userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit') {
+              color = 'blue';
+            } else {
+              color = 'red';
+            }
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "circle",
-              strokecolor: "blue",
-              withLabel: false
+              strokecolor: 'blue',
+              withLabel: false,
+              fillcolor: color
             });
             p1.knockedOut = false;
           }
@@ -244,18 +255,24 @@
             }
           };
           p1.on("up", p1.handlePointClicked, p1);
-          p1.flagLabel = (function() {
-            switch (false) {
-              case userFlagStatus !== "knocked out":
-                return userFlagComment;
-              case preprocessFlagStatus !== "knocked out":
-                return preprocessFlagComment;
-              case algorithmFlagStatus !== "knocked out":
-                return algorithmFlagComment;
-              default:
-                return '';
-            }
-          })();
+          flagLabels = [];
+          if (userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit') {
+            flagLabels.push('hit');
+          }
+          if (userFlagStatus === "knocked out") {
+            flagLabels.push(userFlagComment);
+          }
+          if (preprocessFlagStatus === "knocked out") {
+            flagLabels.push(preprocessFlagComment);
+          }
+          if (algorithmFlagStatus === "knocked out") {
+            flagLabels.push(algorithmFlagComment);
+          }
+          if (flagLabels.length > 0) {
+            p1.flagLabel = flagLabels.join(', ');
+          } else {
+            p1.flagLabel = '';
+          }
           p1.xLabel = JXG.trunc(points[ii].dose, 4);
           this.pointList.push(p1);
           brd.highlightInfobox = function(x, y, el) {

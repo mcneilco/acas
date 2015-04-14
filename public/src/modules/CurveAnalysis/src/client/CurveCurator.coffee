@@ -122,11 +122,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 				userFlagStatus = points[ii].userFlagStatus
 				preprocessFlagStatus = points[ii].preprocessFlagStatus
 				algorithmFlagStatus = points[ii].algorithmFlagStatus
-				userFlagComment = points[ii].userFlagComment
+				userFlagComment = points[ii].userFlagObservation
 				preprocessFlagComment = points[ii].preprocessFlagComment
-				algorithmFlagComment = points[ii].algorithmFlagComment
+				algorithmFlagComment = points[ii].algorithmFlagObservation
+				userFlagCause = points[ii].userFlagCause
+				algorithmFlagCause = points[ii].algorithmFlagCause
+				preprocessFlagCause = points[ii].preprocessFlagCause
 				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
+						when userFlagCause == "curvefit ko" then 'orange'
 						when userFlagStatus == "knocked out" then 'red'
 						when preprocessFlagStatus == "knocked out" then 'gray'
 						when algorithmFlagStatus == "knocked out" then 'blue'
@@ -142,13 +146,18 @@ class window.DoseResponsePlotController extends AbstractFormController
 					p1.knockedOut = true
 
 				else
+					if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+						color = 'blue'
+					else
+						color = 'red'
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "circle"
-						strokecolor: "blue"
+						strokecolor: 'blue'
 						withLabel: false
+						fillcolor: color
 					)
 					p1.knockedOut = false
 
@@ -174,13 +183,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 				p1.on "up", p1.handlePointClicked, p1
 
-				p1.flagLabel = switch
-					when userFlagStatus == "knocked out" then userFlagComment
-					when preprocessFlagStatus == "knocked out" then preprocessFlagComment
-					when algorithmFlagStatus == "knocked out" then algorithmFlagComment
-					else ''
+				flagLabels = []
+				if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+					flagLabels.push 'hit'
+				if userFlagStatus == "knocked out"
+					flagLabels.push userFlagComment
+				if preprocessFlagStatus == "knocked out"
+					flagLabels.push preprocessFlagComment
+				if algorithmFlagStatus == "knocked out"
+					flagLabels.push algorithmFlagComment
+
+				if flagLabels.length > 0
+					p1.flagLabel = flagLabels.join ', '
+				else
+					p1.flagLabel = ''
 
 				p1.xLabel = JXG.trunc(points[ii].dose, 4)
+
 				@pointList.push p1
 				brd.highlightInfobox = (x, y, el) ->
 					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
