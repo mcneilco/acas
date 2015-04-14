@@ -136,7 +136,7 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagComment, userFlagStatus, x, y;
+      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
       this.points = points;
       log10 = function(val) {
         return Math.log(val) / Math.LN10;
@@ -188,9 +188,14 @@
           userFlagComment = points[ii].userFlagObservation;
           preprocessFlagComment = points[ii].preprocessFlagComment;
           algorithmFlagComment = points[ii].algorithmFlagObservation;
+          userFlagCause = points[ii].userFlagCause;
+          algorithmFlagCause = points[ii].algorithmFlagCause;
+          preprocessFlagCause = points[ii].preprocessFlagCause;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
+                case userFlagCause !== "curvefit ko":
+                  return 'orange';
                 case userFlagStatus !== "knocked out":
                   return 'red';
                 case preprocessFlagStatus !== "knocked out":
@@ -209,13 +214,19 @@
             });
             p1.knockedOut = true;
           } else {
+            if (userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit') {
+              color = 'blue';
+            } else {
+              color = 'orange';
+            }
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "circle",
-              strokecolor: "blue",
-              withLabel: false
+              strokecolor: 'blue',
+              withLabel: false,
+              fillcolor: color
             });
             p1.knockedOut = false;
           }
@@ -246,6 +257,8 @@
           p1.on("up", p1.handlePointClicked, p1);
           p1.flagLabel = (function() {
             switch (false) {
+              case !(userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit'):
+                return 'hit';
               case userFlagStatus !== "knocked out":
                 return userFlagComment;
               case preprocessFlagStatus !== "knocked out":

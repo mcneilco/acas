@@ -125,8 +125,12 @@ class window.DoseResponsePlotController extends AbstractFormController
 				userFlagComment = points[ii].userFlagObservation
 				preprocessFlagComment = points[ii].preprocessFlagComment
 				algorithmFlagComment = points[ii].algorithmFlagObservation
+				userFlagCause = points[ii].userFlagCause
+				algorithmFlagCause = points[ii].algorithmFlagCause
+				preprocessFlagCause = points[ii].preprocessFlagCause
 				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
+						when userFlagCause == "curvefit ko" then 'orange'
 						when userFlagStatus == "knocked out" then 'red'
 						when preprocessFlagStatus == "knocked out" then 'gray'
 						when algorithmFlagStatus == "knocked out" then 'blue'
@@ -142,13 +146,18 @@ class window.DoseResponsePlotController extends AbstractFormController
 					p1.knockedOut = true
 
 				else
+					if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+						color = 'blue'
+					else
+						color = 'red'
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "circle"
-						strokecolor: "blue"
+						strokecolor: 'blue'
 						withLabel: false
+						fillcolor: color
 					)
 					p1.knockedOut = false
 
@@ -175,6 +184,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 				p1.on "up", p1.handlePointClicked, p1
 
 				p1.flagLabel = switch
+					when userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit' then 'hit'
 					when userFlagStatus == "knocked out" then userFlagComment
 					when preprocessFlagStatus == "knocked out" then preprocessFlagComment
 					when algorithmFlagStatus == "knocked out" then algorithmFlagComment
