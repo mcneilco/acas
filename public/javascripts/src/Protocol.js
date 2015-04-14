@@ -267,9 +267,9 @@
       this.model.on('notUniqueName', (function(_this) {
         return function() {
           _this.$('.bv_protocolSaveFailed').modal('show');
-          _this.$('.bv_closeSaveFailedModal').removeAttr('disabled');
+          $('.bv_closeSaveFailedModal').removeAttr('disabled');
           _this.$('.bv_saveFailed').show();
-          return _this.$('.bv_protocolSaveFailed').on('hide.bs.modal', function() {
+          return $('.bv_protocolSaveFailed').on('hidden', function() {
             return _this.$('.bv_saveFailed').hide();
           });
         };
