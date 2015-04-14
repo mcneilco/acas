@@ -23,6 +23,9 @@
 
     Protocol.prototype.parse = function(resp) {
       if (resp === "not unique protocol name" || resp === '"not unique protocol name"') {
+        this.trigger('notUniqueName');
+        return resp;
+      } else if (resp === "saveFailed" || resp === '"saveFailed"') {
         this.trigger('saveFailed');
         return resp;
       } else {
@@ -48,12 +51,12 @@
         }
         if (!(resp.lsTags instanceof TagList)) {
           resp.lsTags = new TagList(resp.lsTags);
+          resp.lsTags.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.lsTags.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
         return resp;
       }
     };
@@ -261,13 +264,19 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.model.on('saveFailed', (function(_this) {
+      this.model.on('notUniqueName', (function(_this) {
         return function() {
           _this.$('.bv_protocolSaveFailed').modal('show');
+          _this.$('.bv_closeSaveFailedModal').removeAttr('disabled');
           _this.$('.bv_saveFailed').show();
           return _this.$('.bv_protocolSaveFailed').on('hide.bs.modal', function() {
             return _this.$('.bv_saveFailed').hide();
           });
+        };
+      })(this));
+      this.model.on('saveFailed', (function(_this) {
+        return function() {
+          return _this.$('.bv_saveFailed').show();
         };
       })(this));
       this.setupStatusSelect();

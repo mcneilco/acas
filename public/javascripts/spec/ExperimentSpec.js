@@ -102,9 +102,9 @@
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is finalized", function() {
+            it("should be locked if status is approved", function() {
               this.exp.getStatus().set({
-                codeValue: "finalized"
+                codeValue: "approved"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
@@ -819,19 +819,19 @@
           });
         });
         describe("Experiment status behavior", function() {
-          it("should disable all fields if experiment is finalized", function() {
+          it("should disable all fields if experiment is approved", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').val('approved');
               this.ebc.$('.bv_status').change();
               expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
               return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
             });
           });
           it("should enable all fields if experiment is started", function() {
-            this.ebc.$('.bv_status').val('finalized');
+            this.ebc.$('.bv_status').val('approved');
             this.ebc.$('.bv_status').change();
             this.ebc.$('.bv_status').val('started');
             this.ebc.$('.bv_status').change();
@@ -842,12 +842,12 @@
             this.ebc.$('.bv_status').change();
             return expect(this.ebc.$('.bv_lock')).toBeHidden();
           });
-          return it("should show lock icon if experiment is finalized", function() {
+          return it("should show lock icon if experiment is approved", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').val('approved');
               this.ebc.$('.bv_status').change();
               return expect(this.ebc.$('.bv_lock')).toBeVisible();
             });

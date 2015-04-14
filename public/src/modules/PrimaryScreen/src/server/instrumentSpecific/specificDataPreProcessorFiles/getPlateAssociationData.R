@@ -27,15 +27,21 @@ getPlateAssociationData <- function(fileName, header=FALSE, tempFilePath) {
   plateAssociationData <- plateAssociationData[do.call(paste0, plateAssociationData) != "", ]
   
   if (ncol(plateAssociationData) == 3) {
-    compoundColumns <- c("sidecarBarcode", paste0("compoundBarcode_", 1:(ncol(plateAssociationData)-2)))
-    
-    # In some cases with multiple compound barcodes, the second column is blank but the 
-    # third is not. This is adjusted by moving the third value in to the second column.
-    for(i in 1:nrow(plateAssociationData)) {
-      if(plateAssociationData[i, 2] == "") {
-        warnUser("Blank sidecar barcode found in plate association file, adjusting barcodes to compensate.")
-        plateAssociationData[i, 2] <- plateAssociationData[i, 3]
-        plateAssociationData[i, 3] <- ""
+    # Removes the third column if it is blank
+    if(all(is.na(plateAssociationData[ , 3]))) {
+      plateAssociationData[ , 3] <- NULL
+      compoundColumns <- "compoundBarcode_1"
+    } else {
+      compoundColumns <- c("sidecarBarcode", paste0("compoundBarcode_", 1:(ncol(plateAssociationData)-2)))
+      
+      # In some cases with multiple compound barcodes, the second column is blank but the 
+      # third is not. This is adjusted by moving the third value in to the second column.
+      for(i in 1:nrow(plateAssociationData)) {
+        if(plateAssociationData[i, 2] == "") {
+          warnUser("Blank sidecar barcode found in plate association file, adjusting barcodes to compensate.")
+          plateAssociationData[i, 2] <- plateAssociationData[i, 3]
+          plateAssociationData[i, 3] <- ""
+        }
       }
     }
   } else if (ncol(plateAssociationData) == 2) {

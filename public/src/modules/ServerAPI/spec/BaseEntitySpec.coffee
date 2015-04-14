@@ -62,8 +62,8 @@ describe "Base Entity testing", ->
 					it "should be locked if status is complete", ->
 						@bem.getStatus().set codeValue: "complete"
 						expect(@bem.isEditable()).toBeTruthy()
-					it "should be locked if status is finalized", ->
-						@bem.getStatus().set codeValue: "finalized"
+					it "should be locked if status is approved", ->
+						@bem.getStatus().set codeValue: "approved"
 						expect(@bem.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
 						@bem.getStatus().set codeValue: "rejected"
@@ -327,17 +327,17 @@ describe "Base Entity testing", ->
 				it "should show the status select enabled", ->
 					expect(@bec.$('.bv_status').attr('disabled')).toBeUndefined()
 			describe "Entity status behavior", ->
-				it "should disable all fields if entity is finalized", ->
+				it "should disable all fields if entity is approved", ->
 					waitsFor ->
 						@bec.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@bec.$('.bv_status').val('finalized')
+						@bec.$('.bv_status').val('approved')
 						@bec.$('.bv_status').change()
 						expect(@bec.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
 						expect(@bec.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should enable all fields if entity is started", ->
-					@bec.$('.bv_status').val('finalized')
+					@bec.$('.bv_status').val('approved')
 					@bec.$('.bv_status').change()
 					@bec.$('.bv_status').val('started')
 					@bec.$('.bv_status').change()
@@ -346,12 +346,12 @@ describe "Base Entity testing", ->
 					@bec.$('.bv_status').val('created')
 					@bec.$('.bv_status').change()
 					expect(@bec.$('.bv_lock')).toBeHidden()
-				it "should show lock icon if entity is finalized", ->
+				it "should show lock icon if entity is approved", ->
 					waitsFor ->
 						@bec.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@bec.$('.bv_status').val('finalized')
+						@bec.$('.bv_status').val('approved')
 						@bec.$('.bv_status').change()
 						expect(@bec.$('.bv_lock')).toBeVisible()
 			describe "User edits fields", ->

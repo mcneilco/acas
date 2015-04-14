@@ -35,11 +35,13 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		scientist = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "codeValue", "scientist"
 		if scientist.get('codeValue') is undefined
-			scientist.set codeValue: window.AppLaunchParams.loginUserName
 			scientist.set codeType: "assay"
 			scientist.set codeKind: "scientist"
 			scientist.set codeOrigin: window.conf.scientistCodeOrigin
-
+			if @isNew()
+				scientist.set codeValue: window.AppLaunchParams.loginUserName
+			else
+				scientist.set codeValue: "unassigned"
 		scientist
 
 	getDetails: ->
@@ -403,6 +405,7 @@ class window.BaseEntityController extends AbstractFormController
 			# this is required in addition to model change event watcher only for spec. real app works without it
 			@updateEditable()
 			@model.trigger 'change'
+			@model.trigger 'statusChanged'
 
 	handleValueChanged: (vKind, value) =>
 		currentVal = @model["get"+vKind]()
@@ -418,19 +421,16 @@ class window.BaseEntityController extends AbstractFormController
 		if @model.isEditable()
 			@enableAllInputs()
 			@$('.bv_lock').hide()
-#			@$('.bv_save').attr('disabled', 'disabled')
-#			@$('.bv_cancel').attr('disabled','disabled')
 		else
 			@disableAllInputs()
 			@$('.bv_status').removeAttr('disabled')
 			@$('.bv_lock').show()
-#			@$('.bv_save').removeAttr('disabled')
 			@$('.bv_newEntity').removeAttr('disabled')
-#			@$('.bv')
 		if @model.isNew()
 			@$('.bv_status').attr("disabled", "disabled")
 		else
 			@$('.bv_status').removeAttr("disabled")
+		@model.trigger 'statusChanged'
 
 	beginSave: =>
 		@prepareToSaveAttachedFiles()
@@ -465,6 +465,9 @@ class window.BaseEntityController extends AbstractFormController
 
 	handleNewEntityClicked: =>
 		@$('.bv_confirmClearEntity').modal('show')
+		@$('.bv_confirmClear').removeAttr('disabled')
+		@$('.bv_cancelClear').removeAttr('disabled')
+		@$('.bv_closeModalButton').removeAttr('disabled')
 
 	handleCancelClearClicked: =>
 		@$('.bv_confirmClearEntity').modal('hide')

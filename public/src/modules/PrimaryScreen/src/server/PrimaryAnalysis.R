@@ -1815,8 +1815,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
   
   batchDataTable <- resultTable[is.na(flag)]
+  allFlaggedTable <- resultTable[!is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  # allFlaggedTable is only for treatment groups mising from treatmentGroupData
+  allFlaggedTable <- allFlaggedTable[!(tempParentId %in% treatmentGroupData$tempId)]
+  # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
+  flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
+  treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
   treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
 
@@ -1973,6 +1979,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Flagged wells" = sum(!is.na(resultTable$flag)),
         "Number of wells" = nrow(resultTable),
         "Hit rate" = round((nrow(resultTable[autoFlagType == "HIT"])/nrow(resultTable))*100,2),
+        "Z Prime" = unique(resultTable$zPrime),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
@@ -1981,12 +1988,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                             "\n  Count: ",nrow(resultTable[wellType == "PC"]),
                                             "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
                                             "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5),
+                                            "\n  CV: ",round(var(resultTable[wellType=="PC"]$normalizedActivity),5)),
         "Negative Control summary" = paste0("\n  Batch code: ",parameters$negativeControl$batchCode,
                                             "\n  Count: ",nrow(resultTable[wellType == "NC"]),
                                             "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
                                             "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5),
+                                            "\n  CV: ",round(var(resultTable[wellType=="NC"]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
@@ -2123,6 +2132,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
+    serverFlagFileLocation <- saveAcasFileToExperiment(
+      flaggedWells, experiment, 
+      "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+    
+    summaryInfo$info$"Original Flag File" <- paste0(
+      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2187,6 +2202,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows
+      treatmentGroupDataLong <- treatmentGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
       if (parameters$htsFormat) {
         analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
@@ -2511,6 +2527,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x))},
                                 "median" = function(x) {as.numeric(median(x))},
+                                "returnNA" = function(x) {NA_real_},
                                 stopUser("Internal error: Aggregation method not defined in system.")
   )
   aggregationResults <- batchDataTable[ , lapply(.SD, aggregationFunction), by = groupBy, .SDcols = meanTarget]

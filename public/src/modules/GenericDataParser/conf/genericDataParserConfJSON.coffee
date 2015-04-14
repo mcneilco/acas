@@ -371,19 +371,22 @@
 				typeName: "fileValue"
 			,
 				kindName: "hts format"
-				typeName:"stringValue"
+				typeName: "stringValue"
 			,
 				kindName: "comment"
-				typeName:"stringValue"
+				typeName: "stringValue"
 			,
 				kindName: "flag cause"
-				typeName:"codeValue"
+				typeName: "codeValue"
 			,
 				kindName: "flag observation"
-				typeName:"codeValue"
+				typeName: "codeValue"
 			,
 				kindName: "flag status"
-				typeName:"codeValue"
+				typeName: "codeValue"
+			,
+				kindName: "flag file"
+				typeName: "fileValue"
 			]
 
 		labeltypes:

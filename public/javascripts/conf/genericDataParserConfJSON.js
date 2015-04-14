@@ -386,6 +386,9 @@
         }, {
           kindName: "flag status",
           typeName: "codeValue"
+        }, {
+          kindName: "flag file",
+          typeName: "fileValue"
         }
       ],
       labeltypes: [

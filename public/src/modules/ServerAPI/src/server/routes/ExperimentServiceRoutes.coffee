@@ -121,6 +121,7 @@ updateExpt = (expt, testMode, callback) ->
 					console.log 'got ajax error trying to update experiment'
 					console.log error
 					console.log response
+					callback JSON.stringify "saveFailed"
 			)
 
 postExperiment = (req, resp) ->
@@ -171,6 +172,8 @@ postExperiment = (req, resp) ->
 					console.log 'got ajax error trying to save experiment - not unique name'
 					if response.body[0].message is "not unique experiment name"
 						resp.end JSON.stringify response.body[0].message
+					else
+						resp.end JSON.stringify "saveFailed"
 			)
 
 exports.postExperiment = (req, resp) ->

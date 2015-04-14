@@ -167,11 +167,15 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		$(".bv_searchTerm").val ""
 		if experimentSearchTerm isnt ""
 			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
-			$(".bv_searchingExperimentsMessage").removeClass "hide"
 			$(".bv_experimentBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchTerm").html experimentSearchTerm
 			$(".bv_searchExperimentsStatusIndicator").removeClass "hide"
-			@doSearch experimentSearchTerm
+			if !window.conf.browser.enableSearchAll and experimentSearchTerm is "*"
+				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
+			else
+				$(".bv_searchingExperimentsMessage").removeClass "hide"
+				$(".bv_searchTerm").html experimentSearchTerm
+				$(".bv_moreSpecificExperimentSearchNeeded").addClass "hide"
+				@doSearch experimentSearchTerm
 
 	doSearch: (experimentSearchTerm) =>
 		# disable the search text field while performing a search
@@ -212,6 +216,11 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		@template = _.template($('#ExperimentRowSummaryView').html())
 
 	render: =>
+		date = @model.getCompletionDate()
+		if date.isNew()
+			date = "not recorded"
+		else
+			date = UtilityFunctions::convertMSToYMDDate(date.get('dateValue'))
 
 		experimentBestName = @model.get('lsLabels').pickBestName()
 		if experimentBestName
@@ -223,7 +232,7 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
-			completionDate: @model.getCompletionDate().get('dateValue')
+			completionDate: date
 		$(@el).html(@template(toDisplay))
 
 		@

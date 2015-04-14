@@ -70,8 +70,8 @@ describe "Experiment module testing", ->
 					it "should be locked if status is complete", ->
 						@exp.getStatus().set codeValue: "complete"
 						expect(@exp.isEditable()).toBeTruthy()
-					it "should be locked if status is finalized", ->
-						@exp.getStatus().set codeValue: "finalized"
+					it "should be locked if status is approved", ->
+						@exp.getStatus().set codeValue: "approved"
 						expect(@exp.isEditable()).toBeFalsy()
 					it "should be locked if status is rejected", ->
 						@exp.getStatus().set codeValue: "rejected"
@@ -574,17 +574,17 @@ describe "Experiment module testing", ->
 				it "should show the status select enabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 			describe "Experiment status behavior", ->
-				it "should disable all fields if experiment is finalized", ->
+				it "should disable all fields if experiment is approved", ->
 					waitsFor ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_status').val('finalized')
+						@ebc.$('.bv_status').val('approved')
 						@ebc.$('.bv_status').change()
 						expect(@ebc.$('.bv_notebook').attr('disabled')).toEqual 'disabled'
 						expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
 				it "should enable all fields if experiment is started", ->
-					@ebc.$('.bv_status').val('finalized')
+					@ebc.$('.bv_status').val('approved')
 					@ebc.$('.bv_status').change()
 					@ebc.$('.bv_status').val('started')
 					@ebc.$('.bv_status').change()
@@ -593,12 +593,12 @@ describe "Experiment module testing", ->
 					@ebc.$('.bv_status').val('new')
 					@ebc.$('.bv_status').change()
 					expect(@ebc.$('.bv_lock')).toBeHidden()
-				it "should show lock icon if experiment is finalized", ->
+				it "should show lock icon if experiment is approved", ->
 					waitsFor ->
 						@ebc.$('.bv_status option').length > 0
 					, 1000
 					runs ->
-						@ebc.$('.bv_status').val('finalized')
+						@ebc.$('.bv_status').val('approved')
 						@ebc.$('.bv_status').change()
 						expect(@ebc.$('.bv_lock')).toBeVisible()
 			describe "cancel button behavior testing", ->

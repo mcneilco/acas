@@ -72,11 +72,16 @@
       $(".bv_searchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
-        $(".bv_searchingProtocolsMessage").removeClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
-        $(".bv_searchTerm").html(protocolSearchTerm);
         $(".bv_searchProtocolsStatusIndicator").removeClass("hide");
-        return this.doSearch(protocolSearchTerm);
+        if (!window.conf.browser.enableSearchAll && protocolSearchTerm === "*") {
+          return $(".bv_moreSpecificProtocolSearchNeeded").removeClass("hide");
+        } else {
+          $(".bv_searchingProtocolsMessage").removeClass("hide");
+          $(".bv_searchTerm").html(protocolSearchTerm);
+          $(".bv_moreSpecificProtocolSearchNeeded").addClass("hide");
+          return this.doSearch(protocolSearchTerm);
+        }
       }
     };
 
@@ -144,7 +149,13 @@
     };
 
     ProtocolRowSummaryController.prototype.render = function() {
-      var toDisplay;
+      var date, toDisplay;
+      date = this.model.getCreationDate();
+      if (date.isNew()) {
+        date = "not recorded";
+      } else {
+        date = UtilityFunctions.prototype.convertMSToYMDDate(date.get('dateValue'));
+      }
       toDisplay = {
         protocolName: this.model.get('lsLabels').pickBestName().get('labelText'),
         protocolCode: this.model.get('codeName'),
@@ -153,7 +164,7 @@
         assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
-        creationDate: this.model.getCreationDate().get('dateValue')
+        creationDate: date
       };
       $(this.el).html(this.template(toDisplay));
       return this;
