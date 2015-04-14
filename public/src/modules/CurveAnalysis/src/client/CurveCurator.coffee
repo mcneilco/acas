@@ -183,14 +183,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 				p1.on "up", p1.handlePointClicked, p1
 
-				p1.flagLabel = switch
-					when userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit' then 'hit'
-					when userFlagStatus == "knocked out" then userFlagComment
-					when preprocessFlagStatus == "knocked out" then preprocessFlagComment
-					when algorithmFlagStatus == "knocked out" then algorithmFlagComment
-					else ''
+				flagLabels = []
+				if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+					flagLabels.push 'hit'
+				if userFlagStatus == "knocked out"
+					flagLabels.push userFlagComment
+				if preprocessFlagStatus == "knocked out"
+					flagLabels.push preprocessFlagComment
+				if algorithmFlagStatus == "knocked out"
+					flagLabels.push algorithmFlagComment
+
+				if flagLabels.length > 0
+					p1.flagLabel = flagLabels.join ', '
+				else
+					p1.flagLabel = ''
 
 				p1.xLabel = JXG.trunc(points[ii].dose, 4)
+
 				@pointList.push p1
 				brd.highlightInfobox = (x, y, el) ->
 					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
