@@ -9,6 +9,7 @@ DROP VIEW IF EXISTS API_SUBJECT_RESULTS;
 drop view IF EXISTS api_container_contents;
 DROP VIEW IF EXISTS api_curve_params;
 DROP VIEW IF EXISTS api_dose_response;
+DROP VIEW IF EXISTS API_HTS_TREATMENT_RESULTS;
 DROP VIEW IF EXISTS api_experiment_results;
 DROP VIEW IF EXISTS api_analysis_group_results;
 DROP VIEW IF EXISTS p_api_analysis_group_results;
@@ -180,6 +181,7 @@ SELECT lsvalues0_.analysis_state_id AS stateId,
   lsvalues0_.url_value              AS urlValue,
   lsvalues0_.version                AS version,
   analysisgr0_.string_value	     AS curveId,
+  analysisgr0_.id	     AS curveValueId,
   pv1.numeric_value as curveDisplayMin,
   pv2.numeric_value as curveDisplayMax
 FROM analysis_group_value analysisgr0_
@@ -212,7 +214,8 @@ AND lsvalues0_.ls_kind != 'curve id';
 
 CREATE OR REPLACE VIEW API_DOSE_RESPONSE
 AS
-SELECT lsvalues9_.id        AS responseSubjectValueId,
+SELECT /*+ FIRST_ROWS(1) */
+	lsvalues9_.id        AS responseSubjectValueId,
   analysisgr2_.code_name	AS analysisGroupCode,
   lsvalues9_.recorded_by    AS recorded_by,
   lsvalues9_.ls_transaction AS lsTransaction,
@@ -223,18 +226,18 @@ SELECT lsvalues9_.id        AS responseSubjectValueId,
   lsvalues10_.conc_unit     AS doseUnits,
   lsvalues12_.code_value    AS algorithmFlagStatus,
   lsvalues13_.code_value    AS algorithmFlagObservation,
-  lsvalues14_.code_value    AS algorithmFlagReason,
+  lsvalues14_.code_value    AS algorithmFlagCause,
   lsvalues15_.string_value  AS algorithmFlagComment,
   lsvalues17_.code_value    AS preprocessFlagStatus,
   lsvalues18_.code_value    AS preprocessFlagObservation,
-  lsvalues19_.code_value    AS preprocessFlagReason,
+  lsvalues19_.code_value    AS preprocessFlagCause,
   lsstates11_.ls_kind       AS algorithmFlagLsKind,
   lsstates16_.ls_kind       AS preprocessFlagLsKind,
   lsstates21_.ls_kind       AS userFlagLsKind,
   lsvalues20_.string_value  AS preprocessFlagComment,
   lsvalues22_.code_value    AS userFlagStatus,
   lsvalues23_.code_value    AS userFlagObservation,
-  lsvalues24_.code_value    AS userFlagReason,
+  lsvalues24_.code_value    AS userFlagCause,
   lsvalues25_.string_value  AS userFlagComment,
   analysisgr0_.string_value AS curveId,
   analysisgr0_.id	     AS curveValueId
@@ -275,7 +278,7 @@ ON lsstates11_.id       =lsvalues13_.subject_state_id
 AND (lsvalues13_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues14_
 ON lsstates11_.id       =lsvalues14_.subject_state_id
-AND (lsvalues14_.ls_kind='flag reason')
+AND (lsvalues14_.ls_kind='flag cause')
 LEFT OUTER JOIN subject_value lsvalues15_
 ON lsstates11_.id       =lsvalues15_.subject_state_id
 AND (lsvalues15_.ls_kind='comment')
@@ -291,7 +294,7 @@ ON lsstates16_.id       =lsvalues18_.subject_state_id
 AND (lsvalues18_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues19_
 ON lsstates16_.id       =lsvalues19_.subject_state_id
-AND (lsvalues19_.ls_kind='flag reason')
+AND (lsvalues19_.ls_kind='flag cause')
 LEFT OUTER JOIN subject_value lsvalues20_
 ON lsstates16_.id       =lsvalues20_.subject_state_id
 AND (lsvalues20_.ls_kind='comment')
@@ -307,7 +310,7 @@ ON lsstates21_.id       =lsvalues23_.subject_state_id
 AND (lsvalues23_.ls_kind='flag observation')
 LEFT OUTER JOIN subject_value lsvalues24_
 ON lsstates21_.id       =lsvalues24_.subject_state_id
-AND (lsvalues24_.ls_kind='flag reason')
+AND (lsvalues24_.ls_kind='flag cause')
 LEFT OUTER JOIN subject_value lsvalues25_
 ON lsstates21_.id               =lsvalues25_.subject_state_id
 AND (lsvalues25_.ls_kind        ='comment')
@@ -328,6 +331,33 @@ AND e.ignored = '0'
 AND e.deleted = '0'
 AND analysisgr1_.ls_type ='data'
 AND analysisgr1_.ls_kind ='dose response';
+
+CREATE or REPLACE VIEW API_HTS_TREATMENT_RESULTS
+AS
+SELECT eag.experiment_id,
+tgv2.code_value AS tested_lot,
+tgv2.concentration,
+tgv2.conc_unit,
+tgv.id AS tgv_id,
+tgv.ls_kind as ls_kind,
+tgv.operator_kind,
+tgv.numeric_value,
+tgv.uncertainty,
+tgv.unit_kind,
+tgv.string_value,
+tgv.comments,
+tgv.recorded_date,
+tgv.public_data,
+tgs.id AS state_id,
+tgs.treatment_group_id
+FROM experiment_analysisgroup eag
+JOIN analysis_group ag ON ag.id = eag.analysis_group_id
+LEFT OUTER JOIN analysis_group_state ags on ag.id = ags.ANALYSIS_GROUP_ID
+JOIN analysisgroup_treatmentgroup agtg ON agtg.analysis_group_id = eag.analysis_group_id
+JOIN treatment_group_state tgs ON tgs.treatment_group_id = agtg.treatment_group_id and tgs.ls_type_and_kind = 'data_results'
+JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id and tgv.ls_kind != 'batch code'
+JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
+where (ags.ls_type_and_kind is null or ags.ls_type_and_kind != 'data_dose response');
 
 CREATE OR REPLACE VIEW api_container_contents
 AS
@@ -643,7 +673,7 @@ THEN to_char(tgv.date_value, 'yyyy-mm-dd')
 ELSE tgv.string_value
 END AS tg_string_value,
 tgv.comments as tg_comments, 
-tgv.recorded_date::timestamp::date as tg_recorded_date,
+tgv.recorded_date as tg_recorded_date,
 tgv.public_data as tg_public_data,
 tgs.id AS tg_state_id,
 tgs.ls_kind AS tg_state_kind,
