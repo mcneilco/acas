@@ -137,6 +137,27 @@ class window.Experiment extends BaseEntity
 		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity
 
+	prepareToSave: =>
+		valuesToDelete = [
+			'analysis status'
+			'dry run status'
+			'model fit status'
+			'data analysis parameters'
+			'model fit parameters'
+			'analysis result html'
+			'dry run result html'
+			'model fit type'
+			'model fit result html'
+			'source file'
+			'hts format'
+		]
+		unless @isNew()
+			@get('lsStates').each (state) ->
+				state.get('lsValues').each (val) ->
+					if val.get('lsKind') in valuesToDelete
+						state.get('lsValues').remove val
+		super()
+
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
 
