@@ -1385,9 +1385,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	updateModelFitTab: =>
 		@modelFitController.model = @model
-		@modelFitController.setReadyForFit()
+		@modelFitController.testReadyForFit()
 		@$('.bv_resultsContainer').hide()
-#		@modelFitController.render()
+		@modelFitController.render()
 
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController

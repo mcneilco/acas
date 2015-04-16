@@ -1,8 +1,7 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   window.Experiment = (function(_super) {
     __extends(Experiment, _super);
@@ -228,17 +227,53 @@
     };
 
     Experiment.prototype.prepareToSave = function() {
-      var valuesToDelete;
-      valuesToDelete = ['analysis status', 'dry run status', 'model fit status', 'data analysis parameters', 'model fit parameters', 'analysis result html', 'dry run result html', 'model fit type', 'model fit result html', 'source file', 'hts format'];
+      var expState, val, value, valuesToDelete, _i, _len;
+      valuesToDelete = [
+        {
+          type: 'codeValue',
+          kind: 'analysis status'
+        }, {
+          type: 'codeValue',
+          kind: 'dry run status'
+        }, {
+          type: 'codeValue',
+          kind: 'model fit status'
+        }, {
+          type: 'clobValue',
+          kind: 'data analysis parameters'
+        }, {
+          type: 'clobValue',
+          kind: 'model fit parameters'
+        }, {
+          type: 'clobValue',
+          kind: 'analysis result html'
+        }, {
+          type: 'clobValue',
+          kind: 'dry run result html'
+        }, {
+          type: 'codeValue',
+          kind: 'model fit type'
+        }, {
+          type: 'clobValue',
+          kind: 'model fit result html'
+        }, {
+          type: 'fileValue',
+          kind: 'source file'
+        }, {
+          type: 'fileValue',
+          kind: 'dryrun source file'
+        }, {
+          type: 'stringValue',
+          kind: 'hts format'
+        }
+      ];
       if (!this.isNew()) {
-        this.get('lsStates').each(function(state) {
-          return state.get('lsValues').each(function(val) {
-            var _ref;
-            if (_ref = val.get('lsKind'), __indexOf.call(valuesToDelete, _ref) >= 0) {
-              return state.get('lsValues').remove(val);
-            }
-          });
-        });
+        expState = this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0];
+        for (_i = 0, _len = valuesToDelete.length; _i < _len; _i++) {
+          val = valuesToDelete[_i];
+          value = expState.getValuesByTypeAndKind(val.type, val.kind)[0];
+          expState.get('lsValues').remove(value);
+        }
       }
       return Experiment.__super__.prepareToSave.call(this);
     };
