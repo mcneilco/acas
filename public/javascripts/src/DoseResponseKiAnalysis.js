@@ -201,6 +201,11 @@
         value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_ligandConc_value')))
       });
       this.model.set({
+        inactiveThresholdMode: this.$('.bv_inactiveThresholdMode').is(":checked")
+      }, {
+        silent: true
+      });
+      this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       }, {
         silent: true
