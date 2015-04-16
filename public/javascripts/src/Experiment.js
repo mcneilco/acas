@@ -1,12 +1,14 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   window.Experiment = (function(_super) {
     __extends(Experiment, _super);
 
     function Experiment() {
+      this.prepareToSave = __bind(this.prepareToSave, this);
       this.duplicateEntity = __bind(this.duplicateEntity, this);
       this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
       this.parse = __bind(this.parse, this);
@@ -223,6 +225,22 @@
         dateValue: null
       });
       return copiedEntity;
+    };
+
+    Experiment.prototype.prepareToSave = function() {
+      var valuesToDelete;
+      valuesToDelete = ['analysis status', 'dry run status', 'model fit status', 'data analysis parameters', 'model fit parameters', 'analysis result html', 'dry run result html', 'model fit type', 'model fit result html', 'source file', 'hts format'];
+      if (!this.isNew()) {
+        this.get('lsStates').each(function(state) {
+          return state.get('lsValues').each(function(val) {
+            var _ref;
+            if (_ref = val.get('lsKind'), __indexOf.call(valuesToDelete, _ref) >= 0) {
+              return state.get('lsValues').remove(val);
+            }
+          });
+        });
+      }
+      return Experiment.__super__.prepareToSave.call(this);
     };
 
     return Experiment;
