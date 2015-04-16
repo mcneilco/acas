@@ -70,7 +70,7 @@ class window.PrimaryScreenProtocolParameters extends State
 			mt.set codeValue: "unassigned"
 			mt.set codeType: "assay"
 			mt.set codeKind: "molecular target"
-			mt.set codeOrigin: "ACAS DDICT"
+			mt.set codeOrigin: window.conf.molecularTargetCodeOrigin
 
 		mt
 
