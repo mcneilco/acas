@@ -2695,10 +2695,10 @@ deleteModelSettings <- function(experiment) {
   #   is "not started"
   updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "codeValue", "model fit status")
-  updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
-                           "experiment metadata", "codeValue", "model fit type")
-  updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
-                           "experiment metadata", "clobValue", "model fit parameters")
+#   updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
+#                            "experiment metadata", "codeValue", "model fit type")
+#   updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
+#                            "experiment metadata", "clobValue", "model fit parameters")
   updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "clobValue", "model fit result html")
 }
