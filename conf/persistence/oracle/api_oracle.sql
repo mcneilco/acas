@@ -136,8 +136,9 @@ agv.clob_value,
 agv.comments, 
 agv.recorded_date,
 agv.public_data
-FROM analysis_GROUP ag
-JOIN experiment_analysisgroup eag ON eag.analysis_group_id = ag.id
+FROM experiment e
+JOIN experiment_analysisgroup eag on e.id=eag.experiment_id
+JOIN analysis_GROUP ag ON eag.analysis_group_id = ag.id
 JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
 JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
@@ -145,7 +146,8 @@ LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and
 LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and agv4.ls_kind = 'time'
 WHERE ag.ignored = '0' and
 ags.ignored = '0' and
-agv.ignored = '0';
+agv.ignored = '0' and
+e.ignored = '0';
 
 CREATE OR REPLACE VIEW api_experiment_approved
 AS
@@ -336,7 +338,7 @@ AND analysisgr1_.ls_kind ='dose response';
 
 CREATE or REPLACE VIEW API_HTS_TREATMENT_RESULTS
 AS
-SELECT eag.experiment_id,
+SELECT e.id as experiment_id,
 tgv2.code_value AS tested_lot,
 tgv2.concentration,
 tgv2.conc_unit,
@@ -352,7 +354,8 @@ tgv.recorded_date,
 tgv.public_data,
 tgs.id AS state_id,
 tgs.treatment_group_id
-FROM experiment_analysisgroup eag
+FROM experiment e
+JOIN experiment_analysisgroup eag on e.id=eag.experiment_id
 JOIN analysis_group ag ON ag.id = eag.analysis_group_id
 LEFT OUTER JOIN analysis_group_state ags on ag.id = ags.ANALYSIS_GROUP_ID
 JOIN analysisgroup_treatmentgroup agtg ON agtg.analysis_group_id = eag.analysis_group_id
