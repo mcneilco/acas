@@ -121,7 +121,7 @@
           codeKind: "molecular target"
         });
         mt.set({
-          codeOrigin: "ACAS DDICT"
+          codeOrigin: window.conf.molecularTargetCodeOrigin
         });
       }
       return mt;
