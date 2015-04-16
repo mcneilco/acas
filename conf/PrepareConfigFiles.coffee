@@ -176,11 +176,6 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
 	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
-	confs.push('MinSpareServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'MinSpareServers'}).value)
-	confs.push('MaxSpareServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'MaxSpareServers'}).value)
-	confs.push('ServerLimit ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerLimit'}).value)
-	confs.push('MaxClients ' + _.findWhere(apacheHardCodedConfigs, {directive: 'MaxClients'}).value)
-	confs.push('MaxRequestsPerChild ' + _.findWhere(apacheHardCodedConfigs, {directive: 'MaxRequestsPerChild'}).value)
 	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
 	confs.push('ServerRoot ' + serverRoot)
 	confs.push('ServerName ' + config.all.client.host)
@@ -221,12 +216,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.join('\n')
 
 
-apacheHardCodedConfigs= [{directive: 'StartServers', value: '8'},
-	{directive: 'MinSpareServers', value: '5'},
-	{directive: 'MaxSpareServers', value: '5'},
-	{directive: 'ServerLimit', value: '256'},
-	{directive: 'MaxClients', value: '256'},
-	{directive: 'MaxRequestsPerChild', value: '4000'},
+apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'ServerSignature', value: 'On'},
 	{directive: 'HostnameLookups', value: 'On'},
 	{directive: 'ServerAdmin', value: 'root@localhost'},
