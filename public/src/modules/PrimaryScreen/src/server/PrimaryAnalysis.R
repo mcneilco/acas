@@ -2673,7 +2673,7 @@ matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
   # helper for meltKnownTypes
   newBatchCodeState <- unique(stateKindVect[valueKindVect!="batch code"])
   if (length(newBatchCodeState) != 1) {
-    stopUser("Coding Error: unable to find unique stateKind for batch codes")
+    stop("Coding Error: unable to find unique stateKind for batch codes")
   }
   stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
   return(stateKindVect)
