@@ -2533,8 +2533,8 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   
   aggregationFunction <- switch(parameters$aggregationMethod,
-                                "mean" = function(x) {as.numeric(mean(x))},
-                                "median" = function(x) {as.numeric(median(x))},
+                                "mean" = function(x) {as.numeric(mean(x, na.rm = T))},
+                                "median" = function(x) {as.numeric(median(x, na.rm = T))},
                                 "returnNA" = function(x) {NA_real_},
                                 stopUser("Internal error: Aggregation method not defined in system.")
   )
