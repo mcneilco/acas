@@ -198,13 +198,12 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 	searchParams$advancedFilterSQL <- advancedSqlQuery
 }
 
-#myLogger$debug("here is the final searchParams")
-#myLogger$debug(toJSON(searchParams))
-#myLogger$debug(searchParams)
+myLogger$debug("here is the final searchParams")
+myLogger$debug(toJSON(searchParams))
+myLogger$debug(searchParams)
 
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
-#serverURL <- "http://host5.labsynch.com:8080/acas-1.4/"
 dataCsv <- getURL(
   paste0(serverURL, "experiments/agdata/batchcodelist/experimentcodelist?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
@@ -246,6 +245,11 @@ if (nrow(dataDT) > 0){
 		codeName <- as.character(unique(outputDT$experimentCodeName))
 		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
+        exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+
+		myLogger$debug("here is the exptDataColumns")
+        myLogger$debug(exptDataColumns)
+
 		#setcolorder(outputDT, c("geneId",exptDataColumns))
 		outputDT <- subset(outputDT, ,sel=c("geneId",exptDataColumns))
 
@@ -270,8 +274,7 @@ if (nrow(dataDT) > 0){
 		codeName <- as.character(unique(outputDT2$experimentCodeName))
 		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
-		myLogger$debug(paste0("current experimentCodeName ", codeName))
-		myLogger$debug(paste0("current exptDataColumns ", exptDataColumns))
+		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
 
 		#setcolorder(outputDT2, c("geneId",exptDataColumns))
 		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
