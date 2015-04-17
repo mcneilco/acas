@@ -26,6 +26,9 @@
 			[
 				kindName: "efficacy"
 				typeName: "numericValue"
+			,
+				kindName: "flag file"
+				typeName: "fileValue"
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.genericDataParserConfJSON = window.genericDataParserConfJSON or {} else exports)
