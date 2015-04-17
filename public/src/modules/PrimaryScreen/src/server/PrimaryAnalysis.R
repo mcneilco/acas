@@ -2675,6 +2675,10 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if (forceBatchCodeAdd) {
     fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
+    # If the only value in the tempId is a batch code, there was a missing value input, so we just remove it
+    fullTable[, removeMe := (valueKind=="batch code" && .N==1), by=tempId]
+    fullTable <- fullTable[!(removeMe)]
+    fullTable[, removeMe := NULL]
     fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
   }
   
