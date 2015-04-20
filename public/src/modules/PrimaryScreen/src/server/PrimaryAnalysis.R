@@ -67,7 +67,7 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   
   resultTable[ , flag := as.character(NA)]
   
-  resultTable[flagType=="ko", flag := "KO"]
+  resultTable[flagType=="knocked out", flag := "KO"]
   
   checkFlags(resultTable)
   
@@ -1541,7 +1541,7 @@ autoFlagWells <- function(resultTable, parameters) {
     thresholdType <- "percent efficacy"
     
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
-    resultTable[transformed_efficacy > hitThreshold , autoFlagType := "HIT"]
+    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
   } else if(parameters$thresholdType == "sd") {
     hitThreshold <- parameters$hitSDThreshold
@@ -1823,9 +1823,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
   flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
   treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
-  treatmentGroupData[, tempParentId:=.GRP, by=groupBy]
+  # If one concentration, no problem, if three or more, it's a curve, with two... split them
+  treatmentGroupData[, concIndex := seq(1, .N), by = groupBy]
+  treatmentGroupData[, secondConc := (.N == 2 && concIndex == 2), by = groupBy]
+  treatmentGroupData[, concIndex := NULL]
+  analysisGroupBy <- c(groupBy, "secondConc")
+  treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
-
+  analysisGroupData[, secondConc := NULL]
+  treatmentGroupData[, secondConc := NULL]
   
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
@@ -1979,20 +1985,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         "Flagged wells" = sum(!is.na(resultTable$flag)),
         "Number of wells" = nrow(resultTable),
         "Hit rate" = round((nrow(resultTable[autoFlagType == "HIT"])/nrow(resultTable))*100,2),
+        "Z Prime" = round(unique(resultTable$zPrime),5),
         # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
         # "Z" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test" & !resultTable$fluorescent]),digits=3,nsmall=3),
         # "Robust Z" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="test"& !resultTable$fluorescent]),digits=3,nsmall=3),
         "Positive Control summary" = paste0("\n  Batch code: ",parameters$positiveControl$batchCode,
-                                            "\n  Count: ",nrow(resultTable[wellType == "PC"]),
-                                            "\n  Mean: ",round(mean(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\n  Median: ",round(median(resultTable[wellType=="PC"]$normalizedActivity),5),
-                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC"]$normalizedActivity),5)),
+                                            "\n  Count: ",nrow(resultTable[wellType == "PC" & is.na(flag)]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="PC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="PC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="PC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  CV: ",round(sd(resultTable[wellType=="PC" & is.na(flag)]$normalizedActivity) / mean(resultTable[wellType=="PC" & is.na(flag)]$normalizedActivity),5)),
         "Negative Control summary" = paste0("\n  Batch code: ",parameters$negativeControl$batchCode,
-                                            "\n  Count: ",nrow(resultTable[wellType == "NC"]),
-                                            "\n  Mean: ",round(mean(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\n  Median: ",round(median(resultTable[wellType=="NC"]$normalizedActivity),5),
-                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC"]$normalizedActivity),5)),
+                                            "\n  Count: ",nrow(resultTable[wellType == "NC" & is.na(flag)]),
+                                            "\n  Mean: ",round(mean(resultTable[wellType=="NC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  Median: ",round(median(resultTable[wellType=="NC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  Standard Deviation: ",round(sd(resultTable[wellType=="NC" & is.na(flag)]$normalizedActivity),5),
+                                            "\n  CV: ",round(sd(resultTable[wellType=="NC" & is.na(flag)]$normalizedActivity) / mean(resultTable[wellType=="NC" & is.na(flag)]$normalizedActivity),5)),
         "Date analysis run" = format(Sys.time(), "%a %b %d %X %z %Y")
       )
     )
@@ -2129,12 +2138,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
-    serverFlagFileLocation <- saveAcasFileToExperiment(
-      flaggedWells, experiment, 
-      "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+    if (!is.null(flaggedWells) && flaggedWells != "") {
+      serverFlagFileLocation <- saveAcasFileToExperiment(
+        flaggedWells, experiment, 
+        "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+      summaryInfo$info$"Original Flag File" <- paste0(
+        '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
+    }
     
-    summaryInfo$info$"Original Flag File" <- paste0(
-      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     
     #     if (!useRdap) {
     if (FALSE) {
@@ -2522,8 +2533,8 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   
   aggregationFunction <- switch(parameters$aggregationMethod,
-                                "mean" = function(x) {as.numeric(mean(x))},
-                                "median" = function(x) {as.numeric(median(x))},
+                                "mean" = function(x) {as.numeric(mean(x, na.rm = T))},
+                                "median" = function(x) {as.numeric(median(x, na.rm = T))},
                                 "returnNA" = function(x) {NA_real_},
                                 stopUser("Internal error: Aggregation method not defined in system.")
   )
@@ -2664,6 +2675,10 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if (forceBatchCodeAdd) {
     fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
+    # If the only value in the tempId is a batch code, there was a missing value input, so we just remove it
+    fullTable[, removeMe := (valueKind=="batch code" && .N==1), by=tempId]
+    fullTable <- fullTable[!(removeMe)]
+    fullTable[, removeMe := NULL]
     fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
   }
   
@@ -2684,10 +2699,10 @@ deleteModelSettings <- function(experiment) {
   #   is "not started"
   updateValueByTypeAndKind("not started", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "codeValue", "model fit status")
-  updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
-                           "experiment metadata", "codeValue", "model fit type")
-  updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
-                           "experiment metadata", "clobValue", "model fit parameters")
+#   updateValueByTypeAndKind("unassigned", "experiment", experiment$codeName, "metadata", 
+#                            "experiment metadata", "codeValue", "model fit type")
+#   updateValueByTypeAndKind("[]", "experiment", experiment$codeName, "metadata", 
+#                            "experiment metadata", "clobValue", "model fit parameters")
   updateValueByTypeAndKind("", "experiment", experiment$codeName, "metadata", 
                            "experiment metadata", "clobValue", "model fit result html")
 }

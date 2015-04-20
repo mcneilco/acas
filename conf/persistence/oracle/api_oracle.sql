@@ -9,6 +9,7 @@ DROP VIEW API_SUBJECT_RESULTS;
 drop view api_container_contents;
 DROP VIEW api_curve_params;
 DROP VIEW api_dose_response;
+DROP VIEW API_HTS_TREATMENT_RESULTS;
 DROP VIEW api_experiment_results;
 DROP VIEW api_analysis_group_results;
 DROP VIEW p_api_analysis_group_results;
@@ -135,8 +136,9 @@ agv.clob_value,
 agv.comments, 
 agv.recorded_date,
 agv.public_data
-FROM analysis_GROUP ag
-JOIN experiment_analysisgroup eag ON eag.analysis_group_id = ag.id
+FROM experiment e
+JOIN experiment_analysisgroup eag on e.id=eag.experiment_id
+JOIN analysis_GROUP ag ON eag.analysis_group_id = ag.id
 JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
 JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
 JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
@@ -144,7 +146,8 @@ LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and
 LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and agv4.ls_kind = 'time'
 WHERE ag.ignored = '0' and
 ags.ignored = '0' and
-agv.ignored = '0';
+agv.ignored = '0' and
+e.ignored = '0';
 
 CREATE OR REPLACE VIEW api_experiment_approved
 AS
@@ -332,6 +335,40 @@ AND e.ignored = '0'
 AND e.deleted = '0'
 AND analysisgr1_.ls_type ='data'
 AND analysisgr1_.ls_kind ='dose response';
+
+CREATE or REPLACE VIEW API_HTS_TREATMENT_RESULTS
+AS
+SELECT e.id as experiment_id,
+tgv2.code_value AS tested_lot,
+tgv2.concentration,
+tgv2.conc_unit,
+tgv.id AS tgv_id,
+tgv.ls_kind as ls_kind,
+tgv.operator_kind,
+tgv.numeric_value,
+tgv.uncertainty,
+tgv.unit_kind,
+tgv.string_value,
+tgv.comments,
+tgv.recorded_date,
+tgv.public_data,
+tgs.id AS state_id,
+tgs.treatment_group_id
+FROM experiment e
+JOIN experiment_analysisgroup eag on e.id=eag.experiment_id
+JOIN analysis_group ag ON ag.id = eag.analysis_group_id
+LEFT OUTER JOIN analysis_group_state ags on ag.id = ags.ANALYSIS_GROUP_ID
+JOIN analysisgroup_treatmentgroup agtg ON agtg.analysis_group_id = eag.analysis_group_id
+JOIN treatment_group_state tgs ON tgs.treatment_group_id = agtg.treatment_group_id and tgs.ls_type_and_kind = 'data_results'
+JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id and tgv.ls_kind != 'batch code'
+JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
+where (ags.ls_type_and_kind is null or ags.ls_type_and_kind != 'data_dose response')
+and e.ignored = '0'
+and ag.ignored = '0'
+and ags.ignored = '0'
+and tgs.ignored = '0'
+and tgv.ignored = '0'
+and tgv2.ignored = '0';
 
 CREATE OR REPLACE VIEW api_container_contents
 AS
@@ -851,6 +888,7 @@ GRANT SELECT on api_analysis_group_results TO seurat;
 GRANT SELECT on p_api_analysis_group_results TO seurat;
 GRANT select on api_curve_params to seurat;
 GRANT SELECT on api_dose_response TO seurat;
+grant select on API_HTS_TREATMENT_RESULTS to seurat;
 
 -----------------------------
 -- Run all of these as seurat

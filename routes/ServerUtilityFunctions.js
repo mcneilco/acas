@@ -161,7 +161,7 @@
         if (!error && response.statusCode === 200) {
           return resp.end(JSON.stringify(json));
         } else {
-          console.log('got ajax error trying to save new experiment');
+          console.log('got ajax error');
           console.log(error);
           console.log(json);
           return console.log(response);

@@ -70,7 +70,7 @@ class window.PrimaryScreenProtocolParameters extends State
 			mt.set codeValue: "unassigned"
 			mt.set codeType: "assay"
 			mt.set codeKind: "molecular target"
-			mt.set codeOrigin: "ACAS DDICT"
+			mt.set codeOrigin: window.conf.molecularTargetCodeOrigin
 
 		mt
 
@@ -507,6 +507,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
 		@model.on 'readyToSave', @handleFinishSave
+		@model.on 'notUniqueName', =>
+			@$('.bv_saveModuleFailed').show()
 		@setupPrimaryScreenProtocolController()
 		@setupPrimaryScreenAnalysisParametersController()
 		@setupModelFitTypeController()
@@ -535,7 +537,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@setupModelFitTypeController()
 		@$('.bv_savingModule').hide()
 		@$('.bv_saveAndCancelButtons').hide()
-		if @$('.bv_cancelModuleComplete').is(":visible")
+		if @$('.bv_cancelModuleComplete').is(":visible") or $('.bv_saveModuleFailed').is(":visible")
+			@$('.bv_saveModuleFailed').hide()
 			@$('.bv_updateModuleComplete').hide()
 		else
 			@$('.bv_updateModuleComplete').show()

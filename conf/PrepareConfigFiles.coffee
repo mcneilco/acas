@@ -216,7 +216,7 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 	confs.join('\n')
 
 
-apacheHardCodedConfigs= [{directive: 'StartServers', value: '4'},
+apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'ServerSignature', value: 'On'},
 	{directive: 'HostnameLookups', value: 'On'},
 	{directive: 'ServerAdmin', value: 'root@localhost'},
