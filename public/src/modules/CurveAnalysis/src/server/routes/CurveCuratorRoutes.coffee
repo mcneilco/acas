@@ -92,6 +92,7 @@ exports.updateCurveUserFlag = (req, resp) ->
 		)
 
 exports.updateCurveDetail = (req, resp) ->
+	req.connection.setTimeout 6000000
 	if global.specRunnerTestmode
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
@@ -105,6 +106,7 @@ exports.updateCurveDetail = (req, resp) ->
 			url: baseurl
 			body: JSON.stringify req.body
 			json: true
+			timeout: 6000000
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
@@ -113,7 +115,6 @@ exports.updateCurveDetail = (req, resp) ->
 			else
 				console.log 'got ajax error trying to refit curve'
 				console.log error
-				console.log json
 				console.log response
 				resp.send 'got ajax error trying to refit curve', 500
 		)
