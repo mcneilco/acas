@@ -268,6 +268,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	render: =>
+		#need to reset analyzedPreviously because after successful re-analysis, the model fit status is reset to not started
+		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText

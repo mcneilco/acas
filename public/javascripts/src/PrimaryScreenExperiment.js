@@ -2117,8 +2117,9 @@
 
     AbstractPrimaryScreenExperimentController.prototype.updateModelFitTab = function() {
       this.modelFitController.model = this.model;
-      this.modelFitController.setReadyForFit();
-      return this.$('.bv_resultsContainer').hide();
+      this.modelFitController.testReadyForFit();
+      this.$('.bv_resultsContainer').hide();
+      return this.modelFitController.render();
     };
 
     return AbstractPrimaryScreenExperimentController;

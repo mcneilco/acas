@@ -313,7 +313,7 @@
   apacheHardCodedConfigs = [
     {
       directive: 'StartServers',
-      value: '4'
+      value: '5'
     }, {
       directive: 'ServerSignature',
       value: 'On'

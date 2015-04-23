@@ -455,6 +455,7 @@
 
     DoseResponseAnalysisController.prototype.render = function() {
       var buttonText;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('codeValue') === "not started" ? false : true;
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
       return this.$('.bv_fitModelButton').html(buttonText);

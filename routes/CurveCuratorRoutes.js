@@ -114,6 +114,7 @@
 
   exports.updateCurveDetail = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
+    req.connection.setTimeout(6000000);
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
@@ -126,7 +127,8 @@
         method: 'POST',
         url: baseurl,
         body: JSON.stringify(req.body),
-        json: true
+        json: true,
+        timeout: 6000000
       }, (function(_this) {
         return function(error, response, json) {
           if (!error && response.statusCode === 200) {
@@ -136,7 +138,6 @@
           } else {
             console.log('got ajax error trying to refit curve');
             console.log(error);
-            console.log(json);
             console.log(response);
             return resp.send('got ajax error trying to refit curve', 500);
           }

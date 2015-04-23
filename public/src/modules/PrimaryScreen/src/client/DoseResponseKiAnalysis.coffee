@@ -123,6 +123,8 @@ class window.DoseResponseKiAnalysisParametersController extends AbstractFormCont
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_kd_value'))
 		@model.get('ligandConc').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_ligandConc_value'))
+		@model.set inactiveThresholdMode: @$('.bv_inactiveThresholdMode').is(":checked"),
+			silent: true
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.set smartMode: @$('.bv_smartMode').is(":checked"),

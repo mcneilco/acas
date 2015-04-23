@@ -137,6 +137,51 @@ class window.Experiment extends BaseEntity
 		copiedEntity.getCompletionDate().set dateValue: null
 		copiedEntity
 
+	prepareToSave: =>
+		valuesToDelete = [
+			type: 'codeValue'
+			kind: 'analysis status'
+		,
+			type: 'codeValue'
+			kind: 'dry run status'
+		,
+			type: 'codeValue'
+			kind: 'model fit status'
+		,
+			type: 'clobValue'
+			kind: 'data analysis parameters'
+		,
+			type: 'clobValue'
+			kind: 'model fit parameters'
+		,
+			type: 'clobValue'
+			kind: 'analysis result html'
+		,
+			type: 'clobValue'
+			kind: 'dry run result html'
+		,
+			type: 'codeValue'
+			kind: 'model fit type'
+		,
+			type: 'clobValue'
+			kind: 'model fit result html'
+		,
+			type: 'fileValue'
+			kind: 'source file'
+		,
+			type: 'fileValue'
+			kind: 'dryrun source file'
+		,
+			type: 'stringValue'
+			kind: 'hts format'
+		]
+		unless @isNew()
+			expState = @get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0]
+			for val in valuesToDelete
+				value = expState.getValuesByTypeAndKind(val.type, val.kind)[0]
+				expState.get('lsValues').remove value
+		super()
+
 class window.ExperimentList extends Backbone.Collection
 	model: Experiment
 

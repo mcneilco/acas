@@ -121,7 +121,7 @@
           codeKind: "molecular target"
         });
         mt.set({
-          codeOrigin: "ACAS DDICT"
+          codeOrigin: window.conf.molecularTargetCodeOrigin
         });
       }
       return mt;
@@ -809,6 +809,11 @@
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.model.on('readyToSave', this.handleFinishSave);
+      this.model.on('notUniqueName', (function(_this) {
+        return function() {
+          return _this.$('.bv_saveModuleFailed').show();
+        };
+      })(this));
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
@@ -840,7 +845,8 @@
       this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
       this.$('.bv_saveAndCancelButtons').hide();
-      if (this.$('.bv_cancelModuleComplete').is(":visible")) {
+      if (this.$('.bv_cancelModuleComplete').is(":visible") || $('.bv_saveModuleFailed').is(":visible")) {
+        this.$('.bv_saveModuleFailed').hide();
         this.$('.bv_updateModuleComplete').hide();
       } else {
         this.$('.bv_updateModuleComplete').show();
