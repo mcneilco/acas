@@ -133,8 +133,9 @@ postData <- rawToChar(receiveBin())
 myLogger$debug(postData)
 
 #postData <- '{"queryParams":{"batchCodes":"29 60","experimentCodeList":["EXPT-00017","tags_EXPT-00017","PROT-00014","_External data_Published Influenza Datasets"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
-exportCSV <- FALSE
-onlyPublicData <- "true"
+#postData <- '{"queryParams":{"batchCodes":"","experimentCodeList":["EXPT-00000039"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
+#exportCSV <- TRUE
+#onlyPublicData <- "false"
 
 
 postData.list <- fromJSON(postData)
