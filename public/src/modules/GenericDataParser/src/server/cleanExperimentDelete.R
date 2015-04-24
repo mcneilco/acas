@@ -1,7 +1,7 @@
 require(racas)
 source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
 require(RCurl)
-experimentName <- "PK588_DNS001376769_NOP_R_IVPO_31Jul2013"
+experimentName <- "testExperiment"
 
 configList <- racas::applicationSettings
 

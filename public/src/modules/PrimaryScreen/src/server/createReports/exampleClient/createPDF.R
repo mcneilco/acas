@@ -1,5 +1,5 @@
 createPDF <- function(resultTable, parameters, summaryInfo, threshold, experiment, dryRun=F, activityName) {
-  # DNS
+  # exampleClient
   require('data.table')
   require('reshape')
   require('gplots')

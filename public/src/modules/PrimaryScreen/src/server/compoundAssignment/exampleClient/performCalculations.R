@@ -1,5 +1,5 @@
 performCalculations <- function(resultTable, parameters) {
-  # DNS
+  # exampleClient
   resultTable <- normalizeData(resultTable, parameters)
   
   # get transformed columns

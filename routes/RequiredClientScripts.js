@@ -154,6 +154,5 @@ exports.specScripts = [
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
 	"/javascripts/spec/ThingSpec.js",
-	"/javascripts/spec/UtilityFunctionsSpec.js",
-	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
+	"/javascripts/spec/UtilityFunctionsSpec.js"
 ]

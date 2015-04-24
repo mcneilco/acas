@@ -13,7 +13,7 @@ test.behavior <- function () {
   
   load("public/src/modules/GenericDataParser/spec/RTestSet/IO_for_test_files/cnsOutput.Rda")
   cnsSaved <- query("select protocol_name, experiment_name, analysis_group_code_name, treatment_group_code_name, subject_code_name, tested_lot, tested_conc, tested_conc_unit, tested_time, tested_time_unit, ls_kind, operator_kind, numeric_value, uncertainty, unit_kind, string_value, comments, public_data, state_id, state_kind, state_type from api_subject_container_results 
-                    where experiment_name='PKXXX_DNS001317368_3'
+                    where experiment_name='PKXXX_CMPD001317368_3'
                     order by subject_code_name, ls_kind")
   cnsSavedGeneralized <- cnsSaved
   cnsSavedGeneralized$ANALYSIS_GROUP_CODE_NAME <- as.numeric(as.factor(cnsSaved$ANALYSIS_GROUP_CODE_NAME))

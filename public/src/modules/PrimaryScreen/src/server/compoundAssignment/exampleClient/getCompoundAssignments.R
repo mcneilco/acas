@@ -1,6 +1,6 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
-  # DNS
+  # exampleClient
   
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
