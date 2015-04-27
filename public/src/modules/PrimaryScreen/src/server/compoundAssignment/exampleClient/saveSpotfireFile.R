@@ -48,7 +48,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                                         targetPath = "testSpotfire.txt")
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
-    # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/DNS/files/v1/Files/FILE1419587.txt\
+    # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
     spotfirePrefix <- paste0("tibcospotfire:server:http\\://", 
                              racas::applicationSettings$client.service.spotfire.host,
                              "/:analysis:",

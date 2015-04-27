@@ -2,7 +2,7 @@
 
 specificDataPreProcessor <- function (parameters, folderToParse, errorEnv, 
                                       dryRun, instrumentClass, testMode, tempFilePath) {
-  ##### DNS #####
+  ##### exampleClient #####
   # 
   # This function sources the functions that parse the instrument files
   #

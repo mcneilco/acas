@@ -363,9 +363,9 @@ JOIN treatment_group_state tgs ON tgs.treatment_group_id = agtg.treatment_group_
 JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id and tgv.ls_kind != 'batch code'
 JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
 where (ags.ls_type_and_kind is null or ags.ls_type_and_kind != 'data_dose response')
+and (ags.ignored is null or ags.ignored = '0')
 and e.ignored = '0'
 and ag.ignored = '0'
-and ags.ignored = '0'
 and tgs.ignored = '0'
 and tgv.ignored = '0'
 and tgv2.ignored = '0';
