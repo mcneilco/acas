@@ -26,6 +26,9 @@
         {
           kindName: "efficacy",
           typeName: "numericValue"
+        }, {
+          kindName: "flag file",
+          typeName: "fileValue"
         }
       ]
     };

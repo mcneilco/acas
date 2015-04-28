@@ -65,34 +65,50 @@
           fs.unlink(this.testFile1Path);
           return fs.unlink(this.testFile2Path);
         });
-        it("should return a thing", function() {
-          return assert.equal(this.responseJSON.codeName === null, false);
+        describe("basic saving", function() {
+          it("should return a thing", function() {
+            return assert.equal(this.responseJSON.codeName === null, false);
+          });
+          it("should have a trans at the top level", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsTransaction)), false);
+          });
+          it("should have a trans in the labels", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsLabels[0].lsTransaction)), false);
+          });
+          it("should have a trans in the states", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
+          });
+          return it("should have a trans in the values", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
+          });
         });
-        it("should return the first fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol");
-        });
-        it("should return the first fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol");
-        });
-        it("should return the second fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv");
-        });
-        it("should return the second fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[4].comments, "Test.csv");
-        });
-        it("should move the first file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
-        });
-        return it("should move the second file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
+        return describe("file handling", function() {
+          it("should return the first fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol");
+          });
+          it("should return the first fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol");
+          });
+          it("should return the second fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv");
+          });
+          it("should return the second fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[4].comments, "Test.csv");
+          });
+          it("should move the first file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
+          return it("should move the second file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
         });
       });
       describe("when saving a new thing batch", function() {
@@ -118,34 +134,48 @@
           fs.unlink(this.testFile1Path);
           return fs.unlink(this.testFile2Path);
         });
-        it("should return a thing", function() {
-          return assert.equal(this.responseJSON.codeName === null, false);
+        describe("basic saving", function() {
+          it("should return a thing", function() {
+            return assert.equal(this.responseJSON.codeName === null, false);
+          });
+          it("should have a trans at the top level", function() {
+            console.log(this.responseJSON);
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsTransaction)), false);
+          });
+          it("should have a trans in the states", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsTransaction)), false);
+          });
+          return it("should have a trans in the values", function() {
+            return assert.equal(isNaN(parseInt(this.responseJSON.lsStates[0].lsValues[0].lsTransaction)), false);
+          });
         });
-        it("should return the first fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[7].fileValue, "entities/parentThings/PT00001-1/TestFile.mol");
-        });
-        it("should return the first fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[7].comments, "TestFile.mol");
-        });
-        it("should return the second fileValue moved to the correct location", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[8].fileValue, "entities/parentThings/PT00001-1/Test.csv");
-        });
-        it("should return the second fileValue with the comment filled with the file name", function() {
-          return assert.equal(this.responseJSON.lsStates[0].lsValues[8].comments, "Test.csv");
-        });
-        it("should move the first file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/TestFile.mol", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
-        });
-        return it("should move the second file to the correct location", function() {
-          return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/Test.csv", (function(_this) {
-            return function(err) {
-              return assert.equal(err, null);
-            };
-          })(this));
+        return describe("file handling", function() {
+          it("should return the first fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[7].fileValue, "entities/parentThings/PT00001-1/TestFile.mol");
+          });
+          it("should return the first fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[7].comments, "TestFile.mol");
+          });
+          it("should return the second fileValue moved to the correct location", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[8].fileValue, "entities/parentThings/PT00001-1/Test.csv");
+          });
+          it("should return the second fileValue with the comment filled with the file name", function() {
+            return assert.equal(this.responseJSON.lsStates[0].lsValues[8].comments, "Test.csv");
+          });
+          it("should move the first file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/TestFile.mol", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
+          return it("should move the second file to the correct location", function() {
+            return fs.unlink(config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/Test.csv", (function(_this) {
+              return function(err) {
+                return assert.equal(err, null);
+              };
+            })(this));
+          });
         });
       });
       describe("when updating a thing parent", function() {

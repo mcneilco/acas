@@ -45,22 +45,32 @@ describe "Thing Service testing", ->
 			after ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
-			it "should return a thing", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[4].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
+			describe "basic saving", ->
+				it "should return a thing", ->
+					assert.equal @responseJSON.codeName == null, false
+				it "should have a trans at the top level", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsTransaction)), false
+				it "should have a trans in the labels", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsLabels[0].lsTransaction)), false
+				it "should have a trans in the states", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+				it "should have a trans in the values", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+			describe "file handling", ->
+				it "should return the first fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol"
+				it "should return the first fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[3].comments, "TestFile.mol"
+				it "should return the second fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[4].fileValue, "entities/parentThings/PT00001/Test.csv"
+				it "should return the second fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[4].comments, "Test.csv"
+				it "should move the first file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/TestFile.mol", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
+				it "should move the second file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001/Test.csv", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
 
 		describe "when saving a new thing batch", ->
 			before (done) ->
@@ -80,22 +90,31 @@ describe "Thing Service testing", ->
 			after ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
-			it "should return a thing", ->
-				assert.equal @responseJSON.codeName == null, false
-			it "should return the first fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[7].fileValue, "entities/parentThings/PT00001-1/TestFile.mol"
-			it "should return the first fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[7].comments, "TestFile.mol"
-			it "should return the second fileValue moved to the correct location", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[8].fileValue, "entities/parentThings/PT00001-1/Test.csv"
-			it "should return the second fileValue with the comment filled with the file name", ->
-				assert.equal @responseJSON.lsStates[0].lsValues[8].comments, "Test.csv"
-			it "should move the first file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/TestFile.mol", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
-			it "should move the second file to the correct location", ->
-				fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/Test.csv", (err) =>
-					assert.equal err, null #it should be there to unlink, and we've cleaned up
+			describe "basic saving", ->
+				it "should return a thing", ->
+					assert.equal @responseJSON.codeName == null, false
+				it "should have a trans at the top level", ->
+					console.log @responseJSON
+					assert.equal isNaN(parseInt(@responseJSON.lsTransaction)), false
+				it "should have a trans in the states", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsTransaction)), false
+				it "should have a trans in the values", ->
+					assert.equal isNaN(parseInt(@responseJSON.lsStates[0].lsValues[0].lsTransaction)), false
+			describe "file handling", ->
+				it "should return the first fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[7].fileValue, "entities/parentThings/PT00001-1/TestFile.mol"
+				it "should return the first fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[7].comments, "TestFile.mol"
+				it "should return the second fileValue moved to the correct location", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[8].fileValue, "entities/parentThings/PT00001-1/Test.csv"
+				it "should return the second fileValue with the comment filled with the file name", ->
+					assert.equal @responseJSON.lsStates[0].lsValues[8].comments, "Test.csv"
+				it "should move the first file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/TestFile.mol", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
+				it "should move the second file to the correct location", ->
+					fs.unlink config.all.server.datafiles.relative_path + "/entities/parentThings/PT00001-1/Test.csv", (err) =>
+						assert.equal err, null #it should be there to unlink, and we've cleaned up
 
 		describe "when updating a thing parent", ->
 			before (done) ->
@@ -120,7 +139,7 @@ describe "Thing Service testing", ->
 				fs.unlink @testFile1Path #in case it fails, don't leave a mess
 				fs.unlink @testFile2Path
 			it "should return a thing", ->
-					assert.equal @responseJSON.codeName == null, false
+				assert.equal @responseJSON.codeName == null, false
 			it "should return the first fileValue moved to the correct location", ->
 				assert.equal @responseJSON.lsStates[0].lsValues[3].fileValue, "entities/parentThings/PT00001/TestFile.mol"
 			it "should return the first fileValue with the comment filled with the file name", ->

@@ -227,12 +227,14 @@ exports.createLSTransaction = (date, comments, callback) ->
 
 exports.insertTransactionIntoEntity = (transactionid, entity) ->
 	entity.lsTransaction = transactionid
-	for lab in entity.lsLabels
-		lab.lsTransaction = transactionid
-	for state in entity.lsStates
-		state.lsTransaction = transactionid
-		for val in state.lsValues
-			val.lsTransaction = transactionid
+	if entity.lsLabels?
+		for lab in entity.lsLabels
+			lab.lsTransaction = transactionid
+	if entity.lsStates?
+		for state in entity.lsStates
+			state.lsTransaction = transactionid
+			for val in state.lsValues
+				val.lsTransaction = transactionid
 
 	entity
 

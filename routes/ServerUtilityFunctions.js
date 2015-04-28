@@ -285,19 +285,23 @@
   exports.insertTransactionIntoEntity = function(transactionid, entity) {
     var lab, state, val, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     entity.lsTransaction = transactionid;
-    _ref = entity.lsLabels;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      lab = _ref[_i];
-      lab.lsTransaction = transactionid;
+    if (entity.lsLabels != null) {
+      _ref = entity.lsLabels;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lab = _ref[_i];
+        lab.lsTransaction = transactionid;
+      }
     }
-    _ref1 = entity.lsStates;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      state = _ref1[_j];
-      state.lsTransaction = transactionid;
-      _ref2 = state.lsValues;
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        val = _ref2[_k];
-        val.lsTransaction = transactionid;
+    if (entity.lsStates != null) {
+      _ref1 = entity.lsStates;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        state = _ref1[_j];
+        state.lsTransaction = transactionid;
+        _ref2 = state.lsValues;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          val = _ref2[_k];
+          val.lsTransaction = transactionid;
+        }
       }
     }
     return entity;
