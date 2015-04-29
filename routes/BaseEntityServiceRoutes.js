@@ -1,6 +1,7 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors);
+    app.get('/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors);
+    return app.post('/api/getNextLabelSequence', loginRoutes.ensureAuthenticated, exports.getNextLabelSequence);
   };
 
   exports.getAuthors = function(req, resp) {

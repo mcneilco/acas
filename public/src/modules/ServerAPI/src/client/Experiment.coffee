@@ -84,7 +84,33 @@ class window.Experiment extends BaseEntity
 
 	validate: (attrs) ->
 		errors = []
-		errors.push super(attrs)...
+		bestName = attrs.lsLabels.pickBestName()
+		nameError = true
+		if bestName?
+			nameError = true
+			if bestName.get('labelText') != ""
+				nameError = false
+			if bestName.get('labelText') == attrs.codeName
+				nameError = false
+		if nameError
+			errors.push
+				attribute: attrs.subclass+'Name'
+				message: attrs.subclass+" name must be set"
+		if _.isNaN(attrs.recordedDate)
+			errors.push
+				attribute: 'recordedDate'
+				message: attrs.subclass+" date must be set"
+		if attrs.subclass?
+			notebook = @getNotebook().get('stringValue')
+			if notebook is "" or notebook is undefined or notebook is null
+				errors.push
+					attribute: 'notebook'
+					message: "Notebook must be set"
+			scientist = @getScientist().get('codeValue')
+			if scientist is "unassigned" or scientist is undefined or scientist is "" or scientist is null
+				errors.push
+					attribute: 'scientist'
+					message: "Scientist must be set"
 		if attrs.protocol == null
 			errors.push
 				attribute: 'protocolCode'
@@ -191,6 +217,7 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	events: ->
 		_(super()).extend(
+			"click .bv_exptNameChkbx": "handleExptNameChkbxClicked"
 			"keyup .bv_experimentName": "handleNameChanged"
 			"click .bv_useProtocolParameters": "handleUseProtocolParametersClicked"
 			"change .bv_protocolCode": "handleProtocolCodeChanged"
@@ -289,12 +316,14 @@ class window.ExperimentBaseController extends BaseEntityController
 		if @model.getCompletionDate().get('dateValue')?
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
+		@setupExptNameChkbx()
 		@
 
 	modelSyncCallback: =>
 		unless @model.get('subclass')?
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
+		@render()
 		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
@@ -302,8 +331,19 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
 			@model.trigger 'saveSuccess'
-		@render()
 		@setupAttachFileListController()
+
+	setupExptNameChkbx: ->
+		code = @model.get('codeName')
+		if @model.get('lsLabels').pickBestName()?
+			name = @model.get('lsLabels').pickBestName().get('labelText')
+		else
+			name = ""
+		if code == name
+			@$('.bv_experimentName').attr('disabled', 'disabled')
+			@$('.bv_exptNameChkbx').attr('checked','checked')
+		else
+			@$('.bv_exptNameChkbx').removeAttr('checked')
 
 	setupProtocolSelect: (protocolFilter, protocolKindFilter) ->
 		if @model.get('protocol') != null
@@ -371,6 +411,19 @@ class window.ExperimentBaseController extends BaseEntityController
 				unless !@model.isNew()
 					@handleUseProtocolParametersClicked()
 
+	handleExptNameChkbxClicked: =>
+		checked = @$('.bv_exptNameChkbx').is(":checked")
+		if checked
+			@$('.bv_experimentName').attr('disabled', 'disabled')
+			@$('.bv_experimentName').val @model.get('codeName')
+			@handleNameChanged()
+			if @model.isNew()
+				@model.get('lsLabels').pickBestName().set labelText: undefined
+				#need to specifically set this here or else labelText is set to "" and will have an error even if the checkbox is checked
+		else
+			@$('.bv_experimentName').removeAttr('disabled')
+			@handleNameChanged()
+
 	handleProtocolCodeChanged: =>
 		code = @protocolListController.getSelectedCode()
 		@getAndSetProtocol(code)
@@ -417,6 +470,47 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_protocolCode').removeAttr("disabled")
 		else
 			@$('.bv_protocolCode').attr("disabled", "disabled")
+
+	handleSaveClicked: =>
+		@$('.bv_saveFailed').hide()
+		if @model.isNew() and @$('.bv_exptNameChkbx').is(":checked")
+			@getNextLabelSequence()
+		else
+			@saveEntity()
+
+	getNextLabelSequence: =>
+		$.ajax
+			type: 'POST'
+			url: "/api/getNextLabelSequence"
+			data:
+				JSON.stringify
+					thingTypeAndKind: "document_experiment"
+					labelTypeAndKind: "id_codeName"
+					numberOfLabels: 1
+			contentType: 'application/json'
+			dataType: 'json'
+			success: (response) =>
+				if response is "getNextLabelSequenceFailed"
+					alert 'Error getting the next label sequence'
+					@model.trigger 'saveFailed'
+				else
+					@addNameAndCode(response)
+			error: (err) =>
+				alert 'could not get next label sequence'
+				@serviceReturn = null
+
+	addNameAndCode: (labelInfo) ->
+		code = @createCode(labelInfo)
+		@model.set codeName: code
+		@model.get('lsLabels').pickBestName().set labelText: code
+		@saveEntity()
+
+	createCode: (labelInfo) ->
+		code = labelInfo.labelPrefix + labelInfo.labelSeparator
+		num0 = labelInfo.digits - labelInfo.latestNumber.toString().length
+		code = code + Array(num0+1).join(0) + labelInfo.latestNumber
+		code
+
 
 #	displayInReadOnlyMode: =>
 #		@$(".bv_save").addClass "hide"

@@ -441,6 +441,9 @@ class window.BaseEntityController extends AbstractFormController
 			@trigger "noEditablePickLists"
 
 	handleSaveClicked: =>
+		@saveEntity()
+
+	saveEntity: =>
 		@prepareToSaveAttachedFiles()
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()

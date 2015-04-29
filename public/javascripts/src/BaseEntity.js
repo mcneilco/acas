@@ -389,6 +389,7 @@
       this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
       this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
       this.prepareToSaveAttachedFiles = __bind(this.prepareToSaveAttachedFiles, this);
+      this.saveEntity = __bind(this.saveEntity, this);
       this.handleSaveClicked = __bind(this.handleSaveClicked, this);
       this.beginSave = __bind(this.beginSave, this);
       this.updateEditable = __bind(this.updateEditable, this);
@@ -697,6 +698,10 @@
     };
 
     BaseEntityController.prototype.handleSaveClicked = function() {
+      return this.saveEntity();
+    };
+
+    BaseEntityController.prototype.saveEntity = function() {
       this.prepareToSaveAttachedFiles();
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
