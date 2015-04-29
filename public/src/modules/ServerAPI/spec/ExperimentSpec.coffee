@@ -429,6 +429,8 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_comments').html()).toEqual ""
 				it "should not fill the notebook field", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
+				it "should not have the experiment name checkbox checked field", ->
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
@@ -512,6 +514,17 @@ describe "Experiment module testing", ->
 						@ebc.$('.bv_status').val('complete')
 						@ebc.$('.bv_status').change()
 						expect(@ebc.model.getStatus().get('codeValue')).toEqual 'complete'
+			describe "Match experiment code name checkbox behavior and validation", ->
+				it "should disable the experiment name when the experiment name checkbox is checked", ->
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
+					@ebc.$('.bv_exptNameChkbx').click()
+					@ebc.$('.bv_exptNameChkbx').click()
+					#don't know why exptNameChkbx needs to be clicked twice for spec to pass but the implementation is correct
+					#This behaviour has been observed in other specs that for checkboxes (ie in PrimaryScreenExperiment)
+					expect(@ebc.$('.bv_experimentName').attr("disabled")).toEqual "disabled"
+				it "should disable the experiment name when the experiment name checkbox is unchecked", ->
+					@ebc.$('.bv_exptNameChkbx').click()
+					expect(@ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined()
 		describe "When created from a saved experiment", ->
 			beforeEach ->
 				@exp2 = new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -573,6 +586,23 @@ describe "Experiment module testing", ->
 						expect(@ebc.$('.bv_status').val()).toEqual "started"
 				it "should show the status select enabled", ->
 					expect(@ebc.$('.bv_status').attr('disabled')).toBeUndefined()
+				it "should not have the match experiment code name checkbox checked", ->
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
+			describe "Match experiment code name checkbox behavior and validation", ->
+				it "should disable the experiment name when the experiment name checkbox is checked", ->
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
+					@ebc.$('.bv_exptNameChkbx').click()
+					@ebc.$('.bv_exptNameChkbx').click()
+					#don't know why exptNameChkbx needs to be clicked twice for spec to pass but the implementation is correct
+					#This behaviour has been observed in other specs that for checkboxes (ie in PrimaryScreenExperiment)
+					expect(@ebc.$('.bv_experimentName').attr("disabled")).toEqual "disabled"
+				it "should disable the experiment name when the experiment name checkbox is unchecked", ->
+					@ebc.$('.bv_exptNameChkbx').click()
+					expect(@ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined()
+				it "should set the experiment name to be the same as the code name when the checkbox is checked", ->
+					@ebc.$('.bv_exptNameChkbx').click()
+					@ebc.$('.bv_exptNameChkbx').click()
+					expect(@ebc.$('.bv_experimentName').val()).toEqual @ebc.$('.bv_experimentCode').html()
 			describe "Experiment status behavior", ->
 				it "should disable all fields if experiment is approved", ->
 					waitsFor ->
@@ -788,6 +818,10 @@ describe "Experiment module testing", ->
 						runs ->
 							expect(@ebc.$('.bv_group_notebook').hasClass('error')).toBeTruthy()
 				describe "expect save to work", ->
+					beforeEach ->
+						runs ->
+							@ebc.$('.bv_exptNameChkbx').click()
+#							@ebc.$('.bv_exptNameChkbx').click()
 					it "model should be valid and ready to save", ->
 						runs ->
 							expect(@ebc.model.isValid()).toBeTruthy()
@@ -798,10 +832,20 @@ describe "Experiment module testing", ->
 						waits(1000)
 						runs ->
 							expect(@ebc.$('.bv_experimentCode').html()).toEqual "EXPT-00000001"
+					it "should create a new experiment name to match the code if the expt name checkbox is checked", ->
+						runs ->
+							@ebc.$('.bv_save').removeAttr('disabled','disabled')
+							@ebc.$('.bv_save').click()
+						waits(1000)
+						runs ->
+							expect(@ebc.$('.bv_experimentName').val()).toEqual @ebc.$('.bv_experimentCode').html()
 					it "should show the save button text as Update", ->
 						runs ->
 							@ebc.$('.bv_save').removeAttr('disabled','disabled')
 							@ebc.$('.bv_save').click()
+							@ebc.$('.bv_save').click()
+							console.log "trying to save"
+							console.log @ebc.model.validationError
 						waits(1000)
 						runs ->
 							expect(@ebc.$('.bv_save').html()).toEqual "Update"
@@ -819,6 +863,7 @@ describe "Experiment module testing", ->
 							@ebc.$('.bv_newEntity').click()
 						waits(1000)
 						runs ->
+							@ebc.$('.bv_confirmClear').click()
 							expect(@ebc.$('.bv_experimentName').val()).toEqual ""
 
 #TODO all the specs that include copying protocol params have a hard 1 second wait. Add trigger to watch

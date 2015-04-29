@@ -148,6 +148,9 @@
         if (exptToSave.codeName == null) {
           exptToSave.codeName = "EXPT-00000001";
         }
+        if (exptToSave.id == null) {
+          exptToSave.id = 1;
+        }
       }
       checkFilesAndUpdate = function(expt) {
         var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;

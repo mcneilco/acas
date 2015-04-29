@@ -94,6 +94,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/FullPKTestJSON.js",
 	"/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js",
+	"/javascripts/spec/testFixtures/LabelServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/LoginTestJSON.js",
 	"/javascripts/spec/testFixtures/MetStabTestJSON.js",
 	"/javascripts/spec/testFixtures/MicroSolTestJSON.js",

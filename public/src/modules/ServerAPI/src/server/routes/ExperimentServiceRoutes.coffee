@@ -132,6 +132,8 @@ postExperiment = (req, resp) ->
 		if req.query.testMode or global.specRunnerTestmode
 			unless exptToSave.codeName?
 				exptToSave.codeName = "EXPT-00000001"
+			unless exptToSave.id?
+				exptToSave.id = 1
 
 		checkFilesAndUpdate = (expt) ->
 			fileVals = serverUtilityFunctions.getFileValuesFromEntity expt, false
