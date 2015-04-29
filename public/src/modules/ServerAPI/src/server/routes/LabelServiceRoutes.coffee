@@ -10,7 +10,7 @@ exports.getNextLabelSequence = (req, resp) ->
 		resp.json labelServiceTestJSON.nextLabelSequenceResponse
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getNextLabelSequences"
+		baseurl = config.all.client.service.persistence.fullpath+"labelsequences/getLabels"
 		request = require 'request'
 		request(
 			method: 'POST'

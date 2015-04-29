@@ -494,22 +494,15 @@ class window.ExperimentBaseController extends BaseEntityController
 					alert 'Error getting the next label sequence'
 					@model.trigger 'saveFailed'
 				else
-					@addNameAndCode(response)
+					@addNameAndCode(response[0].autoLabel)
 			error: (err) =>
 				alert 'could not get next label sequence'
 				@serviceReturn = null
 
-	addNameAndCode: (labelInfo) ->
-		code = @createCode(labelInfo)
-		@model.set codeName: code
-		@model.get('lsLabels').pickBestName().set labelText: code
+	addNameAndCode: (codeName) ->
+		@model.set codeName: codeName
+		@model.get('lsLabels').pickBestName().set labelText: codeName
 		@saveEntity()
-
-	createCode: (labelInfo) ->
-		code = labelInfo.labelPrefix + labelInfo.labelSeparator
-		num0 = labelInfo.digits - labelInfo.latestNumber.toString().length
-		code = code + Array(num0+1).join(0) + labelInfo.latestNumber
-		code
 
 
 #	displayInReadOnlyMode: =>
