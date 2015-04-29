@@ -724,7 +724,7 @@
               alert('Error getting the next label sequence');
               return _this.model.trigger('saveFailed');
             } else {
-              return _this.addNameAndCode(response);
+              return _this.addNameAndCode(response[0].autoLabel);
             }
           };
         })(this),
@@ -737,24 +737,14 @@
       });
     };
 
-    ExperimentBaseController.prototype.addNameAndCode = function(labelInfo) {
-      var code;
-      code = this.createCode(labelInfo);
+    ExperimentBaseController.prototype.addNameAndCode = function(codeName) {
       this.model.set({
-        codeName: code
+        codeName: codeName
       });
       this.model.get('lsLabels').pickBestName().set({
-        labelText: code
+        labelText: codeName
       });
       return this.saveEntity();
-    };
-
-    ExperimentBaseController.prototype.createCode = function(labelInfo) {
-      var code, num0;
-      code = labelInfo.labelPrefix + labelInfo.labelSeparator;
-      num0 = labelInfo.digits - labelInfo.latestNumber.toString().length;
-      code = code + Array(num0 + 1).join(0) + labelInfo.latestNumber;
-      return code;
     };
 
     return ExperimentBaseController;
