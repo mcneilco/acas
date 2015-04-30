@@ -5,6 +5,16 @@ getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, a
   
   allCompoundData <- formatCompoundData(assayCompoundDT, assayData, testMode=testMode, tempFilePath=tempFilePath)
   
+  # Check to make sure that wells don't have more than one compound listed
+  overlappingPlate <- Filter(function(x) {length(unique(allCompoundData[assayBarcode == x, wellReference])) != 
+                                                        length(allCompoundData[assayBarcode == x, wellReference])}, 
+                             unique(allCompoundData[, assayBarcode]))
+  if(length(overlappingPlate) > 0) {
+    stopUser(paste0("Some sidecar and compound plates have overlapping wells.\n ",
+                    "Please check the plates associated with the following assay(s): ", 
+                    paste(unlist(overlappingPlate), collapse=", ")))
+  }
+  
   setkeyv(allCompoundData, c("assayBarcode", "wellReference"))
   setkeyv(assayData, c("assayBarcode", "wellReference"))
   

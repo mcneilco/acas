@@ -1926,7 +1926,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     outputTableReloadColumns$"User Defined Hit"[duplicated(uniqueString)] <- ""
     outputTable$"Corporate Batch ID" <- NULL  # Don't want this showing up twice
     protocol <- fromJSON(getURL(paste0(racas::applicationSettings$client.service.persistence.fullpath, "protocols/", experiment$protocol$id)))
-    protocolName <- protocol$lsLabels[[1]]$labelText
+    protocolName <- getPreferredName(protocol)
     metadataState <- experiment$lsStates[lapply(experiment$lsStates, getElement, "lsKind") == "experiment metadata"][[1]]
     completionDateValue <- metadataState$lsValues[lapply(metadataState$lsValues, getElement, "lsKind") == "completion date"][[1]]
     
@@ -1971,7 +1971,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else { #This section is "if(useRdap)"
     library('RCurl')
     protocol <- getProtocolById(experiment$protocol$id)
-    protocolName <- protocol$lsLabels[[1]]$labelText
+    protocolName <- getPreferredName(protocol)
     
     summaryInfo <- list(
       info = list(
