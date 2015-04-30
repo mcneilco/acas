@@ -92,6 +92,8 @@ class window.Experiment extends BaseEntity
 				nameError = false
 			if bestName.get('labelText') == attrs.codeName
 				nameError = false
+		else if @isNew() and bestName is undefined
+			nameError = false
 		if nameError
 			errors.push
 				attribute: attrs.subclass+'Name'
@@ -316,7 +318,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		if @model.getCompletionDate().get('dateValue')?
 			@$('.bv_completionDate').val UtilityFunctions::convertMSToYMDDate(@model.getCompletionDate().get('dateValue'))
 		super()
-		@setupExptNameChkbx()
+		if @model.isNew()
+			@$('.bv_experimentName').attr('disabled','disabled')
+		else
+			@setupExptNameChkbx()
 		@
 
 	modelSyncCallback: =>
@@ -501,7 +506,15 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	addNameAndCode: (codeName) ->
 		@model.set codeName: codeName
-		@model.get('lsLabels').pickBestName().set labelText: codeName
+		if @model.get('lsLabels').pickBestName()?
+			@model.get('lsLabels').pickBestName().set labelText: codeName
+		else
+			@model.get('lsLabels').setBestName new Label
+				lsKind: "experiment name"
+				labelText: codeName
+				recordedBy: window.AppLaunchParams.loginUser.username
+				recordedDate: new Date().getTime()
+
 		@saveEntity()
 
 
