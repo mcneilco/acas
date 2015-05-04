@@ -149,6 +149,8 @@
         if (bestName.get('labelText') === attrs.codeName) {
           nameError = false;
         }
+      } else if (this.isNew() && bestName === void 0) {
+        nameError = false;
       }
       if (nameError) {
         errors.push({
@@ -483,7 +485,11 @@
         this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       ExperimentBaseController.__super__.render.call(this);
-      this.setupExptNameChkbx();
+      if (this.model.isNew()) {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+      } else {
+        this.setupExptNameChkbx();
+      }
       return this;
     };
 
@@ -741,9 +747,18 @@
       this.model.set({
         codeName: codeName
       });
-      this.model.get('lsLabels').pickBestName().set({
-        labelText: codeName
-      });
+      if (this.model.get('lsLabels').pickBestName() != null) {
+        this.model.get('lsLabels').pickBestName().set({
+          labelText: codeName
+        });
+      } else {
+        this.model.get('lsLabels').setBestName(new Label({
+          lsKind: "experiment name",
+          labelText: codeName,
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
+        }));
+      }
       return this.saveEntity();
     };
 
