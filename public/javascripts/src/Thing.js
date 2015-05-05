@@ -108,59 +108,63 @@
 
     Thing.prototype.createDefaultLabels = function() {
       var dLabel, newLabel, _i, _len, _ref, _results;
-      _ref = this.lsProperties.defaultLabels;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dLabel = _ref[_i];
-        newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
-        this.set(dLabel.key, newLabel);
-        _results.push(newLabel.set({
-          preferred: dLabel.preferred
-        }));
+      if (this.lsProperties.defaultLabels != null) {
+        _ref = this.lsProperties.defaultLabels;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dLabel = _ref[_i];
+          newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
+          this.set(dLabel.key, newLabel);
+          _results.push(newLabel.set({
+            preferred: dLabel.preferred
+          }));
+        }
+        return _results;
       }
-      return _results;
     };
 
     Thing.prototype.createDefaultStates = function() {
       var dValue, newValue, _i, _len, _ref, _results;
-      _ref = this.lsProperties.defaultValues;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dValue = _ref[_i];
-        newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
-        this.listenTo(newValue, 'createNewValue', this.createNewValue);
-        if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
-          newValue.set({
-            unitKind: dValue.unitKind
-          });
+      if (this.lsProperties.defaultValues != null) {
+        _ref = this.lsProperties.defaultValues;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dValue = _ref[_i];
+          newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
+          this.listenTo(newValue, 'createNewValue', this.createNewValue);
+          if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
+            newValue.set({
+              unitKind: dValue.unitKind
+            });
+          }
+          if ((dValue.unitType != null) && newValue.get('unitType') === void 0) {
+            newValue.set({
+              unitType: dValue.unitType
+            });
+          }
+          if ((dValue.codeKind != null) && newValue.get('codeKind') === void 0) {
+            newValue.set({
+              codeKind: dValue.codeKind
+            });
+          }
+          if ((dValue.codeType != null) && newValue.get('codeType') === void 0) {
+            newValue.set({
+              codeType: dValue.codeType
+            });
+          }
+          if ((dValue.codeOrigin != null) && newValue.get('codeOrigin') === void 0) {
+            newValue.set({
+              codeOrigin: dValue.codeOrigin
+            });
+          }
+          this.set(dValue.key, newValue);
+          if ((dValue.value != null) && (newValue.get(dValue.type) === void 0)) {
+            newValue.set(dValue.type, dValue.value);
+          }
+          _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
         }
-        if ((dValue.unitType != null) && newValue.get('unitType') === void 0) {
-          newValue.set({
-            unitType: dValue.unitType
-          });
-        }
-        if ((dValue.codeKind != null) && newValue.get('codeKind') === void 0) {
-          newValue.set({
-            codeKind: dValue.codeKind
-          });
-        }
-        if ((dValue.codeType != null) && newValue.get('codeType') === void 0) {
-          newValue.set({
-            codeType: dValue.codeType
-          });
-        }
-        if ((dValue.codeOrigin != null) && newValue.get('codeOrigin') === void 0) {
-          newValue.set({
-            codeOrigin: dValue.codeOrigin
-          });
-        }
-        this.set(dValue.key, newValue);
-        if ((dValue.value != null) && (newValue.get(dValue.type) === void 0)) {
-          newValue.set(dValue.type, dValue.value);
-        }
-        _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
+        return _results;
       }
-      return _results;
     };
 
     Thing.prototype.createNewValue = function(vKind, newVal) {
@@ -179,29 +183,33 @@
 
     Thing.prototype.createDefaultFirstLsThingItx = function() {
       var itx, thingItx, _i, _len, _ref, _results;
-      _ref = this.lsProperties.defaultFirstLsThingItx;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        itx = _ref[_i];
-        thingItx = this.get('firstLsThings').getItxByTypeAndKind(itx.itxType, itx.itxKind);
-        if (thingItx == null) {
-          thingItx = this.get('firstLsThings').createItxByTypeAndKind(itx.itxType, itx.itxKind);
+      if (this.lsProperties.defaultFirstLsThingItx != null) {
+        _ref = this.lsProperties.defaultFirstLsThingItx;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          itx = _ref[_i];
+          thingItx = this.get('firstLsThings').getItxByTypeAndKind(itx.itxType, itx.itxKind);
+          if (thingItx == null) {
+            thingItx = this.get('firstLsThings').createItxByTypeAndKind(itx.itxType, itx.itxKind);
+          }
+          _results.push(this.set(itx.key, thingItx));
         }
-        _results.push(this.set(itx.key, thingItx));
+        return _results;
       }
-      return _results;
     };
 
     Thing.prototype.createDefaultSecondLsThingItx = function() {
       var itx, thingItx, _i, _len, _ref, _results;
-      _ref = this.lsProperties.defaultSecondLsThingItx;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        itx = _ref[_i];
-        thingItx = this.get('secondLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
-        _results.push(this.set(itx.key, thingItx));
+      if (this.lsProperties.defaultSecondLsThingItx != null) {
+        _ref = this.lsProperties.defaultSecondLsThingItx;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          itx = _ref[_i];
+          thingItx = this.get('secondLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
+          _results.push(this.set(itx.key, thingItx));
+        }
+        return _results;
       }
-      return _results;
     };
 
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
