@@ -73,10 +73,19 @@
               user: (function(_this) {
                 return function() {
                   if (allConf.server.run == null) {
-                    console.log("server.run.user is not set setting as current user " + sysEnv.USER);
-                    return sysEnv.USER;
-                    if (allConf.server.run.user == null) {
+                    console.log("server.run.user is not set");
+                    if (sysEnv.USER) {
+                      console.log("using process.env.USER " + sysEnv.USER);
                       return sysEnv.USER;
+                    } else {
+                      console.log("process.env.USER is not set");
+                      if (process.getuid) {
+                        console.log("using process.getuid " + process.getuid);
+                        return process.getuid;
+                      } else {
+                        console.log("could not get run user exiting");
+                        process.exit(1);
+                      }
                     }
                   }
                   return allConf.server.run.user;
