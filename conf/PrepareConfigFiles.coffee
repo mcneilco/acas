@@ -61,9 +61,9 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 								return sysEnv.USER
 							else
 								console.log "process.env.USER is not set"
-								if process.getuid
-									console.log "using process.getuid #{process.getuid}"
-									return process.getuid
+								if process.getuid()
+									console.log "using process.getuid #{process.getuid()}"
+									return process.getuid()
 								else
 									console.log "could not get run user exiting"
 									process.exit 1
