@@ -117,8 +117,8 @@ getApacheCompileOptions = ->
 			apacheCommand = possibleCommand
 			break;
 	if not apacheCommand?
-		console.log 'Could not find apache command in list: ' + posssibleCommands.join(', ')
-		shell.exit 1
+		console.log 'Could not find apache command in list: ' + posssibleCommands.join(', ') + 'skipping apache config'
+		return 'skip'
 
 	compileString = shell.exec(apacheCommand + ' -V', {silent:true})
 	compileOptionStrings =  compileString.output.split("\n");
@@ -228,7 +228,8 @@ writeApacheConfFile = ->
 	config = require './compiled/conf.js'
 	acasHome = path.resolve(__dirname,'..')
 	apacheCompileOptions = getApacheCompileOptions()
-	apacheConfString = getApacheConfsString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
-	rFilesWithRoute = getRFilesWithRoute()
-	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-	fs.writeFileSync "./compiled/apache.conf", [apacheConfString,rFileHandlerString].join('\n')
+	if apacheCompileOptions != 'skip'
+		apacheConfString = getApacheConfsString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+		rFilesWithRoute = getRFilesWithRoute()
+		rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
+		fs.writeFileSync "./compiled/apache.conf", [apacheConfString,rFileHandlerString].join('\n')
