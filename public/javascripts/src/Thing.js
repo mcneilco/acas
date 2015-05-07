@@ -8,6 +8,9 @@
 
     function Thing() {
       this.getStateValueHistory = __bind(this.getStateValueHistory, this);
+      this.resetClonedAttrs = __bind(this.resetClonedAttrs, this);
+      this.copyStatesAndVals = __bind(this.copyStatesAndVals, this);
+      this.resetStatesAndVals = __bind(this.resetStatesAndVals, this);
       this.duplicate = __bind(this.duplicate, this);
       this.deleteInteractions = __bind(this.deleteInteractions, this);
       this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
@@ -286,39 +289,15 @@
     };
 
     Thing.prototype.duplicate = function() {
-      var copiedStates, copiedThing, origStates;
+      var copiedThing, secondItxs, states;
       copiedThing = this.clone();
-      copiedThing.unset('lsStates');
-      copiedThing.unset('id');
       copiedThing.unset('codeName');
-      copiedStates = new StateList();
-      origStates = this.get('lsStates');
-      origStates.each(function(st) {
-        var copiedState, copiedValues, origValues;
-        copiedState = new State(_.clone(st.attributes));
-        copiedState.unset('id');
-        copiedState.unset('lsTransactions');
-        copiedState.unset('lsValues');
-        copiedValues = new ValueList();
-        origValues = st.get('lsValues');
-        origValues.each(function(sv) {
-          var copiedVal;
-          copiedVal = new Value(sv.attributes);
-          copiedVal.unset('id');
-          copiedVal.unset('lsTransaction');
-          return copiedValues.add(copiedVal);
-        });
-        copiedState.set({
-          lsValues: copiedValues
-        });
-        return copiedStates.add(copiedState);
-      });
+      states = copiedThing.get('lsStates');
+      this.resetStatesAndVals(states);
       copiedThing.set({
-        lsStates: copiedStates,
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime(),
         version: 0
       });
+      this.resetClonedAttrs(copiedThing);
       copiedThing.get('notebook').set({
         value: ""
       });
@@ -329,7 +308,73 @@
         value: null
       });
       copiedThing.createDefaultLabels();
+      delete copiedThing.attributes.firstLsThings;
+      secondItxs = copiedThing.get('secondLsThings');
+      secondItxs.each((function(_this) {
+        return function(itx) {
+          var itxStates;
+          _this.resetClonedAttrs(itx);
+          itxStates = itx.get('lsStates');
+          return _this.resetStatesAndVals(itxStates);
+        };
+      })(this));
       return copiedThing;
+    };
+
+    Thing.prototype.resetStatesAndVals = function(states) {
+      return states.each((function(_this) {
+        return function(st) {
+          var igVal, ignoredVals, val, values, _i, _len;
+          _this.resetClonedAttrs(st);
+          values = st.get('lsValues');
+          ignoredVals = values.filter(function(val) {
+            return val.get('ignored');
+          });
+          for (_i = 0, _len = ignoredVals.length; _i < _len; _i++) {
+            val = ignoredVals[_i];
+            igVal = st.getValueById(val.get('id'))[0];
+            values.remove(igVal);
+          }
+          return values.each(function(sv) {
+            return _this.resetClonedAttrs(sv);
+          });
+        };
+      })(this));
+    };
+
+    Thing.prototype.copyStatesAndVals = function(origStates) {
+      var copiedStates;
+      copiedStates = new StateList();
+      origStates.each((function(_this) {
+        return function(st) {
+          var copiedState, copiedValues, origValues;
+          copiedState = new State(_.clone(st.attributes));
+          _this.resetClonedAttrs(copiedState);
+          copiedState.unset('lsValues');
+          copiedValues = new ValueList();
+          origValues = st.get('lsValues');
+          origValues.each(function(sv) {
+            var copiedVal;
+            copiedVal = new Value(sv.attributes);
+            _this.resetClonedAttrs(copiedVal);
+            return copiedValues.add(copiedVal);
+          });
+          copiedState.set({
+            lsValues: copiedValues
+          });
+          return copiedStates.add(copiedState);
+        };
+      })(this));
+      return copiedStates;
+    };
+
+    Thing.prototype.resetClonedAttrs = function(clone) {
+      clone.unset('id');
+      clone.unset('lsTransaction');
+      return clone.set({
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
     };
 
     Thing.prototype.getStateValueHistory = function(vKind) {

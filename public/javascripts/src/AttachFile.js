@@ -170,9 +170,21 @@
     };
 
     AttachFileController.prototype.updateModel = function() {
-      return this.model.set({
-        fileType: this.$('.bv_fileType').val()
-      });
+      var newModel;
+      if (this.model.get('id') === null) {
+        return this.model.set({
+          fileType: this.$('.bv_fileType').val()
+        });
+      } else {
+        newModel = new AttachFile(_.clone(this.model.attributes));
+        newModel.unset('id');
+        newModel.set({
+          fileType: this.$('.bv_fileType').val()
+        });
+        this.model.set("ignored", true);
+        this.$('.bv_fileInfoWrapper').hide();
+        return this.trigger('addNewModel', newModel);
+      }
     };
 
     AttachFileController.prototype.clear = function() {
@@ -278,6 +290,12 @@
       });
       this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
       this.listenTo(afc, 'removeFile', this.ensureValidCollectionLength);
+      afc.on('addNewModel', (function(_this) {
+        return function(newModel) {
+          _this.collection.add(newModel);
+          return _this.addAttachFile(newModel);
+        };
+      })(this));
       afc.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');

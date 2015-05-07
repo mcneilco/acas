@@ -166,38 +166,60 @@ class window.Thing extends Backbone.Model
 
 	duplicate: =>
 		copiedThing = @.clone()
-		#		copiedThing.unset 'lsLabels'
-		copiedThing.unset 'lsStates'
-		copiedThing.unset 'id'
 		copiedThing.unset 'codeName'
-		copiedStates = new StateList()
-		origStates = @get('lsStates')
-		origStates.each (st) ->
-			copiedState = new State(_.clone(st.attributes))
-			copiedState.unset 'id'
-			copiedState.unset 'lsTransactions'
-			copiedState.unset 'lsValues'
-			copiedValues = new ValueList()
-			origValues = st.get('lsValues')
-			origValues.each (sv) ->
-				copiedVal = new Value(sv.attributes)
-				copiedVal.unset 'id'
-				copiedVal.unset 'lsTransaction'
-				copiedValues.add(copiedVal)
-			copiedState.set lsValues: copiedValues
-			copiedStates.add(copiedState)
+		states = copiedThing.get('lsStates')
+		@resetStatesAndVals states
 		copiedThing.set
-#			lsLabels: new LabelList()
-			lsStates: copiedStates
-			recordedBy: window.AppLaunchParams.loginUser.username
-			recordedDate: new Date().getTime()
 			version: 0
+		@resetClonedAttrs(copiedThing)
 		copiedThing.get('notebook').set value: ""
 		copiedThing.get('scientist').set value: "unassigned"
 		copiedThing.get('completion date').set value: null
 		copiedThing.createDefaultLabels()
 
+		delete copiedThing.attributes.firstLsThings
+
+		secondItxs = copiedThing.get('secondLsThings')
+		secondItxs.each (itx) =>
+			@resetClonedAttrs(itx)
+			itxStates = itx.get('lsStates')
+			@resetStatesAndVals itxStates
 		copiedThing
+
+	resetStatesAndVals: (states) =>
+		states.each (st) =>
+			@resetClonedAttrs(st)
+			values = st.get('lsValues')
+			ignoredVals = values.filter (val) ->
+				val.get('ignored')
+			for val in ignoredVals
+				igVal = st.getValueById(val.get('id'))[0]
+				values.remove igVal
+			values.each (sv) =>
+				@resetClonedAttrs(sv)
+
+	copyStatesAndVals: (origStates) =>
+		copiedStates = new StateList()
+		origStates.each (st) =>
+			copiedState = new State(_.clone(st.attributes))
+			@resetClonedAttrs(copiedState)
+			copiedState.unset 'lsValues'
+			copiedValues = new ValueList()
+			origValues = st.get('lsValues')
+			origValues.each (sv) =>
+				copiedVal = new Value(sv.attributes)
+				@resetClonedAttrs(copiedVal)
+				copiedValues.add(copiedVal)
+			copiedState.set lsValues: copiedValues
+			copiedStates.add(copiedState)
+		copiedStates
+
+	resetClonedAttrs: (clone) =>
+		clone.unset 'id'
+		clone.unset 'lsTransaction'
+		clone.set
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 
 	getStateValueHistory: (vKind) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
