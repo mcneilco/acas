@@ -156,12 +156,42 @@ getApacheCompileOptions = ->
 	compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
 	compileOptions
 
-getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
 	confs = []
 	runUser = shell.exec('whoami',{silent:true}).output.replace('\n','')
 	if config.all.server.run?
 		if config.all.server.run.user?
 			runUser = config.all.server.run.user
+	confs.push('User ' + runUser)
+	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
+	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
+	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
+	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
+	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
+	confs.push('ServerName ' + config.all.client.host)
+	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
+	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
+	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
+	confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log')
+	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
+	if Boolean(config.all.client.use.ssl)
+		urlPrefix = 'https'
+		confs.push('SSLEngine On')
+		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
+		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
+		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
+		confs.push('SSLPassPhraseDialog ' + '\'|' + path.resolve(acasHome,'conf','executeNodeScript.sh') + ' ' + path.resolve(acasHome,'conf','getSSLPassphrase.js' + '\''))
+	else
+		urlPrefix = 'http'
+	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
+	confs.push('RewriteEngine On')
+	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.all.client.host}:#{config.all.client.port}/$1 [L,R,NE]")
+	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
+	return confs.join('\n')
+
+getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+	apacheSpecificConfs = []
 	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
 	switch apacheVersion
 		when 'Ubuntu'
@@ -180,49 +210,25 @@ getApacheConfsString = (config, apacheCompileOptions, apacheHardCodedConfigs, ac
 			serverRoot = '\"/usr\"'
 			modulesDir = 'libexec/apache2/'
 			typesConfig = '/private/etc/apache2/mime.types'
-	confs.push('User ' + runUser)
-	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
-	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
-	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
-	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
-	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
-	confs.push('ServerRoot ' + serverRoot)
-	confs.push('ServerName ' + config.all.client.host)
-	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
-	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
-	confs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
-	confs.push('TypesConfig ' + typesConfig)
+
+	apacheSpecificConfs.push('ServerRoot ' + serverRoot)
+	apacheSpecificConfs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
+	apacheSpecificConfs.push('TypesConfig ' + typesConfig)
 	if apacheVersion in ['Redhat', 'Darwin', 'SUSE']
-		confs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
-		confs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
+		apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
+		apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
-		confs.push('Mutex default:' + acasHome + '/bin')
-		confs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
-		confs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
-	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
-	confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log')
-	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
-	confs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
+		apacheSpecificConfs.push('Mutex default:' + acasHome + '/bin')
+		apacheSpecificConfs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
+		apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
+	apacheSpecificConfs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
 
 	if Boolean(config.all.client.use.ssl)
-		urlPrefix = 'https'
-		confs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
-		confs.push('SSLEngine On')
-		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
-		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
-		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
-		confs.push('SSLPassPhraseDialog ' + '\'|' + path.resolve(acasHome,'conf','executeNodeScript.sh') + ' ' + path.resolve(acasHome,'conf','getSSLPassphrase.js' + '\''))
+		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 	else
-		urlPrefix = 'http'
-	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
-	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
-	confs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
-	confs.push('RewriteEngine On')
-	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.all.client.host}:#{config.all.client.port}/$1 [L,R,NE]")
+	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
 
-	confs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
-	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
-	confs.join('\n')
+	apacheSpecificConfs.join('\n')
 
 
 apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
@@ -238,7 +244,11 @@ writeApacheConfFile = ->
 	acasHome = path.resolve(__dirname,'..')
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
-		apacheConfString = getApacheConfsString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
-		rFilesWithRoute = getRFilesWithRoute()
-		rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-		fs.writeFileSync "./compiled/apache.conf", [apacheConfString,rFileHandlerString].join('\n')
+		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+	else
+		apacheSpecificConfString = ''
+	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+	rFilesWithRoute = getRFilesWithRoute()
+	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
+	fs.writeFileSync "./compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "./compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
