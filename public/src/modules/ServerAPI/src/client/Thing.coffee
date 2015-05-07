@@ -55,38 +55,40 @@ class window.Thing extends Backbone.Model
 		# loop over defaultLabels
 		# getorCreateLabel
 		# add key as attribute of model
-		for dLabel in @lsProperties.defaultLabels
-			newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
-			@set dLabel.key, newLabel
-			#			if newLabel.get('preferred') is undefined
-			newLabel.set preferred: dLabel.preferred
+		if @lsProperties.defaultLabels?
+			for dLabel in @lsProperties.defaultLabels
+				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@set dLabel.key, newLabel
+				#			if newLabel.get('preferred') is undefined
+				newLabel.set preferred: dLabel.preferred
 
 
 	createDefaultStates: =>
-		for dValue in @lsProperties.defaultValues
-			#Adding the new state and value to @
-			newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-			@listenTo newValue, 'createNewValue', @createNewValue
-			#setting unitType and unitKind in the state, if units are given
-			if dValue.unitKind? and newValue.get('unitKind') is undefined
-				newValue.set unitKind: dValue.unitKind
-			if dValue.unitType? and newValue.get('unitType') is undefined
-				newValue.set unitType: dValue.unitType
-			if dValue.codeKind? and newValue.get('codeKind') is undefined
-				newValue.set codeKind: dValue.codeKind
-			if dValue.codeType? and newValue.get('codeType') is undefined
-				newValue.set codeType: dValue.codeType
-			if dValue.codeOrigin? and newValue.get('codeOrigin') is undefined
-				newValue.set codeOrigin: dValue.codeOrigin
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+				#Adding the new state and value to @
+				newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
+				@listenTo newValue, 'createNewValue', @createNewValue
+				#setting unitType and unitKind in the state, if units are given
+				if dValue.unitKind? and newValue.get('unitKind') is undefined
+					newValue.set unitKind: dValue.unitKind
+				if dValue.unitType? and newValue.get('unitType') is undefined
+					newValue.set unitType: dValue.unitType
+				if dValue.codeKind? and newValue.get('codeKind') is undefined
+					newValue.set codeKind: dValue.codeKind
+				if dValue.codeType? and newValue.get('codeType') is undefined
+					newValue.set codeType: dValue.codeType
+				if dValue.codeOrigin? and newValue.get('codeOrigin') is undefined
+					newValue.set codeOrigin: dValue.codeOrigin
 
-			#Setting dValue.key attribute in @ to point to the newValue
-			@set dValue.key, newValue
+				#Setting dValue.key attribute in @ to point to the newValue
+				@set dValue.key, newValue
 
-			if dValue.value? and (newValue.get(dValue.type) is undefined)
-				newValue.set dValue.type, dValue.value
-			#setting top level model attribute's value to equal valueType's value
-			# (ie set "value" to equal value in "stringValue")
-			@get(dValue.kind).set("value", newValue.get(dValue.type))
+				if dValue.value? and (newValue.get(dValue.type) is undefined)
+					newValue.set dValue.type, dValue.value
+				#setting top level model attribute's value to equal valueType's value
+				# (ie set "value" to equal value in "stringValue")
+				@get(dValue.kind).set("value", newValue.get(dValue.type))
 
 	createNewValue: (vKind, newVal) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
@@ -99,18 +101,20 @@ class window.Thing extends Backbone.Model
 	createDefaultFirstLsThingItx: =>
 		# loop over defaultFirstLsThingItx
 		# add key as attribute of model
-		for itx in @lsProperties.defaultFirstLsThingItx
-			thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
-			unless thingItx?
-				thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
-			@set itx.key, thingItx
+		if @lsProperties.defaultFirstLsThingItx?
+			for itx in @lsProperties.defaultFirstLsThingItx
+				thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+				unless thingItx?
+					thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
+				@set itx.key, thingItx
 
 	createDefaultSecondLsThingItx: =>
 		# loop over defaultSecondLsThingItx
 		# add key as attribute of model
-		for itx in @lsProperties.defaultSecondLsThingItx
-			thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-			@set itx.key, thingItx
+		if @lsProperties.defaultSecondLsThingItx?
+			for itx in @lsProperties.defaultSecondLsThingItx
+					thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+					@set itx.key, thingItx
 
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files
