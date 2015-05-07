@@ -144,6 +144,11 @@ class window.State extends Backbone.Model
 		@get('lsValues').filter (value) ->
 			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
 
+	getValueById: (id) ->
+		value = @get('lsValues').filter (val) ->
+			val.id == id
+		value
+
 	getValueHistory: (type, kind) ->
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)

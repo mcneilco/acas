@@ -9,7 +9,6 @@
     function Thing() {
       this.getStateValueHistory = __bind(this.getStateValueHistory, this);
       this.resetClonedAttrs = __bind(this.resetClonedAttrs, this);
-      this.copyStatesAndVals = __bind(this.copyStatesAndVals, this);
       this.resetStatesAndVals = __bind(this.resetStatesAndVals, this);
       this.duplicate = __bind(this.duplicate, this);
       this.deleteInteractions = __bind(this.deleteInteractions, this);
@@ -358,38 +357,14 @@
       })(this));
     };
 
-    Thing.prototype.copyStatesAndVals = function(origStates) {
-      var copiedStates;
-      copiedStates = new StateList();
-      origStates.each((function(_this) {
-        return function(st) {
-          var copiedState, copiedValues, origValues;
-          copiedState = new State(_.clone(st.attributes));
-          _this.resetClonedAttrs(copiedState);
-          copiedState.unset('lsValues');
-          copiedValues = new ValueList();
-          origValues = st.get('lsValues');
-          origValues.each(function(sv) {
-            var copiedVal;
-            copiedVal = new Value(sv.attributes);
-            _this.resetClonedAttrs(copiedVal);
-            return copiedValues.add(copiedVal);
-          });
-          copiedState.set({
-            lsValues: copiedValues
-          });
-          return copiedStates.add(copiedState);
-        };
-      })(this));
-      return copiedStates;
-    };
-
     Thing.prototype.resetClonedAttrs = function(clone) {
       clone.unset('id');
       clone.unset('lsTransaction');
+      clone.unset('modifiedDate');
       return clone.set({
         recordedBy: window.AppLaunchParams.loginUser.username,
-        recordedDate: new Date().getTime()
+        recordedDate: new Date().getTime(),
+        version: 0
       });
     };
 

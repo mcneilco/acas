@@ -210,28 +210,14 @@ class window.Thing extends Backbone.Model
 			values.each (sv) =>
 				@resetClonedAttrs(sv)
 
-	copyStatesAndVals: (origStates) =>
-		copiedStates = new StateList()
-		origStates.each (st) =>
-			copiedState = new State(_.clone(st.attributes))
-			@resetClonedAttrs(copiedState)
-			copiedState.unset 'lsValues'
-			copiedValues = new ValueList()
-			origValues = st.get('lsValues')
-			origValues.each (sv) =>
-				copiedVal = new Value(sv.attributes)
-				@resetClonedAttrs(copiedVal)
-				copiedValues.add(copiedVal)
-			copiedState.set lsValues: copiedValues
-			copiedStates.add(copiedState)
-		copiedStates
-
 	resetClonedAttrs: (clone) =>
 		clone.unset 'id'
 		clone.unset 'lsTransaction'
+		clone.unset 'modifiedDate'
 		clone.set
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
+			version: 0
 
 	getStateValueHistory: (vKind) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]

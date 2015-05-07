@@ -285,6 +285,14 @@
       });
     };
 
+    State.prototype.getValueById = function(id) {
+      var value;
+      value = this.get('lsValues').filter(function(val) {
+        return val.id === id;
+      });
+      return value;
+    };
+
     State.prototype.getValueHistory = function(type, kind) {
       return this.get('lsValues').filter(function(value) {
         return (value.get('lsType') === type) && (value.get('lsKind') === kind);
