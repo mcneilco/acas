@@ -137,25 +137,33 @@ class window.Thing extends Backbone.Model
 		attachFileList
 
 	reformatBeforeSaving: =>
-		for dLabel in @lsProperties.defaultLabels
-			@unset(dLabel.key)
+		if @lsProperties.defaultLabels?
+			for dLabel in @lsProperties.defaultLabels
+				@unset(dLabel.key)
 
-		for itx in @lsProperties.defaultFirstLsThingItx
-			@unset(itx.key)
+		if @lsProperties.defaultFirstLsThingItx?
+			for itx in @lsProperties.defaultFirstLsThingItx
+				@unset(itx.key)
+
 		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
 			@get('firstLsThings').reformatBeforeSaving()
-		for itx in @lsProperties.defaultSecondLsThingItx
-			@unset(itx.key)
+
+		if @lsProperties.defaultSecondLsThingItx?
+			for itx in @lsProperties.defaultSecondLsThingItx
+				@unset(itx.key)
+
 		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
 			@get('secondLsThings').reformatBeforeSaving()
 
-		for dValue in @lsProperties.defaultValues
-			if @get(dValue.key)?
-				if @get(dValue.key).get('value') is undefined
-					lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-					value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-					lsStates[0].get('lsValues').remove value
-				@unset(dValue.key)
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+				if @get(dValue.key)?
+					if @get(dValue.key).get('value') is undefined
+						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+						lsStates[0].get('lsValues').remove value
+					@unset(dValue.key)
+
 		if @attributes.attributes?
 			delete @attributes.attributes
 		for i of @attributes

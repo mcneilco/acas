@@ -242,37 +242,45 @@
 
     Thing.prototype.reformatBeforeSaving = function() {
       var dLabel, dValue, i, itx, lsStates, value, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _results;
-      _ref = this.lsProperties.defaultLabels;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        dLabel = _ref[_i];
-        this.unset(dLabel.key);
+      if (this.lsProperties.defaultLabels != null) {
+        _ref = this.lsProperties.defaultLabels;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dLabel = _ref[_i];
+          this.unset(dLabel.key);
+        }
       }
-      _ref1 = this.lsProperties.defaultFirstLsThingItx;
-      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-        itx = _ref1[_j];
-        this.unset(itx.key);
+      if (this.lsProperties.defaultFirstLsThingItx != null) {
+        _ref1 = this.lsProperties.defaultFirstLsThingItx;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          itx = _ref1[_j];
+          this.unset(itx.key);
+        }
       }
       if ((this.get('firstLsThings') != null) && this.get('firstLsThings') instanceof FirstLsThingItxList) {
         this.get('firstLsThings').reformatBeforeSaving();
       }
-      _ref2 = this.lsProperties.defaultSecondLsThingItx;
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        itx = _ref2[_k];
-        this.unset(itx.key);
+      if (this.lsProperties.defaultSecondLsThingItx != null) {
+        _ref2 = this.lsProperties.defaultSecondLsThingItx;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          itx = _ref2[_k];
+          this.unset(itx.key);
+        }
       }
       if ((this.get('secondLsThings') != null) && this.get('secondLsThings') instanceof SecondLsThingItxList) {
         this.get('secondLsThings').reformatBeforeSaving();
       }
-      _ref3 = this.lsProperties.defaultValues;
-      for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
-        dValue = _ref3[_l];
-        if (this.get(dValue.key) != null) {
-          if (this.get(dValue.key).get('value') === void 0) {
-            lsStates = this.get('lsStates').getStatesByTypeAndKind(dValue.stateType, dValue.stateKind);
-            value = lsStates[0].getValuesByTypeAndKind(dValue.type, dValue.kind);
-            lsStates[0].get('lsValues').remove(value);
+      if (this.lsProperties.defaultValues != null) {
+        _ref3 = this.lsProperties.defaultValues;
+        for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+          dValue = _ref3[_l];
+          if (this.get(dValue.key) != null) {
+            if (this.get(dValue.key).get('value') === void 0) {
+              lsStates = this.get('lsStates').getStatesByTypeAndKind(dValue.stateType, dValue.stateKind);
+              value = lsStates[0].getValuesByTypeAndKind(dValue.type, dValue.kind);
+              lsStates[0].get('lsValues').remove(value);
+            }
+            this.unset(dValue.key);
           }
-          this.unset(dValue.key);
         }
       }
       if (this.attributes.attributes != null) {
