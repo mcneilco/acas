@@ -11,7 +11,7 @@ getAssayCompoundData <- function (filePath, plateData, testMode, tempFilePath, a
                              unique(allCompoundData[, assayBarcode]))
   if(length(overlappingPlate) > 0) {
     stopUser(paste0("Some sidecar and compound plates have overlapping wells.\n ",
-                    "Please check the plates associated with the following assay(s): ", 
+                    "Please check the plates associated with the following assay barcode(s): ", 
                     paste(unlist(overlappingPlate), collapse=", ")))
   }
   
