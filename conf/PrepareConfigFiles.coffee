@@ -62,8 +62,9 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 							else
 								console.log "process.env.USER is not set"
 								if process.getuid()
-									console.log "using process.getuid #{process.getuid()}"
-									return process.getuid()
+									user = shell.exec('whoami',{silent:true}).output.replace('\n','')
+									console.log "using whoami result #{user}"
+									return user
 								else
 									console.log "could not get run user exiting"
 									process.exit 1
@@ -158,10 +159,7 @@ getApacheCompileOptions = ->
 
 getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
 	confs = []
-	runUser = shell.exec('whoami',{silent:true}).output.replace('\n','')
-	if config.all.server.run?
-		if config.all.server.run.user?
-			runUser = config.all.server.run.user
+	runUser = config.all.server.run.user
 	confs.push('User ' + runUser)
 	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
 	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
@@ -227,7 +225,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 	else
 	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
-
+	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	apacheSpecificConfs.join('\n')
 
 

@@ -72,6 +72,7 @@
             allConf.server.run = {
               user: (function(_this) {
                 return function() {
+                  var user;
                   if (allConf.server.run == null) {
                     console.log("server.run.user is not set");
                     if (sysEnv.USER) {
@@ -80,8 +81,11 @@
                     } else {
                       console.log("process.env.USER is not set");
                       if (process.getuid()) {
-                        console.log("using process.getuid " + (process.getuid()));
-                        return process.getuid();
+                        user = shell.exec('whoami', {
+                          silent: true
+                        }).output.replace('\n', '');
+                        console.log("using whoami result " + user);
+                        return user;
                       } else {
                         console.log("could not get run user exiting");
                         process.exit(1);
@@ -229,14 +233,7 @@
   getRApacheSpecificConfString = function(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) {
     var confs, runUser, urlPrefix;
     confs = [];
-    runUser = shell.exec('whoami', {
-      silent: true
-    }).output.replace('\n', '');
-    if (config.all.server.run != null) {
-      if (config.all.server.run.user != null) {
-        runUser = config.all.server.run.user;
-      }
-    }
+    runUser = config.all.server.run.user;
     confs.push('User ' + runUser);
     confs.push('Group ' + shell.exec('id -g -n ' + runUser, {
       silent: true
@@ -325,6 +322,7 @@
 
     }
     apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so");
+    apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so");
     return apacheSpecificConfs.join('\n');
   };
 
