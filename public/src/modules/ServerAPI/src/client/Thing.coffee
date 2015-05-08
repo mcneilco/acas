@@ -95,7 +95,13 @@ class window.Thing extends Backbone.Model
 		@unset(vKind)
 		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 		newValue.set valInfo['type'], newVal
-		newValue.set value: newVal
+		newValue.set
+			unitKind: valInfo['unitKind']
+			unitType: valInfo['unitType']
+			codeKind: valInfo['codeKind']
+			codeType: valInfo['codeType']
+			codeOrigin: valInfo['codeOrigin']
+			value: newVal
 		@set vKind, newValue
 
 	createDefaultFirstLsThingItx: =>
@@ -179,6 +185,9 @@ class window.Thing extends Backbone.Model
 	duplicate: =>
 		copiedThing = @.clone()
 		copiedThing.unset 'codeName'
+		labels = copiedThing.get('lsLabels')
+		labels.each (label) =>
+			@resetClonedAttrs label
 		states = copiedThing.get('lsStates')
 		@resetStatesAndVals states
 		copiedThing.set
@@ -187,7 +196,6 @@ class window.Thing extends Backbone.Model
 		copiedThing.get('notebook').set value: ""
 		copiedThing.get('scientist').set value: "unassigned"
 		copiedThing.get('completion date').set value: null
-		copiedThing.createDefaultLabels()
 
 		delete copiedThing.attributes.firstLsThings
 
@@ -202,13 +210,14 @@ class window.Thing extends Backbone.Model
 		states.each (st) =>
 			@resetClonedAttrs(st)
 			values = st.get('lsValues')
-			ignoredVals = values.filter (val) ->
-				val.get('ignored')
-			for val in ignoredVals
-				igVal = st.getValueById(val.get('id'))[0]
-				values.remove igVal
-			values.each (sv) =>
-				@resetClonedAttrs(sv)
+			if values?
+				ignoredVals = values.filter (val) ->
+					val.get('ignored')
+				for val in ignoredVals
+					igVal = st.getValueById(val.get('id'))[0]
+					values.remove igVal
+				values.each (sv) =>
+					@resetClonedAttrs(sv)
 
 	resetClonedAttrs: (clone) =>
 		clone.unset 'id'

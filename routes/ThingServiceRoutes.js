@@ -9,7 +9,8 @@
     app.post('/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch);
     app.put('/api/things/:lsType/:lsKind/:code', exports.putThing);
     app.get('/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName);
-    return app.post('/api/validateName/:componentOrAssembly', exports.validateName);
+    app.post('/api/validateName/:componentOrAssembly', exports.validateName);
+    return app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -20,7 +21,8 @@
     app.post('/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch);
     app.put('/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing);
     app.get('/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName);
-    return app.post('/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName);
+    app.post('/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName);
+    return app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies);
   };
 
   exports.thingsByTypeKind = function(req, resp) {
@@ -36,7 +38,6 @@
       if (req.query.stub) {
         baseurl += "?" + stubFlag;
       }
-      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
@@ -72,7 +73,7 @@
 
   updateThing = function(thing, testMode, callback) {
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-    return serverUtilityFunctions.createLSTransaction(thing.recordedDate, "updated thing", function(transaction) {
+    return serverUtilityFunctions.createLSTransaction(thing.recordedDate, "updated experiment", function(transaction) {
       var baseurl, config, request;
       thing = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, thing);
       if (testMode || global.specRunnerTestmode) {
@@ -106,7 +107,7 @@
     console.log("post thing parent");
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     thingToSave = req.body;
-    return serverUtilityFunctions.createLSTransaction(thingToSave.recordedDate, "new thing", function(transaction) {
+    return serverUtilityFunctions.createLSTransaction(thingToSave.recordedDate, "new experiment", function(transaction) {
       var baseurl, checkFilesAndUpdate, config, request;
       thingToSave = serverUtilityFunctions.insertTransactionIntoEntity(transaction.id, thingToSave);
       if (req.query.testMode || global.specRunnerTestmode) {
@@ -281,11 +282,23 @@
           } else {
             console.log('got ajax error trying to save thing parent');
             console.log(error);
-            console.log(json);
+            console.log(jsonthing);
             return console.log(response);
           }
         };
       })(this));
+    }
+  };
+
+  exports.getAssemblies = function(req, resp) {
+    var baseurl, config;
+    if (req.query.testMode || global.specRunnerTestmode) {
+      return resp.json([]);
+    } else {
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/getcomposites/" + req.params.componentCode;
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 

@@ -178,6 +178,11 @@
       newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']);
       newValue.set(valInfo['type'], newVal);
       newValue.set({
+        unitKind: valInfo['unitKind'],
+        unitType: valInfo['unitType'],
+        codeKind: valInfo['codeKind'],
+        codeType: valInfo['codeType'],
+        codeOrigin: valInfo['codeOrigin'],
         value: newVal
       });
       return this.set(vKind, newValue);
@@ -304,9 +309,15 @@
     };
 
     Thing.prototype.duplicate = function() {
-      var copiedThing, secondItxs, states;
+      var copiedThing, labels, secondItxs, states;
       copiedThing = this.clone();
       copiedThing.unset('codeName');
+      labels = copiedThing.get('lsLabels');
+      labels.each((function(_this) {
+        return function(label) {
+          return _this.resetClonedAttrs(label);
+        };
+      })(this));
       states = copiedThing.get('lsStates');
       this.resetStatesAndVals(states);
       copiedThing.set({
@@ -322,7 +333,6 @@
       copiedThing.get('completion date').set({
         value: null
       });
-      copiedThing.createDefaultLabels();
       delete copiedThing.attributes.firstLsThings;
       secondItxs = copiedThing.get('secondLsThings');
       secondItxs.each((function(_this) {
@@ -342,17 +352,19 @@
           var igVal, ignoredVals, val, values, _i, _len;
           _this.resetClonedAttrs(st);
           values = st.get('lsValues');
-          ignoredVals = values.filter(function(val) {
-            return val.get('ignored');
-          });
-          for (_i = 0, _len = ignoredVals.length; _i < _len; _i++) {
-            val = ignoredVals[_i];
-            igVal = st.getValueById(val.get('id'))[0];
-            values.remove(igVal);
+          if (values != null) {
+            ignoredVals = values.filter(function(val) {
+              return val.get('ignored');
+            });
+            for (_i = 0, _len = ignoredVals.length; _i < _len; _i++) {
+              val = ignoredVals[_i];
+              igVal = st.getValueById(val.get('id'))[0];
+              values.remove(igVal);
+            }
+            return values.each(function(sv) {
+              return _this.resetClonedAttrs(sv);
+            });
           }
-          return values.each(function(sv) {
-            return _this.resetClonedAttrs(sv);
-          });
         };
       })(this));
     };

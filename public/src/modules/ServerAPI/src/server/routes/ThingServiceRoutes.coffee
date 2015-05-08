@@ -7,6 +7,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
 	app.post '/api/validateName/:componentOrAssembly', exports.validateName
+	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -17,6 +18,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
 	app.post '/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName
+	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -30,7 +32,6 @@ exports.thingsByTypeKind = (req, resp) ->
 		stubFlag = "with=stub"
 		if req.query.stub
 			baseurl += "?#{stubFlag}"
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -61,7 +62,7 @@ exports.thingByCodeName = (req, resp) ->
 
 updateThing = (thing, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	serverUtilityFunctions.createLSTransaction thing.recordedDate, "updated thing", (transaction) ->
+	serverUtilityFunctions.createLSTransaction thing.recordedDate, "updated experiment", (transaction) ->
 		thing = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thing
 		if testMode or global.specRunnerTestmode
 			callback thing
@@ -88,7 +89,7 @@ postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	thingToSave = req.body
-	serverUtilityFunctions.createLSTransaction thingToSave.recordedDate, "new thing", (transaction) ->
+	serverUtilityFunctions.createLSTransaction thingToSave.recordedDate, "new experiment", (transaction) ->
 		thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 		if req.query.testMode or global.specRunnerTestmode
 			unless thingToSave.codeName?
@@ -226,8 +227,15 @@ exports.validateName = (req, resp) ->
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error
-				console.log json
+				console.log jsonthing
 				console.log response
 		)
 
-
+exports.getAssemblies = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		resp.json []
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
