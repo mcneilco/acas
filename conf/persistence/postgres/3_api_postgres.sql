@@ -73,13 +73,13 @@ SELECT ag.id AS ag_id,
 ag.code_name as ag_code_name,
 eag.experiment_id AS experiment_id, 
 agv2.code_value AS tested_lot, 
-agv3.numeric_value AS tested_conc, 
+agv2.concentration AS tested_conc, 
 CASE
-	WHEN agv4.numeric_value IS NOT NULL AND agv3.numeric_value IS NOT NULL
-		THEN agv3.unit_kind || ' and ' || agv4.numeric_value || ' ' || agv4.unit_kind
+  WHEN agv4.numeric_value IS NOT NULL AND agv2.concentration IS NOT NULL
+		THEN agv2.conc_unit || ' and ' || agv4.numeric_value || ' ' || agv4.unit_kind
 	WHEN agv4.numeric_value IS NOT NULL
 		THEN agv4.numeric_value || ' ' || agv4.unit_kind
-	ELSE agv3.unit_kind
+	ELSE agv2.conc_unit
 END	
 AS tested_conc_unit, 
 agv.id AS agv_id,
@@ -138,9 +138,8 @@ FROM experiment e
 JOIN experiment_analysisgroup eag on e.id=eag.experiment_id
 JOIN analysis_GROUP ag ON eag.analysis_group_id = ag.id
 JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
-JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
+JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'batch code' AND agv.ls_kind <> 'time'
 JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
-LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and agv3.ls_kind = 'tested concentration'
 LEFT OUTER JOIN analysis_GROUP_value agv4 ON agv4.analysis_state_id = ags.id and agv4.ls_kind = 'time'
 WHERE ag.ignored = '0' and
 ags.ignored = '0' and
