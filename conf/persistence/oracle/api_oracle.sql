@@ -589,8 +589,8 @@ e.scientist,
 e.recorded_date as e_recorded_date,
 ag.id AS ag_id,
 agv2.code_value AS ag_tested_lot,
-agv3.numeric_value AS ag_tested_conc, 
-agv3.unit_kind AS ag_tested_conc_unit, 
+agv2.concentration AS ag_tested_conc, 
+agv2.conc_unit AS ag_tested_conc_unit, 
 agv.id AS agv_id, 
 agv.ls_kind as ag_value_kind, 
 agv.operator_kind as ag_operator, 
@@ -641,8 +641,18 @@ then tgv2.code_value
 else tgv5.code_value
 end
 AS tg_tested_lot, 
-tgv3.numeric_value AS tg_tested_conc,
-tgv3.unit_kind AS tg_tested_conc_unit,
+case 
+when tgv2.code_value is not null 
+then tgv2.concentration
+else tgv5.concentration
+end
+AS tg_tested_conc,
+case 
+when tgv2.code_value is not null 
+then tgv2.conc_unit
+else tgv5.conc_unit
+end
+AS tg_tested_conc_unit,
 tgv4.numeric_value AS tg_tested_time,
 tgv4.unit_kind AS tg_tested_time_unit,
 tgv.id AS tgv_id,
@@ -696,8 +706,18 @@ case
   else sv5.code_value
 end
 AS s_tested_lot, 
-sv3.numeric_value AS s_tested_conc, 
-sv3.unit_kind AS s_tested_conc_unit,
+case 
+  when sv2.code_value is not null 
+  then sv2.concentration
+  else sv5.concentration
+end
+AS s_tested_conc, 
+case 
+  when sv2.code_value is not null 
+  then sv2.conc_unit
+  else sv5.conc_unit
+end
+AS s_tested_conc_unit,
 sv4.numeric_value AS s_tested_time,
 sv4.unit_kind AS s_tested_time_unit,
 sv.id AS sv_id, 
@@ -805,20 +825,17 @@ JOIN treatment_group tg ON tg.id = agtg.treatment_group_id
 JOIN treatmentgroup_subject tgsmm ON tgsmm.treatment_group_id = tg.id
 JOIN subject s ON s.id = tgsmm.subject_id
 LEFT OUTER JOIN analysis_GROUP_state ags ON ags.analysis_GROUP_id = ag.id
-LEFT OUTER JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'tested concentration' AND agv.ls_kind <> 'batch code'
+LEFT OUTER JOIN analysis_GROUP_value agv ON agv.analysis_state_id = ags.id AND agv.ls_kind <> 'batch code'
 LEFT OUTER JOIN analysis_GROUP_value agv2 ON agv2.analysis_state_id = ags.id and agv2.ls_kind = 'batch code'
-LEFT OUTER JOIN analysis_GROUP_value agv3 ON agv3.analysis_state_id = ags.id and agv3.ls_kind = 'tested concentration'
 LEFT OUTER JOIN treatment_group_state tgs ON tgs.treatment_group_id = tg.id
-LEFT OUTER JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id AND tgv.ls_kind <> 'tested concentration' AND tgv.ls_kind <> 'batch code' AND tgv.ls_kind <> 'time'
+LEFT OUTER JOIN treatment_group_value tgv ON tgv.treatment_state_id = tgs.id AND tgv.ls_kind <> 'batch code' AND tgv.ls_kind <> 'time'
 LEFT OUTER JOIN treatment_group_value tgv2 ON tgv2.treatment_state_id = tgs.id and tgv2.ls_kind = 'batch code'
-LEFT OUTER JOIN treatment_group_value tgv3 ON tgv3.treatment_state_id = tgs.id and tgv3.ls_kind = 'tested concentration'
 LEFT OUTER JOIN treatment_group_value tgv4 ON tgv4.treatment_state_id = tgs.id and tgv4.ls_kind = 'time'
 LEFT OUTER JOIN treatment_group_state tgs2 ON tgs2.treatment_group_id = tg.id and tgs2.ls_kind = 'treatment'
 LEFT OUTER JOIN treatment_group_value tgv5 ON tgv5.treatment_state_id = tgs2.id and tgv5.ls_kind = 'batch code'
 LEFT OUTER JOIN subject_state ss ON ss.subject_id = s.id
-LEFT OUTER JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'tested concentration' AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
+LEFT OUTER JOIN subject_value sv ON sv.subject_state_id = ss.id AND sv.ls_kind <> 'batch code' AND sv.ls_kind <> 'time'
 LEFT OUTER JOIN subject_value sv2 ON sv2.subject_state_id = ss.id and sv2.ls_kind = 'batch code'
-LEFT OUTER JOIN subject_value sv3 ON sv3.subject_state_id = ss.id and sv3.ls_kind = 'tested concentration'
 LEFT OUTER JOIN subject_value sv4 ON sv4.subject_state_id = ss.id and sv4.ls_kind = 'time'
 LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'treatment'
 LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code'
