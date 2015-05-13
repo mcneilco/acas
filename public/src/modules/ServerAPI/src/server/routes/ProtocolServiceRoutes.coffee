@@ -110,6 +110,8 @@ postProtocol = (req, resp) ->
 				resp.json prot
 
 		if req.query.testMode or global.specRunnerTestmode
+			unless protToSave.id?
+				protToSave.id = 1
 			checkFilesAndUpdate protToSave
 		else
 			config = require '../conf/compiled/conf.js'

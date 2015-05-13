@@ -151,10 +151,8 @@ describe "Experiment Browser module testing", ->
 
 				estc.setupExperimentSummaryTable([])
 				#waits(1000)
-				console.log '$(".bv_noMatchesFoundMessage").html()'
-				console.log $(".bv_noMatchesFoundMessage").html()
-				expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy()
-				expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found")
+				expect($(".bv_noMatchingExperimentsFoundMessage").hasClass("hide")).toBeFalsy()
+				expect($(".bv_noMatchingExperimentsFoundMessage").html()).toContain("No Matching Experiments Found")
 
 
 	describe "ExperimentBrowserController tests", ->

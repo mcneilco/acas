@@ -1,16 +1,16 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseKnockoutPanelController = (function(_super) {
-    __extends(DoseResponseKnockoutPanelController, _super);
+  window.DoseResponseKnockoutPanelController = (function(superClass) {
+    extend(DoseResponseKnockoutPanelController, superClass);
 
     function DoseResponseKnockoutPanelController() {
-      this.handleDoseResponseKnockoutPanelHidden = __bind(this.handleDoseResponseKnockoutPanelHidden, this);
-      this.setupKnockoutPicklist = __bind(this.setupKnockoutPicklist, this);
-      this.show = __bind(this.show, this);
-      this.render = __bind(this.render, this);
+      this.handleDoseResponseKnockoutPanelHidden = bind(this.handleDoseResponseKnockoutPanelHidden, this);
+      this.setupKnockoutPicklist = bind(this.setupKnockoutPicklist, this);
+      this.show = bind(this.show, this);
+      this.render = bind(this.render, this);
       return DoseResponseKnockoutPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -69,14 +69,14 @@
 
   })(Backbone.View);
 
-  window.DoseResponsePlotController = (function(_super) {
-    __extends(DoseResponsePlotController, _super);
+  window.DoseResponsePlotController = (function(superClass) {
+    extend(DoseResponsePlotController, superClass);
 
     function DoseResponsePlotController() {
-      this.initJSXGraph = __bind(this.initJSXGraph, this);
-      this.knockoutPoints = __bind(this.knockoutPoints, this);
-      this.showDoseResponseKnockoutPanel = __bind(this.showDoseResponseKnockoutPanel, this);
-      this.render = __bind(this.render, this);
+      this.initJSXGraph = bind(this.initJSXGraph, this);
+      this.knockoutPoints = bind(this.knockoutPoints, this);
+      this.showDoseResponseKnockoutPanel = bind(this.showDoseResponseKnockoutPanel, this);
+      this.render = bind(this.render, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
 
@@ -483,12 +483,12 @@
 
   })(AbstractFormController);
 
-  window.CurveDetail = (function(_super) {
-    __extends(CurveDetail, _super);
+  window.CurveDetail = (function(superClass) {
+    extend(CurveDetail, superClass);
 
     function CurveDetail() {
-      this.parse = __bind(this.parse, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = bind(this.parse, this);
+      this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
@@ -529,24 +529,24 @@
 
   })(Backbone.Model);
 
-  window.CurveEditorController = (function(_super) {
-    __extends(CurveEditorController, _super);
+  window.CurveEditorController = (function(superClass) {
+    extend(CurveEditorController, superClass);
 
     function CurveEditorController() {
-      this.deleteRsession = __bind(this.deleteRsession, this);
-      this.handleUpdateSuccess = __bind(this.handleUpdateSuccess, this);
-      this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
-      this.handleUpdateError = __bind(this.handleUpdateError, this);
-      this.handleSaveError = __bind(this.handleSaveError, this);
-      this.handleResetError = __bind(this.handleResetError, this);
-      this.handleRejectClicked = __bind(this.handleRejectClicked, this);
-      this.handleApproveClicked = __bind(this.handleApproveClicked, this);
-      this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
-      this.handleResetClicked = __bind(this.handleResetClicked, this);
-      this.handleParametersChanged = __bind(this.handleParametersChanged, this);
-      this.handlePointsChanged = __bind(this.handlePointsChanged, this);
-      this.handleModelSync = __bind(this.handleModelSync, this);
-      this.render = __bind(this.render, this);
+      this.deleteRsession = bind(this.deleteRsession, this);
+      this.handleUpdateSuccess = bind(this.handleUpdateSuccess, this);
+      this.handleSaveSuccess = bind(this.handleSaveSuccess, this);
+      this.handleUpdateError = bind(this.handleUpdateError, this);
+      this.handleSaveError = bind(this.handleSaveError, this);
+      this.handleResetError = bind(this.handleResetError, this);
+      this.handleRejectClicked = bind(this.handleRejectClicked, this);
+      this.handleApproveClicked = bind(this.handleApproveClicked, this);
+      this.handleUpdateClicked = bind(this.handleUpdateClicked, this);
+      this.handleResetClicked = bind(this.handleResetClicked, this);
+      this.handleParametersChanged = bind(this.handleParametersChanged, this);
+      this.handlePointsChanged = bind(this.handlePointsChanged, this);
+      this.handleModelSync = bind(this.handleModelSync, this);
+      this.render = bind(this.render, this);
       return CurveEditorController.__super__.constructor.apply(this, arguments);
     }
 
@@ -748,8 +748,8 @@
 
   })(Backbone.View);
 
-  window.Curve = (function(_super) {
-    __extends(Curve, _super);
+  window.Curve = (function(superClass) {
+    extend(Curve, superClass);
 
     function Curve() {
       return Curve.__super__.constructor.apply(this, arguments);
@@ -759,15 +759,15 @@
 
   })(Backbone.Model);
 
-  window.CurveList = (function(_super) {
-    __extends(CurveList, _super);
+  window.CurveList = (function(superClass) {
+    extend(CurveList, superClass);
 
     function CurveList() {
-      this.updateUserFlagStatus = __bind(this.updateUserFlagStatus, this);
-      this.updateDirtyFlag = __bind(this.updateDirtyFlag, this);
-      this.updateCurveSummary = __bind(this.updateCurveSummary, this);
-      this.getIndexByCurveID = __bind(this.getIndexByCurveID, this);
-      this.getCurveByID = __bind(this.getCurveByID, this);
+      this.updateUserFlagStatus = bind(this.updateUserFlagStatus, this);
+      this.updateDirtyFlag = bind(this.updateDirtyFlag, this);
+      this.updateCurveSummary = bind(this.updateCurveSummary, this);
+      this.getIndexByCurveID = bind(this.getIndexByCurveID, this);
+      this.getCurveByID = bind(this.getCurveByID, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
 
@@ -833,11 +833,11 @@
 
   })(Backbone.Collection);
 
-  window.CurveCurationSet = (function(_super) {
-    __extends(CurveCurationSet, _super);
+  window.CurveCurationSet = (function(superClass) {
+    extend(CurveCurationSet, superClass);
 
     function CurveCurationSet() {
-      this.parse = __bind(this.parse, this);
+      this.parse = bind(this.parse, this);
       return CurveCurationSet.__super__.constructor.apply(this, arguments);
     }
 
@@ -878,12 +878,12 @@
 
   })(Backbone.Model);
 
-  window.CurveEditorDirtyPanelController = (function(_super) {
-    __extends(CurveEditorDirtyPanelController, _super);
+  window.CurveEditorDirtyPanelController = (function(superClass) {
+    extend(CurveEditorDirtyPanelController, superClass);
 
     function CurveEditorDirtyPanelController() {
-      this.show = __bind(this.show, this);
-      this.render = __bind(this.render, this);
+      this.show = bind(this.show, this);
+      this.render = bind(this.render, this);
       return CurveEditorDirtyPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -921,14 +921,14 @@
 
   })(Backbone.View);
 
-  window.CurveSummaryController = (function(_super) {
-    __extends(CurveSummaryController, _super);
+  window.CurveSummaryController = (function(superClass) {
+    extend(CurveSummaryController, superClass);
 
     function CurveSummaryController() {
-      this.clearSelected = __bind(this.clearSelected, this);
-      this.setSelected = __bind(this.setSelected, this);
-      this.setUserFlagStatus = __bind(this.setUserFlagStatus, this);
-      this.render = __bind(this.render, this);
+      this.clearSelected = bind(this.clearSelected, this);
+      this.setSelected = bind(this.setSelected, this);
+      this.setUserFlagStatus = bind(this.setUserFlagStatus, this);
+      this.render = bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1085,14 +1085,14 @@
 
   })(Backbone.View);
 
-  window.CurveSummaryListController = (function(_super) {
-    __extends(CurveSummaryListController, _super);
+  window.CurveSummaryListController = (function(superClass) {
+    extend(CurveSummaryListController, superClass);
 
     function CurveSummaryListController() {
-      this.showCurveEditorDirtyPanel = __bind(this.showCurveEditorDirtyPanel, this);
-      this.selectionUpdated = __bind(this.selectionUpdated, this);
-      this.anyDirty = __bind(this.anyDirty, this);
-      this.render = __bind(this.render, this);
+      this.showCurveEditorDirtyPanel = bind(this.showCurveEditorDirtyPanel, this);
+      this.selectionUpdated = bind(this.selectionUpdated, this);
+      this.anyDirty = bind(this.anyDirty, this);
+      this.render = bind(this.render, this);
       return CurveSummaryListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1216,19 +1216,19 @@
 
   })(Backbone.View);
 
-  window.CurveCuratorController = (function(_super) {
-    __extends(CurveCuratorController, _super);
+  window.CurveCuratorController = (function(superClass) {
+    extend(CurveCuratorController, superClass);
 
     function CurveCuratorController() {
-      this.handleSortChanged = __bind(this.handleSortChanged, this);
-      this.handleFilterChanged = __bind(this.handleFilterChanged, this);
-      this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
-      this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
-      this.getCurvesFromExperimentCode = __bind(this.getCurvesFromExperimentCode, this);
-      this.handleCurveUpdateError = __bind(this.handleCurveUpdateError, this);
-      this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
-      this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
-      this.render = __bind(this.render, this);
+      this.handleSortChanged = bind(this.handleSortChanged, this);
+      this.handleFilterChanged = bind(this.handleFilterChanged, this);
+      this.handleGetCurveDetailReturn = bind(this.handleGetCurveDetailReturn, this);
+      this.curveSelectionUpdated = bind(this.curveSelectionUpdated, this);
+      this.getCurvesFromExperimentCode = bind(this.getCurvesFromExperimentCode, this);
+      this.handleCurveUpdateError = bind(this.handleCurveUpdateError, this);
+      this.handleCurveDetailUpdated = bind(this.handleCurveDetailUpdated, this);
+      this.handleCurveDetailSaved = bind(this.handleCurveDetailSaved, this);
+      this.render = bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
     }
 

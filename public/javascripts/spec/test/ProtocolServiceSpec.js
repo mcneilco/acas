@@ -1,5 +1,5 @@
 (function() {
-  var assert, config, fs, parseResponse, protocolServiceTestJSON, request, _;
+  var _, assert, config, fs, parseResponse, protocolServiceTestJSON, request;
 
   assert = require('assert');
 
@@ -152,7 +152,7 @@
         });
         return describe("when updating a protocol", function() {
           before(function(done) {
-            var fileVals, val, _i, _len;
+            var fileVals, i, len, val;
             this.timeout(20000);
             this.testFile1Path = config.all.server.datafiles.relative_path + "/TestFile.mol";
             this.testFile2Path = config.all.server.datafiles.relative_path + "/Test.csv";
@@ -161,8 +161,8 @@
             fileVals = this.responseJSON.lsStates[0].lsValues.filter(function(value) {
               return value.fileValue != null;
             });
-            for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-              val = fileVals[_i];
+            for (i = 0, len = fileVals.length; i < len; i++) {
+              val = fileVals[i];
               val.fileValue = val.comments;
               val.comments = null;
               val.id = null;

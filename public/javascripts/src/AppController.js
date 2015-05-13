@@ -1,14 +1,14 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.AppRouter = (function(_super) {
-    __extends(AppRouter, _super);
+  window.AppRouter = (function(superClass) {
+    extend(AppRouter, superClass);
 
     function AppRouter() {
-      this.existingDoc = __bind(this.existingDoc, this);
-      this.newDoc = __bind(this.newDoc, this);
+      this.existingDoc = bind(this.existingDoc, this);
+      this.newDoc = bind(this.newDoc, this);
       return AppRouter.__super__.constructor.apply(this, arguments);
     }
 
@@ -33,14 +33,14 @@
 
   })(Backbone.Router);
 
-  window.AppController = (function(_super) {
-    __extends(AppController, _super);
+  window.AppController = (function(superClass) {
+    extend(AppController, superClass);
 
     function AppController() {
-      this.existingDocReturn = __bind(this.existingDocReturn, this);
-      this.existingDoc = __bind(this.existingDoc, this);
-      this.newDoc = __bind(this.newDoc, this);
-      this.render = __bind(this.render, this);
+      this.existingDocReturn = bind(this.existingDocReturn, this);
+      this.existingDoc = bind(this.existingDoc, this);
+      this.newDoc = bind(this.newDoc, this);
+      this.render = bind(this.render, this);
       return AppController.__super__.constructor.apply(this, arguments);
     }
 

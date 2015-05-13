@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.PickList = (function(_super) {
-    __extends(PickList, _super);
+  window.PickList = (function(superClass) {
+    extend(PickList, superClass);
 
     function PickList() {
       return PickList.__super__.constructor.apply(this, arguments);
@@ -14,8 +14,8 @@
 
   })(Backbone.Model);
 
-  window.PickListList = (function(_super) {
-    __extends(PickListList, _super);
+  window.PickListList = (function(superClass) {
+    extend(PickListList, superClass);
 
     function PickListList() {
       return PickListList.__super__.constructor.apply(this, arguments);
@@ -49,11 +49,11 @@
 
   })(Backbone.Collection);
 
-  window.PickListOptionController = (function(_super) {
-    __extends(PickListOptionController, _super);
+  window.PickListOptionController = (function(superClass) {
+    extend(PickListOptionController, superClass);
 
     function PickListOptionController() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return PickListOptionController.__super__.constructor.apply(this, arguments);
     }
 
@@ -70,11 +70,11 @@
 
   })(Backbone.View);
 
-  window.PickListOptionControllerForLsThing = (function(_super) {
-    __extends(PickListOptionControllerForLsThing, _super);
+  window.PickListOptionControllerForLsThing = (function(superClass) {
+    extend(PickListOptionControllerForLsThing, superClass);
 
     function PickListOptionControllerForLsThing() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return PickListOptionControllerForLsThing.__super__.constructor.apply(this, arguments);
     }
 
@@ -117,14 +117,14 @@
 
   })(Backbone.View);
 
-  window.PickListSelectController = (function(_super) {
-    __extends(PickListSelectController, _super);
+  window.PickListSelectController = (function(superClass) {
+    extend(PickListSelectController, superClass);
 
     function PickListSelectController() {
-      this.checkOptionInCollection = __bind(this.checkOptionInCollection, this);
-      this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
-      this.handleListReset = __bind(this.handleListReset, this);
+      this.checkOptionInCollection = bind(this.checkOptionInCollection, this);
+      this.addOne = bind(this.addOne, this);
+      this.render = bind(this.render, this);
+      this.handleListReset = bind(this.handleListReset, this);
       return PickListSelectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -246,12 +246,12 @@
 
   })(Backbone.View);
 
-  window.PickListForLsThingsSelectController = (function(_super) {
-    __extends(PickListForLsThingsSelectController, _super);
+  window.PickListForLsThingsSelectController = (function(superClass) {
+    extend(PickListForLsThingsSelectController, superClass);
 
     function PickListForLsThingsSelectController() {
-      this.addOne = __bind(this.addOne, this);
-      this.handleListReset = __bind(this.handleListReset, this);
+      this.addOne = bind(this.addOne, this);
+      this.handleListReset = bind(this.handleListReset, this);
       return PickListForLsThingsSelectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -305,8 +305,27 @@
 
   })(PickListSelectController);
 
-  window.AddParameterOptionPanel = (function(_super) {
-    __extends(AddParameterOptionPanel, _super);
+  window.ComboBoxController = (function(superClass) {
+    extend(ComboBoxController, superClass);
+
+    function ComboBoxController() {
+      this.handleListReset = bind(this.handleListReset, this);
+      return ComboBoxController.__super__.constructor.apply(this, arguments);
+    }
+
+    ComboBoxController.prototype.handleListReset = function() {
+      ComboBoxController.__super__.handleListReset.call(this);
+      return $(this.el).combobox({
+        bsVersion: '2'
+      });
+    };
+
+    return ComboBoxController;
+
+  })(PickListSelectController);
+
+  window.AddParameterOptionPanel = (function(superClass) {
+    extend(AddParameterOptionPanel, superClass);
 
     function AddParameterOptionPanel() {
       return AddParameterOptionPanel.__super__.constructor.apply(this, arguments);
@@ -342,16 +361,16 @@
 
   })(Backbone.Model);
 
-  window.AddParameterOptionPanelController = (function(_super) {
-    __extends(AddParameterOptionPanelController, _super);
+  window.AddParameterOptionPanelController = (function(superClass) {
+    extend(AddParameterOptionPanelController, superClass);
 
     function AddParameterOptionPanelController() {
-      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
-      this.triggerAddRequest = __bind(this.triggerAddRequest, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.showModal = __bind(this.showModal, this);
-      this.render = __bind(this.render, this);
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.triggerAddRequest = bind(this.triggerAddRequest, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.showModal = bind(this.showModal, this);
+      this.render = bind(this.render, this);
       return AddParameterOptionPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -424,15 +443,15 @@
 
   })(AbstractFormController);
 
-  window.EditablePickListSelectController = (function(_super) {
-    __extends(EditablePickListSelectController, _super);
+  window.EditablePickListSelectController = (function(superClass) {
+    extend(EditablePickListSelectController, superClass);
 
     function EditablePickListSelectController() {
-      this.saveNewOption = __bind(this.saveNewOption, this);
-      this.handleAddOptionRequested = __bind(this.handleAddOptionRequested, this);
-      this.handleShowAddPanel = __bind(this.handleShowAddPanel, this);
-      this.setupEditingPrivileges = __bind(this.setupEditingPrivileges, this);
-      this.render = __bind(this.render, this);
+      this.saveNewOption = bind(this.saveNewOption, this);
+      this.handleAddOptionRequested = bind(this.handleAddOptionRequested, this);
+      this.handleShowAddPanel = bind(this.handleShowAddPanel, this);
+      this.setupEditingPrivileges = bind(this.setupEditingPrivileges, this);
+      this.render = bind(this.render, this);
       return EditablePickListSelectController.__super__.constructor.apply(this, arguments);
     }
 

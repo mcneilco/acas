@@ -1651,9 +1651,10 @@
           this.psac.model.getStatus().set({
             codeValue: "approved"
           });
+          this.psac.handleStatusChanged();
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
-        it("Should enable analsyis parameter editing if status is approved", function() {
+        it("Should enable analsyis parameter editing if status is started", function() {
           this.psac.model.getStatus().set({
             codeValue: "approved"
           });
@@ -1680,7 +1681,7 @@
           return this.psac.render();
         });
         return it("should show upload button as re-analyze since status is not 'not started'", function() {
-          return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
+          return expect(this.psac.$('.bv_loadAnother').html()).toEqual("Re-Analyze");
         });
       });
       return describe("rendering analysis based on dry run status and analysis status", function() {

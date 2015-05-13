@@ -453,6 +453,7 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
+		console.log "above to save"
 		@model.save()
 
 	prepareToSaveAttachedFiles: =>

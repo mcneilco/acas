@@ -1,17 +1,17 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.GeneIDQueryInputController = (function(_super) {
-    __extends(GeneIDQueryInputController, _super);
+  window.GeneIDQueryInputController = (function(superClass) {
+    extend(GeneIDQueryInputController, superClass);
 
     function GeneIDQueryInputController() {
-      this.handleAdvanceModeRequested = __bind(this.handleAdvanceModeRequested, this);
-      this.handleSearchClicked = __bind(this.handleSearchClicked, this);
-      this.handleKeyInInputField = __bind(this.handleKeyInInputField, this);
-      this.handleInputFieldChanged = __bind(this.handleInputFieldChanged, this);
-      this.render = __bind(this.render, this);
+      this.handleAdvanceModeRequested = bind(this.handleAdvanceModeRequested, this);
+      this.handleSearchClicked = bind(this.handleSearchClicked, this);
+      this.handleKeyInInputField = bind(this.handleKeyInInputField, this);
+      this.handleInputFieldChanged = bind(this.handleInputFieldChanged, this);
+      this.render = bind(this.render, this);
       return GeneIDQueryInputController.__super__.constructor.apply(this, arguments);
     }
 
@@ -59,13 +59,13 @@
 
   })(Backbone.View);
 
-  window.GeneIDQueryResultController = (function(_super) {
-    __extends(GeneIDQueryResultController, _super);
+  window.GeneIDQueryResultController = (function(superClass) {
+    extend(GeneIDQueryResultController, superClass);
 
     function GeneIDQueryResultController() {
-      this.showCSVFileLink = __bind(this.showCSVFileLink, this);
-      this.handleDownloadCSVClicked = __bind(this.handleDownloadCSVClicked, this);
-      this.render = __bind(this.render, this);
+      this.showCSVFileLink = bind(this.showCSVFileLink, this);
+      this.handleDownloadCSVClicked = bind(this.handleDownloadCSVClicked, this);
+      this.render = bind(this.render, this);
       return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
     }
 
@@ -128,15 +128,15 @@
 
   })(Backbone.View);
 
-  window.GeneIDQuerySearchController = (function(_super) {
-    __extends(GeneIDQuerySearchController, _super);
+  window.GeneIDQuerySearchController = (function(superClass) {
+    extend(GeneIDQuerySearchController, superClass);
 
     function GeneIDQuerySearchController() {
-      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
-      this.setShowResultsMode = __bind(this.setShowResultsMode, this);
-      this.setQueryOnlyMode = __bind(this.setQueryOnlyMode, this);
-      this.handleSearchReturn = __bind(this.handleSearchReturn, this);
-      this.handleSearchRequested = __bind(this.handleSearchRequested, this);
+      this.handleDownLoadCSVRequested = bind(this.handleDownLoadCSVRequested, this);
+      this.setShowResultsMode = bind(this.setShowResultsMode, this);
+      this.setQueryOnlyMode = bind(this.setQueryOnlyMode, this);
+      this.handleSearchReturn = bind(this.handleSearchReturn, this);
+      this.handleSearchRequested = bind(this.handleSearchRequested, this);
       return GeneIDQuerySearchController.__super__.constructor.apply(this, arguments);
     }
 
@@ -234,13 +234,13 @@
 
   })(Backbone.View);
 
-  window.ExperimentTreeController = (function(_super) {
-    __extends(ExperimentTreeController, _super);
+  window.ExperimentTreeController = (function(superClass) {
+    extend(ExperimentTreeController, superClass);
 
     function ExperimentTreeController() {
-      this.handleSelectionChanged = __bind(this.handleSelectionChanged, this);
-      this.handleSearchClear = __bind(this.handleSearchClear, this);
-      this.render = __bind(this.render, this);
+      this.handleSelectionChanged = bind(this.handleSelectionChanged, this);
+      this.handleSearchClear = bind(this.handleSearchClear, this);
+      this.render = bind(this.render, this);
       return ExperimentTreeController.__super__.constructor.apply(this, arguments);
     }
 
@@ -310,8 +310,8 @@
 
   })(Backbone.View);
 
-  window.ExperimentResultFilterTerm = (function(_super) {
-    __extends(ExperimentResultFilterTerm, _super);
+  window.ExperimentResultFilterTerm = (function(superClass) {
+    extend(ExperimentResultFilterTerm, superClass);
 
     function ExperimentResultFilterTerm() {
       return ExperimentResultFilterTerm.__super__.constructor.apply(this, arguments);
@@ -343,8 +343,8 @@
 
   })(Backbone.Model);
 
-  window.ExperimentResultFilterTermList = (function(_super) {
-    __extends(ExperimentResultFilterTermList, _super);
+  window.ExperimentResultFilterTermList = (function(superClass) {
+    extend(ExperimentResultFilterTermList, superClass);
 
     function ExperimentResultFilterTermList() {
       return ExperimentResultFilterTermList.__super__.constructor.apply(this, arguments);
@@ -367,17 +367,17 @@
 
   })(Backbone.Collection);
 
-  window.ExperimentResultFilterTermController = (function(_super) {
-    __extends(ExperimentResultFilterTermController, _super);
+  window.ExperimentResultFilterTermController = (function(superClass) {
+    extend(ExperimentResultFilterTermController, superClass);
 
     function ExperimentResultFilterTermController() {
-      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
-      this.clear = __bind(this.clear, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.setOperatorOptions = __bind(this.setOperatorOptions, this);
-      this.setKindOptions = __bind(this.setKindOptions, this);
-      this.render = __bind(this.render, this);
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.setOperatorOptions = bind(this.setOperatorOptions, this);
+      this.setKindOptions = bind(this.setKindOptions, this);
+      this.render = bind(this.render, this);
       return ExperimentResultFilterTermController.__super__.constructor.apply(this, arguments);
     }
 
@@ -422,12 +422,12 @@
     };
 
     ExperimentResultFilterTermController.prototype.setKindOptions = function() {
-      var currentExpt, kind, kinds, _i, _len;
+      var currentExpt, i, kind, kinds, len;
       currentExpt = this.getSelectedExperiment();
       kinds = _.pluck(currentExpt.get('valueKinds'), 'lsKind');
       this.$('.bv_kind').empty();
-      for (_i = 0, _len = kinds.length; _i < _len; _i++) {
-        kind = kinds[_i];
+      for (i = 0, len = kinds.length; i < len; i++) {
+        kind = kinds[i];
         this.$('.bv_kind').append('<option value="' + kind + '">' + kind + '</option>');
       }
       return this.setOperatorOptions();
@@ -510,13 +510,13 @@
 
   })(AbstractFormController);
 
-  window.ExperimentResultFilterTermListController = (function(_super) {
-    __extends(ExperimentResultFilterTermListController, _super);
+  window.ExperimentResultFilterTermListController = (function(superClass) {
+    extend(ExperimentResultFilterTermListController, superClass);
 
     function ExperimentResultFilterTermListController() {
-      this.checkCollection = __bind(this.checkCollection, this);
-      this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
+      this.checkCollection = bind(this.checkCollection, this);
+      this.addOne = bind(this.addOne, this);
+      this.render = bind(this.render, this);
       return ExperimentResultFilterTermListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -589,12 +589,12 @@
 
   })(Backbone.View);
 
-  window.ExperimentResultFilterController = (function(_super) {
-    __extends(ExperimentResultFilterController, _super);
+  window.ExperimentResultFilterController = (function(superClass) {
+    extend(ExperimentResultFilterController, superClass);
 
     function ExperimentResultFilterController() {
-      this.handleBooleanFilterChanged = __bind(this.handleBooleanFilterChanged, this);
-      this.render = __bind(this.render, this);
+      this.handleBooleanFilterChanged = bind(this.handleBooleanFilterChanged, this);
+      this.render = bind(this.render, this);
       return ExperimentResultFilterController.__super__.constructor.apply(this, arguments);
     }
 
@@ -656,15 +656,15 @@
 
   })(Backbone.View);
 
-  window.AdvancedExperimentResultsQueryController = (function(_super) {
-    __extends(AdvancedExperimentResultsQueryController, _super);
+  window.AdvancedExperimentResultsQueryController = (function(superClass) {
+    extend(AdvancedExperimentResultsQueryController, superClass);
 
     function AdvancedExperimentResultsQueryController() {
-      this.handleDownLoadCSVRequested = __bind(this.handleDownLoadCSVRequested, this);
-      this.handleSearchReturn = __bind(this.handleSearchReturn, this);
-      this.handleGetExperimentSearchAttributesReturn = __bind(this.handleGetExperimentSearchAttributesReturn, this);
-      this.handleGetGeneExperimentsReturn = __bind(this.handleGetGeneExperimentsReturn, this);
-      this.handleNextClicked = __bind(this.handleNextClicked, this);
+      this.handleDownLoadCSVRequested = bind(this.handleDownLoadCSVRequested, this);
+      this.handleSearchReturn = bind(this.handleSearchReturn, this);
+      this.handleGetExperimentSearchAttributesReturn = bind(this.handleGetExperimentSearchAttributesReturn, this);
+      this.handleGetGeneExperimentsReturn = bind(this.handleGetGeneExperimentsReturn, this);
+      this.handleNextClicked = bind(this.handleNextClicked, this);
       return AdvancedExperimentResultsQueryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -864,15 +864,15 @@
 
   })(Backbone.View);
 
-  window.GeneIDQueryAppController = (function(_super) {
-    __extends(GeneIDQueryAppController, _super);
+  window.GeneIDQueryAppController = (function(superClass) {
+    extend(GeneIDQueryAppController, superClass);
 
     function GeneIDQueryAppController() {
-      this.handleHelpClicked = __bind(this.handleHelpClicked, this);
-      this.handleCancelClicked = __bind(this.handleCancelClicked, this);
-      this.handleNextClicked = __bind(this.handleNextClicked, this);
-      this.startAdvanceedQueryWizard = __bind(this.startAdvanceedQueryWizard, this);
-      this.startBasicQueryWizard = __bind(this.startBasicQueryWizard, this);
+      this.handleHelpClicked = bind(this.handleHelpClicked, this);
+      this.handleCancelClicked = bind(this.handleCancelClicked, this);
+      this.handleNextClicked = bind(this.handleNextClicked, this);
+      this.startAdvanceedQueryWizard = bind(this.startAdvanceedQueryWizard, this);
+      this.startBasicQueryWizard = bind(this.startBasicQueryWizard, this);
       return GeneIDQueryAppController.__super__.constructor.apply(this, arguments);
     }
 

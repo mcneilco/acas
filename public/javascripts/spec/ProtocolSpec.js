@@ -819,10 +819,14 @@
             });
             return it("should show the save button text as Update", function() {
               runs(function() {
+                console.log(this.pbc.$('.bv_save'));
+                this.pbc.$('.bv_save').removeAttr('disabled');
                 return this.pbc.$('.bv_save').click();
               });
               waits(1000);
               return runs(function() {
+                console.log(this.pbc.model.validationError);
+                console.log(this.pbc.model);
                 return expect(this.pbc.$('.bv_save').html()).toEqual("Update");
               });
             });

@@ -169,6 +169,13 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
 
+class window.ComboBoxController extends PickListSelectController
+
+	handleListReset: =>
+		super()
+		$(@el).combobox
+			bsVersion: '2'
+
 
 class window.AddParameterOptionPanel extends Backbone.Model
 	defaults:

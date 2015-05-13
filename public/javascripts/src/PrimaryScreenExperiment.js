@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.PrimaryAnalysisRead = (function(_super) {
-    __extends(PrimaryAnalysisRead, _super);
+  window.PrimaryAnalysisRead = (function(superClass) {
+    extend(PrimaryAnalysisRead, superClass);
 
     function PrimaryAnalysisRead() {
-      this.validate = __bind(this.validate, this);
+      this.validate = bind(this.validate, this);
       return PrimaryAnalysisRead.__super__.constructor.apply(this, arguments);
     }
 
@@ -44,11 +44,11 @@
 
   })(Backbone.Model);
 
-  window.TransformationRule = (function(_super) {
-    __extends(TransformationRule, _super);
+  window.TransformationRule = (function(superClass) {
+    extend(TransformationRule, superClass);
 
     function TransformationRule() {
-      this.validate = __bind(this.validate, this);
+      this.validate = bind(this.validate, this);
       return TransformationRule.__super__.constructor.apply(this, arguments);
     }
 
@@ -76,27 +76,27 @@
 
   })(Backbone.Model);
 
-  window.PrimaryAnalysisReadList = (function(_super) {
-    __extends(PrimaryAnalysisReadList, _super);
+  window.PrimaryAnalysisReadList = (function(superClass) {
+    extend(PrimaryAnalysisReadList, superClass);
 
     function PrimaryAnalysisReadList() {
-      this.validateCollection = __bind(this.validateCollection, this);
+      this.validateCollection = bind(this.validateCollection, this);
       return PrimaryAnalysisReadList.__super__.constructor.apply(this, arguments);
     }
 
     PrimaryAnalysisReadList.prototype.model = PrimaryAnalysisRead;
 
     PrimaryAnalysisReadList.prototype.validateCollection = function(matchReadName) {
-      var currentReadName, error, index, indivModelErrors, model, modelErrors, usedReadNames, _i, _j, _len, _ref;
+      var currentReadName, error, i, index, indivModelErrors, j, len, model, modelErrors, ref, usedReadNames;
       modelErrors = [];
       usedReadNames = {};
       if (this.length !== 0) {
-        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+        for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
           model = this.at(index);
           indivModelErrors = model.validate(model.attributes);
           if (indivModelErrors !== null) {
-            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
-              error = indivModelErrors[_j];
+            for (j = 0, len = indivModelErrors.length; j < len; j++) {
+              error = indivModelErrors[j];
               if (!(matchReadName && error.attribute === 'readPosition')) {
                 modelErrors.push({
                   attribute: error.attribute + ':eq(' + index + ')',
@@ -127,27 +127,27 @@
 
   })(Backbone.Collection);
 
-  window.TransformationRuleList = (function(_super) {
-    __extends(TransformationRuleList, _super);
+  window.TransformationRuleList = (function(superClass) {
+    extend(TransformationRuleList, superClass);
 
     function TransformationRuleList() {
-      this.validateCollection = __bind(this.validateCollection, this);
+      this.validateCollection = bind(this.validateCollection, this);
       return TransformationRuleList.__super__.constructor.apply(this, arguments);
     }
 
     TransformationRuleList.prototype.model = TransformationRule;
 
     TransformationRuleList.prototype.validateCollection = function() {
-      var currentRule, error, index, indivModelErrors, model, modelErrors, usedRules, _i, _j, _len, _ref;
+      var currentRule, error, i, index, indivModelErrors, j, len, model, modelErrors, ref, usedRules;
       modelErrors = [];
       usedRules = {};
       if (this.length !== 0) {
-        for (index = _i = 0, _ref = this.length - 1; 0 <= _ref ? _i <= _ref : _i >= _ref; index = 0 <= _ref ? ++_i : --_i) {
+        for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
           model = this.at(index);
           indivModelErrors = model.validate(model.attributes);
           if (indivModelErrors !== null) {
-            for (_j = 0, _len = indivModelErrors.length; _j < _len; _j++) {
-              error = indivModelErrors[_j];
+            for (j = 0, len = indivModelErrors.length; j < len; j++) {
+              error = indivModelErrors[j];
               modelErrors.push({
                 attribute: error.attribute + ':eq(' + index + ')',
                 message: error.message
@@ -176,12 +176,12 @@
 
   })(Backbone.Collection);
 
-  window.PrimaryScreenAnalysisParameters = (function(_super) {
-    __extends(PrimaryScreenAnalysisParameters, _super);
+  window.PrimaryScreenAnalysisParameters = (function(superClass) {
+    extend(PrimaryScreenAnalysisParameters, superClass);
 
     function PrimaryScreenAnalysisParameters() {
-      this.validate = __bind(this.validate, this);
-      this.parse = __bind(this.parse, this);
+      this.validate = bind(this.validate, this);
+      this.parse = bind(this.parse, this);
       return PrimaryScreenAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -454,11 +454,11 @@
 
   })(Backbone.Model);
 
-  window.PrimaryScreenExperiment = (function(_super) {
-    __extends(PrimaryScreenExperiment, _super);
+  window.PrimaryScreenExperiment = (function(superClass) {
+    extend(PrimaryScreenExperiment, superClass);
 
     function PrimaryScreenExperiment() {
-      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
+      this.copyProtocolAttributes = bind(this.copyProtocolAttributes, this);
       return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -569,15 +569,15 @@
 
   })(Experiment);
 
-  window.PrimaryAnalysisReadController = (function(_super) {
-    __extends(PrimaryAnalysisReadController, _super);
+  window.PrimaryAnalysisReadController = (function(superClass) {
+    extend(PrimaryAnalysisReadController, superClass);
 
     function PrimaryAnalysisReadController() {
-      this.clear = __bind(this.clear, this);
-      this.handleActivityChanged = __bind(this.handleActivityChanged, this);
-      this.handleReadNameChanged = __bind(this.handleReadNameChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.clear = bind(this.clear, this);
+      this.handleActivityChanged = bind(this.handleActivityChanged, this);
+      this.handleReadNameChanged = bind(this.handleReadNameChanged, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return PrimaryAnalysisReadController.__super__.constructor.apply(this, arguments);
     }
 
@@ -681,13 +681,13 @@
 
   })(AbstractFormController);
 
-  window.TransformationRuleController = (function(_super) {
-    __extends(TransformationRuleController, _super);
+  window.TransformationRuleController = (function(superClass) {
+    extend(TransformationRuleController, superClass);
 
     function TransformationRuleController() {
-      this.clear = __bind(this.clear, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return TransformationRuleController.__super__.constructor.apply(this, arguments);
     }
 
@@ -741,17 +741,17 @@
 
   })(AbstractFormController);
 
-  window.PrimaryAnalysisReadListController = (function(_super) {
-    __extends(PrimaryAnalysisReadListController, _super);
+  window.PrimaryAnalysisReadListController = (function(superClass) {
+    extend(PrimaryAnalysisReadListController, superClass);
 
     function PrimaryAnalysisReadListController() {
-      this.updateAllActivities = __bind(this.updateAllActivities, this);
-      this.renumberReads = __bind(this.renumberReads, this);
-      this.checkActivity = __bind(this.checkActivity, this);
-      this.matchReadNameChanged = __bind(this.matchReadNameChanged, this);
-      this.addNewRead = __bind(this.addNewRead, this);
-      this.render = __bind(this.render, this);
-      this.initialize = __bind(this.initialize, this);
+      this.updateAllActivities = bind(this.updateAllActivities, this);
+      this.renumberReads = bind(this.renumberReads, this);
+      this.checkActivity = bind(this.checkActivity, this);
+      this.matchReadNameChanged = bind(this.matchReadNameChanged, this);
+      this.addNewRead = bind(this.addNewRead, this);
+      this.render = bind(this.render, this);
+      this.initialize = bind(this.initialize, this);
       return PrimaryAnalysisReadListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -840,10 +840,10 @@
     };
 
     PrimaryAnalysisReadListController.prototype.checkActivity = function() {
-      var activitySet, index, _results;
+      var activitySet, index, results1;
       index = this.collection.length - 1;
       activitySet = false;
-      _results = [];
+      results1 = [];
       while (index >= 0 && activitySet === false) {
         if (this.collection.at(index).get('activity') === true) {
           activitySet = true;
@@ -854,16 +854,16 @@
             activity: true
           });
         }
-        _results.push(index = index - 1);
+        results1.push(index = index - 1);
       }
-      return _results;
+      return results1;
     };
 
     PrimaryAnalysisReadListController.prototype.renumberReads = function() {
-      var index, readNumber, _results;
+      var index, readNumber, results1;
       this.nextReadNumber = 1;
       index = 0;
-      _results = [];
+      results1 = [];
       while (index < this.collection.length) {
         readNumber = 'R' + this.nextReadNumber.toString();
         this.collection.at(index).set({
@@ -871,37 +871,37 @@
         });
         this.$('.bv_readNumber:eq(' + index + ')').html(readNumber);
         index++;
-        _results.push(this.nextReadNumber++);
+        results1.push(this.nextReadNumber++);
       }
-      return _results;
+      return results1;
     };
 
     PrimaryAnalysisReadListController.prototype.updateAllActivities = function() {
-      var activity, index, _results;
+      var activity, index, results1;
       index = this.collection.length - 1;
-      _results = [];
+      results1 = [];
       while (index >= 0) {
         activity = this.$('.bv_activity:eq(' + index + ')').is(":checked");
         this.collection.at(index).set({
           activity: activity
         });
-        _results.push(index--);
+        results1.push(index--);
       }
-      return _results;
+      return results1;
     };
 
     return PrimaryAnalysisReadListController;
 
   })(AbstractFormController);
 
-  window.TransformationRuleListController = (function(_super) {
-    __extends(TransformationRuleListController, _super);
+  window.TransformationRuleListController = (function(superClass) {
+    extend(TransformationRuleListController, superClass);
 
     function TransformationRuleListController() {
-      this.checkNumberOfRules = __bind(this.checkNumberOfRules, this);
-      this.addNewRule = __bind(this.addNewRule, this);
-      this.render = __bind(this.render, this);
-      this.initialize = __bind(this.initialize, this);
+      this.checkNumberOfRules = bind(this.checkNumberOfRules, this);
+      this.addNewRule = bind(this.addNewRule, this);
+      this.render = bind(this.render, this);
+      this.initialize = bind(this.initialize, this);
       return TransformationRuleListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -972,20 +972,20 @@
 
   })(AbstractFormController);
 
-  window.PrimaryScreenAnalysisParametersController = (function(_super) {
-    __extends(PrimaryScreenAnalysisParametersController, _super);
+  window.PrimaryScreenAnalysisParametersController = (function(superClass) {
+    extend(PrimaryScreenAnalysisParametersController, superClass);
 
     function PrimaryScreenAnalysisParametersController() {
-      this.handleMatchReadNameChanged = __bind(this.handleMatchReadNameChanged, this);
-      this.handleVolumeTypeChanged = __bind(this.handleVolumeTypeChanged, this);
-      this.handleAutoHitSelectionChanged = __bind(this.handleAutoHitSelectionChanged, this);
-      this.handleThresholdTypeChanged = __bind(this.handleThresholdTypeChanged, this);
-      this.handleDilutionFactorChanged = __bind(this.handleDilutionFactorChanged, this);
-      this.handleTransferVolumeChanged = __bind(this.handleTransferVolumeChanged, this);
-      this.handleAssayVolumeChanged = __bind(this.handleAssayVolumeChanged, this);
-      this.handlePreferredBatchIdReturn = __bind(this.handlePreferredBatchIdReturn, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.handleMatchReadNameChanged = bind(this.handleMatchReadNameChanged, this);
+      this.handleVolumeTypeChanged = bind(this.handleVolumeTypeChanged, this);
+      this.handleAutoHitSelectionChanged = bind(this.handleAutoHitSelectionChanged, this);
+      this.handleThresholdTypeChanged = bind(this.handleThresholdTypeChanged, this);
+      this.handleDilutionFactorChanged = bind(this.handleDilutionFactorChanged, this);
+      this.handleTransferVolumeChanged = bind(this.handleTransferVolumeChanged, this);
+      this.handleAssayVolumeChanged = bind(this.handleAssayVolumeChanged, this);
+      this.handlePreferredBatchIdReturn = bind(this.handlePreferredBatchIdReturn, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return PrimaryScreenAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1385,19 +1385,19 @@
 
   })(AbstractParserFormController);
 
-  window.AbstractUploadAndRunPrimaryAnalsysisController = (function(_super) {
-    __extends(AbstractUploadAndRunPrimaryAnalsysisController, _super);
+  window.AbstractUploadAndRunPrimaryAnalsysisController = (function(superClass) {
+    extend(AbstractUploadAndRunPrimaryAnalsysisController, superClass);
 
     function AbstractUploadAndRunPrimaryAnalsysisController() {
-      this.validateParseFile = __bind(this.validateParseFile, this);
-      this.enableFields = __bind(this.enableFields, this);
-      this.disableAll = __bind(this.disableAll, this);
-      this.loadAnother = __bind(this.loadAnother, this);
-      this.backToUpload = __bind(this.backToUpload, this);
-      this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
-      this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
-      this.handleMSFormInvalid = __bind(this.handleMSFormInvalid, this);
-      this.handleMSFormValid = __bind(this.handleMSFormValid, this);
+      this.validateParseFile = bind(this.validateParseFile, this);
+      this.enableFields = bind(this.enableFields, this);
+      this.disableAll = bind(this.disableAll, this);
+      this.loadAnother = bind(this.loadAnother, this);
+      this.backToUpload = bind(this.backToUpload, this);
+      this.handleSaveReturnSuccess = bind(this.handleSaveReturnSuccess, this);
+      this.handleValidationReturnSuccess = bind(this.handleValidationReturnSuccess, this);
+      this.handleMSFormInvalid = bind(this.handleMSFormInvalid, this);
+      this.handleMSFormValid = bind(this.handleMSFormValid, this);
       return AbstractUploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1423,6 +1423,7 @@
       this.analyzedPreviously = this.options.analyzedPreviously;
       this.analysisParameterController.render();
       if (this.analyzedPreviously) {
+        console.log;
         this.$('.bv_loadAnother').html("Re-Analyze");
       }
       return this.handleMSFormInvalid();
@@ -1556,8 +1557,8 @@
 
   })(BasicFileValidateAndSaveController);
 
-  window.UploadAndRunPrimaryAnalsysisController = (function(_super) {
-    __extends(UploadAndRunPrimaryAnalsysisController, _super);
+  window.UploadAndRunPrimaryAnalsysisController = (function(superClass) {
+    extend(UploadAndRunPrimaryAnalsysisController, superClass);
 
     function UploadAndRunPrimaryAnalsysisController() {
       return UploadAndRunPrimaryAnalsysisController.__super__.constructor.apply(this, arguments);
@@ -1582,17 +1583,17 @@
 
   })(AbstractUploadAndRunPrimaryAnalsysisController);
 
-  window.PrimaryScreenAnalysisController = (function(_super) {
-    __extends(PrimaryScreenAnalysisController, _super);
+  window.PrimaryScreenAnalysisController = (function(superClass) {
+    extend(PrimaryScreenAnalysisController, superClass);
 
     function PrimaryScreenAnalysisController() {
-      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
-      this.handleAnalysisComplete = __bind(this.handleAnalysisComplete, this);
-      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.setExperimentSaved = __bind(this.setExperimentSaved, this);
-      this.showUpdatedModel = __bind(this.showUpdatedModel, this);
-      this.checkStatus = __bind(this.checkStatus, this);
-      this.render = __bind(this.render, this);
+      this.handleStatusChanged = bind(this.handleStatusChanged, this);
+      this.handleAnalysisComplete = bind(this.handleAnalysisComplete, this);
+      this.handleExperimentSaved = bind(this.handleExperimentSaved, this);
+      this.setExperimentSaved = bind(this.setExperimentSaved, this);
+      this.showUpdatedModel = bind(this.showUpdatedModel, this);
+      this.checkStatus = bind(this.checkStatus, this);
+      this.render = bind(this.render, this);
       return PrimaryScreenAnalysisController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1849,17 +1850,17 @@
 
   })(Backbone.View);
 
-  window.AbstractPrimaryScreenExperimentController = (function(_super) {
-    __extends(AbstractPrimaryScreenExperimentController, _super);
+  window.AbstractPrimaryScreenExperimentController = (function(superClass) {
+    extend(AbstractPrimaryScreenExperimentController, superClass);
 
     function AbstractPrimaryScreenExperimentController() {
-      this.updateModelFitTab = __bind(this.updateModelFitTab, this);
-      this.fetchModel = __bind(this.fetchModel, this);
-      this.reinitialize = __bind(this.reinitialize, this);
-      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
-      this.handleProtocolAttributesCopied = __bind(this.handleProtocolAttributesCopied, this);
-      this.handleExperimentSaved = __bind(this.handleExperimentSaved, this);
-      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.updateModelFitTab = bind(this.updateModelFitTab, this);
+      this.fetchModel = bind(this.fetchModel, this);
+      this.reinitialize = bind(this.reinitialize, this);
+      this.handleStatusChanged = bind(this.handleStatusChanged, this);
+      this.handleProtocolAttributesCopied = bind(this.handleProtocolAttributesCopied, this);
+      this.handleExperimentSaved = bind(this.handleExperimentSaved, this);
+      this.completeInitialization = bind(this.completeInitialization, this);
       return AbstractPrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);
     }
 
@@ -2126,8 +2127,8 @@
 
   })(Backbone.View);
 
-  window.PrimaryScreenExperimentController = (function(_super) {
-    __extends(PrimaryScreenExperimentController, _super);
+  window.PrimaryScreenExperimentController = (function(superClass) {
+    extend(PrimaryScreenExperimentController, superClass);
 
     function PrimaryScreenExperimentController() {
       return PrimaryScreenExperimentController.__super__.constructor.apply(this, arguments);

@@ -120,7 +120,7 @@
         }
       }
       checkFilesAndUpdate = function(thing) {
-        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(thing, false);
         filesToSave = fileVals.length;
         completeThingUpdate = function(thingToUpdate) {
@@ -139,13 +139,13 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(thing.codeName);
-          _results = [];
-          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-            fv = fileVals[_i];
+          results = [];
+          for (i = 0, len = fileVals.length; i < len; i++) {
+            fv = fileVals[i];
             console.log("updating file");
-            _results.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
+            results.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
           }
-          return _results;
+          return results;
         } else {
           return resp.json(thing);
         }
@@ -189,7 +189,7 @@
   };
 
   exports.putThing = function(req, resp) {
-    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, thingToSave, _i, _len, _results;
+    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results, thingToSave;
     thingToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(thingToSave, true);
     filesToSave = fileVals.length;
@@ -209,16 +209,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      _results = [];
-      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-        fv = fileVals[_i];
+      results = [];
+      for (i = 0, len = fileVals.length; i < len; i++) {
+        fv = fileVals[i];
         if (fv.id == null) {
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     } else {
       return completeThingUpdate();
     }

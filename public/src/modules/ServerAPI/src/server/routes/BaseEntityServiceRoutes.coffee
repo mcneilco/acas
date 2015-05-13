@@ -1,6 +1,5 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authors', loginRoutes.ensureAuthenticated, exports.getAuthors
-	app.post '/api/getNextLabelSequence', loginRoutes.ensureAuthenticated, exports.getNextLabelSequence
 
 exports.getAuthors = (req, resp) ->
 	console.log "getting authors"

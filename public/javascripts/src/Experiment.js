@@ -1,16 +1,16 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.Experiment = (function(_super) {
-    __extends(Experiment, _super);
+  window.Experiment = (function(superClass) {
+    extend(Experiment, superClass);
 
     function Experiment() {
-      this.prepareToSave = __bind(this.prepareToSave, this);
-      this.duplicateEntity = __bind(this.duplicateEntity, this);
-      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
-      this.parse = __bind(this.parse, this);
+      this.prepareToSave = bind(this.prepareToSave, this);
+      this.duplicateEntity = bind(this.duplicateEntity, this);
+      this.copyProtocolAttributes = bind(this.copyProtocolAttributes, this);
+      this.parse = bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -267,7 +267,7 @@
     };
 
     Experiment.prototype.prepareToSave = function() {
-      var expState, val, value, valuesToDelete, _i, _len;
+      var expState, i, len, val, value, valuesToDelete;
       valuesToDelete = [
         {
           type: 'codeValue',
@@ -309,8 +309,8 @@
       ];
       if (!this.isNew()) {
         expState = this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0];
-        for (_i = 0, _len = valuesToDelete.length; _i < _len; _i++) {
-          val = valuesToDelete[_i];
+        for (i = 0, len = valuesToDelete.length; i < len; i++) {
+          val = valuesToDelete[i];
           value = expState.getValuesByTypeAndKind(val.type, val.kind)[0];
           expState.get('lsValues').remove(value);
         }
@@ -322,8 +322,8 @@
 
   })(BaseEntity);
 
-  window.ExperimentList = (function(_super) {
-    __extends(ExperimentList, _super);
+  window.ExperimentList = (function(superClass) {
+    extend(ExperimentList, superClass);
 
     function ExperimentList() {
       return ExperimentList.__super__.constructor.apply(this, arguments);
@@ -335,21 +335,21 @@
 
   })(Backbone.Collection);
 
-  window.ExperimentBaseController = (function(_super) {
-    __extends(ExperimentBaseController, _super);
+  window.ExperimentBaseController = (function(superClass) {
+    extend(ExperimentBaseController, superClass);
 
     function ExperimentBaseController() {
-      this.getNextLabelSequence = __bind(this.getNextLabelSequence, this);
-      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
-      this.updateEditable = __bind(this.updateEditable, this);
-      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
-      this.handleDateChanged = __bind(this.handleDateChanged, this);
-      this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
-      this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
-      this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
-      this.handleExptNameChkbxClicked = __bind(this.handleExptNameChkbxClicked, this);
-      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
-      this.render = __bind(this.render, this);
+      this.getNextLabelSequence = bind(this.getNextLabelSequence, this);
+      this.handleSaveClicked = bind(this.handleSaveClicked, this);
+      this.updateEditable = bind(this.updateEditable, this);
+      this.handleCompletionDateIconClicked = bind(this.handleCompletionDateIconClicked, this);
+      this.handleDateChanged = bind(this.handleDateChanged, this);
+      this.handleUseProtocolParametersClicked = bind(this.handleUseProtocolParametersClicked, this);
+      this.handleProjectCodeChanged = bind(this.handleProjectCodeChanged, this);
+      this.handleProtocolCodeChanged = bind(this.handleProtocolCodeChanged, this);
+      this.handleExptNameChkbxClicked = bind(this.handleExptNameChkbxClicked, this);
+      this.modelSyncCallback = bind(this.modelSyncCallback, this);
+      this.render = bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
 

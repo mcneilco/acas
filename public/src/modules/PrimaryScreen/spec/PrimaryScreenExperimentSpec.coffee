@@ -1152,8 +1152,9 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			it "Should disable analsyis parameter editing if status is approved", ->
 				@psac.model.getStatus().set codeValue: "approved"
+				@psac.handleStatusChanged()
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toEqual 'disabled'
-			it "Should enable analsyis parameter editing if status is approved", ->
+			it "Should enable analsyis parameter editing if status is started", ->
 				@psac.model.getStatus().set codeValue: "approved"
 				@psac.model.getStatus().set codeValue: "started"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
@@ -1169,7 +1170,7 @@ describe "Primary Screen Experiment module testing", ->
 					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			it "should show upload button as re-analyze since status is not 'not started'", ->
-				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
+				expect(@psac.$('.bv_loadAnother').html()).toEqual "Re-Analyze"
 		describe "rendering analysis based on dry run status and analysis status", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -1182,8 +1183,6 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			it "should show the upload data page", ->
 				expect(@psac.$('.bv_nextControlContainer')).toBeVisible()
-				#TODO: finish writing specs
-
 
 
 	describe "Abstract Primary Screen Experiment Controller testing", ->

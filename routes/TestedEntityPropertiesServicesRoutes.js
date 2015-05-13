@@ -6,7 +6,7 @@
   exports.setupRoutes = function(app, loginRoutes) {};
 
   exports.testedEntityProperties = function(req, resp) {
-    var csUtilities, ents, i, j, out, prop, prop2, _i, _j, _k, _len, _len1, _ref, _ref1, _ref2;
+    var csUtilities, ents, i, j, k, l, len, len1, m, out, prop, prop2, ref, ref1, ref2;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     if (global.specRunnerTestmode) {
       if (req.body.properties.indexOf('ERROR') > -1) {
@@ -16,18 +16,18 @@
       ents = req.body.entityIdStringLines.split('\n');
       console.log(ents);
       out = "id,";
-      _ref = req.body.properties;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        prop = _ref[_i];
+      ref = req.body.properties;
+      for (k = 0, len = ref.length; k < len; k++) {
+        prop = ref[k];
         out += prop + ",";
       }
       out = out.slice(0, -1) + '\n';
-      for (i = _j = 0, _ref1 = ents.length - 2; 0 <= _ref1 ? _j <= _ref1 : _j >= _ref1; i = 0 <= _ref1 ? ++_j : --_j) {
+      for (i = l = 0, ref1 = ents.length - 2; 0 <= ref1 ? l <= ref1 : l >= ref1; i = 0 <= ref1 ? ++l : --l) {
         out += ents[i] + ",";
         j = 0;
-        _ref2 = req.body.properties;
-        for (_k = 0, _len1 = _ref2.length; _k < _len1; _k++) {
-          prop2 = _ref2[_k];
+        ref2 = req.body.properties;
+        for (m = 0, len1 = ref2.length; m < len1; m++) {
+          prop2 = ref2[m];
           if (ents[i].indexOf('ERROR') < 0) {
             out += i + j++;
           } else {

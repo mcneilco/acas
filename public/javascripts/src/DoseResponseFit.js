@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseDataParserController = (function(_super) {
-    __extends(DoseResponseDataParserController, _super);
+  window.DoseResponseDataParserController = (function(superClass) {
+    extend(DoseResponseDataParserController, superClass);
 
     function DoseResponseDataParserController() {
-      this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
+      this.handleSaveReturnSuccess = bind(this.handleSaveReturnSuccess, this);
       return DoseResponseDataParserController.__super__.constructor.apply(this, arguments);
     }
 
@@ -32,16 +32,16 @@
 
   })(BasicFileValidateAndSaveController);
 
-  window.DoseResponseFitController = (function(_super) {
-    __extends(DoseResponseFitController, _super);
+  window.DoseResponseFitController = (function(superClass) {
+    extend(DoseResponseFitController, superClass);
 
     function DoseResponseFitController() {
-      this.fitReturnSuccess = __bind(this.fitReturnSuccess, this);
-      this.launchFit = __bind(this.launchFit, this);
-      this.paramsInvalid = __bind(this.paramsInvalid, this);
-      this.paramsValid = __bind(this.paramsValid, this);
-      this.setupParameterController = __bind(this.setupParameterController, this);
-      this.render = __bind(this.render, this);
+      this.fitReturnSuccess = bind(this.fitReturnSuccess, this);
+      this.launchFit = bind(this.launchFit, this);
+      this.paramsInvalid = bind(this.paramsInvalid, this);
+      this.paramsValid = bind(this.paramsValid, this);
+      this.setupParameterController = bind(this.setupParameterController, this);
+      this.render = bind(this.render, this);
       return DoseResponseFitController.__super__.constructor.apply(this, arguments);
     }
 
@@ -193,15 +193,15 @@
 
   })(Backbone.View);
 
-  window.DoseResponseFitWorkflowController = (function(_super) {
-    __extends(DoseResponseFitWorkflowController, _super);
+  window.DoseResponseFitWorkflowController = (function(superClass) {
+    extend(DoseResponseFitWorkflowController, superClass);
 
     function DoseResponseFitWorkflowController() {
-      this.handleFitAnother = __bind(this.handleFitAnother, this);
-      this.handleFitComplete = __bind(this.handleFitComplete, this);
-      this.handleDataUploadComplete = __bind(this.handleDataUploadComplete, this);
-      this.initializeCurveFitController = __bind(this.initializeCurveFitController, this);
-      this.render = __bind(this.render, this);
+      this.handleFitAnother = bind(this.handleFitAnother, this);
+      this.handleFitComplete = bind(this.handleFitComplete, this);
+      this.handleDataUploadComplete = bind(this.handleDataUploadComplete, this);
+      this.initializeCurveFitController = bind(this.initializeCurveFitController, this);
+      this.render = bind(this.render, this);
       return DoseResponseFitWorkflowController.__super__.constructor.apply(this, arguments);
     }
 

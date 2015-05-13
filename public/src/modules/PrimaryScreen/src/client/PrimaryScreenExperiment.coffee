@@ -893,6 +893,7 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = @options.analyzedPreviously
 		@analysisParameterController.render()
 		if @analyzedPreviously
+			console.log
 			@$('.bv_loadAnother').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 

@@ -1,15 +1,15 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.PrimaryScreenAppRouter = (function(_super) {
-    __extends(PrimaryScreenAppRouter, _super);
+  window.PrimaryScreenAppRouter = (function(superClass) {
+    extend(PrimaryScreenAppRouter, superClass);
 
     function PrimaryScreenAppRouter() {
-      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
-      this.existingExperiment = __bind(this.existingExperiment, this);
-      this.newExperiment = __bind(this.newExperiment, this);
+      this.existingExperimentByCode = bind(this.existingExperimentByCode, this);
+      this.existingExperiment = bind(this.existingExperiment, this);
+      this.newExperiment = bind(this.newExperiment, this);
       return PrimaryScreenAppRouter.__super__.constructor.apply(this, arguments);
     }
 
@@ -39,14 +39,14 @@
 
   })(Backbone.Router);
 
-  window.PrimaryScreenAppController = (function(_super) {
-    __extends(PrimaryScreenAppController, _super);
+  window.PrimaryScreenAppController = (function(superClass) {
+    extend(PrimaryScreenAppController, superClass);
 
     function PrimaryScreenAppController() {
-      this.existingExperiment = __bind(this.existingExperiment, this);
-      this.existingExperimentByCode = __bind(this.existingExperimentByCode, this);
-      this.newExperiment = __bind(this.newExperiment, this);
-      this.render = __bind(this.render, this);
+      this.existingExperiment = bind(this.existingExperiment, this);
+      this.existingExperimentByCode = bind(this.existingExperimentByCode, this);
+      this.newExperiment = bind(this.newExperiment, this);
+      this.render = bind(this.render, this);
       return PrimaryScreenAppController.__super__.constructor.apply(this, arguments);
     }
 

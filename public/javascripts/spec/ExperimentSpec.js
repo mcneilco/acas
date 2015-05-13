@@ -632,8 +632,8 @@
           it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
           });
-          return it("should not have the experiment name checkbox checked field", function() {
-            return expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined();
+          return it("should have the experiment name checkbox checked field", function() {
+            return expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual("checked");
           });
         });
         describe("User edits fields", function() {
@@ -739,12 +739,12 @@
         });
         return describe("Match experiment code name checkbox behavior and validation", function() {
           it("should disable the experiment name when the experiment name checkbox is checked", function() {
-            expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined();
-            this.ebc.$('.bv_exptNameChkbx').click();
+            expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual("checked");
             this.ebc.$('.bv_exptNameChkbx').click();
             return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toEqual("disabled");
           });
-          return it("should disable the experiment name when the experiment name checkbox is unchecked", function() {
+          return it("should enable the experiment name when the experiment name checkbox is unchecked", function() {
+            this.ebc.$('.bv_exptNameChkbx').click();
             this.ebc.$('.bv_exptNameChkbx').click();
             return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined();
           });
@@ -1069,6 +1069,8 @@
             });
             it("should show error in name field", function() {
               return runs(function() {
+                this.ebc.$('.bv_exptNameChkbx').click();
+                this.ebc.$('.bv_exptNameChkbx').click();
                 return expect(this.ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy();
               });
             });
@@ -1146,9 +1148,7 @@
           });
           describe("expect save to work", function() {
             beforeEach(function() {
-              return runs(function() {
-                return this.ebc.$('.bv_exptNameChkbx').click();
-              });
+              return runs(function() {});
             });
             it("model should be valid and ready to save", function() {
               return runs(function() {

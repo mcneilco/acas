@@ -212,10 +212,8 @@
           estc = new ExperimentBrowserController();
           $("#fixture").html(estc.render().el);
           estc.setupExperimentSummaryTable([]);
-          console.log('$(".bv_noMatchesFoundMessage").html()');
-          console.log($(".bv_noMatchesFoundMessage").html());
-          expect($(".bv_noMatchesFoundMessage").hasClass("hide")).toBeFalsy();
-          return expect($(".bv_noMatchesFoundMessage").html()).toContain("No Matching Experiments Found");
+          expect($(".bv_noMatchingExperimentsFoundMessage").hasClass("hide")).toBeFalsy();
+          return expect($(".bv_noMatchingExperimentsFoundMessage").html()).toContain("No Matching Experiments Found");
         });
       });
     });

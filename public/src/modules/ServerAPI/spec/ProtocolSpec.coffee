@@ -573,9 +573,13 @@ describe "Protocol module testing", ->
 							expect(@pbc.$('.bv_protocolCode').html()).toEqual "PROT-00000001"
 					it "should show the save button text as Update", ->
 						runs ->
+							console.log @pbc.$('.bv_save')
+							@pbc.$('.bv_save').removeAttr('disabled')
 							@pbc.$('.bv_save').click()
 						waits(1000)
 						runs ->
+							console.log @pbc.model.validationError
+							console.log @pbc.model
 							expect(@pbc.$('.bv_save').html()).toEqual "Update"
 				describe "cancel button behavior testing", ->
 					it "should call a fetch on the model when cancel is clicked", ->

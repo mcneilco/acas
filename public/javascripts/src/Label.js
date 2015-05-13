@@ -1,9 +1,9 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.Label = (function(_super) {
-    __extends(Label, _super);
+  window.Label = (function(superClass) {
+    extend(Label, superClass);
 
     function Label() {
       return Label.__super__.constructor.apply(this, arguments);
@@ -31,8 +31,8 @@
 
   })(Backbone.Model);
 
-  window.LabelList = (function(_super) {
-    __extends(LabelList, _super);
+  window.LabelList = (function(superClass) {
+    extend(LabelList, superClass);
 
     function LabelList() {
       return LabelList.__super__.constructor.apply(this, arguments);
@@ -182,8 +182,8 @@
 
   })(Backbone.Collection);
 
-  window.Value = (function(_super) {
-    __extends(Value, _super);
+  window.Value = (function(superClass) {
+    extend(Value, superClass);
 
     function Value() {
       return Value.__super__.constructor.apply(this, arguments);
@@ -221,8 +221,8 @@
 
   })(Backbone.Model);
 
-  window.ValueList = (function(_super) {
-    __extends(ValueList, _super);
+  window.ValueList = (function(superClass) {
+    extend(ValueList, superClass);
 
     function ValueList() {
       return ValueList.__super__.constructor.apply(this, arguments);
@@ -234,8 +234,8 @@
 
   })(Backbone.Collection);
 
-  window.State = (function(_super) {
-    __extends(State, _super);
+  window.State = (function(superClass) {
+    extend(State, superClass);
 
     function State() {
       return State.__super__.constructor.apply(this, arguments);
@@ -303,8 +303,8 @@
 
   })(Backbone.Model);
 
-  window.StateList = (function(_super) {
-    __extends(StateList, _super);
+  window.StateList = (function(superClass) {
+    extend(StateList, superClass);
 
     function StateList() {
       return StateList.__super__.constructor.apply(this, arguments);

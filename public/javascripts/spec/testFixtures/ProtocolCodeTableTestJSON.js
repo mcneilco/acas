@@ -25,6 +25,10 @@
             code: "rejected",
             name: "Rejected",
             ignored: false
+          }, {
+            code: "approved",
+            name: "Approved",
+            ignored: false
           }
         ]
       }, {

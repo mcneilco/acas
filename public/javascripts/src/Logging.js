@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.Logging = (function(_super) {
-    __extends(Logging, _super);
+  window.Logging = (function(superClass) {
+    extend(Logging, superClass);
 
     function Logging() {
       return Logging.__super__.constructor.apply(this, arguments);
@@ -14,11 +14,11 @@
 
   })(Backbone.Model);
 
-  window.LoggingController1 = (function(_super) {
-    __extends(LoggingController1, _super);
+  window.LoggingController1 = (function(superClass) {
+    extend(LoggingController1, superClass);
 
     function LoggingController1() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return LoggingController1.__super__.constructor.apply(this, arguments);
     }
 
@@ -41,11 +41,11 @@
 
   })(Backbone.View);
 
-  window.LoggingController = (function(_super) {
-    __extends(LoggingController, _super);
+  window.LoggingController = (function(superClass) {
+    extend(LoggingController, superClass);
 
     function LoggingController() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return LoggingController.__super__.constructor.apply(this, arguments);
     }
 
@@ -66,12 +66,12 @@
 
   })(Backbone.View);
 
-  window.FileLoggingController = (function(_super) {
-    __extends(FileLoggingController, _super);
+  window.FileLoggingController = (function(superClass) {
+    extend(FileLoggingController, superClass);
 
     function FileLoggingController() {
-      this.updateLogFiltering = __bind(this.updateLogFiltering, this);
-      this.render = __bind(this.render, this);
+      this.updateLogFiltering = bind(this.updateLogFiltering, this);
+      this.render = bind(this.render, this);
       return FileLoggingController.__super__.constructor.apply(this, arguments);
     }
 
@@ -97,12 +97,12 @@
 
   })(Backbone.View);
 
-  window.MongoLoggingController = (function(_super) {
-    __extends(MongoLoggingController, _super);
+  window.MongoLoggingController = (function(superClass) {
+    extend(MongoLoggingController, superClass);
 
     function MongoLoggingController() {
-      this.updateLogFiltering = __bind(this.updateLogFiltering, this);
-      this.render = __bind(this.render, this);
+      this.updateLogFiltering = bind(this.updateLogFiltering, this);
+      this.render = bind(this.render, this);
       return MongoLoggingController.__super__.constructor.apply(this, arguments);
     }
 
@@ -139,8 +139,8 @@
 
   })(Backbone.View);
 
-  window.LogEntry = (function(_super) {
-    __extends(LogEntry, _super);
+  window.LogEntry = (function(superClass) {
+    extend(LogEntry, superClass);
 
     function LogEntry() {
       return LogEntry.__super__.constructor.apply(this, arguments);
@@ -168,11 +168,11 @@
 
   })(Backbone.Model);
 
-  window.LogList = (function(_super) {
-    __extends(LogList, _super);
+  window.LogList = (function(superClass) {
+    extend(LogList, superClass);
 
     function LogList() {
-      this.getLogTypeStats = __bind(this.getLogTypeStats, this);
+      this.getLogTypeStats = bind(this.getLogTypeStats, this);
       return LogList.__super__.constructor.apply(this, arguments);
     }
 
@@ -204,13 +204,13 @@
 
   })(Backbone.Collection);
 
-  window.LogListController = (function(_super) {
-    __extends(LogListController, _super);
+  window.LogListController = (function(superClass) {
+    extend(LogListController, superClass);
 
     function LogListController() {
-      this.addItem = __bind(this.addItem, this);
-      this.addAllItems = __bind(this.addAllItems, this);
-      this.render = __bind(this.render, this);
+      this.addItem = bind(this.addItem, this);
+      this.addAllItems = bind(this.addAllItems, this);
+      this.render = bind(this.render, this);
       return LogListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -248,11 +248,11 @@
 
   })(Backbone.View);
 
-  window.LogEntryController = (function(_super) {
-    __extends(LogEntryController, _super);
+  window.LogEntryController = (function(superClass) {
+    extend(LogEntryController, superClass);
 
     function LogEntryController() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return LogEntryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -281,13 +281,13 @@
 
   })(Backbone.View);
 
-  window.LogFilterMenu = (function(_super) {
-    __extends(LogFilterMenu, _super);
+  window.LogFilterMenu = (function(superClass) {
+    extend(LogFilterMenu, superClass);
 
     function LogFilterMenu() {
-      this.render = __bind(this.render, this);
-      this.getFilters = __bind(this.getFilters, this);
-      this.filterChanged = __bind(this.filterChanged, this);
+      this.render = bind(this.render, this);
+      this.getFilters = bind(this.getFilters, this);
+      this.filterChanged = bind(this.filterChanged, this);
       return LogFilterMenu.__super__.constructor.apply(this, arguments);
     }
 
@@ -309,7 +309,7 @@
     };
 
     LogFilterMenu.prototype.getFilters = function() {
-      return "" + (this.$(".bv_logLevel").val()) + "/" + (this.$(".bv_application select").val()) + "/" + (this.$(".bv_user select").val());
+      return (this.$(".bv_logLevel").val()) + "/" + (this.$(".bv_application select").val()) + "/" + (this.$(".bv_user select").val());
     };
 
     LogFilterMenu.prototype.render = function() {
@@ -332,8 +332,8 @@
 
   })(Backbone.View);
 
-  window.ApplicationSourcesList = (function(_super) {
-    __extends(ApplicationSourcesList, _super);
+  window.ApplicationSourcesList = (function(superClass) {
+    extend(ApplicationSourcesList, superClass);
 
     function ApplicationSourcesList() {
       return ApplicationSourcesList.__super__.constructor.apply(this, arguments);
@@ -345,8 +345,8 @@
 
   })(Backbone.Collection);
 
-  window.UsersList = (function(_super) {
-    __extends(UsersList, _super);
+  window.UsersList = (function(superClass) {
+    extend(UsersList, superClass);
 
     function UsersList() {
       return UsersList.__super__.constructor.apply(this, arguments);
@@ -358,11 +358,11 @@
 
   })(Backbone.Collection);
 
-  window.GraphLogStats = (function(_super) {
-    __extends(GraphLogStats, _super);
+  window.GraphLogStats = (function(superClass) {
+    extend(GraphLogStats, superClass);
 
     function GraphLogStats() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return GraphLogStats.__super__.constructor.apply(this, arguments);
     }
 

@@ -429,8 +429,8 @@ describe "Experiment module testing", ->
 					expect(@ebc.$('.bv_comments').html()).toEqual ""
 				it "should not fill the notebook field", ->
 					expect(@ebc.$('.bv_notebook').val()).toEqual ""
-				it "should not have the experiment name checkbox checked field", ->
-					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
+				it "should have the experiment name checkbox checked field", ->
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual "checked"
 			describe "User edits fields", ->
 				it "should update model when scientist is changed", ->
 					expect(@ebc.model.getScientist().get('codeValue')).toEqual window.AppLaunchParams.loginUserName
@@ -516,14 +516,15 @@ describe "Experiment module testing", ->
 						expect(@ebc.model.getStatus().get('codeValue')).toEqual 'complete'
 			describe "Match experiment code name checkbox behavior and validation", ->
 				it "should disable the experiment name when the experiment name checkbox is checked", ->
-					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined()
+					expect(@ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual "checked"
+					@ebc.$('.bv_exptNameChkbx').click()
+#					@ebc.$('.bv_exptNameChkbx').click()
+					expect(@ebc.$('.bv_experimentName').attr("disabled")).toEqual "disabled"
+				it "should enable the experiment name when the experiment name checkbox is unchecked", ->
 					@ebc.$('.bv_exptNameChkbx').click()
 					@ebc.$('.bv_exptNameChkbx').click()
 					#don't know why exptNameChkbx needs to be clicked twice for spec to pass but the implementation is correct
 					#This behaviour has been observed in other specs that for checkboxes (ie in PrimaryScreenExperiment)
-					expect(@ebc.$('.bv_experimentName').attr("disabled")).toEqual "disabled"
-				it "should disable the experiment name when the experiment name checkbox is unchecked", ->
-					@ebc.$('.bv_exptNameChkbx').click()
 					expect(@ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined()
 		describe "When created from a saved experiment", ->
 			beforeEach ->
@@ -769,6 +770,8 @@ describe "Experiment module testing", ->
 							expect(@ebc.isValid()).toBeFalsy()
 					it "should show error in name field", ->
 						runs ->
+							@ebc.$('.bv_exptNameChkbx').click()
+							@ebc.$('.bv_exptNameChkbx').click()
 							expect(@ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy()
 					it "should show the save button disabled", ->
 						runs ->
@@ -820,7 +823,7 @@ describe "Experiment module testing", ->
 				describe "expect save to work", ->
 					beforeEach ->
 						runs ->
-							@ebc.$('.bv_exptNameChkbx').click()
+#							@ebc.$('.bv_exptNameChkbx').click()
 #							@ebc.$('.bv_exptNameChkbx').click()
 					it "model should be valid and ready to save", ->
 						runs ->

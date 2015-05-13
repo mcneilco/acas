@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseAnalysisParameters = (function(_super) {
-    __extends(DoseResponseAnalysisParameters, _super);
+  window.DoseResponseAnalysisParameters = (function(superClass) {
+    extend(DoseResponseAnalysisParameters, superClass);
 
     function DoseResponseAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -90,20 +90,20 @@
 
   })(Backbone.Model);
 
-  window.DoseResponseAnalysisParametersController = (function(_super) {
-    __extends(DoseResponseAnalysisParametersController, _super);
+  window.DoseResponseAnalysisParametersController = (function(superClass) {
+    extend(DoseResponseAnalysisParametersController, superClass);
 
     function DoseResponseAnalysisParametersController() {
-      this.handleSlopeLimitTypeChanged = __bind(this.handleSlopeLimitTypeChanged, this);
-      this.handleMinLimitTypeChanged = __bind(this.handleMinLimitTypeChanged, this);
-      this.handleMaxLimitTypeChanged = __bind(this.handleMaxLimitTypeChanged, this);
-      this.handleInverseAgonistModeChanged = __bind(this.handleInverseAgonistModeChanged, this);
-      this.handleInactiveThresholdMoved = __bind(this.handleInactiveThresholdMoved, this);
-      this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
-      this.handleInactiveThresholdModeChanged = __bind(this.handleInactiveThresholdModeChanged, this);
-      this.handleSmartModeChanged = __bind(this.handleSmartModeChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.handleSlopeLimitTypeChanged = bind(this.handleSlopeLimitTypeChanged, this);
+      this.handleMinLimitTypeChanged = bind(this.handleMinLimitTypeChanged, this);
+      this.handleMaxLimitTypeChanged = bind(this.handleMaxLimitTypeChanged, this);
+      this.handleInverseAgonistModeChanged = bind(this.handleInverseAgonistModeChanged, this);
+      this.handleInactiveThresholdMoved = bind(this.handleInactiveThresholdMoved, this);
+      this.handleInactiveThresholdChanged = bind(this.handleInactiveThresholdChanged, this);
+      this.handleInactiveThresholdModeChanged = bind(this.handleInactiveThresholdModeChanged, this);
+      this.handleSmartModeChanged = bind(this.handleSmartModeChanged, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return DoseResponseAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
@@ -294,15 +294,15 @@
 
   })(AbstractFormController);
 
-  window.ModelFitTypeController = (function(_super) {
-    __extends(ModelFitTypeController, _super);
+  window.ModelFitTypeController = (function(superClass) {
+    extend(ModelFitTypeController, superClass);
 
     function ModelFitTypeController() {
-      this.updateModel = __bind(this.updateModel, this);
-      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
-      this.setupParameterController = __bind(this.setupParameterController, this);
-      this.setupModelFitTypeSelect = __bind(this.setupModelFitTypeSelect, this);
-      this.render = __bind(this.render, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
+      this.setupParameterController = bind(this.setupParameterController, this);
+      this.setupModelFitTypeSelect = bind(this.setupModelFitTypeSelect, this);
+      this.render = bind(this.render, this);
       return ModelFitTypeController.__super__.constructor.apply(this, arguments);
     }
 
@@ -420,20 +420,20 @@
 
   })(Backbone.View);
 
-  window.DoseResponseAnalysisController = (function(_super) {
-    __extends(DoseResponseAnalysisController, _super);
+  window.DoseResponseAnalysisController = (function(superClass) {
+    extend(DoseResponseAnalysisController, superClass);
 
     function DoseResponseAnalysisController() {
-      this.fitReturnSuccess = __bind(this.fitReturnSuccess, this);
-      this.launchFit = __bind(this.launchFit, this);
-      this.paramsInvalid = __bind(this.paramsInvalid, this);
-      this.paramsValid = __bind(this.paramsValid, this);
-      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
-      this.handleModelStatusChanged = __bind(this.handleModelStatusChanged, this);
-      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
-      this.setReadyForFit = __bind(this.setReadyForFit, this);
-      this.testReadyForFit = __bind(this.testReadyForFit, this);
-      this.render = __bind(this.render, this);
+      this.fitReturnSuccess = bind(this.fitReturnSuccess, this);
+      this.launchFit = bind(this.launchFit, this);
+      this.paramsInvalid = bind(this.paramsInvalid, this);
+      this.paramsValid = bind(this.paramsValid, this);
+      this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
+      this.handleModelStatusChanged = bind(this.handleModelStatusChanged, this);
+      this.handleStatusChanged = bind(this.handleStatusChanged, this);
+      this.setReadyForFit = bind(this.setReadyForFit, this);
+      this.testReadyForFit = bind(this.testReadyForFit, this);
+      this.render = bind(this.render, this);
       return DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
     }
 
