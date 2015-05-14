@@ -116,14 +116,15 @@
       return bestLabel;
     };
 
-    LabelList.prototype.setBestName = function(label) {
-      var currentName;
-      label.set({
-        lsType: 'name',
-        preferred: true,
-        ignored: false
+    LabelList.prototype.getNonPreferredName = function(lsKind) {
+      var nonPreferredName;
+      nonPreferredName = _.filter(this.getCurrent(), function(lab) {
+        return (lab.get('preferred') === false) && (lab.get('lsType') === "name");
       });
-      currentName = this.pickBestName();
+      return nonPreferredName[0];
+    };
+
+    LabelList.prototype.setName = function(label, currentName) {
       if (currentName != null) {
         if (currentName.isNew()) {
           return currentName.set({
@@ -141,6 +142,28 @@
       } else {
         return this.add(label);
       }
+    };
+
+    LabelList.prototype.setBestName = function(label) {
+      var currentName;
+      label.set({
+        lsType: 'name',
+        preferred: true,
+        ignored: false
+      });
+      currentName = this.pickBestName();
+      return this.setName(label, currentName);
+    };
+
+    LabelList.prototype.setNonPreferredName = function(label) {
+      var nonPreferredName;
+      label.set({
+        lsType: 'name',
+        preferred: false,
+        ignored: false
+      });
+      nonPreferredName = this.getNonPreferredName();
+      return this.setName(label, nonPreferredName);
     };
 
     LabelList.prototype.getLabelByTypeAndKind = function(type, kind) {

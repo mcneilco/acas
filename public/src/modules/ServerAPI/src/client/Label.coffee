@@ -55,12 +55,13 @@ class window.LabelList extends Backbone.Collection
 			(if (rd is "") then Infinity else rd)
 		return bestLabel
 
-	setBestName: (label) ->
-		label.set
-			lsType: 'name'
-			preferred: true
-			ignored: false
-		currentName = @pickBestName()
+	getNonPreferredName: (lsKind) ->
+		nonPreferredName = _.filter @getCurrent(), (lab) ->
+			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
+		nonPreferredName[0]
+
+
+	setName: (label, currentName) ->
 		if currentName?
 			if currentName.isNew()
 				currentName.set
@@ -73,6 +74,22 @@ class window.LabelList extends Backbone.Collection
 				@add label
 		else
 			@add label
+
+	setBestName: (label) ->
+		label.set
+			lsType: 'name'
+			preferred: true
+			ignored: false
+		currentName = @pickBestName()
+		@setName(label, currentName)
+
+	setNonPreferredName: (label) ->
+		label.set
+			lsType: 'name'
+			preferred: false
+			ignored: false
+		nonPreferredName = @getNonPreferredName()
+		@setName(label, nonPreferredName)
 
 	getLabelByTypeAndKind: (type, kind) ->
 		@filter (label) ->
