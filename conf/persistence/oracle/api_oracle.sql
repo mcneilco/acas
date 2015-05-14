@@ -417,7 +417,7 @@ AS
     cntrv3.string_value,
     cntrv3.unit_kind;
 
-
+-- If anyone is using this, it should be fixed to get the concentration correctly
 CREATE OR REPLACE VIEW API_SUBJECT_RESULTS AS 
 SELECT p.label_text AS protocol_name,
 p.code_name AS protocol_code_name,
@@ -497,7 +497,7 @@ LEFT OUTER JOIN subject_state ss2 ON ss2.subject_id = s.id and ss2.ls_kind = 'tr
 LEFT OUTER JOIN subject_value sv5 ON sv5.subject_state_id = ss2.id and sv5.ls_kind = 'batch code';
 
 
-
+-- If anyone is using this, it should be fixed to get the concentration correctly
 CREATE OR REPLACE VIEW API_SUBJECT_CONTAINER_RESULTS AS
 SELECT p.label_text AS protocol_name,
 p.code_name AS protocol_code_name,
