@@ -329,10 +329,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_experimentName').attr('disabled','disabled')
 		else
 			@setupExptNameChkbx()
-		reqProject = window.conf.include.project
-		if reqProject?
-			if reqProject.toLowerCase() is "false"
-				@$('.bv_projectLabel').html "Project"
 
 		@
 
@@ -384,6 +380,10 @@ class window.ExperimentBaseController extends BaseEntityController
 			selectedCode: protocolCode
 
 	setupProjectSelect: ->
+		reqProject = window.conf.include.project
+		if reqProject?
+			if reqProject.toLowerCase() is "false"
+				@$('.bv_projectLabel').html "Project"
 		@projectList = new PickListList()
 		@projectList.url = "/api/projects"
 		@projectListController = new PickListSelectController
@@ -470,7 +470,13 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	handleUseProtocolParametersClicked: =>
 		@model.copyProtocolAttributes(@model.get('protocol'))
+		exptChkbx = @$('.bv_exptNameChkbx').attr('checked') #render will always disable the expt name field if new.
+		# Remember if checkbox was checked and then display expt name field properly after render is called.
 		@render()
+		if exptChkbx is "checked"
+			@$('.bv_experimentName').attr('disabled', 'disabled')
+		else
+			@$('.bv_experimentName').removeAttr('disabled')
 		@model.trigger 'change' #need to trigger change because render will call updateEditable, which disables the save button
 
 	handleDateChanged: =>

@@ -481,7 +481,6 @@
     };
 
     ExperimentBaseController.prototype.render = function() {
-      var reqProject;
       if (this.model == null) {
         this.model = new Experiment();
       }
@@ -500,12 +499,6 @@
         this.$('.bv_experimentName').attr('disabled', 'disabled');
       } else {
         this.setupExptNameChkbx();
-      }
-      reqProject = window.conf.include.project;
-      if (reqProject != null) {
-        if (reqProject.toLowerCase() === "false") {
-          this.$('.bv_projectLabel').html("Project");
-        }
       }
       return this;
     };
@@ -572,6 +565,13 @@
     };
 
     ExperimentBaseController.prototype.setupProjectSelect = function() {
+      var reqProject;
+      reqProject = window.conf.include.project;
+      if (reqProject != null) {
+        if (reqProject.toLowerCase() === "false") {
+          this.$('.bv_projectLabel').html("Project");
+        }
+      }
       this.projectList = new PickListList();
       this.projectList.url = "/api/projects";
       return this.projectListController = new PickListSelectController({
@@ -697,8 +697,15 @@
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
+      var exptChkbx;
       this.model.copyProtocolAttributes(this.model.get('protocol'));
+      exptChkbx = this.$('.bv_exptNameChkbx').attr('checked');
       this.render();
+      if (exptChkbx === "checked") {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_experimentName').removeAttr('disabled');
+      }
       return this.model.trigger('change');
     };
 
