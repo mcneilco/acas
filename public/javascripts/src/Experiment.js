@@ -27,7 +27,10 @@
       this.set({
         subclass: "experiment"
       });
-      return Experiment.__super__.initialize.call(this);
+      Experiment.__super__.initialize.call(this);
+      if (window.conf.include.project == null) {
+        return console.dir("config for client.include.project is not set");
+      }
     };
 
     Experiment.prototype.parse = function(resp) {
@@ -137,7 +140,7 @@
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, projectCode, scientist;
+      var bestName, cDate, errors, nameError, notebook, projectCode, reqProject, scientist;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -187,12 +190,19 @@
         });
       }
       if (attrs.subclass != null) {
-        projectCode = this.getProjectCode().get('codeValue');
-        if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-          errors.push({
-            attribute: 'projectCode',
-            message: "Project must be set"
-          });
+        reqProject = window.conf.include.project;
+        if (reqProject == null) {
+          reqProject = "true";
+        }
+        reqProject = reqProject.toLowerCase();
+        if (reqProject !== "false") {
+          projectCode = this.getProjectCode().get('codeValue');
+          if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+            errors.push({
+              attribute: 'projectCode',
+              message: "Project must be set"
+            });
+          }
         }
         cDate = this.getCompletionDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
@@ -471,6 +481,7 @@
     };
 
     ExperimentBaseController.prototype.render = function() {
+      var reqProject;
       if (this.model == null) {
         this.model = new Experiment();
       }
@@ -489,6 +500,12 @@
         this.$('.bv_experimentName').attr('disabled', 'disabled');
       } else {
         this.setupExptNameChkbx();
+      }
+      reqProject = window.conf.include.project;
+      if (reqProject != null) {
+        if (reqProject.toLowerCase() === "false") {
+          this.$('.bv_projectLabel').html("Project");
+        }
       }
       return this;
     };

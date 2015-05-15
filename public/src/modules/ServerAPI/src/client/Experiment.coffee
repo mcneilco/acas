@@ -9,6 +9,8 @@ class window.Experiment extends BaseEntity
 	initialize: ->
 		@.set subclass: "experiment"
 		super()
+		unless window.conf.include.project?
+			console.dir "config for client.include.project is not set"
 
 	parse: (resp) =>
 		if resp == "not unique experiment name" or resp == '"not unique experiment name"'
@@ -118,11 +120,16 @@ class window.Experiment extends BaseEntity
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
 		if attrs.subclass?
-			projectCode = @getProjectCode().get('codeValue')
-			if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-				errors.push
-					attribute: 'projectCode'
-					message: "Project must be set"
+			reqProject = window.conf.include.project
+			unless reqProject?
+				reqProject = "true"
+			reqProject = reqProject.toLowerCase()
+			unless reqProject is "false"
+				projectCode = @getProjectCode().get('codeValue')
+				if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+					errors.push
+						attribute: 'projectCode'
+						message: "Project must be set"
 			cDate = @getCompletionDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
@@ -322,6 +329,11 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_experimentName').attr('disabled','disabled')
 		else
 			@setupExptNameChkbx()
+		reqProject = window.conf.include.project
+		if reqProject?
+			if reqProject.toLowerCase() is "false"
+				@$('.bv_projectLabel').html "Project"
+
 		@
 
 	modelSyncCallback: =>
