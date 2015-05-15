@@ -1,0 +1,16 @@
+body
+{
+    position:relative;
+}
+
+li :hover
+{
+    text-decoration: underline;
+    cursor:pointer;
+}
+
+h1,h3,h4,p,a,li
+{
+    font-family: "Segoe UI Light","Segoe UI",Tahoma,sans-serif;
+    text-decoration-color:#4ec724;
+}

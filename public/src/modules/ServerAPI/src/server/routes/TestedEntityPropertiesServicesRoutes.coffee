@@ -2,7 +2,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/testedEntities/properties', exports.testedEntityProperties
 
 exports.setupRoutes = (app, loginRoutes) ->
-
+	app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
 
 exports.testedEntityProperties = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
