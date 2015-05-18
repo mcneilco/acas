@@ -665,11 +665,13 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
   returnDataFrame$Units <-  getUnitFromParentheses(dataColumns)
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
-  returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
-  returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
+  concUnitList <- getNumberAndUnit(concAndUnits)
+  returnDataFrame$Conc <- concUnitList$num
+  returnDataFrame$concUnits <- concUnitList$unit
   timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
-  returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
-  returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
+  timeUnitList <- getNumberAndUnit(timeAndUnits)
+  returnDataFrame$time <- timeUnitList$num
+  returnDataFrame$timeUnit <- timeUnitList$unit
   # Mark standard deviation and comments with a text string
   uncertaintyTypeUsed <- uncertaintyType[valueKindsVector %in% valueKindNotIgnored]
   commentColUsed <- commentCol[valueKindsVector %in% valueKindNotIgnored]
@@ -706,7 +708,25 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   # Return a data frame with the units separated from the type, and with uncertainties and comments marked
   return(returnDataFrame)
 }
-
+getNumberAndUnit <- function(numberAndUnit) {
+  # From a number and unit as a single string, returns a list of the number and unit
+  library(gdata)
+  
+  numberAndUnit <- trim(numberAndUnit)
+  loc <- regexpr("^[0-9\\.]*", numberAndUnit)
+  if (loc == -1) {
+    stopUser(paste0("This concentration is missing a number: ", numberAndUnit))
+  }
+  num <- substr(numberAndUnit, loc, attr(loc, "match.length"))
+  unit <- trim(substr(numberAndUnit, loc + attr(loc, "match.length"), nchar(numberAndUnit)))
+  if (is.na(suppressWarnings(as.numeric(num)))) {
+    # Technically, this doesn't need to have a space, but they should add one if they ended it with a period
+    stopUser(paste0("Concentration ", numberAndUnit, "must start with a number followed by a space."))
+  } else {
+    num <- as.numeric(num)
+  }
+  return(list(num=num, unit=unit))
+}
 organizeCalculatedResults <- function(calculatedResults, inputFormat, formatParameters, mainCode, 
                                       lockCorpBatchId = TRUE, rawOnlyFormat = FALSE, 
                                       errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
