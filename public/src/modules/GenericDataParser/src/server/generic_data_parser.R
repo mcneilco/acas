@@ -191,13 +191,16 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
-validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList,  errorEnv = NULL) {
+validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList) {
   # Valides the custom meta data section
   #
   # Args:
-  #   metaData: 			A "data.frame" of 3 columns - 1) a value kind 2) a value 3) a type
-  #	  configList:     Also known as racas::applicationSettings
-
+  #   metaData: 			data.frame of 3 columns - 1) a value kind 2) a value 3) a type
+  #   recordedBy: 		character the user recording data
+  #   lstransaction:  integer lstransaction id
+  #   dryRun: 			  boolean should the function load data to the database?
+  #   configList:     data.frame racas::applicationSettings
+  
   # Returns:
   #  A list containing data frame with the validated custom meta data
   
@@ -221,7 +224,6 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   if(length(valueNA) > 0) {
     item <- if(length(valueNA) == 1) {c("Item", "is")} else {c("Items","are")}
     warnUser(paste0(item[[1]], " ", paste(valueNA, collapse = ", ")," of the Custom Meta Data Section ",item[[2]], " null"))
-    #metaData <- metaData[-(valueNA),]
   }
   
   # stop if value kinds are NA
@@ -260,11 +262,11 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
 
   # warn user if select lists don't already exist
   selectListItems <- metaData[tolower(metaData$userType) == "select list",]
-  selectListItems$lsKind <- tolower(selectListItems$fieldName)
-  selectListItems$codeName <- tolower(selectListItems$userValue)
+  selectListItems[ , lsKind := tolower(fieldName)]
+  selectListItems[ , codeName := tolower(userValue)]
   customExperimentMetaDataDdictType <- "custom experiment metadata"
   ddictKinds <- as.data.table(racas::getDDictKinds())[lsType == customExperimentMetaDataDdictType,]
-  notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("fieldName","lsKind"), with = FALSE]
+  notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("fieldName", "lsKind"), with = FALSE]
   if(nrow(notExistsDdictList) > 0) {
     warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$fieldName, collapse = "','"), "'")))
     if(!dryRun) {
@@ -2379,7 +2381,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Custom Metadata
   customMetaData <- getSection(genericDataFileDataFrame, lookFor = "Custom Experiment Meta Data", transpose = FALSE, required = FALSE)
   if(!is.null(customMetaData)) {
-    validatedCustomExperimentMetaData <- validateCustomExperimentMetaData(customMetaData, recordedBy = recordedBy, lsTransaction = lsTransaction, dryRun, configList, errorEnv)
+    validatedCustomExperimentMetaData <- validateCustomExperimentMetaData(customMetaData, recordedBy = recordedBy, lsTransaction = lsTransaction, dryRun, configList)
     validatedCustomMetaDataStates <- validatedCustomExperimentMetaData$customStates
     customExperimentMetaDataValues <- validatedCustomExperimentMetaData$customExperimentMetaDataValues
   } else {
