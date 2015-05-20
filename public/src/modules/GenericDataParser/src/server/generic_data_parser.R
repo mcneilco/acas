@@ -222,22 +222,22 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   # warn if any values are NA
   valueNA <- which(is.na(metaData$userValue))
   if(length(valueNA) > 0) {
-    item <- if(length(valueNA) == 1) {c("Item", "is")} else {c("Items","are")}
-    warnUser(paste0(item[[1]], " ", paste(valueNA, collapse = ", ")," of the Custom Meta Data Section ",item[[2]], " null"))
+    item <- if(length(valueNA) == 1) {c("Item", "has a null value")} else {c("Items","have null values")}
+    warnUser(paste0(item[[1]], " ", paste(valueNA, collapse = ", ")," of the Custom Meta Data Section ",item[[2]]))
   }
   
-  # stop if value kinds are NA
+  # add error if value kinds are NA
   valueKindNA <- which(is.na(metaData$fieldName))
   if(length(valueKindNA) > 0) {
     item <- ifelse(length(valueKindNA) == 1, "Item", "Items")
-    stopUser(paste0(item, " ", paste(valueKindNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null kind"))
+    addError(paste0(item, " ", paste(valueKindNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null kind"))
   }
 
-  # stop if value types are NA
+  # add error if value types are NA
   valueTypeNA <- which(is.na(metaData$userType))
   if(length(valueTypeNA) > 0) {
     item <- ifelse(length(valueTypeNA) == 1, "Item", "Items")
-    stopUser(paste0(item, " ", paste(valueTypeNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null type"))
+    addError(paste0(item, " ", paste(valueTypeNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null type"))
   }
   
   # get hidden types columns
@@ -250,14 +250,14 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   # TODO hardcoding required to true for now
   metaData[ , required := TRUE]
   
-  # stop if any value types are not in allowed list
+  # add error if any value types are not in allowed list
   allowedTypesUser <- c("Date", "Number", "Text", "URL", "Large Text", "Select List")
   allowedTypes <- tolower(allowedTypesUser)
   metaData[ , fieldType := allowedTypes[match(tolower(metaData$userType), allowedTypes)]]
   unknownTypes <- which(is.na(metaData$fieldType))
   if(length(unknownTypes) > 0) {
     item <- if(length(unknownTypes) == 1) {c("Item", "has an", "type")} else {c("Items","have", "types")}
-    stopUser(paste0(item[[1]], " ",  paste(unknownTypes, collapse = ", ")," of the Custom Meta Data Section type column ",item[[2]]," unrecognized ",item[[3]]," of ", paste0("'",paste(metaData[unknownTypes]$userType, collapse = "','"), "'"),". Please load one of the following: ",paste0("'",paste(allowedTypesUser, collapse = "','"), "'")))
+    addError(paste0(item[[1]], " ",  paste(unknownTypes, collapse = ", ")," of the Custom Meta Data Section type column ",item[[2]]," unrecognized ",item[[3]]," of ", paste0("'",paste(metaData[unknownTypes]$userType, collapse = "','"), "'"),". Please load one of the following: ",paste0("'",paste(allowedTypesUser, collapse = "','"), "'")))
   }
 
   # warn user if select lists don't already exist
@@ -302,12 +302,11 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
       setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
       createCodeTablesFromJsonArray(newDdictValuesDF)
       newValueKinds <- newDdictValues[ , c("lsKind","lsType"), with = FALSE]
-      get_or_create_value_kinds(newDdictValues)
     }
   }
-
+  
   # validate the values themselves and create custom experiment meta data state values
-  metaData[, c("customExperimentMetaDataStateValues", "lsType", "lsKind") := {
+  metaData[ !is.na(fieldType), c("customExperimentMetaDataStateValues", "lsType", "lsKind") := {
     lsType <- switch(fieldType,
                      number = "numericValue",
                      date = "dateValue",
@@ -345,7 +344,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                 lsKind = lsKind
                 )
   }, by = c("fieldType","fieldName","userValue")]
-  
+
   # create custom experiment metadata state
   customExperimentMetaDataState <- createExperimentState(experimentValues=metaData$customExperimentMetaDataStateValues,
                                                          lsTransaction = lsTransaction, 
