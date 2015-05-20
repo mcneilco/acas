@@ -45,41 +45,52 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-		#cache values I don't want to overwrite
-		scientist = @getScientist().get('codeValue')
-		notebook = @getNotebook().get('stringValue')
-		completionDate = @getCompletionDate().get('dateValue')
-		project = @getProjectCode().get('codeValue')
-		estates = new StateList()
+		#only need to copy protocol's experiment metadata attributes
 		pstates = protocol.get('lsStates')
-		pstates.each (st) ->
-			if st.get('lsKind') is "experiment metadata"
-				estate = new State(_.clone(st.attributes))
-				estate.unset 'id'
-				estate.unset 'lsTransaction'
-				estate.unset 'lsValues'
-				evals = new ValueList()
-				svals = st.get('lsValues')
-				svals.each (sv) ->
-#					unless sv.get('lsKind')=="notebook" || sv.get('lsKind')=="project" || sv.get('lsKind')=="completion date" || sv.get('lsKind')=="scientist"
-					evalue = new Value(sv.attributes)
-					evalue.unset 'id'
-					evalue.unset 'lsTransaction'
-					evals.add(evalue)
-				estate.set lsValues: evals
-				estates.add(estate)
+		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
+		if pExptMeta.length > 0
+			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+			dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
+			if dapVal.length > 0
+				#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+				if dapVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove dapVal[0]
+				else
+					dapVal[0].set ignored: true
+			dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters").attributes)
+			dap.unset 'id'
+			dap.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add dap
+
+			mfpVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "model fit parameters"
+			if mfpVal.length > 0
+				if mfpVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mfpVal[0]
+				else
+					mfpVal[0].set ignored: true
+			mfp = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters").attributes)
+			mfp.unset 'id'
+			mfp.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mfp
+
+			mftVal = eExptMeta[0].getValuesByTypeAndKind "codeValue", "model fit type"
+			if mftVal.length > 0
+				if mftVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftVal[0]
+				else
+					mftVal[0].set ignored: true
+			mft = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type").attributes)
+			mft.unset 'id'
+			mft.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mft
+			@getDryRunStatus().set ignored: true
+			@getDryRunStatus().set codeValue: 'not started'
+			@getDryRunResultHTML().set ignored: true
+			@getDryRunResultHTML().set clobValue: ""
+
 		@set
 			lsKind: protocol.get('lsKind')
 			protocol: protocol
-#			shortDescription: protocol.get('shortDescription')
-			lsStates: estates
-		@getScientist().set codeValue: scientist
-		@getNotebook().set stringValue: notebook
-		@getCompletionDate().set dateValue: completionDate
-		@getProjectCode().set codeValue: project
-#		@getComments().set clobValue: protocol.getComments().get('clobValue')
-#		@getDescription().set clobValue: protocol.getDescription().get('clobValue')
-#		@setupCompositeChangeTriggers()
 		@trigger 'change'
 		@trigger "protocol_attributes_copied"
 		return
@@ -214,7 +225,10 @@ class window.Experiment extends BaseEntity
 			expState = @get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0]
 			for val in valuesToDelete
 				value = expState.getValuesByTypeAndKind(val.type, val.kind)[0]
-				expState.get('lsValues').remove value
+				if value?
+					if ((val.kind is "data analysis parameters" or val.kind is "model fit parameters" or val.kind is "model fit type" or val.kind is "dry run status" or val.kind  is "dry run html") and value.isNew())
+					else
+						expState.get('lsValues').remove value
 		super()
 
 class window.ExperimentList extends Backbone.Collection
@@ -233,6 +247,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			"change .bv_projectCode": "handleProjectCodeChanged"
 			"change .bv_completionDate": "handleDateChanged"
 			"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+			"click .bv_keepOldParams": "handleKeepOldParams"
+			"click .bv_useNewParams": "handleUseNewParams"
 
 		)
 
@@ -279,7 +295,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		@model = new Experiment()
 		@model.set protocol: new Protocol
 			codeName: code
-		@getAndSetProtocol(code)
+		@getAndSetProtocol(code, true)
 
 	completeInitialization: ->
 		unless @model?
@@ -425,8 +441,7 @@ class window.ExperimentBaseController extends BaseEntityController
 						@handleUseProtocolParametersClicked()
 			else
 				@setUseProtocolParametersDisabledState()
-				unless !@model.isNew()
-					@handleUseProtocolParametersClicked()
+				@handleUseProtocolParametersClicked()
 
 	handleExptNameChkbxClicked: =>
 		checked = @$('.bv_exptNameChkbx').is(":checked")
@@ -436,33 +451,60 @@ class window.ExperimentBaseController extends BaseEntityController
 			@handleNameChanged()
 			if @model.isNew()
 				@model.get('lsLabels').pickBestName().set labelText: undefined
-				#need to specifically set this here or else labelText is set to "" and will have an error even if the checkbox is checked
+#need to specifically set this here or else labelText is set to "" and will have an error even if the checkbox is checked
 		else
 			@$('.bv_experimentName').removeAttr('disabled')
 			@handleNameChanged()
 
 	handleProtocolCodeChanged: =>
 		code = @protocolListController.getSelectedCode()
-		@getAndSetProtocol(code)
+		if @model.isNew()
+			@getAndSetProtocol(code, true)
+		unless @model.isNew()
+			if (@model.get('lsKind') is "default")
+				@getAndSetProtocol(code, false) #base experiments don't have analysis parameters
+			else
+				analysisStatus = @model.getAnalysisStatus().get('codeValue')
+				if analysisStatus is "not started"
+					@$('.bv_askChangeProtocolParameters').modal({
+						backdrop: 'static'
+					})
+					@$('.bv_askChangeProtocolParameters').modal('show')
+				else
+					@$('.bv_dontChangeProtocolParameters').modal('show')
+					@getAndSetProtocol(code, false)
 
-	getAndSetProtocol: (code) ->
+	getAndSetProtocol: (code, setAnalysisParams) ->
 		if code == "" || code == "unassigned"
 			@model.set 'protocol': null
 			#@getFullProtocol()
 			@setUseProtocolParametersDisabledState()
 		else
+			@$('.bv_protocolCode').attr('disabled','disabled')
+			@$('.bv_spinner').spin('aligned')
 			$.ajax
 				type: 'GET'
 				url: "/api/protocols/codename/"+code
 				success: (json) =>
+					@$('.bv_spinner').spin(false)
+					@$('.bv_protocolCode').removeAttr('disabled')
 					if json.length == 0
 						alert("Could not find selected protocol in database")
 					else
 						@model.set protocol: new Protocol(json)
-						@getFullProtocol() # this will fetch full protocol
+						if setAnalysisParams
+							@getFullProtocol() # this will fetch full protocol
 				error: (err) ->
 					alert 'got ajax error from getting protocol '+ code
 				dataType: 'json'
+
+	handleKeepOldParams: =>
+		@$('.bv_askChangeProtocolParameters').modal('hide')
+		@getAndSetProtocol(@protocolListController.getSelectedCode(), false)
+
+	handleUseNewParams: =>
+		@$('.bv_askChangeProtocolParameters').modal('hide')
+		@getAndSetProtocol(@protocolListController.getSelectedCode(), true)
 
 	handleProjectCodeChanged: =>
 		value = @projectListController.getSelectedCode()
@@ -478,6 +520,8 @@ class window.ExperimentBaseController extends BaseEntityController
 		else
 			@$('.bv_experimentName').removeAttr('disabled')
 		@model.trigger 'change' #need to trigger change because render will call updateEditable, which disables the save button
+		unless @model.isNew()
+			@model.trigger 'changeProtocolParams'
 
 	handleDateChanged: =>
 		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_completionDate'))
@@ -489,10 +533,6 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	updateEditable: =>
 		super()
-		if @model.isNew()
-			@$('.bv_protocolCode').removeAttr("disabled")
-		else
-			@$('.bv_protocolCode').attr("disabled", "disabled")
 
 	handleSaveClicked: =>
 		@$('.bv_saveFailed').hide()

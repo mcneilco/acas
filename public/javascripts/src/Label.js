@@ -205,7 +205,7 @@
       var newVal, oldVal;
       oldVal = this.get(this.get('lsType'));
       newVal = this.get('value');
-      if (!(oldVal === newVal || (Number.isNaN(oldVal) && Number.isNaN(newVal)))) {
+      if (oldVal !== newVal) {
         if (this.isNew()) {
           return this.set(this.get('lsType'), this.get('value'));
         } else {
