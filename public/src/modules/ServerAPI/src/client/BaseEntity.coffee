@@ -412,7 +412,7 @@ class window.BaseEntityController extends AbstractFormController
 		unless currentVal.isNew()
 			currentVal.set ignored: true
 			currentVal = @model["get"+vKind]() #this will create a new value
-#		currentVal.set vType, value
+		#		currentVal.set vType, value
 		currentVal.set currentVal.get('lsType'), value
 		# this is required only for spec. real app works without it
 		@model.trigger 'change'
@@ -453,7 +453,6 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
-		console.log "above to save"
 		@model.save()
 
 	prepareToSaveAttachedFiles: =>

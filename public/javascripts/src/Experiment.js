@@ -27,7 +27,10 @@
       this.set({
         subclass: "experiment"
       });
-      return Experiment.__super__.initialize.call(this);
+      Experiment.__super__.initialize.call(this);
+      if (window.conf.include.project == null) {
+        return console.dir("config for client.include.project is not set");
+      }
     };
 
     Experiment.prototype.parse = function(resp) {
@@ -86,58 +89,76 @@
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var completionDate, estates, notebook, project, pstates, scientist;
-      scientist = this.getScientist().get('codeValue');
-      notebook = this.getNotebook().get('stringValue');
-      completionDate = this.getCompletionDate().get('dateValue');
-      project = this.getProjectCode().get('codeValue');
-      estates = new StateList();
+      var dap, dapVal, eExptMeta, mfp, mfpVal, mft, mftVal, pExptMeta, pstates;
       pstates = protocol.get('lsStates');
-      pstates.each(function(st) {
-        var estate, evals, svals;
-        if (st.get('lsKind') === "experiment metadata") {
-          estate = new State(_.clone(st.attributes));
-          estate.unset('id');
-          estate.unset('lsTransaction');
-          estate.unset('lsValues');
-          evals = new ValueList();
-          svals = st.get('lsValues');
-          svals.each(function(sv) {
-            var evalue;
-            evalue = new Value(sv.attributes);
-            evalue.unset('id');
-            evalue.unset('lsTransaction');
-            return evals.add(evalue);
-          });
-          estate.set({
-            lsValues: evals
-          });
-          return estates.add(estate);
+      pExptMeta = pstates.getStatesByTypeAndKind("metadata", "experiment metadata");
+      if (pExptMeta.length > 0) {
+        eExptMeta = this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+        dapVal = eExptMeta[0].getValuesByTypeAndKind("clobValue", "data analysis parameters");
+        if (dapVal.length > 0) {
+          if (dapVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(dapVal[0]);
+          } else {
+            dapVal[0].set({
+              ignored: true
+            });
+          }
         }
-      });
+        dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters")).attributes);
+        dap.unset('id');
+        dap.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(dap);
+        mfpVal = eExptMeta[0].getValuesByTypeAndKind("clobValue", "model fit parameters");
+        if (mfpVal.length > 0) {
+          if (mfpVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mfpVal[0]);
+          } else {
+            mfpVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mfp = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters")).attributes);
+        mfp.unset('id');
+        mfp.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mfp);
+        mftVal = eExptMeta[0].getValuesByTypeAndKind("codeValue", "model fit type");
+        if (mftVal.length > 0) {
+          if (mftVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mftVal[0]);
+          } else {
+            mftVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mft = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type")).attributes);
+        mft.unset('id');
+        mft.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mft);
+        this.getDryRunStatus().set({
+          ignored: true
+        });
+        this.getDryRunStatus().set({
+          codeValue: 'not started'
+        });
+        this.getDryRunResultHTML().set({
+          ignored: true
+        });
+        this.getDryRunResultHTML().set({
+          clobValue: ""
+        });
+      }
       this.set({
         lsKind: protocol.get('lsKind'),
-        protocol: protocol,
-        lsStates: estates
-      });
-      this.getScientist().set({
-        codeValue: scientist
-      });
-      this.getNotebook().set({
-        stringValue: notebook
-      });
-      this.getCompletionDate().set({
-        dateValue: completionDate
-      });
-      this.getProjectCode().set({
-        codeValue: project
+        protocol: protocol
       });
       this.trigger('change');
       this.trigger("protocol_attributes_copied");
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, projectCode, scientist;
+      var bestName, cDate, errors, nameError, notebook, projectCode, reqProject, scientist;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -187,12 +208,19 @@
         });
       }
       if (attrs.subclass != null) {
-        projectCode = this.getProjectCode().get('codeValue');
-        if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-          errors.push({
-            attribute: 'projectCode',
-            message: "Project must be set"
-          });
+        reqProject = window.conf.include.project;
+        if (reqProject == null) {
+          reqProject = "true";
+        }
+        reqProject = reqProject.toLowerCase();
+        if (reqProject !== "false") {
+          projectCode = this.getProjectCode().get('codeValue');
+          if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+            errors.push({
+              attribute: 'projectCode',
+              message: "Project must be set"
+            });
+          }
         }
         cDate = this.getCompletionDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
@@ -312,7 +340,13 @@
         for (i = 0, len = valuesToDelete.length; i < len; i++) {
           val = valuesToDelete[i];
           value = expState.getValuesByTypeAndKind(val.type, val.kind)[0];
-          expState.get('lsValues').remove(value);
+          if (value != null) {
+            if ((val.kind === "data analysis parameters" || val.kind === "model fit parameters" || val.kind === "model fit type" || val.kind === "dry run status" || val.kind === "dry run html") && value.isNew()) {
+
+            } else {
+              expState.get('lsValues').remove(value);
+            }
+          }
         }
       }
       return Experiment.__super__.prepareToSave.call(this);
@@ -346,6 +380,8 @@
       this.handleDateChanged = bind(this.handleDateChanged, this);
       this.handleUseProtocolParametersClicked = bind(this.handleUseProtocolParametersClicked, this);
       this.handleProjectCodeChanged = bind(this.handleProjectCodeChanged, this);
+      this.handleUseNewParams = bind(this.handleUseNewParams, this);
+      this.handleKeepOldParams = bind(this.handleKeepOldParams, this);
       this.handleProtocolCodeChanged = bind(this.handleProtocolCodeChanged, this);
       this.handleExptNameChkbxClicked = bind(this.handleExptNameChkbxClicked, this);
       this.modelSyncCallback = bind(this.modelSyncCallback, this);
@@ -365,7 +401,9 @@
         "change .bv_protocolCode": "handleProtocolCodeChanged",
         "change .bv_projectCode": "handleProjectCodeChanged",
         "change .bv_completionDate": "handleDateChanged",
-        "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+        "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
+        "click .bv_keepOldParams": "handleKeepOldParams",
+        "click .bv_useNewParams": "handleUseNewParams"
       });
     };
 
@@ -427,7 +465,7 @@
           codeName: code
         })
       });
-      return this.getAndSetProtocol(code);
+      return this.getAndSetProtocol(code, true);
     };
 
     ExperimentBaseController.prototype.completeInitialization = function() {
@@ -555,6 +593,13 @@
     };
 
     ExperimentBaseController.prototype.setupProjectSelect = function() {
+      var reqProject;
+      reqProject = window.conf.include.project;
+      if (reqProject != null) {
+        if (reqProject.toLowerCase() === "false") {
+          this.$('.bv_projectLabel').html("Project");
+        }
+      }
       this.projectList = new PickListList();
       this.projectList.url = "/api/projects";
       return this.projectListController = new PickListSelectController({
@@ -612,9 +657,7 @@
           });
         } else {
           this.setUseProtocolParametersDisabledState();
-          if (!!this.model.isNew()) {
-            return this.handleUseProtocolParametersClicked();
-          }
+          return this.handleUseProtocolParametersClicked();
         }
       }
     };
@@ -638,30 +681,54 @@
     };
 
     ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
-      var code;
+      var analysisStatus, code;
       code = this.protocolListController.getSelectedCode();
-      return this.getAndSetProtocol(code);
+      if (this.model.isNew()) {
+        this.getAndSetProtocol(code, true);
+      }
+      if (!this.model.isNew()) {
+        if (this.model.get('lsKind') === "default") {
+          return this.getAndSetProtocol(code, false);
+        } else {
+          analysisStatus = this.model.getAnalysisStatus().get('codeValue');
+          if (analysisStatus === "not started") {
+            this.$('.bv_askChangeProtocolParameters').modal({
+              backdrop: 'static'
+            });
+            return this.$('.bv_askChangeProtocolParameters').modal('show');
+          } else {
+            this.$('.bv_dontChangeProtocolParameters').modal('show');
+            return this.getAndSetProtocol(code, false);
+          }
+        }
+      }
     };
 
-    ExperimentBaseController.prototype.getAndSetProtocol = function(code) {
+    ExperimentBaseController.prototype.getAndSetProtocol = function(code, setAnalysisParams) {
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
         });
         return this.setUseProtocolParametersDisabledState();
       } else {
+        this.$('.bv_protocolCode').attr('disabled', 'disabled');
+        this.$('.bv_spinner').spin('aligned');
         return $.ajax({
           type: 'GET',
           url: "/api/protocols/codename/" + code,
           success: (function(_this) {
             return function(json) {
+              _this.$('.bv_spinner').spin(false);
+              _this.$('.bv_protocolCode').removeAttr('disabled');
               if (json.length === 0) {
                 return alert("Could not find selected protocol in database");
               } else {
                 _this.model.set({
                   protocol: new Protocol(json)
                 });
-                return _this.getFullProtocol();
+                if (setAnalysisParams) {
+                  return _this.getFullProtocol();
+                }
               }
             };
           })(this),
@@ -673,6 +740,16 @@
       }
     };
 
+    ExperimentBaseController.prototype.handleKeepOldParams = function() {
+      this.$('.bv_askChangeProtocolParameters').modal('hide');
+      return this.getAndSetProtocol(this.protocolListController.getSelectedCode(), false);
+    };
+
+    ExperimentBaseController.prototype.handleUseNewParams = function() {
+      this.$('.bv_askChangeProtocolParameters').modal('hide');
+      return this.getAndSetProtocol(this.protocolListController.getSelectedCode(), true);
+    };
+
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       var value;
       value = this.projectListController.getSelectedCode();
@@ -680,9 +757,19 @@
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
+      var exptChkbx;
       this.model.copyProtocolAttributes(this.model.get('protocol'));
+      exptChkbx = this.$('.bv_exptNameChkbx').attr('checked');
       this.render();
-      return this.model.trigger('change');
+      if (exptChkbx === "checked") {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_experimentName').removeAttr('disabled');
+      }
+      this.model.trigger('change');
+      if (!this.model.isNew()) {
+        return this.model.trigger('changeProtocolParams');
+      }
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
@@ -696,12 +783,7 @@
     };
 
     ExperimentBaseController.prototype.updateEditable = function() {
-      ExperimentBaseController.__super__.updateEditable.call(this);
-      if (this.model.isNew()) {
-        return this.$('.bv_protocolCode').removeAttr("disabled");
-      } else {
-        return this.$('.bv_protocolCode').attr("disabled", "disabled");
-      }
+      return ExperimentBaseController.__super__.updateEditable.call(this);
     };
 
     ExperimentBaseController.prototype.handleSaveClicked = function() {

@@ -712,7 +712,6 @@
       }
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_saving').show();
-      console.log("above to save");
       return this.model.save();
     };
 

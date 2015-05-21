@@ -458,7 +458,6 @@
     extend(PrimaryScreenExperiment, superClass);
 
     function PrimaryScreenExperiment() {
-      this.copyProtocolAttributes = bind(this.copyProtocolAttributes, this);
       return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -554,15 +553,6 @@
         });
       }
       return type;
-    };
-
-    PrimaryScreenExperiment.prototype.copyProtocolAttributes = function(protocol) {
-      var modelFitStatus;
-      modelFitStatus = this.getModelFitStatus().get('codeValue');
-      PrimaryScreenExperiment.__super__.copyProtocolAttributes.call(this, protocol);
-      return this.getModelFitStatus().set({
-        codeValue: modelFitStatus
-      });
     };
 
     return PrimaryScreenExperiment;
@@ -1423,7 +1413,6 @@
       this.analyzedPreviously = this.options.analyzedPreviously;
       this.analysisParameterController.render();
       if (this.analyzedPreviously) {
-        console.log;
         this.$('.bv_loadAnother').html("Re-Analyze");
       }
       return this.handleMSFormInvalid();
@@ -1587,6 +1576,7 @@
     extend(PrimaryScreenAnalysisController, superClass);
 
     function PrimaryScreenAnalysisController() {
+      this.handleAnalysisParamsChanged = bind(this.handleAnalysisParamsChanged, this);
       this.handleStatusChanged = bind(this.handleStatusChanged, this);
       this.handleAnalysisComplete = bind(this.handleAnalysisComplete, this);
       this.handleExperimentSaved = bind(this.handleExperimentSaved, this);
@@ -1602,6 +1592,7 @@
     PrimaryScreenAnalysisController.prototype.initialize = function() {
       this.model.on("saveSuccess", this.handleExperimentSaved);
       this.model.on('statusChanged', this.handleStatusChanged);
+      this.model.on('changeProtocolParams', this.handleAnalysisParamsChanged);
       this.dataAnalysisController = null;
       $(this.el).empty();
       $(this.el).html(this.template());
@@ -1821,6 +1812,15 @@
           return this.$('.bv_loadAnother').prop('disabled', true);
         }
       }
+    };
+
+    PrimaryScreenAnalysisController.prototype.handleAnalysisParamsChanged = function() {
+      if (this.dataAnalysisController != null) {
+        this.dataAnalysisController.undelegateEvents();
+      }
+      this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+      this.setExperimentNotSaved();
+      return this.$('.bv_saveExperimentToAnalyze').html("Analysis parameters have changed. To analyze data, save the experiment first.");
     };
 
     PrimaryScreenAnalysisController.prototype.setupDataAnalysisController = function(dacClassName) {
