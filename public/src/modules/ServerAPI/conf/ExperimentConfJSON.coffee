@@ -145,6 +145,8 @@
 				typeName: "analysis parameter"
 			,
 				typeName: "experiment metadata"
+			,
+				typeName: "custom experiment metadata"
 			]
 
 		ddictkinds:
