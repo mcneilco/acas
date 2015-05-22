@@ -14,7 +14,8 @@ USER	runner
 WORKDIR /home/runner
 
 RUN npm install && \
-    mkdir log
+    mkdir log && \
+    mv config-docker.properties config.properties
 
 # Expose ports
 EXPOSE	1080
