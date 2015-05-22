@@ -182,6 +182,4 @@ exports.renderCurve = (req, resp) ->
 	console.log redirectQuery
 	console.log req.query
 	rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery
-	#rapacheCall = 'http://192.168.99.101:1080/r-services-api/curve/render/dr/?' + redirectQuery
-	console.log rapacheCall
 	req.pipe(request(rapacheCall)).pipe(resp)
