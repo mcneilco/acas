@@ -222,22 +222,22 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   # warn if any values are NA
   valueNA <- which(is.na(metaData$userValue))
   if(length(valueNA) > 0) {
-    item <- if(length(valueNA) == 1) {c("Item", "is")} else {c("Items","are")}
-    warnUser(paste0(item[[1]], " ", paste(valueNA, collapse = ", ")," of the Custom Meta Data Section ",item[[2]], " null"))
+    item <- if(length(valueNA) == 1) {c("Item", "has a null value")} else {c("Items","have null values")}
+    warnUser(paste0(item[[1]], " ", paste(valueNA, collapse = ", ")," of the Custom Meta Data Section ",item[[2]]))
   }
   
-  # stop if value kinds are NA
+  # add error if value kinds are NA
   valueKindNA <- which(is.na(metaData$fieldName))
   if(length(valueKindNA) > 0) {
     item <- ifelse(length(valueKindNA) == 1, "Item", "Items")
-    stopUser(paste0(item, " ", paste(valueKindNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null kind"))
+    addError(paste0(item, " ", paste(valueKindNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null kind"))
   }
 
-  # stop if value types are NA
+  # add error if value types are NA
   valueTypeNA <- which(is.na(metaData$userType))
   if(length(valueTypeNA) > 0) {
     item <- ifelse(length(valueTypeNA) == 1, "Item", "Items")
-    stopUser(paste0(item, " ", paste(valueTypeNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null type"))
+    addError(paste0(item, " ", paste(valueTypeNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null type"))
   }
   
   # get hidden types columns
@@ -250,25 +250,24 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   # TODO hardcoding required to true for now
   metaData[ , required := TRUE]
   
-  # stop if any value types are not in allowed list
+  # add error if any value types are not in allowed list
   allowedTypesUser <- c("Date", "Number", "Text", "URL", "Large Text", "Select List")
   allowedTypes <- tolower(allowedTypesUser)
-  metaData[ , fieldType := allowedTypes[match(tolower(metaData$userType), allowedTypes)]]
-  unknownTypes <- which(is.na(metaData$fieldType))
+  metaData[ , fieldType := allowedTypes[match(tolower(userType), allowedTypes)]]
+  unknownTypes <- which(is.na(metaData[!is.na(userType),]$fieldType))
   if(length(unknownTypes) > 0) {
     item <- if(length(unknownTypes) == 1) {c("Item", "has an", "type")} else {c("Items","have", "types")}
-    stopUser(paste0(item[[1]], " ",  paste(unknownTypes, collapse = ", ")," of the Custom Meta Data Section type column ",item[[2]]," unrecognized ",item[[3]]," of ", paste0("'",paste(metaData[unknownTypes]$userType, collapse = "','"), "'"),". Please load one of the following: ",paste0("'",paste(allowedTypesUser, collapse = "','"), "'")))
+    addError(paste0(item[[1]], " ",  paste(unknownTypes, collapse = ", ")," of the Custom Meta Data Section type column ",item[[2]]," unrecognized ",item[[3]]," of ", paste0("'",paste(metaData[!is.na(userType),][unknownTypes]$userType, collapse = "','"), "'"),". Please load one of the following: ",paste0("'",paste(allowedTypesUser, collapse = "','"), "'")))
   }
 
   # warn user if select lists don't already exist
-  selectListItems <- metaData[tolower(metaData$userType) == "select list",]
-  selectListItems[ , lsKind := tolower(fieldName)]
-  selectListItems[ , codeName := tolower(userValue)]
+  selectListItems <- metaData[tolower(userType) == "select list",]
+  selectListItems[ , lsKind := fieldName]
   customExperimentMetaDataDdictType <- "custom experiment metadata"
   ddictKinds <- as.data.table(racas::getDDictKinds())[lsType == customExperimentMetaDataDdictType,]
   notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("fieldName", "lsKind"), with = FALSE]
   if(nrow(notExistsDdictList) > 0) {
-    warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$fieldName, collapse = "','"), "'")))
+    warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$fieldName, collapse = "', '"), "'")))
     if(!dryRun) {
       ddictKinds <- data.frame(typeName = customExperimentMetaDataDdictType, kindName = notExistsDdictList$lsKind)
       getOrCreateDDictKinds(ddictKinds)
@@ -287,7 +286,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                                                                                                       "comments", "description", "displayOrder", "id", "ignored", "labelText", 
                                                                                                       "lsKind", "lsType", "shortName", "version"), class = "data.frame", row.names = integer(0)))
   }
-  selectListItems <- as.data.table(selectListItems)
+  selectListItems[ , codeName := tolower(userValue)]
   userDdictValues <- selectListItems[!is.na(userValue) , c("userValue","lsKind","codeName"), with = FALSE]
   userDdictValues[ , fieldType := customExperimentMetaDataDdictType]
   setkey(userDdictValues)
@@ -295,19 +294,18 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   newDdictValues <- ddictValues[userDdictValues][is.na(codeName)]
   if(nrow(newDdictValues) > 0) {
     userKinds <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$fieldName
-    userWarnText <- jsonlite::toJSON(data.frame(Kind = userKinds, Value = newDdictValues$labelText))
-    warnUser(paste0("The following select list items have not been registerd previously and will be created: ", userWarnText))
+    userWarnText <- paste0("<ul><li>",paste0(userKinds, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
+    warnUser(paste0("The following select list items have not been registerd previously and will be created:<br>", userWarnText))
     if(!dryRun) {
       newDdictValuesDF <- newDdictValues[ , c("shortName","labelText","lsKind","lsType"), with = FALSE]
       setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
       createCodeTablesFromJsonArray(newDdictValuesDF)
       newValueKinds <- newDdictValues[ , c("lsKind","lsType"), with = FALSE]
-      get_or_create_value_kinds(newDdictValues)
     }
   }
-
+  
   # validate the values themselves and create custom experiment meta data state values
-  metaData[, c("customExperimentMetaDataStateValues", "lsType", "lsKind") := {
+  metaData[ !is.na(fieldType), c("customExperimentMetaDataStateValues", "lsType", "lsKind") := {
     lsType <- switch(fieldType,
                      number = "numericValue",
                      date = "dateValue",
@@ -315,13 +313,19 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                      "select list" = "codeValue",
                      "large text" = "clobValue",
                      "url" = "urlValue")
-    lsKind <- tolower(fieldName)
+    lsKind <- fieldName
     stateValueList <- list(
       recordedBy = recordedBy,
       lsTransaction = lsTransaction,
       lsType = lsType,
       lsKind = lsKind
     )
+    if(lsType == "codeValue") {
+      stateValueList[["codeKind"]] <- lsKind
+      stateValueList[["codeType"]] <- customExperimentMetaDataDdictType
+      stateValueList[["codeOrigin"]] <- "ACAS DDICT"
+    }
+
     if(is.na(userValue)) {
       stateValueList[[lsType]] <- NULL
     } else {
@@ -329,15 +333,10 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                                          "numericValue" = validateNumeric(userValue),
                                          "dateValue" = validateDate(userValue),
                                          "stringValue" = validateCharacter(userValue),
-                                         "codeValue" = tolower(userValue),
+                                         "codeValue" = userValue,
                                          "clobValue" = userValue,
                                          "urlValue" = userValue
       )
-    }
-    if(lsType == "codeValue") {
-      stateValueList[["codeKind"]] <- tolower(fieldName)
-      stateValueList[["codeType"]] <- customExperimentMetaDataDdictType
-      stateValueList[["codeOrigin"]] <- "ACAS DDICT"
     }
     customExperimentMetaDataStateValues <- list(do.call(createStateValue,stateValueList))
     list(customExperimentMetaDataStateValues = customExperimentMetaDataStateValues,
@@ -345,6 +344,21 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                 lsKind = lsKind
                 )
   }, by = c("fieldType","fieldName","userValue")]
+
+  # validate value kinds
+  valueKindDT <- metaData[!is.na(lsKind) & !is.na(lsType), c('lsType','lsKind','userType'), with = FALSE]
+  valueKindDT <- validateValueKindsFromDataFrame(valueKindDT)
+  if(any(!valueKindDT$lsKindExists)) {
+    userWarningDT <- valueKindDT[!lsKindExists==TRUE,c('userType','lsKindName'), with = FALSE]
+    setnames(userWarningDT, c('Type', 'Kind'))
+    userWarningText <- paste0("<ul><li>",paste0(userWarningDT$Type, ': ', as.character(userWarningDT$Kind),collapse='</li><li>'),"</li></ul>")
+    warnUser(paste0("The following custom experiment meta data kinds have not been loaded before and will be created:<br>", userWarningText))
+    if(!dryRun) {
+      valueKindsToRegister <- valueKindDT[!lsKindExists==TRUE,c('lsTypeName','lsKindName'), with = FALSE]
+      setnames(valueKindsToRegister, c('lsType', 'lsKind'))
+      get_or_create_value_kinds(valueKindsToRegister)
+    }
+  }
   
   # create custom experiment metadata state
   customExperimentMetaDataState <- createExperimentState(experimentValues=metaData$customExperimentMetaDataStateValues,
@@ -370,6 +384,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                                                          lsKind="custom experiment metadata gui")
   
   # organize return of values for summary info
+  metaData[is.na(userValue), userValue := ""]
   customExperimentMetaDataValues <- metaData[ , c('fieldName', 'userValue'), with = FALSE]
   customExperimentMetaDataValues <- setNames(as.character(customExperimentMetaDataValues$userValue), customExperimentMetaDataValues$fieldName)
   
