@@ -957,7 +957,7 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds=";
+        curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=";
         curveUrl += this.model.get('curveid') + "&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
