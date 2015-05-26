@@ -411,10 +411,6 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-	clear: =>
-		@model.trigger 'amDirty'
-		@model.destroy()
-		@attributeChanged()
 
 
 class window.TransformationRuleController extends AbstractFormController

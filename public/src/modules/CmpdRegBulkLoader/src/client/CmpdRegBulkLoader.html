@@ -1,0 +1,94 @@
+<script type="text/template" id="AssignedPropView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline span12" style="margin-bottom:15px;">
+        <span class="bv_sdfProp span2" style="margin-left:0px;text-align:right;">Corporate ID</span>
+        <select class="bv_dbProp span3" style="margin-left:25px;"></select>
+        <input class="bv_defaultVal span2" style="margin-left:20px;" type="text"/>
+        <button class="close bv_deleteProp" style="margin-top:1px;">&times;</button>
+    </div>
+
+</script>
+
+<script type="text/template" id="AssignedPropListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_propInfo"></div>
+    <div class="span12" style="margin-bottom:15px;margin-left:12px;">
+        <span class="span5"></span>
+        <button type="button" class="btn bv_addDbProp">Add Database Property</button>
+    </div>
+
+</script>
+
+<script type="text/template" id="CmpdRegBulkLoaderAppView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container-fluid">
+                <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="brand bv_headerName" href="/CmpdRegBulkLoader">BULK COMPOUND REGISTRATION: Project Apollo</a>
+                <p class="navbar-text pull-right bv_userInfo" style="">
+                    Welcome
+                    <a href="#" class="navbar-link bv_loginUserFirstName">First Name</a>
+                    <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
+                    <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
+                </p>
+            </div><!--/.nav-collapse -->
+        </div>
+    </div>
+
+
+    <div class="container" style="margin-left:15px;">
+        <div class="bv_bulkReg">
+            <div class="span12">
+                <h4>Select SD File to Upload:</h4>
+                <div class="bv_browseFile span7"></div>
+                    <div class="span12">
+                        <div class="form-group span3" style="margin-left:0px;">
+                            <label>Detected SDF Properties</label>
+                            <textarea class="bv_detectedSDFProp" rows="7" style="resize:none;" disabled="disabled"></textarea>
+                        </div>
+                        <div class="form-group span3" style="margin-left:0px;">
+                            <!--<label>Records Read:</label>-->
+                            <span>Records Read:</span>
+                            <span bv_recordsRead>0</span>
+                            <!--<input type="text" disabled="disabled"/>-->
+                            <button type="button" class="btn bv_read100More">Read 100 More Records</button>
+                            <button type="button" class="btn bv_readAll" style="margin-top:9px;">Read All Records</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="span9">
+                <h4>Assign SDF Properties</h4>
+                <p style="margin-left:30px;">Assign the SDF Properties to their paired database column. Database columns requiring a default value are shown in yellow with an asterisk* in the drop-down list. Default values will assign a value to a database entry when that matching SDF property is null or missing.</p>
+            </div>
+
+        <!--<div class="span12 well well-small">-->
+            <div class="span12" style="margin-bottom:10px;">
+                <span class="span2" style="margin-left:0px;margin-bottom:5px;font-weight:bold;font-size:15px;text-align:right;">SDF Property</span>
+                <span class="span3" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Database Property</span>
+                <span class="span2" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Default Value</span>
+            </div>
+       <!--</div>-->
+
+            <div class="bv_assignedPropList"></div>
+            <div class="span12" style="margin-left:25px;">
+                <span class="span2"></span>
+                <textarea class="span5" rows="7" style="resize:none;" disabled="disabled"></textarea>
+            </div>
+            <div class="span12" style="margin-top:5px;margin-bottom:15px;margin-left:25px;">
+                <span class="span5"></span>
+                <button type="button" class="btn btn-success bv_regCmpds" disabled="disabled">Register Compounds</button>
+            </div>
+
+
+        </div>
+        <div class="bv_purgeFiles"></div>
+    </div>
+
+
+</script>
