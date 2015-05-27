@@ -80,3 +80,7 @@ testValidateMetaData <- function() {
   test_file(file.path(filePathToTests, "test_unit_validateMetaData.R"))
 }
 
+testGetNumberAndUnit <- function() {
+  test_file(file.path(filePathToTests, "test_unit_getNumberAndUnit.R"))
+}
+
