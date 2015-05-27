@@ -709,21 +709,26 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   return(returnDataFrame)
 }
 getNumberAndUnit <- function(numberAndUnit) {
-  # From a number and unit as a single string, returns a list of the number and unit
+  # From a number and unit as a single string, returns a list of the number and unit.
+  # This is vectorized.
   library(gdata)
   
   numberAndUnit <- trim(numberAndUnit)
-  loc <- regexpr("^[0-9\\.]*", numberAndUnit)
-  if (loc == -1) {
-    stopUser(paste0("This concentration is missing a number: ", numberAndUnit))
+  loc <- regexpr("^[0-9\\.]+", numberAndUnit)
+  if (any(!is.na(loc) & numberAndUnit != "" & loc == -1)) {
+    stopUser(paste0("These concentrations are missing a number: '", 
+                    paste(numberAndUnit[loc == -1], collapse = "', '"), "'."))
   }
   num <- substr(numberAndUnit, loc, attr(loc, "match.length"))
   unit <- trim(substr(numberAndUnit, loc + attr(loc, "match.length"), nchar(numberAndUnit)))
-  if (is.na(suppressWarnings(as.numeric(num)))) {
+  nonNumeric <- is.na(suppressWarnings(as.numeric(num))) & !is.na(num) & (numberAndUnit != "")
+  if (any(nonNumeric)) {
     # Technically, this doesn't need to have a space, but they should add one if they ended it with a period
-    stopUser(paste0("Concentration ", numberAndUnit, "must start with a number followed by a space."))
+    stopUser(paste0("Concentration '", paste(numberAndUnit[nonNumeric], collapse = "'', '"), 
+                    "' must start with a number followed by a space."))
   } else {
     num <- as.numeric(num)
+    unit[unit == ""] <- NA_character_
   }
   return(list(num=num, unit=unit))
 }
@@ -2439,15 +2444,10 @@ parseGenericData <- function(request) {
   #   hasWarning (boolean)
   #   errorMessages (list)
   
-  # In 1.6, remove this and use the "external." function
-  globalMessenger <- messenger()
-  globalMessenger$reset()
-  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
-  
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
-  developmentMode <- FALSE
+  developmentMode <- messenger()$devMode
   
   # Collect the information from the request
   request <- as.list(request)
@@ -2478,15 +2478,17 @@ parseGenericData <- function(request) {
   
   # Run the function and save output (value), errors, and warnings
   if (developmentMode) {
-    return(list(runMain(pathToGenericDataFormatExcelFile,
-                        reportFilePath = reportFilePath,
-                        dryRun = dryRun,
-                        developmentMode = developmentMode,
-                        configList=configList, 
-                        testMode=testMode,
-                        recordedBy=recordedBy,
-                        imagesFile=imagesFile,
-                        errorEnv = errorEnv)))
+    loadResult <- list(value = runMain(pathToGenericDataFormatExcelFile,
+                                       reportFilePath = reportFilePath,
+                                       dryRun = dryRun,
+                                       developmentMode = developmentMode,
+                                       configList=configList, 
+                                       testMode=testMode,
+                                       recordedBy=recordedBy,
+                                       imagesFile=imagesFile,
+                                       errorEnv = errorEnv),
+                       errorList = messenger()$errors,
+                       warningList = list())
   } else {
     loadResult <- tryCatchLog(runMain(pathToGenericDataFormatExcelFile,
                                       reportFilePath = reportFilePath,
