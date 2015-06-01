@@ -674,13 +674,14 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   # Return classRow
   return(classRow)
 }
-validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
+validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, reserved = c("concentration", "time")) {
   # Checks that column headers are valid valueKinds (or creates them if they are new)
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
   #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
   #   dryRun:                 A boolean indicating whether the data should be saved
+  #   reserved:               A character vector of value kinds that are not allowed
   #
   # Returns:
   #	  NULL
@@ -689,10 +690,9 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun) {
   require(RCurl)
   
   # Throw errors for words used with special meanings by the loader
-  internalReservedWords <- c("concentration", "time")
-  usedReservedWords <- internalReservedWords %in% neededValueKinds
+  usedReservedWords <- reserved %in% neededValueKinds
   if (any(usedReservedWords)) {
-    stopUser(paste0(sqliz(internalReservedWords[usedReservedWords]), " is reserved and cannot be used as a column header."))
+    stopUser(paste0(sqliz(reserved[usedReservedWords]), " is reserved and cannot be used as a column header."))
   }
   
   currentValueKindsList <- getAllValueKinds()  
@@ -1037,6 +1037,24 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       valueKind = unlist(doseResponseKinds),
       stateType = rep("data", length(doseResponseKinds)), 
       stateKind = rep("dose response", length(doseResponseKinds)),
+      stringsAsFactors = FALSE
+    )
+  } else if (inputFormat == "Time Result" && is.null(stateAssignments)) {
+    if (!("Rendering Hint" %in% names(results))) {
+      stopUser("Time Result data must have a 'Rendering Hint' column.")
+    }
+    
+    # This list is a copy of the Dose Response kinds, because both use the same fitter. Update later.
+    timeResultKinds <- list(
+      "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
+      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
+      "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
+    )
+    stateAssignments <- data.frame(
+      valueKind = unlist(timeResultKinds),
+      stateType = rep("data", length(timeResultKinds)), 
+      stateKind = rep("dose response", length(timeResultKinds)),
       stringsAsFactors = FALSE
     )
   }
@@ -2383,6 +2401,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
   subjectData <- subjectAndTreatmentData$subjectData
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
+  validateSubjectData(subjectData, dryRun)
   
   # If there are errors, do not allow an upload
   errorFree <- length(c(errorList, messenger()$errors))==0
@@ -2822,7 +2841,17 @@ organizeSubjectData <- function(
 getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat) {
   # Creates a list of format parameters, based on custom format settings if it is a "rawOnlyFormat"
   formatSettings <- customFormatSettings
-  o <- list()
+  # Set defaults
+  o <- list(
+    lookFor = "Calculated Results",
+    lockCorpBatchId = TRUE,
+    replaceFakeCorpBatchId = "",
+    stateGroups = NULL,
+    curveNames = NULL,
+    sigFigs = NULL,
+    annotationType = "s_general",
+    splitSubjects = NULL,
+    inputFormat = inputFormat)
   if (rawOnlyFormat) {
     o$lookFor <- "Raw Data"
     o$lockCorpBatchId <- FALSE
@@ -2841,6 +2870,10 @@ getFormatParameters <- function(rawOnlyFormat, customFormatSettings, inputFormat
     if (is.null(o$includeTreatmentGroupData)) {
       o$includeTreatmentGroupData <- TRUE
     }
+  } else if (inputFormat == "Dose Response") {
+    
+  } else if (inputFormat == "Time Result") {
+    
   } else {
     # TODO: generate the list dynamically
     if(!(inputFormat %in% c("Generic", "Dose Response", "Gene ID Data", "Use Existing Experiment", "Precise For Existing Experiment", "Precise"))) {
@@ -2891,6 +2924,79 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode, link, precise, stateAssignments = NULL, keepColumn=keepColumn, errorEnv=errorEnv, formatParameters =  formatParameters)
       subjectData <- intermedList$subjectData
       treatmentGroupData <- intermedList$treatmentGroupData
+    }
+  } else if (inputFormat == "Time Result") {
+    subjectData <- getSection(genericDataFileDataFrame, lookFor = "Raw Results", transpose = FALSE)
+    
+    if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
+      stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
+    }
+    
+    if (!is.null(subjectData)) {
+      xColumn <- which(subjectData[1, ] == 'x')
+      
+      xColumnName <- subjectData[2, xColumn]
+      groupByColumns <- c(xColumnName, 'link')
+      if (!grepl("^Time", xColumnName)) {
+        stopUser("Raw Result 'x' must be 'Time' with a unit")
+      }
+      groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
+      
+      
+      yColumn <- which(subjectData[1, ] == 'y')
+      keepColumn <- subjectData[2, yColumn]
+      excludedRowKinds <- "flag"
+      
+      link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
+     
+      if (subjectData[2, 1] != "curve id") {
+        stopUser("The second row in Raw Results must start with curve id")
+      }
+      
+      subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
+      
+      subjectData[2, 1] <- "link"
+      
+      subjectData[[5]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "knocked out")
+      subjectData[[5]][1] <- "Code"
+      subjectData[[5]][2] <- "flag status"
+      
+      subjectData[[6]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "sel ko")
+      subjectData[[6]][1] <- "Code"
+      subjectData[[6]][2] <- "flag cause"
+      
+      subjectData[[7]] <- ifelse(is.na(subjectData[[4]]), NA_character_, "sel ko")
+      subjectData[[7]][1] <- "Code"
+      subjectData[[7]][2] <- "flag observation"
+      
+      
+      
+      stateAssignments <- data.frame(
+        valueKind = c("Time", keepColumn, "flag", "flag status", "flag cause", "flag observation"), 
+        stateType = c("data", "data", "data", "data", "data", "data"), 
+        stateKind = c("results", "results", "preprocess flag", "preprocess flag", "preprocess flag", "preprocess flag"),
+        stringsAsFactors = FALSE
+      )
+      
+      codeAssignments <- data.frame(
+        valueKind = c("Time", keepColumn, "flag", "flag status", "flag cause", "flag observation"), 
+        codeType = c(NA, NA, NA, rep("preprocess well flags", 3)), 
+        codeKind = c(NA, NA, NA, "flag status", "flag cause", "flag observation"),
+        codeOrigin = c(NA, NA, NA, rep("ACAS DDICT", 3)),
+        stringsAsFactors = FALSE
+      )
+      
+      # list(subjectData, treatmentGroupData)
+      intermedList <- organizeSubjectData(
+        subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
+        link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
+        formatParameters = formatParameters, concColumn = NULL,
+        codeAssignments = codeAssignments)
+      
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Time"] <- "time"
+      intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "flag"] <- "comment"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Time"] <- "time"
+      intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "flag"] <- "comment"
     }
   } else {
     # Grab the Raw Results Section
@@ -2961,6 +3067,13 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
     }
   }
   return(intermedList)
+}
+
+validateSubjectData <- function(subjectData, dryRun) {
+  # Validates Subject Data
+  # For now, just passes information to validateValue Kinds
+  uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
+  validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
 }
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
