@@ -214,7 +214,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   }
   
   metaData <- as.data.table(metaData)
-  setnames(metaData, c("fieldName", "userValue", "userType"))
+  setnames(metaData, c("userLabel", "userValue", "userType"))
   
   # capture the display order
   metaData[ , displayOrder := 1:nrow(metaData)]
@@ -227,7 +227,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   }
   
   # add error if value kinds are NA
-  valueKindNA <- which(is.na(metaData$fieldName))
+  valueKindNA <- which(is.na(metaData$userLabel))
   if(length(valueKindNA) > 0) {
     item <- ifelse(length(valueKindNA) == 1, "Item", "Items")
     addError(paste0(item, " ", paste(valueKindNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null kind"))
@@ -239,17 +239,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
     item <- ifelse(length(valueTypeNA) == 1, "Item", "Items")
     addError(paste0(item, " ", paste(valueTypeNA, collapse = ", ")," of the Custom Meta Data Section cannot have a null type"))
   }
-  
-  # get hidden types columns
-  metaData[ , display := !getHiddenColumns(userType), ]
-  
-  # remove 'hidden' text from columns
-  metaData[ , userType := trim(gsub("\\(.*)","",userType)), ]
-  
-  # get required types
-  # TODO hardcoding required to true for now
-  metaData[ , required := TRUE]
-  
+
   # add error if any value types are not in allowed list
   allowedTypesUser <- c("Date", "Number", "Text", "URL", "Large Text", "Select List")
   allowedTypes <- tolower(allowedTypesUser)
@@ -262,12 +252,12 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
 
   # warn user if select lists don't already exist
   selectListItems <- metaData[tolower(userType) == "select list",]
-  selectListItems[ , lsKind := fieldName]
+  selectListItems[ , lsKind := userLabel]
   customExperimentMetaDataDdictType <- "custom experiment metadata"
   ddictKinds <- as.data.table(racas::getDDictKinds())[lsType == customExperimentMetaDataDdictType,]
-  notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("fieldName", "lsKind"), with = FALSE]
+  notExistsDdictList <- selectListItems[!lsKind %in% ddictKinds$name,c("userLabel", "lsKind"), with = FALSE]
   if(nrow(notExistsDdictList) > 0) {
-    warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$fieldName, collapse = "', '"), "'")))
+    warnUser(paste0("The following Custom Experiment Meta Data select lists do not exist currently and will be created: ", paste0("'",paste(notExistsDdictList$userLabel, collapse = "', '"), "'")))
     if(!dryRun) {
       ddictKinds <- data.frame(typeName = customExperimentMetaDataDdictType, kindName = notExistsDdictList$lsKind)
       getOrCreateDDictKinds(ddictKinds)
@@ -293,8 +283,8 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   setkeyv(ddictValues, c("labelText", "lsKind", "shortName", "lsType"))
   newDdictValues <- ddictValues[userDdictValues][is.na(codeName)]
   if(nrow(newDdictValues) > 0) {
-    userKinds <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$fieldName
-    userWarnText <- paste0("<ul><li>",paste0(userKinds, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
+    userLabels <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$userLabel
+    userWarnText <- paste0("<ul><li>",paste0(userLabels, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
     warnUser(paste0("The following select list items have not been registerd previously and will be created:<br>", userWarnText))
     if(!dryRun) {
       newDdictValuesDF <- newDdictValues[ , c("shortName","labelText","lsKind","lsType"), with = FALSE]
@@ -313,7 +303,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                      "select list" = "codeValue",
                      "large text" = "clobValue",
                      "url" = "urlValue")
-    lsKind <- fieldName
+    lsKind <- userLabel
     stateValueList <- list(
       recordedBy = recordedBy,
       lsTransaction = lsTransaction,
@@ -338,12 +328,13 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
                                          "urlValue" = userValue
       )
     }
+
     customExperimentMetaDataStateValues <- list(do.call(createStateValue,stateValueList))
-    list(customExperimentMetaDataStateValues = customExperimentMetaDataStateValues,
+    list(customExperimentMetaDataStateValues = list(customExperimentMetaDataStateValues),
                 lsType = lsType,
                 lsKind = lsKind
                 )
-  }, by = c("fieldType","fieldName","userValue")]
+  }, by = c("fieldType","userLabel","userValue")]
 
   # validate value kinds
   valueKindDT <- metaData[!is.na(lsKind) & !is.na(lsType), c('lsType','lsKind','userType'), with = FALSE]
@@ -361,14 +352,16 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   }
   
   # create custom experiment metadata state
-  customExperimentMetaDataState <- createExperimentState(experimentValues=metaData$customExperimentMetaDataStateValues,
+  customExperimentMetaDataState <- createExperimentState(experimentValues=lapply(metaData$customExperimentMetaDataStateValues, function(x) x[[1]]),
                                                          lsTransaction = lsTransaction, 
                                                          recordedBy=recordedBy, 
                                                          lsType="metadata", 
                                                          lsKind="custom experiment metadata")
   
   # create GUI descriptor value
-  guiClobValue <- jsonlite::toJSON(metaData[ ,c('displayOrder', 'display', 'required', 'lsType', 'lsKind', 'fieldName', 'fieldType'), with = FALSE])
+  guiClobValue <- metaData[ ,c('displayOrder', 'lsType', 'lsKind', 'userLabel'), with = FALSE]
+  setnames(guiClobValue, 'userLabel', 'label')
+  guiClobValue <- jsonlite::toJSON(guiClobValue)
   customMetaDataGuiStateValues <- createStateValue(lsType = 'clobValue',
                                                    lsKind = 'GUI descriptor',
                                                    clobValue = guiClobValue,
@@ -385,8 +378,8 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   
   # organize return of values for summary info
   metaData[is.na(userValue), userValue := ""]
-  customExperimentMetaDataValues <- metaData[ , c('fieldName', 'userValue'), with = FALSE]
-  customExperimentMetaDataValues <- setNames(as.character(customExperimentMetaDataValues$userValue), customExperimentMetaDataValues$fieldName)
+  customExperimentMetaDataValues <- metaData[ , c('userLabel', 'userValue'), with = FALSE]
+  customExperimentMetaDataValues <- setNames(as.character(customExperimentMetaDataValues$userValue), customExperimentMetaDataValues$userLabel)
   
   # return
   return(list(customStates = list(customExperimentMetaDataState, customExperimentMetaDataGUIState), customExperimentMetaDataValues = customExperimentMetaDataValues))
@@ -866,11 +859,13 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
   returnDataFrame$Units <-  getUnitFromParentheses(dataColumns)
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
-  returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
-  returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
+  concUnitList <- getNumberAndUnit(concAndUnits)
+  returnDataFrame$Conc <- concUnitList$num
+  returnDataFrame$concUnits <- concUnitList$unit
   timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
-  returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
-  returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
+  timeUnitList <- getNumberAndUnit(timeAndUnits)
+  returnDataFrame$time <- timeUnitList$num
+  returnDataFrame$timeUnit <- timeUnitList$unit
   # Mark standard deviation and comments with a text string
   uncertaintyTypeUsed <- uncertaintyType[valueKindsVector %in% valueKindNotIgnored]
   commentColUsed <- commentCol[valueKindsVector %in% valueKindNotIgnored]
@@ -907,7 +902,30 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   # Return a data frame with the units separated from the type, and with uncertainties and comments marked
   return(returnDataFrame)
 }
-
+getNumberAndUnit <- function(numberAndUnit) {
+  # From a number and unit as a single string, returns a list of the number and unit.
+  # This is vectorized.
+  library(gdata)
+  
+  numberAndUnit <- trim(numberAndUnit)
+  loc <- regexpr("^[0-9\\.]+", numberAndUnit)
+  if (any(!is.na(loc) & numberAndUnit != "" & loc == -1)) {
+    stopUser(paste0("These concentrations are missing a number: '", 
+                    paste(numberAndUnit[loc == -1], collapse = "', '"), "'."))
+  }
+  num <- substr(numberAndUnit, loc, attr(loc, "match.length"))
+  unit <- trim(substr(numberAndUnit, loc + attr(loc, "match.length"), nchar(numberAndUnit)))
+  nonNumeric <- is.na(suppressWarnings(as.numeric(num))) & !is.na(num) & (numberAndUnit != "")
+  if (any(nonNumeric)) {
+    # Technically, this doesn't need to have a space, but they should add one if they ended it with a period
+    stopUser(paste0("Concentration '", paste(numberAndUnit[nonNumeric], collapse = "'', '"), 
+                    "' must start with a number followed by a space."))
+  } else {
+    num <- as.numeric(num)
+    unit[unit == ""] <- NA_character_
+  }
+  return(list(num=num, unit=unit))
+}
 organizeCalculatedResults <- function(calculatedResults, inputFormat, formatParameters, mainCode, 
                                       lockCorpBatchId = TRUE, rawOnlyFormat = FALSE, 
                                       errorEnv = NULL, precise = F, link = NULL, calculateGroupingID = NULL,
@@ -2658,15 +2676,10 @@ parseGenericData <- function(request) {
   #   hasWarning (boolean)
   #   errorMessages (list)
   
-  # In 1.6, remove this and use the "external." function
-  globalMessenger <- messenger()
-  globalMessenger$reset()
-  globalMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
-  
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
   # server and does not wrap everything in tryCatch so debug will keep printing
-  developmentMode <- FALSE
+  developmentMode <- messenger()$devMode
   
   # Collect the information from the request
   request <- as.list(request)
@@ -2697,15 +2710,17 @@ parseGenericData <- function(request) {
   
   # Run the function and save output (value), errors, and warnings
   if (developmentMode) {
-    return(list(runMain(pathToGenericDataFormatExcelFile,
-                        reportFilePath = reportFilePath,
-                        dryRun = dryRun,
-                        developmentMode = developmentMode,
-                        configList=configList, 
-                        testMode=testMode,
-                        recordedBy=recordedBy,
-                        imagesFile=imagesFile,
-                        errorEnv = errorEnv)))
+    loadResult <- list(value = runMain(pathToGenericDataFormatExcelFile,
+                                       reportFilePath = reportFilePath,
+                                       dryRun = dryRun,
+                                       developmentMode = developmentMode,
+                                       configList=configList, 
+                                       testMode=testMode,
+                                       recordedBy=recordedBy,
+                                       imagesFile=imagesFile,
+                                       errorEnv = errorEnv),
+                       errorList = messenger()$errors,
+                       warningList = list())
   } else {
     loadResult <- tryCatchLog(runMain(pathToGenericDataFormatExcelFile,
                                       reportFilePath = reportFilePath,

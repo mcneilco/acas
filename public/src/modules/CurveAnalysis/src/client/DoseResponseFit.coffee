@@ -43,24 +43,25 @@ class window.DoseResponseFitController extends Backbone.View
 			selectedCode: "unassigned"
 
 	setupParameterController: (modelFitType) =>
-		drapType = switch modelFitType
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
-			when "unassigned" then "unassigned"
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: modelFitType})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
+			controllerClass =  curveFitClasses.get 'parametersController'
+			drapcType = window[controllerClass]
+		else
+			drapType = 'unassigned'
+
 		if drapType is "unassigned"
 			@$('.bv_analysisParameterForm').empty()
 			@$('.bv_fitModelButton').hide()
-
 		else
 			@$('.bv_fitModelButton').show()
 			if @options? && @options.initialAnalysisParameters?
 				drap = new drapType @options.initialAnalysisParameters
 			else
 				drap = new drapType()
-
-			drapcType = switch modelFitType
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')
 				model: drap
