@@ -175,4 +175,3 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
-

@@ -289,4 +289,55 @@
 
   })(AbstractFormController);
 
+  window.DoseResponsePlotCurveKi = (function(superClass) {
+    extend(DoseResponsePlotCurveKi, superClass);
+
+    function DoseResponsePlotCurveKi() {
+      this.render = bind(this.render, this);
+      return DoseResponsePlotCurveKi.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotCurveKi.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotCurveKi.prototype.render = function(brd, curve, plotWindow) {
+      var color, fct, intersect, log10;
+      log10 = this.log10;
+      fct = function(x) {
+        return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
+      };
+      brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
+        strokeWidth: 2
+      });
+      if (curve.curveAttributes.Ki != null) {
+        intersect = fct(log10(curve.curveAttributes.Ki));
+        if (curve.curveAttributes.Operator != null) {
+          color = '#ff0000';
+        } else {
+          color = '#808080';
+        }
+        brd.create('line', [[plotWindow[0], intersect], [log10(curve.curveAttributes.Ki), intersect]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+        return brd.create('line', [[log10(curve.curveAttributes.Ki), intersect], [log10(curve.curveAttributes.Ki), 0]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+      }
+    };
+
+    return DoseResponsePlotCurveKi;
+
+  })(Backbone.Model);
+
 }).call(this);

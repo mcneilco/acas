@@ -87,15 +87,21 @@
     };
 
     DoseResponsePlotController.prototype.render = function() {
+      var curveFitClasses, curvefitClassesCollection, plotCurveClass;
       this.$el.empty();
       this.$el.html(this.template());
       if (this.model != null) {
+        curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+        curveFitClasses = curvefitClassesCollection.findWhere({
+          code: this.model.get('curve').type
+        });
+        plotCurveClass = window[curveFitClasses.get('plotCurveClass')];
         this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
         this.doseResponseKnockoutPanelController = new DoseResponseKnockoutPanelController({
           el: this.$('.bv_doseResponseKnockoutPanel')
         });
         this.doseResponseKnockoutPanelController.render();
-        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'), plotCurveClass);
         return this;
       } else {
         return this.$el.html("Plot data not loaded");
@@ -135,12 +141,14 @@
       this.model.trigger('change');
     };
 
-    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, flagLabels, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
+    DoseResponsePlotController.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID, plotCurveClass) {
+      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, curvePlot, flagLabels, getMouseCoords, ii, includePoints, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
       this.points = points;
-      log10 = function(val) {
-        return Math.log(val) / Math.LN10;
-      };
+      log10 = this.log10;
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
@@ -302,70 +310,8 @@
         }
       }
       if (curve != null) {
-        if (curve.type === "4 parameter D-R") {
-          fct = function(x) {
-            return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
-          };
-          brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
-            strokeWidth: 2
-          });
-          if (curve.reported_ec50 != null) {
-            intersect = fct(log10(curve.reported_ec50));
-            if (curve.reported_operator != null) {
-              color = '#ff0000';
-            } else {
-              color = '#808080';
-            }
-            brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ec50), intersect]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-          }
-        }
-        if (curve.type === "Ki Fit") {
-          fct = function(x) {
-            return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
-          };
-          brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
-            strokeWidth: 2
-          });
-          if (curve.reported_ki != null) {
-            intersect = fct(log10(curve.reported_ki));
-            if (curve.reported_operator != null) {
-              color = '#ff0000';
-            } else {
-              color = '#808080';
-            }
-            brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ki), intersect]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-            brd.create('line', [[log10(curve.reported_ki), intersect], [log10(curve.reported_ki), 0]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-          }
-        }
+        curvePlot = new plotCurveClass();
+        curvePlot.render(brd, curve, plotWindow);
       }
       getMouseCoords = function(e) {
         var absPos, cPos, dx, dy;
@@ -510,15 +456,15 @@
     };
 
     CurveDetail.prototype.parse = function(resp) {
-      var drapType;
-      drapType = (function() {
-        switch (resp.renderingHint) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParameters;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParameters;
-        }
-      })();
+      var curveFitClasses, curvefitClassesCollection, drapType, parametersClass;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        code: resp.renderingHint
+      });
+      if (curveFitClasses != null) {
+        parametersClass = curveFitClasses.get('parametersClass');
+        drapType = window[parametersClass];
+      }
       if (!(resp.fitSettings instanceof drapType)) {
         resp.fitSettings = new drapType(resp.fitSettings);
       }
@@ -560,18 +506,18 @@
     };
 
     CurveEditorController.prototype.render = function() {
-      var drapcType;
+      var controllerClass, curveFitClasses, curvefitClassesCollection, drapcType;
       this.$el.empty();
       if (this.model != null) {
         this.$el.html(this.template());
-        drapcType = (function() {
-          switch (this.model.get('renderingHint')) {
-            case "4 parameter D-R":
-              return DoseResponseAnalysisParametersController;
-            case "Ki Fit":
-              return DoseResponseKiAnalysisParametersController;
-          }
-        }).call(this);
+        curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+        curveFitClasses = curvefitClassesCollection.findWhere({
+          code: this.model.get('renderingHint')
+        });
+        if (curveFitClasses != null) {
+          controllerClass = curveFitClasses.get('parametersController');
+          drapcType = window[controllerClass];
+        }
         this.drapc = new drapcType({
           model: this.model.get('fitSettings'),
           el: this.$('.bv_analysisParameterForm')
