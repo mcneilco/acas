@@ -42,11 +42,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@$el.empty()
 		@$el.html @template()
 		if @model?
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curve').type})
+			plotCurveClass =  window[curveFitClasses.get 'plotCurveClass']
+
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
 			@doseResponseKnockoutPanelController= new DoseResponseKnockoutPanelController
 				el: @$('.bv_doseResponseKnockoutPanel')
 			@doseResponseKnockoutPanelController.render()
-			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'), plotCurveClass)
 			@
 		else
 			@$el.html "Plot data not loaded"
@@ -77,11 +81,12 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@model.trigger 'change'
 		return
 
-	initJSXGraph: (points, curve, plotWindow, divID) =>
-		@points = points
-		log10 = (val) ->
-			Math.log(val) / Math.LN10
+	log10: (val) ->
+		Math.log(val) / Math.LN10
 
+	initJSXGraph: (points, curve, plotWindow, divID, plotCurveClass) =>
+		@points = points
+		log10 = @log10
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
@@ -238,38 +243,8 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
 		if curve?
-			if curve.type == "4 parameter D-R"
-				fct = (x) ->
-					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ec50?
-					intersect = fct(log10(curve.reported_ec50))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-			if curve.type == "Ki Fit"
-				fct = (x) ->
-					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
-					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
-					#'max + (min-max)/(1+10^(log10(x)-log10(ki*(1+ligandConc/kd))))'
-					curve.max + (curve.min - curve.max) / (1 + Math.pow(10,(x-log10(curve.ki*(1 + curve.ligandConc/curve.kd)))))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ki?
-					intersect = fct(log10(curve.reported_ki))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-					#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ki),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-					#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ki),intersect],[log10(curve.reported_ki),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-
+			curvePlot = new plotCurveClass()
+			curvePlot.render(brd, curve, plotWindow)
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
@@ -359,9 +334,11 @@ class window.CurveDetail extends Backbone.Model
 			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 
 	parse: (resp) =>
-		drapType = switch resp.renderingHint
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: resp.renderingHint})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
 		if resp.fitSettings not instanceof drapType
 			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
@@ -378,9 +355,11 @@ class window.CurveEditorController extends Backbone.View
 		@$el.empty()
 		if @model?
 			@$el.html @template()
-			drapcType = switch @model.get('renderingHint')
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('renderingHint')})
+			if curveFitClasses?
+				controllerClass =  curveFitClasses.get 'parametersController'
+				drapcType = window[controllerClass]
 			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
