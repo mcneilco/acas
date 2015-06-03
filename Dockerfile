@@ -22,4 +22,4 @@ EXPOSE	3000
 EXPOSE	3001
 
 # Define default command
-CMD cp conf/config-docker.properties conf/config.properties && grunt execute:prepare_config_files && cd conf && node PrepareModuleConfJSON.js && sh /home/runner/bin/acas.sh start && tail -f /home/runner/log/*.log
+CMD ["/bin/sh", "bin/acas-docker.sh"]k
