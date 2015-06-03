@@ -22,4 +22,4 @@ EXPOSE	3000
 EXPOSE	3001
 
 # Define default command
-CMD ["/bin/sh", "bin/acas-docker.sh"]k
+CMD ["/bin/sh", "bin/acas-docker.sh"]
