@@ -1,4 +1,4 @@
-FROM mcneilco/racas:1.6.0-release
+FROM mcneilco/racas:development
 
 USER	root
 
