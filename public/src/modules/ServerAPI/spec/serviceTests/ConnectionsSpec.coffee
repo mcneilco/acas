@@ -140,7 +140,7 @@ describe "D. Access to Rscript", ->
           @stdout = stdout
           done()
       it.skip "should not throw an error or warning", ->
-        assert.equal(@stderr, null, "racas gives the following error or warning: "+@stderr)
+        assert.equal(@stderr, null, "racas gives the following error or warning: \n"+@stderr)
       it "should return a list", ->
         #split the output into an array using the newline as the delimiter, only return the first split.
         split = @stdout.split "\n", 1
@@ -160,10 +160,11 @@ describe "D. Access to Rscript", ->
           @stdout = stdout
           done()
       it.skip "should not throw an error or warning", ->
-        assert.equal(@stderr, null, "racas gives the following error or warning: "+@stderr)
-      it "should return a status of ???", ->
+        assert.equal(@stderr, null, "Error connecting to the database through racas. Check relevant environment variables. \n" +@stderr)
+      it.skip "should return a status of ???", ->
         #todo figure out what this is supposed to return when postgreSQL is installed.
-        assert(false, @stdout)
+        assert(false,@stdout)
+
 
 
 #################################
