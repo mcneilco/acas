@@ -48,11 +48,30 @@ describe "B. Connecting to the database", ->
       assert.equal(@response==undefined,false, "Node cannot connect to tomcat. Check that the property client.service.persistence.port and client.service.persistence.host are set properly.")
       assert.equal(@response.statusCode, 200, "status code "+@response.statusCode+" returned instead")
 
-    describe "should be able to contact the database", ->
-      it "before timeout", ->
+    describe "and fetching data from the database", ->
+      it "should be able to contact the database before timeout", ->
         before (done) ->
-          request "http://"+config.all.client.host+":"+config.all.server.nodeapi.port+"/api/codetables", (error, response, body) =>
+          request "http://roo:"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
             done()
+
+      describe "should return a JSON", ->
+        before (done) ->
+          request "http://roo:"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
+#       request "http://"+client.service.persistence.host+":"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes" (error, response, body) =>
+            @responseJSON = body
+            done()
+        it "that can be parsed", ->
+          try parseResponse(@responseJSON)
+          catch
+            #Note, will fail if containertypes is empty
+            assert(false,"Unable to parse the JSON response, check connection between roo and the database and that
+                        client.service.persistence.port and client.service.persistence.host")
+
+  describe "through the nodeapi port", ->
+    it "should be able to contact the database before timeout", ->
+      before (done) ->
+        request "http://"+config.all.client.host+":"+config.all.server.nodeapi.port+"/api/codetables", (error, response, body) =>
+          done()
 
     describe "and pulling the codetables", ->
       before (done) ->
@@ -72,7 +91,7 @@ describe "B. Connecting to the database", ->
 # todo make this test more robust
 # Note, this is not a very robust test. It simply checks to see if the directory assigned to be the uploads and temp file system exists
 # This does not check write permissions since fs.access can only check permissions of files, not directories
-describe.only "C. Writing a file to", ->
+describe "C. Writing a file to", ->
   describe "the uploads path", ->
     before (done) ->
       fs.writeFile config.all.server.datafiles.relative_path+'/test.txt', 'this is a test', (error) =>
