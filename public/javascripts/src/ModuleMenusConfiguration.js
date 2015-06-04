@@ -29,7 +29,7 @@
       autoLaunchName: "experiment_base"
     }, {
       isHeader: false,
-      menuName: "Analyze FLIPR Data",
+      menuName: "Primary Screen Experiment",
       mainControllerClassName: "PrimaryScreenExperimentController",
       autoLaunchName: "primary_screen_experiment"
     }, {

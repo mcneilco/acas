@@ -3,8 +3,8 @@ glob = require 'glob'
 _ = require 'underscore'
 
 prepIncludes = ->
-	styleFiles = glob.sync '../public/src/modules/*/src/client/*.css'
-	templateFiles = glob.sync '../public/src/modules/*/src/client/*.html'
+	styleFiles = glob.sync '../public/src/modules/*/src/client/**/*.css'
+	templateFiles = glob.sync '../public/src/modules/*/src/client/**/*.html'
 
 	includeLines = ""
 	for path in styleFiles

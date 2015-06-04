@@ -1,15 +1,16 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.Experiment = (function(_super) {
-    __extends(Experiment, _super);
+  window.Experiment = (function(superClass) {
+    extend(Experiment, superClass);
 
     function Experiment() {
-      this.duplicateEntity = __bind(this.duplicateEntity, this);
-      this.copyProtocolAttributes = __bind(this.copyProtocolAttributes, this);
-      this.parse = __bind(this.parse, this);
+      this.prepareToSave = bind(this.prepareToSave, this);
+      this.duplicateEntity = bind(this.duplicateEntity, this);
+      this.copyProtocolAttributes = bind(this.copyProtocolAttributes, this);
+      this.parse = bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -26,11 +27,17 @@
       this.set({
         subclass: "experiment"
       });
-      return Experiment.__super__.initialize.call(this);
+      Experiment.__super__.initialize.call(this);
+      if (window.conf.include.project == null) {
+        return console.dir("config for client.include.project is not set");
+      }
     };
 
     Experiment.prototype.parse = function(resp) {
       if (resp === "not unique experiment name" || resp === '"not unique experiment name"') {
+        this.trigger('notUniqueName');
+        return resp;
+      } else if (resp === "saveFailed" || resp === '"saveFailed"') {
         this.trigger('saveFailed');
         return resp;
       } else {
@@ -71,71 +78,129 @@
         }
         if (!(resp.lsTags instanceof TagList)) {
           resp.lsTags = new TagList(resp.lsTags);
+          resp.lsTags.on('change', (function(_this) {
+            return function() {
+              return _this.trigger('change');
+            };
+          })(this));
         }
-        resp.lsTags.on('change', (function(_this) {
-          return function() {
-            return _this.trigger('change');
-          };
-        })(this));
         return resp;
       }
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var completionDate, estates, notebook, project, pstates, scientist;
-      scientist = this.getScientist().get('codeValue');
-      notebook = this.getNotebook().get('stringValue');
-      completionDate = this.getCompletionDate().get('dateValue');
-      project = this.getProjectCode().get('codeValue');
-      estates = new StateList();
+      var dap, dapVal, eExptMeta, mfp, mfpVal, mft, mftVal, pExptMeta, pstates;
       pstates = protocol.get('lsStates');
-      pstates.each(function(st) {
-        var estate, evals, svals;
-        if (st.get('lsKind') === "experiment metadata") {
-          estate = new State(_.clone(st.attributes));
-          estate.unset('id');
-          estate.unset('lsTransaction');
-          estate.unset('lsValues');
-          evals = new ValueList();
-          svals = st.get('lsValues');
-          svals.each(function(sv) {
-            var evalue;
-            evalue = new Value(sv.attributes);
-            evalue.unset('id');
-            evalue.unset('lsTransaction');
-            return evals.add(evalue);
-          });
-          estate.set({
-            lsValues: evals
-          });
-          return estates.add(estate);
+      pExptMeta = pstates.getStatesByTypeAndKind("metadata", "experiment metadata");
+      if (pExptMeta.length > 0) {
+        eExptMeta = this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata");
+        dapVal = eExptMeta[0].getValuesByTypeAndKind("clobValue", "data analysis parameters");
+        if (dapVal.length > 0) {
+          if (dapVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(dapVal[0]);
+          } else {
+            dapVal[0].set({
+              ignored: true
+            });
+          }
         }
-      });
+        dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "data analysis parameters")).attributes);
+        dap.unset('id');
+        dap.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(dap);
+        mfpVal = eExptMeta[0].getValuesByTypeAndKind("clobValue", "model fit parameters");
+        if (mfpVal.length > 0) {
+          if (mfpVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mfpVal[0]);
+          } else {
+            mfpVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mfp = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "clobValue", "model fit parameters")).attributes);
+        mfp.unset('id');
+        mfp.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mfp);
+        mftVal = eExptMeta[0].getValuesByTypeAndKind("codeValue", "model fit type");
+        if (mftVal.length > 0) {
+          if (mftVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mftVal[0]);
+          } else {
+            mftVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mft = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit type")).attributes);
+        mft.unset('id');
+        mft.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mft);
+        this.getDryRunStatus().set({
+          ignored: true
+        });
+        this.getDryRunStatus().set({
+          codeValue: 'not started'
+        });
+        this.getDryRunResultHTML().set({
+          ignored: true
+        });
+        this.getDryRunResultHTML().set({
+          clobValue: ""
+        });
+      }
       this.set({
         lsKind: protocol.get('lsKind'),
-        protocol: protocol,
-        lsStates: estates
-      });
-      this.getScientist().set({
-        codeValue: scientist
-      });
-      this.getNotebook().set({
-        stringValue: notebook
-      });
-      this.getCompletionDate().set({
-        dateValue: completionDate
-      });
-      this.getProjectCode().set({
-        codeValue: project
+        protocol: protocol
       });
       this.trigger('change');
       this.trigger("protocol_attributes_copied");
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var cDate, errors, projectCode;
+      var bestName, cDate, errors, nameError, notebook, projectCode, reqProject, scientist;
       errors = [];
-      errors.push.apply(errors, Experiment.__super__.validate.call(this, attrs));
+      bestName = attrs.lsLabels.pickBestName();
+      nameError = true;
+      if (bestName != null) {
+        nameError = true;
+        if (bestName.get('labelText') !== "") {
+          nameError = false;
+        }
+        if (bestName.get('labelText') === attrs.codeName) {
+          nameError = false;
+        }
+      } else if (this.isNew() && bestName === void 0) {
+        nameError = false;
+      }
+      if (nameError) {
+        errors.push({
+          attribute: attrs.subclass + 'Name',
+          message: attrs.subclass + " name must be set"
+        });
+      }
+      if (_.isNaN(attrs.recordedDate)) {
+        errors.push({
+          attribute: 'recordedDate',
+          message: attrs.subclass + " date must be set"
+        });
+      }
+      if (attrs.subclass != null) {
+        notebook = this.getNotebook().get('stringValue');
+        if (notebook === "" || notebook === void 0 || notebook === null) {
+          errors.push({
+            attribute: 'notebook',
+            message: "Notebook must be set"
+          });
+        }
+        scientist = this.getScientist().get('codeValue');
+        if (scientist === "unassigned" || scientist === void 0 || scientist === "" || scientist === null) {
+          errors.push({
+            attribute: 'scientist',
+            message: "Scientist must be set"
+          });
+        }
+      }
       if (attrs.protocol === null) {
         errors.push({
           attribute: 'protocolCode',
@@ -143,12 +208,19 @@
         });
       }
       if (attrs.subclass != null) {
-        projectCode = this.getProjectCode().get('codeValue');
-        if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-          errors.push({
-            attribute: 'projectCode',
-            message: "Project must be set"
-          });
+        reqProject = window.conf.include.project;
+        if (reqProject == null) {
+          reqProject = "true";
+        }
+        reqProject = reqProject.toLowerCase();
+        if (reqProject !== "false") {
+          projectCode = this.getProjectCode().get('codeValue');
+          if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+            errors.push({
+              attribute: 'projectCode',
+              message: "Project must be set"
+            });
+          }
         }
         cDate = this.getCompletionDate().get('dateValue');
         if (cDate === void 0 || cDate === "" || cDate === null) {
@@ -222,12 +294,70 @@
       return copiedEntity;
     };
 
+    Experiment.prototype.prepareToSave = function() {
+      var expState, i, len, val, value, valuesToDelete;
+      valuesToDelete = [
+        {
+          type: 'codeValue',
+          kind: 'analysis status'
+        }, {
+          type: 'codeValue',
+          kind: 'dry run status'
+        }, {
+          type: 'codeValue',
+          kind: 'model fit status'
+        }, {
+          type: 'clobValue',
+          kind: 'data analysis parameters'
+        }, {
+          type: 'clobValue',
+          kind: 'model fit parameters'
+        }, {
+          type: 'clobValue',
+          kind: 'analysis result html'
+        }, {
+          type: 'clobValue',
+          kind: 'dry run result html'
+        }, {
+          type: 'codeValue',
+          kind: 'model fit type'
+        }, {
+          type: 'clobValue',
+          kind: 'model fit result html'
+        }, {
+          type: 'fileValue',
+          kind: 'source file'
+        }, {
+          type: 'fileValue',
+          kind: 'dryrun source file'
+        }, {
+          type: 'stringValue',
+          kind: 'hts format'
+        }
+      ];
+      if (!this.isNew()) {
+        expState = this.get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0];
+        for (i = 0, len = valuesToDelete.length; i < len; i++) {
+          val = valuesToDelete[i];
+          value = expState.getValuesByTypeAndKind(val.type, val.kind)[0];
+          if (value != null) {
+            if ((val.kind === "data analysis parameters" || val.kind === "model fit parameters" || val.kind === "model fit type" || val.kind === "dry run status" || val.kind === "dry run html") && value.isNew()) {
+
+            } else {
+              expState.get('lsValues').remove(value);
+            }
+          }
+        }
+      }
+      return Experiment.__super__.prepareToSave.call(this);
+    };
+
     return Experiment;
 
   })(BaseEntity);
 
-  window.ExperimentList = (function(_super) {
-    __extends(ExperimentList, _super);
+  window.ExperimentList = (function(superClass) {
+    extend(ExperimentList, superClass);
 
     function ExperimentList() {
       return ExperimentList.__super__.constructor.apply(this, arguments);
@@ -239,18 +369,23 @@
 
   })(Backbone.Collection);
 
-  window.ExperimentBaseController = (function(_super) {
-    __extends(ExperimentBaseController, _super);
+  window.ExperimentBaseController = (function(superClass) {
+    extend(ExperimentBaseController, superClass);
 
     function ExperimentBaseController() {
-      this.updateEditable = __bind(this.updateEditable, this);
-      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
-      this.handleDateChanged = __bind(this.handleDateChanged, this);
-      this.handleUseProtocolParametersClicked = __bind(this.handleUseProtocolParametersClicked, this);
-      this.handleProjectCodeChanged = __bind(this.handleProjectCodeChanged, this);
-      this.handleProtocolCodeChanged = __bind(this.handleProtocolCodeChanged, this);
-      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
-      this.render = __bind(this.render, this);
+      this.getNextLabelSequence = bind(this.getNextLabelSequence, this);
+      this.handleSaveClicked = bind(this.handleSaveClicked, this);
+      this.updateEditable = bind(this.updateEditable, this);
+      this.handleCompletionDateIconClicked = bind(this.handleCompletionDateIconClicked, this);
+      this.handleDateChanged = bind(this.handleDateChanged, this);
+      this.handleUseProtocolParametersClicked = bind(this.handleUseProtocolParametersClicked, this);
+      this.handleProjectCodeChanged = bind(this.handleProjectCodeChanged, this);
+      this.handleUseNewParams = bind(this.handleUseNewParams, this);
+      this.handleKeepOldParams = bind(this.handleKeepOldParams, this);
+      this.handleProtocolCodeChanged = bind(this.handleProtocolCodeChanged, this);
+      this.handleExptNameChkbxClicked = bind(this.handleExptNameChkbxClicked, this);
+      this.modelSyncCallback = bind(this.modelSyncCallback, this);
+      this.render = bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
     }
 
@@ -260,12 +395,15 @@
 
     ExperimentBaseController.prototype.events = function() {
       return _(ExperimentBaseController.__super__.events.call(this)).extend({
+        "click .bv_exptNameChkbx": "handleExptNameChkbxClicked",
         "keyup .bv_experimentName": "handleNameChanged",
         "click .bv_useProtocolParameters": "handleUseProtocolParametersClicked",
         "change .bv_protocolCode": "handleProtocolCodeChanged",
         "change .bv_projectCode": "handleProjectCodeChanged",
         "change .bv_completionDate": "handleDateChanged",
-        "click .bv_completionDateIcon": "handleCompletionDateIconClicked"
+        "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
+        "click .bv_keepOldParams": "handleKeepOldParams",
+        "click .bv_useNewParams": "handleUseNewParams"
       });
     };
 
@@ -327,7 +465,7 @@
           codeName: code
         })
       });
-      return this.getAndSetProtocol(code);
+      return this.getAndSetProtocol(code, true);
     };
 
     ExperimentBaseController.prototype.completeInitialization = function() {
@@ -343,13 +481,19 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      this.model.on('saveFailed', (function(_this) {
+      this.model.on('notUniqueName', (function(_this) {
         return function() {
           _this.$('.bv_experimentSaveFailed').modal('show');
+          _this.$('.bv_closeSaveFailedModal').removeAttr('disabled');
           _this.$('.bv_saveFailed').show();
           return _this.$('.bv_experimentSaveFailed').on('hide.bs.modal', function() {
             return _this.$('.bv_saveFailed').hide();
           });
+        };
+      })(this));
+      this.model.on('saveFailed', (function(_this) {
+        return function() {
+          return _this.$('.bv_saveFailed').show();
         };
       })(this));
       this.setupStatusSelect();
@@ -379,6 +523,11 @@
         this.$('.bv_completionDate').val(UtilityFunctions.prototype.convertMSToYMDDate(this.model.getCompletionDate().get('dateValue')));
       }
       ExperimentBaseController.__super__.render.call(this);
+      if (this.model.isNew()) {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+      } else {
+        this.setupExptNameChkbx();
+      }
       return this;
     };
 
@@ -389,6 +538,7 @@
         });
       }
       this.$('.bv_saving').hide();
+      this.render();
       if (this.$('.bv_saveFailed').is(":visible") || this.$('.bv_cancelComplete').is(":visible")) {
         this.$('.bv_updateComplete').hide();
         this.trigger('amDirty');
@@ -397,8 +547,23 @@
         this.trigger('amClean');
         this.model.trigger('saveSuccess');
       }
-      this.render();
       return this.setupAttachFileListController();
+    };
+
+    ExperimentBaseController.prototype.setupExptNameChkbx = function() {
+      var code, name;
+      code = this.model.get('codeName');
+      if (this.model.get('lsLabels').pickBestName() != null) {
+        name = this.model.get('lsLabels').pickBestName().get('labelText');
+      } else {
+        name = "";
+      }
+      if (code === name) {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+        return this.$('.bv_exptNameChkbx').attr('checked', 'checked');
+      } else {
+        return this.$('.bv_exptNameChkbx').removeAttr('checked');
+      }
     };
 
     ExperimentBaseController.prototype.setupProtocolSelect = function(protocolFilter, protocolKindFilter) {
@@ -428,6 +593,13 @@
     };
 
     ExperimentBaseController.prototype.setupProjectSelect = function() {
+      var reqProject;
+      reqProject = window.conf.include.project;
+      if (reqProject != null) {
+        if (reqProject.toLowerCase() === "false") {
+          this.$('.bv_projectLabel').html("Project");
+        }
+      }
       this.projectList = new PickListList();
       this.projectList.url = "/api/projects";
       return this.projectListController = new PickListSelectController({
@@ -485,38 +657,78 @@
           });
         } else {
           this.setUseProtocolParametersDisabledState();
-          if (!!this.model.isNew()) {
-            return this.handleUseProtocolParametersClicked();
+          return this.handleUseProtocolParametersClicked();
+        }
+      }
+    };
+
+    ExperimentBaseController.prototype.handleExptNameChkbxClicked = function() {
+      var checked;
+      checked = this.$('.bv_exptNameChkbx').is(":checked");
+      if (checked) {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+        this.$('.bv_experimentName').val(this.model.get('codeName'));
+        this.handleNameChanged();
+        if (this.model.isNew()) {
+          return this.model.get('lsLabels').pickBestName().set({
+            labelText: void 0
+          });
+        }
+      } else {
+        this.$('.bv_experimentName').removeAttr('disabled');
+        return this.handleNameChanged();
+      }
+    };
+
+    ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
+      var analysisStatus, code;
+      code = this.protocolListController.getSelectedCode();
+      if (this.model.isNew()) {
+        this.getAndSetProtocol(code, true);
+      }
+      if (!this.model.isNew()) {
+        if (this.model.get('lsKind') === "default") {
+          return this.getAndSetProtocol(code, false);
+        } else {
+          analysisStatus = this.model.getAnalysisStatus().get('codeValue');
+          if (analysisStatus === "not started") {
+            this.$('.bv_askChangeProtocolParameters').modal({
+              backdrop: 'static'
+            });
+            return this.$('.bv_askChangeProtocolParameters').modal('show');
+          } else {
+            this.$('.bv_dontChangeProtocolParameters').modal('show');
+            return this.getAndSetProtocol(code, false);
           }
         }
       }
     };
 
-    ExperimentBaseController.prototype.handleProtocolCodeChanged = function() {
-      var code;
-      code = this.protocolListController.getSelectedCode();
-      return this.getAndSetProtocol(code);
-    };
-
-    ExperimentBaseController.prototype.getAndSetProtocol = function(code) {
+    ExperimentBaseController.prototype.getAndSetProtocol = function(code, setAnalysisParams) {
       if (code === "" || code === "unassigned") {
         this.model.set({
           'protocol': null
         });
         return this.setUseProtocolParametersDisabledState();
       } else {
+        this.$('.bv_protocolCode').attr('disabled', 'disabled');
+        this.$('.bv_spinner').spin('aligned');
         return $.ajax({
           type: 'GET',
           url: "/api/protocols/codename/" + code,
           success: (function(_this) {
             return function(json) {
+              _this.$('.bv_spinner').spin(false);
+              _this.$('.bv_protocolCode').removeAttr('disabled');
               if (json.length === 0) {
                 return alert("Could not find selected protocol in database");
               } else {
                 _this.model.set({
                   protocol: new Protocol(json)
                 });
-                return _this.getFullProtocol();
+                if (setAnalysisParams) {
+                  return _this.getFullProtocol();
+                }
               }
             };
           })(this),
@@ -528,6 +740,16 @@
       }
     };
 
+    ExperimentBaseController.prototype.handleKeepOldParams = function() {
+      this.$('.bv_askChangeProtocolParameters').modal('hide');
+      return this.getAndSetProtocol(this.protocolListController.getSelectedCode(), false);
+    };
+
+    ExperimentBaseController.prototype.handleUseNewParams = function() {
+      this.$('.bv_askChangeProtocolParameters').modal('hide');
+      return this.getAndSetProtocol(this.protocolListController.getSelectedCode(), true);
+    };
+
     ExperimentBaseController.prototype.handleProjectCodeChanged = function() {
       var value;
       value = this.projectListController.getSelectedCode();
@@ -535,9 +757,19 @@
     };
 
     ExperimentBaseController.prototype.handleUseProtocolParametersClicked = function() {
+      var exptChkbx;
       this.model.copyProtocolAttributes(this.model.get('protocol'));
+      exptChkbx = this.$('.bv_exptNameChkbx').attr('checked');
       this.render();
-      return this.model.trigger('change');
+      if (exptChkbx === "checked") {
+        this.$('.bv_experimentName').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_experimentName').removeAttr('disabled');
+      }
+      this.model.trigger('change');
+      if (!this.model.isNew()) {
+        return this.model.trigger('changeProtocolParams');
+      }
     };
 
     ExperimentBaseController.prototype.handleDateChanged = function() {
@@ -551,12 +783,65 @@
     };
 
     ExperimentBaseController.prototype.updateEditable = function() {
-      ExperimentBaseController.__super__.updateEditable.call(this);
-      if (this.model.isNew()) {
-        return this.$('.bv_protocolCode').removeAttr("disabled");
+      return ExperimentBaseController.__super__.updateEditable.call(this);
+    };
+
+    ExperimentBaseController.prototype.handleSaveClicked = function() {
+      this.$('.bv_saveFailed').hide();
+      if (this.model.isNew() && this.$('.bv_exptNameChkbx').is(":checked")) {
+        return this.getNextLabelSequence();
       } else {
-        return this.$('.bv_protocolCode').attr("disabled", "disabled");
+        return this.saveEntity();
       }
+    };
+
+    ExperimentBaseController.prototype.getNextLabelSequence = function() {
+      return $.ajax({
+        type: 'POST',
+        url: "/api/getNextLabelSequence",
+        data: JSON.stringify({
+          thingTypeAndKind: "document_experiment",
+          labelTypeAndKind: "id_codeName",
+          numberOfLabels: 1
+        }),
+        contentType: 'application/json',
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            if (response === "getNextLabelSequenceFailed") {
+              alert('Error getting the next label sequence');
+              return _this.model.trigger('saveFailed');
+            } else {
+              return _this.addNameAndCode(response[0].autoLabel);
+            }
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            alert('could not get next label sequence');
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
+    };
+
+    ExperimentBaseController.prototype.addNameAndCode = function(codeName) {
+      this.model.set({
+        codeName: codeName
+      });
+      if (this.model.get('lsLabels').pickBestName() != null) {
+        this.model.get('lsLabels').pickBestName().set({
+          labelText: codeName
+        });
+      } else {
+        this.model.get('lsLabels').setBestName(new Label({
+          lsKind: "experiment name",
+          labelText: codeName,
+          recordedBy: window.AppLaunchParams.loginUser.username,
+          recordedDate: new Date().getTime()
+        }));
+      }
+      return this.saveEntity();
     };
 
     return ExperimentBaseController;

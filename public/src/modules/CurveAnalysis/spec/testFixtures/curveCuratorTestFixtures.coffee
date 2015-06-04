@@ -374,7 +374,7 @@
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 20
@@ -382,7 +382,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 88.51
 						responseKind: "efficacy"
@@ -391,13 +391,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 10
@@ -405,7 +405,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 89.826
 						responseKind: "efficacy"
@@ -414,13 +414,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 5
@@ -428,7 +428,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 89.883
 						responseKind: "efficacy"
@@ -437,13 +437,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 2.5
@@ -451,7 +451,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 79.299
 						responseKind: "efficacy"
@@ -460,13 +460,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 1.25
@@ -474,7 +474,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 67.286
 						responseKind: "efficacy"
@@ -483,13 +483,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.625
@@ -497,7 +497,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 44.002
 						responseKind: "efficacy"
@@ -506,13 +506,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.3125
@@ -520,7 +520,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 38.853
 						responseKind: "efficacy"
@@ -529,13 +529,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.15625
@@ -543,7 +543,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 23.75
 						responseKind: "efficacy"
@@ -552,13 +552,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.078125
@@ -566,7 +566,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 32.331
 						responseKind: "efficacy"
@@ -575,13 +575,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.039063
@@ -589,7 +589,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 11.565
 						responseKind: "efficacy"
@@ -598,13 +598,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 20
@@ -612,7 +612,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 80
 						responseKind: "efficacy"
@@ -621,13 +621,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 10
@@ -635,7 +635,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 95.546
 						responseKind: "efficacy"
@@ -644,13 +644,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 5
@@ -658,7 +658,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 92.743
 						responseKind: "efficacy"
@@ -667,13 +667,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 2.5
@@ -681,7 +681,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 89.54
 						responseKind: "efficacy"
@@ -690,13 +690,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 1.25
@@ -704,7 +704,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 71.805
 						responseKind: "efficacy"
@@ -713,13 +713,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.625
@@ -727,7 +727,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 60.993
 						responseKind: "efficacy"
@@ -736,13 +736,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.3125
@@ -750,7 +750,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 49.322
 						responseKind: "efficacy"
@@ -759,13 +759,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.15625
@@ -773,7 +773,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 32.789
 						responseKind: "efficacy"
@@ -782,13 +782,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.078125
@@ -796,7 +796,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 20.146
 						responseKind: "efficacy"
@@ -805,13 +805,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.039063
@@ -819,7 +819,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 27.354
 						responseKind: "efficacy"
@@ -828,13 +828,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 20
@@ -842,7 +842,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 82
 						responseKind: "efficacy"
@@ -851,13 +851,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 10
@@ -865,7 +865,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 92.286
 						responseKind: "efficacy"
@@ -874,13 +874,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 5
@@ -888,7 +888,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 90.112
 						responseKind: "efficacy"
@@ -897,13 +897,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 2.5
@@ -911,7 +911,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 87.423
 						responseKind: "efficacy"
@@ -920,13 +920,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 1.25
@@ -934,7 +934,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 75.924
 						responseKind: "efficacy"
@@ -943,13 +943,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.625
@@ -957,7 +957,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 50.581
 						responseKind: "efficacy"
@@ -966,13 +966,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.3125
@@ -980,7 +980,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 48.864
 						responseKind: "efficacy"
@@ -989,13 +989,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.15625
@@ -1003,7 +1003,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 37.48
 						responseKind: "efficacy"
@@ -1012,13 +1012,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.078125
@@ -1026,7 +1026,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 31.015
 						responseKind: "efficacy"
@@ -1035,13 +1035,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.039063
@@ -1049,7 +1049,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 6.4159
 						responseKind: "efficacy"
@@ -1058,13 +1058,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 20
@@ -1072,7 +1072,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 79
 						responseKind: "efficacy"
@@ -1081,13 +1081,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 10
@@ -1095,7 +1095,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 98.922
 						responseKind: "efficacy"
@@ -1104,13 +1104,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 5
@@ -1118,7 +1118,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 91.256
 						responseKind: "efficacy"
@@ -1127,13 +1127,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 2.5
@@ -1141,7 +1141,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 85.077
 						responseKind: "efficacy"
@@ -1150,13 +1150,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 1.25
@@ -1164,7 +1164,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 75.295
 						responseKind: "efficacy"
@@ -1173,13 +1173,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.625
@@ -1187,7 +1187,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 60.821
 						responseKind: "efficacy"
@@ -1196,13 +1196,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.3125
@@ -1210,7 +1210,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 41.656
 						responseKind: "efficacy"
@@ -1219,13 +1219,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.15625
@@ -1233,7 +1233,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 36.965
 						responseKind: "efficacy"
@@ -1242,13 +1242,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.078125
@@ -1256,7 +1256,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 25.295
 						responseKind: "efficacy"
@@ -1265,13 +1265,13 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 					{
 						algorithmFlagComment: ""
 						algorithmFlagObservation: ""
-						algorithmFlagReason: ""
+						algorithmFlagCause: ""
 						algorithmFlagStatus: ""
 						curveId: "AG-00439996_6863"
 						dose: 0.039063
@@ -1279,7 +1279,7 @@
 						flagchanged: false
 						preprocessFlagComment: ""
 						preprocessFlagObservation: ""
-						preprocessFlagReason: ""
+						preprocessFlagCause: ""
 						preprocessFlagStatus: ""
 						response: 18.086
 						responseKind: "efficacy"
@@ -1288,7 +1288,7 @@
 						tempFlagStatus: ""
 						userFlagComment: ""
 						userFlagObservation: ""
-						userFlagReason: ""
+						userFlagCause: ""
 						userFlagStatus: ""
 					}
 				]

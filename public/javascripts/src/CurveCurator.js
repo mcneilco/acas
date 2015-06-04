@@ -1,16 +1,16 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseKnockoutPanelController = (function(_super) {
-    __extends(DoseResponseKnockoutPanelController, _super);
+  window.DoseResponseKnockoutPanelController = (function(superClass) {
+    extend(DoseResponseKnockoutPanelController, superClass);
 
     function DoseResponseKnockoutPanelController() {
-      this.handleDoseResponseKnockoutPanelHidden = __bind(this.handleDoseResponseKnockoutPanelHidden, this);
-      this.setupKnockoutReasonPicklist = __bind(this.setupKnockoutReasonPicklist, this);
-      this.show = __bind(this.show, this);
-      this.render = __bind(this.render, this);
+      this.handleDoseResponseKnockoutPanelHidden = bind(this.handleDoseResponseKnockoutPanelHidden, this);
+      this.setupKnockoutPicklist = bind(this.setupKnockoutPicklist, this);
+      this.show = bind(this.show, this);
+      this.render = bind(this.render, this);
       return DoseResponseKnockoutPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -19,7 +19,7 @@
     DoseResponseKnockoutPanelController.prototype.render = function() {
       this.$el.empty();
       this.$el.html(this.template());
-      this.setupKnockoutReasonPicklist();
+      this.setupKnockoutPicklist();
       this.$('.bv_doseResponseKnockoutPanel').on("show", (function(_this) {
         return function() {
           return _this.$('.bv_dataDictPicklist').focus();
@@ -47,36 +47,36 @@
       return this.$('.bv_doseResponseKnockoutPanel').modal("show");
     };
 
-    DoseResponseKnockoutPanelController.prototype.setupKnockoutReasonPicklist = function() {
-      this.knockoutReasonList = new PickListList();
-      this.knockoutReasonList.url = "/api/codetables/user well flags/flag observation";
-      return this.knockoutReasonListController = new PickListSelectController({
+    DoseResponseKnockoutPanelController.prototype.setupKnockoutPicklist = function() {
+      this.knockoutObservationList = new PickListList();
+      this.knockoutObservationList.url = "/api/codetables/user well flags/flag observation";
+      return this.knockoutObservationListController = new PickListSelectController({
         el: this.$('.bv_dataDictPicklist'),
-        collection: this.knockoutReasonList
+        collection: this.knockoutObservationList
       });
     };
 
     DoseResponseKnockoutPanelController.prototype.handleDoseResponseKnockoutPanelHidden = function() {
-      var comment, observation, reason, status;
+      var cause, comment, observation, status;
       status = "knocked out";
-      reason = this.knockoutReasonListController.getSelectedCode();
-      observation = reason;
-      comment = this.knockoutReasonListController.getSelectedModel().get('name');
-      return this.trigger('reasonSelected', status, observation, reason, comment);
+      observation = this.knockoutObservationListController.getSelectedCode();
+      cause = "curvefit ko";
+      comment = this.knockoutObservationListController.getSelectedModel().get('name');
+      return this.trigger('observationSelected', status, observation, cause, comment);
     };
 
     return DoseResponseKnockoutPanelController;
 
   })(Backbone.View);
 
-  window.DoseResponsePlotController = (function(_super) {
-    __extends(DoseResponsePlotController, _super);
+  window.DoseResponsePlotController = (function(superClass) {
+    extend(DoseResponsePlotController, superClass);
 
     function DoseResponsePlotController() {
-      this.initJSXGraph = __bind(this.initJSXGraph, this);
-      this.knockoutPoints = __bind(this.knockoutPoints, this);
-      this.showDoseResponseKnockoutPanel = __bind(this.showDoseResponseKnockoutPanel, this);
-      this.render = __bind(this.render, this);
+      this.initJSXGraph = bind(this.initJSXGraph, this);
+      this.knockoutPoints = bind(this.knockoutPoints, this);
+      this.showDoseResponseKnockoutPanel = bind(this.showDoseResponseKnockoutPanel, this);
+      this.render = bind(this.render, this);
       return DoseResponsePlotController.__super__.constructor.apply(this, arguments);
     }
 
@@ -87,15 +87,21 @@
     };
 
     DoseResponsePlotController.prototype.render = function() {
+      var curveFitClasses, curvefitClassesCollection, plotCurveClass;
       this.$el.empty();
       this.$el.html(this.template());
       if (this.model != null) {
+        curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+        curveFitClasses = curvefitClassesCollection.findWhere({
+          code: this.model.get('curve').type
+        });
+        plotCurveClass = window[curveFitClasses.get('plotCurveClass')];
         this.$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + this.model.cid);
         this.doseResponseKnockoutPanelController = new DoseResponseKnockoutPanelController({
           el: this.$('.bv_doseResponseKnockoutPanel')
         });
         this.doseResponseKnockoutPanelController.render();
-        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'));
+        this.initJSXGraph(this.model.get('points'), this.model.get('curve'), this.model.get('plotWindow'), this.$('.bv_plotWindow').attr('id'), plotCurveClass);
         return this;
       } else {
         return this.$el.html("Plot data not loaded");
@@ -104,27 +110,27 @@
 
     DoseResponsePlotController.prototype.showDoseResponseKnockoutPanel = function(selectedPoints) {
       this.doseResponseKnockoutPanelController.show();
-      this.doseResponseKnockoutPanelController.on('reasonSelected', (function(_this) {
-        return function(status, observation, reason, comment) {
-          return _this.knockoutPoints(selectedPoints, status, observation, reason, comment);
+      this.doseResponseKnockoutPanelController.on('observationSelected', (function(_this) {
+        return function(status, observation, cause, comment) {
+          return _this.knockoutPoints(selectedPoints, status, observation, cause, comment);
         };
       })(this));
     };
 
-    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, status, observation, reason, comment) {
+    DoseResponsePlotController.prototype.knockoutPoints = function(selectedPoints, status, observation, cause, comment) {
       selectedPoints.forEach((function(_this) {
         return function(selectedPoint) {
           _this.points[selectedPoint.idx].algorithmFlagStatus = "";
           _this.points[selectedPoint.idx].algorithmFlagObservation = "";
-          _this.points[selectedPoint.idx].algorithmFlagReason = "";
+          _this.points[selectedPoint.idx].algorithmFlagCause = "";
           _this.points[selectedPoint.idx].algorithmFlagComment = "";
           _this.points[selectedPoint.idx].preprocessFlagStatus = "";
           _this.points[selectedPoint.idx].preprocessFlagObservation = "";
-          _this.points[selectedPoint.idx].preprocessFlagReason = "";
+          _this.points[selectedPoint.idx].preprocessFlagCause = "";
           _this.points[selectedPoint.idx].preprocessFlagComment = "";
           _this.points[selectedPoint.idx].userFlagStatus = status;
           _this.points[selectedPoint.idx].userFlagObservation = observation;
-          _this.points[selectedPoint.idx].userFlagReason = reason;
+          _this.points[selectedPoint.idx].userFlagCause = cause;
           _this.points[selectedPoint.idx].userFlagComment = comment;
           return selectedPoint.drawAsKnockedOut();
         };
@@ -135,12 +141,14 @@
       this.model.trigger('change');
     };
 
-    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID) {
-      var algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, fct, getMouseCoords, ii, includePoints, intersect, log10, p1, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagComment, userFlagStatus, x, y;
+    DoseResponsePlotController.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID, plotCurveClass) {
+      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, curvePlot, flagLabels, getMouseCoords, ii, includePoints, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
       this.points = points;
-      log10 = function(val) {
-        return Math.log(val) / Math.LN10;
-      };
+      log10 = this.log10;
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
@@ -160,15 +168,15 @@
             selectedPoints.forEach(function(selectedPoint) {
               _this.points[selectedPoint.idx].algorithmFlagStatus = "";
               _this.points[selectedPoint.idx].algorithmFlagObservation = "";
-              _this.points[selectedPoint.idx].algorithmFlagReason = "";
+              _this.points[selectedPoint.idx].algorithmFlagCause = "";
               _this.points[selectedPoint.idx].algorithmFlagComment = "";
               _this.points[selectedPoint.idx].preprocessFlagStatus = "";
               _this.points[selectedPoint.idx].preprocessFlagObservation = "";
-              _this.points[selectedPoint.idx].preprocessFlagReason = "";
+              _this.points[selectedPoint.idx].preprocessFlagCause = "";
               _this.points[selectedPoint.idx].preprocessFlagComment = "";
               _this.points[selectedPoint.idx].userFlagStatus = "";
               _this.points[selectedPoint.idx].userFlagObservation = "";
-              _this.points[selectedPoint.idx].userFlagReason = "";
+              _this.points[selectedPoint.idx].userFlagCause = "";
               _this.points[selectedPoint.idx].userFlagComment = "";
               return selectedPoint.drawAsIncluded();
             });
@@ -185,12 +193,17 @@
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
           algorithmFlagStatus = points[ii].algorithmFlagStatus;
-          userFlagComment = points[ii].userFlagComment;
-          preprocessFlagComment = points[ii].preprocessFlagReason;
-          algorithmFlagComment = points[ii].algorithmFlagComment;
+          userFlagComment = points[ii].userFlagObservation;
+          preprocessFlagComment = points[ii].preprocessFlagComment;
+          algorithmFlagComment = points[ii].algorithmFlagObservation;
+          userFlagCause = points[ii].userFlagCause;
+          algorithmFlagCause = points[ii].algorithmFlagCause;
+          preprocessFlagCause = points[ii].preprocessFlagCause;
           if (userFlagStatus === "knocked out" || preprocessFlagStatus === "knocked out" || algorithmFlagStatus === "knocked out") {
             color = (function() {
               switch (false) {
+                case userFlagCause !== "curvefit ko":
+                  return 'orange';
                 case userFlagStatus !== "knocked out":
                   return 'red';
                 case preprocessFlagStatus !== "knocked out":
@@ -209,13 +222,19 @@
             });
             p1.knockedOut = true;
           } else {
+            if (userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit') {
+              color = 'blue';
+            } else {
+              color = 'red';
+            }
             p1 = brd.create("point", [x, y], {
               name: points[ii].response_sv_id,
               fixed: true,
               size: 4,
               face: "circle",
-              strokecolor: "blue",
-              withLabel: false
+              strokecolor: 'blue',
+              withLabel: false,
+              fillcolor: color
             });
             p1.knockedOut = false;
           }
@@ -244,18 +263,24 @@
             }
           };
           p1.on("up", p1.handlePointClicked, p1);
-          p1.flagLabel = (function() {
-            switch (false) {
-              case userFlagStatus !== "knocked out":
-                return userFlagComment;
-              case preprocessFlagStatus !== "knocked out":
-                return preprocessFlagComment;
-              case algorithmFlagStatus !== "knocked out":
-                return algorithmFlagComment;
-              default:
-                return '';
-            }
-          })();
+          flagLabels = [];
+          if (userFlagStatus === 'hit' || algorithmFlagStatus === 'hit' || preprocessFlagStatus === 'hit') {
+            flagLabels.push('hit');
+          }
+          if (userFlagStatus === "knocked out") {
+            flagLabels.push(userFlagComment);
+          }
+          if (preprocessFlagStatus === "knocked out") {
+            flagLabels.push(preprocessFlagComment);
+          }
+          if (algorithmFlagStatus === "knocked out") {
+            flagLabels.push(algorithmFlagComment);
+          }
+          if (flagLabels.length > 0) {
+            p1.flagLabel = flagLabels.join(', ');
+          } else {
+            p1.flagLabel = '';
+          }
           p1.xLabel = JXG.trunc(points[ii].dose, 4);
           this.pointList.push(p1);
           brd.highlightInfobox = function(x, y, el) {
@@ -285,70 +310,8 @@
         }
       }
       if (curve != null) {
-        if (curve.type === "4 parameter D-R") {
-          fct = function(x) {
-            return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
-          };
-          brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
-            strokeWidth: 2
-          });
-          if (curve.reported_ec50 != null) {
-            intersect = fct(log10(curve.reported_ec50));
-            if (curve.reported_operator != null) {
-              color = '#ff0000';
-            } else {
-              color = '#808080';
-            }
-            brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ec50), intersect]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-            brd.create('line', [[log10(curve.reported_ec50), intersect], [log10(curve.reported_ec50), 0]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-          }
-        }
-        if (curve.type === "Ki Fit") {
-          fct = function(x) {
-            return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
-          };
-          brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
-            strokeWidth: 2
-          });
-          if (curve.reported_ki != null) {
-            intersect = fct(log10(curve.reported_ki));
-            if (curve.reported_operator != null) {
-              color = '#ff0000';
-            } else {
-              color = '#808080';
-            }
-            brd.create('line', [[plotWindow[0], intersect], [log10(curve.reported_ki), intersect]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-            brd.create('line', [[log10(curve.reported_ki), intersect], [log10(curve.reported_ki), 0]], {
-              fixed: true,
-              straightFirst: false,
-              straightLast: false,
-              strokeWidth: 2,
-              dash: 3,
-              strokeColor: color
-            });
-          }
-        }
+        curvePlot = new plotCurveClass();
+        curvePlot.render(brd, curve, plotWindow);
       }
       getMouseCoords = function(e) {
         var absPos, cPos, dx, dy;
@@ -466,12 +429,12 @@
 
   })(AbstractFormController);
 
-  window.CurveDetail = (function(_super) {
-    __extends(CurveDetail, _super);
+  window.CurveDetail = (function(superClass) {
+    extend(CurveDetail, superClass);
 
     function CurveDetail() {
-      this.parse = __bind(this.parse, this);
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.parse = bind(this.parse, this);
+      this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return CurveDetail.__super__.constructor.apply(this, arguments);
     }
 
@@ -493,15 +456,15 @@
     };
 
     CurveDetail.prototype.parse = function(resp) {
-      var drapType;
-      drapType = (function() {
-        switch (resp.renderingHint) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParameters;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParameters;
-        }
-      })();
+      var curveFitClasses, curvefitClassesCollection, drapType, parametersClass;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        code: resp.renderingHint
+      });
+      if (curveFitClasses != null) {
+        parametersClass = curveFitClasses.get('parametersClass');
+        drapType = window[parametersClass];
+      }
       if (!(resp.fitSettings instanceof drapType)) {
         resp.fitSettings = new drapType(resp.fitSettings);
       }
@@ -512,24 +475,24 @@
 
   })(Backbone.Model);
 
-  window.CurveEditorController = (function(_super) {
-    __extends(CurveEditorController, _super);
+  window.CurveEditorController = (function(superClass) {
+    extend(CurveEditorController, superClass);
 
     function CurveEditorController() {
-      this.deleteRsession = __bind(this.deleteRsession, this);
-      this.handleUpdateSuccess = __bind(this.handleUpdateSuccess, this);
-      this.handleSaveSuccess = __bind(this.handleSaveSuccess, this);
-      this.handleUpdateError = __bind(this.handleUpdateError, this);
-      this.handleSaveError = __bind(this.handleSaveError, this);
-      this.handleResetError = __bind(this.handleResetError, this);
-      this.handleRejectClicked = __bind(this.handleRejectClicked, this);
-      this.handleApproveClicked = __bind(this.handleApproveClicked, this);
-      this.handleUpdateClicked = __bind(this.handleUpdateClicked, this);
-      this.handleResetClicked = __bind(this.handleResetClicked, this);
-      this.handleParametersChanged = __bind(this.handleParametersChanged, this);
-      this.handlePointsChanged = __bind(this.handlePointsChanged, this);
-      this.handleModelSync = __bind(this.handleModelSync, this);
-      this.render = __bind(this.render, this);
+      this.deleteRsession = bind(this.deleteRsession, this);
+      this.handleUpdateSuccess = bind(this.handleUpdateSuccess, this);
+      this.handleSaveSuccess = bind(this.handleSaveSuccess, this);
+      this.handleUpdateError = bind(this.handleUpdateError, this);
+      this.handleSaveError = bind(this.handleSaveError, this);
+      this.handleResetError = bind(this.handleResetError, this);
+      this.handleRejectClicked = bind(this.handleRejectClicked, this);
+      this.handleApproveClicked = bind(this.handleApproveClicked, this);
+      this.handleUpdateClicked = bind(this.handleUpdateClicked, this);
+      this.handleResetClicked = bind(this.handleResetClicked, this);
+      this.handleParametersChanged = bind(this.handleParametersChanged, this);
+      this.handlePointsChanged = bind(this.handlePointsChanged, this);
+      this.handleModelSync = bind(this.handleModelSync, this);
+      this.render = bind(this.render, this);
       return CurveEditorController.__super__.constructor.apply(this, arguments);
     }
 
@@ -543,18 +506,18 @@
     };
 
     CurveEditorController.prototype.render = function() {
-      var drapcType;
+      var controllerClass, curveFitClasses, curvefitClassesCollection, drapcType;
       this.$el.empty();
       if (this.model != null) {
         this.$el.html(this.template());
-        drapcType = (function() {
-          switch (this.model.get('renderingHint')) {
-            case "4 parameter D-R":
-              return DoseResponseAnalysisParametersController;
-            case "Ki Fit":
-              return DoseResponseKiAnalysisParametersController;
-          }
-        }).call(this);
+        curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+        curveFitClasses = curvefitClassesCollection.findWhere({
+          code: this.model.get('renderingHint')
+        });
+        if (curveFitClasses != null) {
+          controllerClass = curveFitClasses.get('parametersController');
+          drapcType = window[controllerClass];
+        }
         this.drapc = new drapcType({
           model: this.model.get('fitSettings'),
           el: this.$('.bv_analysisParameterForm')
@@ -731,8 +694,8 @@
 
   })(Backbone.View);
 
-  window.Curve = (function(_super) {
-    __extends(Curve, _super);
+  window.Curve = (function(superClass) {
+    extend(Curve, superClass);
 
     function Curve() {
       return Curve.__super__.constructor.apply(this, arguments);
@@ -742,15 +705,15 @@
 
   })(Backbone.Model);
 
-  window.CurveList = (function(_super) {
-    __extends(CurveList, _super);
+  window.CurveList = (function(superClass) {
+    extend(CurveList, superClass);
 
     function CurveList() {
-      this.updateUserFlagStatus = __bind(this.updateUserFlagStatus, this);
-      this.updateDirtyFlag = __bind(this.updateDirtyFlag, this);
-      this.updateCurveSummary = __bind(this.updateCurveSummary, this);
-      this.getIndexByCurveID = __bind(this.getIndexByCurveID, this);
-      this.getCurveByID = __bind(this.getCurveByID, this);
+      this.updateUserFlagStatus = bind(this.updateUserFlagStatus, this);
+      this.updateDirtyFlag = bind(this.updateDirtyFlag, this);
+      this.updateCurveSummary = bind(this.updateCurveSummary, this);
+      this.getIndexByCurveID = bind(this.getIndexByCurveID, this);
+      this.getCurveByID = bind(this.getCurveByID, this);
       return CurveList.__super__.constructor.apply(this, arguments);
     }
 
@@ -816,11 +779,11 @@
 
   })(Backbone.Collection);
 
-  window.CurveCurationSet = (function(_super) {
-    __extends(CurveCurationSet, _super);
+  window.CurveCurationSet = (function(superClass) {
+    extend(CurveCurationSet, superClass);
 
     function CurveCurationSet() {
-      this.parse = __bind(this.parse, this);
+      this.parse = bind(this.parse, this);
       return CurveCurationSet.__super__.constructor.apply(this, arguments);
     }
 
@@ -861,13 +824,12 @@
 
   })(Backbone.Model);
 
-  window.CurveEditorDirtyPanelController = (function(_super) {
-    __extends(CurveEditorDirtyPanelController, _super);
+  window.CurveEditorDirtyPanelController = (function(superClass) {
+    extend(CurveEditorDirtyPanelController, superClass);
 
     function CurveEditorDirtyPanelController() {
-      this.hide = __bind(this.hide, this);
-      this.show = __bind(this.show, this);
-      this.render = __bind(this.render, this);
+      this.show = bind(this.show, this);
+      this.render = bind(this.render, this);
       return CurveEditorDirtyPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -901,27 +863,18 @@
       return this.$('.bv_curveEditorDirtyPanel').modal("show");
     };
 
-    CurveEditorDirtyPanelController.prototype.hide = function() {
-      var comment, observation, reason, status;
-      status = "knocked out";
-      reason = this.knockoutReasonListController.getSelectedCode();
-      observation = reason;
-      comment = this.knockoutReasonListController.getSelectedModel().get('name');
-      return this.trigger('reasonSelected', status, observation, reason(comment));
-    };
-
     return CurveEditorDirtyPanelController;
 
   })(Backbone.View);
 
-  window.CurveSummaryController = (function(_super) {
-    __extends(CurveSummaryController, _super);
+  window.CurveSummaryController = (function(superClass) {
+    extend(CurveSummaryController, superClass);
 
     function CurveSummaryController() {
-      this.clearSelected = __bind(this.clearSelected, this);
-      this.setSelected = __bind(this.setSelected, this);
-      this.setUserFlagStatus = __bind(this.setUserFlagStatus, this);
-      this.render = __bind(this.render, this);
+      this.clearSelected = bind(this.clearSelected, this);
+      this.setSelected = bind(this.setSelected, this);
+      this.setUserFlagStatus = bind(this.setUserFlagStatus, this);
+      this.render = bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -950,7 +903,7 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = window.conf.service.rapache.fullpath + "curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds=";
+        curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=";
         curveUrl += this.model.get('curveid') + "&showAxes=false&labelAxes=false";
       }
       this.$el.html(this.template({
@@ -1078,14 +1031,14 @@
 
   })(Backbone.View);
 
-  window.CurveSummaryListController = (function(_super) {
-    __extends(CurveSummaryListController, _super);
+  window.CurveSummaryListController = (function(superClass) {
+    extend(CurveSummaryListController, superClass);
 
     function CurveSummaryListController() {
-      this.showCurveEditorDirtyPanel = __bind(this.showCurveEditorDirtyPanel, this);
-      this.selectionUpdated = __bind(this.selectionUpdated, this);
-      this.anyDirty = __bind(this.anyDirty, this);
-      this.render = __bind(this.render, this);
+      this.showCurveEditorDirtyPanel = bind(this.showCurveEditorDirtyPanel, this);
+      this.selectionUpdated = bind(this.selectionUpdated, this);
+      this.anyDirty = bind(this.anyDirty, this);
+      this.render = bind(this.render, this);
       return CurveSummaryListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1209,19 +1162,19 @@
 
   })(Backbone.View);
 
-  window.CurveCuratorController = (function(_super) {
-    __extends(CurveCuratorController, _super);
+  window.CurveCuratorController = (function(superClass) {
+    extend(CurveCuratorController, superClass);
 
     function CurveCuratorController() {
-      this.handleSortChanged = __bind(this.handleSortChanged, this);
-      this.handleFilterChanged = __bind(this.handleFilterChanged, this);
-      this.handleGetCurveDetailReturn = __bind(this.handleGetCurveDetailReturn, this);
-      this.curveSelectionUpdated = __bind(this.curveSelectionUpdated, this);
-      this.getCurvesFromExperimentCode = __bind(this.getCurvesFromExperimentCode, this);
-      this.handleCurveUpdateError = __bind(this.handleCurveUpdateError, this);
-      this.handleCurveDetailUpdated = __bind(this.handleCurveDetailUpdated, this);
-      this.handleCurveDetailSaved = __bind(this.handleCurveDetailSaved, this);
-      this.render = __bind(this.render, this);
+      this.handleSortChanged = bind(this.handleSortChanged, this);
+      this.handleFilterChanged = bind(this.handleFilterChanged, this);
+      this.handleGetCurveDetailReturn = bind(this.handleGetCurveDetailReturn, this);
+      this.curveSelectionUpdated = bind(this.curveSelectionUpdated, this);
+      this.getCurvesFromExperimentCode = bind(this.getCurvesFromExperimentCode, this);
+      this.handleCurveUpdateError = bind(this.handleCurveUpdateError, this);
+      this.handleCurveDetailUpdated = bind(this.handleCurveDetailUpdated, this);
+      this.handleCurveDetailSaved = bind(this.handleCurveDetailSaved, this);
+      this.render = bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
     }
 

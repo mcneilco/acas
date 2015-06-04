@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.ProtocolSearch = (function(_super) {
-    __extends(ProtocolSearch, _super);
+  window.ProtocolSearch = (function(superClass) {
+    extend(ProtocolSearch, superClass);
 
     function ProtocolSearch() {
       return ProtocolSearch.__super__.constructor.apply(this, arguments);
@@ -18,14 +18,14 @@
 
   })(Backbone.Model);
 
-  window.ProtocolSimpleSearchController = (function(_super) {
-    __extends(ProtocolSimpleSearchController, _super);
+  window.ProtocolSimpleSearchController = (function(superClass) {
+    extend(ProtocolSimpleSearchController, superClass);
 
     function ProtocolSimpleSearchController() {
-      this.doSearch = __bind(this.doSearch, this);
-      this.handleDoSearchClicked = __bind(this.handleDoSearchClicked, this);
-      this.updateProtocolSearchTerm = __bind(this.updateProtocolSearchTerm, this);
-      this.render = __bind(this.render, this);
+      this.doSearch = bind(this.doSearch, this);
+      this.handleDoSearchClicked = bind(this.handleDoSearchClicked, this);
+      this.updateProtocolSearchTerm = bind(this.updateProtocolSearchTerm, this);
+      this.render = bind(this.render, this);
       return ProtocolSimpleSearchController.__super__.constructor.apply(this, arguments);
     }
 
@@ -72,11 +72,16 @@
       $(".bv_searchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
-        $(".bv_searchingProtocolsMessage").removeClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
-        $(".bv_searchTerm").html(protocolSearchTerm);
         $(".bv_searchProtocolsStatusIndicator").removeClass("hide");
-        return this.doSearch(protocolSearchTerm);
+        if (!window.conf.browser.enableSearchAll && protocolSearchTerm === "*") {
+          return $(".bv_moreSpecificProtocolSearchNeeded").removeClass("hide");
+        } else {
+          $(".bv_searchingProtocolsMessage").removeClass("hide");
+          $(".bv_searchTerm").html(protocolSearchTerm);
+          $(".bv_moreSpecificProtocolSearchNeeded").addClass("hide");
+          return this.doSearch(protocolSearchTerm);
+        }
       }
     };
 
@@ -116,12 +121,12 @@
 
   })(AbstractFormController);
 
-  window.ProtocolRowSummaryController = (function(_super) {
-    __extends(ProtocolRowSummaryController, _super);
+  window.ProtocolRowSummaryController = (function(superClass) {
+    extend(ProtocolRowSummaryController, superClass);
 
     function ProtocolRowSummaryController() {
-      this.render = __bind(this.render, this);
-      this.handleClick = __bind(this.handleClick, this);
+      this.render = bind(this.render, this);
+      this.handleClick = bind(this.handleClick, this);
       return ProtocolRowSummaryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -144,7 +149,13 @@
     };
 
     ProtocolRowSummaryController.prototype.render = function() {
-      var toDisplay;
+      var date, toDisplay;
+      date = this.model.getCreationDate();
+      if (date.isNew()) {
+        date = "not recorded";
+      } else {
+        date = UtilityFunctions.prototype.convertMSToYMDDate(date.get('dateValue'));
+      }
       toDisplay = {
         protocolName: this.model.get('lsLabels').pickBestName().get('labelText'),
         protocolCode: this.model.get('codeName'),
@@ -153,7 +164,7 @@
         assayStage: this.model.getAssayStage().get("codeValue"),
         status: this.model.getStatus().get("codeValue"),
         experimentCount: this.model.get('experimentCount'),
-        creationDate: this.model.getCreationDate().get('dateValue')
+        creationDate: date
       };
       $(this.el).html(this.template(toDisplay));
       return this;
@@ -163,12 +174,12 @@
 
   })(Backbone.View);
 
-  window.ProtocolSummaryTableController = (function(_super) {
-    __extends(ProtocolSummaryTableController, _super);
+  window.ProtocolSummaryTableController = (function(superClass) {
+    extend(ProtocolSummaryTableController, superClass);
 
     function ProtocolSummaryTableController() {
-      this.render = __bind(this.render, this);
-      this.selectedRowChanged = __bind(this.selectedRowChanged, this);
+      this.render = bind(this.render, this);
+      this.selectedRowChanged = bind(this.selectedRowChanged, this);
       return ProtocolSummaryTableController.__super__.constructor.apply(this, arguments);
     }
 
@@ -208,20 +219,20 @@
 
   })(Backbone.View);
 
-  window.ProtocolBrowserController = (function(_super) {
-    __extends(ProtocolBrowserController, _super);
+  window.ProtocolBrowserController = (function(superClass) {
+    extend(ProtocolBrowserController, superClass);
 
     function ProtocolBrowserController() {
-      this.render = __bind(this.render, this);
-      this.destroyProtocolSummaryTable = __bind(this.destroyProtocolSummaryTable, this);
-      this.handleCreateExperimentClicked = __bind(this.handleCreateExperimentClicked, this);
-      this.handleDuplicateProtocolClicked = __bind(this.handleDuplicateProtocolClicked, this);
-      this.handleEditProtocolClicked = __bind(this.handleEditProtocolClicked, this);
-      this.handleCancelDeleteClicked = __bind(this.handleCancelDeleteClicked, this);
-      this.handleConfirmDeleteProtocolClicked = __bind(this.handleConfirmDeleteProtocolClicked, this);
-      this.handleDeleteProtocolClicked = __bind(this.handleDeleteProtocolClicked, this);
-      this.selectedProtocolUpdated = __bind(this.selectedProtocolUpdated, this);
-      this.setupProtocolSummaryTable = __bind(this.setupProtocolSummaryTable, this);
+      this.render = bind(this.render, this);
+      this.destroyProtocolSummaryTable = bind(this.destroyProtocolSummaryTable, this);
+      this.handleCreateExperimentClicked = bind(this.handleCreateExperimentClicked, this);
+      this.handleDuplicateProtocolClicked = bind(this.handleDuplicateProtocolClicked, this);
+      this.handleEditProtocolClicked = bind(this.handleEditProtocolClicked, this);
+      this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
+      this.handleConfirmDeleteProtocolClicked = bind(this.handleConfirmDeleteProtocolClicked, this);
+      this.handleDeleteProtocolClicked = bind(this.handleDeleteProtocolClicked, this);
+      this.selectedProtocolUpdated = bind(this.selectedProtocolUpdated, this);
+      this.setupProtocolSummaryTable = bind(this.setupProtocolSummaryTable, this);
       return ProtocolBrowserController.__super__.constructor.apply(this, arguments);
     }
 

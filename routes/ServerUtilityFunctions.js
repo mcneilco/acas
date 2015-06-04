@@ -1,5 +1,5 @@
 (function() {
-  var basicRScriptPreValidation, controllerRedirect, _;
+  var _, basicRScriptPreValidation, controllerRedirect;
 
   _ = require('underscore');
 
@@ -161,7 +161,7 @@
         if (!error && response.statusCode === 200) {
           return resp.end(JSON.stringify(json));
         } else {
-          console.log('got ajax error trying to save new experiment');
+          console.log('got ajax error');
           console.log(error);
           console.log(json);
           return console.log(response);
@@ -188,13 +188,13 @@
   };
 
   exports.makeAbsolutePath = function(relativePath) {
-    var acasPath, d, dotMatches, numDotDots, _i;
+    var acasPath, d, dotMatches, i, numDotDots, ref;
     acasPath = process.env.PWD;
     dotMatches = relativePath.match(/\.\.\//g);
     if (dotMatches != null) {
       numDotDots = relativePath.match(/\.\.\//g).length;
       relativePath = relativePath.replace(/\.\.\//g, '');
-      for (d = _i = 1; 1 <= numDotDots ? _i <= numDotDots : _i >= numDotDots; d = 1 <= numDotDots ? ++_i : --_i) {
+      for (d = i = 1, ref = numDotDots; 1 <= ref ? i <= ref : i >= ref; d = 1 <= ref ? ++i : --i) {
         acasPath = acasPath.replace(/[^\/]+\/?$/, '');
       }
     } else {
@@ -205,14 +205,14 @@
   };
 
   exports.getFileValuesFromEntity = function(thing, ignoreSaved) {
-    var fvs, state, v, vals, _i, _j, _len, _len1, _ref;
+    var fvs, i, j, len, len1, ref, state, v, vals;
     fvs = [];
-    _ref = thing.lsStates;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      state = _ref[_i];
+    ref = thing.lsStates;
+    for (i = 0, len = ref.length; i < len; i++) {
+      state = ref[i];
       vals = state.lsValues;
-      for (_j = 0, _len1 = vals.length; _j < _len1; _j++) {
-        v = vals[_j];
+      for (j = 0, len1 = vals.length; j < len1; j++) {
+        v = vals[j];
         if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
           if (!(ignoreSaved && (v.id != null))) {
             fvs.push(v);
@@ -236,10 +236,10 @@
   };
 
   exports.getPrefixFromEntityCode = function(code) {
-    var pref, redir, _ref;
-    _ref = controllerRedirect.controllerRedirectConf;
-    for (pref in _ref) {
-      redir = _ref[pref];
+    var pref, redir, ref;
+    ref = controllerRedirect.controllerRedirectConf;
+    for (pref in ref) {
+      redir = ref[pref];
       if (code.indexOf(pref) > -1) {
         return pref;
       }
@@ -283,21 +283,25 @@
   };
 
   exports.insertTransactionIntoEntity = function(transactionid, entity) {
-    var lab, state, val, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
+    var i, j, k, lab, len, len1, len2, ref, ref1, ref2, state, val;
     entity.lsTransaction = transactionid;
-    _ref = entity.lsLabels;
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      lab = _ref[_i];
-      lab.lsTransaction = transactionid;
+    if (entity.lsLabels != null) {
+      ref = entity.lsLabels;
+      for (i = 0, len = ref.length; i < len; i++) {
+        lab = ref[i];
+        lab.lsTransaction = transactionid;
+      }
     }
-    _ref1 = entity.lsStates;
-    for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-      state = _ref1[_j];
-      state.lsTransaction = transactionid;
-      _ref2 = state.lsValues;
-      for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
-        val = _ref2[_k];
-        val.lsTransaction = transactionid;
+    if (entity.lsStates != null) {
+      ref1 = entity.lsStates;
+      for (j = 0, len1 = ref1.length; j < len1; j++) {
+        state = ref1[j];
+        state.lsTransaction = transactionid;
+        ref2 = state.lsValues;
+        for (k = 0, len2 = ref2.length; k < len2; k++) {
+          val = ref2[k];
+          val.lsTransaction = transactionid;
+        }
       }
     }
     return entity;

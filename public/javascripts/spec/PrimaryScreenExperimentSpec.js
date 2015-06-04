@@ -390,16 +390,16 @@
             });
             return expect(filtErrors.length).toEqual(0);
           });
-          it("should be valid when instrument reader is unassigned", function() {
+          it("should be invalid when instrument reader is unassigned", function() {
             var filtErrors;
             this.psap.set({
               instrumentReader: "unassigned"
             });
-            expect(this.psap.isValid()).toBeTruthy();
+            expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
               return err.attribute === 'instrumentReader';
             });
-            return expect(filtErrors.length).toEqual(0);
+            return expect(filtErrors.length).toBeGreaterThan(0);
           });
           it("should be invalid when aggregate by is unassigned", function() {
             var filtErrors;
@@ -1431,14 +1431,14 @@
               return expect(this.psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy();
             });
           });
-          it("should not show error if instrumentReader is unassigned", function() {
+          it("should show error if instrumentReader is unassigned", function() {
             waitsFor(function() {
               return this.psapc.$('.bv_instrumentReader option').length > 0;
             }, 1000);
             return runs(function() {
               this.psapc.$('.bv_instrumentReader').val("unassigned");
               this.psapc.$('.bv_instrumentReader').change();
-              return expect(this.psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeFalsy();
+              return expect(this.psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy();
             });
           });
           it("should show error if signal direction rule is unassigned", function() {
@@ -1647,15 +1647,16 @@
           });
           return this.psac.render();
         });
-        it("Should disable analsyis parameter editing if status is finalized", function() {
+        it("Should disable analsyis parameter editing if status is approved", function() {
           this.psac.model.getStatus().set({
-            codeValue: "finalized"
+            codeValue: "approved"
           });
+          this.psac.handleStatusChanged();
           return expect(this.psac.$('.bv_normalizationRule').attr('disabled')).toEqual('disabled');
         });
-        it("Should enable analsyis parameter editing if status is finalized", function() {
+        it("Should enable analsyis parameter editing if status is started", function() {
           this.psac.model.getStatus().set({
-            codeValue: "finalized"
+            codeValue: "approved"
           });
           this.psac.model.getStatus().set({
             codeValue: "started"
@@ -1680,7 +1681,7 @@
           return this.psac.render();
         });
         return it("should show upload button as re-analyze since status is not 'not started'", function() {
-          return expect(this.psac.$('.bv_save').html()).toEqual("Re-Analyze");
+          return expect(this.psac.$('.bv_loadAnother').html()).toEqual("Re-Analyze");
         });
       });
       return describe("rendering analysis based on dry run status and analysis status", function() {

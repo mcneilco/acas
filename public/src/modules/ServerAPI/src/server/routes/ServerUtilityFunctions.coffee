@@ -136,7 +136,7 @@ exports.getFromACASServer = (baseurl, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to save new experiment'
+				console.log 'got ajax error'
 				console.log error
 				console.log json
 				console.log response
@@ -227,12 +227,14 @@ exports.createLSTransaction = (date, comments, callback) ->
 
 exports.insertTransactionIntoEntity = (transactionid, entity) ->
 	entity.lsTransaction = transactionid
-	for lab in entity.lsLabels
-		lab.lsTransaction = transactionid
-	for state in entity.lsStates
-		state.lsTransaction = transactionid
-		for val in state.lsValues
-			val.lsTransaction = transactionid
+	if entity.lsLabels?
+		for lab in entity.lsLabels
+			lab.lsTransaction = transactionid
+	if entity.lsStates?
+		for state in entity.lsStates
+			state.lsTransaction = transactionid
+			for val in state.lsValues
+				val.lsTransaction = transactionid
 
 	entity
 

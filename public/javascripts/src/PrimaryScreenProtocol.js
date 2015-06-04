@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.PrimaryScreenProtocolParameters = (function(_super) {
-    __extends(PrimaryScreenProtocolParameters, _super);
+  window.PrimaryScreenProtocolParameters = (function(superClass) {
+    extend(PrimaryScreenProtocolParameters, superClass);
 
     function PrimaryScreenProtocolParameters() {
-      this.validate = __bind(this.validate, this);
+      this.validate = bind(this.validate, this);
       return PrimaryScreenProtocolParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -70,7 +70,7 @@
       minY = this.getOrCreateValueByTypeAndKind("numericValue", "curve display min");
       if (minY.get('numericValue') === void 0 || minY.get('numericValue') === "") {
         minY.set({
-          numericValue: 0.0
+          numericValue: -20.0
         });
       }
       return minY;
@@ -81,7 +81,7 @@
       maxY = this.getOrCreateValueByTypeAndKind("numericValue", "curve display max");
       if (maxY.get('numericValue') === void 0 || maxY.get('numericValue') === "") {
         maxY.set({
-          numericValue: 100.0
+          numericValue: 120.0
         });
       }
       return maxY;
@@ -121,7 +121,7 @@
           codeKind: "molecular target"
         });
         mt.set({
-          codeOrigin: "ACAS DDICT"
+          codeOrigin: window.conf.molecularTargetCodeOrigin
         });
       }
       return mt;
@@ -241,11 +241,11 @@
 
   })(State);
 
-  window.PrimaryScreenProtocol = (function(_super) {
-    __extends(PrimaryScreenProtocol, _super);
+  window.PrimaryScreenProtocol = (function(superClass) {
+    extend(PrimaryScreenProtocol, superClass);
 
     function PrimaryScreenProtocol() {
-      this.validate = __bind(this.validate, this);
+      this.validate = bind(this.validate, this);
       return PrimaryScreenProtocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -313,24 +313,24 @@
 
   })(Protocol);
 
-  window.PrimaryScreenProtocolParametersController = (function(_super) {
-    __extends(PrimaryScreenProtocolParametersController, _super);
+  window.PrimaryScreenProtocolParametersController = (function(superClass) {
+    extend(PrimaryScreenProtocolParametersController, superClass);
 
     function PrimaryScreenProtocolParametersController() {
-      this.saveNewPickListOptions = __bind(this.saveNewPickListOptions, this);
-      this.handleCurveDisplayMinChanged = __bind(this.handleCurveDisplayMinChanged, this);
-      this.handleCurveDisplayMaxChanged = __bind(this.handleCurveDisplayMaxChanged, this);
-      this.handleCellLineChanged = __bind(this.handleCellLineChanged, this);
-      this.handleAssayTechnologyChanged = __bind(this.handleAssayTechnologyChanged, this);
-      this.handleAssayTypeChanged = __bind(this.handleAssayTypeChanged, this);
-      this.handleTargetOriginChanged = __bind(this.handleTargetOriginChanged, this);
-      this.checkCloneTarget = __bind(this.checkCloneTarget, this);
-      this.handleCloneValidationReturn = __bind(this.handleCloneValidationReturn, this);
-      this.validateClone = __bind(this.validateClone, this);
-      this.handleCloneNameChanged = __bind(this.handleCloneNameChanged, this);
-      this.handleMolecularTargetChanged = __bind(this.handleMolecularTargetChanged, this);
-      this.handleAssayActivityChanged = __bind(this.handleAssayActivityChanged, this);
-      this.render = __bind(this.render, this);
+      this.saveNewPickListOptions = bind(this.saveNewPickListOptions, this);
+      this.handleCurveDisplayMinChanged = bind(this.handleCurveDisplayMinChanged, this);
+      this.handleCurveDisplayMaxChanged = bind(this.handleCurveDisplayMaxChanged, this);
+      this.handleCellLineChanged = bind(this.handleCellLineChanged, this);
+      this.handleAssayTechnologyChanged = bind(this.handleAssayTechnologyChanged, this);
+      this.handleAssayTypeChanged = bind(this.handleAssayTypeChanged, this);
+      this.handleTargetOriginChanged = bind(this.handleTargetOriginChanged, this);
+      this.checkCloneTarget = bind(this.checkCloneTarget, this);
+      this.handleCloneValidationReturn = bind(this.handleCloneValidationReturn, this);
+      this.validateClone = bind(this.validateClone, this);
+      this.handleCloneNameChanged = bind(this.handleCloneNameChanged, this);
+      this.handleMolecularTargetChanged = bind(this.handleMolecularTargetChanged, this);
+      this.handleAssayActivityChanged = bind(this.handleAssayActivityChanged, this);
+      this.render = bind(this.render, this);
       return PrimaryScreenProtocolParametersController.__super__.constructor.apply(this, arguments);
     }
 
@@ -621,16 +621,16 @@
 
   })(AbstractFormController);
 
-  window.PrimaryScreenProtocolController = (function(_super) {
-    __extends(PrimaryScreenProtocolController, _super);
+  window.PrimaryScreenProtocolController = (function(superClass) {
+    extend(PrimaryScreenProtocolController, superClass);
 
     function PrimaryScreenProtocolController() {
-      this.attachFilesAreValid = __bind(this.attachFilesAreValid, this);
-      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
-      this.handleCheckForNewPickListOptions = __bind(this.handleCheckForNewPickListOptions, this);
-      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
-      this.setupPrimaryScreenProtocolParametersController = __bind(this.setupPrimaryScreenProtocolParametersController, this);
-      this.setupProtocolBaseController = __bind(this.setupProtocolBaseController, this);
+      this.attachFilesAreValid = bind(this.attachFilesAreValid, this);
+      this.displayInReadOnlyMode = bind(this.displayInReadOnlyMode, this);
+      this.handleCheckForNewPickListOptions = bind(this.handleCheckForNewPickListOptions, this);
+      this.handleSaveClicked = bind(this.handleSaveClicked, this);
+      this.setupPrimaryScreenProtocolParametersController = bind(this.setupPrimaryScreenProtocolParametersController, this);
+      this.setupProtocolBaseController = bind(this.setupProtocolBaseController, this);
       return PrimaryScreenProtocolController.__super__.constructor.apply(this, arguments);
     }
 
@@ -716,32 +716,32 @@
 
   })(Backbone.View);
 
-  window.AbstractPrimaryScreenProtocolModuleController = (function(_super) {
-    __extends(AbstractPrimaryScreenProtocolModuleController, _super);
+  window.AbstractPrimaryScreenProtocolModuleController = (function(superClass) {
+    extend(AbstractPrimaryScreenProtocolModuleController, superClass);
 
     function AbstractPrimaryScreenProtocolModuleController() {
-      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
-      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
-      this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
-      this.handleCancelComplete = __bind(this.handleCancelComplete, this);
-      this.handleCancelClicked = __bind(this.handleCancelClicked, this);
-      this.reinitialize = __bind(this.reinitialize, this);
-      this.isValid = __bind(this.isValid, this);
-      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
-      this.handleFinishSave = __bind(this.handleFinishSave, this);
-      this.prepareToSaveToDatabase = __bind(this.prepareToSaveToDatabase, this);
-      this.handleSaveModule = __bind(this.handleSaveModule, this);
-      this.updateModelFitClobValue = __bind(this.updateModelFitClobValue, this);
-      this.updateAnalysisClobValue = __bind(this.updateAnalysisClobValue, this);
-      this.setupModelFitTypeController = __bind(this.setupModelFitTypeController, this);
-      this.setupPrimaryScreenAnalysisParametersController = __bind(this.setupPrimaryScreenAnalysisParametersController, this);
-      this.setupPrimaryScreenProtocolController = __bind(this.setupPrimaryScreenProtocolController, this);
-      this.handleProtocolSaved = __bind(this.handleProtocolSaved, this);
-      this.modelChangeCallback = __bind(this.modelChangeCallback, this);
-      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
-      this.completeInitialization = __bind(this.completeInitialization, this);
-      this.initialize = __bind(this.initialize, this);
+      this.handleConfirmClearClicked = bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = bind(this.handleCancelClearClicked, this);
+      this.handleNewEntityClicked = bind(this.handleNewEntityClicked, this);
+      this.handleCancelComplete = bind(this.handleCancelComplete, this);
+      this.handleCancelClicked = bind(this.handleCancelClicked, this);
+      this.reinitialize = bind(this.reinitialize, this);
+      this.isValid = bind(this.isValid, this);
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.handleFinishSave = bind(this.handleFinishSave, this);
+      this.prepareToSaveToDatabase = bind(this.prepareToSaveToDatabase, this);
+      this.handleSaveModule = bind(this.handleSaveModule, this);
+      this.updateModelFitClobValue = bind(this.updateModelFitClobValue, this);
+      this.updateAnalysisClobValue = bind(this.updateAnalysisClobValue, this);
+      this.setupModelFitTypeController = bind(this.setupModelFitTypeController, this);
+      this.setupPrimaryScreenAnalysisParametersController = bind(this.setupPrimaryScreenAnalysisParametersController, this);
+      this.setupPrimaryScreenProtocolController = bind(this.setupPrimaryScreenProtocolController, this);
+      this.handleProtocolSaved = bind(this.handleProtocolSaved, this);
+      this.modelChangeCallback = bind(this.modelChangeCallback, this);
+      this.modelSyncCallback = bind(this.modelSyncCallback, this);
+      this.completeInitialization = bind(this.completeInitialization, this);
+      this.initialize = bind(this.initialize, this);
       return AbstractPrimaryScreenProtocolModuleController.__super__.constructor.apply(this, arguments);
     }
 
@@ -809,6 +809,11 @@
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
       this.model.on('readyToSave', this.handleFinishSave);
+      this.model.on('notUniqueName', (function(_this) {
+        return function() {
+          return _this.$('.bv_saveModuleFailed').show();
+        };
+      })(this));
       this.setupPrimaryScreenProtocolController();
       this.setupPrimaryScreenAnalysisParametersController();
       this.setupModelFitTypeController();
@@ -840,7 +845,8 @@
       this.setupModelFitTypeController();
       this.$('.bv_savingModule').hide();
       this.$('.bv_saveAndCancelButtons').hide();
-      if (this.$('.bv_cancelModuleComplete').is(":visible")) {
+      if (this.$('.bv_cancelModuleComplete').is(":visible") || $('.bv_saveModuleFailed').is(":visible")) {
+        this.$('.bv_saveModuleFailed').hide();
         this.$('.bv_updateModuleComplete').hide();
       } else {
         this.$('.bv_updateModuleComplete').show();
@@ -1042,8 +1048,8 @@
 
   })(AbstractFormController);
 
-  window.PrimaryScreenProtocolModuleController = (function(_super) {
-    __extends(PrimaryScreenProtocolModuleController, _super);
+  window.PrimaryScreenProtocolModuleController = (function(superClass) {
+    extend(PrimaryScreenProtocolModuleController, superClass);
 
     function PrimaryScreenProtocolModuleController() {
       return PrimaryScreenProtocolModuleController.__super__.constructor.apply(this, arguments);

@@ -51,9 +51,9 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 				if indivModelErrors != null
 					for error in indivModelErrors
 						unless (matchReadName and error.attribute == 'readPosition')
-								modelErrors.push
-									attribute: error.attribute+':eq('+index+')'
-									message: error.message
+							modelErrors.push
+								attribute: error.attribute+':eq('+index+')'
+								message: error.message
 				currentReadName = model.get('readName')
 				if currentReadName of usedReadNames
 					modelErrors.push
@@ -207,6 +207,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'vehicleControlBatch'
 				message: "A registered batch number must be provided."
 
+		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is null
+			errors.push
+				attribute: 'instrumentReader'
+				message: "Instrument Reader must be assigned"
 		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is null
 			errors.push
 				attribute: 'signalDirectionRule'
@@ -237,9 +241,9 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'assayVolume'
 				message: "Assay volume must be a number"
 		if (attrs.assayVolume == "" or attrs.assayVolume == null) and (attrs.transferVolume != "" and attrs.transferVolume != null)
-				errors.push
-					attribute: 'assayVolume'
-					message: "Assay volume must be assigned"
+			errors.push
+				attribute: 'assayVolume'
+				message: "Assay volume must be assigned"
 		if attrs.volumeType == "dilution" && _.isNaN(attrs.dilutionFactor)
 			errors.push
 				attribute: 'dilutionFactor'
@@ -329,10 +333,10 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		type
 
-	copyProtocolAttributes: (protocol) =>
-		modelFitStatus = @getModelFitStatus().get('codeValue')
-		super(protocol)
-		@getModelFitStatus().set codeValue: modelFitStatus
+#	copyProtocolAttributes: (protocol) =>
+#		modelFitStatus = @getModelFitStatus().get('codeValue')
+#		super(protocol)
+#		@getModelFitStatus().set codeValue: modelFitStatus
 
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
@@ -865,9 +869,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		super()
 		if @$('.bv_matchReadName').is(":checked")
 			@$('.bv_readPosition').attr 'disabled','disabled'
+		@$('.bv_loadAnother').prop('disabled', false)
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
-#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
+	#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
 
 	initialize: ->
 		@allowedFileTypes = ['zip']
@@ -944,18 +949,29 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 	disableAllInputs: ->
 		@analysisParameterController.disableAllInputs()
 
-	disableAll: ->
+	disableAll: =>
 		@analysisParameterController.disableAllInputs()
-		@$('.bv_htmlSummary').hide()
-		@$('.bv_fileUploadWrapper').hide()
-		@$('.bv_nextControlContainer').hide()
-		@$('.bv_saveControlContainer').hide()
-		@$('.bv_completeControlContainer').hide()
-		@$('.bv_notifications').hide()
+		@$('.bv_next').attr('disabled','disabled')
+		@$('.bv_next').prop('disabled', true)
+		@$('.bv_back').attr('disabled','disabled')
+		@$('.bv_back').prop('disabled', true)
+		@$('.bv_loadAnother').removeAttr('disabled')
+		@$('.bv_loadAnother').attr('disabled','disabled')
 
-	enableAll: ->
-		@analysisParameterController.enableAllInputs()
-		@showFileSelectPhase()
+	enableFields: =>
+		@$('.bv_back').removeAttr('disabled')
+		@$('.bv_back').prop('disabled', false)
+		@$('.bv_next').removeAttr('disabled')
+		@$('.bv_next').prop('disabled', false)
+		if @$('.bv_outerContainer .bv_flowControl .bv_nextControlContainer').css('display') != 'none' #file is not yet uploaded
+			@analysisParameterController.enableAllInputs()
+		else
+			if @analysisParameterController.model.isValid()
+				@$('.bv_loadAnother').removeAttr('disabled')
+				@$('.bv_loadAnother').prop('disabled', false)
+			else
+				@$('.bv_loadAnother').removeAttr('disabled')
+				@$('.bv_loadAnother').attr('disabled','disabled')
 
 	validateParseFile: =>
 		@analysisParameterController.updateModel()
@@ -984,7 +1000,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
-#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
@@ -996,7 +1012,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 
 	initialize: ->
 		@model.on "saveSuccess", @handleExperimentSaved
-		@model.getStatus().on 'change', @handleStatusChanged
+		@model.on 'statusChanged', @handleStatusChanged
+		@model.on 'changeProtocolParams', @handleAnalysisParamsChanged
 		@dataAnalysisController = null
 		$(@el).empty()
 		$(@el).html @template()
@@ -1160,7 +1177,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@setExperimentSaved()
 		unless @dataAnalysisController?
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
-		@model.getStatus().on 'change', @handleStatusChanged
+#		@model.getStatus().on 'change', @handleStatusChanged
 
 	handleAnalysisComplete: =>
 		# Results are shown analysis controller, so redundant here until experiment is reloaded, which resets analysis controller
@@ -1170,9 +1187,18 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	handleStatusChanged: =>
 		if @dataAnalysisController != null
 			if @model.isEditable()
-				@dataAnalysisController.enableAll()
+				@dataAnalysisController.enableFields()
 			else
 				@dataAnalysisController.disableAll()
+				@$('.bv_loadAnother').attr('disabled', 'disabled')
+				@$('.bv_loadAnother').prop('disabled', true)
+
+	handleAnalysisParamsChanged: =>
+		if @dataAnalysisController?
+			@dataAnalysisController.undelegateEvents()
+		@setupDataAnalysisController(@options.uploadAndRunControllerName)
+		@setExperimentNotSaved()
+		@$('.bv_saveExperimentToAnalyze').html("Analysis parameters have changed. To analyze data, save the experiment first.")
 
 	setupDataAnalysisController: (dacClassName) ->
 		newArgs =
@@ -1215,7 +1241,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								if json.length == 0
 									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-	#								exp = new PrimaryScreenExperiment json
+#								exp = new PrimaryScreenExperiment json
 									lsKind = json.lsKind
 									if lsKind is "Bio Activity"
 										exp = new PrimaryScreenExperiment json
@@ -1268,6 +1294,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@analysisController.on 'analysis-completed', =>
 			@fetchModel()
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
+		@model.on 'statusChanged', @handleStatusChanged
 		@experimentBaseController.render()
 		@analysisController.render()
 		@modelFitController.render()
@@ -1304,6 +1331,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	handleProtocolAttributesCopied: =>
 		@analysisController.render()
+
+	handleStatusChanged: =>
+		@analysisController.handleStatusChanged()
+		@modelFitController.handleModelStatusChanged()
 
 	showWarningModal: ->
 		@$('a[href="#tab3"]').tab('show')
@@ -1361,9 +1392,9 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 
 	updateModelFitTab: =>
 		@modelFitController.model = @model
-		@modelFitController.setReadyForFit()
+		@modelFitController.testReadyForFit()
 		@$('.bv_resultsContainer').hide()
-#		@modelFitController.render()
+		@modelFitController.render()
 
 
 class window.PrimaryScreenExperimentController extends AbstractPrimaryScreenExperimentController

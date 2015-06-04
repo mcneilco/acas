@@ -102,9 +102,9 @@
               });
               return expect(this.exp.isEditable()).toBeTruthy();
             });
-            it("should be locked if status is finalized", function() {
+            it("should be locked if status is approved", function() {
               this.exp.getStatus().set({
-                codeValue: "finalized"
+                codeValue: "approved"
               });
               return expect(this.exp.isEditable()).toBeFalsy();
             });
@@ -629,11 +629,14 @@
           it("should not fill the comments field", function() {
             return expect(this.ebc.$('.bv_comments').html()).toEqual("");
           });
-          return it("should not fill the notebook field", function() {
+          it("should not fill the notebook field", function() {
             return expect(this.ebc.$('.bv_notebook').val()).toEqual("");
           });
+          return it("should have the experiment name checkbox checked field", function() {
+            return expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual("checked");
+          });
         });
-        return describe("User edits fields", function() {
+        describe("User edits fields", function() {
           it("should update model when scientist is changed", function() {
             expect(this.ebc.model.getScientist().get('codeValue')).toEqual(window.AppLaunchParams.loginUserName);
             waitsFor(function() {
@@ -734,6 +737,18 @@
             });
           });
         });
+        return describe("Match experiment code name checkbox behavior and validation", function() {
+          it("should disable the experiment name when the experiment name checkbox is checked", function() {
+            expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toEqual("checked");
+            this.ebc.$('.bv_exptNameChkbx').click();
+            return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toEqual("disabled");
+          });
+          return it("should enable the experiment name when the experiment name checkbox is unchecked", function() {
+            this.ebc.$('.bv_exptNameChkbx').click();
+            this.ebc.$('.bv_exptNameChkbx').click();
+            return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined();
+          });
+        });
       });
       describe("When created from a saved experiment", function() {
         beforeEach(function() {
@@ -814,24 +829,44 @@
               return expect(this.ebc.$('.bv_status').val()).toEqual("started");
             });
           });
-          return it("should show the status select enabled", function() {
+          it("should show the status select enabled", function() {
             return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
+          });
+          return it("should not have the match experiment code name checkbox checked", function() {
+            return expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined();
+          });
+        });
+        describe("Match experiment code name checkbox behavior and validation", function() {
+          it("should disable the experiment name when the experiment name checkbox is checked", function() {
+            expect(this.ebc.$('.bv_exptNameChkbx').attr("checked")).toBeUndefined();
+            this.ebc.$('.bv_exptNameChkbx').click();
+            this.ebc.$('.bv_exptNameChkbx').click();
+            return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toEqual("disabled");
+          });
+          it("should disable the experiment name when the experiment name checkbox is unchecked", function() {
+            this.ebc.$('.bv_exptNameChkbx').click();
+            return expect(this.ebc.$('.bv_experimentName').attr("disabled")).toBeUndefined();
+          });
+          return it("should set the experiment name to be the same as the code name when the checkbox is checked", function() {
+            this.ebc.$('.bv_exptNameChkbx').click();
+            this.ebc.$('.bv_exptNameChkbx').click();
+            return expect(this.ebc.$('.bv_experimentName').val()).toEqual(this.ebc.$('.bv_experimentCode').html());
           });
         });
         describe("Experiment status behavior", function() {
-          it("should disable all fields if experiment is finalized", function() {
+          it("should disable all fields if experiment is approved", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').val('approved');
               this.ebc.$('.bv_status').change();
               expect(this.ebc.$('.bv_notebook').attr('disabled')).toEqual('disabled');
               return expect(this.ebc.$('.bv_status').attr('disabled')).toBeUndefined();
             });
           });
           it("should enable all fields if experiment is started", function() {
-            this.ebc.$('.bv_status').val('finalized');
+            this.ebc.$('.bv_status').val('approved');
             this.ebc.$('.bv_status').change();
             this.ebc.$('.bv_status').val('started');
             this.ebc.$('.bv_status').change();
@@ -842,12 +877,12 @@
             this.ebc.$('.bv_status').change();
             return expect(this.ebc.$('.bv_lock')).toBeHidden();
           });
-          return it("should show lock icon if experiment is finalized", function() {
+          return it("should show lock icon if experiment is approved", function() {
             waitsFor(function() {
               return this.ebc.$('.bv_status option').length > 0;
             }, 1000);
             return runs(function() {
-              this.ebc.$('.bv_status').val('finalized');
+              this.ebc.$('.bv_status').val('approved');
               this.ebc.$('.bv_status').change();
               return expect(this.ebc.$('.bv_lock')).toBeVisible();
             });
@@ -1034,6 +1069,8 @@
             });
             it("should show error in name field", function() {
               return runs(function() {
+                this.ebc.$('.bv_exptNameChkbx').click();
+                this.ebc.$('.bv_exptNameChkbx').click();
                 return expect(this.ebc.$('.bv_group_experimentName').hasClass('error')).toBeTruthy();
               });
             });
@@ -1110,6 +1147,9 @@
             });
           });
           describe("expect save to work", function() {
+            beforeEach(function() {
+              return runs(function() {});
+            });
             it("model should be valid and ready to save", function() {
               return runs(function() {
                 return expect(this.ebc.model.isValid()).toBeTruthy();
@@ -1125,10 +1165,23 @@
                 return expect(this.ebc.$('.bv_experimentCode').html()).toEqual("EXPT-00000001");
               });
             });
-            return it("should show the save button text as Update", function() {
+            it("should create a new experiment name to match the code if the expt name checkbox is checked", function() {
               runs(function() {
                 this.ebc.$('.bv_save').removeAttr('disabled', 'disabled');
                 return this.ebc.$('.bv_save').click();
+              });
+              waits(1000);
+              return runs(function() {
+                return expect(this.ebc.$('.bv_experimentName').val()).toEqual(this.ebc.$('.bv_experimentCode').html());
+              });
+            });
+            return it("should show the save button text as Update", function() {
+              runs(function() {
+                this.ebc.$('.bv_save').removeAttr('disabled', 'disabled');
+                this.ebc.$('.bv_save').click();
+                this.ebc.$('.bv_save').click();
+                console.log("trying to save");
+                return console.log(this.ebc.model.validationError);
               });
               waits(1000);
               return runs(function() {
@@ -1155,6 +1208,7 @@
               });
               waits(1000);
               return runs(function() {
+                this.ebc.$('.bv_confirmClear').click();
                 return expect(this.ebc.$('.bv_experimentName').val()).toEqual("");
               });
             });

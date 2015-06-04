@@ -4,6 +4,7 @@
     app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
     app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail);
     app.post('/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub);
+    app.get('/api/curve/render/*', loginRoutes.ensureAuthenticated, exports.renderCurve);
     return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 
@@ -114,6 +115,7 @@
 
   exports.updateCurveDetail = function(req, resp) {
     var baseurl, config, curveCuratorTestData, request;
+    req.connection.setTimeout(6000000);
     if (global.specRunnerTestmode) {
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
@@ -126,7 +128,8 @@
         method: 'POST',
         url: baseurl,
         body: JSON.stringify(req.body),
-        json: true
+        json: true,
+        timeout: 6000000
       }, (function(_this) {
         return function(error, response, json) {
           if (!error && response.statusCode === 200) {
@@ -136,7 +139,6 @@
           } else {
             console.log('got ajax error trying to refit curve');
             console.log(error);
-            console.log(json);
             console.log(response);
             return resp.send('got ajax error trying to refit curve', 500);
           }
@@ -209,6 +211,17 @@
         deployMode: global.deployMode
       }
     });
+  };
+
+  exports.renderCurve = function(req, resp) {
+    var config, rapacheCall, redirectQuery, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    redirectQuery = req._parsedUrl.query;
+    console.log(redirectQuery);
+    console.log(req.query);
+    rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery;
+    return req.pipe(request(rapacheCall)).pipe(resp);
   };
 
 }).call(this);

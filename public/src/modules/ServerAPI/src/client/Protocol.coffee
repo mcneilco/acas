@@ -7,6 +7,9 @@ class window.Protocol extends BaseEntity
 
 	parse: (resp) =>
 		if resp == "not unique protocol name" or resp == '"not unique protocol name"'
+			@trigger 'notUniqueName'
+			resp
+		else if resp == "saveFailed" or resp == '"saveFailed"'
 			@trigger 'saveFailed'
 			resp
 		else
@@ -22,8 +25,8 @@ class window.Protocol extends BaseEntity
 					@trigger 'change'
 			if resp.lsTags not instanceof TagList
 				resp.lsTags = new TagList(resp.lsTags)
-			resp.lsTags.on 'change', =>
-				@trigger 'change'
+				resp.lsTags.on 'change', =>
+					@trigger 'change'
 			resp
 
 	getCreationDate: ->
@@ -150,11 +153,16 @@ class window.ProtocolBaseController extends BaseEntityController
 			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
-		@model.on 'saveFailed', =>
+		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
+			$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
-			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+#			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+#				@$('.bv_saveFailed').hide()
+			$('.bv_protocolSaveFailed').on 'hidden', =>
 				@$('.bv_saveFailed').hide()
+		@model.on 'saveFailed', =>
+			@$('.bv_saveFailed').show()
 		@setupStatusSelect()
 		@setupScientistSelect()
 		@setupTagList()

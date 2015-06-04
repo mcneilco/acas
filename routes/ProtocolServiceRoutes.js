@@ -88,7 +88,8 @@
             } else {
               console.log('got ajax error trying to update protocol');
               console.log(error);
-              return console.log(response);
+              console.log(response);
+              return callback(JSON.stringify("saveFailed"));
             }
           };
         })(this));
@@ -109,7 +110,7 @@
         }
       }
       checkFilesAndUpdate = function(prot) {
-        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
         filesToSave = fileVals.length;
         completeProtUpdate = function(protToUpdate) {
@@ -128,17 +129,20 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
-          _results = [];
-          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-            fv = fileVals[_i];
-            _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
+          results = [];
+          for (i = 0, len = fileVals.length; i < len; i++) {
+            fv = fileVals[i];
+            results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
           }
-          return _results;
+          return results;
         } else {
           return resp.json(prot);
         }
       };
       if (req.query.testMode || global.specRunnerTestmode) {
+        if (protToSave.id == null) {
+          protToSave.id = 1;
+        }
         return checkFilesAndUpdate(protToSave);
       } else {
         config = require('../conf/compiled/conf.js');
@@ -158,8 +162,10 @@
               console.log(error);
               console.log(response.statusCode);
               console.log(response);
-              if (response.body[0].message === "not unique experiment name") {
+              if (response.body[0].message === "not unique protocol name") {
                 return resp.end(JSON.stringify(response.body[0].message));
+              } else {
+                return resp.end(JSON.stringify("saveFailed"));
               }
             }
           };
@@ -173,7 +179,7 @@
   };
 
   exports.putProtocol = function(req, resp) {
-    var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, protToSave, _i, _len, _results;
+    var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, protToSave, results;
     protToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(protToSave, true);
     filesToSave = fileVals.length;
@@ -193,16 +199,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      _results = [];
-      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-        fv = fileVals[_i];
+      results = [];
+      for (i = 0, len = fileVals.length; i < len; i++) {
+        fv = fileVals[i];
         if (fv.id == null) {
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          _results.push(void 0);
+          results.push(void 0);
         }
       }
-      return _results;
+      return results;
     } else {
       return completeProtUpdate();
     }
@@ -234,10 +240,10 @@
       shouldFilterByKind = false;
     }
     translateToCodes = function(labels) {
-      var label, match, protCodes, _i, _len;
+      var i, label, len, match, protCodes;
       protCodes = [];
-      for (_i = 0, _len = labels.length; _i < _len; _i++) {
-        label = labels[_i];
+      for (i = 0, len = labels.length; i < len; i++) {
+        label = labels[i];
         if (shouldFilterByName) {
           match = label.labelText.toUpperCase().indexOf(filterString) > -1;
         } else if (shouldFilterByKind) {
@@ -294,10 +300,10 @@
   exports.protocolKindCodeList = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, request, translateToCodes;
     translateToCodes = function(kinds) {
-      var kind, kindCodes, _i, _len;
+      var i, kind, kindCodes, len;
       kindCodes = [];
-      for (_i = 0, _len = kinds.length; _i < _len; _i++) {
-        kind = kinds[_i];
+      for (i = 0, len = kinds.length; i < len; i++) {
+        kind = kinds[i];
         kindCodes.push({
           code: kind.kindName,
           name: kind.kindName,

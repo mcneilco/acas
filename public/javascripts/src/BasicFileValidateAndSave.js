@@ -1,27 +1,27 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.BasicFileValidateAndSaveController = (function(_super) {
-    __extends(BasicFileValidateAndSaveController, _super);
+  window.BasicFileValidateAndSaveController = (function(superClass) {
+    extend(BasicFileValidateAndSaveController, superClass);
 
     function BasicFileValidateAndSaveController() {
-      this.handleFormValid = __bind(this.handleFormValid, this);
-      this.handleFormInvalid = __bind(this.handleFormInvalid, this);
-      this.loadAnother = __bind(this.loadAnother, this);
-      this.backToUpload = __bind(this.backToUpload, this);
-      this.handleSaveReturnSuccess = __bind(this.handleSaveReturnSuccess, this);
-      this.handleValidationReturnSuccess = __bind(this.handleValidationReturnSuccess, this);
-      this.parseAndSave = __bind(this.parseAndSave, this);
-      this.validateParseFile = __bind(this.validateParseFile, this);
-      this.handleImagesFileRemoved = __bind(this.handleImagesFileRemoved, this);
-      this.handleImagesFileUploaded = __bind(this.handleImagesFileUploaded, this);
-      this.handleReportFileRemoved = __bind(this.handleReportFileRemoved, this);
-      this.handleReportFileUploaded = __bind(this.handleReportFileUploaded, this);
-      this.handleParseFileRemoved = __bind(this.handleParseFileRemoved, this);
-      this.handleParseFileUploaded = __bind(this.handleParseFileUploaded, this);
-      this.render = __bind(this.render, this);
+      this.handleFormValid = bind(this.handleFormValid, this);
+      this.handleFormInvalid = bind(this.handleFormInvalid, this);
+      this.loadAnother = bind(this.loadAnother, this);
+      this.backToUpload = bind(this.backToUpload, this);
+      this.handleSaveReturnSuccess = bind(this.handleSaveReturnSuccess, this);
+      this.handleValidationReturnSuccess = bind(this.handleValidationReturnSuccess, this);
+      this.parseAndSave = bind(this.parseAndSave, this);
+      this.validateParseFile = bind(this.validateParseFile, this);
+      this.handleImagesFileRemoved = bind(this.handleImagesFileRemoved, this);
+      this.handleImagesFileUploaded = bind(this.handleImagesFileUploaded, this);
+      this.handleReportFileRemoved = bind(this.handleReportFileRemoved, this);
+      this.handleReportFileUploaded = bind(this.handleReportFileUploaded, this);
+      this.handleParseFileRemoved = bind(this.handleParseFileRemoved, this);
+      this.handleParseFileUploaded = bind(this.handleParseFileUploaded, this);
+      this.render = bind(this.render, this);
       return BasicFileValidateAndSaveController.__super__.constructor.apply(this, arguments);
     }
 
@@ -219,7 +219,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
-      var summaryStr, _ref;
+      var ref, summaryStr;
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -237,7 +237,7 @@
       this.showFileUploadPhase();
       this.$('.bv_resultStatus').html(summaryStr);
       this.notificationController.addNotifications(this.errorOwnerName, json.errorMessages);
-      if (((_ref = json.results) != null ? _ref.htmlSummary : void 0) != null) {
+      if (((ref = json.results) != null ? ref.htmlSummary : void 0) != null) {
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
       this.$('.bv_validateStatusDropDown').modal("hide");
@@ -346,7 +346,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.showCSVPreview = function(csv) {
-      var csvRows, headCells, r, rowCells, val, _i, _j, _k, _len, _len1, _ref;
+      var csvRows, headCells, i, j, k, len, len1, r, ref, rowCells, val;
       this.$('.csvPreviewTHead').empty();
       this.$('.csvPreviewTBody').empty();
       csvRows = csv.split('\n');
@@ -354,15 +354,15 @@
         headCells = csvRows[0].split(',');
         if (headCells.length > 1) {
           this.$('.csvPreviewTHead').append("<tr></tr>");
-          for (_i = 0, _len = headCells.length; _i < _len; _i++) {
-            val = headCells[_i];
+          for (i = 0, len = headCells.length; i < len; i++) {
+            val = headCells[i];
             this.$('.csvPreviewTHead tr').append("<th>" + val + "</th>");
           }
-          for (r = _j = 1, _ref = csvRows.length - 2; 1 <= _ref ? _j <= _ref : _j >= _ref; r = 1 <= _ref ? ++_j : --_j) {
+          for (r = j = 1, ref = csvRows.length - 2; 1 <= ref ? j <= ref : j >= ref; r = 1 <= ref ? ++j : --j) {
             this.$('.csvPreviewTBody').append("<tr></tr>");
             rowCells = csvRows[r].split(',');
-            for (_k = 0, _len1 = rowCells.length; _k < _len1; _k++) {
-              val = rowCells[_k];
+            for (k = 0, len1 = rowCells.length; k < len1; k++) {
+              val = rowCells[k];
               this.$('.csvPreviewTBody tr:last').append("<td>" + val + "</td>");
             }
           }

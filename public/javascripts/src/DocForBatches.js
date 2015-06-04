@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.DocForBatches = (function(_super) {
-    __extends(DocForBatches, _super);
+  window.DocForBatches = (function(superClass) {
+    extend(DocForBatches, superClass);
 
     function DocForBatches() {
       return DocForBatches.__super__.constructor.apply(this, arguments);
@@ -219,15 +219,15 @@
 
   })(Backbone.Model);
 
-  window.DocForBatchesController = (function(_super) {
-    __extends(DocForBatchesController, _super);
+  window.DocForBatchesController = (function(superClass) {
+    extend(DocForBatchesController, superClass);
 
     function DocForBatchesController() {
-      this.resetForm = __bind(this.resetForm, this);
-      this.save = __bind(this.save, this);
-      this.subFormIsInvalid = __bind(this.subFormIsInvalid, this);
-      this.subFormIsValid = __bind(this.subFormIsValid, this);
-      this.render = __bind(this.render, this);
+      this.resetForm = bind(this.resetForm, this);
+      this.save = bind(this.save, this);
+      this.subFormIsInvalid = bind(this.subFormIsInvalid, this);
+      this.subFormIsValid = bind(this.subFormIsValid, this);
+      this.render = bind(this.render, this);
       return DocForBatchesController.__super__.constructor.apply(this, arguments);
     }
 

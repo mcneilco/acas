@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.PickList = (function(_super) {
-    __extends(PickList, _super);
+  window.PickList = (function(superClass) {
+    extend(PickList, superClass);
 
     function PickList() {
       return PickList.__super__.constructor.apply(this, arguments);
@@ -14,8 +14,8 @@
 
   })(Backbone.Model);
 
-  window.PickListList = (function(_super) {
-    __extends(PickListList, _super);
+  window.PickListList = (function(superClass) {
+    extend(PickListList, superClass);
 
     function PickListList() {
       return PickListList.__super__.constructor.apply(this, arguments);
@@ -25,6 +25,12 @@
 
     PickListList.prototype.setType = function(type) {
       return this.type = type;
+    };
+
+    PickListList.prototype.getModelWithId = function(id) {
+      return this.detect(function(enu) {
+        return enu.get("id") === id;
+      });
     };
 
     PickListList.prototype.getModelWithCode = function(code) {
@@ -43,11 +49,11 @@
 
   })(Backbone.Collection);
 
-  window.PickListOptionController = (function(_super) {
-    __extends(PickListOptionController, _super);
+  window.PickListOptionController = (function(superClass) {
+    extend(PickListOptionController, superClass);
 
     function PickListOptionController() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return PickListOptionController.__super__.constructor.apply(this, arguments);
     }
 
@@ -64,14 +70,61 @@
 
   })(Backbone.View);
 
-  window.PickListSelectController = (function(_super) {
-    __extends(PickListSelectController, _super);
+  window.PickListOptionControllerForLsThing = (function(superClass) {
+    extend(PickListOptionControllerForLsThing, superClass);
+
+    function PickListOptionControllerForLsThing() {
+      this.render = bind(this.render, this);
+      return PickListOptionControllerForLsThing.__super__.constructor.apply(this, arguments);
+    }
+
+    PickListOptionControllerForLsThing.prototype.tagName = "option";
+
+    PickListOptionControllerForLsThing.prototype.initialize = function() {
+      if (this.options.insertFirstOption != null) {
+        return this.insertFirstOption = this.options.insertFirstOption;
+      } else {
+        return this.insertFirstOption = null;
+      }
+    };
+
+    PickListOptionControllerForLsThing.prototype.render = function() {
+      var bestName, displayValue, preferredNames;
+      preferredNames = _.filter(this.model.get('lsLabels'), function(lab) {
+        return lab.preferred && (lab.lsType === "name") && !lab.ignored;
+      });
+      bestName = _.max(preferredNames, function(lab) {
+        var rd;
+        rd = lab.recordedDate;
+        if (rd === "") {
+          return Infinity;
+        } else {
+          return rd;
+        }
+      });
+      if (bestName != null) {
+        displayValue = bestName.labelText;
+      } else if (this.model.get('codeName') != null) {
+        displayValue = this.model.get('codeName');
+      } else {
+        displayValue = this.insertFirstOption.get('name');
+      }
+      $(this.el).attr("value", this.model.get("id")).text(displayValue);
+      return this;
+    };
+
+    return PickListOptionControllerForLsThing;
+
+  })(Backbone.View);
+
+  window.PickListSelectController = (function(superClass) {
+    extend(PickListSelectController, superClass);
 
     function PickListSelectController() {
-      this.checkOptionInCollection = __bind(this.checkOptionInCollection, this);
-      this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
-      this.handleListReset = __bind(this.handleListReset, this);
+      this.checkOptionInCollection = bind(this.checkOptionInCollection, this);
+      this.addOne = bind(this.addOne, this);
+      this.render = bind(this.render, this);
+      this.handleListReset = bind(this.handleListReset, this);
       return PickListSelectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -193,8 +246,86 @@
 
   })(Backbone.View);
 
-  window.AddParameterOptionPanel = (function(_super) {
-    __extends(AddParameterOptionPanel, _super);
+  window.PickListForLsThingsSelectController = (function(superClass) {
+    extend(PickListForLsThingsSelectController, superClass);
+
+    function PickListForLsThingsSelectController() {
+      this.addOne = bind(this.addOne, this);
+      this.handleListReset = bind(this.handleListReset, this);
+      return PickListForLsThingsSelectController.__super__.constructor.apply(this, arguments);
+    }
+
+    PickListForLsThingsSelectController.prototype.handleListReset = function() {
+      var newOption;
+      if (this.insertFirstOption) {
+        this.collection.add(this.insertFirstOption, {
+          at: 0,
+          silent: true
+        });
+        if (!(this.selectedCode === this.insertFirstOption.get('code'))) {
+          if ((this.collection.where({
+            id: this.selectedCode
+          })).length === 0) {
+            newOption = new PickList({
+              id: this.selectedCode,
+              name: this.selectedCode
+            });
+            this.collection.add(newOption);
+          }
+        }
+      }
+      return this.render();
+    };
+
+    PickListForLsThingsSelectController.prototype.addOne = function(enm) {
+      var shouldRender;
+      shouldRender = this.showIgnored;
+      if (enm.get('ignored')) {
+        if (this.selectedCode != null) {
+          if (this.selectedCode === enm.get('code')) {
+            shouldRender = true;
+          }
+        }
+      } else {
+        shouldRender = true;
+      }
+      if (shouldRender) {
+        return $(this.el).append(new PickListOptionControllerForLsThing({
+          model: enm,
+          insertFirstOption: this.insertFirstOption
+        }).render().el);
+      }
+    };
+
+    PickListForLsThingsSelectController.prototype.getSelectedModel = function() {
+      return this.collection.getModelWithId(parseInt(this.getSelectedCode()));
+    };
+
+    return PickListForLsThingsSelectController;
+
+  })(PickListSelectController);
+
+  window.ComboBoxController = (function(superClass) {
+    extend(ComboBoxController, superClass);
+
+    function ComboBoxController() {
+      this.handleListReset = bind(this.handleListReset, this);
+      return ComboBoxController.__super__.constructor.apply(this, arguments);
+    }
+
+    ComboBoxController.prototype.handleListReset = function() {
+      ComboBoxController.__super__.handleListReset.call(this);
+      return $(this.el).combobox({
+        bsVersion: '2'
+      });
+    };
+
+    return ComboBoxController;
+
+  })(PickListSelectController);
+
+  window.AddParameterOptionPanel = (function(superClass) {
+    extend(AddParameterOptionPanel, superClass);
 
     function AddParameterOptionPanel() {
       return AddParameterOptionPanel.__super__.constructor.apply(this, arguments);
@@ -230,16 +361,16 @@
 
   })(Backbone.Model);
 
-  window.AddParameterOptionPanelController = (function(_super) {
-    __extends(AddParameterOptionPanelController, _super);
+  window.AddParameterOptionPanelController = (function(superClass) {
+    extend(AddParameterOptionPanelController, superClass);
 
     function AddParameterOptionPanelController() {
-      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
-      this.validationError = __bind(this.validationError, this);
-      this.triggerAddRequest = __bind(this.triggerAddRequest, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.showModal = __bind(this.showModal, this);
-      this.render = __bind(this.render, this);
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.triggerAddRequest = bind(this.triggerAddRequest, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.showModal = bind(this.showModal, this);
+      this.render = bind(this.render, this);
       return AddParameterOptionPanelController.__super__.constructor.apply(this, arguments);
     }
 
@@ -312,15 +443,15 @@
 
   })(AbstractFormController);
 
-  window.EditablePickListSelectController = (function(_super) {
-    __extends(EditablePickListSelectController, _super);
+  window.EditablePickListSelectController = (function(superClass) {
+    extend(EditablePickListSelectController, superClass);
 
     function EditablePickListSelectController() {
-      this.saveNewOption = __bind(this.saveNewOption, this);
-      this.handleAddOptionRequested = __bind(this.handleAddOptionRequested, this);
-      this.handleShowAddPanel = __bind(this.handleShowAddPanel, this);
-      this.setupEditingPrivileges = __bind(this.setupEditingPrivileges, this);
-      this.render = __bind(this.render, this);
+      this.saveNewOption = bind(this.saveNewOption, this);
+      this.handleAddOptionRequested = bind(this.handleAddOptionRequested, this);
+      this.handleShowAddPanel = bind(this.handleShowAddPanel, this);
+      this.setupEditingPrivileges = bind(this.setupEditingPrivileges, this);
+      this.render = bind(this.render, this);
       return EditablePickListSelectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -443,7 +574,7 @@
       code = this.pickListController.getSelectedCode();
       selectedModel = this.pickListController.collection.getModelWithCode(code);
       if (selectedModel !== void 0 && selectedModel.get('code') !== "unassigned") {
-        if ((selectedModel.get('id') != null) || selectedModel.get('codeOrigin') !== "ACAS DDICT") {
+        if (selectedModel.get('id') != null) {
           return callback.call();
         } else {
           return $.ajax({

@@ -255,12 +255,12 @@ describe "Primary Screen Experiment module testing", ->
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='assayVolume'
 					expect(filtErrors.length).toEqual 0
-				it "should be valid when instrument reader is unassigned", ->
+				it "should be invalid when instrument reader is unassigned", ->
 					@psap.set instrumentReader: "unassigned"
-					expect(@psap.isValid()).toBeTruthy()
+					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='instrumentReader'
-					expect(filtErrors.length).toEqual 0
+					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when aggregate by is unassigned", ->
 					@psap.set aggregateBy: "unassigned"
 					expect(@psap.isValid()).toBeFalsy()
@@ -973,14 +973,14 @@ describe "Primary Screen Experiment module testing", ->
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_vehicleControlBatch').hasClass("error")).toBeFalsy()
-				it "should not show error if instrumentReader is unassigned", ->
+				it "should show error if instrumentReader is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_instrumentReader option').length > 0
 					, 1000
 					runs ->
 						@psapc.$('.bv_instrumentReader').val "unassigned"
 						@psapc.$('.bv_instrumentReader').change()
-						expect(@psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_instrumentReader').hasClass("error")).toBeTruthy()
 				it "should show error if signal direction rule is unassigned", ->
 					waitsFor ->
 						@psapc.$('.bv_signalDirectionRule option').length > 0
@@ -1150,11 +1150,12 @@ describe "Primary Screen Experiment module testing", ->
 					el: $('#fixture')
 					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
-			it "Should disable analsyis parameter editing if status is finalized", ->
-				@psac.model.getStatus().set codeValue: "finalized"
+			it "Should disable analsyis parameter editing if status is approved", ->
+				@psac.model.getStatus().set codeValue: "approved"
+				@psac.handleStatusChanged()
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toEqual 'disabled'
-			it "Should enable analsyis parameter editing if status is finalized", ->
-				@psac.model.getStatus().set codeValue: "finalized"
+			it "Should enable analsyis parameter editing if status is started", ->
+				@psac.model.getStatus().set codeValue: "approved"
 				@psac.model.getStatus().set codeValue: "started"
 				expect(@psac.$('.bv_normalizationRule').attr('disabled')).toBeUndefined()
 			it "should show upload button as upload data since status is 'not started'", ->
@@ -1169,7 +1170,7 @@ describe "Primary Screen Experiment module testing", ->
 					uploadAndRunControllerName: "UploadAndRunPrimaryAnalsysisController"
 				@psac.render()
 			it "should show upload button as re-analyze since status is not 'not started'", ->
-				expect(@psac.$('.bv_save').html()).toEqual "Re-Analyze"
+				expect(@psac.$('.bv_loadAnother').html()).toEqual "Re-Analyze"
 		describe "rendering analysis based on dry run status and analysis status", ->
 			beforeEach ->
 				@exp = new PrimaryScreenExperiment window.experimentServiceTestJSON.fullExperimentFromServer
@@ -1182,8 +1183,6 @@ describe "Primary Screen Experiment module testing", ->
 				@psac.render()
 			it "should show the upload data page", ->
 				expect(@psac.$('.bv_nextControlContainer')).toBeVisible()
-				#TODO: finish writing specs
-
 
 
 	describe "Abstract Primary Screen Experiment Controller testing", ->

@@ -1,5 +1,5 @@
 (function() {
-  var assert, config, csUtilities, fs, parseResponse, request, _;
+  var _, assert, config, csUtilities, fs, parseResponse, request;
 
   assert = require('assert');
 
@@ -253,7 +253,7 @@
       describe("when valid compounds sent with valid properties", function() {
         var entityList, propertyList;
         propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"];
-        entityList = "DNS76\nDNS2\nDNS78\n";
+        entityList = "CMPD76\nCMPD2\nCMPD78\n";
         before(function(done) {
           this.timeout(20000);
           return csUtilities.getTestedEntityProperties(propertyList, entityList, (function(_this) {
@@ -285,7 +285,7 @@
       describe("when valid compounds sent with invalid property", function() {
         var entityList, propertyList;
         propertyList = ["ERROR", "deep_fred"];
-        entityList = "DNS76\nDNS2\nDNS78\n";
+        entityList = "CMPD76\nCMPD2\nCMPD78\n";
         before(function(done) {
           this.timeout(20000);
           return csUtilities.getTestedEntityProperties(propertyList, entityList, (function(_this) {

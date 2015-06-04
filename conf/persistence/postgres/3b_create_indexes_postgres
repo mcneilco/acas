@@ -1,5 +1,8 @@
 --Run this script as the acas user to create indexes
 
+ALTER TABLE acas.label_sequence
+  ADD CONSTRAINT label_seq_uq UNIQUE (label_type_and_kind, thing_type_and_kind);
+
 --ddict changes
 
 ALTER TABLE acas.ddict_kind

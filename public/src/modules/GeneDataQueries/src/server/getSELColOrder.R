@@ -376,7 +376,15 @@ getExperimentColumns <- function(experimentCode){
 
 	if (length(fromJSON(sourceFileValueJSON)) > 0){
 		fileName <- fromJSON(sourceFileValueJSON)[[1]]$fileValue
+
+        if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
+            sampleDataFile <- paste0(fileName, ".xlsx")
+            f = CFILE(sampleDataFile, mode="wb")
+            curlPerform(url = paste0(racas::applicationSettings$server.service.external.file.service.url, fileName), writedata = f@ref)
+            close(f)
+        } else {
 		sampleDataFile <- paste0(filePath, "/", fileName)
+        }
 		
 		#	sampleDataFile <- "/Users/goshiro2014/Documents/McNeilco_2012/clients/Chanda_Lab/development/sampleData/upload RNAseq-140724_6_50rows.xlsx"
 		sheet <- 1 
@@ -388,6 +396,9 @@ getExperimentColumns <- function(experimentCode){
 		errorFileFlag <- FALSE
 		tryCatch({
 		  genericDataFileDataFrame <- read.xls(sampleDataFile, sheet = sheet, header = header, nrows=numberOfRows)
+		          if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
+                        file.remove(sampleDataFile)
+                    }
 		  },
 		    warning = function(w) {
 		    warningFlag <- TRUE
@@ -575,8 +586,7 @@ saveExptDataColOrder <- function(codeName){
 	resultFlag <- TRUE
 	exptDataColumns <- getExperimentColumns(codeName)
 	if (exptDataColumns != ""){
-		experiments <- getEntityByCodeName(codeName, entityKind="experiments",include="prettyjsonstub")
-		experiment <- experiments[[1]]
+		experiment <- getEntityByCodeName(codeName, entityKind="experiments",include="prettyjsonstub")
 
 		## create new experiment state to store the column order information (we will have state tuples for each order)
 		lsTransaction <- experiment$lsTransaction

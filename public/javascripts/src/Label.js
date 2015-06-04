@@ -1,9 +1,9 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.Label = (function(_super) {
-    __extends(Label, _super);
+  window.Label = (function(superClass) {
+    extend(Label, superClass);
 
     function Label() {
       return Label.__super__.constructor.apply(this, arguments);
@@ -31,8 +31,8 @@
 
   })(Backbone.Model);
 
-  window.LabelList = (function(_super) {
-    __extends(LabelList, _super);
+  window.LabelList = (function(superClass) {
+    extend(LabelList, superClass);
 
     function LabelList() {
       return LabelList.__super__.constructor.apply(this, arguments);
@@ -116,14 +116,15 @@
       return bestLabel;
     };
 
-    LabelList.prototype.setBestName = function(label) {
-      var currentName;
-      label.set({
-        lsType: 'name',
-        preferred: true,
-        ignored: false
+    LabelList.prototype.getNonPreferredName = function(lsKind) {
+      var nonPreferredName;
+      nonPreferredName = _.filter(this.getCurrent(), function(lab) {
+        return (lab.get('preferred') === false) && (lab.get('lsType') === "name");
       });
-      currentName = this.pickBestName();
+      return nonPreferredName[0];
+    };
+
+    LabelList.prototype.setName = function(label, currentName) {
       if (currentName != null) {
         if (currentName.isNew()) {
           return currentName.set({
@@ -141,6 +142,28 @@
       } else {
         return this.add(label);
       }
+    };
+
+    LabelList.prototype.setBestName = function(label) {
+      var currentName;
+      label.set({
+        lsType: 'name',
+        preferred: true,
+        ignored: false
+      });
+      currentName = this.pickBestName();
+      return this.setName(label, currentName);
+    };
+
+    LabelList.prototype.setNonPreferredName = function(label) {
+      var nonPreferredName;
+      label.set({
+        lsType: 'name',
+        preferred: false,
+        ignored: false
+      });
+      nonPreferredName = this.getNonPreferredName();
+      return this.setName(label, nonPreferredName);
     };
 
     LabelList.prototype.getLabelByTypeAndKind = function(type, kind) {
@@ -182,8 +205,8 @@
 
   })(Backbone.Collection);
 
-  window.Value = (function(_super) {
-    __extends(Value, _super);
+  window.Value = (function(superClass) {
+    extend(Value, superClass);
 
     function Value() {
       return Value.__super__.constructor.apply(this, arguments);
@@ -205,7 +228,7 @@
       var newVal, oldVal;
       oldVal = this.get(this.get('lsType'));
       newVal = this.get('value');
-      if (!(oldVal === newVal || (Number.isNaN(oldVal) && Number.isNaN(newVal)))) {
+      if (oldVal !== newVal) {
         if (this.isNew()) {
           return this.set(this.get('lsType'), this.get('value'));
         } else {
@@ -221,8 +244,8 @@
 
   })(Backbone.Model);
 
-  window.ValueList = (function(_super) {
-    __extends(ValueList, _super);
+  window.ValueList = (function(superClass) {
+    extend(ValueList, superClass);
 
     function ValueList() {
       return ValueList.__super__.constructor.apply(this, arguments);
@@ -234,8 +257,8 @@
 
   })(Backbone.Collection);
 
-  window.State = (function(_super) {
-    __extends(State, _super);
+  window.State = (function(superClass) {
+    extend(State, superClass);
 
     function State() {
       return State.__super__.constructor.apply(this, arguments);
@@ -285,6 +308,14 @@
       });
     };
 
+    State.prototype.getValueById = function(id) {
+      var value;
+      value = this.get('lsValues').filter(function(val) {
+        return val.id === id;
+      });
+      return value;
+    };
+
     State.prototype.getValueHistory = function(type, kind) {
       return this.get('lsValues').filter(function(value) {
         return (value.get('lsType') === type) && (value.get('lsKind') === kind);
@@ -295,8 +326,8 @@
 
   })(Backbone.Model);
 
-  window.StateList = (function(_super) {
-    __extends(StateList, _super);
+  window.StateList = (function(superClass) {
+    extend(StateList, superClass);
 
     function StateList() {
       return StateList.__super__.constructor.apply(this, arguments);

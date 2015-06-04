@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.ModuleLauncher = (function(_super) {
-    __extends(ModuleLauncher, _super);
+  window.ModuleLauncher = (function(superClass) {
+    extend(ModuleLauncher, superClass);
 
     function ModuleLauncher() {
       return ModuleLauncher.__super__.constructor.apply(this, arguments);
@@ -42,8 +42,8 @@
 
   })(Backbone.Model);
 
-  window.ModuleLauncherList = (function(_super) {
-    __extends(ModuleLauncherList, _super);
+  window.ModuleLauncherList = (function(superClass) {
+    extend(ModuleLauncherList, superClass);
 
     function ModuleLauncherList() {
       return ModuleLauncherList.__super__.constructor.apply(this, arguments);
@@ -55,13 +55,13 @@
 
   })(Backbone.Collection);
 
-  window.ModuleLauncherMenuController = (function(_super) {
-    __extends(ModuleLauncherMenuController, _super);
+  window.ModuleLauncherMenuController = (function(superClass) {
+    extend(ModuleLauncherMenuController, superClass);
 
     function ModuleLauncherMenuController() {
-      this.clearSelected = __bind(this.clearSelected, this);
-      this.handleSelect = __bind(this.handleSelect, this);
-      this.render = __bind(this.render, this);
+      this.clearSelected = bind(this.clearSelected, this);
+      this.handleSelect = bind(this.handleSelect, this);
+      this.render = bind(this.render, this);
       return ModuleLauncherMenuController.__super__.constructor.apply(this, arguments);
     }
 
@@ -110,8 +110,8 @@
     };
 
     ModuleLauncherMenuController.prototype.clearSelected = function(who) {
-      var _ref;
-      if ((who != null ? (_ref = who.model) != null ? _ref.get("menuName") : void 0 : void 0) !== this.model.get("menuName")) {
+      var ref;
+      if ((who != null ? (ref = who.model) != null ? ref.get("menuName") : void 0 : void 0) !== this.model.get("menuName")) {
         return this.model.requestDeactivation();
       }
     };
@@ -120,11 +120,11 @@
 
   })(Backbone.View);
 
-  window.ModuleLauncherMenuHeaderController = (function(_super) {
-    __extends(ModuleLauncherMenuHeaderController, _super);
+  window.ModuleLauncherMenuHeaderController = (function(superClass) {
+    extend(ModuleLauncherMenuHeaderController, superClass);
 
     function ModuleLauncherMenuHeaderController() {
-      this.render = __bind(this.render, this);
+      this.render = bind(this.render, this);
       return ModuleLauncherMenuHeaderController.__super__.constructor.apply(this, arguments);
     }
 
@@ -145,13 +145,13 @@
 
   })(Backbone.View);
 
-  window.ModuleLauncherMenuListController = (function(_super) {
-    __extends(ModuleLauncherMenuListController, _super);
+  window.ModuleLauncherMenuListController = (function(superClass) {
+    extend(ModuleLauncherMenuListController, superClass);
 
     function ModuleLauncherMenuListController() {
-      this.selectionUpdated = __bind(this.selectionUpdated, this);
-      this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
+      this.selectionUpdated = bind(this.selectionUpdated, this);
+      this.addOne = bind(this.addOne, this);
+      this.render = bind(this.render, this);
       return ModuleLauncherMenuListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -202,13 +202,13 @@
 
   })(Backbone.View);
 
-  window.ModuleLauncherController = (function(_super) {
-    __extends(ModuleLauncherController, _super);
+  window.ModuleLauncherController = (function(superClass) {
+    extend(ModuleLauncherController, superClass);
 
     function ModuleLauncherController() {
-      this.handleDeactivation = __bind(this.handleDeactivation, this);
-      this.handleActivation = __bind(this.handleActivation, this);
-      this.render = __bind(this.render, this);
+      this.handleDeactivation = bind(this.handleDeactivation, this);
+      this.handleActivation = bind(this.handleActivation, this);
+      this.render = bind(this.render, this);
       return ModuleLauncherController.__super__.constructor.apply(this, arguments);
     }
 
@@ -272,12 +272,12 @@
 
   })(Backbone.View);
 
-  window.ModuleLauncherListController = (function(_super) {
-    __extends(ModuleLauncherListController, _super);
+  window.ModuleLauncherListController = (function(superClass) {
+    extend(ModuleLauncherListController, superClass);
 
     function ModuleLauncherListController() {
-      this.addOne = __bind(this.addOne, this);
-      this.render = __bind(this.render, this);
+      this.addOne = bind(this.addOne, this);
+      this.render = bind(this.render, this);
       return ModuleLauncherListController.__super__.constructor.apply(this, arguments);
     }
 

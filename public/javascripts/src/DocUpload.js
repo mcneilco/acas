@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.DocUpload = (function(_super) {
-    __extends(DocUpload, _super);
+  window.DocUpload = (function(superClass) {
+    extend(DocUpload, superClass);
 
     function DocUpload() {
       return DocUpload.__super__.constructor.apply(this, arguments);
@@ -19,9 +19,9 @@
     };
 
     DocUpload.prototype.validate = function(attrs) {
-      var errors, _ref;
+      var errors, ref;
       errors = [];
-      if ((_ref = attrs.docType) !== 'url' && _ref !== 'file') {
+      if ((ref = attrs.docType) !== 'url' && ref !== 'file') {
         errors.push({
           attribute: 'docType',
           message: "Type must be one of url or file"
@@ -54,16 +54,16 @@
 
   })(Backbone.Model);
 
-  window.DocUploadController = (function(_super) {
-    __extends(DocUploadController, _super);
+  window.DocUploadController = (function(superClass) {
+    extend(DocUploadController, superClass);
 
     function DocUploadController() {
-      this.updateModel = __bind(this.updateModel, this);
-      this.attributeChanged = __bind(this.attributeChanged, this);
-      this.clearNewFileName = __bind(this.clearNewFileName, this);
-      this.setNewFileName = __bind(this.setNewFileName, this);
-      this.docTypeChanged = __bind(this.docTypeChanged, this);
-      this.render = __bind(this.render, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.attributeChanged = bind(this.attributeChanged, this);
+      this.clearNewFileName = bind(this.clearNewFileName, this);
+      this.setNewFileName = bind(this.setNewFileName, this);
+      this.docTypeChanged = bind(this.docTypeChanged, this);
+      this.render = bind(this.render, this);
       return DocUploadController.__super__.constructor.apply(this, arguments);
     }
 

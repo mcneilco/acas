@@ -75,16 +75,16 @@
 	routeSet_13 = require("./routes/GenericDataParserRoutes.js");
 	if (routeSet_13.setupAPIRoutes) {
 		routeSet_13.setupAPIRoutes(app); }
-	routeSet_14 = require("./routes/Logger.js");
+	routeSet_14 = require("./routes/LabelServiceRoutes.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
-	routeSet_15 = require("./routes/LoggingRoutes.js");
+	routeSet_15 = require("./routes/Logger.js");
 	if (routeSet_15.setupAPIRoutes) {
 		routeSet_15.setupAPIRoutes(app); }
-	routeSet_16 = require("./routes/PreferredBatchIdService.js");
+	routeSet_16 = require("./routes/LoggingRoutes.js");
 	if (routeSet_16.setupAPIRoutes) {
 		routeSet_16.setupAPIRoutes(app); }
-	routeSet_17 = require("./routes/PreferredEntityCodeService.js");
+	routeSet_17 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_17.setupAPIRoutes) {
 		routeSet_17.setupAPIRoutes(app); }
 	routeSet_18 = require("./routes/PrimaryScreenProtocolRoutes.js");

@@ -17,9 +17,12 @@ exports.requiredScripts = [
 	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/src/lib/dataTables/js/jquery.dataTables.js',
     '/src/lib/bootstrap/bootstrap-datatable.js',
+    '/src/lib/bootstrap-combobox/js/bootstrap-combobox.js',
     '/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
-	'/src/lib/moment.min.js'
+	'/src/lib/moment.min.js',
+	'/src/lib/spin/js/spin.js',
+	'/src/lib/spin/js/jquery-spin.js'
 ];
 
 exports.applicationScripts = [
@@ -63,7 +66,8 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
-	"/javascripts/src/TagList.js"
+	"/javascripts/src/TagList.js",
+	"/javascripts/src/ThingInteraction.js"
 ];
 
 exports.jasmineScripts = [
@@ -94,11 +98,9 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/FullPKTestJSON.js",
 	"/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js",
+	"/javascripts/spec/testFixtures/LabelServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/LoginTestJSON.js",
-	"/javascripts/spec/testFixtures/MetStabTestJSON.js",
-	"/javascripts/spec/testFixtures/MicroSolTestJSON.js",
 	"/javascripts/spec/testFixtures/ModuleMenusTestJSON.js",
-	"/javascripts/spec/testFixtures/PampaTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js",
@@ -106,6 +108,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
+	"/javascripts/spec/testFixtures/ThingInteractionTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingTestJSON.js",
 	"/javascripts/spec/testFixtures/codeTablePostTestJSON.js",
@@ -153,7 +156,7 @@ exports.specScripts = [
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/ThingInteractionSpec.js",
 	"/javascripts/spec/ThingSpec.js",
-	"/javascripts/spec/UtilityFunctionsSpec.js",
-	"/javascripts/spec/dnsAuthenticationServiceSpec.js"
+	"/javascripts/spec/UtilityFunctionsSpec.js"
 ]

@@ -206,10 +206,16 @@ class window.ModelFitTypeController extends Backbone.View
 			selectedCode: modelFitType
 
 	setupParameterController: (modelFitType) =>
-		drapType = switch modelFitType
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
-			when "unassigned" then "unassigned"
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({codeValue: modelFitType})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
+			controllerClass =  curveFitClasses.get 'controllerClass'
+			drapcType = window[controllerClass]
+		else
+			drapType = 'unassigned'
+
 		if @parameterController?
 			@parameterController.undelegateEvents()
 		if drapType is "unassigned"
@@ -225,9 +231,6 @@ class window.ModelFitTypeController extends Backbone.View
 			else
 				drap = new drapType @model.getModelFitParameters()
 
-			drapcType = switch modelFitType
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')
 				model: drap
@@ -268,6 +271,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@testReadyForFit()
 
 	render: =>
+		#need to reset analyzedPreviously because after successful re-analysis, the model fit status is reset to not started
+		@analyzedPreviously = if @model.getModelFitStatus().get('codeValue') == "not started" then false else true
 		@showExistingResults()
 		buttonText = if @analyzedPreviously then "Re-Fit" else "Fit Data"
 		@$('.bv_fitModelButton').html buttonText
@@ -312,6 +317,18 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			if @model.isEditable()
 				@parameterController.enableAllInputs()
 			else
+				@parameterController.disableAllInputs()
+
+	handleModelStatusChanged: =>
+		if @model.isEditable()
+			@$('.bv_fitModelButton').removeAttr('disabled')
+			@$('select').removeAttr('disabled')
+			if @parameterController?
+				@parameterController.enableAllInputs()
+		else
+			@$('.bv_fitModelButton').attr('disabled','disabled')
+			@$('select').attr('disabled','disabled')
+			if @parameterController?
 				@parameterController.disableAllInputs()
 
 	setupModelFitTypeController: ->
@@ -386,4 +403,23 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitStatusDropDown').modal("hide")
 
+class window.DoseResponsePlotCurveLL4 extends Backbone.Model
 
+	log10: (val) ->
+		Math.log(val) / Math.LN10
+
+	render: (brd, curve, plotWindow) =>
+		log10 = @log10
+		fct = (x) ->
+			curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
+		brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
+		if curve.curveAttributes.EC50?
+			intersect = fct(log10(curve.curveAttributes.EC50))
+			if curve.curveAttributes.Operator?
+				color = '#ff0000'
+			else
+				color = '#808080'
+			#				Horizontal Line
+			brd.create('line',[[plotWindow[0],intersect],[log10(curve.curveAttributes.EC50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+			#				Vertical Line
+			brd.create('line',[[log10(curve.curveAttributes.EC50),intersect],[log10(curve.curveAttributes.EC50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});

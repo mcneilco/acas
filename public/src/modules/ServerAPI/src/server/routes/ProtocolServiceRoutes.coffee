@@ -76,6 +76,7 @@ updateProt = (prot, testMode, callback) ->
 					console.log 'got ajax error trying to update protocol'
 					console.log error
 					console.log response
+					callback JSON.stringify "saveFailed"
 			)
 
 postProtocol = (req, resp) ->
@@ -109,6 +110,8 @@ postProtocol = (req, resp) ->
 				resp.json prot
 
 		if req.query.testMode or global.specRunnerTestmode
+			unless protToSave.id?
+				protToSave.id = 1
 			checkFilesAndUpdate protToSave
 		else
 			config = require '../conf/compiled/conf.js'
@@ -129,8 +132,10 @@ postProtocol = (req, resp) ->
 #					console.log response
 					console.log response.statusCode
 					console.log response
-					if response.body[0].message is "not unique experiment name"
+					if response.body[0].message is "not unique protocol name"
 						resp.end JSON.stringify response.body[0].message
+					else
+						resp.end JSON.stringify "saveFailed"
 			)
 
 

@@ -4,7 +4,7 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
-		@setupKnockoutReasonPicklist()
+		@setupKnockoutPicklist()
 		@$('.bv_doseResponseKnockoutPanel').on "show", =>
 			@$('.bv_dataDictPicklist').focus()
 		@$('.bv_doseResponseKnockoutPanel').on "keypress", (key)=>
@@ -19,19 +19,19 @@ class window.DoseResponseKnockoutPanelController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_doseResponseKnockoutPanel').modal "show"
 
-	setupKnockoutReasonPicklist: =>
-		@knockoutReasonList = new PickListList()
-		@knockoutReasonList.url = "/api/codetables/user well flags/flag observation"
-		@knockoutReasonListController = new PickListSelectController
+	setupKnockoutPicklist: =>
+		@knockoutObservationList = new PickListList()
+		@knockoutObservationList.url = "/api/codetables/user well flags/flag observation"
+		@knockoutObservationListController = new PickListSelectController
 			el: @$('.bv_dataDictPicklist')
-			collection: @knockoutReasonList
+			collection: @knockoutObservationList
 
 	handleDoseResponseKnockoutPanelHidden: =>
 		status = "knocked out"
-		reason = @knockoutReasonListController.getSelectedCode()
-		observation = reason
-		comment = @knockoutReasonListController.getSelectedModel().get 'name'
-		@trigger 'reasonSelected', status, observation, reason, comment
+		observation = @knockoutObservationListController.getSelectedCode()
+		cause = "curvefit ko"
+		comment = @knockoutObservationListController.getSelectedModel().get 'name'
+		@trigger 'observationSelected', status, observation, cause, comment
 
 class window.DoseResponsePlotController extends AbstractFormController
 	template: _.template($("#DoseResponsePlotView").html())
@@ -42,34 +42,38 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@$el.empty()
 		@$el.html @template()
 		if @model?
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curve').type})
+			plotCurveClass =  window[curveFitClasses.get 'plotCurveClass']
+
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
 			@doseResponseKnockoutPanelController= new DoseResponseKnockoutPanelController
 				el: @$('.bv_doseResponseKnockoutPanel')
 			@doseResponseKnockoutPanelController.render()
-			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'), plotCurveClass)
 			@
 		else
 			@$el.html "Plot data not loaded"
 
 	showDoseResponseKnockoutPanel: (selectedPoints) =>
 		@doseResponseKnockoutPanelController.show()
-		@doseResponseKnockoutPanelController.on 'reasonSelected', (status, observation, reason, comment) =>
-			@knockoutPoints(selectedPoints, status, observation, reason, comment)
+		@doseResponseKnockoutPanelController.on 'observationSelected', (status, observation, cause, comment) =>
+			@knockoutPoints(selectedPoints, status, observation, cause, comment)
 		return
 
-	knockoutPoints: (selectedPoints, status, observation, reason, comment) =>
+	knockoutPoints: (selectedPoints, status, observation, cause, comment) =>
 		selectedPoints.forEach (selectedPoint) =>
 			@points[selectedPoint.idx].algorithmFlagStatus = ""
 			@points[selectedPoint.idx].algorithmFlagObservation = ""
-			@points[selectedPoint.idx].algorithmFlagReason = ""
+			@points[selectedPoint.idx].algorithmFlagCause = ""
 			@points[selectedPoint.idx].algorithmFlagComment = ""
 			@points[selectedPoint.idx].preprocessFlagStatus = ""
 			@points[selectedPoint.idx].preprocessFlagObservation = ""
-			@points[selectedPoint.idx].preprocessFlagReason = ""
+			@points[selectedPoint.idx].preprocessFlagCause = ""
 			@points[selectedPoint.idx].preprocessFlagComment = ""
 			@points[selectedPoint.idx].userFlagStatus = status
 			@points[selectedPoint.idx].userFlagObservation = observation
-			@points[selectedPoint.idx].userFlagReason = reason
+			@points[selectedPoint.idx].userFlagCause = cause
 			@points[selectedPoint.idx].userFlagComment = comment
 
 			selectedPoint.drawAsKnockedOut()
@@ -77,15 +81,16 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@model.trigger 'change'
 		return
 
-	initJSXGraph: (points, curve, plotWindow, divID) =>
-		@points = points
-		log10 = (val) ->
-			Math.log(val) / Math.LN10
+	log10: (val) ->
+		Math.log(val) / Math.LN10
 
+	initJSXGraph: (points, curve, plotWindow, divID, plotCurveClass) =>
+		@points = points
+		log10 = @log10
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
-				axis: false #we do this later (log axis reasons)
+				axis: false #we do this later (log axis causes)
 				showCopyright: false
 				zoom : {
 					wheel: false
@@ -99,15 +104,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 				selectedPoints.forEach (selectedPoint) =>
 					@points[selectedPoint.idx].algorithmFlagStatus = ""
 					@points[selectedPoint.idx].algorithmFlagObservation = ""
-					@points[selectedPoint.idx].algorithmFlagReason = ""
+					@points[selectedPoint.idx].algorithmFlagCause = ""
 					@points[selectedPoint.idx].algorithmFlagComment = ""
 					@points[selectedPoint.idx].preprocessFlagStatus = ""
 					@points[selectedPoint.idx].preprocessFlagObservation = ""
-					@points[selectedPoint.idx].preprocessFlagReason = ""
+					@points[selectedPoint.idx].preprocessFlagCause = ""
 					@points[selectedPoint.idx].preprocessFlagComment = ""
 					@points[selectedPoint.idx].userFlagStatus = ""
 					@points[selectedPoint.idx].userFlagObservation = ""
-					@points[selectedPoint.idx].userFlagReason = ""
+					@points[selectedPoint.idx].userFlagCause = ""
 					@points[selectedPoint.idx].userFlagComment = ""
 
 					selectedPoint.drawAsIncluded()
@@ -122,11 +127,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 				userFlagStatus = points[ii].userFlagStatus
 				preprocessFlagStatus = points[ii].preprocessFlagStatus
 				algorithmFlagStatus = points[ii].algorithmFlagStatus
-				userFlagComment = points[ii].userFlagComment
-				preprocessFlagComment = points[ii].preprocessFlagReason
-				algorithmFlagComment = points[ii].algorithmFlagComment
+				userFlagComment = points[ii].userFlagObservation
+				preprocessFlagComment = points[ii].preprocessFlagComment
+				algorithmFlagComment = points[ii].algorithmFlagObservation
+				userFlagCause = points[ii].userFlagCause
+				algorithmFlagCause = points[ii].algorithmFlagCause
+				preprocessFlagCause = points[ii].preprocessFlagCause
 				if (userFlagStatus == "knocked out" || preprocessFlagStatus == "knocked out" || algorithmFlagStatus == "knocked out")
 					color = switch
+						when userFlagCause == "curvefit ko" then 'orange'
 						when userFlagStatus == "knocked out" then 'red'
 						when preprocessFlagStatus == "knocked out" then 'gray'
 						when algorithmFlagStatus == "knocked out" then 'blue'
@@ -142,13 +151,18 @@ class window.DoseResponsePlotController extends AbstractFormController
 					p1.knockedOut = true
 
 				else
+					if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+						color = 'blue'
+					else
+						color = 'red'
 					p1 = brd.create("point", [x,y],
 						name: points[ii].response_sv_id
 						fixed: true
 						size: 4
 						face: "circle"
-						strokecolor: "blue"
+						strokecolor: 'blue'
 						withLabel: false
+						fillcolor: color
 					)
 					p1.knockedOut = false
 
@@ -174,13 +188,23 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 				p1.on "up", p1.handlePointClicked, p1
 
-				p1.flagLabel = switch
-					when userFlagStatus == "knocked out" then userFlagComment
-					when preprocessFlagStatus == "knocked out" then preprocessFlagComment
-					when algorithmFlagStatus == "knocked out" then algorithmFlagComment
-					else ''
+				flagLabels = []
+				if userFlagStatus == 'hit' or algorithmFlagStatus == 'hit' or preprocessFlagStatus == 'hit'
+					flagLabels.push 'hit'
+				if userFlagStatus == "knocked out"
+					flagLabels.push userFlagComment
+				if preprocessFlagStatus == "knocked out"
+					flagLabels.push preprocessFlagComment
+				if algorithmFlagStatus == "knocked out"
+					flagLabels.push algorithmFlagComment
+
+				if flagLabels.length > 0
+					p1.flagLabel = flagLabels.join ', '
+				else
+					p1.flagLabel = ''
 
 				p1.xLabel = JXG.trunc(points[ii].dose, 4)
+
 				@pointList.push p1
 				brd.highlightInfobox = (x, y, el) ->
 					#brd.infobox.setText('<img src="http://www.freesmileys.org/smileys/big/big-smiley-face.gif" alt="Smiley face" width="42" height="42">');
@@ -219,38 +243,8 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
 		if curve?
-			if curve.type == "4 parameter D-R"
-				fct = (x) ->
-					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ec50?
-					intersect = fct(log10(curve.reported_ec50))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-			if curve.type == "Ki Fit"
-				fct = (x) ->
-					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
-					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
-					#'max + (min-max)/(1+10^(log10(x)-log10(ki*(1+ligandConc/kd))))'
-					curve.max + (curve.min - curve.max) / (1 + Math.pow(10,(x-log10(curve.ki*(1 + curve.ligandConc/curve.kd)))))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ki?
-					intersect = fct(log10(curve.reported_ki))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-					#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ki),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-					#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ki),intersect],[log10(curve.reported_ki),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-
+			curvePlot = new plotCurveClass()
+			curvePlot.render(brd, curve, plotWindow)
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
@@ -340,9 +334,11 @@ class window.CurveDetail extends Backbone.Model
 			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 
 	parse: (resp) =>
-		drapType = switch resp.renderingHint
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: resp.renderingHint})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
 		if resp.fitSettings not instanceof drapType
 			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
@@ -359,9 +355,11 @@ class window.CurveEditorController extends Backbone.View
 		@$el.empty()
 		if @model?
 			@$el.html @template()
-			drapcType = switch @model.get('renderingHint')
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('renderingHint')})
+			if curveFitClasses?
+				controllerClass =  curveFitClasses.get 'parametersController'
+				drapcType = window[controllerClass]
 			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
@@ -568,13 +566,6 @@ class window.CurveEditorDirtyPanelController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_curveEditorDirtyPanel').modal "show"
 
-	hide: =>
-		status = "knocked out"
-		reason = @knockoutReasonListController.getSelectedCode()
-		observation = reason
-		comment = @knockoutReasonListController.getSelectedModel().get 'name'
-		@trigger 'reasonSelected', status, observation, reason comment
-
 class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
 	tagName: 'div'
@@ -595,7 +586,7 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="
 			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl

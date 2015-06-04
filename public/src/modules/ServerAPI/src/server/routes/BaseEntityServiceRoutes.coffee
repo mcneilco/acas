@@ -9,3 +9,4 @@ exports.getAuthors = (req, resp) ->
 	else
 		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 		csUtilities.getAuthors resp
+

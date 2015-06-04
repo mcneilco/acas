@@ -55,12 +55,13 @@ class window.LabelList extends Backbone.Collection
 			(if (rd is "") then Infinity else rd)
 		return bestLabel
 
-	setBestName: (label) ->
-		label.set
-			lsType: 'name'
-			preferred: true
-			ignored: false
-		currentName = @pickBestName()
+	getNonPreferredName: (lsKind) ->
+		nonPreferredName = _.filter @getCurrent(), (lab) ->
+			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
+		nonPreferredName[0]
+
+
+	setName: (label, currentName) ->
 		if currentName?
 			if currentName.isNew()
 				currentName.set
@@ -73,6 +74,22 @@ class window.LabelList extends Backbone.Collection
 				@add label
 		else
 			@add label
+
+	setBestName: (label) ->
+		label.set
+			lsType: 'name'
+			preferred: true
+			ignored: false
+		currentName = @pickBestName()
+		@setName(label, currentName)
+
+	setNonPreferredName: (label) ->
+		label.set
+			lsType: 'name'
+			preferred: false
+			ignored: false
+		nonPreferredName = @getNonPreferredName()
+		@setName(label, nonPreferredName)
 
 	getLabelByTypeAndKind: (type, kind) ->
 		@filter (label) ->
@@ -108,7 +125,7 @@ class window.Value extends Backbone.Model
 	setValueType: ->
 		oldVal = @get(@get('lsType'))
 		newVal = @get('value')
-		unless oldVal == newVal or (Number.isNaN(oldVal) and Number.isNaN(newVal))
+		unless oldVal == newVal #or (Number.isNaN(oldVal) and Number.isNaN(newVal))
 			if @isNew()
 				@.set @get('lsType'), @get('value')
 			else
@@ -144,6 +161,11 @@ class window.State extends Backbone.Model
 		@get('lsValues').filter (value) ->
 			(!value.get('ignored')) and (value.get('lsType')==type) and (value.get('lsKind')==kind)
 
+	getValueById: (id) ->
+		value = @get('lsValues').filter (val) ->
+			val.id == id
+		value
+
 	getValueHistory: (type, kind) ->
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)
@@ -159,7 +181,7 @@ class window.StateList extends Backbone.Collection
 		value = null
 		states = @getStatesByTypeAndKind stype, skind
 		if states.length > 0
-			#TODO get most recent state and value if more than 1 or throw error
+#TODO get most recent state and value if more than 1 or throw error
 			values = states[0].getValuesByTypeAndKind(vtype, vkind)
 			if values.length > 0
 				value = values[0]

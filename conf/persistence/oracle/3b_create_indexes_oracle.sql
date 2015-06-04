@@ -1,3 +1,20 @@
+--Run this script as the acas user to create indexes
+ALTER TABLE label_sequence
+  ADD CONSTRAINT label_seq_uq UNIQUE (label_type_and_kind, thing_type_and_kind);
+--ddict changes
+ALTER TABLE ddict_value
+  ADD CONSTRAINT dd_value_tk_fk FOREIGN KEY (ls_type_and_kind) REFERENCES ddict_kind (ls_type_and_kind);
+
+--many to many changes
+CREATE INDEX IDX_E_AG_ANALYSIS_GROUP_ID ON EXPERIMENT_ANALYSISGROUP (ANALYSIS_GROUP_ID);
+CREATE INDEX IDX_E_AG_EXPERIMENT_ID ON EXPERIMENT_ANALYSISGROUP (EXPERIMENT_ID);
+CREATE INDEX IDX_AG_TG_TREATMENT_GROUP_ID ON ANALYSISGROUP_TREATMENTGROUP (TREATMENT_GROUP_ID);
+CREATE INDEX IDX_AG_TG_ANALYSIS_GROUP_ID ON ANALYSISGROUP_TREATMENTGROUP (ANALYSIS_GROUP_ID);
+CREATE INDEX IDX_TG_S_TREATMENT_GROUP_ID ON TREATMENTGROUP_SUBJECT (TREATMENT_GROUP_ID);
+CREATE INDEX IDX_TG_S_SUBJECT_GROUP_ID ON TREATMENTGROUP_SUBJECT (SUBJECT_ID);
+
+
+
 --more indexes for FKs and other
 
 CREATE UNIQUE INDEX EXPT_LABEL_UNIQ ON EXPERIMENT_LABEL (LS_TYPE_AND_KIND, LABEL_TEXT, IGNORED);
@@ -6,15 +23,6 @@ CREATE UNIQUE INDEX PROT_LABEL_UNIQ ON PROTOCOL_LABEL (LS_TYPE_AND_KIND, LABEL_T
 create index expt_label_txt_idx on experiment_label(label_text);
 create index prot_label_txt_idx on protocol_label(label_text);
 create index cont_label_txt_idx on container_label(label_text);
-
---many to many changes
-CREATE INDEX expt_ag_exptid_idx ON experiment_analysisgroup (experiment_id);
-CREATE INDEX expt_ag_agid_idx ON experiment_analysisgroup (analysis_group_id);
-CREATE INDEX ag_trtgrp_agid_idx ON analysisgroup_treatmentgroup (analysis_group_id);
-CREATE INDEX ag_trtgrp_trtgrpid_idx ON analysisgroup_treatmentgroup (treatment_group_id);
-CREATE INDEX trtgrp_subj_trtgrpid_idx ON treatmentgroup_subject(treatment_group_id);
-CREATE INDEX trtgrp_subj_subjid_idx ON treatmentgroup_subject(subject_id);
-
 
 create index sbjlbl_sbj_fk on subject_label(subject_id);
 create index sbjst_sbj_fk on subject_state(subject_id);
@@ -51,13 +59,7 @@ create index itxsubjcntr_cntr_fk on itx_subject_container(container_id);
 create index itxsbcntrst_itxcntr_fk on itx_subject_container_state(itx_subject_container);
 create index itxsbcntrvl_itxcntrst_fk on itx_subject_container_value(ls_state);
 
-
-CREATE INDEX CNTR_VALUE_STATE_FK ON CONTAINER_VALUE (CONTAINER_STATE_ID);
-CREATE INDEX CNTR_VALUE_CNTR_FK ON CONTAINER_STATE (CONTAINER_ID);
-CREATE INDEX CNTR_LBL_CNTR_FK ON CONTAINER_LABEL (CONTAINER_ID);
-
-
-
+-----
 create index itx_cntrs_KIND_IDX on itx_container_container (ls_kind);
 create index itx_cntrs_TRXN_IDX on itx_container_container (ls_transaction);
 create index itx_cntrs_TYPE_IDX on itx_container_container (ls_type);
@@ -79,14 +81,6 @@ create index itx_subj_cont_value_UNTK_IDX on itx_subject_container_value (unit_t
 create index itx_subj_cont_value_TK_IDX on itx_subject_container_value (ls_type_and_kind);
 create index itx_subj_cont_value_OPTK_IDX on itx_subject_container_value (operator_type_and_kind);
 create index itx_subj_cont_value_REC_BY_IDX on itx_subject_container_value (recorded_by);
-
---new indexes for containers
-
-CREATE INDEX ITX_CNTRS_FIRST_IDX ON ITX_CONTAINER_CONTAINER (FIRST_CONTAINER_ID);
-CREATE INDEX ITX_CNTRS_SECOND_IDX ON ITX_CONTAINER_CONTAINER (SECOND_CONTAINER_ID);
-CREATE INDEX CNTR_STATE_CNTR_IDX ON CONTAINER_STATE (CONTAINER_ID);
-CREATE INDEX CNTR_LABEL_CNTR_IDX ON CONTAINER_LABEL (CONTAINER_ID);
-CREATE INDEX CNTR_VALUE_STATE_IDX ON CONTAINER_VALUE (CONTAINER_STATE_ID);
 
 -- note: may need to add additional foreign key constrains
 

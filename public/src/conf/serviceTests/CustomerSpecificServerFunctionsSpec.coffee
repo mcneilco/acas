@@ -168,7 +168,7 @@ describe "Base ACAS Customer Specific Function Tests", ->
 	describe "get calculated compound properties", ->
 		describe "when valid compounds sent with valid properties", ->
 			propertyList = ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
-			entityList = "DNS76\nDNS2\nDNS78\n"
+			entityList = "CMPD76\nCMPD2\nCMPD78\n"
 			before (done) ->
 				@.timeout(20000)
 				csUtilities.getTestedEntityProperties propertyList, entityList, (properties) =>
@@ -187,7 +187,7 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				assert.equal isNaN(parseFloat(res[1].split(',')[1])),false
 		describe "when valid compounds sent with invalid property", ->
 			propertyList = ["ERROR", "deep_fred"]
-			entityList = "DNS76\nDNS2\nDNS78\n"
+			entityList = "CMPD76\nCMPD2\nCMPD78\n"
 			before (done) ->
 				@.timeout(20000)
 				csUtilities.getTestedEntityProperties propertyList, entityList, (properties) =>

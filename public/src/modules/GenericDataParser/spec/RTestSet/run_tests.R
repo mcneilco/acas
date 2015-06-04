@@ -1,3 +1,5 @@
+# Deprecated: now unit testthat rather than RUnit
+
 # To Run:
 # setwd("~/Documents/clients/Wellspring/SeuratAddOns/") or whatever install directory is
 # source("public/src/modules/GenericDataParser/spec/RTestSet/run_tests.R")

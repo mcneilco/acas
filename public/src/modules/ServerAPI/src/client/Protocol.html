@@ -81,9 +81,8 @@
 
 
 
-
     <div>
-        <div style="margin-bottom:5px;">Short Description</div>
+        <div class="span10" style="margin-bottom:5px;">Short Description</div>
         <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
     </div>
 
@@ -123,11 +122,11 @@
         <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
     </div>
 
-    <div class="modal fade bv_protocolSaveFailed" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true" data-backdrop="static">
+    <div class="modal fade bv_protocolSaveFailed" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                     <h4 class="modal-title bv_saveErrorTitle" style="color:red;">Error: Protocol Not Saved</h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;">
@@ -142,7 +141,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <button type="button" class="close bv_closeModalButton" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
                     <h4 class="modal-title">Clear Form</h4>
                 </div>
                 <div class="modal-body" style="padding-left:0px;margin-left:15px;">

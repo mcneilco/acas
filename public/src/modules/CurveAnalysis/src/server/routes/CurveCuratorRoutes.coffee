@@ -4,6 +4,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
 	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail
 	app.post '/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub
+	app.get  '/api/curve/render/*', loginRoutes.ensureAuthenticated, exports.renderCurve
 	app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
 
 exports.getCurveStubs = (req, resp) ->
@@ -92,6 +93,7 @@ exports.updateCurveUserFlag = (req, resp) ->
 		)
 
 exports.updateCurveDetail = (req, resp) ->
+	req.connection.setTimeout 6000000
 	if global.specRunnerTestmode
 		curveCuratorTestData = require '../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js'
 		resp.end JSON.stringify curveCuratorTestData.curveDetail
@@ -105,6 +107,7 @@ exports.updateCurveDetail = (req, resp) ->
 			url: baseurl
 			body: JSON.stringify req.body
 			json: true
+			timeout: 6000000
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
@@ -113,7 +116,6 @@ exports.updateCurveDetail = (req, resp) ->
 			else
 				console.log 'got ajax error trying to refit curve'
 				console.log error
-				console.log json
 				console.log response
 				resp.send 'got ajax error trying to refit curve', 500
 		)
@@ -172,3 +174,12 @@ exports.curveCuratorIndex = (req, resp) ->
 			testMode: global.specRunnerTestmode
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			deployMode: global.deployMode
+
+exports.renderCurve = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	redirectQuery = req._parsedUrl.query
+	console.log redirectQuery
+	console.log req.query
+	rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery
+	req.pipe(request(rapacheCall)).pipe(resp)

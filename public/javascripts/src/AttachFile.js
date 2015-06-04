@@ -1,10 +1,10 @@
 (function() {
-  var __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty,
+    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.AttachFile = (function(_super) {
-    __extends(AttachFile, _super);
+  window.AttachFile = (function(superClass) {
+    extend(AttachFile, superClass);
 
     function AttachFile() {
       return AttachFile.__super__.constructor.apply(this, arguments);
@@ -52,8 +52,8 @@
 
   })(Backbone.Model);
 
-  window.AttachFileList = (function(_super) {
-    __extends(AttachFileList, _super);
+  window.AttachFileList = (function(superClass) {
+    extend(AttachFileList, superClass);
 
     function AttachFileList() {
       return AttachFileList.__super__.constructor.apply(this, arguments);
@@ -65,16 +65,16 @@
 
   })(Backbone.Collection);
 
-  window.AttachFileController = (function(_super) {
-    __extends(AttachFileController, _super);
+  window.AttachFileController = (function(superClass) {
+    extend(AttachFileController, superClass);
 
     function AttachFileController() {
-      this.clear = __bind(this.clear, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.handleFileTypeChanged = __bind(this.handleFileTypeChanged, this);
-      this.handleFileUpload = __bind(this.handleFileUpload, this);
-      this.createNewFileChooser = __bind(this.createNewFileChooser, this);
-      this.render = __bind(this.render, this);
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.handleFileTypeChanged = bind(this.handleFileTypeChanged, this);
+      this.handleFileUpload = bind(this.handleFileUpload, this);
+      this.createNewFileChooser = bind(this.createNewFileChooser, this);
+      this.render = bind(this.render, this);
       return AttachFileController.__super__.constructor.apply(this, arguments);
     }
 
@@ -170,9 +170,21 @@
     };
 
     AttachFileController.prototype.updateModel = function() {
-      return this.model.set({
-        fileType: this.$('.bv_fileType').val()
-      });
+      var newModel;
+      if (this.model.get('id') === null) {
+        return this.model.set({
+          fileType: this.$('.bv_fileType').val()
+        });
+      } else {
+        newModel = new AttachFile(_.clone(this.model.attributes));
+        newModel.unset('id');
+        newModel.set({
+          fileType: this.$('.bv_fileType').val()
+        });
+        this.model.set("ignored", true);
+        this.$('.bv_fileInfoWrapper').hide();
+        return this.trigger('addNewModel', newModel);
+      }
     };
 
     AttachFileController.prototype.clear = function() {
@@ -190,16 +202,16 @@
 
   })(AbstractFormController);
 
-  window.AttachFileListController = (function(_super) {
-    __extends(AttachFileListController, _super);
+  window.AttachFileListController = (function(superClass) {
+    extend(AttachFileListController, superClass);
 
     function AttachFileListController() {
-      this.isValid = __bind(this.isValid, this);
-      this.checkIfNeedToAddNew = __bind(this.checkIfNeedToAddNew, this);
-      this.ensureValidCollectionLength = __bind(this.ensureValidCollectionLength, this);
-      this.addAttachFile = __bind(this.addAttachFile, this);
-      this.uploadNewAttachFile = __bind(this.uploadNewAttachFile, this);
-      this.render = __bind(this.render, this);
+      this.isValid = bind(this.isValid, this);
+      this.checkIfNeedToAddNew = bind(this.checkIfNeedToAddNew, this);
+      this.ensureValidCollectionLength = bind(this.ensureValidCollectionLength, this);
+      this.addAttachFile = bind(this.addAttachFile, this);
+      this.uploadNewAttachFile = bind(this.uploadNewAttachFile, this);
+      this.render = bind(this.render, this);
       return AttachFileListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -278,6 +290,12 @@
       });
       this.listenTo(afc, 'fileUploaded', this.checkIfNeedToAddNew);
       this.listenTo(afc, 'removeFile', this.ensureValidCollectionLength);
+      afc.on('addNewModel', (function(_this) {
+        return function(newModel) {
+          _this.collection.add(newModel);
+          return _this.addAttachFile(newModel);
+        };
+      })(this));
       afc.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');

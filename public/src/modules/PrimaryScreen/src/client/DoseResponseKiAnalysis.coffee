@@ -123,6 +123,8 @@ class window.DoseResponseKiAnalysisParametersController extends AbstractFormCont
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_kd_value'))
 		@model.get('ligandConc').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_ligandConc_value'))
+		@model.set inactiveThresholdMode: @$('.bv_inactiveThresholdMode').is(":checked"),
+			silent: true
 		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
 			silent: true
 		@model.set smartMode: @$('.bv_smartMode').is(":checked"),
@@ -175,3 +177,28 @@ class window.DoseResponseKiAnalysisParametersController extends AbstractFormCont
 			@$(".bv_formTitle").html @formTitle
 		else
 			@formTitle = @$(".bv_formTitle").html()
+
+
+class window.DoseResponsePlotCurveKi extends Backbone.Model
+
+	log10: (val) ->
+		Math.log(val) / Math.LN10
+
+	render: (brd, curve, plotWindow) =>
+		log10 = @log10
+		fct = (x) ->
+			#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
+			#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
+			#'max + (min-max)/(1+10^(log10(x)-log10(ki*(1+ligandConc/kd))))'
+			curve.max + (curve.min - curve.max) / (1 + Math.pow(10,(x-log10(curve.ki*(1 + curve.ligandConc/curve.kd)))))
+		brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
+		if curve.curveAttributes.Ki?
+			intersect = fct(log10(curve.curveAttributes.Ki))
+			if curve.curveAttributes.Operator?
+				color = '#ff0000'
+			else
+				color = '#808080'
+			#				Horizontal Line
+			brd.create('line',[[plotWindow[0],intersect],[log10(curve.curveAttributes.Ki),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
+			#				Vertical Line
+			brd.create('line',[[log10(curve.curveAttributes.Ki),intersect],[log10(curve.curveAttributes.Ki),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});

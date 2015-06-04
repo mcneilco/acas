@@ -105,8 +105,17 @@ class window.AttachFileController extends AbstractFormController
 		@trigger 'amDirty'
 
 	updateModel: =>
-		@model.set
-			fileType: @$('.bv_fileType').val()
+		if @model.get('id') is null
+			@model.set
+				fileType: @$('.bv_fileType').val()
+		else
+			newModel = new AttachFile (_.clone(@model.attributes))
+			newModel.unset 'id'
+			newModel.set
+				fileType: @$('.bv_fileType').val()
+			@model.set "ignored", true
+			@$('.bv_fileInfoWrapper').hide()
+			@trigger 'addNewModel', newModel
 
 	clear: =>
 		if @model.get('id') is null
@@ -177,6 +186,9 @@ class window.AttachFileListController extends Backbone.View
 			fileTypeList: @fileTypeList
 		@listenTo afc, 'fileUploaded', @checkIfNeedToAddNew
 		@listenTo afc, 'removeFile', @ensureValidCollectionLength
+		afc.on 'addNewModel', (newModel) =>
+			@collection.add newModel
+			@addAttachFile newModel
 		afc.on 'amDirty', =>
 			@trigger 'amDirty'
 		@$('.bv_attachFileInfo').append afc.render().el

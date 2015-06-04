@@ -24,7 +24,7 @@
       return resp.end(JSON.stringify(codeTableServiceTestJSON['codes']));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = "" + config.all.client.service.persistence.fullpath + "ddictvalues?format=codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "ddictvalues?format=codetable";
       request = require('request');
       return request({
         method: 'GET',
@@ -56,7 +56,7 @@
       return resp.end(JSON.stringify(correctCodeTable['codes']));
     } else {
       config = require('../conf/compiled/conf.js');
-      baseurl = "" + config.all.client.service.persistence.fullpath + "ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "ddictvalues/all/" + req.params.type + "/" + req.params.kind + "/codetable";
       request = require('request');
       return request({
         method: 'GET',
@@ -85,7 +85,7 @@
     } else {
       console.log("attempting to post new code table value");
       config = require('../conf/compiled/conf.js');
-      baseurl = "" + config.all.client.service.persistence.fullpath + "ddictvalues/codetable";
+      baseurl = config.all.client.service.persistence.fullpath + "ddictvalues/codetable";
       request = require('request');
       return request({
         method: 'POST',
@@ -115,7 +115,7 @@
     } else {
       config = require('../conf/compiled/conf.js');
       putId = req.body.id;
-      baseurl = "" + config.all.client.service.persistence.fullpath + "ddictvalues/codetable/" + putId;
+      baseurl = config.all.client.service.persistence.fullpath + "ddictvalues/codetable/" + putId;
       request = require('request');
       return request({
         method: 'PUT',

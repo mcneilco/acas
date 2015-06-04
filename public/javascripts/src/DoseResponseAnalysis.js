@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseAnalysisParameters = (function(_super) {
-    __extends(DoseResponseAnalysisParameters, _super);
+  window.DoseResponseAnalysisParameters = (function(superClass) {
+    extend(DoseResponseAnalysisParameters, superClass);
 
     function DoseResponseAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -90,20 +90,20 @@
 
   })(Backbone.Model);
 
-  window.DoseResponseAnalysisParametersController = (function(_super) {
-    __extends(DoseResponseAnalysisParametersController, _super);
+  window.DoseResponseAnalysisParametersController = (function(superClass) {
+    extend(DoseResponseAnalysisParametersController, superClass);
 
     function DoseResponseAnalysisParametersController() {
-      this.handleSlopeLimitTypeChanged = __bind(this.handleSlopeLimitTypeChanged, this);
-      this.handleMinLimitTypeChanged = __bind(this.handleMinLimitTypeChanged, this);
-      this.handleMaxLimitTypeChanged = __bind(this.handleMaxLimitTypeChanged, this);
-      this.handleInverseAgonistModeChanged = __bind(this.handleInverseAgonistModeChanged, this);
-      this.handleInactiveThresholdMoved = __bind(this.handleInactiveThresholdMoved, this);
-      this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
-      this.handleInactiveThresholdModeChanged = __bind(this.handleInactiveThresholdModeChanged, this);
-      this.handleSmartModeChanged = __bind(this.handleSmartModeChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.handleSlopeLimitTypeChanged = bind(this.handleSlopeLimitTypeChanged, this);
+      this.handleMinLimitTypeChanged = bind(this.handleMinLimitTypeChanged, this);
+      this.handleMaxLimitTypeChanged = bind(this.handleMaxLimitTypeChanged, this);
+      this.handleInverseAgonistModeChanged = bind(this.handleInverseAgonistModeChanged, this);
+      this.handleInactiveThresholdMoved = bind(this.handleInactiveThresholdMoved, this);
+      this.handleInactiveThresholdChanged = bind(this.handleInactiveThresholdChanged, this);
+      this.handleInactiveThresholdModeChanged = bind(this.handleInactiveThresholdModeChanged, this);
+      this.handleSmartModeChanged = bind(this.handleSmartModeChanged, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return DoseResponseAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
@@ -294,15 +294,15 @@
 
   })(AbstractFormController);
 
-  window.ModelFitTypeController = (function(_super) {
-    __extends(ModelFitTypeController, _super);
+  window.ModelFitTypeController = (function(superClass) {
+    extend(ModelFitTypeController, superClass);
 
     function ModelFitTypeController() {
-      this.updateModel = __bind(this.updateModel, this);
-      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
-      this.setupParameterController = __bind(this.setupParameterController, this);
-      this.setupModelFitTypeSelect = __bind(this.setupModelFitTypeSelect, this);
-      this.render = __bind(this.render, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
+      this.setupParameterController = bind(this.setupParameterController, this);
+      this.setupModelFitTypeSelect = bind(this.setupModelFitTypeSelect, this);
+      this.render = bind(this.render, this);
       return ModelFitTypeController.__super__.constructor.apply(this, arguments);
     }
 
@@ -338,17 +338,19 @@
     };
 
     ModelFitTypeController.prototype.setupParameterController = function(modelFitType) {
-      var drap, drapType, drapcType, mfp;
-      drapType = (function() {
-        switch (modelFitType) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParameters;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParameters;
-          case "unassigned":
-            return "unassigned";
-        }
-      })();
+      var controllerClass, curveFitClasses, curvefitClassesCollection, drap, drapType, drapcType, mfp, parametersClass;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        codeValue: modelFitType
+      });
+      if (curveFitClasses != null) {
+        parametersClass = curveFitClasses.get('parametersClass');
+        drapType = window[parametersClass];
+        controllerClass = curveFitClasses.get('controllerClass');
+        drapcType = window[controllerClass];
+      } else {
+        drapType = 'unassigned';
+      }
       if (this.parameterController != null) {
         this.parameterController.undelegateEvents();
       }
@@ -367,14 +369,6 @@
         } else {
           drap = new drapType(this.model.getModelFitParameters());
         }
-        drapcType = (function() {
-          switch (modelFitType) {
-            case "4 parameter D-R":
-              return DoseResponseAnalysisParametersController;
-            case "Ki Fit":
-              return DoseResponseKiAnalysisParametersController;
-          }
-        })();
         this.parameterController = new drapcType({
           el: this.$('.bv_analysisParameterForm'),
           model: drap
@@ -420,19 +414,20 @@
 
   })(Backbone.View);
 
-  window.DoseResponseAnalysisController = (function(_super) {
-    __extends(DoseResponseAnalysisController, _super);
+  window.DoseResponseAnalysisController = (function(superClass) {
+    extend(DoseResponseAnalysisController, superClass);
 
     function DoseResponseAnalysisController() {
-      this.fitReturnSuccess = __bind(this.fitReturnSuccess, this);
-      this.launchFit = __bind(this.launchFit, this);
-      this.paramsInvalid = __bind(this.paramsInvalid, this);
-      this.paramsValid = __bind(this.paramsValid, this);
-      this.handleModelFitTypeChanged = __bind(this.handleModelFitTypeChanged, this);
-      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
-      this.setReadyForFit = __bind(this.setReadyForFit, this);
-      this.testReadyForFit = __bind(this.testReadyForFit, this);
-      this.render = __bind(this.render, this);
+      this.fitReturnSuccess = bind(this.fitReturnSuccess, this);
+      this.launchFit = bind(this.launchFit, this);
+      this.paramsInvalid = bind(this.paramsInvalid, this);
+      this.paramsValid = bind(this.paramsValid, this);
+      this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
+      this.handleModelStatusChanged = bind(this.handleModelStatusChanged, this);
+      this.handleStatusChanged = bind(this.handleStatusChanged, this);
+      this.setReadyForFit = bind(this.setReadyForFit, this);
+      this.testReadyForFit = bind(this.testReadyForFit, this);
+      this.render = bind(this.render, this);
       return DoseResponseAnalysisController.__super__.constructor.apply(this, arguments);
     }
 
@@ -454,6 +449,7 @@
 
     DoseResponseAnalysisController.prototype.render = function() {
       var buttonText;
+      this.analyzedPreviously = this.model.getModelFitStatus().get('codeValue') === "not started" ? false : true;
       this.showExistingResults();
       buttonText = this.analyzedPreviously ? "Re-Fit" : "Fit Data";
       return this.$('.bv_fitModelButton').html(buttonText);
@@ -509,6 +505,22 @@
         if (this.model.isEditable()) {
           return this.parameterController.enableAllInputs();
         } else {
+          return this.parameterController.disableAllInputs();
+        }
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.handleModelStatusChanged = function() {
+      if (this.model.isEditable()) {
+        this.$('.bv_fitModelButton').removeAttr('disabled');
+        this.$('select').removeAttr('disabled');
+        if (this.parameterController != null) {
+          return this.parameterController.enableAllInputs();
+        }
+      } else {
+        this.$('.bv_fitModelButton').attr('disabled', 'disabled');
+        this.$('select').attr('disabled', 'disabled');
+        if (this.parameterController != null) {
           return this.parameterController.disableAllInputs();
         }
       }
@@ -613,5 +625,56 @@
     return DoseResponseAnalysisController;
 
   })(Backbone.View);
+
+  window.DoseResponsePlotCurveLL4 = (function(superClass) {
+    extend(DoseResponsePlotCurveLL4, superClass);
+
+    function DoseResponsePlotCurveLL4() {
+      this.render = bind(this.render, this);
+      return DoseResponsePlotCurveLL4.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotCurveLL4.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotCurveLL4.prototype.render = function(brd, curve, plotWindow) {
+      var color, fct, intersect, log10;
+      log10 = this.log10;
+      fct = function(x) {
+        return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
+      };
+      brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
+        strokeWidth: 2
+      });
+      if (curve.curveAttributes.EC50 != null) {
+        intersect = fct(log10(curve.curveAttributes.EC50));
+        if (curve.curveAttributes.Operator != null) {
+          color = '#ff0000';
+        } else {
+          color = '#808080';
+        }
+        brd.create('line', [[plotWindow[0], intersect], [log10(curve.curveAttributes.EC50), intersect]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+        return brd.create('line', [[log10(curve.curveAttributes.EC50), intersect], [log10(curve.curveAttributes.EC50), 0]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+      }
+    };
+
+    return DoseResponsePlotCurveLL4;
+
+  })(Backbone.Model);
 
 }).call(this);

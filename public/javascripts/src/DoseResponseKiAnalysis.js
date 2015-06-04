@@ -1,13 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.DoseResponseKiAnalysisParameters = (function(_super) {
-    __extends(DoseResponseKiAnalysisParameters, _super);
+  window.DoseResponseKiAnalysisParameters = (function(superClass) {
+    extend(DoseResponseKiAnalysisParameters, superClass);
 
     function DoseResponseKiAnalysisParameters() {
-      this.fixCompositeClasses = __bind(this.fixCompositeClasses, this);
+      this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return DoseResponseKiAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
 
@@ -99,19 +99,19 @@
 
   })(Backbone.Model);
 
-  window.DoseResponseKiAnalysisParametersController = (function(_super) {
-    __extends(DoseResponseKiAnalysisParametersController, _super);
+  window.DoseResponseKiAnalysisParametersController = (function(superClass) {
+    extend(DoseResponseKiAnalysisParametersController, superClass);
 
     function DoseResponseKiAnalysisParametersController() {
-      this.handleMinLimitTypeChanged = __bind(this.handleMinLimitTypeChanged, this);
-      this.handleMaxLimitTypeChanged = __bind(this.handleMaxLimitTypeChanged, this);
-      this.handleInverseAgonistModeChanged = __bind(this.handleInverseAgonistModeChanged, this);
-      this.handleInactiveThresholdMoved = __bind(this.handleInactiveThresholdMoved, this);
-      this.handleInactiveThresholdChanged = __bind(this.handleInactiveThresholdChanged, this);
-      this.handleInactiveThresholdModeChanged = __bind(this.handleInactiveThresholdModeChanged, this);
-      this.handleSmartModeChanged = __bind(this.handleSmartModeChanged, this);
-      this.updateModel = __bind(this.updateModel, this);
-      this.render = __bind(this.render, this);
+      this.handleMinLimitTypeChanged = bind(this.handleMinLimitTypeChanged, this);
+      this.handleMaxLimitTypeChanged = bind(this.handleMaxLimitTypeChanged, this);
+      this.handleInverseAgonistModeChanged = bind(this.handleInverseAgonistModeChanged, this);
+      this.handleInactiveThresholdMoved = bind(this.handleInactiveThresholdMoved, this);
+      this.handleInactiveThresholdChanged = bind(this.handleInactiveThresholdChanged, this);
+      this.handleInactiveThresholdModeChanged = bind(this.handleInactiveThresholdModeChanged, this);
+      this.handleSmartModeChanged = bind(this.handleSmartModeChanged, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
       return DoseResponseKiAnalysisParametersController.__super__.constructor.apply(this, arguments);
     }
 
@@ -201,6 +201,11 @@
         value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_ligandConc_value')))
       });
       this.model.set({
+        inactiveThresholdMode: this.$('.bv_inactiveThresholdMode').is(":checked")
+      }, {
+        silent: true
+      });
+      this.model.set({
         inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
       }, {
         silent: true
@@ -283,5 +288,56 @@
     return DoseResponseKiAnalysisParametersController;
 
   })(AbstractFormController);
+
+  window.DoseResponsePlotCurveKi = (function(superClass) {
+    extend(DoseResponsePlotCurveKi, superClass);
+
+    function DoseResponsePlotCurveKi() {
+      this.render = bind(this.render, this);
+      return DoseResponsePlotCurveKi.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotCurveKi.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotCurveKi.prototype.render = function(brd, curve, plotWindow) {
+      var color, fct, intersect, log10;
+      log10 = this.log10;
+      fct = function(x) {
+        return curve.max + (curve.min - curve.max) / (1 + Math.pow(10, x - log10(curve.ki * (1 + curve.ligandConc / curve.kd))));
+      };
+      brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
+        strokeWidth: 2
+      });
+      if (curve.curveAttributes.Ki != null) {
+        intersect = fct(log10(curve.curveAttributes.Ki));
+        if (curve.curveAttributes.Operator != null) {
+          color = '#ff0000';
+        } else {
+          color = '#808080';
+        }
+        brd.create('line', [[plotWindow[0], intersect], [log10(curve.curveAttributes.Ki), intersect]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+        return brd.create('line', [[log10(curve.curveAttributes.Ki), intersect], [log10(curve.curveAttributes.Ki), 0]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+      }
+    };
+
+    return DoseResponsePlotCurveKi;
+
+  })(Backbone.Model);
 
 }).call(this);

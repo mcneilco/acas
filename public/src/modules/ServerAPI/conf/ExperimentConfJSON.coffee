@@ -27,6 +27,9 @@
 				kindName: "experiment metadata"
 			,
 				typeName: "metadata"
+				kindName: "custom experiment metadata"
+			,
+				typeName: "metadata"
 				kindName: "raw results locations"
 			,
 				typeName: "metadata"
@@ -142,6 +145,8 @@
 				typeName: "analysis parameter"
 			,
 				typeName: "experiment metadata"
+			,
+				typeName: "custom experiment metadata"
 			]
 
 		ddictkinds:
@@ -231,6 +236,13 @@
 				codeOrigin: "ACAS DDICT"
 				code: "rejected"
 				name: "Rejected"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				code: "deleted"
+				name: "Deleted"
 				ignored: false
 			,
 				codeType: "analysis"
