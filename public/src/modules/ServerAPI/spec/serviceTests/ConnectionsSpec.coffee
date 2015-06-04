@@ -1,6 +1,6 @@
 assert = require 'assert'
 request = require 'request'
-# _ = require 'underscore'
+_ = require 'underscore'
 experimentServiceTestJSON = require '../testFixtures/ExperimentServiceTestJSON.js'
 fs = require 'fs'
 exec = require('child_process').exec
@@ -12,11 +12,6 @@ parseResponse = (jsonStr) ->
   catch error
     console.log "response unparsable: " + error
     return null
-
-#####################################
-# 0. Test that the config compiles ?
-#####################################
-
 
 
 #########################
@@ -77,23 +72,104 @@ describe "B. Connecting to the database", ->
 # todo make this test more robust
 # Note, this is not a very robust test. It simply checks to see if the directory assigned to be the uploads and temp file system exists
 # This does not check write permissions since fs.access can only check permissions of files, not directories
-describe "C. Accessing a directory", ->
-  describe "from the uploads path", ->
+describe.only "C. Writing a file to", ->
+  describe "the uploads path", ->
     before (done) ->
-      fs.readdir config.all.server.datafiles.relative_path, (error, files) =>
-        @readErrors = error
+      fs.writeFile config.all.server.datafiles.relative_path+'/test.txt', 'this is a test', (error) =>
+        @errors = error
         done()
     it "should not throw an error", ->
-      assert(@readErrors == null || @readErrors == undefined, "Check the connection between node and the file uploads
-                                                                including server.datafiles.relative_path.")
-  describe "from the temp path", ->
+      assert(@errors == null || @errors == undefined, "Check the connection between node and the file uploads
+                                                       including server.datafiles.relative_path.")
+    describe "then accessing the file", ->
+      describe  "directly", ->
+        before (done) ->
+          fs.readdir config.all.server.datafiles.relative_path, (err,files) =>
+            @errors = err
+            @files = files
+            done()
+        it "should not throw an error", ->
+          assert(@errors==null, "Unable to read the directory. Check the connection between node and the file uploads
+                                including server.datafiles.relative_path.")
+        it "should find file", ->
+          assert(@files.indexOf("test.txt")!= -1, "test file was not added to the uploads directory. Check that
+                                                    server.datafiles.relative_path points to a directory that can be written to.")
+      describe "through the server", ->
+        before (done) ->
+          request config.all.server.service.persistence.fileUrl, (error, response, body) =>
+            @errors = error
+            @responseJSON = body
+            done()
+        it "should not throw an error", ->
+          assert(@errors==null, "unable to access the test file through the nodeapi port.
+                                Ensure that server.service.persistence.fileUrl is set correctly.")
+        it "should find file", ->
+          parsedResponse = JSON.stringify(parseResponse(@responseJSON))
+          assert(parsedResponse.indexOf("test.txt") != -1, "unable to access the test file through the nodeapi port.
+                                                            Ensure that server.service.persistence.fileUrl is set correctly.")
+
+    describe "then deleting the file", ->
+      before (done) ->
+        fs.unlink config.all.server.datafiles.relative_path+'/test.txt', (err) =>
+          @errors = err
+          done()
+      it "should not throw an error", ->
+        assert(@errors==null, "unable to delete file from uploads path: "+@errors)
+
+      describe "and checking for existence", ->
+        before (done) ->
+          fs.readdir config.all.server.datafiles.relative_path, (err,files) =>
+            @errors = err
+            @files = files
+            done()
+        it "should not throw an error", ->
+          assert(@errors==null, "Unable to read the directory. Check the connection between node and the file uploads
+                                including server.datafiles.relative_path.")
+        it "should not find file", ->
+          assert(@files.indexOf("test.txt")== -1, "test file was not deleted from the uploads directory. Check that
+                                                    server.datafiles.relative_path points to a directory that can be written to.")
+
+  describe "the temp path", ->
     before (done) ->
-      fs.readdir config.all.server.tempfiles.relative_path, (error, files) =>
-        @readErrors = error
+      fs.writeFile config.all.server.tempfiles.relative_path+'/test.txt', 'this is a test', (error) =>
+        @errors = error
         done()
     it "should not throw an error", ->
-      assert(@readErrors == null || @readErrors == undefined, "Check the connection between node and the temp files
-                                                                including server.tempfiles.relative_path.")
+      assert(@errors == null || @errors == undefined, "Check the connection between node and the temp files
+                                                       including server.tempfiles.relative_path.")
+    describe "then accessing the file", ->
+      before (done) ->
+        fs.readdir config.all.server.tempfiles.relative_path, (err,files) =>
+          @errors = err
+          @files = files
+          done()
+      it "should not throw an error", ->
+        assert(@errors==null, "Unable to read the directory. Check the connection between node and the temp files
+                                including server.tempfiles.relative_path.")
+      it "should find file", ->
+        assert(@files.indexOf("test.txt")!= -1, "test file was not added to the temp files directory. Check that
+                                                    server.tempfiles.relative_path points to a directory that can be written to.")
+
+    describe "then deleting the file", ->
+      before (done) ->
+        fs.unlink config.all.server.tempfiles.relative_path+'/test.txt', (err) =>
+          @errors = err
+          done()
+      it "should not throw an error", ->
+        assert(@errors==null, "unable to delete file from uploads path: "+@errors)
+
+      describe "and checking for existence", ->
+        before (done) ->
+          fs.readdir config.all.server.tempfiles.relative_path, (err,files) =>
+            @errors = err
+            @files = files
+            done()
+        it "should not throw an error", ->
+          assert(@errors==null, "Unable to read the directory. Check the connection between node and the file uploads
+                                including server.tempfiles.relative_path.")
+        it "should not find file", ->
+          assert(@files.indexOf("test.txt")== -1, "test file was not deleted from the uploads directory. Check that
+                                                    server.datafiles.relative_path points to a directory that can be written to.")
 
 
 #################################
