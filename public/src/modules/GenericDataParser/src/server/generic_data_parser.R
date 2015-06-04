@@ -3088,6 +3088,7 @@ validateSubjectData <- function(subjectData, dryRun) {
   # Validates Subject Data
   # For now, just passes information to validateValue Kinds
   uniqueDF <- unique(subjectData[, c("Class", "valueKind")])
+  uniqueDF <- uniqueDF[!(uniqueDF$valueKind %in% c('flag cause', 'flag observation', 'flag status')), ]
   validateValueKinds(uniqueDF$valueKind, uniqueDF$Class, dryRun, reserved = NULL)
 }
 getUnitFromParentheses <- function(columnHeaders) {
