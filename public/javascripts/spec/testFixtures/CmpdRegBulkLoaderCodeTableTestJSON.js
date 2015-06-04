@@ -3,15 +3,15 @@
     return exports.codetableValues = [
       {
         type: "properties",
-        kind: "database",
+        kind: "templates",
         codes: [
           {
-            code: "corporate id",
-            name: "Corporate ID",
+            code: "Template 1",
+            name: "Template 1",
             ignored: false
           }, {
-            code: "lot number",
-            name: "Lot Number",
+            code: "Template 2",
+            name: "Template 2",
             ignored: false
           }
         ]

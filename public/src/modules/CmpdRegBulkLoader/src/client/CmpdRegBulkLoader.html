@@ -1,32 +1,12 @@
-<script type="text/template" id="AssignedPropView" xmlns="http://www.w3.org/1999/html">
-
-    <div class="form-inline span12" style="margin-bottom:15px;">
-        <span class="bv_sdfProp span2" style="margin-left:0px;text-align:right;">Corporate ID</span>
-        <select class="bv_dbProp span3" style="margin-left:25px;"></select>
-        <input class="bv_defaultVal span2" style="margin-left:20px;" type="text"/>
-        <button class="close bv_deleteProp" style="margin-top:1px;">&times;</button>
-    </div>
-
-</script>
-
-<script type="text/template" id="AssignedPropListView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_propInfo"></div>
-    <div class="span12" style="margin-bottom:15px;margin-left:12px;">
-        <span class="span5"></span>
-        <button type="button" class="btn bv_addDbProp">Add Database Property</button>
-    </div>
-
-</script>
-
 <script type="text/template" id="CmpdRegBulkLoaderAppView" xmlns="http://www.w3.org/1999/html">
 
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
             <div class="container-fluid">
                 <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
+                    <!--<span class="icon-bar"></span>-->
+                    <!--<span class="icon-bar"></span>-->
+                    <!--<span class="icon-bar"></span>-->
                 </a>
                 <a class="brand bv_headerName" href="/CmpdRegBulkLoader">BULK COMPOUND REGISTRATION: Project Apollo</a>
                 <p class="navbar-text pull-right bv_userInfo" style="">
@@ -35,60 +15,212 @@
                     <a href="#" class="navbar-link bv_loginUserLastName">Last Name</a>
                     <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
                 </p>
+                <ul class="nav nav-pills pull-right">
+                    <li class="dropdown bv_drop">
+                        <a class="dropdown-toggle"
+                           data-toggle="dropdown"
+                           href="#">Register<b class="caret" style="margin-top:7px;"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="">
+                                <a class="bv_test" href="#">Single Compound Registration</a>
+                                <a href="#">Bulk Compound Registration</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="#">Search</a>
+                    </li>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle"
+                           data-toggle="dropdown"
+                           href="#">Admin<b class="caret" style="margin-top:7px;"></b>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a href="#">Purge Files</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
             </div><!--/.nav-collapse -->
         </div>
     </div>
 
 
     <div class="container" style="margin-left:15px;">
-        <div class="bv_bulkReg">
-            <div class="span12">
-                <h4>Select SD File to Upload:</h4>
-                <div class="bv_browseFile span7"></div>
-                    <div class="span12">
-                        <div class="form-group span3" style="margin-left:0px;">
-                            <label>Detected SDF Properties</label>
-                            <textarea class="bv_detectedSDFProp" rows="7" style="resize:none;" disabled="disabled"></textarea>
-                        </div>
-                        <div class="form-group span3" style="margin-left:0px;">
-                            <!--<label>Records Read:</label>-->
-                            <span>Records Read:</span>
-                            <span bv_recordsRead>0</span>
-                            <!--<input type="text" disabled="disabled"/>-->
-                            <button type="button" class="btn bv_read100More">Read 100 More Records</button>
-                            <button type="button" class="btn bv_readAll" style="margin-top:9px;">Read All Records</button>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <div class="span9">
-                <h4>Assign SDF Properties</h4>
-                <p style="margin-left:30px;">Assign the SDF Properties to their paired database column. Database columns requiring a default value are shown in yellow with an asterisk* in the drop-down list. Default values will assign a value to a database entry when that matching SDF property is null or missing.</p>
-            </div>
-
-        <!--<div class="span12 well well-small">-->
-            <div class="span12" style="margin-bottom:10px;">
-                <span class="span2" style="margin-left:0px;margin-bottom:5px;font-weight:bold;font-size:15px;text-align:right;">SDF Property</span>
-                <span class="span3" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Database Property</span>
-                <span class="span2" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Default Value</span>
-            </div>
-       <!--</div>-->
-
-            <div class="bv_assignedPropList"></div>
-            <div class="span12" style="margin-left:25px;">
-                <span class="span2"></span>
-                <textarea class="span5" rows="7" style="resize:none;" disabled="disabled"></textarea>
-            </div>
-            <div class="span12" style="margin-top:5px;margin-bottom:15px;margin-left:25px;">
-                <span class="span5"></span>
-                <button type="button" class="btn btn-success bv_regCmpds" disabled="disabled">Register Compounds</button>
-            </div>
-
-
-        </div>
+        <div class="bv_bulkReg"></div>
+        <div class="bv_bulkRegSummary"></div>
         <div class="bv_purgeFiles"></div>
     </div>
 
 
 </script>
+
+<script type="text/template" id="BulkRegCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
+    <div class="span9">
+        <h3>Bulk Compound Registration Complete</h3>
+        <h4 style="font-size:16px;">Registration Summary:</h4>
+        <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
+            <span class="bv_regSummaryHTML"></span>
+        </div>
+        <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
+        <button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</button>
+    </div>
+</script>
+
+<script type="text/template" id="BulkRegCmpdsView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_detectSdfProperties"></div>
+    <div class="bv_assignSdfProperties"></div>
+</script>
+
+<script type="text/template" id="DetectSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="span9">
+        <h3>Bulk Compound Registration</h3>
+        <div class="well" style="background:#FFFFFF;height:310px;margin-bottom:10px;">
+            <div class="">Select an SD file:</div>
+            <span>
+                <div class="well bv_browseFile" style="padding-bottom:5px; height:35px; padding-top:10px;margin-left:0px;"></div>
+                <div class="">
+                    <div class="form-group span6" style="margin-left:0px;">
+                        <label style="font-weight:bold;">Detected SDF Properties</label>
+                        <textarea class="bv_detectedSdfPropertiesList" rows="9" style="width:545px; resize:none;" disabled="disabled" placeholder="No file uploaded."></textarea>
+                    </div>
+                    <div class="form-group" style="margin-left:0px;">
+                        <!--<label>Records Read:</label>-->
+                        <div style="margin-bottom:1px;">Records Read:
+                            <span class="bv_recordsRead">0</span></div>
+                        <!--<input type="text" disabled="disabled"/>-->
+                        <button type="button" class="btn bv_readMore" style="margin-top:4px;">Read 100 More</button>
+                        <button type="button" class="btn bv_readAll" style="width:120px;margin-top:4px;margin-left:6px;">Read All</button>
+                    </div>
+                </div>
+            </span>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="AssignSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
+    <div class="span9 bv_configuration">
+        <h4 style="font-size:16px;">Configuration</h4>
+        <div class="well" style="background:#FFFFFF;padding-bottom:83px;">
+            <div class="form-horizontal span5" style="margin-left:0px;width:410px;">
+                <div class="control-group bv_group_dbProject" style="margin-bottom:25px;width:400px;margin-right:0px;">
+                    <label class="control-label" style="width:100px;">DB Project</label>
+                    <div class="controls" style="margin-left:10px;width:420px;">
+                        <select class="bv_dbProject" style="width:300px;margin-left:6px;">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="form-horizontal span6" style="width:420px;margin-left:0px;">
+                <div class="control-group bv_group_projectName" style="margin-bottom:25px;margin-left:10px;">
+                    <label class="control-label" style="width:100px;">Project Name</label>
+                    <div class="controls" style="margin-left:10px;">
+                        <input class="bv_projectName" style="width:286px;margin-left:6px;" type="text"/>
+                        </input>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-horizontal span5" style="margin-left:0px;width:410px;">
+                <div class="control-group bv_group_useTemplate" style="margin-bottom:25px;width:400px;margin-right:0px;">
+                    <label class="control-label" style="width:100px;">Use Template</label>
+                    <div class="controls" style="margin-left:10px;width:420px;">
+                        <select class="bv_useTemplate" style="width:300px;margin-left:6px;">
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <!--<div class="form-horizontal span6" style="width:420px;margin-left:0px;">-->
+                <!--<div class="control-group bv_group_templateName" style="margin-bottom:25px;margin-left:10px;">-->
+                    <!--<label class="control-label" style="width:100px;">Template Name</label>-->
+                    <!--<div class="controls" style="margin-left:10px;">-->
+                        <!--<input class="bv_templateName" style="width:286px;margin-left:6px;" type="text"/>-->
+                        <!--</input>-->
+                    <!--</div>-->
+                <!--</div>-->
+            <!--</div>-->
+
+        </div>
+    </div>
+    <div class="span9 bv_assignProperties hide">
+        <h4 style="font-size:16px;">Assign SDF Properties</h4>
+        <div class="well" style="background:#FFFFFF;padding-bottom:10px;">
+            <div class="well">
+                <span>Assign the SDF Properties to their paired database column. Database columns requiring a default value are shown with an asterisk* in the drop-down list. Default values will assign a value to a database entry when that matching SDF property is null or missing.</span>
+            </div>
+            <!--<div class="span12 well well-small">-->
+            <div class="span12" style="margin-left:0px;">
+                <span class="span2" style="margin-left:0px;margin-bottom:5px;font-weight:bold;font-size:15px;text-align:right;">SDF Property</span>
+                <span class="span3" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;width:305px;">Database Property</span>
+                <span class="span2" style="margin-left:25px;margin-bottom:5px;font-weight:bold;font-size:15px;">Default Value</span>
+            </div>
+
+            <div class="span9" style="height:1px;width:830px;margin-bottom:10px;margin-left:0px;background-color:#f5f5f5;"></div>
+            <!--</div>-->
+
+            <div class="bv_assignedPropertiesList"></div>
+            <span>The following required database properties still need to be assigned:</span>
+            <!--<div class="well bv_unassignedProperties" style="margin-top:5px;"></div>-->
+            <div>
+                <textarea class="bv_unassignedProperties" rows="5" style="width:816px; resize:none;margin-top:5px;color:red;" disabled="disabled" placeholder="All required database properties have been assigned."></textarea>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="span9 bv_saveOptions hide" style="margin-top:5px;margin-bottom:15px;">
+        <!--<span class="span5"></span>-->
+        <div class="">
+            <span class="checkbox" style="padding-left:10px;">
+                <input type="checkbox"class="bv_saveTemplate" style="margin-right: 0px;margin-left: 0px;margin-top:8px;"/>Save Template
+                <span class="control-group bv_group_templateName">
+                    <input class="bv_templateName" style="width:286px;margin-left:7px;" type="text" placeholder="Template Name" disabled="disabled"/>
+                </span>
+            </span>
+            <button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button>
+        </div>
+        <div class="alert alert-warning bv_overwriteWarning hide" role="alert" style="margin-top:10px;width:375px;">
+            <span class="bv_overwriteMessage"></span>
+            <span class="bv_overwrite">
+                <label class="radio inline" style="padding-top:0px;margin-left:10px;">
+                    <input type="radio" name="bv_overwrite" value="no" checked="checked">No
+                </label>
+                <label class="radio inline" style="padding-top:0px;">
+                    <input type="radio" name="bv_overwrite" value="yes">Yes
+                </label>
+            </span>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="AssignedPropertyView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:10px;margin-left:0px;">
+        <span class="bv_sdfProperty span2" style="margin-left:0px;text-align:right;">Corporate ID</span>
+        <span class="control-group bv_group_dbProperty">
+            <select class="bv_dbProperty span3" style="margin-left:25px;width:307px;"></select>
+        </span>
+        <span class="control-group bv_group_defaultVal">
+            <input class="bv_defaultVal span2" style="margin-left:20px;width:270px;" type="text"/>
+        </span>
+        <button class="close bv_deleteProperty hide" style="margin-top:1px;">&times;</button>
+    </div>
+    <div class="span9" style="height:1px;width:830px;margin-bottom:10px;margin-left:0px;background-color:#f5f5f5;"></div>
+
+</script>
+
+<script type="text/template" id="AssignedPropertiesListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_propInfo"></div>
+    <span class="span8" style="margin-bottom:15px;margin-left:60px;">
+        <!--<span class="span5"></span>-->
+        <button type="button" class="btn bv_addDbProperty pull-right" disabled="disabled">Add Database Property</button>
+    </span>
+
+</script>
+
