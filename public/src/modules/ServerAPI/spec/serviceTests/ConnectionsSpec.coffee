@@ -39,9 +39,7 @@ describe "A. Connecting to ACAS", ->
 describe "B. Connecting to the database", ->
   describe "through tomcat", ->
     before (done) ->
-      request "http://roo:"+config.all.client.service.persistence.port, (error, response, body) =>
-#     If not testing on Docker, I think the command below should be used instead:
-#     request "http://"+client.service.persistence.host+":"+config.all.client.service.persistence.port, (error, response, body) =>
+     request "http://"+config.all.client.service.persistence.host+":"+config.all.client.service.persistence.port, (error, response, body) =>
         @response = response
         done()
     it "should return a status code of 200", ->
@@ -51,13 +49,12 @@ describe "B. Connecting to the database", ->
     describe "and fetching data from the database", ->
       it "should be able to contact the database before timeout", ->
         before (done) ->
-          request "http://roo:"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
+          request "http://"+config.all.client.service.persistence.host+":"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
             done()
 
       describe "should return a JSON", ->
         before (done) ->
-          request "http://roo:"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
-#       request "http://"+client.service.persistence.host+":"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes" (error, response, body) =>
+          request "http://"+config.all.client.service.persistence.host+":"+config.all.client.service.persistence.port+"/acas/api/v1/containertypes", (error, response, body) =>
             @responseJSON = body
             done()
         it "that can be parsed", ->
