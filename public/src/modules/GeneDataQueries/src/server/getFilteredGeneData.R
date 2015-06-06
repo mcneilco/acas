@@ -17,7 +17,7 @@ source('getExperimentColOrder.R')
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
 
-myLogger <- createLogger(logName = "com.acas.get.getFilteredGeneData",
+myLogger <- createLogger(logName = "1",
                          logFileName = 'geneData.log',
                          logLevel = "DEBUG", logToConsole = FALSE)
 
@@ -210,6 +210,7 @@ dataCsv <- getURL(
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
+  
 
 
 errorFlag <- FALSE
@@ -241,29 +242,57 @@ if (nrow(dataDT) > 0){
   for (expt in experimentIdList){
     myLogger$debug(paste0("current experiment ", expt))
     if(firstPass){
+		
 		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
 		experimentName <- as.character(unique(outputDT$experimentName))
 		codeName <- as.character(unique(outputDT$experimentCodeName))
 		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
+		outputDT <- cbind(outputDT,sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+		colnames(outputDT)[ncol(outputDT)] <- "Structure Image"
+		
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
         exptDataColumns <- intersect(exptDataColumns, names(outputDT))
-
+		
+	
 		myLogger$debug("here is the exptDataColumns")
         myLogger$debug(exptDataColumns)
 
 		#setcolorder(outputDT, c("geneId",exptDataColumns))
-		outputDT <- subset(outputDT, ,sel=c("geneId",exptDataColumns))
+		outputDT <- subset(outputDT, ,sel=c("geneId","Structure Image", exptDataColumns))
+
+		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+
+
 
 		for (colName in exptDataColumns){
 			setnames(outputDT, colName, paste0(experimentName, "::", colName))
 		}
 		firstPass <- FALSE
 
-		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
+		# myLogger$debug("exptDataColumns is set as:")
+		# myLogger$debug(exptDataColumns)
+
+		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))		
 		orderCols$order <- as.integer(as.character(orderCols$order))
+		
 		colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		
+		myLogger$debug("here is orderCols")
+        myLogger$debug(orderCols)
+		
+		myLogger$debug("here is colNamesDF")
+        myLogger$debug(colNamesDF)
+		
+		
 		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
+		
+		myLogger$debug("here is the allColNamesDF")
+        myLogger$debug(allColNamesDF)		
+		
 		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
+		
+		myLogger$debug("here is the allColNamesDF")
+        myLogger$debug(allColNamesDF)
       
     } else {
 		myLogger$debug(paste0("current firstPass ", firstPass))
@@ -274,15 +303,23 @@ if (nrow(dataDT) > 0){
 		experimentName <- as.character(unique(outputDT2$experimentName))
 		codeName <- as.character(unique(outputDT2$experimentCodeName))
 		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
+		outputDT2 <- cbind(outputDT2,sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+		colnames(outputDT2)[ncol(outputDT2)] <- "Structure Image"
+		
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
 		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
 
 		#setcolorder(outputDT2, c("geneId",exptDataColumns))
-		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
+		outputDT2 <- subset(outputDT2, ,sel=c("geneId","Structure Image",exptDataColumns))
+
+		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+
+
+
 		for (colName in exptDataColumns){
 			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
 		}
-		outputDT <- merge(outputDT, outputDT2, by="geneId", all=TRUE)
+		outputDT <- merge(outputDT, outputDT2, by=c("geneId","Structure Image"), all=TRUE)
 		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
 		orderCols$order <- as.integer(as.character(orderCols$order))
 		colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
@@ -317,14 +354,15 @@ if (nrow(dataDT) > 0){
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   allColNamesDT$sClass <- "center"
   setnames(allColNamesDT, "lsKind", "sTitle")
-  
+ 
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
+  aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="center"), aoColumnsDF)
   aoColumnsDF <- rbind(data.frame(sTitle="Gene ID", sClass="center"), aoColumnsDF)
   
   
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
-  groupHeadersDF <- rbind(data.frame(numberOfColumns=1, titleText=' '), groupHeadersDF)
+  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText=' '), groupHeadersDF)
   
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
