@@ -206,8 +206,8 @@ describe "D. Access to Rscript", ->
                 hello()
                 },error = function(ex) {cat(paste("R Execution Error:",ex));})'
     before (done) ->
-      #this takes a long time even when working. Disable timeout for this test
-      @timeout 0
+      #this takes a long time even when working, adjust timeout to 10 seconds
+      @timeout 10000
       exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error,stdout,stderr) =>
         @stdout = stdout
         @stderr = stderr
@@ -225,8 +225,8 @@ describe "D. Access to Rscript", ->
                   getAllValueKinds()
                   },error = function(ex) {cat(paste("R Execution Error:",ex));})'
       before (done) ->
-        #this takes a long time even when working. Disable timeout for this test
-        @timeout 0
+        #this takes a long time even when working, adjust timeout to 10 seconds
+        @timeout 10000
         exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
           @stderr = stderr
           @stdout = stdout
@@ -245,8 +245,8 @@ describe "D. Access to Rscript", ->
                   dbDisconnect(conn)
                   },error = function(ex) {cat(paste("R Execution Error:",ex));})'
       before (done) ->
-        #this takes a long time even when working. Disabling timeout for this test
-        @timeout 0
+        #this takes a long time even when working, adjust timeout to 10 seconds
+        @timeout 10000
         exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
           @stderr = stderr
           @stdout = stdout
@@ -264,7 +264,7 @@ describe "D. Access to Rscript", ->
 #################################
 
 describe "E. Access to rApache", ->
-  @timeout 0
+  @timeout 10000
   before (done) ->
     request config.all.client.service.rapache.fullpath + "RApacheInfo", (error, response, body) =>
       @responseJSON = body
@@ -295,6 +295,7 @@ describe "E. Access to rApache", ->
           done()
       it "should return a stringified list", ->
 # split the output into an array using ( delimiter, only return the first split.
+
         split = @responseJSON.split "(", 1
         assert.equal(split[0], "list", "rApache unable to access the database through tomcat.
                                         Check that all environment variables are set correctly. ")
