@@ -32,7 +32,7 @@ myLogger <- createLogger(logName = "1",
 #' @keywords JSON SQL, Advanced Query
 #' @export
 getSQLFromJSONFilterList <- function(searchFilters) {
-
+  
   termsSQL <- data.table()
   filterList <- 1
     for (filterList in 1:length(searchFilters)) {
@@ -211,7 +211,8 @@ dataCsv <- getURL(
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
   
-
+# myLogger$debug("dataCsv is:")
+# myLogger$debug(dataCsv)
 
 errorFlag <- FALSE
 tryCatch({
@@ -257,10 +258,6 @@ if (nrow(dataDT) > 0){
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
         exptDataColumns <- intersect(exptDataColumns, names(outputDT))
 		
-	
-		myLogger$debug("here is the exptDataColumns")
-        myLogger$debug(exptDataColumns)
-
 		#setcolorder(outputDT, c("geneId",exptDataColumns))
 		outputDT <- subset(outputDT, ,sel=c("geneId","Structure Image", exptDataColumns))
 
@@ -273,34 +270,16 @@ if (nrow(dataDT) > 0){
 		}
 		firstPass <- FALSE
 
-		# myLogger$debug("exptDataColumns is set as:")
-		# myLogger$debug(exptDataColumns)
-
 		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))		
 		orderCols$order <- as.integer(as.character(orderCols$order))
-    
-    myLogger$debug("dataDT is:")
-    myLogger$debug(dataDT)
 		
 		colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
     colNamesDF <- unique(colNamesDF)
-		
-# 		myLogger$debug("here is orderCols")
-#         myLogger$debug(orderCols)
-# 		
- 		myLogger$debug("here is colNamesDF")
-         myLogger$debug(colNamesDF)
-		
-		
-		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
-		
-# 		myLogger$debug("here is the allColNamesDF")
-#         myLogger$debug(allColNamesDF)		
-		
+#   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
+    colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
+
+		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")		
 		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
-		
-# 		myLogger$debug("here is the allColNamesDF")
-#         myLogger$debug(allColNamesDF)
       
     } else {
 		myLogger$debug(paste0("current firstPass ", firstPass))
@@ -324,8 +303,6 @@ if (nrow(dataDT) > 0){
 		# TODO replace hard-coded url with a reference to config.properties
 		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
 
-
-
 		for (colName in exptDataColumns){
 			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
 		}
@@ -333,6 +310,8 @@ if (nrow(dataDT) > 0){
 		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
 		orderCols$order <- as.integer(as.character(orderCols$order))
 		colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		#   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
+		colNamesDF2 <- subset(colNamesDF2,!duplicated(colNamesDF2[["lsKind"]]))
 		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
 		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
 		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
