@@ -247,8 +247,12 @@ if (nrow(dataDT) > 0){
 		experimentName <- as.character(unique(outputDT$experimentName))
 		codeName <- as.character(unique(outputDT$experimentCodeName))
 		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
+    
+    # Add a column next to gene ID with the compound structure
+    # TODO replace hard-coded url with a reference to the config.properties
 		outputDT <- cbind(outputDT,sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
-		colnames(outputDT)[ncol(outputDT)] <- "Structure Image"
+		# Name new column
+    colnames(outputDT)[ncol(outputDT)] <- "Structure Image"
 		
 		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
         exptDataColumns <- intersect(exptDataColumns, names(outputDT))
@@ -260,9 +264,9 @@ if (nrow(dataDT) > 0){
 		#setcolorder(outputDT, c("geneId",exptDataColumns))
 		outputDT <- subset(outputDT, ,sel=c("geneId","Structure Image", exptDataColumns))
 
+    # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
+    # TODO replace hard-coded url with a reference to config.properties
 		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
-
-
 
 		for (colName in exptDataColumns){
 			setnames(outputDT, colName, paste0(experimentName, "::", colName))
@@ -274,25 +278,29 @@ if (nrow(dataDT) > 0){
 
 		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))		
 		orderCols$order <- as.integer(as.character(orderCols$order))
+    
+    myLogger$debug("dataDT is:")
+    myLogger$debug(dataDT)
 		
-		colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+    colNamesDF <- unique(colNamesDF)
 		
-		myLogger$debug("here is orderCols")
-        myLogger$debug(orderCols)
-		
-		myLogger$debug("here is colNamesDF")
-        myLogger$debug(colNamesDF)
+# 		myLogger$debug("here is orderCols")
+#         myLogger$debug(orderCols)
+# 		
+ 		myLogger$debug("here is colNamesDF")
+         myLogger$debug(colNamesDF)
 		
 		
 		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
 		
-		myLogger$debug("here is the allColNamesDF")
-        myLogger$debug(allColNamesDF)		
+# 		myLogger$debug("here is the allColNamesDF")
+#         myLogger$debug(allColNamesDF)		
 		
 		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
 		
-		myLogger$debug("here is the allColNamesDF")
-        myLogger$debug(allColNamesDF)
+# 		myLogger$debug("here is the allColNamesDF")
+#         myLogger$debug(allColNamesDF)
       
     } else {
 		myLogger$debug(paste0("current firstPass ", firstPass))
@@ -312,6 +320,8 @@ if (nrow(dataDT) > 0){
 		#setcolorder(outputDT2, c("geneId",exptDataColumns))
 		outputDT2 <- subset(outputDT2, ,sel=c("geneId","Structure Image",exptDataColumns))
 
+		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
+		# TODO replace hard-coded url with a reference to config.properties
 		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
 
 
