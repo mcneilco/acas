@@ -214,6 +214,8 @@ dataCsv <- getURL(
 myLogger$debug("dataCsv is:")
 myLogger$debug(dataCsv)
 
+save(dataCsv,file='test11.Rda')
+
 errorFlag <- FALSE
 tryCatch({
   dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
@@ -244,21 +246,14 @@ if (nrow(dataDT) > 0){
   for (expt in experimentIdList){
     myLogger$debug(paste0("current experiment ", expt))
     if(firstPass){
-		
-      save(dataDT,file="test1.Rda")
-        
-  		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
-  		myLogger$debug("outputDT1:")
-  		myLogger$debug(outputDT)   
       
+      save(dataDT,file='test1.Rda')
+      
+  		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
       experimentName <- as.character(unique(outputDT$experimentName))
-  		codeName <- as.character(unique(outputDT$experimentCodeName))
-      
-  #     myLogger$debug("codeName is:")
-  #     myLogger$debug(codeName)
-      
+  		
+      codeName <- as.character(unique(outputDT$experimentCodeName))
   		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
-  
   
       # Add a column next to gene ID with the compound structure
       # TODO replace hard-coded url with a reference to the config.properties
@@ -266,15 +261,14 @@ if (nrow(dataDT) > 0){
   		# Name new column
       colnames(outputDT)[ncol(outputDT)] <- "Structure Image"
   
-      myLogger$debug("outputDT:")
+      myLogger$debug("outputDT1000000:")
       myLogger$debug(outputDT)
   		
-  		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
-  
-      myLogger$debug("getExperimentColNames is:")
-      myLogger$debug(exptDataColumns)
-  
+  		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+      
+  		myLogger$debug("exptDataColumns is:")
+  		myLogger$debug(exptDataColumns)
   		
   		#setcolorder(outputDT, c("geneId",exptDataColumns))
   		outputDT <- subset(outputDT, ,sel=c("geneId","Structure Image", exptDataColumns))
@@ -365,7 +359,7 @@ if (nrow(dataDT) > 0){
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
   aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="center"), aoColumnsDF)
-  aoColumnsDF <- rbind(data.frame(sTitle="Gene ID", sClass="center"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle="ID", sClass="center"), aoColumnsDF)
   
   
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
