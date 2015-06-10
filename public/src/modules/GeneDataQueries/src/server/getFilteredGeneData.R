@@ -246,10 +246,13 @@ if (nrow(dataDT) > 0){
       
       save(dataDT,file="dataDT.Rda")
       
-      # Modify lsKind to include concentration info as well
-      # Note this means all lsKind values will now have two extra spaces even if concentration info is blank
-      dataDT[["lsKind"]]<- paste(dataDT[["lsKind"]],dataDT[["testedConcentration"]],dataDT[["testedConcentrationUnit"]],sep=' ')
-  		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
+      # Modify lsKind to include concentration info as well (if it exists)
+      for (i in 1:nrow(dataDT)){
+        if (dataDT[["testedConcentration"]][i] != "") {
+          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i],"at",dataDT[["testedConcentration"]][i],dataDT[["testedConcentrationUnit"]][i],sep=" ")
+        }
+      }
+      outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
   		save(outputDT,file="outputDT.Rda")
       experimentName <- as.character(unique(outputDT$experimentName))
   		
@@ -275,7 +278,7 @@ if (nrow(dataDT) > 0){
       # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
       # The two extra spaces are due to the appending of concentration info.
       # TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT[["curve id  "]] <- sapply(outputDT[["curve id  "]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+  		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
 
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(experimentName, "::", colName))
@@ -312,7 +315,7 @@ if (nrow(dataDT) > 0){
   
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT2[["curve id  "]] <- sapply(outputDT2[["curve id  "]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+  		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
   
   		for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
