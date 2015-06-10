@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, config, csUtilities, fs, parseResponse, request;
+  var assert, config, csUtilities, fs, parseResponse, request, _;
 
   assert = require('assert');
 

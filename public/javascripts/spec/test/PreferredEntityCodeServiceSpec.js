@@ -12,13 +12,14 @@
     } catch (_error) {
       error = _error;
       console.log("response unparsable: " + error);
+      console.log("response: " + jsonStr);
       return null;
     }
   };
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe.only("Preferred Entity code service tests", function() {
+  describe("Preferred Entity code service tests", function() {
     describe("available entity type list", function() {
       describe("when requested as fully detailed list", function() {
         before(function(done) {
@@ -65,7 +66,6 @@
         body = {
           type: "parent",
           kind: "protein",
-          codeOrigin: "ACAS LSThing",
           entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
         };
         before(function(done) {
@@ -111,7 +111,6 @@
         body = {
           type: "ERROR",
           kind: "protein",
-          codeOrigin: "ACAS LSThing",
           entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
         };
         before(function(done) {
@@ -134,12 +133,11 @@
           return assert.equal(this.serverResponse.statusCode, 500);
         });
       });
-      return describe("when invalid compounds sent with valid type info", function() {
+      describe("when invalid compounds sent with valid type info", function() {
         var body;
         body = {
           type: "parent",
           kind: "protein",
-          codeOrigin: "ACAS LSThing",
           entityIdStringLines: "PROT1\nERROR\nPROT3\n"
         };
         before(function(done) {
@@ -152,7 +150,6 @@
             return function(error, response, body) {
               _this.serverError = error;
               _this.responseJSON = body;
-              console.log(_this.responseJSON);
               _this.serverResponse = response;
               return done();
             };
@@ -180,6 +177,94 @@
           return assert.equal(res[2].split(',')[0], "ERROR");
         });
         return it("should have blank second result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[1], "");
+        });
+      });
+      describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", function() {
+        var body;
+        body = {
+          type: "compound",
+          kind: "batch name",
+          entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should have the first line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[0], "CMPD-0000001-01");
+        });
+        it("should have the first line result second result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[1], "CMPD-0000001-01");
+        });
+        it("should have the second line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[0], "none_2222:1");
+        });
+        return it("should have the second line result second result column with no result", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[1], "");
+        });
+      });
+      return describe("when valid lthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
+        var body;
+        body = {
+          type: "parent",
+          kind: "protein",
+          entityIdStringLines: "PRTN-0000001\nnone_2222\nPRTN-0000002\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should have the first line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[0], "PRTN-0000001");
+        });
+        it("should have the first line result second result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[1], "PRTN-0000001");
+        });
+        it("should have the second line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[0], "none_2222");
+        });
+        return it("should have the second line result second result column with no result", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[2].split(',')[1], "");

@@ -110,7 +110,7 @@
         }
       }
       checkFilesAndUpdate = function(prot) {
-        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
+        var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(prot, false);
         filesToSave = fileVals.length;
         completeProtUpdate = function(protToUpdate) {
@@ -129,12 +129,12 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(prot.codeName);
-          results = [];
-          for (i = 0, len = fileVals.length; i < len; i++) {
-            fv = fileVals[i];
-            results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, prot.codeName, fileSaveCompleted));
           }
-          return results;
+          return _results;
         } else {
           return resp.json(prot);
         }
@@ -179,7 +179,7 @@
   };
 
   exports.putProtocol = function(req, resp) {
-    var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, protToSave, results;
+    var completeProtUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, protToSave, _i, _len, _results;
     protToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(protToSave, true);
     filesToSave = fileVals.length;
@@ -199,16 +199,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      results = [];
-      for (i = 0, len = fileVals.length; i < len; i++) {
-        fv = fileVals[i];
+      _results = [];
+      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+        fv = fileVals[_i];
         if (fv.id == null) {
-          results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          results.push(void 0);
+          _results.push(void 0);
         }
       }
-      return results;
+      return _results;
     } else {
       return completeProtUpdate();
     }
@@ -240,10 +240,10 @@
       shouldFilterByKind = false;
     }
     translateToCodes = function(labels) {
-      var i, label, len, match, protCodes;
+      var label, match, protCodes, _i, _len;
       protCodes = [];
-      for (i = 0, len = labels.length; i < len; i++) {
-        label = labels[i];
+      for (_i = 0, _len = labels.length; _i < _len; _i++) {
+        label = labels[_i];
         if (shouldFilterByName) {
           match = label.labelText.toUpperCase().indexOf(filterString) > -1;
         } else if (shouldFilterByKind) {
@@ -300,10 +300,10 @@
   exports.protocolKindCodeList = function(req, resp) {
     var baseurl, config, protocolServiceTestJSON, request, translateToCodes;
     translateToCodes = function(kinds) {
-      var i, kind, kindCodes, len;
+      var kind, kindCodes, _i, _len;
       kindCodes = [];
-      for (i = 0, len = kinds.length; i < len; i++) {
-        kind = kinds[i];
+      for (_i = 0, _len = kinds.length; _i < _len; _i++) {
+        kind = kinds[_i];
         kindCodes.push({
           code: kind.kindName,
           name: kind.kindName,

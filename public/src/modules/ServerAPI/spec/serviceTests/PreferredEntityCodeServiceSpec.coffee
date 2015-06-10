@@ -30,10 +30,11 @@ parseResponse = (jsonStr) ->
 		return JSON.parse jsonStr
 	catch error
 		console.log "response unparsable: " + error
+		console.log "response: "+ jsonStr
 		return null
 
 config = require '../../../../conf/compiled/conf.js'
-describe.only "Preferred Entity code service tests", ->
+describe  "Preferred Entity code service tests", ->
 	describe "available entity type list", ->
 		describe "when requested as fully detailed list", ->
 			before (done) ->
@@ -65,7 +66,6 @@ describe.only "Preferred Entity code service tests", ->
 			body =
 				type: "parent"
 				kind: "protein"
-				codeOrigin: "ACAS LSThing"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
@@ -97,7 +97,6 @@ describe.only "Preferred Entity code service tests", ->
 			body =
 				type: "ERROR"
 				kind: "protein"
-				codeOrigin: "ACAS LSThing"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
@@ -118,7 +117,6 @@ describe.only "Preferred Entity code service tests", ->
 			body =
 				type: "parent"
 				kind: "protein"
-				codeOrigin: "ACAS LSThing"
 				entityIdStringLines: "PROT1\nERROR\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
@@ -129,7 +127,6 @@ describe.only "Preferred Entity code service tests", ->
 				, (error, response, body) =>
 					@serverError = error
 					@responseJSON = body
-					console.log @responseJSON
 					@serverResponse = response
 					done()
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
@@ -146,5 +143,65 @@ describe.only "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[2].split(',')[0], "ERROR"
 			it "should have blank second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], ""
+
+		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", ->
+			body =
+				type: "compound"
+				kind: "batch name"
+				entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "CMPD-0000001-01"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "CMPD-0000001-01"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "none_2222:1"
+			it "should have the second line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], ""
+
+		describe "when valid lthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
+			body =
+				type: "parent"
+				kind: "protein"
+				entityIdStringLines: "PRTN-0000001\nnone_2222\nPRTN-0000002\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "PRTN-0000001"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "PRTN-0000001"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "none_2222"
+			it "should have the second line result second result column with no result", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[2].split(',')[1], ""

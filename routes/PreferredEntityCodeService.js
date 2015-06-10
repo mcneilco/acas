@@ -1,5 +1,5 @@
 (function() {
-  var configuredEntityTypes;
+  var configuredEntityTypes, formatCSVRequestAsReqArray;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes', exports.getConfiguredEntityTypes);
@@ -37,7 +37,26 @@
   };
 
   exports.preferredCodes = function(req, resp) {
-    var name, out, outStr;
+    var name, out, outStr, preferredBatchService, reqLines;
+    if (req.body.type === "compound") {
+      if (req.body.kind === "batch name") {
+        preferredBatchService = require("./PreferredBatchIdService.js");
+        reqLines = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
+        preferredBatchService.getPreferredCompoundBatchIDs(reqLines, function(prefResp) {
+          var outStr, pref, preferreds, _i, _len;
+          preferreds = JSON.parse(prefResp).results;
+          outStr = "Requested Name,Preferred Code\n";
+          for (_i = 0, _len = preferreds.length; _i < _len; _i++) {
+            pref = preferreds[_i];
+            outStr += pref.requestName + ',' + pref.preferredName + '\n';
+          }
+          return resp.json({
+            resultCSV: outStr
+          });
+        });
+        return;
+      }
+    }
     if (global.specRunnerTestmode) {
       if (req.body.type.indexOf('ERROR') > -1) {
         resp.statusCode = 500;
@@ -61,6 +80,19 @@
     } else {
       return console.log("preferredCodes not implemented");
     }
+  };
+
+  formatCSVRequestAsReqArray = function(csvReq) {
+    var req, requests, _i, _len, _ref;
+    requests = [];
+    _ref = csvReq.split('\n');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      req = _ref[_i];
+      requests.push({
+        requestName: req
+      });
+    }
+    return requests;
   };
 
 }).call(this);

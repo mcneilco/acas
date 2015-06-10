@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, config, fs, parseResponse, request, thingServiceTestJSON;
+  var assert, config, fs, parseResponse, request, thingServiceTestJSON, _;
 
   assert = require('assert');
 
@@ -25,7 +25,7 @@
   };
 
   describe("Thing Service testing", function() {
-    return describe("Thing CRUD testing", function() {
+    describe("Thing CRUD testing", function() {
       describe("when fetching Thing by codename", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/PT00001", (function(_this) {
@@ -271,6 +271,11 @@
           return assert.equal(this.responseJSON, true);
         });
       });
+    });
+    return describe("Lookup codeNames by names or codeNames", function() {
+      var preferredThingService;
+      preferredThingService = require("../../../../routes/ThingServiceRoutes.js");
+      return before(function() {});
     });
   });
 

@@ -180,3 +180,7 @@ describe "Thing Service testing", ->
 			it "should return a thing", ->
 				assert.equal @responseJSON, true
 
+	describe "Lookup codeNames by names or codeNames", ->
+		preferredThingService = require "../../../../routes/ThingServiceRoutes.js"
+		before ->
+

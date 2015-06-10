@@ -7,18 +7,6 @@
       displayName: "Corporate Batch ID",
       sourceExternal: true
     }, {
-      type: "protocol",
-      kind: "",
-      codeOrigin: "ACAS Protocol",
-      displayName: "Protocol",
-      sourceExternal: false
-    }, {
-      type: "experiment",
-      kind: "",
-      codeOrigin: "ACAS Experiment",
-      displayName: "Experiment",
-      sourceExternal: false
-    }, {
       type: "parent",
       kind: "protein",
       codeOrigin: "ACAS LSThing",

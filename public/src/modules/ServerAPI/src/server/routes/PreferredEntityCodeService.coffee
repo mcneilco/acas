@@ -19,6 +19,23 @@ exports.getConfiguredEntityTypes = (req, resp) ->
 		resp.json configuredEntityTypes.entityTypes
 
 exports.preferredCodes = (req, resp) ->
+	if req.body.type is "compound"
+		if req.body.kind is "batch name"
+			preferredBatchService = require "./PreferredBatchIdService.js"
+			reqLines = formatCSVRequestAsReqArray(req.body.entityIdStringLines)
+			preferredBatchService.getPreferredCompoundBatchIDs reqLines , (prefResp) ->
+				preferreds = JSON.parse(prefResp).results
+				outStr =  "Requested Name,Preferred Code\n"
+				for pref in preferreds
+					outStr += pref.requestName + ',' + pref.preferredName + '\n'
+				resp.json resultCSV: outStr
+			return
+#	else
+#		entityType = configuredEntityTypes.entityTypes. where type: req.body.type, kind: req.body.kind
+#		if entityType.codeOrgin is "ACAS LSThing"
+#			preferredThingService = require "./ThingServiceRoutes.js"
+
+
 	if global.specRunnerTestmode
 		if req.body.type.indexOf('ERROR') > -1
 			resp.statusCode = 500
@@ -34,3 +51,10 @@ exports.preferredCodes = (req, resp) ->
 	else
 		console.log "preferredCodes not implemented"
 
+
+formatCSVRequestAsReqArray = (csvReq) ->
+	requests = []
+	for req in csvReq.split '\n'
+		requests.push requestName: req
+
+	return requests
