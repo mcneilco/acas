@@ -214,15 +214,12 @@ dataCsv <- getURL(
 myLogger$debug("dataCsv is:")
 myLogger$debug(dataCsv)
 
-save(dataCsv,file='test11.Rda')
-
 errorFlag <- FALSE
 tryCatch({
   dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
   error = function(ex) {
   errorFlag <<- TRUE
 })
-save(dataDF, file="test.Rda")
 
 if (errorFlag){
         dataDT <- data.table()
@@ -247,36 +244,39 @@ if (nrow(dataDT) > 0){
     myLogger$debug(paste0("current experiment ", expt))
     if(firstPass){
       
-      save(dataDT,file='test1.Rda')
+      save(dataDT,file="dataDT.Rda")
       
+      # Modify lsKind to include concentration info as well
+      # Note this means all lsKind values will now have two extra spaces even if concentration info is blank
+      dataDT[["lsKind"]]<- paste(dataDT[["lsKind"]],dataDT[["testedConcentration"]],dataDT[["testedConcentrationUnit"]],sep=' ')
   		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
+  		save(outputDT,file="outputDT.Rda")
       experimentName <- as.character(unique(outputDT$experimentName))
   		
       codeName <- as.character(unique(outputDT$experimentCodeName))
   		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
   
-      # Add a column next to gene ID with the compound structure
+      # Add a column with the compound structure
       # TODO replace hard-coded url with a reference to the config.properties
-  		outputDT <- cbind(outputDT,sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
-  		# Name new column
-      colnames(outputDT)[ncol(outputDT)] <- "Structure Image"
-  
-      myLogger$debug("outputDT1000000:")
-      myLogger$debug(outputDT)
-  		
+  		outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+ 		
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
-      exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+#       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+      # Can't take intersect anymore because lsKind might be modified with concentration info.
+      # Instead use grep to keep values of exptDataColums which have a value of outputDT as part of their name
+      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT),value=TRUE)))))
       
   		myLogger$debug("exptDataColumns is:")
   		myLogger$debug(exptDataColumns)
   		
   		#setcolorder(outputDT, c("geneId",exptDataColumns))
-  		outputDT <- subset(outputDT, ,sel=c("geneId","Structure Image", exptDataColumns))
-  
+   		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))   
+
       # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
+      # The two extra spaces are due to the appending of concentration info.
       # TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
-  
+  		try(outputDT[["curve id  "]] <- sapply(outputDT[["curve id  "]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(experimentName, "::", colName))
   		}
@@ -287,12 +287,12 @@ if (nrow(dataDT) > 0){
   		
   		colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
       colNamesDF <- unique(colNamesDF)
-  #   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
+      # Get rid of any columns that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
       colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
   
-  		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")		
+  		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
   		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
-      
+
     } else {
   		myLogger$debug(paste0("current firstPass ", firstPass))
   		outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
@@ -302,28 +302,28 @@ if (nrow(dataDT) > 0){
   		experimentName <- as.character(unique(outputDT2$experimentName))
   		codeName <- as.character(unique(outputDT2$experimentCodeName))
   		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
-  		outputDT2 <- cbind(outputDT2,sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
-  		colnames(outputDT2)[ncol(outputDT2)] <- "Structure Image"
+      outputDT2 <- cbind(outputDT2,StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
   		
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
-  		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
-  
+#   		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
+      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
   		#setcolorder(outputDT2, c("geneId",exptDataColumns))
-  		outputDT2 <- subset(outputDT2, ,sel=c("geneId","Structure Image",exptDataColumns))
+  		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
   
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+  		try(outputDT2[["curve id  "]] <- sapply(outputDT2[["curve id  "]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
   
   		for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
   		}
-  		outputDT <- merge(outputDT, outputDT2, by=c("geneId","Structure Image"), all=TRUE)
+  		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
   		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
   		orderCols$order <- as.integer(as.character(orderCols$order))
   		colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
   		#   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
   		colNamesDF2 <- subset(colNamesDF2,!duplicated(colNamesDF2[["lsKind"]]))
+      save(orderCols,file="orderCols2.Rda")
   		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
   		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
   		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
@@ -355,7 +355,6 @@ if (nrow(dataDT) > 0){
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   allColNamesDT$sClass <- "center"
   setnames(allColNamesDT, "lsKind", "sTitle")
- 
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
   aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="center"), aoColumnsDF)
@@ -363,7 +362,7 @@ if (nrow(dataDT) > 0){
   
   
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
-  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText=' '), groupHeadersDF)
+  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText='Compound Information'), groupHeadersDF)
   
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
