@@ -31,8 +31,6 @@ class window.AssignedProperty extends Backbone.Model
 			return null
 
 	validateProject: ->
-		console.log "validate project"
-		console.log @
 		projectError = []
 		if @get('required') and @get('dbProperty') == "project" and @get('defaultVal') == "unassigned"
 			projectError. push
@@ -50,7 +48,6 @@ class window.AssignedPropertiesList extends Backbone.Collection
 			for index in [0..@.length-1]
 				model = @.at(index)
 				currentDbProp = model.get('dbProperty')
-				console.log currentDbProp
 				unless currentDbProp is "none"
 					if currentDbProp of assignedDbProps
 						duplicates.push
@@ -113,7 +110,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@browseFileController.on('fileDeleted', @handleFileRemoved)
 
 	handleFileUploaded: (fileName) =>
-		console.log "file uploaded"
 		@fileName = fileName
 		@getProperties()
 
@@ -123,13 +119,9 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@$('.bv_deleteFile').attr 'disabled','disabled'
 		mappings = null
 		if @mappings instanceof Backbone.Collection
-			console.log "@mappings is backbonecollection"
-			console.log @mappings
 			mappings = @mappings.toJSON()
 		else
 			mappings = @mappings
-		console.log "mappings"
-		console.log mappings
 		if window.conf.cmpdReg.showProjectSelect
 			#add selected project to mappings
 			mappingsCollection = new Backbone.Collection mappings #change to collection to be able to search for project property
@@ -151,30 +143,22 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			numRecords: @numRecords
 			templateName: @tempName
 			mappings: mappings
-		console.log "about to read sdf"
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/readSDF"
 			data: sdfInfo
 			success: (response) =>
-				console.log "successful read of SDF"
 				@handlePropertiesDetected(response)
 				@$('.bv_deleteFile').removeAttr 'disabled'
 			error: (err) =>
-				console.log "error reading sdf"
+				#TODO: handle error
 				@serviceReturn = null
 			dataType: 'json'
-#
-#		#TODO: disable browsing for another file while service to read records is still running - perhaps have spinner that says "Reading..." or use modal
 
 	handlePropertiesDetected: (response) ->
-		console.log "handle properties detected"
-		console.log response
-		console.log @numRecords
 		@trigger 'propsDetected', response
 
 	handleFileRemoved: =>
-		console.log "sdf file removed"
 		@disableInputs()
 		@$('.bv_detectedSdfPropertiesList').html ""
 		@fileName = null
@@ -185,17 +169,14 @@ class window.DetectSdfPropertiesController extends Backbone.View
 	showSdfProperties: (sdfPropsList) ->
 		if @numRecords == -1
 			@$('.bv_recordsRead').html 'All'
-			#TODO: can/should service return with total number of records?
+			#TODO: can/should service return with total number of records or is it ok to just display 'All' when all records are read?
 		else
 			@$('.bv_recordsRead').html @numRecords
 			@$('.bv_readMore').removeAttr('disabled')
 			@$('.bv_readAll').removeAttr('disabled')
-		console.log "show SDF props"
-		console.log sdfPropsList
 		newLine = "&#13;&#10;"
 		props = ""
 		sdfPropsList.each (prop) ->
-			console.log prop.get('name')
 			if props == ""
 				props = prop.get('name')
 			else
@@ -251,10 +232,7 @@ class window.AssignedPropertyController extends AbstractFormController
 		@$('.bv_sdfProperty').html(@model.get('sdfProperty'))
 		@setupDbPropertiesSelect()
 		@$('.bv_defaultVal').val @model.get('defaultVal')
-		console.log "dbProp"
-		console.log @model.get('dbProperty')
 		if @model.get('dbProperty') is "none"
-			console.log "disabling"
 			@$('.bv_defaultVal').attr 'disabled', 'disabled'
 
 		@
@@ -287,16 +265,12 @@ class window.AssignedPropertyController extends AbstractFormController
 		formattedOptions
 
 	handleDbPropertyChanged: ->
-		console.log "handle db prop changed"
 		dbProp = @dbPropertiesListController.getSelectedCode()
-		console.log dbProp
 		if dbProp is "none" or dbProp is "corporate id"
 			@$('.bv_defaultVal').attr('disabled', 'disabled')
 		else
 			@$('.bv_defaultVal').removeAttr('disabled')
-		console.log @dbPropertiesList
 		propInfo = @dbPropertiesList.findWhere({name: dbProp})
-		console.log propInfo
 		if propInfo?
 			if propInfo.get('required')
 				@model.set required: true
@@ -342,8 +316,6 @@ class window.AssignedPropertiesListController extends AbstractFormController
 		newModel.trigger 'amDirty'
 
 	addOneProperty: (prop, canDelete) ->
-		console.log "add one prop"
-		console.log @dbPropertiesList
 		apc = new AssignedPropertyController
 			model: prop
 			dbPropertiesList: @dbPropertiesList
@@ -380,16 +352,12 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@setupAssignedPropertiesListController()
 
 	getAndFormatTemplateOptions: ->
-		console.log "getting templates"
-		console.log window.AppLaunchParams.loginUser.username
 		$.ajax
 			type: 'GET'
 			url: "/api/cmpdRegBulkLoader/templates/"+window.AppLaunchParams.loginUser.username
 			dataType: 'json'
 			success: (response) =>
-				console.log "got templates"
 				@templates = new Backbone.Collection response
-				console.log @templates
 				@translateIntoPicklistFormat()
 			error: (err) =>
 				@serviceReturn = null
@@ -403,7 +371,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				name: temp.get('template')
 				ignored: temp.get('ignored')
 			templatePickList.add(option)
-		console.log templatePickList
 		@setupTemplateSelect(templatePickList)
 
 	setupTemplateSelect: (templatePickList)->
@@ -437,15 +404,10 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@assignedPropertiesListController.render()
 
 	createPropertyCollections: (properties) ->
-		console.log "handle props detected in app controller"
-		console.log properties
-		console.log properties.sdfProperties
 		@sdfPropertiesList = new SdfPropertiesList properties.sdfProperties
 		@dbPropertiesList = new DbPropertiesList properties.dbProperties
-		#TODO: disable browsing for another file while service to read records is still running - perhaps have spinner that says "Reading..." or use modal
 		@assignedPropertiesList = new AssignedPropertiesList properties.bulkloadProperties
 		@assignedPropertiesList.on 'change', =>
-			console.log "assigned props changed, trigger isvalid"
 			@isValid()
 		@addUnassignedSdfProperties()
 		@assignedPropertiesListController.collection = @assignedPropertiesList
@@ -458,9 +420,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@isValid()
 
 	addUnassignedSdfProperties: ->
-		console.log "add unassigned sdf props"
-		console.log @sdfPropertiesList
-		console.log @assignedPropertiesList
 		@sdfPropertiesList.each (sdfProp) =>
 			sdfProperty = sdfProp.get('name')
 			unless @assignedPropertiesList.findWhere({sdfProperty: sdfProperty})?
@@ -472,7 +431,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
-		console.log "handle Project changed"
 		project = @projectListController.getSelectedCode()
 		if @assignedPropertiesList?
 			#file has already been read at least once
@@ -480,7 +438,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			if assignedProjectProp?
 				assignedProjectProp.set defaultVal: project
 			else
-				console.log "adding new assigned property"
 				projectProp = new AssignedProperty
 					sdfProperty: null
 					dbProperty: "project"
@@ -497,18 +454,13 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			mappings = null
 		else
 			mappings = @templates.findWhere({template: templateName}).get('mappings')
-		console.log "handle temp changed"
-		console.log mappings
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
-		console.log "checkbox changed"
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
-		console.log saveTemplateChecked
 		if saveTemplateChecked
 			@$('.bv_templateName').removeAttr('disabled')
 			currentTempName = @templateListController.getSelectedCode()
-			console.log currentTempName
 			if currentTempName is "none"
 				@$('.bv_templateName').val ""
 			else
@@ -521,8 +473,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	handleNameTemplateChanged: ->
 		tempName = UtilityFunctions::getTrimmedInput @$('.bv_templateName')
-		console.log "new TempName"
-		console.log tempName
 		if @templateList.findWhere({name: tempName})? #and tempName.toLowerCase() != "none"
 			@$('.bv_overwriteMessage').html tempName+" already exists. Overwrite?"
 			@$('.bv_overwriteWarning').show()
@@ -533,13 +483,10 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			@isValid()
 
 	handleOverwriteRadioSelectChanged: =>
-		console.log "radio select changed"
 		@isValid()
 
 	showUnassignedDbProperties: ->
-		console.log "show unassigned db props"
 		reqDbProp = @dbPropertiesList.getRequired()
-#		console.log reqDbProp
 		unassignedDbProps = ""
 		newLine = "&#13;&#10;"
 		for prop in reqDbProp
@@ -552,7 +499,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		if @assignedPropertiesList.findWhere({dbProperty: 'salt id'}) or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?
 			unless @assignedPropertiesList.findWhere({dbProperty: 'salt equivalents'})?
 				unassignedDbProps += newLine + 'salt equivalents (required for salt type/id)'
-#		@unassignedDbProps = unassignedDbProps
 		@$('.bv_unassignedProperties').html unassignedDbProps
 		@isValid()
 
@@ -561,10 +507,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		validCheck = true
 		validAp = @validateAssignedProperties()
 		unless validAp
-			console.log "valid check false"
 			validCheck = false
 		otherErrors = []
-		#Todo: use config to see if validateProp needs to be called
 		if window.conf.cmpdReg.showProjectSelect
 			otherErrors.push @getProjectErrors()...
 		if @assignedPropertiesList?
@@ -573,11 +517,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		otherErrors.push @getTemplateErrors()...
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
-			console.log "has unassigned db props"
-			console.log "valid check false"
 			validCheck = false
 		if otherErrors.length > 0
-			console.log "valid check false"
 			validCheck = false
 
 		if validCheck
@@ -592,7 +533,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			if projectProp?
 				projectError = projectProp.validateProject()
 		else if window.conf.cmpdReg.showProjectSelect
-			console.log @projectListController.getSelectedCode()
 			if @projectListController.getSelectedCode() is "unassigned" or @projectListController.getSelectedCode() is null
 				projectError.push
 					attribute: 'dbProject'
@@ -603,8 +543,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		validCheck = true
 		if @assignedPropertiesList?
 			@assignedPropertiesList.each (model) =>
-				console.log "isValid"
-				console.log model
 				validModel = model.isValid()
 				if validModel is false
 					validCheck = false
@@ -626,7 +564,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		templateErrors
 
 	showValidationErrors: (errors) =>
-		console.log errors
 		for err in errors
 			@$('.bv_group_'+err.attribute).addClass 'input_error error'
 			@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
@@ -645,7 +582,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			$(ee).removeClass 'input_error error'
 
 	showNameTemplateError: (errMessage) =>
-		console.log "show name template error"
 		@$('.bv_group_templateName').addClass 'input_error error'
 		@$('.bv_group_templateName').attr('data-toggle', 'tooltip')
 		@$('.bv_group_templateName').attr('data-placement', 'bottom')
@@ -653,8 +589,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$("[data-toggle=tooltip]").tooltip();
 
 	handleRegCmpdsClicked: ->
-		console.log "register compounds"
-		console.log @assignedPropertiesListController.collection.models
 		templateName = null
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
 		if saveTemplateChecked
@@ -698,7 +632,6 @@ class window.BulkRegCmpdsController extends Backbone.View
 		@detectSdfPropertiesController.render()
 
 	setupAssignSdfPropertiesController: =>
-		console.log "setupAssignSdfPropertiesController"
 		@assignSdfPropertiesController = new AssignSdfPropertiesController
 			el: @$('.bv_assignSdfProperties')
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
@@ -743,6 +676,9 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 	handleLoadAnotherSDF: ->
 		@trigger 'loadAnother'
 
+	handleDownloadSummary: ->
+		#TODO: get links to download summary
+
 class window.PurgeFilesController extends Backbone.View
 	template: _.template($("#PurgeFilesView").html())
 
@@ -753,6 +689,7 @@ class window.PurgeFilesController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 
+	#TODO: show datatable of files to purge
 	handlePurgeFile: ->
 		#TODO: add implementation
 
@@ -760,23 +697,31 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 	template: _.template($("#CmpdRegBulkLoaderAppView").html())
 
 	events:
-		"click .bv_test": "handleTest"
+		"click .bv_bulkRegDropdown": "handleBulkRegDropdownSelected"
+		"click .bv_purgeFileDropdown": "handlePurgeFileSelected"
 
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
 		$(@el).addClass 'CmpdRegBulkLoaderAppController'
+		@$('.bv_searchNavOption').hide()
 		@setupBulkRegCmpdsController()
 
-	handleTest: ->
-		console.log "test passed"
-#		@$('.bv_drop').dropdown('toggle')
+	handleBulkRegDropdownSelected: ->
+		@$('.bv_bulkReg').show()
+		@$('.bv_purgeFiles').hide()
+		@$('.bv_registerDropdown').dropdown('toggle')
+
+	handlePurgeFileSelected: ->
+		@$('.bv_adminDropdown').dropdown('toggle')
+		@$('.bv_bulkReg').hide()
+		@$('.bv_purgeFiles').show()
+		@setupPurgeFilesController()
 
 	setupBulkRegCmpdsController: ->
 		@regCmpdsController = new BulkRegCmpdsController
 			el: @$('.bv_bulkReg')
 		@regCmpdsController.on 'saveComplete', (summary) =>
-			console.log "SAVE complete"
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkRegSummary').show()
 			@setupBulkRegCmpdsSummaryController(summary)
@@ -784,7 +729,6 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 	setupBulkRegCmpdsSummaryController: (summary) ->
 		if @regCmpdsSummaryController?
 			@regCmpdsSummaryController.undelegateEvents()
-		console.log summary
 		@regCmpdsSummaryController = new BulkRegCmpdsSummaryController
 			el: @$('.bv_bulkRegSummary')
 			summaryHTML: summary
@@ -795,3 +739,7 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsController()
 			@$('.bv_bulkRegSummary').hide()
 			@$('.bv_bulkReg').show()
+
+	setupPurgeFilesController: ->
+		@purgeFilesController = new PurgeFilesController
+			el: @$('.bv_purgeFiles')

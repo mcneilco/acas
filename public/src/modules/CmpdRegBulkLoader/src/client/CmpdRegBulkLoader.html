@@ -16,29 +16,27 @@
                     <a href="/logout" class="btn btn-small bv_logout" style="margin-top:0px;margin-left:5px;">Logout</a>
                 </p>
                 <ul class="nav nav-pills pull-right">
-                    <li class="dropdown bv_drop">
-                        <a class="dropdown-toggle"
-                           data-toggle="dropdown"
-                           href="#">Register<b class="caret" style="margin-top:7px;"></b>
+                    <li class="dropdown">
+                        <a class="dropdown-toggle bv_registerDropdown" role="button" data-toggle="dropdown" href="#">Register
+                            <b class="caret" style="margin-top:7px;"></b>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li class="">
-                                <a class="bv_test" href="#">Single Compound Registration</a>
-                                <a href="#">Bulk Compound Registration</a>
+                        <ul class="dropdown-menu" role="menu" >
+                            <li role="presentation">
+                                <!--<a class="bv_singleRegDropdown" role="menuitem" href="#">Single Compound Registration</a>-->
+                                <a class="bv_bulkRegDropdown" role="menuitem" href="#">Bulk Compound Registration</a>
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <a href="#">Search</a>
+                        <a class="bv_searchNavOption" href="#">Search</a>
                     </li>
                     <li class="dropdown">
-                        <a class="dropdown-toggle"
-                           data-toggle="dropdown"
-                           href="#">Admin<b class="caret" style="margin-top:7px;"></b>
+                        <a class="dropdown-toggle bv_adminDropdown" role="button" data-toggle="dropdown" href="#">Admin
+                            <b class="caret" style="margin-top:7px;"></b>
                         </a>
-                        <ul class="dropdown-menu">
-                            <li>
-                                <a href="#">Purge Files</a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li role="presentation">
+                                <a class="bv_purgeFileDropdown" role="menuitem" href="#">Purge Files</a>
                             </li>
                         </ul>
                     </li>
@@ -210,9 +208,13 @@
     <div class="span9">
         <h3>Purge Files</h3>
         <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
-            <span class="well">Select a registration file to have its records purged from the database.  Note that if there are any dependencies, you will not be able to purge the file.</span>
+            <span>
+                <div class="well">Select a registration file to have its records purged from the database. Note that if there are any dependencies, you will not be able to purge the file.</div>
+            </span>
         </div>
-        <button type="button" class="btn bv_downloadSummary pull-right">Purge File</button>
+        <div class="span9" style="margin-left:0px;">
+            <button type="button" class="btn bv_downloadSummary pull-right">Purge File</button>
+        </div>
         <div class="well bv_purgeSummary" style="background:#FFFFFF;margin-bottom:10px;">
         </div>
     </div>
