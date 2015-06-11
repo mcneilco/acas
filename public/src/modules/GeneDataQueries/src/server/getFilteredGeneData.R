@@ -266,7 +266,8 @@ if (nrow(dataDT) > 0){
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
 #       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
-      # Instead use grep to keep values of exptDataColums which have a value of outputDT as part of their name
+      # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
+      # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT),value=TRUE)))))
       
   		myLogger$debug("exptDataColumns is:")
@@ -278,7 +279,7 @@ if (nrow(dataDT) > 0){
       # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
       # The two extra spaces are due to the appending of concentration info.
       # TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
+  		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
 
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(experimentName, "::", colName))
@@ -309,6 +310,7 @@ if (nrow(dataDT) > 0){
   		
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
 #   		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
+      # See note at line 268
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
   		#setcolorder(outputDT2, c("geneId",exptDataColumns))
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
