@@ -75,7 +75,7 @@
     AssignedProperty.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (attrs.required && attrs.dbProperty !== "corporate id" && attrs.defaultVal === "") {
+      if (attrs.required && attrs.dbProperty !== "corporate id" && attrs.dbProperty !== "project" && attrs.defaultVal === "") {
         errors.push({
           attribute: 'defaultVal',
           message: 'A default value must be assigned'
@@ -88,6 +88,20 @@
       }
     };
 
+    AssignedProperty.prototype.validateProject = function() {
+      var projectError;
+      console.log("validate project");
+      console.log(this);
+      projectError = [];
+      if (this.get('required') && this.get('dbProperty') === "project" && this.get('defaultVal') === "unassigned") {
+        projectError.push({
+          attribute: 'dbProject',
+          message: 'Project must be selected'
+        });
+      }
+      return projectError;
+    };
+
     return AssignedProperty;
 
   })(Backbone.Model);
@@ -96,6 +110,7 @@
     extend(AssignedPropertiesList, superClass);
 
     function AssignedPropertiesList() {
+      this.checkSaltProperties = bind(this.checkSaltProperties, this);
       this.checkDuplicates = bind(this.checkDuplicates, this);
       return AssignedPropertiesList.__super__.constructor.apply(this, arguments);
     }
@@ -104,7 +119,6 @@
 
     AssignedPropertiesList.prototype.checkDuplicates = function() {
       var assignedDbProps, currentDbProp, duplicates, i, index, model, ref;
-      console.log("check duplicates");
       duplicates = [];
       assignedDbProps = {};
       if (this.length !== 0) {
@@ -128,9 +142,32 @@
           }
         }
       }
-      console.log(assignedDbProps);
-      console.log(duplicates);
       return duplicates;
+    };
+
+    AssignedPropertiesList.prototype.checkSaltProperties = function() {
+      var errors, saltEquiv, saltId, saltType;
+      errors = [];
+      saltId = this.findWhere({
+        dbProperty: 'salt id'
+      });
+      saltType = this.findWhere({
+        dbProperty: 'salt type'
+      });
+      saltEquiv = this.findWhere({
+        dbProperty: 'salt equivalents'
+      });
+      if ((saltId != null) || (saltType != null)) {
+        if (saltEquiv != null) {
+          if (saltEquiv.get('defaultVal') === "") {
+            errors.push({
+              attribute: 'defaultVal:eq(' + this.indexOf(saltEquiv) + ')',
+              message: "Salt type/id requires default value for salt equivalents property"
+            });
+          }
+        }
+      }
+      return errors;
     };
 
     return AssignedPropertiesList;
@@ -141,6 +178,7 @@
     extend(DetectSdfPropertiesController, superClass);
 
     function DetectSdfPropertiesController() {
+      this.handleProjectChanged = bind(this.handleProjectChanged, this);
       this.handleTemplateChanged = bind(this.handleTemplateChanged, this);
       this.handleFileRemoved = bind(this.handleFileRemoved, this);
       this.getProperties = bind(this.getProperties, this);
@@ -160,7 +198,9 @@
 
     DetectSdfPropertiesController.prototype.initialize = function() {
       this.numRecords = 100;
-      return this.temp = "none";
+      this.tempName = "none";
+      this.mappings = null;
+      return this.project = "unassigned";
     };
 
     DetectSdfPropertiesController.prototype.render = function() {
@@ -201,15 +241,49 @@
     };
 
     DetectSdfPropertiesController.prototype.getProperties = function() {
-      var sdfInfo;
+      var mappings, mappingsCollection, projectProp, sdfInfo;
       this.$('.bv_detectedSdfPropertiesList').html("Loading...");
       this.disableInputs();
       this.$('.bv_deleteFile').attr('disabled', 'disabled');
+      mappings = null;
+      if (this.mappings instanceof Backbone.Collection) {
+        console.log("@mappings is backbonecollection");
+        console.log(this.mappings);
+        mappings = this.mappings.toJSON();
+      } else {
+        mappings = this.mappings;
+      }
+      console.log("mappings");
+      console.log(mappings);
+      if (window.conf.cmpdReg.showProjectSelect) {
+        mappingsCollection = new Backbone.Collection(mappings);
+        projectProp = mappingsCollection.findWhere({
+          dbProperty: 'project'
+        });
+        if (projectProp != null) {
+          projectProp.set({
+            defaultVal: this.project
+          });
+          mappings = mappingsCollection.toJSON();
+        } else {
+          if (mappings === null) {
+            mappings = [];
+          }
+          mappings.push({
+            dbProperty: 'project',
+            sdfProperty: null,
+            required: true,
+            defaultVal: this.project
+          });
+        }
+      }
       sdfInfo = {
         fileName: this.fileName,
         numRecords: this.numRecords,
-        template: this.temp
+        templateName: this.tempName,
+        mappings: mappings
       };
+      console.log("about to read sdf");
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/readSDF",
@@ -223,6 +297,7 @@
         })(this),
         error: (function(_this) {
           return function(err) {
+            console.log("error reading sdf");
             return _this.serviceReturn = null;
           };
         })(this),
@@ -249,7 +324,13 @@
 
     DetectSdfPropertiesController.prototype.showSdfProperties = function(sdfPropsList) {
       var newLine, props;
-      this.$('.bv_recordsRead').html(this.numRecords);
+      if (this.numRecords === -1) {
+        this.$('.bv_recordsRead').html('All');
+      } else {
+        this.$('.bv_recordsRead').html(this.numRecords);
+        this.$('.bv_readMore').removeAttr('disabled');
+        this.$('.bv_readAll').removeAttr('disabled');
+      }
       console.log("show SDF props");
       console.log(sdfPropsList);
       newLine = "&#13;&#10;";
@@ -265,9 +346,7 @@
       if (props === "") {
         props = "No SDF Properties Detected";
       }
-      this.$('.bv_detectedSdfPropertiesList').html(props);
-      this.$('.bv_readMore').removeAttr('disabled');
-      return this.$('.bv_readAll').removeAttr('disabled');
+      return this.$('.bv_detectedSdfPropertiesList').html(props);
     };
 
     DetectSdfPropertiesController.prototype.disableInputs = function() {
@@ -281,14 +360,20 @@
     };
 
     DetectSdfPropertiesController.prototype.readAllRecords = function() {
+      this.numRecords = -1;
       return this.getProperties();
     };
 
-    DetectSdfPropertiesController.prototype.handleTemplateChanged = function(template) {
-      this.temp = template;
+    DetectSdfPropertiesController.prototype.handleTemplateChanged = function(templateName, mappings) {
+      this.tempName = templateName;
+      this.mappings = mappings;
       if ((this.fileName != null) && this.fileName !== null) {
         return this.getProperties();
       }
+    };
+
+    DetectSdfPropertiesController.prototype.handleProjectChanged = function(projectName) {
+      return this.project = projectName;
     };
 
     return DetectSdfPropertiesController;
@@ -388,12 +473,24 @@
       } else {
         this.$('.bv_defaultVal').removeAttr('disabled');
       }
+      console.log(this.dbPropertiesList);
       propInfo = this.dbPropertiesList.findWhere({
         name: dbProp
       });
-      if (propInfo.get('required')) {
+      console.log(propInfo);
+      if (propInfo != null) {
+        if (propInfo.get('required')) {
+          this.model.set({
+            required: true
+          });
+        } else {
+          this.model.set({
+            required: false
+          });
+        }
+      } else {
         this.model.set({
-          required: true
+          required: false
         });
       }
       this.model.set({
@@ -479,6 +576,7 @@
     function AssignSdfPropertiesController() {
       this.showNameTemplateError = bind(this.showNameTemplateError, this);
       this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.showValidationErrors = bind(this.showValidationErrors, this);
       this.isValid = bind(this.isValid, this);
       this.handleOverwriteRadioSelectChanged = bind(this.handleOverwriteRadioSelectChanged, this);
       return AssignSdfPropertiesController.__super__.constructor.apply(this, arguments);
@@ -487,6 +585,7 @@
     AssignSdfPropertiesController.prototype.template = _.template($("#AssignSdfPropertiesView").html());
 
     AssignSdfPropertiesController.prototype.events = {
+      "change .bv_dbProject": "handleDbProjectChanged",
       "change .bv_useTemplate": "handleTemplateChanged",
       "change .bv_saveTemplate": "handleSaveTemplateCheckboxChanged",
       "keyup .bv_templateName": "handleNameTemplateChanged",
@@ -497,13 +596,60 @@
     AssignSdfPropertiesController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.setupTemplateSelect();
+      this.getAndFormatTemplateOptions();
+      if (window.conf.cmpdReg.showProjectSelect) {
+        this.setupProjectSelect();
+        this.isValid();
+      } else {
+        this.$('.bv_group_dbProject').hide();
+      }
       return this.setupAssignedPropertiesListController();
     };
 
-    AssignSdfPropertiesController.prototype.setupTemplateSelect = function() {
-      this.templateList = new PickListList();
-      this.templateList.url = "/api/codetables/properties/templates";
+    AssignSdfPropertiesController.prototype.getAndFormatTemplateOptions = function() {
+      console.log("getting templates");
+      console.log(window.AppLaunchParams.loginUser.username);
+      return $.ajax({
+        type: 'GET',
+        url: "/api/cmpdRegBulkLoader/templates/" + window.AppLaunchParams.loginUser.username,
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            console.log("got templates");
+            _this.templates = new Backbone.Collection(response);
+            console.log(_this.templates);
+            return _this.translateIntoPicklistFormat();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
+    };
+
+    AssignSdfPropertiesController.prototype.translateIntoPicklistFormat = function() {
+      var templatePickList;
+      templatePickList = new PickListList();
+      this.templates.each((function(_this) {
+        return function(temp) {
+          var option;
+          option = new PickList();
+          option.set({
+            code: temp.get('template'),
+            name: temp.get('template'),
+            ignored: temp.get('ignored')
+          });
+          return templatePickList.add(option);
+        };
+      })(this));
+      console.log(templatePickList);
+      return this.setupTemplateSelect(templatePickList);
+    };
+
+    AssignSdfPropertiesController.prototype.setupTemplateSelect = function(templatePickList) {
+      this.templateList = templatePickList;
       return this.templateListController = new PickListSelectController({
         el: this.$('.bv_useTemplate'),
         collection: this.templateList,
@@ -511,7 +657,22 @@
           code: "none",
           name: "None"
         }),
-        selectedCode: "none"
+        selectedCode: "none",
+        autoFetch: false
+      });
+    };
+
+    AssignSdfPropertiesController.prototype.setupProjectSelect = function() {
+      this.projectList = new PickListList();
+      this.projectList.url = "/api/projects";
+      return this.projectListController = new PickListSelectController({
+        el: this.$('.bv_dbProject'),
+        collection: this.projectList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Project"
+        }),
+        selectedCode: "unassigned"
       });
     };
 
@@ -534,9 +695,10 @@
       console.log(properties.sdfProperties);
       this.sdfPropertiesList = new SdfPropertiesList(properties.sdfProperties);
       this.dbPropertiesList = new DbPropertiesList(properties.dbProperties);
-      this.assignedPropertiesList = new AssignedPropertiesList(properties.autoMagicProperties);
+      this.assignedPropertiesList = new AssignedPropertiesList(properties.bulkloadProperties);
       this.assignedPropertiesList.on('change', (function(_this) {
         return function() {
+          console.log("assigned props changed, trigger isvalid");
           return _this.isValid();
         };
       })(this));
@@ -546,6 +708,9 @@
       this.assignedPropertiesListController.render();
       this.showUnassignedDbProperties();
       this.$('.bv_addDbProperty').removeAttr('disabled');
+      if (window.conf.cmpdReg.showProjectSelect) {
+        this.handleDbProjectChanged();
+      }
       return this.isValid();
     };
 
@@ -571,10 +736,46 @@
       })(this));
     };
 
+    AssignSdfPropertiesController.prototype.handleDbProjectChanged = function() {
+      var assignedProjectProp, project, projectProp;
+      console.log("handle Project changed");
+      project = this.projectListController.getSelectedCode();
+      if (this.assignedPropertiesList != null) {
+        assignedProjectProp = this.assignedPropertiesList.findWhere({
+          dbProperty: "project"
+        });
+        if (assignedProjectProp != null) {
+          assignedProjectProp.set({
+            defaultVal: project
+          });
+        } else {
+          console.log("adding new assigned property");
+          projectProp = new AssignedProperty({
+            sdfProperty: null,
+            dbProperty: "project",
+            defaultVal: project,
+            required: true
+          });
+          this.assignedPropertiesList.add(projectProp);
+        }
+      }
+      this.isValid();
+      return this.trigger('projectChanged', project);
+    };
+
     AssignSdfPropertiesController.prototype.handleTemplateChanged = function() {
-      var template;
-      template = this.templateListController.getSelectedCode();
-      return this.trigger('templateChanged', template);
+      var mappings, templateName;
+      templateName = this.templateListController.getSelectedCode();
+      if (templateName === "none") {
+        mappings = null;
+      } else {
+        mappings = this.templates.findWhere({
+          template: templateName
+        }).get('mappings');
+      }
+      console.log("handle temp changed");
+      console.log(mappings);
+      return this.trigger('templateChanged', templateName, mappings);
     };
 
     AssignSdfPropertiesController.prototype.handleSaveTemplateCheckboxChanged = function() {
@@ -613,7 +814,7 @@
         return this.$('.bv_overwrite').change();
       } else {
         this.$('.bv_overwriteWarning').hide();
-        return this.hideNameTemplateError();
+        return this.isValid();
       }
     };
 
@@ -641,49 +842,123 @@
           }
         }
       }
-      return this.$('.bv_unassignedProperties').html(unassignedDbProps);
+      if (this.assignedPropertiesList.findWhere({
+        dbProperty: 'salt id'
+      }) || (this.assignedPropertiesList.findWhere({
+        dbProperty: 'salt type'
+      }) != null)) {
+        if (this.assignedPropertiesList.findWhere({
+          dbProperty: 'salt equivalents'
+        }) == null) {
+          unassignedDbProps += newLine + 'salt equivalents (required for salt type/id)';
+        }
+      }
+      this.$('.bv_unassignedProperties').html(unassignedDbProps);
+      return this.isValid();
     };
 
     AssignSdfPropertiesController.prototype.isValid = function() {
-      var duplicates, overwrite, saveTemplateChecked, validCheck;
+      var otherErrors, validAp, validCheck;
       this.clearValidationErrorStyles();
       validCheck = true;
-      this.assignedPropertiesListController.collection.each(function(model) {
-        var validModel;
-        validModel = model.isValid();
-        if (validModel === false) {
-          return validCheck = false;
-        }
-      });
-      duplicates = this.assignedPropertiesListController.collection.checkDuplicates();
-      if (duplicates.length > 1) {
-        this.showDbPropErrors(duplicates);
+      validAp = this.validateAssignedProperties();
+      if (!validAp) {
+        console.log("valid check false");
         validCheck = false;
       }
-      saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
-      if (saveTemplateChecked && this.$('.bv_overwriteWarning').is(":visible") && this.$('input[name="bv_overwrite"]:checked').val() === "no") {
-        console.log("need unique template name");
-        overwrite = this.$('input[name="bv_overwrite"]:checked').val();
-        if (overwrite === "yes") {
-          this.hideNameTemplateError();
-        } else {
-          this.showNameTemplateError('The template name should be unique');
-          validCheck = false;
-        }
+      otherErrors = [];
+      if (window.conf.cmpdReg.showProjectSelect) {
+        otherErrors.push.apply(otherErrors, this.getProjectErrors());
+      }
+      if (this.assignedPropertiesList != null) {
+        otherErrors.push.apply(otherErrors, this.assignedPropertiesList.checkDuplicates());
+        otherErrors.push.apply(otherErrors, this.assignedPropertiesList.checkSaltProperties());
+      }
+      otherErrors.push.apply(otherErrors, this.getTemplateErrors());
+      this.showValidationErrors(otherErrors);
+      if (this.$('.bv_unassignedProperties').html() !== "") {
+        console.log("has unassigned db props");
+        console.log("valid check false");
+        validCheck = false;
+      }
+      if (otherErrors.length > 0) {
+        console.log("valid check false");
+        validCheck = false;
       }
       if (validCheck) {
-        this.$('.bv_regCmpds').removeAttr('disabled');
+        return this.$('.bv_regCmpds').removeAttr('disabled');
       } else {
-        this.$('.bv_regCmpds').attr('disabled', 'disabled');
+        return this.$('.bv_regCmpds').attr('disabled', 'disabled');
+      }
+    };
+
+    AssignSdfPropertiesController.prototype.getProjectErrors = function() {
+      var projectError, projectProp;
+      projectError = [];
+      if (this.assignedPropertiesList != null) {
+        projectProp = this.assignedPropertiesList.findWhere({
+          dbProperty: 'project'
+        });
+        if (projectProp != null) {
+          projectError = projectProp.validateProject();
+        }
+      } else if (window.conf.cmpdReg.showProjectSelect) {
+        console.log(this.projectListController.getSelectedCode());
+        if (this.projectListController.getSelectedCode() === "unassigned" || this.projectListController.getSelectedCode() === null) {
+          projectError.push({
+            attribute: 'dbProject',
+            message: 'Project must be selected'
+          });
+        }
+      }
+      return projectError;
+    };
+
+    AssignSdfPropertiesController.prototype.validateAssignedProperties = function() {
+      var validCheck;
+      validCheck = true;
+      if (this.assignedPropertiesList != null) {
+        this.assignedPropertiesList.each((function(_this) {
+          return function(model) {
+            var validModel;
+            console.log("isValid");
+            console.log(model);
+            validModel = model.isValid();
+            if (validModel === false) {
+              return validCheck = false;
+            }
+          };
+        })(this));
       }
       return validCheck;
     };
 
-    AssignSdfPropertiesController.prototype.showDbPropErrors = function(duplicates) {
+    AssignSdfPropertiesController.prototype.getTemplateErrors = function() {
+      var saveTemplateChecked, templateErrors;
+      templateErrors = [];
+      saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
+      if (saveTemplateChecked) {
+        if (UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_templateName')) === "") {
+          templateErrors.push({
+            attribute: 'templateName',
+            message: 'The template name must be set'
+          });
+        } else if (this.$('.bv_overwriteWarning').is(":visible") && this.$('input[name="bv_overwrite"]:checked').val() === "no") {
+          templateErrors.push({
+            attribute: 'templateName',
+            message: 'The template name should be unique'
+          });
+        }
+      }
+      return templateErrors;
+    };
+
+    AssignSdfPropertiesController.prototype.showValidationErrors = function(errors) {
       var err, i, len, results;
+      console.log(errors);
       results = [];
-      for (i = 0, len = duplicates.length; i < len; i++) {
-        err = duplicates[i];
+      for (i = 0, len = errors.length; i < len; i++) {
+        err = errors[i];
         this.$('.bv_group_' + err.attribute).addClass('input_error error');
         this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
         this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
@@ -717,24 +992,25 @@
       return this.$("[data-toggle=tooltip]").tooltip();
     };
 
-    AssignSdfPropertiesController.prototype.hideNameTemplateError = function() {
-      console.log("clear name template error");
-      this.$('.bv_group_templateName').removeAttr('data-toggle');
-      this.$('.bv_group_templateName').removeAttr('data-placement');
-      this.$('.bv_group_templateName').removeAttr('title');
-      this.$('.bv_group_templateName').removeAttr('data-original-title');
-      return this.$('.bv_group_templateName').removeClass('input_error error');
-    };
-
     AssignSdfPropertiesController.prototype.handleRegCmpdsClicked = function() {
+      var dataToPost, saveTemplateChecked, templateName;
       console.log("register compounds");
       console.log(this.assignedPropertiesListController.collection.models);
+      templateName = null;
+      saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
+      if (saveTemplateChecked) {
+        templateName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_templateName'));
+      }
+      dataToPost = {
+        templateName: templateName,
+        mappings: JSON.stringify(this.assignedPropertiesListController.collection.models),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        ignored: false
+      };
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader",
-        data: {
-          properties: JSON.stringify(this.assignedPropertiesListController.collection.models)
-        },
+        data: dataToPost,
         success: (function(_this) {
           return function(response) {
             return _this.trigger('saveComplete', response);
@@ -757,6 +1033,7 @@
     extend(BulkRegCmpdsController, superClass);
 
     function BulkRegCmpdsController() {
+      this.handleSdfPropertiesDetected = bind(this.handleSdfPropertiesDetected, this);
       this.setupAssignSdfPropertiesController = bind(this.setupAssignSdfPropertiesController, this);
       return BulkRegCmpdsController.__super__.constructor.apply(this, arguments);
     }
@@ -777,11 +1054,7 @@
       });
       this.detectSdfPropertiesController.on('propsDetected', (function(_this) {
         return function(properties) {
-          _this.assignSdfPropertiesController.createPropertyCollections(properties);
-          _this.detectSdfPropertiesController.showSdfProperties(_this.assignSdfPropertiesController.sdfPropertiesList);
-          _this.$('.bv_assignProperties').show();
-          _this.$('.bv_saveOptions').show();
-          return _this.$('.bv_regCmpds').show();
+          return _this.handleSdfPropertiesDetected(properties);
         };
       })(this));
       this.detectSdfPropertiesController.on('resetAssignProps', (function(_this) {
@@ -801,8 +1074,13 @@
         el: this.$('.bv_assignSdfProperties')
       });
       this.assignSdfPropertiesController.on('templateChanged', (function(_this) {
-        return function(template) {
-          return _this.detectSdfPropertiesController.handleTemplateChanged(template);
+        return function(templateName, mappings) {
+          return _this.detectSdfPropertiesController.handleTemplateChanged(templateName, mappings);
+        };
+      })(this));
+      this.assignSdfPropertiesController.on('projectChanged', (function(_this) {
+        return function(projectName) {
+          return _this.detectSdfPropertiesController.handleProjectChanged(projectName);
         };
       })(this));
       return this.assignSdfPropertiesController.on('saveComplete', (function(_this) {
@@ -810,6 +1088,15 @@
           return _this.trigger('saveComplete', saveSummary);
         };
       })(this));
+    };
+
+    BulkRegCmpdsController.prototype.handleSdfPropertiesDetected = function(properties) {
+      this.assignSdfPropertiesController.createPropertyCollections(properties);
+      this.detectSdfPropertiesController.mappings = this.assignSdfPropertiesController.assignedPropertiesList;
+      this.detectSdfPropertiesController.showSdfProperties(this.assignSdfPropertiesController.sdfPropertiesList);
+      this.$('.bv_assignProperties').show();
+      this.$('.bv_saveOptions').show();
+      return this.$('.bv_regCmpds').show();
     };
 
     BulkRegCmpdsController.prototype.disableAllInputs = function() {
@@ -839,7 +1126,16 @@
 
     BulkRegCmpdsSummaryController.prototype.initialize = function() {
       $(this.el).empty();
-      return $(this.el).html(this.template());
+      $(this.el).html(this.template());
+      if (this.options.summaryHTML != null) {
+        return this.summaryHTML = this.options.summaryHTML;
+      } else {
+        return this.summaryHTML = "";
+      }
+    };
+
+    BulkRegCmpdsSummaryController.prototype.render = function() {
+      return this.$('.bv_regSummaryHTML').html(this.summaryHTML);
     };
 
     BulkRegCmpdsSummaryController.prototype.handleLoadAnotherSDF = function() {
@@ -847,6 +1143,30 @@
     };
 
     return BulkRegCmpdsSummaryController;
+
+  })(Backbone.View);
+
+  window.PurgeFilesController = (function(superClass) {
+    extend(PurgeFilesController, superClass);
+
+    function PurgeFilesController() {
+      return PurgeFilesController.__super__.constructor.apply(this, arguments);
+    }
+
+    PurgeFilesController.prototype.template = _.template($("#PurgeFilesView").html());
+
+    PurgeFilesController.prototype.events = {
+      "click .bv_purgeFile": "handlePurgeFile"
+    };
+
+    PurgeFilesController.prototype.initialize = function() {
+      $(this.el).empty();
+      return $(this.el).html(this.template());
+    };
+
+    PurgeFilesController.prototype.handlePurgeFile = function() {};
+
+    return PurgeFilesController;
 
   })(Backbone.View);
 
@@ -879,18 +1199,25 @@
         el: this.$('.bv_bulkReg')
       });
       return this.regCmpdsController.on('saveComplete', (function(_this) {
-        return function() {
+        return function(summary) {
           console.log("SAVE complete");
           _this.$('.bv_bulkReg').hide();
-          return _this.setupBulkRegCmpdsSummaryController();
+          _this.$('.bv_bulkRegSummary').show();
+          return _this.setupBulkRegCmpdsSummaryController(summary);
         };
       })(this));
     };
 
-    CmpdRegBulkLoaderAppController.prototype.setupBulkRegCmpdsSummaryController = function() {
+    CmpdRegBulkLoaderAppController.prototype.setupBulkRegCmpdsSummaryController = function(summary) {
+      if (this.regCmpdsSummaryController != null) {
+        this.regCmpdsSummaryController.undelegateEvents();
+      }
+      console.log(summary);
       this.regCmpdsSummaryController = new BulkRegCmpdsSummaryController({
-        el: this.$('.bv_bulkRegSummary')
+        el: this.$('.bv_bulkRegSummary'),
+        summaryHTML: summary
       });
+      this.regCmpdsSummaryController.render();
       return this.regCmpdsSummaryController.on('loadAnother', (function(_this) {
         return function() {
           if (_this.regCmpdsController != null) {

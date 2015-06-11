@@ -1,5 +1,105 @@
 (function() {
   (function(exports) {
+    exports.templates = [
+      {
+        template: 'Template 1',
+        mappings: [
+          {
+            "dbProperty": "db1",
+            "sdfProperty": "prop1",
+            "required": true,
+            "defaultVal": "1"
+          }, {
+            "dbProperty": "db2",
+            "sdfProperty": "prop2",
+            "required": true,
+            "defaultVal": "2"
+          }, {
+            "dbProperty": "db3",
+            "required": true,
+            "sdfProperty": "prop3",
+            "defaultVal": "3"
+          }, {
+            "dbProperty": "db4",
+            "required": true,
+            "sdfProperty": "prop4",
+            "defaultVal": "4"
+          }, {
+            "dbProperty": "none",
+            "required": false,
+            "sdfProperty": "prop5",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db5",
+            "required": false,
+            "sdfProperty": null,
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db6",
+            "required": false,
+            "sdfProperty": "prop6",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db7",
+            "required": false,
+            "sdfProperty": "prop7",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db8",
+            "required": false,
+            "sdfProperty": "prop8",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db9",
+            "required": true,
+            "sdfProperty": "prop9",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db10",
+            "required": true,
+            "sdfProperty": "prop10",
+            "defaultVal": ""
+          }
+        ],
+        ignored: false
+      }, {
+        template: 'Template 2',
+        mappings: [
+          {
+            "dbProperty": "db1",
+            "sdfProperty": "prop1",
+            "required": true,
+            "defaultVal": "1"
+          }, {
+            "dbProperty": "db2",
+            "sdfProperty": "prop2",
+            "required": true,
+            "defaultVal": "2"
+          }, {
+            "dbProperty": "db3",
+            "required": true,
+            "sdfProperty": "prop3",
+            "defaultVal": "3"
+          }, {
+            "dbProperty": "db4",
+            "required": true,
+            "sdfProperty": "prop4",
+            "defaultVal": "4"
+          }, {
+            "dbProperty": "none",
+            "required": false,
+            "sdfProperty": "prop5",
+            "defaultVal": ""
+          }, {
+            "dbProperty": "db5",
+            "required": true,
+            "sdfProperty": null,
+            "defaultVal": ""
+          }
+        ],
+        ignored: false
+      }
+    ];
     exports.propertiesList = {
       "sdfProperties": [
         {
@@ -47,15 +147,17 @@
           "displayOrder": 5
         }
       ],
-      "autoMagicProperties": [
+      "bulkloadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",
-          required: true
+          required: true,
+          defaultVal: 1
         }, {
           "dbProperty": "db2",
           "sdfProperty": "prop2",
-          required: true
+          required: true,
+          defaultVal: 2
         }
       ]
     };
@@ -123,46 +225,50 @@
           "name": "db6",
           "dataType": "double",
           "required": false,
-          "displayOrder": 1
+          "displayOrder": 6
         }, {
           "name": "db7",
           "dataType": "text",
           "required": false,
-          "displayOrder": 2
+          "displayOrder": 7
         }, {
           "name": "db8",
           "dataType": "date",
           "required": false,
-          "displayOrder": 3
+          "displayOrder": 8
         }, {
           "name": "db9",
           "dataType": "integer",
           "required": true,
-          "displayOrder": 4
+          "displayOrder": 9
         }, {
           "name": "db10",
           "dataType": "double",
           "required": true,
-          "displayOrder": 5
+          "displayOrder": 10
         }
       ],
-      "autoMagicProperties": [
+      "bulkloadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",
-          required: true
+          required: true,
+          defaultVal: 1
         }, {
           "dbProperty": "db2",
           "sdfProperty": "prop2",
-          required: true
+          required: true,
+          defaultVal: 2
         }, {
           "dbProperty": "db9",
           "sdfProperty": "prop9",
-          required: true
+          required: true,
+          defaultVal: 9
         }, {
           "dbProperty": "db10",
           "sdfProperty": "prop10",
-          required: true
+          required: true,
+          defaultVal: 10
         }
       ]
     };
@@ -198,6 +304,9 @@
         }, {
           "name": "prop10",
           "dataType": "double"
+        }, {
+          "name": "prop10",
+          "dataType": "double"
         }
       ],
       "dbProperties": [
@@ -230,30 +339,40 @@
           "name": "db6",
           "dataType": "double",
           "required": true,
-          "displayOrder": 1
+          "displayOrder": 6
         }, {
           "name": "db7",
           "dataType": "text",
           "required": false,
-          "displayOrder": 2
+          "displayOrder": 7
         }, {
           "name": "db8",
           "dataType": "date",
           "required": false,
-          "displayOrder": 3
+          "displayOrder": 8
         }, {
           "name": "db9",
           "dataType": "integer",
           "required": false,
-          "displayOrder": 4
+          "displayOrder": 9
         }, {
           "name": "db10",
           "dataType": "double",
           "required": false,
-          "displayOrder": 5
+          "displayOrder": 10
+        }, {
+          "name": "salt type",
+          "dataType": "double",
+          "required": false,
+          "displayOrder": 11
+        }, {
+          "name": "salt equivalents",
+          "dataType": "double",
+          "required": false,
+          "displayOrder": 12
         }
       ],
-      "autoMagicProperties": [
+      "bulkloadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",

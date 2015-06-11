@@ -58,18 +58,6 @@
 
 </script>
 
-<script type="text/template" id="BulkRegCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
-    <div class="span9">
-        <h3>Bulk Compound Registration Complete</h3>
-        <h4 style="font-size:16px;">Registration Summary:</h4>
-        <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
-            <span class="bv_regSummaryHTML"></span>
-        </div>
-        <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
-        <button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</button>
-    </div>
-</script>
-
 <script type="text/template" id="BulkRegCmpdsView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_detectSdfProperties"></div>
     <div class="bv_assignSdfProperties"></div>
@@ -106,8 +94,8 @@
 <script type="text/template" id="AssignSdfPropertiesView" xmlns="http://www.w3.org/1999/html">
     <div class="span9 bv_configuration">
         <h4 style="font-size:16px;">Configuration</h4>
-        <div class="well" style="background:#FFFFFF;padding-bottom:83px;">
-            <div class="form-horizontal span5" style="margin-left:0px;width:410px;">
+        <div class="well" style="background:#FFFFFF;padding-top:25px;padding-bottom:0px;">
+            <div class="form-horizontal" style="margin-left:0px;width:410px;">
                 <div class="control-group bv_group_dbProject" style="margin-bottom:25px;width:400px;margin-right:0px;">
                     <label class="control-label" style="width:100px;">DB Project</label>
                     <div class="controls" style="margin-left:10px;width:420px;">
@@ -116,17 +104,8 @@
                     </div>
                 </div>
             </div>
-            <div class="form-horizontal span6" style="width:420px;margin-left:0px;">
-                <div class="control-group bv_group_projectName" style="margin-bottom:25px;margin-left:10px;">
-                    <label class="control-label" style="width:100px;">Project Name</label>
-                    <div class="controls" style="margin-left:10px;">
-                        <input class="bv_projectName" style="width:286px;margin-left:6px;" type="text"/>
-                        </input>
-                    </div>
-                </div>
-            </div>
 
-            <div class="form-horizontal span5" style="margin-left:0px;width:410px;">
+            <div class="form-horizontal" style="margin-left:0px;">
                 <div class="control-group bv_group_useTemplate" style="margin-bottom:25px;width:400px;margin-right:0px;">
                     <label class="control-label" style="width:100px;">Use Template</label>
                     <div class="controls" style="margin-left:10px;width:420px;">
@@ -135,15 +114,6 @@
                     </div>
                 </div>
             </div>
-            <!--<div class="form-horizontal span6" style="width:420px;margin-left:0px;">-->
-                <!--<div class="control-group bv_group_templateName" style="margin-bottom:25px;margin-left:10px;">-->
-                    <!--<label class="control-label" style="width:100px;">Template Name</label>-->
-                    <!--<div class="controls" style="margin-left:10px;">-->
-                        <!--<input class="bv_templateName" style="width:286px;margin-left:6px;" type="text"/>-->
-                        <!--</input>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
 
         </div>
     </div>
@@ -177,7 +147,7 @@
         <!--<span class="span5"></span>-->
         <div class="">
             <span class="checkbox" style="padding-left:10px;">
-                <input type="checkbox"class="bv_saveTemplate" style="margin-right: 0px;margin-left: 0px;margin-top:8px;"/>Save Template
+                <input type="checkbox"class="bv_saveTemplate" style="margin-right: 0px;margin-left: 0px;margin-top:12px;"/>Save Template
                 <span class="control-group bv_group_templateName">
                     <input class="bv_templateName" style="width:286px;margin-left:7px;" type="text" placeholder="Template Name" disabled="disabled"/>
                 </span>
@@ -224,3 +194,26 @@
 
 </script>
 
+<script type="text/template" id="BulkRegCmpdsSummaryView" xmlns="http://www.w3.org/1999/html">
+    <div class="span9">
+        <h3>Bulk Compound Registration Complete</h3>
+        <h4 style="font-size:16px;">Registration Summary:</h4>
+        <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
+            <span class="bv_regSummaryHTML"></span>
+        </div>
+        <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
+        <button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</button>
+    </div>
+</script>
+
+<script type="text/template" id="PurgeFilesView" xmlns="http://www.w3.org/1999/html">
+    <div class="span9">
+        <h3>Purge Files</h3>
+        <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
+            <span class="well">Select a registration file to have its records purged from the database.  Note that if there are any dependencies, you will not be able to purge the file.</span>
+        </div>
+        <button type="button" class="btn bv_downloadSummary pull-right">Purge File</button>
+        <div class="well bv_purgeSummary" style="background:#FFFFFF;margin-bottom:10px;">
+        </div>
+    </div>
+</script>
