@@ -235,6 +235,20 @@ pivotResults <- function(geneId, lsKind, result){
 }
 
 
+# A function to take in a string and round using signif() if possible before converting back to a string.
+# if the string cannot be coersed into a numeric type, the original string is returned as is.
+# e.g roundString("retest", 3) = "retest"
+#     roundString("128479823", 3) = "1.28e+08"
+roundString <- function(string,sigfigs){
+  num <- as.numeric(string)
+  if (!is.na(num)){
+    return(as.character(signif(num,sigfigs)))
+  }else{
+    return(string)
+  }
+}
+
+
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
   experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName)))
@@ -246,12 +260,20 @@ if (nrow(dataDT) > 0){
       
       save(dataDT,file="dataDT.Rda")
       
-      # Modify lsKind to include concentration info as well (if it exists)
+      # Modify lsKind to include units and concentration info as well (if it exists)
       for (i in 1:nrow(dataDT)){
+        if (dataDT[["resultUnit"]][i] != ""){
+          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i]," (",dataDT[["resultUnit"]][i],") ",sep='')
+        }
         if (dataDT[["testedConcentration"]][i] != "") {
           dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i],"at",dataDT[["testedConcentration"]][i],dataDT[["testedConcentrationUnit"]][i],sep=" ")
         }
       }
+      # Keep only 4 sig-figs
+      # todo make sure this doesn't run if exporting as a .csv
+      options( scipen = -2 ) #This is to force scientific notation more often
+      dataDT[["result"]] <- sapply(dataDT[["result"]],function(x) roundString(x,4))
+      
       outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
   		save(outputDT,file="outputDT.Rda")
       experimentName <- as.character(unique(outputDT$experimentName))
@@ -318,7 +340,6 @@ if (nrow(dataDT) > 0){
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
   		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false">')),TRUE)
-  
   		for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
   		}
