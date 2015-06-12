@@ -297,14 +297,26 @@ if (nrow(dataDT) > 0){
       }
       
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+      save(exptDataColumns,file="exptData1.Rda")
 #       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT),value=TRUE)))))
       
+      # Get names of inlineFileValue thigs if they exist (e.g. Western Blots) and add them to exptDataColums
+      fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
+      exptDataColumns <- c(exptDataColumns,fileValues)
+
+      # Replace inlineFileValue with a link to the file
+      for (i in fileValues){
+        outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<img src="http://192.168.99.100:3000/dataFiles/',x,'">'))
+      }
+
   		myLogger$debug("exptDataColumns is:")
   		myLogger$debug(exptDataColumns)
+      save(exptDataColumns, file="exptData2.Rda")
   		
   		#setcolorder(outputDT, c("geneId",exptDataColumns))
    		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))   
@@ -313,7 +325,7 @@ if (nrow(dataDT) > 0){
       # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x,'&showAxes=true&labelAxes=true"></a>')),TRUE)
       }else{
         try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
       }
@@ -345,24 +357,34 @@ if (nrow(dataDT) > 0){
   		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
   
   		if (!exportCSV){
-  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+  		  outputDT2 <- cbind(outputDT2, StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
   		}else{
-  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
+  		  outputDT2 <- cbind(outputDT2, StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
   		}
       
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
 #   		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
       # See note at line 268
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
+
+      # Get names of inlineFileValue thigs if they exist (e.g. Western Blots) and add them to exptDataColums
+      fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
+      exptDataColumns <- c(exptDataColumns,fileValues)
+
+      for (i in fileValues){
+        outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<img src="http://192.168.99.100:3000/dataFiles/',x,'">'))
+      }
+
+
   		#setcolorder(outputDT2, c("geneId",exptDataColumns))
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
   
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
+        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x,'&showAxes=true&labelAxes=true"></a>')),TRUE)
       }else{
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
+        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
       }  		
       for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
