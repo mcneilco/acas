@@ -269,11 +269,15 @@ if (nrow(dataDT) > 0){
           dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i],"at",dataDT[["testedConcentration"]][i],dataDT[["testedConcentrationUnit"]][i],sep=" ")
         }
       }
+      
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
         options( scipen = -2 ) #This is to force scientific notation more often
         dataDT[["result"]] <- sapply(dataDT[["result"]],function(x) roundString(x,4))
       }
+      
+      # Add operators to the front of result if they exist
+      dataDT[["result"]] <- paste(dataDT[["operator"]],dataDT[["result"]],sep = '')
       
       outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
   		save(outputDT,file="outputDT.Rda")
@@ -284,8 +288,14 @@ if (nrow(dataDT) > 0){
   
       # Add a column with the compound structure
       # TODO replace hard-coded url with a reference to the config.properties
-  		outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
- 		
+      
+      # For HTML display include <tags>. For csv just give the url.
+      if (!exportCSV){
+  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+      }else{
+        outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
+      }
+      
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
 #       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
@@ -300,9 +310,13 @@ if (nrow(dataDT) > 0){
    		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))   
 
       # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
-      # The two extra spaces are due to the appending of concentration info.
+      # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
+      if (!exportCSV){
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
+      }else{
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
+      }
 
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(experimentName, "::", colName))
@@ -329,8 +343,13 @@ if (nrow(dataDT) > 0){
   		experimentName <- as.character(unique(outputDT2$experimentName))
   		codeName <- as.character(unique(outputDT2$experimentCodeName))
   		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
-      outputDT2 <- cbind(outputDT2,StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
-  		
+  
+  		if (!exportCSV){
+  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+  		}else{
+  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
+  		}
+      
   		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
 #   		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
       # See note at line 268
@@ -340,8 +359,12 @@ if (nrow(dataDT) > 0){
   
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
-  		try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
-  		for (colName in exptDataColumns){
+      if (!exportCSV){
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=',x,'&showAxes=false&labelAxes=false"></a>')),TRUE)
+      }else{
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
+      }  		
+      for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
   		}
   		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
