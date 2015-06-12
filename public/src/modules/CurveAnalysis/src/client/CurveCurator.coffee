@@ -587,7 +587,7 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid')+".png"
 		else
 			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="
-			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
+			curveUrl += @model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
 		if @model.get('algorithmFlagStatus') == 'no fit'

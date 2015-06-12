@@ -904,7 +904,7 @@
         curveUrl += this.model.get('curveid') + ".png";
       } else {
         curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=";
-        curveUrl += this.model.get('curveid') + "&showAxes=false&labelAxes=false";
+        curveUrl += this.model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false";
       }
       this.$el.html(this.template({
         curveUrl: curveUrl
