@@ -311,7 +311,7 @@ if (nrow(dataDT) > 0){
 
       # Replace inlineFileValue with a link to the file
       for (i in fileValues){
-        outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<img src="http://192.168.99.100:3000/dataFiles/',x,'">'))
+        outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
       }
 
   		myLogger$debug("exptDataColumns is:")
@@ -372,7 +372,7 @@ if (nrow(dataDT) > 0){
       exptDataColumns <- c(exptDataColumns,fileValues)
 
       for (i in fileValues){
-        outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<img src="http://192.168.99.100:3000/dataFiles/',x,'">'))
+        outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
       }
 
 
@@ -425,7 +425,9 @@ if (nrow(dataDT) > 0){
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
-  allColNamesDT$sClass <- "center"
+
+  save(allColNamesDT,file="allCol.Rda")
+  allColNamesDT$sClass <- sapply(allColNamesDT[["lsKind"]],function(x) if(x=="curve id"){"curveId"}else{"center"})
   setnames(allColNamesDT, "lsKind", "sTitle")
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
