@@ -6,7 +6,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
 // Also handles scientific notation
 
 
-    "acas-pre": function ( a ) {
+    "lsThing-pre": function ( a ) {
         var operator =a[0];
         if (operator == ">" || operator == "<") {
             return operator + parseFloat(a.slice(1) );
@@ -14,7 +14,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         return (parseFloat( a ) || a);
     },
 
-    "acas-asc": function ( a, b ) {
+    "lsThing-asc": function ( a, b ) {
         if (a[0] == "<"){
             if (b[0] == "<"){
                 return ((a.split(1) < b.split(1)) ? -1 : ((a.split(1) > b.split(1)) ? 1 : 0));
@@ -34,7 +34,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         return ((a < b) ? -1 : ((a > b) ? 1 : 0));
     },
 
-    "acas-desc": function ( a, b ) {
+    "lsThing-desc": function ( a, b ) {
         if (a[0] == "<"){
             if (b[0] == "<"){
                 return ((a.split(1) < b.split(1)) ? 1 : ((a.split(1) > b.split(1)) ? -1 : 0));
