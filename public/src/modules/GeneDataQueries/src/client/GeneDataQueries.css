@@ -256,3 +256,8 @@
     margin-top: 10px;
     margin-left: 185px;
 }
+
+.GeneIDQueryAppController .container {
+    margin-left: 0px !important;
+    margin-right:0px !important;
+}
