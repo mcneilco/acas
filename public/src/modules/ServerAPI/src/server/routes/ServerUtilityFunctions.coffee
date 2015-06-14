@@ -19,6 +19,9 @@ basicRScriptPreValidation = (payload) ->
 	return result
 
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
+	exports.runRFunctionOutsideRequest request.body.user, request.body, rScript, rFunction, returnFunction, preValidationFunction 
+	
+exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	rScriptCommand = config.all.server.rscript
@@ -28,11 +31,11 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 		rScriptCommand = "Rscript"
 
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
+	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(argumentsJSON), username
 	if preValidationFunction?
-		preValErrors = preValidationFunction.call @, request.body
+		preValErrors = preValidationFunction.call @, argumentsJSON
 	else
-		preValErrors = basicRScriptPreValidation request.body
+		preValErrors = basicRScriptPreValidation argumentsJSON
 
 	if preValErrors.hasError
 		console.log preValErrors
@@ -46,7 +49,7 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 	rCommandFile = new Tempfile
 	requestJSONFile = new Tempfile
 	stdoutFile =  new Tempfile
-	requestJSONFile.writeFile JSON.stringify(request.body), =>
+	requestJSONFile.writeFile JSON.stringify(argumentsJSON), =>
 
 		rCommand = 'tryCatch({ '
 		rCommand += '	out <- capture.output(.libPaths("r_libs")); '
@@ -77,40 +80,19 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 							experimentId: null
 							results: null
 						returnFunction.call JSON.stringify(result)
-						csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
+						csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), username
 					else
 						returnFunction.call @, stdoutFileText
 						try
 							if stdoutFileText.indexOf '"hasError":true' > -1
-								csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdoutFileText, request.body.user
+								csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdoutFileText, username
 							else
-								csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
+								csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
 						catch error
 							console.log error
 
-exports.runRScript = (rScript) ->
-	config = require '../conf/compiled/conf.js'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	rScriptCommand = config.all.server.rscript
-	if config.all.server.rscript?
-		rScriptCommand = config.all.server.rscript
-	else
-		rScriptCommand = "Rscript"
-
-	exec = require('child_process').exec
-	command = "export R_LIBS=r_libs && "+ rScriptCommand + " " + rScript + " 2> /dev/null"
-	console.log "About to call R script using command: "+command
-	child = exec command,  (error, stdout, stderr) ->
-		console.log "stderr: " + stderr
-		console.log "stdout: " + stdout
 
 
-### To allow following test routes to work, install this Module
-	# ServerUtility function testing routes
-	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
-	serverUtilityFunctions.setupRoutes(app)
-
-###
 exports.setupRoutes = (app) ->
 	app.post '/api/runRFunctionTest', exports.runRFunctionTest
 

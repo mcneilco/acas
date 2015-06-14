@@ -90,6 +90,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/AttachFileCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/AttachFileTestJSON.js",
 	"/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js",
+	"/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveAnalysisCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/CurveFitTestFixtures.js",
 	"/javascripts/spec/testFixtures/CurveFitTestJSON.js",

@@ -1,26 +1,26 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.Thing = (function(superClass) {
-    extend(Thing, superClass);
+  window.Thing = (function(_super) {
+    __extends(Thing, _super);
 
     function Thing() {
-      this.getStateValueHistory = bind(this.getStateValueHistory, this);
-      this.resetClonedAttrs = bind(this.resetClonedAttrs, this);
-      this.resetStatesAndVals = bind(this.resetStatesAndVals, this);
-      this.duplicate = bind(this.duplicate, this);
-      this.deleteInteractions = bind(this.deleteInteractions, this);
-      this.reformatBeforeSaving = bind(this.reformatBeforeSaving, this);
-      this.getAnalyticalFiles = bind(this.getAnalyticalFiles, this);
-      this.createDefaultSecondLsThingItx = bind(this.createDefaultSecondLsThingItx, this);
-      this.createDefaultFirstLsThingItx = bind(this.createDefaultFirstLsThingItx, this);
-      this.createNewValue = bind(this.createNewValue, this);
-      this.createDefaultStates = bind(this.createDefaultStates, this);
-      this.createDefaultLabels = bind(this.createDefaultLabels, this);
-      this.parse = bind(this.parse, this);
-      this.defaults = bind(this.defaults, this);
+      this.getStateValueHistory = __bind(this.getStateValueHistory, this);
+      this.resetClonedAttrs = __bind(this.resetClonedAttrs, this);
+      this.resetStatesAndVals = __bind(this.resetStatesAndVals, this);
+      this.duplicate = __bind(this.duplicate, this);
+      this.deleteInteractions = __bind(this.deleteInteractions, this);
+      this.reformatBeforeSaving = __bind(this.reformatBeforeSaving, this);
+      this.getAnalyticalFiles = __bind(this.getAnalyticalFiles, this);
+      this.createDefaultSecondLsThingItx = __bind(this.createDefaultSecondLsThingItx, this);
+      this.createDefaultFirstLsThingItx = __bind(this.createDefaultFirstLsThingItx, this);
+      this.createNewValue = __bind(this.createNewValue, this);
+      this.createDefaultStates = __bind(this.createDefaultStates, this);
+      this.createDefaultLabels = __bind(this.createDefaultLabels, this);
+      this.parse = __bind(this.parse, this);
+      this.defaults = __bind(this.defaults, this);
       return Thing.__super__.constructor.apply(this, arguments);
     }
 
@@ -109,29 +109,29 @@
     };
 
     Thing.prototype.createDefaultLabels = function() {
-      var dLabel, j, len, newLabel, ref, results;
+      var dLabel, newLabel, _i, _len, _ref, _results;
       if (this.lsProperties.defaultLabels != null) {
-        ref = this.lsProperties.defaultLabels;
-        results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
-          dLabel = ref[j];
+        _ref = this.lsProperties.defaultLabels;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dLabel = _ref[_i];
           newLabel = this.get('lsLabels').getOrCreateLabelByTypeAndKind(dLabel.type, dLabel.kind);
           this.set(dLabel.key, newLabel);
-          results.push(newLabel.set({
+          _results.push(newLabel.set({
             preferred: dLabel.preferred
           }));
         }
-        return results;
+        return _results;
       }
     };
 
     Thing.prototype.createDefaultStates = function() {
-      var dValue, j, len, newValue, ref, results;
+      var dValue, newValue, _i, _len, _ref, _results;
       if (this.lsProperties.defaultValues != null) {
-        ref = this.lsProperties.defaultValues;
-        results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
-          dValue = ref[j];
+        _ref = this.lsProperties.defaultValues;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dValue = _ref[_i];
           newValue = this.get('lsStates').getOrCreateValueByTypeAndKind(dValue.stateType, dValue.stateKind, dValue.type, dValue.kind);
           this.listenTo(newValue, 'createNewValue', this.createNewValue);
           if ((dValue.unitKind != null) && newValue.get('unitKind') === void 0) {
@@ -163,9 +163,9 @@
           if ((dValue.value != null) && (newValue.get(dValue.type) === void 0)) {
             newValue.set(dValue.type, dValue.value);
           }
-          results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
+          _results.push(this.get(dValue.kind).set("value", newValue.get(dValue.type)));
         }
-        return results;
+        return _results;
       }
     };
 
@@ -189,46 +189,46 @@
     };
 
     Thing.prototype.createDefaultFirstLsThingItx = function() {
-      var itx, j, len, ref, results, thingItx;
+      var itx, thingItx, _i, _len, _ref, _results;
       if (this.lsProperties.defaultFirstLsThingItx != null) {
-        ref = this.lsProperties.defaultFirstLsThingItx;
-        results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
-          itx = ref[j];
+        _ref = this.lsProperties.defaultFirstLsThingItx;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          itx = _ref[_i];
           thingItx = this.get('firstLsThings').getItxByTypeAndKind(itx.itxType, itx.itxKind);
           if (thingItx == null) {
             thingItx = this.get('firstLsThings').createItxByTypeAndKind(itx.itxType, itx.itxKind);
           }
-          results.push(this.set(itx.key, thingItx));
+          _results.push(this.set(itx.key, thingItx));
         }
-        return results;
+        return _results;
       }
     };
 
     Thing.prototype.createDefaultSecondLsThingItx = function() {
-      var itx, j, len, ref, results, thingItx;
+      var itx, thingItx, _i, _len, _ref, _results;
       if (this.lsProperties.defaultSecondLsThingItx != null) {
-        ref = this.lsProperties.defaultSecondLsThingItx;
-        results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
-          itx = ref[j];
+        _ref = this.lsProperties.defaultSecondLsThingItx;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          itx = _ref[_i];
           thingItx = this.get('secondLsThings').getOrCreateItxByTypeAndKind(itx.itxType, itx.itxKind);
-          results.push(this.set(itx.key, thingItx));
+          _results.push(this.set(itx.key, thingItx));
         }
-        return results;
+        return _results;
       }
     };
 
     Thing.prototype.getAnalyticalFiles = function(fileTypes) {
-      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, j, k, len, len1, type;
+      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, type, _i, _j, _len, _len1;
       attachFileList = new AttachFileList();
-      for (j = 0, len = fileTypes.length; j < len; j++) {
-        type = fileTypes[j];
+      for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
+        type = fileTypes[_i];
         analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('lsKind') + " batch");
         analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
         if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
-          for (k = 0, len1 = analyticalFileValues.length; k < len1; k++) {
-            file = analyticalFileValues[k];
+          for (_j = 0, _len1 = analyticalFileValues.length; _j < _len1; _j++) {
+            file = analyticalFileValues[_j];
             if (!file.get('ignored')) {
               afm = new AttachFile({
                 fileType: type.code,
@@ -245,18 +245,18 @@
     };
 
     Thing.prototype.reformatBeforeSaving = function() {
-      var dLabel, dValue, i, itx, j, k, l, len, len1, len2, len3, lsStates, m, ref, ref1, ref2, ref3, results, value;
+      var dLabel, dValue, i, itx, lsStates, value, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3, _results;
       if (this.lsProperties.defaultLabels != null) {
-        ref = this.lsProperties.defaultLabels;
-        for (j = 0, len = ref.length; j < len; j++) {
-          dLabel = ref[j];
+        _ref = this.lsProperties.defaultLabels;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          dLabel = _ref[_i];
           this.unset(dLabel.key);
         }
       }
       if (this.lsProperties.defaultFirstLsThingItx != null) {
-        ref1 = this.lsProperties.defaultFirstLsThingItx;
-        for (k = 0, len1 = ref1.length; k < len1; k++) {
-          itx = ref1[k];
+        _ref1 = this.lsProperties.defaultFirstLsThingItx;
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          itx = _ref1[_j];
           this.unset(itx.key);
         }
       }
@@ -264,9 +264,9 @@
         this.get('firstLsThings').reformatBeforeSaving();
       }
       if (this.lsProperties.defaultSecondLsThingItx != null) {
-        ref2 = this.lsProperties.defaultSecondLsThingItx;
-        for (l = 0, len2 = ref2.length; l < len2; l++) {
-          itx = ref2[l];
+        _ref2 = this.lsProperties.defaultSecondLsThingItx;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          itx = _ref2[_k];
           this.unset(itx.key);
         }
       }
@@ -274,9 +274,9 @@
         this.get('secondLsThings').reformatBeforeSaving();
       }
       if (this.lsProperties.defaultValues != null) {
-        ref3 = this.lsProperties.defaultValues;
-        for (m = 0, len3 = ref3.length; m < len3; m++) {
-          dValue = ref3[m];
+        _ref3 = this.lsProperties.defaultValues;
+        for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+          dValue = _ref3[_l];
           if (this.get(dValue.key) != null) {
             if (this.get(dValue.key).get('value') === void 0) {
               lsStates = this.get('lsStates').getStatesByTypeAndKind(dValue.stateType, dValue.stateKind);
@@ -290,17 +290,17 @@
       if (this.attributes.attributes != null) {
         delete this.attributes.attributes;
       }
-      results = [];
+      _results = [];
       for (i in this.attributes) {
         if (_.isFunction(this.attributes[i])) {
-          results.push(delete this.attributes[i]);
+          _results.push(delete this.attributes[i]);
         } else if (!isNaN(i)) {
-          results.push(delete this.attributes[i]);
+          _results.push(delete this.attributes[i]);
         } else {
-          results.push(void 0);
+          _results.push(void 0);
         }
       }
-      return results;
+      return _results;
     };
 
     Thing.prototype.deleteInteractions = function() {
@@ -349,15 +349,15 @@
     Thing.prototype.resetStatesAndVals = function(states) {
       return states.each((function(_this) {
         return function(st) {
-          var igVal, ignoredVals, j, len, val, values;
+          var igVal, ignoredVals, val, values, _i, _len;
           _this.resetClonedAttrs(st);
           values = st.get('lsValues');
           if (values != null) {
             ignoredVals = values.filter(function(val) {
               return val.get('ignored');
             });
-            for (j = 0, len = ignoredVals.length; j < len; j++) {
-              val = ignoredVals[j];
+            for (_i = 0, _len = ignoredVals.length; _i < _len; _i++) {
+              val = ignoredVals[_i];
               igVal = st.getValueById(val.get('id'))[0];
               values.remove(igVal);
             }

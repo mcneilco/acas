@@ -1,10 +1,10 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty,
-    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.ExperimentSearch = (function(superClass) {
-    extend(ExperimentSearch, superClass);
+  window.ExperimentSearch = (function(_super) {
+    __extends(ExperimentSearch, _super);
 
     function ExperimentSearch() {
       return ExperimentSearch.__super__.constructor.apply(this, arguments);
@@ -19,17 +19,17 @@
 
   })(Backbone.Model);
 
-  window.ExperimentSearchController = (function(superClass) {
-    extend(ExperimentSearchController, superClass);
+  window.ExperimentSearchController = (function(_super) {
+    __extends(ExperimentSearchController, _super);
 
     function ExperimentSearchController() {
-      this.setupExperimentSummaryTable = bind(this.setupExperimentSummaryTable, this);
-      this.selectedExperimentUpdated = bind(this.selectedExperimentUpdated, this);
-      this.doGenericExperimentSearch = bind(this.doGenericExperimentSearch, this);
-      this.handleFindClicked = bind(this.handleFindClicked, this);
-      this.updateExperimentCode = bind(this.updateExperimentCode, this);
-      this.updateModel = bind(this.updateModel, this);
-      this.render = bind(this.render, this);
+      this.setupExperimentSummaryTable = __bind(this.setupExperimentSummaryTable, this);
+      this.selectedExperimentUpdated = __bind(this.selectedExperimentUpdated, this);
+      this.doGenericExperimentSearch = __bind(this.doGenericExperimentSearch, this);
+      this.handleFindClicked = __bind(this.handleFindClicked, this);
+      this.updateExperimentCode = __bind(this.updateExperimentCode, this);
+      this.updateModel = __bind(this.updateModel, this);
+      this.render = __bind(this.render, this);
       return ExperimentSearchController.__super__.constructor.apply(this, arguments);
     }
 
@@ -177,8 +177,8 @@
 
   })(AbstractFormController);
 
-  window.ExperimentSearch = (function(superClass) {
-    extend(ExperimentSearch, superClass);
+  window.ExperimentSearch = (function(_super) {
+    __extends(ExperimentSearch, _super);
 
     function ExperimentSearch() {
       return ExperimentSearch.__super__.constructor.apply(this, arguments);
@@ -193,14 +193,14 @@
 
   })(Backbone.Model);
 
-  window.ExperimentSimpleSearchController = (function(superClass) {
-    extend(ExperimentSimpleSearchController, superClass);
+  window.ExperimentSimpleSearchController = (function(_super) {
+    __extends(ExperimentSimpleSearchController, _super);
 
     function ExperimentSimpleSearchController() {
-      this.doSearch = bind(this.doSearch, this);
-      this.handleDoSearchClicked = bind(this.handleDoSearchClicked, this);
-      this.updateExperimentSearchTerm = bind(this.updateExperimentSearchTerm, this);
-      this.render = bind(this.render, this);
+      this.doSearch = __bind(this.doSearch, this);
+      this.handleDoSearchClicked = __bind(this.handleDoSearchClicked, this);
+      this.updateExperimentSearchTerm = __bind(this.updateExperimentSearchTerm, this);
+      this.render = __bind(this.render, this);
       return ExperimentSimpleSearchController.__super__.constructor.apply(this, arguments);
     }
 
@@ -302,12 +302,12 @@
 
   })(AbstractFormController);
 
-  window.ExperimentRowSummaryController = (function(superClass) {
-    extend(ExperimentRowSummaryController, superClass);
+  window.ExperimentRowSummaryController = (function(_super) {
+    __extends(ExperimentRowSummaryController, _super);
 
     function ExperimentRowSummaryController() {
-      this.render = bind(this.render, this);
-      this.handleClick = bind(this.handleClick, this);
+      this.render = __bind(this.render, this);
+      this.handleClick = __bind(this.handleClick, this);
       return ExperimentRowSummaryController.__super__.constructor.apply(this, arguments);
     }
 
@@ -358,12 +358,12 @@
 
   })(Backbone.View);
 
-  window.ExperimentSummaryTableController = (function(superClass) {
-    extend(ExperimentSummaryTableController, superClass);
+  window.ExperimentSummaryTableController = (function(_super) {
+    __extends(ExperimentSummaryTableController, _super);
 
     function ExperimentSummaryTableController() {
-      this.render = bind(this.render, this);
-      this.selectedRowChanged = bind(this.selectedRowChanged, this);
+      this.render = __bind(this.render, this);
+      this.selectedRowChanged = __bind(this.selectedRowChanged, this);
       return ExperimentSummaryTableController.__super__.constructor.apply(this, arguments);
     }
 
@@ -403,19 +403,19 @@
 
   })(Backbone.View);
 
-  window.ExperimentBrowserController = (function(superClass) {
-    extend(ExperimentBrowserController, superClass);
+  window.ExperimentBrowserController = (function(_super) {
+    __extends(ExperimentBrowserController, _super);
 
     function ExperimentBrowserController() {
-      this.render = bind(this.render, this);
-      this.destroyExperimentSummaryTable = bind(this.destroyExperimentSummaryTable, this);
-      this.handleDuplicateExperimentClicked = bind(this.handleDuplicateExperimentClicked, this);
-      this.handleEditExperimentClicked = bind(this.handleEditExperimentClicked, this);
-      this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
-      this.handleConfirmDeleteExperimentClicked = bind(this.handleConfirmDeleteExperimentClicked, this);
-      this.handleDeleteExperimentClicked = bind(this.handleDeleteExperimentClicked, this);
-      this.selectedExperimentUpdated = bind(this.selectedExperimentUpdated, this);
-      this.setupExperimentSummaryTable = bind(this.setupExperimentSummaryTable, this);
+      this.render = __bind(this.render, this);
+      this.destroyExperimentSummaryTable = __bind(this.destroyExperimentSummaryTable, this);
+      this.handleDuplicateExperimentClicked = __bind(this.handleDuplicateExperimentClicked, this);
+      this.handleEditExperimentClicked = __bind(this.handleEditExperimentClicked, this);
+      this.handleCancelDeleteClicked = __bind(this.handleCancelDeleteClicked, this);
+      this.handleConfirmDeleteExperimentClicked = __bind(this.handleConfirmDeleteExperimentClicked, this);
+      this.handleDeleteExperimentClicked = __bind(this.handleDeleteExperimentClicked, this);
+      this.selectedExperimentUpdated = __bind(this.selectedExperimentUpdated, this);
+      this.setupExperimentSummaryTable = __bind(this.setupExperimentSummaryTable, this);
       return ExperimentBrowserController.__super__.constructor.apply(this, arguments);
     }
 
@@ -568,11 +568,11 @@
 
   })(Backbone.View);
 
-  window.ExperimentDetailController = (function(superClass) {
-    extend(ExperimentDetailController, superClass);
+  window.ExperimentDetailController = (function(_super) {
+    __extends(ExperimentDetailController, _super);
 
     function ExperimentDetailController() {
-      this.render = bind(this.render, this);
+      this.render = __bind(this.render, this);
       return ExperimentDetailController.__super__.constructor.apply(this, arguments);
     }
 

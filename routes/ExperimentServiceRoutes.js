@@ -153,7 +153,7 @@
         }
       }
       checkFilesAndUpdate = function(expt) {
-        var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
+        var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(expt, false);
         filesToSave = fileVals.length;
         completeExptUpdate = function(exptToUpdate) {
@@ -172,12 +172,12 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(expt.codeName);
-          results = [];
-          for (i = 0, len = fileVals.length; i < len; i++) {
-            fv = fileVals[i];
-            results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
           }
-          return results;
+          return _results;
         } else {
           return resp.json(expt);
         }
@@ -216,7 +216,7 @@
   };
 
   exports.putExperiment = function(req, resp) {
-    var completeExptUpdate, exptToSave, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
+    var completeExptUpdate, exptToSave, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
     exptToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(exptToSave, true);
     filesToSave = fileVals.length;
@@ -236,16 +236,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      results = [];
-      for (i = 0, len = fileVals.length; i < len; i++) {
-        fv = fileVals[i];
+      _results = [];
+      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+        fv = fileVals[_i];
         if (fv.id == null) {
-          results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          results.push(void 0);
+          _results.push(void 0);
         }
       }
-      return results;
+      return _results;
     } else {
       return completeExptUpdate();
     }
@@ -319,7 +319,7 @@
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {
-    var _, baseurl, config, experimentServiceTestJSON, resultViewerURL;
+    var baseurl, config, experimentServiceTestJSON, resultViewerURL, _;
     console.log(__dirname);
     _ = require('../public/src/lib/underscore.js');
     if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {

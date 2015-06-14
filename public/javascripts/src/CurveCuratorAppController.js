@@ -1,13 +1,13 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.CurveCuratorAppRouter = (function(superClass) {
-    extend(CurveCuratorAppRouter, superClass);
+  window.CurveCuratorAppRouter = (function(_super) {
+    __extends(CurveCuratorAppRouter, _super);
 
     function CurveCuratorAppRouter() {
-      this.loadCurvesForExptCode = bind(this.loadCurvesForExptCode, this);
+      this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
       return CurveCuratorAppRouter.__super__.constructor.apply(this, arguments);
     }
 
@@ -28,13 +28,13 @@
 
   })(Backbone.Router);
 
-  window.CurveCuratorAppController = (function(superClass) {
-    extend(CurveCuratorAppController, superClass);
+  window.CurveCuratorAppController = (function(_super) {
+    __extends(CurveCuratorAppController, _super);
 
     function CurveCuratorAppController() {
-      this.hideLoadCurvesModal = bind(this.hideLoadCurvesModal, this);
-      this.loadCurvesForExptCode = bind(this.loadCurvesForExptCode, this);
-      this.render = bind(this.render, this);
+      this.hideLoadCurvesModal = __bind(this.hideLoadCurvesModal, this);
+      this.loadCurvesForExptCode = __bind(this.loadCurvesForExptCode, this);
+      this.render = __bind(this.render, this);
       return CurveCuratorAppController.__super__.constructor.apply(this, arguments);
     }
 

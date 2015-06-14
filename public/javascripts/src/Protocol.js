@@ -1,14 +1,14 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.Protocol = (function(superClass) {
-    extend(Protocol, superClass);
+  window.Protocol = (function(_super) {
+    __extends(Protocol, _super);
 
     function Protocol() {
-      this.duplicateEntity = bind(this.duplicateEntity, this);
-      this.parse = bind(this.parse, this);
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
+      this.parse = __bind(this.parse, this);
       return Protocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -161,8 +161,8 @@
 
   })(BaseEntity);
 
-  window.ProtocolList = (function(superClass) {
-    extend(ProtocolList, superClass);
+  window.ProtocolList = (function(_super) {
+    __extends(ProtocolList, _super);
 
     function ProtocolList() {
       return ProtocolList.__super__.constructor.apply(this, arguments);
@@ -174,19 +174,19 @@
 
   })(Backbone.Collection);
 
-  window.ProtocolBaseController = (function(superClass) {
-    extend(ProtocolBaseController, superClass);
+  window.ProtocolBaseController = (function(_super) {
+    __extends(ProtocolBaseController, _super);
 
     function ProtocolBaseController() {
-      this.handleAssayTreeRuleChanged = bind(this.handleAssayTreeRuleChanged, this);
-      this.handleAssayPrincipleChanged = bind(this.handleAssayPrincipleChanged, this);
-      this.handleAssayStageChanged = bind(this.handleAssayStageChanged, this);
-      this.handleCreationDateIconClicked = bind(this.handleCreationDateIconClicked, this);
-      this.handleCreationDateChanged = bind(this.handleCreationDateChanged, this);
-      this.modelSyncCallback = bind(this.modelSyncCallback, this);
-      this.render = bind(this.render, this);
-      this.completeInitialization = bind(this.completeInitialization, this);
-      this.initialize = bind(this.initialize, this);
+      this.handleAssayTreeRuleChanged = __bind(this.handleAssayTreeRuleChanged, this);
+      this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
+      this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
+      this.handleCreationDateIconClicked = __bind(this.handleCreationDateIconClicked, this);
+      this.handleCreationDateChanged = __bind(this.handleCreationDateChanged, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
+      this.render = __bind(this.render, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 

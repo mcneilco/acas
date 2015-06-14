@@ -1,16 +1,16 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.AbstractFormController = (function(superClass) {
-    extend(AbstractFormController, superClass);
+  window.AbstractFormController = (function(_super) {
+    __extends(AbstractFormController, _super);
 
     function AbstractFormController() {
-      this.handleModelChange = bind(this.handleModelChange, this);
-      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
-      this.validationError = bind(this.validationError, this);
-      this.attributeChanged = bind(this.attributeChanged, this);
+      this.handleModelChange = __bind(this.handleModelChange, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
+      this.attributeChanged = __bind(this.attributeChanged, this);
       return AbstractFormController.__super__.constructor.apply(this, arguments);
     }
 

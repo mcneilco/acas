@@ -1,9 +1,9 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.LSFileChooserModel = (function(superClass) {
-    extend(LSFileChooserModel, superClass);
+  window.LSFileChooserModel = (function(_super) {
+    __extends(LSFileChooserModel, _super);
 
     function LSFileChooserModel() {
       return LSFileChooserModel.__super__.constructor.apply(this, arguments);
@@ -27,8 +27,8 @@
 
   })(Backbone.Model);
 
-  window.LSFileModelCollection = (function(superClass) {
-    extend(LSFileModelCollection, superClass);
+  window.LSFileModelCollection = (function(_super) {
+    __extends(LSFileModelCollection, _super);
 
     function LSFileModelCollection() {
       return LSFileModelCollection.__super__.constructor.apply(this, arguments);
@@ -40,8 +40,8 @@
 
   })(Backbone.Collection);
 
-  window.LSFileChooserController = (function(superClass) {
-    extend(LSFileChooserController, superClass);
+  window.LSFileChooserController = (function(_super) {
+    __extends(LSFileChooserController, _super);
 
     function LSFileChooserController() {
       return LSFileChooserController.__super__.constructor.apply(this, arguments);
