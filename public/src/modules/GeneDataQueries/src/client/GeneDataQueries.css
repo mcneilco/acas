@@ -261,3 +261,7 @@
     margin-left: 0px !important;
     margin-right:0px !important;
 }
+
+.GeneIDQueryAppController .bv_advancedQueryContainer{
+    padding-right: 30px !important;
+}
