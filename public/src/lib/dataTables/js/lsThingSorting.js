@@ -11,7 +11,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         if (operator == ">" || operator == "<") {
             return operator + parseFloat(a.slice(1) );
         }
-        return (parseFloat( a ) || a);
+        return (parseFloat( a ) || a.toLowerCase());
     },
 
     "lsThing-asc": function ( a, b ) {
