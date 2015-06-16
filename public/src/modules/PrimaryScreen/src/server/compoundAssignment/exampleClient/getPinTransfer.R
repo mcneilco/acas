@@ -11,7 +11,7 @@ getPinTransfer <- function(plateAssociationDT, testMode, tempFilePath) {
   
   cmpdBarcodeCheck <- setdiff(compoundBarcodes, compoundData$cmpdBarcode)
   if (length(cmpdBarcodeCheck) != 0) {
-    stopUser(paste0("Missing compound plate data for ",length(cmpdBarcodeCheck), " compound(s): ", paste(list(cmpdBarcodeCheck), collapse=",")))
+    stopUser(paste0("Missing compound plate data for ",length(cmpdBarcodeCheck), " compound(s): '", paste(cmpdBarcodeCheck, collapse="', '"), "'"))
   }
   
   assayCompoundDT <- getAssayCompoundDT(plateAssociationDT, tempFilePath=tempFilePath)
