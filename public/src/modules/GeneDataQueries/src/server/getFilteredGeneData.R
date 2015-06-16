@@ -368,13 +368,15 @@ if (nrow(dataDT) > 0){
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
 
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blots) and add them to exptDataColums
-      fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
-      exptDataColumns <- c(exptDataColumns,fileValues)
+      fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
+      exptDataColumns <- c(exptDataColumns,fileValues2)
 
-      for (i in fileValues){
+      for (i in fileValues2){
         outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
       }
-
+      
+      # save a list of all fileValues
+      fileValues <- c(fileValues,fileValues2)
 
   		#setcolorder(outputDT2, c("geneId",exptDataColumns))
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
@@ -427,7 +429,9 @@ if (nrow(dataDT) > 0){
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
 
   save(allColNamesDT,file="allCol.Rda")
-  allColNamesDT$sClass <- sapply(allColNamesDT[["lsKind"]],function(x) if(x=="curve id"){"curveId"}else{"center"})
+  # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
+  # so that the columns can be made wider in the .css
+  allColNamesDT$sClass <- sapply(allColNamesDT[["lsKind"]],function(x) if(x %in% c("curve id",fileValues)){"curveId"}else{"center"})
   setnames(allColNamesDT, "lsKind", "sTitle")
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
