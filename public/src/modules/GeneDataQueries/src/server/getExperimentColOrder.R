@@ -16,7 +16,7 @@ getExperimentColOrderValues <- function(experimentCode){
 	  paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/", experimentCode, "/exptvalues/bystate/metadata/data%20column%20order/tsv"),
 	  customrequest='GET',
 	  httpheader=c('Content-Type'='application/json'))
-	errorFlag <- FALSE
+	errorFlag <- TRUE
 	tryCatch({
 	  dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
 	  error = function(ex) {
