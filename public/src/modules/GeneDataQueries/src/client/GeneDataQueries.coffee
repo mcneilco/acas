@@ -49,12 +49,10 @@ class window.GeneIDQueryResultController extends Backbone.View
 				aoColumns: @model.get('data').aoColumns
 				bDeferRender: true
 				bProcessing: true
-				scrollX: true
 				aoColumnDefs: [
-					{sType: "lsThing", aTargets: ["_all"]},
-					{sWidth: "400px", aTargets:["curveId"]}
+					{sType: "lsThing", aTargets: ["_all"]}
 				]
-				sDom : "Rlfrtip"
+#				sDom : "Rlfrtip"
 
 #	uncomment the following line to disable sorting in the dataTable
 #				bSort: false

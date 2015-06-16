@@ -431,7 +431,7 @@ if (nrow(dataDT) > 0){
   setnames(allColNamesDT, "lsKind", "sTitle")
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
-  aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="center"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="StructureImage"), aoColumnsDF)
   aoColumnsDF <- rbind(data.frame(sTitle="ID", sClass="center"), aoColumnsDF)
   
   

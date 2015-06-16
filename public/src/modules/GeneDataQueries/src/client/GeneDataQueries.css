@@ -265,3 +265,12 @@
 .GeneIDQueryAppController .bv_advancedQueryContainer{
     padding-right: 30px !important;
 }
+
+/*Properties so that curves display at a readable size*/
+.GeneIDQueryAppController .curveId{
+    min-width: 380px !important;
+}
+
+.GeneIDQueryAppController .StructureImage{
+    min-width: 160px !important;
+}
