@@ -393,7 +393,7 @@ getExperimentColumns <- function(experimentCode){
 #		wb <- XLConnect::loadWorkbook(sampleDataFile)
 #		genericDataFileDataFrame <- XLConnect::readWorksheet(wb, sheet = sheet, header = header, endRow=numberOfRows, dateTimeFormat="%Y-%m-%d")
 
-		errorFileFlag <- FALSE
+		errorFileFlag <- TRUE
 		tryCatch({
 		  genericDataFileDataFrame <- read.xls(sampleDataFile, sheet = sheet, header = header, nrows=numberOfRows)
 		          if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
