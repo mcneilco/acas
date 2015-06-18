@@ -502,6 +502,7 @@
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
       this.setupAttachFileListController();
+      this.setupCustomExperimentMetadataController();
       this.render();
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
@@ -630,6 +631,19 @@
         collection: this.model.get('lsTags')
       });
       return this.tagListController.render();
+    };
+
+    ExperimentBaseController.prototype.setupCustomExperimentMetadataController = function() {
+      var customExperimentMetaDataState, experimentStates;
+      experimentStates = this.model.get('lsStates');
+      customExperimentMetaDataState = experimentStates.getStatesByTypeAndKind("metadata", "custom experiment metadata");
+      if (customExperimentMetaDataState.length > 0) {
+        this.customerExperimentMetadataListController = new CustomExperimentMetadataListController({
+          el: this.$('.bv_custom_experiment_metadata'),
+          model: this.model
+        });
+        return this.customerExperimentMetadataListController.render();
+      }
     };
 
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
