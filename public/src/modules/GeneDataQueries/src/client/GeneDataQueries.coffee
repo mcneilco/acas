@@ -53,7 +53,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 					{sType: "lsThing", aTargets: ["_all"]}
 				]
 #				sDom : "Rlfrtip"
-
 #	uncomment the following line to disable sorting in the dataTable
 #				bSort: false
 		else
@@ -161,12 +160,15 @@ class window.ExperimentTreeController extends Backbone.View
 	events:
 		"click .bv_searchClear": "handleSearchClear"
 		"click .bv_tree": "handleSelectionChanged"
+		"click .bv_aggregation_true": "handleAggregationChanged"
+		"click .bv_aggregation_false": "handleAggregationChanged"
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
 		@trigger 'disableNext'
 		@setupTree()
+		@handleAggregationChanged()
 		
 		@
 	
@@ -203,6 +205,9 @@ class window.ExperimentTreeController extends Backbone.View
 			@trigger 'enableNext'
 		else
 			@trigger 'disableNext'
+
+	handleAggregationChanged: =>
+		@aggregate = @$("input[name='bv_aggregation']:checked").val()
 
 class window.ExperimentResultFilterTerm extends Backbone.Model
 	defaults: ->
@@ -514,6 +519,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			batchCodes: @searchCodes
 			experimentCodeList: @experimentList
 			searchFilters: @erfc.getSearchFilters()
+			aggregate: @etc.aggregate
 
 	fromFiltersToResults: ->
 		@$('.bv_searchStatusDropDown').modal

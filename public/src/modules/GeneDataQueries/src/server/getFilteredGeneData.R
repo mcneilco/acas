@@ -129,6 +129,7 @@ if(is.null(GET$format)){
 
 
 postData <- rawToChar(receiveBin())
+save(postData,file="postData.Rda")
 
 myLogger$debug(postData)
 
@@ -137,9 +138,7 @@ myLogger$debug(postData)
 #exportCSV <- TRUE
 #onlyPublicData <- "false"
 
-
 postData.list <- fromJSON(postData)
-
 
 batchCodeList <- list()
 if (!is.null(postData.list$queryParams$batchCodes)) {
@@ -183,15 +182,15 @@ searchParams$batchCodeList <- batchCodeList
 searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
-
-
 save(searchParams,file="searchParams.rda")
+
+# Whether or not to aggregate on protocol
+aggregate <- as.logical(postData.list$queryParams$aggregate)
 
 if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 	termsSQL <- getSQLFromJSONFilterList(postData.list$queryParams$searchFilters$filters)
 #myLogger$debug("here is the termsSQL")
 #myLogger$debug(termsSQL)
-
 
 	advancedSqlQuery <- getFullSQLQuery(termsSQL, postData.list$queryParams$searchFilters$advancedFilter)
 #myLogger$debug("here is the advancedSqlQuery")
@@ -202,7 +201,6 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 myLogger$debug("here is the final searchParams")
 myLogger$debug(toJSON(searchParams))
 myLogger$debug(searchParams)
-
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
 dataCsv <- getURL(
@@ -227,12 +225,18 @@ if (errorFlag){
         dataDT <- as.data.table(dataDF)
 }
 
+# This is bound to the global environment because pivotResults can't seem to find it otherwise. 
+# pretty sure it's due to this bug: https://github.com/Rdatatable/data.table/issues/713
+aggregateData <<- function(...){
+  return(paste(...,sep="<br>",collapse="<br>"))
+}
 
 pivotResults <- function(geneId, lsKind, result){
   exptSubset <- data.table(geneId, lsKind, result)
-  answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = paste, sep="<br>",collapse= "<br>")
+  answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData)
   return(answers)
 }
+
 
 
 # A function to take in a string and round using signif() if possible before converting back to a string.
@@ -251,16 +255,22 @@ roundString <- function(string,sigfigs){
 
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
-  experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName)))
-  setkey(experimentIdDT, experimentCodeName)
-  experimentIdList <- experimentIdDT$experimentId
+  
+# Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
+  if (aggregate){
+    protocolIdDT <- unique(subset(dataDT, ,sel=protocolId))
+    experimentIdList <-protocolIdDT
+  }else{
+    experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName)))
+    setkey(experimentIdDT, experimentCodeName)
+    experimentIdList <- experimentIdDT$experimentId
+  }
+
   for (expt in experimentIdList){
-    myLogger$debug(paste0("current experiment ", expt))
-    if(firstPass){
-      
-      save(dataDT,file="dataDT.Rda")
-      
+    myLogger$debug(paste0("current experiment(/protocol) ", expt))
+    if(firstPass){      
       # Modify lsKind to include units and concentration info as well (if it exists)
+#todo I'm sure this can be done in vectorization instead of a loop
       for (i in 1:nrow(dataDT)){
         if (dataDT[["resultUnit"]][i] != ""){
           dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i]," (",dataDT[["resultUnit"]][i],") ",sep='')
@@ -278,14 +288,29 @@ if (nrow(dataDT) > 0){
       
       # Add operators to the front of result if they exist
       dataDT[["result"]] <- paste(dataDT[["operator"]],dataDT[["result"]],sep = '')
+
+#aggregate
+
+      if (aggregate){
+# subset dataDT based on lskind
+# dcast each subset by calling a different fun.aggregate
+# merge all subsets back into one outputDT
+        outputDT <- dataDT[ protocolId == expt , pivotResults(testedLot, lsKind, result)]
+        experimentList <- unique(dataDT[protocolId == expt,experimentName,experimentCodeName])
+      }else{
+        outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
+        experimentName <- as.character(unique(outputDT$experimentName))
+        codeName <- as.character(unique(outputDT$experimentCodeName))
+      }
       
-      outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
-  		save(outputDT,file="outputDT.Rda")
-      experimentName <- as.character(unique(outputDT$experimentName))
-  		
-      codeName <- as.character(unique(outputDT$experimentCodeName))
-  		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
-  
+#aggregate
+  # If aggregate, these are actually protocol names, what to do about ordering???
+
+
+#aggregate    
+      if(!aggregate){
+      outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
+      }
       # Add a column with the compound structure
       # TODO replace hard-coded url with a reference to the config.properties
       
@@ -296,27 +321,34 @@ if (nrow(dataDT) > 0){
         outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
       }
       
-  		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
-      save(exptDataColumns,file="exptData1.Rda")
-#       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
+      # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
+      if (aggregate){
+        exptDataColumns <- c()
+        for (codeName in experimentList$experimentCodeName){
+          exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+        }
+      }else{
+  		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+      }
 
+#       exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT),value=TRUE)))))
       
-      # Get names of inlineFileValue thigs if they exist (e.g. Western Blots) and add them to exptDataColums
+      # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
       fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
       exptDataColumns <- c(exptDataColumns,fileValues)
 
       # Replace inlineFileValue with a link to the file
+#TODO replace hard-coded url with a reference to the properies file
       for (i in fileValues){
         outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
       }
 
   		myLogger$debug("exptDataColumns is:")
   		myLogger$debug(exptDataColumns)
-      save(exptDataColumns, file="exptData2.Rda")
   		
   		#setcolorder(outputDT, c("geneId",exptDataColumns))
    		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))   
@@ -330,15 +362,20 @@ if (nrow(dataDT) > 0){
         try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
       }
 
+#changed experimentName to expt 
   		for (colName in exptDataColumns){
-  			setnames(outputDT, colName, paste0(experimentName, "::", colName))
+  			setnames(outputDT, colName, paste0(expt, "::", colName))
   		}
   		firstPass <- FALSE
   
   		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))		
   		orderCols$order <- as.integer(as.character(orderCols$order))
   		
-  		colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+      if (aggregate){
+  		  colNamesDF <- subset(dataDT, protocolId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+      }else{
+  		  colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+      }
       colNamesDF <- unique(colNamesDF)
       # Get rid of any columns that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
       colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
@@ -420,6 +457,9 @@ if (nrow(dataDT) > 0){
     }
     return(sType)
   }
+
+
+  save(allColNamesDF,file="help.Rda")
   
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
