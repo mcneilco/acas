@@ -310,22 +310,24 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
       lsType = lsType,
       lsKind = lsKind
     )
+    uValue <- userValue
     if(lsType == "codeValue") {
+      uValue <- tolower(uValue)
       stateValueList[["codeKind"]] <- lsKind
       stateValueList[["codeType"]] <- customExperimentMetaDataDdictType
       stateValueList[["codeOrigin"]] <- "ACAS DDICT"
     }
 
-    if(is.na(userValue)) {
+    if(is.na(uValue)) {
       stateValueList[[lsType]] <- NULL
     } else {
       stateValueList[[lsType]] <- switch(lsType,
-                                         "numericValue" = validateNumeric(userValue),
-                                         "dateValue" = validateDate(userValue),
-                                         "stringValue" = validateCharacter(userValue),
-                                         "codeValue" = userValue,
-                                         "clobValue" = userValue,
-                                         "urlValue" = userValue
+                                         "numericValue" = validateNumeric(uValue),
+                                         "dateValue" = validateDate(uValue),
+                                         "stringValue" = validateCharacter(uValue),
+                                         "codeValue" = uValue,
+                                         "clobValue" = uValue,
+                                         "urlValue" = uValue
       )
     }
 
