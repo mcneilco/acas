@@ -216,6 +216,10 @@
     padding-left: 25px !important;
 }
 
+.GeneIDQueryAppController .radioTrue {
+    padding-left: 25px !important;
+}
+
 .radioAdvancedFilter {
     padding-left: 25px !important;
 }
