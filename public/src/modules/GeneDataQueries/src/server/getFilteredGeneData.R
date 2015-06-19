@@ -386,7 +386,7 @@ if (nrow(dataDT) > 0){
         
         exptDataColumns <- c()
         for (codeName in experimentList$experimentCodeName){
-          exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+          exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)) 
         }
       }else{
   		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
@@ -448,14 +448,14 @@ if (nrow(dataDT) > 0){
   		orderCols$order <- as.integer(as.character(orderCols$order))
   		
       if (aggregate){
-  		  colNamesDF <- subset(dataDT, protocolId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+  		  colNamesDF <- subset(dataDT, protocolId == expt, select=c(protocolId, experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }else{
   		  colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }
       colNamesDF <- unique(colNamesDF)
       # Get rid of any columns that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
       colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
-  
+      save(colNamesDF, exptDataColumns,file="help2.Rda")
   		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
   		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
 
@@ -495,7 +495,7 @@ if (nrow(dataDT) > 0){
       if (aggregate){
         exptDataColumns <- c()
         for (codeName in experimentList$experimentCodeName){
-          exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+          exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) )
         }
       }else{
         exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
@@ -590,9 +590,16 @@ if (nrow(dataDT) > 0){
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , exptColName := paste0(experimentName, '::', lsKind)]
+# if (aggregate){
+#   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, protocolId)]
+#   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(protocolId)]
+#   allColNamesDT[ , titleText := experimentName, by=list(protocolId)]
+# }else{
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
+# }
+
 
   save(allColNamesDT,file="allCol.Rda")
   # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
