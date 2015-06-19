@@ -50,7 +50,7 @@ renderCurve <- function(getParams) {
   renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
 
   setContentType("image/png")
-  setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
+  setHeader("Content-Disposition", paste0("filename=\"",getParams$curveIds,"\""))
   t <- tempfile()
   racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = "green")
   sendBin(readBin(t,'raw',n=file.info(t)$size))
