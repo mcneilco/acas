@@ -207,8 +207,6 @@ dataCsv <- getURL(
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
   
-myLogger$debug("dataCsv is:")
-myLogger$debug(dataCsv)
 
 errorFlag <- FALSE
 tryCatch({
