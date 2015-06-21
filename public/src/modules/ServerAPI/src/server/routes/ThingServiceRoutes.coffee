@@ -239,3 +239,27 @@ exports.getAssemblies = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingCodesFormNamesOrCodes = (request, callback) ->
+	console.log "got to getThingCodesFormNamesOrCodes"
+	if global.specRunnerTestmode
+		results = []
+		for req in request.requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("ambiguous") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("name") > -1
+				res.preferredName = "GENE1111"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response =
+			thingType: "parent"
+			thingKind: "gene"
+			results: results
+
+		callback response
+	else
+		console.log "real function not implemented"
+
+

@@ -272,10 +272,44 @@
         });
       });
     });
-    return describe("Lookup codeNames by names or codeNames", function() {
-      var preferredThingService;
-      preferredThingService = require("../../../../routes/ThingServiceRoutes.js");
-      return before(function() {});
+    return describe("Function to lookup codeNames by names or codeNames", function() {
+      before(function(done) {
+        var preferredThingService, requestData;
+        global.specRunnerTestmode = true;
+        preferredThingService = require("../../../../routes/ThingServiceRoutes.js");
+        requestData = {
+          thingType: "parent",
+          thingKind: "gene",
+          requests: [
+            {
+              requestName: "GENE1234"
+            }, {
+              requestName: "some Gene name"
+            }, {
+              requestName: "ambiguousName"
+            }
+          ]
+        };
+        return preferredThingService.getThingCodesFormNamesOrCodes(requestData, (function(_this) {
+          return function(codeResponse) {
+            _this.codeResponse = codeResponse;
+            console.log(_this.codeResponse);
+            return done();
+          };
+        })(this));
+      });
+      it("should return three responses", function() {
+        return assert.equal(this.codeResponse.results.length, 3);
+      });
+      it("should return the matching result in the first response", function() {
+        return assert.equal(this.codeResponse.results[0].preferredName, "GENE1234");
+      });
+      it("should return the code matching the name in the second response", function() {
+        return assert.equal(this.codeResponse.results[1].preferredName, "GENE1111");
+      });
+      return it("should return the no result in the third response", function() {
+        return assert.equal(this.codeResponse.results[2].preferredName, "");
+      });
     });
   });
 

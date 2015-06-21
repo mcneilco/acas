@@ -34,7 +34,7 @@ parseResponse = (jsonStr) ->
 		return null
 
 config = require '../../../../conf/compiled/conf.js'
-describe  "Preferred Entity code service tests", ->
+describe.only  "Preferred Entity code service tests", ->
 	describe "available entity type list", ->
 		describe "when requested as fully detailed list", ->
 			before (done) ->
@@ -113,39 +113,6 @@ describe  "Preferred Entity code service tests", ->
 			it "should return a failure status code", ->
 				assert.equal @serverResponse.statusCode,500
 
-		describe "when invalid compounds sent with valid type info", ->
-			body =
-				type: "parent"
-				kind: "protein"
-				entityIdStringLines: "PROT1\nERROR\nPROT3\n"
-			before (done) ->
-				@.timeout(20000)
-				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
-					json: true
-					body: body
-				, (error, response, body) =>
-					@serverError = error
-					@responseJSON = body
-					@serverResponse = response
-					done()
-			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
-				assert.equal @serverResponse.statusCode,200
-			it "should return 5 rows including a trailing \n", ->
-				assert.equal @responseJSON.resultCSV.split('\n').length, 5
-			it "should have 2 columns", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[0].split(',').length, 2
-			it "should have a header row", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[0], "Requested Name,Preferred Code"
-			it "should have the query first result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[0], "ERROR"
-			it "should have blank second result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[1], ""
-
 		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
 				type: "compound"
@@ -176,11 +143,11 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[2].split(',')[1], ""
 
-		describe "when valid lthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
+		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
 				type: "parent"
 				kind: "protein"
-				entityIdStringLines: "PRTN-0000001\nnone_2222\nPRTN-0000002\n"
+				entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -195,13 +162,23 @@ describe  "Preferred Entity code service tests", ->
 					done()
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[1].split(',')[0], "PRTN-0000001"
+				assert.equal res[1].split(',')[0], "GENE1234"
 			it "should have the first line result second result column", ->
 				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[1].split(',')[1], "PRTN-0000001"
+				assert.equal res[1].split(',')[1], "GENE1234"
 			it "should have the second line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[0], "none_2222"
-			it "should have the second line result second result column with no result", ->
+				assert.equal res[2].split(',')[0], "some Gene name"
+			it "should have the second line result second result column with the code", ->
 				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[1], ""
+				assert.equal res[2].split(',')[1], "GENE1111"
+			it "should have the third line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[0], "ambiguousName"
+			it "should have the third line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[1], ""
+
+#TODO Make compound parent preferred id spec and service
+#TODO real implementation of getThingCodesFormNamesOrCodes
+#TODO test in live mode for compounds batch, compound parent, and lsthing protein

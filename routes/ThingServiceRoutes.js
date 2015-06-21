@@ -302,4 +302,35 @@
     }
   };
 
+  exports.getThingCodesFormNamesOrCodes = function(request, callback) {
+    var req, res, response, results, _i, _len, _ref;
+    console.log("got to getThingCodesFormNamesOrCodes");
+    if (global.specRunnerTestmode) {
+      results = [];
+      _ref = request.requests;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        req = _ref[_i];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("ambiguous") > -1) {
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("name") > -1) {
+          res.preferredName = "GENE1111";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = {
+        thingType: "parent",
+        thingKind: "gene",
+        results: results
+      };
+      return callback(response);
+    } else {
+      return console.log("real function not implemented");
+    }
+  };
+
 }).call(this);

@@ -111,9 +111,6 @@
               };
             })(this));
           });
-          after(function() {
-            return fs.unlink(this.testFilePath);
-          });
           it("should return passed", function() {
             return assert.equal(this.passed, true);
           });
@@ -152,9 +149,6 @@
               };
             })(this));
           });
-          after(function() {
-            return fs.unlink(this.testFilePath);
-          });
           it("should return a fileValue with the correct relative path for Experiment", function() {
             return assert.equal(this.outputFileValue.fileValue, "experiments/EXPT12345/test Work List (1).csv");
           });
@@ -186,9 +180,6 @@
                 return done();
               };
             })(this));
-          });
-          after(function() {
-            return fs.unlink(this.testFilePath);
           });
           it("should return a fileValue with the correct relative path for Experiment", function() {
             return assert.equal(this.outputFileValue.fileValue, "entities/parentThings/PT12345/test Work List (1).csv");

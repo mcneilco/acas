@@ -19,7 +19,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe("Preferred Entity code service tests", function() {
+  describe.only("Preferred Entity code service tests", function() {
     describe("available entity type list", function() {
       describe("when requested as fully detailed list", function() {
         before(function(done) {
@@ -133,55 +133,6 @@
           return assert.equal(this.serverResponse.statusCode, 500);
         });
       });
-      describe("when invalid compounds sent with valid type info", function() {
-        var body;
-        body = {
-          type: "parent",
-          kind: "protein",
-          entityIdStringLines: "PROT1\nERROR\nPROT3\n"
-        };
-        before(function(done) {
-          this.timeout(20000);
-          return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
-            json: true,
-            body: body
-          }, (function(_this) {
-            return function(error, response, body) {
-              _this.serverError = error;
-              _this.responseJSON = body;
-              _this.serverResponse = response;
-              return done();
-            };
-          })(this));
-        });
-        it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
-          return assert.equal(this.serverResponse.statusCode, 200);
-        });
-        it("should return 5 rows including a trailing \n", function() {
-          return assert.equal(this.responseJSON.resultCSV.split('\n').length, 5);
-        });
-        it("should have 2 columns", function() {
-          var res;
-          res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[0].split(',').length, 2);
-        });
-        it("should have a header row", function() {
-          var res;
-          res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[0], "Requested Name,Preferred Code");
-        });
-        it("should have the query first result column", function() {
-          var res;
-          res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[2].split(',')[0], "ERROR");
-        });
-        return it("should have blank second result column", function() {
-          var res;
-          res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[2].split(',')[1], "");
-        });
-      });
       describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
@@ -226,12 +177,12 @@
           return assert.equal(res[2].split(',')[1], "");
         });
       });
-      return describe("when valid lthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
+      return describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
           type: "parent",
           kind: "protein",
-          entityIdStringLines: "PRTN-0000001\nnone_2222\nPRTN-0000002\n"
+          entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
         };
         before(function(done) {
           this.timeout(20000);
@@ -252,22 +203,32 @@
         it("should have the first line query in first result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[1].split(',')[0], "PRTN-0000001");
+          return assert.equal(res[1].split(',')[0], "GENE1234");
         });
         it("should have the first line result second result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[1].split(',')[1], "PRTN-0000001");
+          return assert.equal(res[1].split(',')[1], "GENE1234");
         });
         it("should have the second line query in first result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[2].split(',')[0], "none_2222");
+          return assert.equal(res[2].split(',')[0], "some Gene name");
         });
-        return it("should have the second line result second result column with no result", function() {
+        it("should have the second line result second result column with the code", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[2].split(',')[1], "");
+          return assert.equal(res[2].split(',')[1], "GENE1111");
+        });
+        it("should have the third line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[0], "ambiguousName");
+        });
+        return it("should have the third line result second result column with no result", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[1], "");
         });
       });
     });

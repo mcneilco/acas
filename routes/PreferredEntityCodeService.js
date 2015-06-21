@@ -1,5 +1,5 @@
 (function() {
-  var configuredEntityTypes, formatCSVRequestAsReqArray;
+  var configuredEntityTypes, formatCSVRequestAsReqArray, _;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes', exports.getConfiguredEntityTypes);
@@ -12,6 +12,8 @@
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
+
+  _ = require('underscore');
 
   exports.getConfiguredEntityTypes = function(req, resp) {
     var codes, et;
@@ -37,12 +39,12 @@
   };
 
   exports.preferredCodes = function(req, resp) {
-    var name, out, outStr, preferredBatchService, reqLines;
+    var entityType, preferredBatchService, preferredThingService, reqHashes;
     if (req.body.type === "compound") {
       if (req.body.kind === "batch name") {
         preferredBatchService = require("./PreferredBatchIdService.js");
-        reqLines = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
-        preferredBatchService.getPreferredCompoundBatchIDs(reqLines, function(prefResp) {
+        reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
+        preferredBatchService.getPreferredCompoundBatchIDs(reqHashes, function(prefResp) {
           var outStr, pref, preferreds, _i, _len;
           preferreds = JSON.parse(prefResp).results;
           outStr = "Requested Name,Preferred Code\n";
@@ -54,31 +56,40 @@
             resultCSV: outStr
           });
         });
-        return;
       }
-    }
-    if (global.specRunnerTestmode) {
-      if (req.body.type.indexOf('ERROR') > -1) {
-        resp.statusCode = 500;
-        resp.end("problem with propery request, check log");
-        return;
-      }
-      out = (function() {
-        var _i, _len, _ref, _results;
-        _ref = req.body.entityIdStringLines.split('\n');
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          name = _ref[_i];
-          _results.push(name + "," + (name.indexOf('ERROR') < 0 ? name : ""));
-        }
-        return _results;
-      })();
-      outStr = "Requested Name,Preferred Code\n" + out.join('\n');
-      return resp.json({
-        resultCSV: outStr
-      });
     } else {
-      return console.log("preferredCodes not implemented");
+      entityType = _.where(configuredEntityTypes.entityTypes, {
+        type: req.body.type,
+        kind: req.body.kind
+      });
+      if (entityType.length === 1 && entityType[0].codeOrigin === "ACAS LSThing") {
+        preferredThingService = require("./ThingServiceRoutes.js");
+        reqHashes = {
+          thingType: entityType[0].type,
+          thingKind: entityType[0].kind,
+          requests: formatCSVRequestAsReqArray(req.body.entityIdStringLines)
+        };
+        preferredThingService.getThingCodesFormNamesOrCodes(reqHashes, function(codeResponse) {
+          var out, outStr, res;
+          out = (function() {
+            var _i, _len, _ref, _results;
+            _ref = codeResponse.results;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              res = _ref[_i];
+              _results.push(res.requestName + "," + res.preferredName);
+            }
+            return _results;
+          })();
+          outStr = "Requested Name,Preferred Code\n" + out.join('\n');
+          return resp.json({
+            resultCSV: outStr
+          });
+        });
+      } else {
+        resp.statusCode = 500;
+        return resp.end("problem with preferred Code request: code type and kind are unknown to system");
+      }
     }
   };
 

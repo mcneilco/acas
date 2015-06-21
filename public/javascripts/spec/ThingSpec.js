@@ -1,11 +1,11 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   describe('Thing testing', function() {
     beforeEach(function() {
-      return window.siRNA = (function(superClass) {
-        extend(siRNA, superClass);
+      return window.siRNA = (function(_super) {
+        __extends(siRNA, _super);
 
         function siRNA() {
           return siRNA.__super__.constructor.apply(this, arguments);
