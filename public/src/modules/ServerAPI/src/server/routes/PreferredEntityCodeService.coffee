@@ -22,15 +22,18 @@ exports.getConfiguredEntityTypes = (req, resp) ->
 exports.preferredCodes = (req, resp) ->
 	#Note specRunnerTestMode is handled within functions called from here
 	if req.body.type is "compound"
+		reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines)
 		if req.body.kind is "batch name"
 			preferredBatchService = require "./PreferredBatchIdService.js"
-			reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines)
-			preferredBatchService.getPreferredCompoundBatchIDs reqHashes , (prefResp) ->
-				preferreds = JSON.parse(prefResp).results
-				outStr =  "Requested Name,Preferred Code\n"
-				for pref in preferreds
-					outStr += pref.requestName + ',' + pref.preferredName + '\n'
-				resp.json resultCSV: outStr
+			preferredBatchService.getPreferredCompoundBatchIDs reqHashes , (json) ->
+				prefResp = JSON.parse(json)
+				resp.json resultCSV: formatReqArratAsCSV(prefResp.results)
+			return
+		else if req.body.kind is "parent name"
+			console.log "looking up compound parents"
+			csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+			csUtilities.getPreferredParentIds reqHashes , (prefResp) ->
+				resp.json resultCSV: formatReqArratAsCSV(prefResp)
 			return
 	else
 		entityType = _.where configuredEntityTypes.entityTypes, type: req.body.type, kind: req.body.kind
@@ -46,12 +49,9 @@ exports.preferredCodes = (req, resp) ->
 				outStr =  "Requested Name,Preferred Code\n"+out.join('\n')
 				resp.json resultCSV: outStr
 			return
-		else
-			resp.statusCode = 500
-			resp.end "problem with preferred Code request: code type and kind are unknown to system"
-
-
-
+	#this is the fall-through. All trapped cases should "return"
+	resp.statusCode = 500
+	resp.end "problem with preferred Code request: code type and kind are unknown to system"
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []
@@ -59,3 +59,11 @@ formatCSVRequestAsReqArray = (csvReq) ->
 		requests.push requestName: req
 
 	return requests
+
+formatReqArratAsCSV = (prefResp) ->
+	preferreds = prefResp
+	outStr =  "Requested Name,Preferred Code\n"
+	for pref in preferreds
+		outStr += pref.requestName + ',' + pref.preferredName + '\n'
+
+	return outStr

@@ -1,5 +1,11 @@
 exports.entityTypes = [
-	#displayName must be unique for any given deployed system beciase SEL uses it to lookup the code type
+	#displayName must be unique for any given deployed system because SEL uses it to lookup the code type
+	type: "compound"
+	kind: "parent name"
+	codeOrigin: "ACAS CmpdReg"
+	displayName: "Corporate Parent ID"
+	sourceExternal: true
+,
 	type: "compound"
 	kind: "batch name"
 	codeOrigin: "ACAS CmpdReg"

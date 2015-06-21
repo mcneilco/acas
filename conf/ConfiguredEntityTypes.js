@@ -2,6 +2,12 @@
   exports.entityTypes = [
     {
       type: "compound",
+      kind: "parent name",
+      codeOrigin: "ACAS CmpdReg",
+      displayName: "Corporate Parent ID",
+      sourceExternal: true
+    }, {
+      type: "compound",
       kind: "batch name",
       codeOrigin: "ACAS CmpdReg",
       displayName: "Corporate Batch ID",

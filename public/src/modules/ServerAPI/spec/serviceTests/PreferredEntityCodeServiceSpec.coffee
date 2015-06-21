@@ -143,6 +143,39 @@ describe.only  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[2].split(',')[1], ""
 
+		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE", ->
+			body =
+				type: "compound"
+				kind: "parent name"
+				entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "CMPD-0000001"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "CMPD-0000001"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "CMPD-999999999"
+			it "should have the second line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], ""
+			it "should have the third line result second result column with alias result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[1].indexOf('CMPD')>-1, true
+
 		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
 				type: "parent"

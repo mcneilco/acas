@@ -1,5 +1,5 @@
 (function() {
-  var configuredEntityTypes, formatCSVRequestAsReqArray, _;
+  var configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV, _;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes', exports.getConfiguredEntityTypes);
@@ -39,23 +39,28 @@
   };
 
   exports.preferredCodes = function(req, resp) {
-    var entityType, preferredBatchService, preferredThingService, reqHashes;
+    var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
     if (req.body.type === "compound") {
+      reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
       if (req.body.kind === "batch name") {
         preferredBatchService = require("./PreferredBatchIdService.js");
-        reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
-        preferredBatchService.getPreferredCompoundBatchIDs(reqHashes, function(prefResp) {
-          var outStr, pref, preferreds, _i, _len;
-          preferreds = JSON.parse(prefResp).results;
-          outStr = "Requested Name,Preferred Code\n";
-          for (_i = 0, _len = preferreds.length; _i < _len; _i++) {
-            pref = preferreds[_i];
-            outStr += pref.requestName + ',' + pref.preferredName + '\n';
-          }
+        preferredBatchService.getPreferredCompoundBatchIDs(reqHashes, function(json) {
+          var prefResp;
+          prefResp = JSON.parse(json);
           return resp.json({
-            resultCSV: outStr
+            resultCSV: formatReqArratAsCSV(prefResp.results)
           });
         });
+        return;
+      } else if (req.body.kind === "parent name") {
+        console.log("looking up compound parents");
+        csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+        csUtilities.getPreferredParentIds(reqHashes, function(prefResp) {
+          return resp.json({
+            resultCSV: formatReqArratAsCSV(prefResp)
+          });
+        });
+        return;
       }
     } else {
       entityType = _.where(configuredEntityTypes.entityTypes, {
@@ -86,11 +91,11 @@
             resultCSV: outStr
           });
         });
-      } else {
-        resp.statusCode = 500;
-        return resp.end("problem with preferred Code request: code type and kind are unknown to system");
+        return;
       }
     }
+    resp.statusCode = 500;
+    return resp.end("problem with preferred Code request: code type and kind are unknown to system");
   };
 
   formatCSVRequestAsReqArray = function(csvReq) {
@@ -104,6 +109,17 @@
       });
     }
     return requests;
+  };
+
+  formatReqArratAsCSV = function(prefResp) {
+    var outStr, pref, preferreds, _i, _len;
+    preferreds = prefResp;
+    outStr = "Requested Name,Preferred Code\n";
+    for (_i = 0, _len = preferreds.length; _i < _len; _i++) {
+      pref = preferreds[_i];
+      outStr += pref.requestName + ',' + pref.preferredName + '\n';
+    }
+    return outStr;
   };
 
 }).call(this);

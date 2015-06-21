@@ -259,3 +259,42 @@ exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
 		out = out.slice(0,-1) + '\n'
 
 	callback out
+
+
+exports.getPreferredBatchIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234::7"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else
+		console.log "real function not implemented"
+
+exports.getPreferredParentIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234"
+			else if req.requestName.indexOf("compoundName") > -1
+				res.preferredName = "CMPD000001234"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else
+		console.log "real function not implemented"

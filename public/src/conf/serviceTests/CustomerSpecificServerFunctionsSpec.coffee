@@ -216,39 +216,64 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				assert.equal res[1].split(',')[1],""
 
 
-#	describe "get preferred batchids", ->
-#		describe "when valid, alias, and invalid batches sent", ->
-#			requestData =
-#				requests: [
-#					{requestName: "DNS000000001::1"} #normal
-#					{requestName: "DNS000673874::1"} #alias
-#					{requestName: "DNS000000001::000"} #none
-#				]
-#			before (done) ->
-#				@.timeout(20000)
-#				csUtilities.getPreferredBatchIds requestData.requests, (response) =>
-#					@response = response
-#					done()
-#			it "should return 3 results", ->
-#				assert.equal @response.length, 3
-#			it "should have the batch if not an alias", ->
-#				assert.equal @response[0].requestName, @response[0].preferredName
-#			it "should have the batch an alias", ->
-#				assert.equal @response[1].preferredName, "DNS000001234::7"
-#			it "should not return an alias if the batch is not valid", ->
-#				assert.equal @response[2].preferredName, ""
-#		describe "when 1000 batches sent", ->
-#			requests = for i in [1..1000]
-#				num = "000000000"+i
-#				num = num.substr(num.length-9)
-#				requestName: "DNS"+num+"::1"
-#			before (done) ->
-#				@.timeout(20000)
-#				csUtilities.getPreferredBatchIds requests, (response) =>
-#					@response = response
-#					done()
-#			it "should return 1000 results", ->
-#				assert.equal @response.length, 1000
-#			it "should have the batch if not an alias", ->
-#				assert.equal @response[999].requestName, @response[999].preferredName
-#
+	describe "get preferred batchids", ->
+		describe "when valid, alias, and invalid batches sent", ->
+			requestData =
+				requests: [
+					{requestName: "DNS000000001::1"} #normal
+					{requestName: "DNS000673874::1"} #alias
+					{requestName: "DNS999999999::9999"} #none
+				]
+			before (done) ->
+				@.timeout(20000)
+				global.specRunnerTestmode = true
+				csUtilities.getPreferredBatchIds requestData.requests, (response) =>
+					@response = response
+					console.log response
+					done()
+			it "should return 3 results", ->
+				assert.equal @response.length, 3
+			it "should have the batch if not an alias", ->
+				assert.equal @response[0].requestName, @response[0].preferredName
+			it "should have the batch an alias", ->
+				assert.equal @response[1].preferredName, "DNS000001234::7"
+			it "should not return an alias if the batch is not valid", ->
+				assert.equal @response[2].preferredName, ""
+		describe "when 1000 batches sent", ->
+			requests = for i in [1..1000]
+				num = "000000000"+i
+				num = num.substr(num.length-9)
+				requestName: "DNS"+num+"::1"
+			before (done) ->
+				@.timeout(20000)
+				csUtilities.getPreferredBatchIds requests, (response) =>
+					@response = response
+					done()
+			it "should return 1000 results", ->
+				assert.equal @response.length, 1000
+			it "should have the batch if not an alias", ->
+				assert.equal @response[999].requestName, @response[999].preferredName
+
+	describe "get preferred parent ids", ->
+		describe "when valid, alias, and invalid batches sent", ->
+			requestData =
+				requests: [
+					{requestName: "DNS000000001"} #normal
+					{requestName: "DNS000673874"} #alias
+					{requestName: "DNS999999999"} #none
+				]
+			before (done) ->
+				@.timeout(20000)
+				global.specRunnerTestmode = true
+				csUtilities.getPreferredParentIds requestData.requests, (response) =>
+					@response = response
+					console.log response
+					done()
+			it "should return 3 results", ->
+				assert.equal @response.length, 3
+			it "should have the batch if not an alias", ->
+				assert.equal @response[0].requestName, @response[0].preferredName
+			it "should have the batch an alias", ->
+				assert.equal @response[1].preferredName, "DNS000001234"
+			it "should not return an alias if the batch is not valid", ->
+				assert.equal @response[2].preferredName, ""
