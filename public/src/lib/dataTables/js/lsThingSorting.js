@@ -8,6 +8,11 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
 
     "lsThing-pre": function ( a ) {
         var operator =a[0];
+
+        while (operator == "*"){
+            a = a.slice(1);
+            operator = a[0];
+        }
         if (operator == ">" || operator == "<") {
             return operator + parseFloat(a.slice(1) );
         }
