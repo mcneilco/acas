@@ -125,7 +125,6 @@ if(is.null(GET$format)){
   onlyPublicData <- "false"
 }
 
-
 postData <- rawToChar(receiveBin())
 save(postData,file="postData.Rda")
 
@@ -239,51 +238,49 @@ roundString <- function(string,sigfigs){
 
 # A function that can deal with the < and > signs
 arithMean <- function(data){
-  tryCatch({
-    hasOperator <- sapply(data,function(x) substr(x,1,1)=="<"||substr(x,1,1)==">")
-    # returns < or > if it is the only operator, *** if there are both
-    finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substr(x,1,1)))
-    if (length(finalOperator) > 1){
-      finalOperator <- "***"
-    }else if (length(finalOperator) == 1){
-      finalOperator <- paste0("*",finalOperator)
-    }
-    valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
-    return (paste0(finalOperator,roundString(mean(valuesList, na.rm=TRUE))))
-  },
-  # needed when data is character(0)
-  error=function(e){
-    return (NA)
-  })  
+  save(data,file="data.Rda")
+  if (length(data)==0){
+    return ("NA")
+  }
+  hasOperator <- sapply(data,function(x) substring(x,1,1)=="<"||substring(x,1,1)==">")
+  # returns < or > if it is the only operator, *** if there are both
+  finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substring(x,1,1)))
+  if (length(finalOperator) > 1){
+    finalOperator <- "***"
+  }else if (length(finalOperator) == 1){
+    finalOperator <- paste0("*",finalOperator)
+  }
+  valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
+  x <- (paste0(finalOperator,roundString(mean(valuesList, na.rm=TRUE))))
+  return(x)
 }
+
 geomMean <- function(data){
-  tryCatch({
-    hasOperator <- sapply(data,function(x) substr(x,1,1)=="<"||substr(x,1,1)==">")
-    # returns < or > if it is the only operator, *** if there are both
-    finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substr(x,1,1)))
-    if (length(finalOperator) > 1){
-      finalOperator <- "***"
-    }else if (length(finalOperator) == 1){
-      finalOperator <- paste0("*",finalOperator)
-    }
-    valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
-    gMean <- exp(sum(log(valuesList[valuesList > 0]), na.rm=TRUE) / length(subset(valuesList,!is.na(valuesList))))
-    return (paste0(finalOperator,roundString(gMean)))
-  },
-  # needed when data is character(0)
-  error=function(e){
-    return (NA)
-  })  
+  if (length(data) == 0){
+    return ("NA") 
+  }
+  hasOperator <- sapply(data,function(x) substr(x,1,1)=="<"||substr(x,1,1)==">")
+  # returns < or > if it is the only operator, *** if there are both
+  finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substr(x,1,1)))
+  if (length(finalOperator) > 1){
+    finalOperator <- "***"
+  }else if (length(finalOperator) == 1){
+    finalOperator <- paste0("*",finalOperator)
+  }
+  valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
+  gMean <- exp(sum(log(valuesList[valuesList > 0]), na.rm=TRUE) / length(subset(valuesList,!is.na(valuesList))))
+  return (paste0(finalOperator,roundString(gMean)))
 }
 
 # This is bound to the global environment because pivotResults can't seem to find it otherwise. 
 # pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
 aggregateData <<- function(x,type){
+  save(x,type,file="data63.Rda")
   if (length(x)==1){
     return (x)
   }
   if (type == "geomMean"){
-    geomMean(x)   
+    geomMean(x)
   }else if(type == "arithMean"){
     arithMean(x)
   #curve curator does overlay with curve id's delimited by &  
@@ -299,7 +296,9 @@ pivotResults <- function(geneId, lsKind, result, aggType="other"){
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
+  save(aggType,file="data10.Rda")
   answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType)
+  save(answers,aggType,file="data11.Rda")
   return(answers)
 }
 
@@ -308,9 +307,12 @@ myMerge <- function(x,y){
   merge(x,y,by="geneId",all=TRUE)
 }
 
+
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
-  
+
+save(list = ls(all.names = TRUE), file = "save0.Rda")  
+
 # Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
   if (aggregate){
     protocolIdDT <- unique(subset(dataDT, ,sel=protocolId))
@@ -327,7 +329,7 @@ if (nrow(dataDT) > 0){
       # Modify lsKind to include units and concentration info as well (if it exists)
       for (i in (1:nrow(dataDT))){
         if (dataDT[["resultUnit"]][i] != ""){
-          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i]," (",dataDT[["resultUnit"]][i],") ",sep='')
+          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i]," (",dataDT[["resultUnit"]][i],")",sep="")
         }
         if (dataDT[["testedConcentration"]][i] != "") {
           dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i],"at",dataDT[["testedConcentration"]][i],dataDT[["testedConcentrationUnit"]][i],sep=" ")
@@ -352,16 +354,16 @@ if (nrow(dataDT) > 0){
         outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
         save(list = ls(all.names = TRUE), file = "save3.Rda")
         outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
+        save(list = ls(all.names = TRUE), file = "save4.Rda")
         outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result,"curve")]
         outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result,"other")]
-        save(list = ls(all.names = TRUE), file = "save3.Rda")
+        
         # merge all subsets back into one outputDT
         outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))        
         
         experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
         
-      }else{
-        
+      }else{ 
         outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
         experimentName <- as.character(unique(outputDT$experimentName))
         codeName <- as.character(unique(outputDT$experimentCodeName))
@@ -370,8 +372,7 @@ if (nrow(dataDT) > 0){
       
       
       # Add a column with the compound structure
-      # TODO replace hard-coded url with a reference to the config.properties
-      
+# TODO replace hard-coded url with a reference to the config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
   		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
@@ -393,8 +394,9 @@ if (nrow(dataDT) > 0){
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
+      # The regex keeps things like look like Ki (uM) but excludes Ki.x (which is from curve curator)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
-      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT),value=TRUE)))))
+      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(paste0(x,"([^.]|$)"),names(outputDT),value=TRUE)))))
       
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
@@ -551,7 +553,7 @@ if (nrow(dataDT) > 0){
   		orderCols$order <- as.integer(as.character(orderCols$order))
 
       if (aggregate){
-        colNamesDF2 <- subset(dataDT, protocolId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
+        colNamesDF2 <- subset(dataDT, protocolId == expt, select=c(experimentId, protocolId, experimentCodeName, experimentName, lsType, lsKind))
       }else{
         colNamesDF2 <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }
@@ -561,6 +563,7 @@ if (nrow(dataDT) > 0){
       save(orderCols,file="orderCols2.Rda")
   		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
   		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
+      save(allColNamesDF,colNamesDF2,file="colNames.Rda")
   		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
       }
   }
