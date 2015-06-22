@@ -50,7 +50,9 @@ class window.GeneIDQueryResultController extends Backbone.View
 				bDeferRender: true
 				bProcessing: true
 				aoColumnDefs: [
+					{bSortable: false, aTargets: [1]},
 					{sType: "lsThing", aTargets: ["_all"]}
+
 				]
 #				sDom : "Rlfrtip"
 #	uncomment the following line to disable sorting in the dataTable
