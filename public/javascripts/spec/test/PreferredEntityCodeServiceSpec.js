@@ -156,6 +156,12 @@
             };
           })(this));
         });
+        it("should return the requested Type", function() {
+          return assert.equal(this.responseJSON.type, "compound");
+        });
+        it("should return the requested Kind", function() {
+          return assert.equal(this.responseJSON.kind, "batch name");
+        });
         it("should have the first line query in first result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
@@ -200,6 +206,12 @@
             };
           })(this));
         });
+        it("should return the requested Type", function() {
+          return assert.equal(this.responseJSON.type, "compound");
+        });
+        it("should return the requested Kind", function() {
+          return assert.equal(this.responseJSON.kind, "parent name");
+        });
         it("should have the first line query in first result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
@@ -226,7 +238,7 @@
           return assert.equal(res[3].split(',')[1].indexOf('CMPD') > -1, true);
         });
       });
-      return describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
+      describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
           type: "parent",
@@ -249,6 +261,12 @@
             };
           })(this));
         });
+        it("should return the requested Type", function() {
+          return assert.equal(this.responseJSON.type, "parent");
+        });
+        it("should return the requested Kind", function() {
+          return assert.equal(this.responseJSON.kind, "protein");
+        });
         it("should have the first line query in first result column", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
@@ -268,6 +286,70 @@
           var res;
           res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[2].split(',')[1], "GENE1111");
+        });
+        it("should have the third line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[0], "ambiguousName");
+        });
+        return it("should have the third line result second result column with no result", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[1], "");
+        });
+      });
+      return describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
+        var body;
+        body = {
+          type: "gene",
+          kind: "entrez gene",
+          entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              console.log(_this.serverResponse.statusCode);
+              return done();
+            };
+          })(this));
+        });
+        it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
+          return assert.equal(this.serverResponse.statusCode, 200);
+        });
+        it("should return the requested Type", function() {
+          return assert.equal(this.responseJSON.type, "gene");
+        });
+        it("should return the requested Kind", function() {
+          return assert.equal(this.responseJSON.kind, "entrez gene");
+        });
+        it("should have the first line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[0], "GENE-000002");
+        });
+        it("should have the first line result second result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[1], "GENE-000002");
+        });
+        it("should have the second line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[0], "CPAMD5");
+        });
+        it("should have the second line result second result column with the code", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[1], "GENE-000003");
         });
         it("should have the third line query in first result column", function() {
           var res;

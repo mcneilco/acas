@@ -27,13 +27,19 @@ exports.preferredCodes = (req, resp) ->
 			preferredBatchService = require "./PreferredBatchIdService.js"
 			preferredBatchService.getPreferredCompoundBatchIDs reqHashes , (json) ->
 				prefResp = JSON.parse(json)
-				resp.json resultCSV: formatReqArratAsCSV(prefResp.results)
+				resp.json
+					type: req.body.type
+					kind: req.body.kind
+					resultCSV: formatReqArratAsCSV(prefResp.results)
 			return
 		else if req.body.kind is "parent name"
 			console.log "looking up compound parents"
 			csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 			csUtilities.getPreferredParentIds reqHashes , (prefResp) ->
-				resp.json resultCSV: formatReqArratAsCSV(prefResp)
+				resp.json
+					type: req.body.type
+					kind: req.body.kind
+					resultCSV: formatReqArratAsCSV(prefResp)
 			return
 	else
 		entityType = _.where configuredEntityTypes.entityTypes, type: req.body.type, kind: req.body.kind
@@ -43,11 +49,14 @@ exports.preferredCodes = (req, resp) ->
 				thingType: entityType[0].type
 				thingKind: entityType[0].kind
 				requests: formatCSVRequestAsReqArray(req.body.entityIdStringLines)
-			preferredThingService.getThingCodesFormNamesOrCodes reqHashes, (codeResponse) ->
+			preferredThingService.getThingCodesFromNamesOrCodes reqHashes, (codeResponse) ->
 				out = for res in codeResponse.results
 					res.requestName + "," + res.preferredName
 				outStr =  "Requested Name,Preferred Code\n"+out.join('\n')
-				resp.json resultCSV: outStr
+				resp.json
+					type: codeResponse.thingType
+					kind: codeResponse.thingKind
+					resultCSV: outStr
 			return
 	#this is the fall-through. All trapped cases should "return"
 	resp.statusCode = 500
@@ -56,7 +65,8 @@ exports.preferredCodes = (req, resp) ->
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []
 	for req in csvReq.split '\n'
-		requests.push requestName: req
+		unless req is ""
+			requests.push requestName: req
 
 	return requests
 

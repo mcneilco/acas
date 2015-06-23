@@ -48,6 +48,8 @@
           var prefResp;
           prefResp = JSON.parse(json);
           return resp.json({
+            type: req.body.type,
+            kind: req.body.kind,
             resultCSV: formatReqArratAsCSV(prefResp.results)
           });
         });
@@ -57,6 +59,8 @@
         csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
         csUtilities.getPreferredParentIds(reqHashes, function(prefResp) {
           return resp.json({
+            type: req.body.type,
+            kind: req.body.kind,
             resultCSV: formatReqArratAsCSV(prefResp)
           });
         });
@@ -74,7 +78,7 @@
           thingKind: entityType[0].kind,
           requests: formatCSVRequestAsReqArray(req.body.entityIdStringLines)
         };
-        preferredThingService.getThingCodesFormNamesOrCodes(reqHashes, function(codeResponse) {
+        preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
           var out, outStr, res;
           out = (function() {
             var _i, _len, _ref, _results;
@@ -88,6 +92,8 @@
           })();
           outStr = "Requested Name,Preferred Code\n" + out.join('\n');
           return resp.json({
+            type: codeResponse.thingType,
+            kind: codeResponse.thingKind,
             resultCSV: outStr
           });
         });
@@ -104,9 +110,11 @@
     _ref = csvReq.split('\n');
     for (_i = 0, _len = _ref.length; _i < _len; _i++) {
       req = _ref[_i];
-      requests.push({
-        requestName: req
-      });
+      if (req !== "") {
+        requests.push({
+          requestName: req
+        });
+      }
     }
     return requests;
   };

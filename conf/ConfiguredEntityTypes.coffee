@@ -23,4 +23,10 @@ exports.entityTypes = [
 	codeOrigin: "ACAS LSThing"
 	displayName: "Protein Batch"
 	sourceExternal: false
+,
+	type: "gene"
+	kind: "entrez gene"
+	codeOrigin: "ACAS LSThing"
+	displayName: "Protein Batch"
+	sourceExternal: false
 ]

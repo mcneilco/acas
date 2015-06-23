@@ -302,12 +302,12 @@
     }
   };
 
-  exports.getThingCodesFormNamesOrCodes = function(request, callback) {
-    var req, res, response, results, _i, _len, _ref;
+  exports.getThingCodesFromNamesOrCodes = function(codeRequest, callback) {
+    var baseurl, config, postBody, req, request, res, response, results, url, _i, _len, _ref;
     console.log("got to getThingCodesFormNamesOrCodes");
     if (global.specRunnerTestmode) {
       results = [];
-      _ref = request.requests;
+      _ref = codeRequest.requests;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         req = _ref[_i];
         res = {
@@ -323,13 +323,45 @@
         results.push(res);
       }
       response = {
-        thingType: "parent",
-        thingKind: "gene",
+        thingType: codeRequest.thingType,
+        thingKind: codeRequest.thingKind,
         results: results
       };
       return callback(response);
     } else {
-      return console.log("real function not implemented");
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/getCodeNameFromNameRequest?";
+      url = baseurl + ("thingType=" + codeRequest.thingType + "&thingKind=" + codeRequest.thingKind);
+      postBody = {
+        requests: codeRequest.requests
+      };
+      console.log(postBody);
+      console.log(url);
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: url,
+        body: postBody,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          console.log(json);
+          if (!error && !json.error) {
+            return callback({
+              thingType: codeRequest.thingType,
+              thingKind: codeRequest.thingKind,
+              results: json.results
+            });
+          } else {
+            console.log('got ajax error trying to lookup lsThing name');
+            console.log(error);
+            console.log(jsonthing);
+            console.log(response);
+            return callback(json);
+          }
+        };
+      })(this));
     }
   };
 

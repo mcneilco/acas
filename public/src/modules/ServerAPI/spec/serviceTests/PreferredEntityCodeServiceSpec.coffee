@@ -130,6 +130,10 @@ describe.only  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
+			it "should return the requested Type", ->
+				assert.equal @responseJSON.type, "compound"
+			it "should return the requested Kind", ->
+				assert.equal @responseJSON.kind, "batch name"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "CMPD-0000001-01"
@@ -160,6 +164,10 @@ describe.only  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
+			it "should return the requested Type", ->
+				assert.equal @responseJSON.type, "compound"
+			it "should return the requested Kind", ->
+				assert.equal @responseJSON.kind, "parent name"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "CMPD-0000001"
@@ -193,6 +201,10 @@ describe.only  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
+			it "should return the requested Type", ->
+				assert.equal @responseJSON.type, "parent"
+			it "should return the requested Kind", ->
+				assert.equal @responseJSON.kind, "protein"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "GENE1234"
@@ -212,6 +224,48 @@ describe.only  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1], ""
 
-#TODO Make compound parent preferred id spec and service
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
+			body =
+				type: "gene"
+				kind: "entrez gene"
+				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					console.log @serverResponse.statusCode
+					done()
+			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
+				assert.equal @serverResponse.statusCode,200
+			it "should return the requested Type", ->
+				assert.equal @responseJSON.type, "gene"
+			it "should return the requested Kind", ->
+				assert.equal @responseJSON.kind, "entrez gene"
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "GENE-000002"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "GENE-000002"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "CPAMD5"
+			it "should have the second line result second result column with the code", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], "GENE-000003"
+			it "should have the third line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[0], "ambiguousName"
+			it "should have the third line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[1], ""
+
 #TODO real implementation of getThingCodesFormNamesOrCodes
 #TODO test in live mode for compounds batch, compound parent, and lsthing protein
