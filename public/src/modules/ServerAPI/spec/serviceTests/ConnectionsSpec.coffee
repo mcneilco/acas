@@ -2,6 +2,7 @@ assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
 experimentServiceTestJSON = require '../testFixtures/ExperimentServiceTestJSON.js'
+runRFunctionServiceTestJSON = require '../testFixtures/RunRFunctionServiceTestJSON.js'
 fs = require 'fs'
 exec = require('child_process').exec
 config = require '../../../../conf/compiled/conf.js'
@@ -286,6 +287,19 @@ describe "E. Access to rApache", ->
       assert(@response!=undefined,false, "communication error between rApache and racas.")
       assert(@response.body == 'Hello from racas', "communication error between rApache and racas,"+@response.body+" returned instead.")
 
+  describe "and then to racas runfunction", ->
+    before (done) ->
+      @.timeout(20000)
+      request.post
+        url: config.all.client.service.rapache.fullpath + "runfunction"
+        json: true
+        body: runRFunctionServiceTestJSON.runRFunctionRequest
+      , (error, response, body) =>
+        @serverError = error
+        @responseJSON = body
+        done()
+    it "should return the response", ->
+      assert @responseJSON.result == 'Success', "communication error when running rApache runfunction route, returned "+@responseJSON+" instead."
 
   describe "and then to the database", ->
     describe "through tomcat", ->
