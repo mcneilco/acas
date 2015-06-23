@@ -16,7 +16,7 @@ source('getExperimentColOrder.R')
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
-Rprof(filename = "Rprof.out", append = FALSE, interval = 0.001,
+Rprof(filename = "Rprof.out", append = FALSE, interval = 0.0005,
       memory.profiling = FALSE, gc.profiling = FALSE, 
       line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
 
@@ -236,7 +236,8 @@ roundString <- function(string,sigfigs=4){
   ifelse(is.na(num), string, as.character(signif(num,sigfigs)) )
 }
 
-# A function that can deal with the < and > signs
+# functions that can deal with the < and > signs
+# Compile these?
 arithMean <- function(data){
   if (length(data)==0){
     return ("NA")
@@ -254,7 +255,6 @@ arithMean <- function(data){
   x <- (paste0(finalOperator,roundString(mean(valuesList, na.rm=TRUE),sigfig)))
   return(x)
 }
-
 geomMean <- function(data){
   if (length(data) == 0){
     return ("NA") 
@@ -569,20 +569,20 @@ if (nrow(dataDT) > 0){
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , exptColName := paste0(experimentName, '::', lsKind)]
-if (aggregate){
-  allColNamesDT[ , sType := setType(lsType), by=list(lsKind, protocolId)]
-  allColNamesDT[ , numberOfColumns := length(lsKind), by=list(protocolId)]
-  allColNamesDT[ , titleText := paste0("Protocol: ",protocolId), by=list(protocolId)]
-}else{
-  allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
-  allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
-  allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
-}
+  if (aggregate){
+    allColNamesDT[ , sType := setType(lsType), by=list(lsKind, protocolId)]
+    allColNamesDT[ , numberOfColumns := length(lsKind), by=list(protocolId)]
+    allColNamesDT[ , titleText := paste0("Protocol: ",protocolId), by=list(protocolId)]
+  }else{
+    allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
+    allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
+    allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
+  }
 
 
   # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
   # so that the columns can be made wider in the .css
-  allColNamesDT$sClass <- sapply(allColNamesDT[["lsKind"]],function(x) if(x %in% c("curve id",fileValues)){"curveId"}else{"center"})
+  allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),"curveId","center")
   setnames(allColNamesDT, "lsKind", "sTitle")
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
@@ -640,6 +640,7 @@ if (exportCSV){
   cat(toJSON(responseJson))
 }
 
+Rprof(NULL)
 
     
 
