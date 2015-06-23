@@ -533,6 +533,7 @@
         this.drpc.render();
         this.stopListening(this.drpc.model, 'change');
         this.listenTo(this.drpc.model, 'change', this.handlePointsChanged);
+        this.$('.bv_compoundCode').html(this.model.get('compoundCode'));
         this.$('.bv_reportedValues').html(this.model.get('reportedValues'));
         this.$('.bv_fitSummary').html(this.model.get('fitSummary'));
         this.$('.bv_parameterStdErrors').html(this.model.get('parameterStdErrors'));
@@ -874,6 +875,7 @@
       this.clearSelected = bind(this.clearSelected, this);
       this.setSelected = bind(this.setSelected, this);
       this.setUserFlagStatus = bind(this.setUserFlagStatus, this);
+      this.approveUncurated = bind(this.approveUncurated, this);
       this.render = bind(this.render, this);
       return CurveSummaryController.__super__.constructor.apply(this, arguments);
     }
@@ -947,6 +949,12 @@
       }
       this.$('.bv_compoundCode').html(this.model.get('curveAttributes').compoundCode);
       return this;
+    };
+
+    CurveSummaryController.prototype.approveUncurated = function() {
+      if (this.model.get("userFlagStatus") === "") {
+        return this.userApprove();
+      }
     };
 
     CurveSummaryController.prototype.userApprove = function() {
@@ -1050,10 +1058,11 @@
       this.sortAscending = true;
       this.firstRun = true;
       if (this.options.selectedCurve != null) {
-        return this.initiallySelectedCurveID = this.options.selectedCurve;
+        this.initiallySelectedCurveID = this.options.selectedCurve;
       } else {
-        return this.initiallySelectedCurveID = "NA";
+        this.initiallySelectedCurveID = "NA";
       }
+      return this.on('handleApproveUncurated', this.handleApproveUncurated);
     };
 
     CurveSummaryListController.prototype.render = function() {
@@ -1087,12 +1096,15 @@
         this.toRender = new Backbone.Collection(this.toRender);
       }
       i = 1;
+      this.csControllers = [];
       this.toRender.each((function(_this) {
         return function(cs) {
           var csController;
           csController = new CurveSummaryController({
             model: cs
           });
+          csController.on("approveUncurated", csController.approveUncurated);
+          _this.csControllers.push(csController);
           _this.$('.bv_curveSummaries').append(csController.render().el);
           csController.on('selected', _this.selectionUpdated);
           csController.on('showCurveEditorDirtyPanel', _this.showCurveEditorDirtyPanel);
@@ -1143,6 +1155,17 @@
       }
     };
 
+    CurveSummaryListController.prototype.handleApproveUncurated = function() {
+      var curveSummaryController, j, len, ref, results;
+      ref = this.csControllers;
+      results = [];
+      for (j = 0, len = ref.length; j < len; j++) {
+        curveSummaryController = ref[j];
+        results.push(curveSummaryController.trigger('approveUncurated'));
+      }
+      return results;
+    };
+
     CurveSummaryListController.prototype.showCurveEditorDirtyPanel = function() {
       return this.curveEditorDirtyPanel.show();
     };
@@ -1174,6 +1197,7 @@
       this.handleCurveUpdateError = bind(this.handleCurveUpdateError, this);
       this.handleCurveDetailUpdated = bind(this.handleCurveDetailUpdated, this);
       this.handleCurveDetailSaved = bind(this.handleCurveDetailSaved, this);
+      this.handleApproveUncuratedClicked = bind(this.handleApproveUncuratedClicked, this);
       this.render = bind(this.render, this);
       return CurveCuratorController.__super__.constructor.apply(this, arguments);
     }
@@ -1184,7 +1208,8 @@
       'change .bv_filterBy': 'handleFilterChanged',
       'change .bv_sortBy': 'handleSortChanged',
       'click .bv_sortDirection_ascending': 'handleSortChanged',
-      'click .bv_sortDirection_descending': 'handleSortChanged'
+      'click .bv_sortDirection_descending': 'handleSortChanged',
+      'click .bv_approve_uncurated': 'handleApproveUncuratedClicked'
     };
 
     CurveCuratorController.prototype.render = function() {
@@ -1242,6 +1267,10 @@
         this.handleSortChanged();
       }
       return this;
+    };
+
+    CurveCuratorController.prototype.handleApproveUncuratedClicked = function() {
+      return this.curveListController.trigger('handleApproveUncurated');
     };
 
     CurveCuratorController.prototype.handleCurveDetailSaved = function(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus) {

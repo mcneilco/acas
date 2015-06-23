@@ -377,6 +377,7 @@ class window.CurveEditorController extends Backbone.View
 			@stopListening @drpc.model, 'change'
 			@listenTo @drpc.model, 'change', @handlePointsChanged
 
+			@$('.bv_compoundCode').html @model.get('compoundCode')
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
@@ -627,6 +628,10 @@ class window.CurveSummaryController extends Backbone.View
 #		@model.on 'change', @render
 		@
 
+	approveUncurated: =>
+		if @model.get("userFlagStatus") == ""
+			@userApprove()
+
 	userApprove: ->
 		@approveReject("approved")
 
@@ -693,6 +698,7 @@ class window.CurveSummaryListController extends Backbone.View
 			@initiallySelectedCurveID = @options.selectedCurve
 		else
 			@initiallySelectedCurveID = "NA"
+		@on 'handleApproveUncurated', @handleApproveUncurated
 
 	render: =>
 		@$el.empty()
@@ -716,8 +722,11 @@ class window.CurveSummaryListController extends Backbone.View
 			@toRender = new Backbone.Collection @toRender
 
 		i = 1
+		@csControllers = []
 		@toRender.each (cs) =>
 			csController = new CurveSummaryController(model: cs)
+			csController.on "approveUncurated", csController.approveUncurated
+			@csControllers.push csController
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
 			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel
@@ -754,6 +763,11 @@ class window.CurveSummaryListController extends Backbone.View
 			who.clearSelected()
 			@showCurveEditorDirtyPanel()
 
+	handleApproveUncurated: ->
+		for curveSummaryController in @csControllers
+			curveSummaryController.trigger 'approveUncurated'
+
+
 	showCurveEditorDirtyPanel: =>
 		@curveEditorDirtyPanel.show()
 
@@ -773,6 +787,7 @@ class window.CurveCuratorController extends Backbone.View
 		'change .bv_sortBy': 'handleSortChanged'
 		'click .bv_sortDirection_ascending': 'handleSortChanged'
 		'click .bv_sortDirection_descending': 'handleSortChanged'
+		'click .bv_approve_uncurated': 'handleApproveUncuratedClicked'
 
 	render: =>
 		@$el.empty()
@@ -824,6 +839,9 @@ class window.CurveCuratorController extends Backbone.View
 			@handleSortChanged()
 
 		@
+
+	handleApproveUncuratedClicked: =>
+		@curveListController.trigger 'handleApproveUncurated'
 
 	handleCurveDetailSaved: (oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
 		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus)
