@@ -16,7 +16,7 @@ source('getExperimentColOrder.R')
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
-Rprof(filename = "Rprof.out", append = FALSE, interval = 0.01,
+Rprof(filename = "Rprof.out", append = FALSE, interval = 0.005,
       memory.profiling = FALSE, gc.profiling = FALSE, 
       line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
 
@@ -232,7 +232,6 @@ if (errorFlag){
 #     roundString("128479823", 3) = "1.28e+08"
 sigfig <- 4 #TODO pull from a config
 roundString <- function(string,sigfigs){
-  options( scipen = -2 ) #This is to force scientific notation more often
   num <- as.numeric(string)
   if (!is.na(num)){
     return(as.character(signif(num,sigfigs)))
@@ -299,8 +298,7 @@ pivotResults <- function(geneId, lsKind, result, aggType="other"){
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType)
-  return(answers)
+  return(dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType))
 }
 
 # wrapper function so that reduce can be called on data.table.merge with non-default arguments
@@ -332,7 +330,8 @@ if (nrow(dataDT) > 0){
       
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
-        dataDT[["result"]] <- sapply(dataDT[["result"]],function(x) roundString(x,sigfig))
+        options( scipen = -2 ) #This is to force scientific notation more often
+        dataDT[,result := sapply(result,function(x) roundString(x,sigfig))]
       }
       
       # Add operators to the front of result if they exist
@@ -363,9 +362,9 @@ if (nrow(dataDT) > 0){
 # TODO replace hard-coded url with a reference to the config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
-  		  outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
+  		  outputDT[, StructureImage := paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',geneId,'">')]
       }else{
-        outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
+        outputDT[, StructureImage := paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",geneId)]
       }
       # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
       if (aggregate){
@@ -468,11 +467,11 @@ if (nrow(dataDT) > 0){
   		myLogger$debug(paste0("current outputDT2 ", nrow(outputDT2)))
   		myLogger$debug(paste0("current outputDT2 ", names(outputDT2)))
 
-  		if (!exportCSV){
-  		  outputDT2 <- cbind(outputDT2, StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',x,'">')))
-  		}else{
-  		  outputDT2 <- cbind(outputDT2, StructureImage=sapply(outputDT2[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
-  		}
+      if (!exportCSV){
+        outputDT2[, StructureImage := paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',geneId,'">')]
+      }else{
+        outputDT2[, StructureImage := paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",geneId)]
+      }
 
       # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
       if (aggregate){
