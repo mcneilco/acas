@@ -16,7 +16,7 @@ source('getExperimentColOrder.R')
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
-Rprof(filename = "Rprof.out", append = FALSE, interval = 0.005,
+Rprof(filename = "Rprof.out", append = FALSE, interval = 0.001,
       memory.profiling = FALSE, gc.profiling = FALSE, 
       line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
 
@@ -387,20 +387,20 @@ if (nrow(dataDT) > 0){
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
 #Replace with vectorization
-        for (i in fileValues){
-          split <-  strsplit(outputDT[[i]],"<br>")
+        for (file in fileValues){
+          split <-  strsplit(outputDT[[file]],"<br>")
           urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
-          if (length(urlSplit) > length(outputDT[[i]])){
-            outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
+          if (length(urlSplit) > length(outputDT[[file]])){
+            set(outputDT,i=NULL, file, apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>")))
           }else{
-            outputDT[[i]] <- urlSplit
+            set(outputDT,i=NULL,file,urlSplit)
           }
         }
       }else{
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
-        for (i in fileValues){
-          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+        for (file in fileValues){
+          set(outputDT,i=NULL, file, paste0('<a href="http://192.168.99.100:3000/dataFiles/',outputDT[[file]],'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',outputDT[[file]],'"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues)
