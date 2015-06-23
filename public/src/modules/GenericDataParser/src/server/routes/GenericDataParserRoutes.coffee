@@ -27,7 +27,7 @@ exports.parseGenericData = (request, response)  ->
 				response.end rReturn
 		)
 	else
-		serverUtilityFunctions.runRFunction(
+		serverUtilityFunctions.runRApacheFunction(
 			request,
 			"public/src/modules/GenericDataParser/src/server/generic_data_parser.R",
 			"parseGenericData",

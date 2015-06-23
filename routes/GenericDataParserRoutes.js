@@ -27,7 +27,7 @@
         return response.end(rReturn);
       });
     } else {
-      return serverUtilityFunctions.runRFunction(request, "public/src/modules/GenericDataParser/src/server/generic_data_parser.R", "parseGenericData", function(rReturn) {
+      return serverUtilityFunctions.runRApacheFunction(request, "public/src/modules/GenericDataParser/src/server/generic_data_parser.R", "parseGenericData", function(rReturn) {
         return response.end(rReturn);
       });
     }
