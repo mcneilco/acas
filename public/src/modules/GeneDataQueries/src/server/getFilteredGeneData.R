@@ -16,6 +16,10 @@ source('getExperimentColOrder.R')
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
+Rprof(filename = "Rprof.out", append = FALSE, interval = 0.01,
+      memory.profiling = FALSE, gc.profiling = FALSE, 
+      line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
+
 
 myLogger <- createLogger(logName = "1",
                          logFileName = 'geneData.log',
@@ -228,6 +232,7 @@ if (errorFlag){
 #     roundString("128479823", 3) = "1.28e+08"
 sigfig <- 4 #TODO pull from a config
 roundString <- function(string,sigfigs){
+  options( scipen = -2 ) #This is to force scientific notation more often
   num <- as.numeric(string)
   if (!is.na(num)){
     return(as.character(signif(num,sigfigs)))
@@ -238,7 +243,6 @@ roundString <- function(string,sigfigs){
 
 # A function that can deal with the < and > signs
 arithMean <- function(data){
-  save(data,file="data.Rda")
   if (length(data)==0){
     return ("NA")
   }
@@ -275,7 +279,6 @@ geomMean <- function(data){
 # This is bound to the global environment because pivotResults can't seem to find it otherwise. 
 # pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
 aggregateData <<- function(x,type){
-  save(x,type,file="data63.Rda")
   if (length(x)==1){
     return (x)
   }
@@ -296,9 +299,7 @@ pivotResults <- function(geneId, lsKind, result, aggType="other"){
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  save(aggType,file="data10.Rda")
   answers <- dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType)
-  save(answers,aggType,file="data11.Rda")
   return(answers)
 }
 
@@ -311,7 +312,6 @@ myMerge <- function(x,y){
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
 
-save(list = ls(all.names = TRUE), file = "save0.Rda")  
 
 # Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
   if (aggregate){
@@ -327,40 +327,29 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
     myLogger$debug(paste0("current experiment(/protocol) ", expt))
     if(firstPass){      
       # Modify lsKind to include units and concentration info as well (if it exists)
-      for (i in (1:nrow(dataDT))){
-        if (dataDT[["resultUnit"]][i] != ""){
-          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i]," (",dataDT[["resultUnit"]][i],")",sep="")
-        }
-        if (dataDT[["testedConcentration"]][i] != "") {
-          dataDT[["lsKind"]][i]<-paste(dataDT[["lsKind"]][i],"at",dataDT[["testedConcentration"]][i],dataDT[["testedConcentrationUnit"]][i],sep=" ")
-        }
-      }
+      dataDT[resultUnit != "", lsKind := paste(lsKind," (",resultUnit,")",sep="")]
+      dataDT[testedConcentration != "", lsKind := paste(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
       
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
-        options( scipen = -2 ) #This is to force scientific notation more often
         dataDT[["result"]] <- sapply(dataDT[["result"]],function(x) roundString(x,sigfig))
       }
       
       # Add operators to the front of result if they exist
-      dataDT[["result"]] <- paste(dataDT[["operator"]],dataDT[["result"]],sep = '')
+      dataDT[,result := paste(operator,result,sep = '')]
 
       #aggregate and pivot the data
       if (aggregate){
         # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
         geomList = c("EC50","pH","Ki")
         dataDTFilter <- dataDT[protocolId == expt]   
-        save(list = ls(all.names = TRUE), file = "save2.Rda")
         outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
-        save(list = ls(all.names = TRUE), file = "save3.Rda")
         outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
-        save(list = ls(all.names = TRUE), file = "save4.Rda")
         outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result,"curve")]
         outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result,"other")]
         
         # merge all subsets back into one outputDT
-        outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))        
-        
+        outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))              
         experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
         
       }else{ 
@@ -369,8 +358,7 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
         codeName <- as.character(unique(outputDT$experimentCodeName))
         outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
       }
-      
-      
+
       # Add a column with the compound structure
 # TODO replace hard-coded url with a reference to the config.properties
       # For HTML display include <tags>. For csv just give the url.
@@ -379,10 +367,8 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
       }else{
         outputDT <- cbind(outputDT, StructureImage=sapply(outputDT[["geneId"]],function(x) paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",x)))
       }
-      save(list = ls(all.names = TRUE), file = "save4.Rda")
       # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
       if (aggregate){
-        
         exptDataColumns <- c()
         for (codeName in experimentList$experimentCodeName){
           exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)) 
@@ -390,7 +376,6 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
       }else{
   		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
       }
-      save(list = ls(all.names = TRUE), file = "save4.Rda")
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
@@ -402,12 +387,11 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
 #csv handling
 #TODO replace hard-coded url with a reference to the properies file
       if (aggregate){
-        save(list = ls(all.names = TRUE), file = "save5.Rda")
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
+#Replace with vectorization
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
           urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
-          save(urlSplit,outputDT,i,file="images.Rda")
           if (length(urlSplit) > length(outputDT[[i]])){
             outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -433,9 +417,9 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
       # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x,'&showAxes=true&labelAxes=true"></a>')),TRUE)
+        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true"></a>')],TRUE)
       }else{
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
+        try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
 
 #changed experimentName to expt 
@@ -455,7 +439,6 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
       colNamesDF <- unique(colNamesDF)
       # Get rid of any columns that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
       colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
-      save(colNamesDF, exptDataColumns,file="help2.Rda")
   		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
   		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
 
@@ -540,10 +523,10 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x,'&showAxes=true&labelAxes=true"></a>')),TRUE)
+        try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true"></a>')],TRUE)
       }else{
-        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",x,"&showAxes=true&labelAxes=true")),TRUE)
-      }  	
+        try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
+      }	
 #changed experimentName to expt
       for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(expt, "::", colName))
@@ -560,10 +543,8 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
   		colNamesDF2 <- unique(colNamesDF2)
   		#   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
   		colNamesDF2 <- subset(colNamesDF2,!duplicated(colNamesDF2[["lsKind"]]))
-      save(orderCols,file="orderCols2.Rda")
   		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
   		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
-      save(allColNamesDF,colNamesDF2,file="colNames.Rda")
   		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
       }
   }
@@ -586,23 +567,21 @@ save(list = ls(all.names = TRUE), file = "save0.Rda")
   }
 
 
-  save(allColNamesDF,file="help.Rda")
   
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , exptColName := paste0(experimentName, '::', lsKind)]
-# if (aggregate){
-#   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, protocolId)]
-#   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(protocolId)]
-#   allColNamesDT[ , titleText := experimentName, by=list(protocolId)]
-# }else{
+if (aggregate){
+  allColNamesDT[ , sType := setType(lsType), by=list(lsKind, protocolId)]
+  allColNamesDT[ , numberOfColumns := length(lsKind), by=list(protocolId)]
+  allColNamesDT[ , titleText := paste0("Protocol: ",protocolId), by=list(protocolId)]
+}else{
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
-# }
+}
 
 
-  save(allColNamesDT,file="allCol.Rda")
   # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
   # so that the columns can be made wider in the .css
   allColNamesDT$sClass <- sapply(allColNamesDT[["lsKind"]],function(x) if(x %in% c("curve id",fileValues)){"curveId"}else{"center"})
@@ -662,6 +641,8 @@ if (exportCSV){
   setContentType("application/json")
   cat(toJSON(responseJson))
 }
+
+
     
 
 
