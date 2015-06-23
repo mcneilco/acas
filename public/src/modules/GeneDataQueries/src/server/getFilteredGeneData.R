@@ -231,13 +231,9 @@ if (errorFlag){
 # e.g roundString("retest", 3) = "retest"
 #     roundString("128479823", 3) = "1.28e+08"
 sigfig <- 4 #TODO pull from a config
-roundString <- function(string,sigfigs){
+roundString <- function(string,sigfigs=4){
   num <- as.numeric(string)
-  if (!is.na(num)){
-    return(as.character(signif(num,sigfigs)))
-  }else{
-    return(string)
-  }
+  ifelse(is.na(num), string, as.character(signif(num,sigfigs)) )
 }
 
 # A function that can deal with the < and > signs
@@ -245,16 +241,17 @@ arithMean <- function(data){
   if (length(data)==0){
     return ("NA")
   }
-  hasOperator <- sapply(data,function(x) substring(x,1,1)=="<"||substring(x,1,1)==">")
+  firstChar = substring(data,1,1)
+  hasOperator <- firstChar =="<" | firstChar == ">"
   # returns < or > if it is the only operator, *** if there are both
-  finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substring(x,1,1)))
+  finalOperator <- unique(subset(firstChar,hasOperator))
   if (length(finalOperator) > 1){
     finalOperator <- "***"
   }else if (length(finalOperator) == 1){
     finalOperator <- paste0("*",finalOperator)
   }
-  valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
-  x <- (paste0(finalOperator,roundString(mean(valuesList, na.rm=TRUE))))
+  valuesList <- as.numeric(c(subset(data,!hasOperator), substring(subset(data,hasOperator),2)))
+  x <- (paste0(finalOperator,roundString(mean(valuesList, na.rm=TRUE),sigfig)))
   return(x)
 }
 
@@ -262,17 +259,18 @@ geomMean <- function(data){
   if (length(data) == 0){
     return ("NA") 
   }
-  hasOperator <- sapply(data,function(x) substr(x,1,1)=="<"||substr(x,1,1)==">")
+  firstChar = substring(data,1,1)
+  hasOperator <- firstChar =="<" | firstChar == ">"
   # returns < or > if it is the only operator, *** if there are both
-  finalOperator <- unique(sapply(subset(data,hasOperator),function(x) substr(x,1,1)))
+  finalOperator <- unique(subset(firstChar,hasOperator))
   if (length(finalOperator) > 1){
     finalOperator <- "***"
   }else if (length(finalOperator) == 1){
     finalOperator <- paste0("*",finalOperator)
   }
-  valuesList <- as.numeric(c(subset(data,!hasOperator),sapply(subset(data,hasOperator),function(x) substring(x,2))))
+  valuesList <- as.numeric(c(subset(data,!hasOperator), substring(subset(data,hasOperator),2)))
   gMean <- exp(sum(log(valuesList[valuesList > 0]), na.rm=TRUE) / length(subset(valuesList,!is.na(valuesList))))
-  return (paste0(finalOperator,roundString(gMean)))
+  return (paste0(finalOperator,roundString(gMean,sigfig)))
 }
 
 # This is bound to the global environment because pivotResults can't seem to find it otherwise. 
@@ -331,7 +329,7 @@ if (nrow(dataDT) > 0){
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
         options( scipen = -2 ) #This is to force scientific notation more often
-        dataDT[,result := sapply(result,function(x) roundString(x,sigfig))]
+        dataDT[,result := roundString(result,sigfig)]
       }
       
       # Add operators to the front of result if they exist
@@ -340,6 +338,7 @@ if (nrow(dataDT) > 0){
       #aggregate and pivot the data
       if (aggregate){
         # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
+#Config
         geomList = c("EC50","pH","Ki")
         dataDTFilter <- dataDT[protocolId == expt]   
         outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
