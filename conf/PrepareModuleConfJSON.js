@@ -1,5 +1,5 @@
 (function() {
-  var _, allModuleConfJSFiles, allModulesTypesAndKinds, async, compiledModuleConfsFileName, compiledTypesAndKinds, confJSONFilesToCompile, config, data, fileName, fs, glob, i, j, jsonfilestring, k, l, len, len1, len2, len3, moduleData, newFileName, request, selectedConfJSONFiles, typeKinds, typeOrKind, value, values;
+  var allModuleConfJSFiles, allModulesTypesAndKinds, async, compiledModuleConfsFileName, compiledTypesAndKinds, confJSONFilesToCompile, config, data, fileName, fs, glob, jsonfilestring, moduleData, newFileName, request, selectedConfJSONFiles, typeKinds, typeOrKind, value, values, _, _i, _j, _k, _l, _len, _len1, _len2, _len3;
 
   fs = require('fs');
 
@@ -9,8 +9,8 @@
 
   allModuleConfJSFiles = glob.sync("../public/javascripts/conf/*.js");
 
-  for (i = 0, len = allModuleConfJSFiles.length; i < len; i++) {
-    fileName = allModuleConfJSFiles[i];
+  for (_i = 0, _len = allModuleConfJSFiles.length; _i < _len; _i++) {
+    fileName = allModuleConfJSFiles[_i];
     data = require(fileName);
     jsonfilestring = JSON.stringify(data);
     newFileName = fileName.replace("conf", "conf/confJSON/moduleJSON");
@@ -35,17 +35,17 @@
 
   allModulesTypesAndKinds = {};
 
-  for (j = 0, len1 = confJSONFilesToCompile.length; j < len1; j++) {
-    fileName = confJSONFilesToCompile[j];
+  for (_j = 0, _len1 = confJSONFilesToCompile.length; _j < _len1; _j++) {
+    fileName = confJSONFilesToCompile[_j];
     moduleData = require(fileName);
-    for (k = 0, len2 = typeKinds.length; k < len2; k++) {
-      typeOrKind = typeKinds[k];
+    for (_k = 0, _len2 = typeKinds.length; _k < _len2; _k++) {
+      typeOrKind = typeKinds[_k];
       if (moduleData.typeKindList[typeOrKind] != null) {
         values = moduleData.typeKindList[typeOrKind];
         if (allModulesTypesAndKinds[typeOrKind] != null) {
           compiledTypesAndKinds = allModulesTypesAndKinds[typeOrKind];
-          for (l = 0, len3 = values.length; l < len3; l++) {
-            value = values[l];
+          for (_l = 0, _len3 = values.length; _l < _len3; _l++) {
+            value = values[_l];
             if (_.findWhere(compiledTypesAndKinds, value) === void 0) {
               compiledTypesAndKinds.push(value);
             }

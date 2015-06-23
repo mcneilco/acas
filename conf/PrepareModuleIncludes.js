@@ -1,5 +1,5 @@
 (function() {
-  var _, appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepRouteIncludes, prepSpecScripts, routeLines, scriptPaths, specScriptLines;
+  var appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepRouteIncludes, prepSpecScripts, routeLines, scriptPaths, specScriptLines, _;
 
   fs = require('fs');
 
@@ -8,19 +8,19 @@
   _ = require('underscore');
 
   prepIncludes = function() {
-    var i, includeLines, includeStr, j, len, len1, path, styleFiles, templateFiles;
+    var includeLines, includeStr, path, styleFiles, templateFiles, _i, _j, _len, _len1;
     styleFiles = glob.sync('../public/src/modules/*/src/client/**/*.css');
     templateFiles = glob.sync('../public/src/modules/*/src/client/**/*.html');
     includeLines = "";
-    for (i = 0, len = styleFiles.length; i < len; i++) {
-      path = styleFiles[i];
+    for (_i = 0, _len = styleFiles.length; _i < _len; _i++) {
+      path = styleFiles[_i];
       includeStr = '        link(rel="stylesheet", href="';
       includeStr += path.replace("../public", "");
       includeStr += '")\n';
       includeLines += includeStr;
     }
-    for (j = 0, len1 = templateFiles.length; j < len1; j++) {
-      path = templateFiles[j];
+    for (_j = 0, _len1 = templateFiles.length; _j < _len1; _j++) {
+      path = templateFiles[_j];
       includeStr = "        include ";
       includeStr += path;
       includeStr += '\n';
@@ -56,10 +56,10 @@
   };
 
   makeFileNameHash = function(inArray) {
-    var i, len, path, scripts;
+    var path, scripts, _i, _len;
     scripts = {};
-    for (i = 0, len = inArray.length; i < len; i++) {
-      path = inArray[i];
+    for (_i = 0, _len = inArray.length; _i < _len; _i++) {
+      path = inArray[_i];
       scripts[getFileNameFromPath(path)] = path;
     }
     return scripts;

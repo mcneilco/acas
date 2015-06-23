@@ -15,7 +15,6 @@
           properties: ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"],
           entityIdStringLines: "FRD76\nFRD2\nFRD78\n"
         };
-        console.log(body);
         before(function(done) {
           this.timeout(20000);
           return request.post({

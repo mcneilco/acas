@@ -162,7 +162,7 @@
   };
 
   exports.isUserAdmin = function(user) {
-    var _, adminRoles, isAdmin;
+    var adminRoles, isAdmin, _;
     _ = require('underscore');
     adminRoles = _.filter(user.roles, function(role) {
       return role.roleEntry.roleName === 'admin';
@@ -308,23 +308,23 @@
   };
 
   exports.getTestedEntityProperties = function(propertyList, entityList, callback) {
-    var ents, i, j, k, l, len, len1, m, out, prop, prop2, ref;
+    var ents, i, j, out, prop, prop2, _i, _j, _k, _len, _len1, _ref;
     if (propertyList.indexOf('ERROR') > -1) {
       callback(null);
       return;
     }
     ents = entityList.split('\n');
     out = "id,";
-    for (k = 0, len = propertyList.length; k < len; k++) {
-      prop = propertyList[k];
+    for (_i = 0, _len = propertyList.length; _i < _len; _i++) {
+      prop = propertyList[_i];
       out += prop + ",";
     }
     out = out.slice(0, -1) + '\n';
-    for (i = l = 0, ref = ents.length - 2; 0 <= ref ? l <= ref : l >= ref; i = 0 <= ref ? ++l : --l) {
+    for (i = _j = 0, _ref = ents.length - 2; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
       out += ents[i] + ",";
       j = 0;
-      for (m = 0, len1 = propertyList.length; m < len1; m++) {
-        prop2 = propertyList[m];
+      for (_k = 0, _len1 = propertyList.length; _k < _len1; _k++) {
+        prop2 = propertyList[_k];
         if (ents[i].indexOf('ERROR') < 0) {
           out += i + j++;
         } else {
@@ -335,6 +335,58 @@
       out = out.slice(0, -1) + '\n';
     }
     return callback(out);
+  };
+
+  exports.getPreferredBatchIds = function(requests, callback) {
+    var req, res, response, results, _i, _len;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (_i = 0, _len = requests.length; _i < _len; _i++) {
+        req = requests[_i];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.preferredName = "DNS000001234::7";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      return console.log("real function not implemented");
+    }
+  };
+
+  exports.getPreferredParentIds = function(requests, callback) {
+    var req, res, response, results, _i, _len;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (_i = 0, _len = requests.length; _i < _len; _i++) {
+        req = requests[_i];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.preferredName = "DNS000001234";
+        } else if (req.requestName.indexOf("compoundName") > -1) {
+          res.preferredName = "CMPD000001234";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      return console.log("real function not implemented");
+    }
   };
 
 }).call(this);
