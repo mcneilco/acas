@@ -345,16 +345,26 @@ class window.CurveDetail extends Backbone.Model
 
 class window.CurveEditorController extends Backbone.View
 	template: _.template($("#CurveEditorView").html())
+	defaults:
+		locked: false
+
 	events:
 		'click .bv_reset': 'handleResetClicked'
 		'click .bv_update': 'handleUpdateClicked'
 		'click .bv_approve': 'handleApproveClicked'
 		'click .bv_reject': 'handleRejectClicked'
 
+	initialize: =>
+		if @options.locked
+			@locked = @options.locked
+
 	render: =>
 		@$el.empty()
 		if @model?
 			@$el.html @template()
+			if @locked
+				@$('.bv_update').attr 'disabled', 'disabled'
+
 			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
 			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('renderingHint')})
 			if curveFitClasses?
@@ -364,6 +374,7 @@ class window.CurveEditorController extends Backbone.View
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"
+
 			@drapc.render()
 
 			@stopListening @drapc.model, 'change'
@@ -571,6 +582,8 @@ class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
 	tagName: 'div'
 	className: 'bv_curveSummary'
+	defaults:
+		locked: false
 	events:
 		'click .bv_group_thumbnail': 'setSelected'
 		'click .bv_userApprove': 'userApprove'
@@ -579,6 +592,9 @@ class window.CurveSummaryController extends Backbone.View
 
 	initialize: ->
 		@model.on 'change', @render
+		if @options.locked
+			@locked = @options.locked
+
 
 	render: =>
 		@$el.empty()
@@ -591,6 +607,10 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl += @model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
+
+		if @locked
+			@$('.bv_flagUser').attr 'disabled', 'disabled'
+
 		if @model.get('algorithmFlagStatus') == 'no fit'
 			@$('.bv_pass').hide()
 			@$('.bv_fail').show()
@@ -652,7 +672,6 @@ class window.CurveSummaryController extends Backbone.View
 		@model.save(userFlagStatus: userFlagStatus, user: window.AppLaunchParams.loginUserName, {
 			wait: true,
 			success: =>
-#				UtilityFunctions::hideProgressModal $('.bv_curveCuratorDropDown')
 				@enableSummary()
 				if @$el.hasClass('selected')
 					@trigger 'selected', @
@@ -689,7 +708,11 @@ class window.CurveSummaryController extends Backbone.View
 
 class window.CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
+	defaults:
+		locked: false
 	initialize: ->
+		if @options.locked
+			@locked = @options.locked
 		@filterKey = 'all'
 		@sortKey = 'none'
 		@sortAscending = true
@@ -724,7 +747,9 @@ class window.CurveSummaryListController extends Backbone.View
 		i = 1
 		@csControllers = []
 		@toRender.each (cs) =>
-			csController = new CurveSummaryController(model: cs)
+			csController = new CurveSummaryController
+				model: cs
+				locked: @locked
 			csController.on "approveUncurated", csController.approveUncurated
 			@csControllers.push csController
 			@$('.bv_curveSummaries').append(csController.render().el)
@@ -782,6 +807,9 @@ class window.CurveSummaryListController extends Backbone.View
 
 class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
+	defaults:
+		locked: false
+
 	events:
 		'change .bv_filterBy': 'handleFilterChanged'
 		'change .bv_sortBy': 'handleSortChanged'
@@ -792,14 +820,19 @@ class window.CurveCuratorController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+
 		if @model?
+			if @locked
+				@$('.bv_approve_uncurated').attr 'disabled', 'disabled'
 			@curveListController = new CurveSummaryListController
 				el: @$('.bv_curveList')
 				collection: @model.get 'curves'
 				selectedCurve: @initiallySelectedCurveID
+				locked: @locked
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
+				locked: @locked
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
@@ -867,6 +900,36 @@ class window.CurveCuratorController extends Backbone.View
 					backdrop: "static"
 				@$('.bv_badExperimentCode').modal "show"
 
+	showBadExperimentModal: ->
+		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')
+
+	handleWarnUserLockedExperiment: (exptCode, curveID)->
+		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		@$('.bv_experimentLocked').modal "show"
+		@$('.bv_experimentLocked').on "hidden", =>
+			@getCurvesFromExperimentCode(exptCode, curveID)
+
+	setupCurator: (exptCode, curveID)=>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/"+exptCode+"/exptvalues/bystate/metadata/experiment metadata/byvalue/codeValue/experiment status"
+			dataType: 'json'
+			success: (json) =>
+				if json.length == 0
+					@showBadExperimentModal()
+				else
+					@exptType = json[0].lsState.experiment.lsType
+					@exptStatus = json[0].codeValue
+					if @exptType == "Bio Activity" && @exptStatus == "approved"
+						@locked = true
+						@handleWarnUserLockedExperiment(exptCode, curveID)
+					else
+						@locked = false
+						@getCurvesFromExperimentCode(exptCode, curveID)
+			error: (err) =>
+				@showBadExperimentModal
+
 	curveSelectionUpdated: (who) =>
 		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')
 		curveDetail = new CurveDetail id: who.model.get('curveid')
@@ -879,7 +942,6 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_badCurveID').modal
 					backdrop: "static"
 				@$('.bv_badCurveID').modal "show"
-
 
 	handleGetCurveDetailReturn: (json) =>
 		@curveEditorController.setModel new CurveDetail(json)
