@@ -26,7 +26,6 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 		callback errorMessage
 
 	if serviceType == "NewLineSepBulkPost" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
 		csUtilities.getPreferredBatchIds requests, (preferredResp) ->
 			callback JSON.stringify
 				error: false

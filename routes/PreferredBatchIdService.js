@@ -35,7 +35,6 @@
       callback(errorMessage);
     }
     if (serviceType === "NewLineSepBulkPost" && !global.specRunnerTestmode) {
-      req.body.user = "";
       return csUtilities.getPreferredBatchIds(requests, function(preferredResp) {
         return callback(JSON.stringify({
           error: false,

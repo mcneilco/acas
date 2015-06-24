@@ -324,22 +324,22 @@
       });
     });
     describe("get preferred batchids", function() {
+      global.specRunnerTestmode = true;
       describe("when valid, alias, and invalid batches sent", function() {
         var requestData;
         requestData = {
           requests: [
             {
-              requestName: "DNS000000001::1"
+              requestName: "CMPD-0000001-01A"
             }, {
-              requestName: "DNS000673874::1"
+              requestName: "CMPD-0000002-01A"
             }, {
-              requestName: "DNS999999999::9999"
+              requestName: "CMPD-999999999::9999"
             }
           ]
         };
         before(function(done) {
           this.timeout(20000);
-          global.specRunnerTestmode = true;
           return csUtilities.getPreferredBatchIds(requestData.requests, (function(_this) {
             return function(response) {
               _this.response = response;
@@ -355,42 +355,44 @@
           return assert.equal(this.response[0].requestName, this.response[0].preferredName);
         });
         it("should have the batch an alias", function() {
-          return assert.equal(this.response[1].preferredName, "DNS000001234::7");
+          return assert.equal(this.response[1].preferredName, "CMPD-0000002-01A");
         });
         return it("should not return an alias if the batch is not valid", function() {
           return assert.equal(this.response[2].preferredName, "");
         });
       });
-      return describe("when 1000 batches sent", function() {
-        var i, num, requests;
-        requests = (function() {
-          var _i, _results;
-          _results = [];
-          for (i = _i = 1; _i <= 1000; i = ++_i) {
-            num = "000000000" + i;
-            num = num.substr(num.length - 9);
-            _results.push({
-              requestName: "DNS" + num + "::1"
-            });
-          }
-          return _results;
-        })();
-        before(function(done) {
-          this.timeout(20000);
-          return csUtilities.getPreferredBatchIds(requests, (function(_this) {
-            return function(response) {
-              _this.response = response;
-              return done();
-            };
-          })(this));
+      if (global.specRunnerTestmode) {
+        return describe("when 1000 batches sent", function() {
+          var i, num, requests;
+          requests = (function() {
+            var _i, _results;
+            _results = [];
+            for (i = _i = 1; _i <= 1000; i = ++_i) {
+              num = "000000000" + i;
+              num = num.substr(num.length - 9);
+              _results.push({
+                requestName: "DNS" + num + "::1"
+              });
+            }
+            return _results;
+          })();
+          before(function(done) {
+            this.timeout(20000);
+            return csUtilities.getPreferredBatchIds(requests, (function(_this) {
+              return function(response) {
+                _this.response = response;
+                return done();
+              };
+            })(this));
+          });
+          it("should return 1000 results", function() {
+            return assert.equal(this.response.length, 1000);
+          });
+          return it("should have the batch if not an alias", function() {
+            return assert.equal(this.response[999].requestName, this.response[999].preferredName);
+          });
         });
-        it("should return 1000 results", function() {
-          return assert.equal(this.response.length, 1000);
-        });
-        return it("should have the batch if not an alias", function() {
-          return assert.equal(this.response[999].requestName, this.response[999].preferredName);
-        });
-      });
+      }
     });
     return describe("get preferred parent ids", function() {
       return describe("when valid, alias, and invalid batches sent", function() {
