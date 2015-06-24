@@ -1226,6 +1226,7 @@
       this.handleGetCurveDetailReturn = bind(this.handleGetCurveDetailReturn, this);
       this.curveSelectionUpdated = bind(this.curveSelectionUpdated, this);
       this.setupCurator = bind(this.setupCurator, this);
+      this.checkLocked = bind(this.checkLocked, this);
       this.getCurvesFromExperimentCode = bind(this.getCurvesFromExperimentCode, this);
       this.handleCurveUpdateError = bind(this.handleCurveUpdateError, this);
       this.handleCurveDetailUpdated = bind(this.handleCurveDetailUpdated, this);
@@ -1367,6 +1368,22 @@
       })(this));
     };
 
+    CurveCuratorController.prototype.checkLocked = function(experiment, status) {
+      var experimentMatchesAFilter, expt, lockFilters, shouldLock;
+      expt = [experiment];
+      lockFilters = $.parseJSON(window.conf.experiment.lockwhenapproved.filter);
+      experimentMatchesAFilter = false;
+      _.each(lockFilters, function(filter) {
+        var test;
+        test = _.where(expt, filter);
+        if (test.length > 0) {
+          return experimentMatchesAFilter = true;
+        }
+      });
+      shouldLock = (status === 'approved') & experimentMatchesAFilter;
+      return shouldLock;
+    };
+
     CurveCuratorController.prototype.setupCurator = function(exptCode, curveID) {
       return $.ajax({
         type: 'GET',
@@ -1374,12 +1391,14 @@
         dataType: 'json',
         success: (function(_this) {
           return function(json) {
+            var experiment, shouldLock, status;
             if (json.length === 0) {
               return _this.showBadExperimentModal();
             } else {
-              _this.exptType = json[0].lsState.experiment.lsType;
-              _this.exptStatus = json[0].codeValue;
-              if (_this.exptType === "Bio Activity" && _this.exptStatus === "approved") {
+              experiment = json[0].lsState.experiment;
+              status = json[0].codeValue;
+              shouldLock = _this.checkLocked(experiment, status);
+              if (shouldLock) {
                 _this.locked = true;
                 return _this.handleWarnUserLockedExperiment(exptCode, curveID);
               } else {

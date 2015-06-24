@@ -910,6 +910,17 @@ class window.CurveCuratorController extends Backbone.View
 		@$('.bv_experimentLocked').on "hidden", =>
 			@getCurvesFromExperimentCode(exptCode, curveID)
 
+	checkLocked: (experiment, status) =>
+		expt = [experiment]
+		lockFilters = $.parseJSON window.conf.experiment.lockwhenapproved.filter
+		experimentMatchesAFilter = false
+		_.each lockFilters, (filter) ->
+			test = _.where(expt, filter)
+			if test.length > 0
+				experimentMatchesAFilter = true
+		shouldLock = (status == 'approved') & experimentMatchesAFilter
+		return shouldLock
+
 	setupCurator: (exptCode, curveID)=>
 		$.ajax
 			type: 'GET'
@@ -919,9 +930,10 @@ class window.CurveCuratorController extends Backbone.View
 				if json.length == 0
 					@showBadExperimentModal()
 				else
-					@exptType = json[0].lsState.experiment.lsType
-					@exptStatus = json[0].codeValue
-					if @exptType == "Bio Activity" && @exptStatus == "approved"
+					experiment = json[0].lsState.experiment
+					status = json[0].codeValue
+					shouldLock = @checkLocked(experiment, status)
+					if shouldLock
 						@locked = true
 						@handleWarnUserLockedExperiment(exptCode, curveID)
 					else
