@@ -227,7 +227,8 @@ if (errorFlag){
         dataDT <- as.data.table(dataDF)
 }
 
-### PROCESS DATA INTO ROWS/COLS ETC...#####
+### FUNCTIONS FOR PROCESSING DATA INTO ROWS/COLS ETC...#####
+
 
 # A function to take in a string and round using signif() if possible before converting back to a string.
 # if the string cannot be coersed into a numeric type, the original string is returned as is.
@@ -306,6 +307,7 @@ myMerge <- function(x,y){
   merge(x,y,by="geneId",all=TRUE)
 }
 
+### PROCESS DATA INTO ROWS/COLS ETC...#####
 
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
@@ -361,6 +363,7 @@ if (nrow(dataDT) > 0){
 
       # Add a column with the compound structure
 # TODO replace hard-coded url with a reference to the config.properties
+# or use racas::getAcasFileLink which uses config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
   		  outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
@@ -373,7 +376,7 @@ if (nrow(dataDT) > 0){
         for (codeName in experimentList$experimentCodeName){
           exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)) 
         }
-      }else{
+      }else{ #aggregate is false
   		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
       }
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
@@ -397,7 +400,7 @@ if (nrow(dataDT) > 0){
             outputDT[[i]] <- urlSplit
           }
         }
-      }else{
+      }else{ #aggregate is false
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues){
@@ -416,7 +419,7 @@ if (nrow(dataDT) > 0){
       # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true"></a>')],TRUE)
+        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
       }else{
         try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
@@ -519,9 +522,9 @@ if (nrow(dataDT) > 0){
   
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
-      if (!exportCSV){
-        try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true"></a>')],TRUE)
-      }else{
+  		if (!exportCSV){
+  		  try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
+  		}else{
         try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }	
 #changed experimentName to expt
@@ -546,14 +549,12 @@ if (nrow(dataDT) > 0){
       }
   }
 
-
-  
   outputDF <- as.data.frame(outputDT)
   names(outputDF) <- NULL
   outputDT.list <- as.list(as.data.frame(t(outputDF)))
   names(outputDT.list) <- NULL
   
-  
+# function to convert lsType to sType(used in js datatables)
   setType <- function(lsType){
     if (lsType == "stringValue"){
       sType <- "string"
@@ -562,8 +563,6 @@ if (nrow(dataDT) > 0){
     }
     return(sType)
   }
-
-
   
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
@@ -586,7 +585,7 @@ if (nrow(dataDT) > 0){
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
   aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="StructureImage"), aoColumnsDF)
-  aoColumnsDF <- rbind(data.frame(sTitle="ID", sClass="center"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle="Batch Code", sClass="center"), aoColumnsDF)
   
   
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
@@ -610,7 +609,7 @@ if (nrow(dataDT) > 0){
   responseJson$errorMessages <- list()
   setStatus(status=200L)
   
-} else {
+} else { #no results
   
   responseJson <- list()
   responseJson$results$data$aaData <- list()
@@ -639,6 +638,7 @@ if (exportCSV){
   cat(toJSON(responseJson))
 }
 
+#stops timing the code profiling
 Rprof(NULL)
 
     
