@@ -49,11 +49,10 @@ class window.GeneIDQueryResultController extends Backbone.View
 				aoColumns: @model.get('data').aoColumns
 				bDeferRender: true
 				bProcessing: true
-				aoColumnDefs: [
-					{bSortable: false, aTargets: [1]},
-					{sType: "lsThing", aTargets: ["_all"]}
+				aoColumnDefs:
+					bSortable: false, aTargets: [1]
+					sType: "lsThing", aTargets: ["_all"]
 
-				]
 #				sDom : "Rlfrtip"
 #	uncomment the following line to disable sorting in the dataTable
 #				bSort: false
@@ -66,7 +65,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 
 	setupHeaders: ->
 		_.each @model.get('data').groupHeaders, (header) =>
-			@$('.bv_experimentNamesHeader').append '<th colspan="'+header.numberOfColumns+'">'+header.titleText+'</th>'
+			@$('.bv_experimentNamesHeader').append '<th class="bv_headerCell" colspan="'+header.numberOfColumns+'">'+header.titleText+'</th>'
 		_.each @model.get('data').aoColumns, (header) =>
 			@$('.bv_columnNamesHeader').append '<th>placeholder</th>'
 

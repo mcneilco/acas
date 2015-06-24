@@ -278,3 +278,8 @@
 .GeneIDQueryAppController .StructureImage{
     min-width: 160px !important;
 }
+.GeneIDQueryAppController .bv_headerCell{
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+
+}
