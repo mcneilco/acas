@@ -276,8 +276,21 @@ exports.getPreferredBatchIds = (requests, callback) ->
 		response = results
 
 		callback response
-	else
-		console.log "real function not implemented"
+	else #not spec mode
+		request = require 'request'
+		request
+			method: 'POST'
+			url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
 
 exports.getPreferredParentIds = (requests, callback) ->
 	if global.specRunnerTestmode
@@ -298,3 +311,5 @@ exports.getPreferredParentIds = (requests, callback) ->
 		callback response
 	else
 		console.log "real function not implemented"
+
+

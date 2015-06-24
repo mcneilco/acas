@@ -19,7 +19,7 @@
 
   config = require('../../../../conf/compiled/conf.js');
 
-  describe.only("Preferred Entity code service tests", function() {
+  describe("Preferred Entity code service tests", function() {
     describe("available entity type list", function() {
       describe("when requested as fully detailed list", function() {
         before(function(done) {

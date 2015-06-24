@@ -338,7 +338,7 @@
   };
 
   exports.getPreferredBatchIds = function(requests, callback) {
-    var req, res, response, results, _i, _len;
+    var req, request, res, response, results, _i, _len;
     if (global.specRunnerTestmode) {
       results = [];
       for (_i = 0, _len = requests.length; _i < _len; _i++) {
@@ -358,7 +358,24 @@
       response = results;
       return callback(response);
     } else {
-      return console.log("real function not implemented");
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
     }
   };
 

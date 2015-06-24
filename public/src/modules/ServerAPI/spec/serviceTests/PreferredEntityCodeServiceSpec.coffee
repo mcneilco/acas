@@ -34,7 +34,7 @@ parseResponse = (jsonStr) ->
 		return null
 
 config = require '../../../../conf/compiled/conf.js'
-describe.only  "Preferred Entity code service tests", ->
+describe  "Preferred Entity code service tests", ->
 	describe "available entity type list", ->
 		describe "when requested as fully detailed list", ->
 			before (done) ->
