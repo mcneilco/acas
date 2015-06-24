@@ -13,7 +13,8 @@ postData <- rawToChar(receiveBin())
 
 #postData <- '{"geneIDs":"1, 2; 15, blah"}'
 geneData <- fromJSON(postData)$geneIDs
-geneDataList <- strsplit(geneData, split="\\W")[[1]]
+#split on whitespace (except "-", don't split on that)
+geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
 geneDataList <- geneDataList[geneDataList!=""]
 
 if (length(geneDataList) > 0) {
@@ -32,11 +33,18 @@ if (length(geneDataList) > 0) {
 		postfields=toJSON(requestObject))
 
 	genes <- fromJSON(geneNameList)$results
+  
+  save(genes,requestList,file="geneQuery.Rda")
+  
 	batchCodeList <- list()
 	for (i in 1:length(genes)){
 	   if (genes[[i]]$referenceName != ""){
 	      batchCodeList[[length(batchCodeList)+1]] <- list(batchCode=genes[[i]]$referenceName)
 	   }
+#Hack to include compound ids
+     else{
+       batchCodeList[[length(batchCodeList)+1]] <- list(batchCode=genes[[i]]$requestName)
+     }
 	}
 
 	if (length(batchCodeList) > 0){
