@@ -2,7 +2,6 @@
 # ROUTE: /getFilteredGeneData
 
 #.libPaths('/opt/acas_home/app_1.4/acas/r_libs')
-
 require('RCurl')
 require('rjson')
 require('data.table')
@@ -14,9 +13,13 @@ require('reshape2')
 source('getSELColOrder.R')
 source('getExperimentColOrder.R')
 
+# Load the configs
+configList <- racas::applicationSettings
+
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
-Rprof(filename = "Rprof.out", append = FALSE, interval = 0.0005,
+# Used to profile the code
+Rprof(filename = "Rprof.out", append = FALSE, interval = 0.0001,
       memory.profiling = FALSE, gc.profiling = FALSE, 
       line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
 
@@ -237,7 +240,6 @@ roundString <- function(string,sigfigs=4){
 }
 
 # functions that can deal with the < and > signs
-# Compile these?
 arithMean <- function(data){
   if (length(data)==0){
     return ("NA")
@@ -337,9 +339,9 @@ if (nrow(dataDT) > 0){
 
       #aggregate and pivot the data
       if (aggregate){
+        # Get list of properties to aggregate with geometirc mean from config
+        geomList <- unlist(strsplit(configList$server.sar.geomMean,","))
         # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
-#Config
-        geomList = c("EC50","pH","Ki")
         dataDTFilter <- dataDT[protocolId == expt]   
         outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
         outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
@@ -361,9 +363,9 @@ if (nrow(dataDT) > 0){
 # TODO replace hard-coded url with a reference to the config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
-  		  outputDT[, StructureImage := paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',geneId,'">')]
+  		  outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
       }else{
-        outputDT[, StructureImage := paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",geneId)]
+        outputDT[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
       }
       # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
       if (aggregate){
@@ -386,7 +388,6 @@ if (nrow(dataDT) > 0){
 #TODO replace hard-coded url with a reference to the properies file
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
-#Replace with vectorization
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
           urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
@@ -445,9 +446,7 @@ if (nrow(dataDT) > 0){
       
   		#aggregate and pivot the data
   		if (aggregate){
-  		  # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
-#TODO config  		  
-        geomList = c("EC50","pH","Ki")
+  		  # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)		  
   		  dataDTFilter <- dataDT[protocolId == expt]         
   		  outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
   		  outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
@@ -466,11 +465,11 @@ if (nrow(dataDT) > 0){
   		myLogger$debug(paste0("current outputDT2 ", nrow(outputDT2)))
   		myLogger$debug(paste0("current outputDT2 ", names(outputDT2)))
 
-      if (!exportCSV){
-        outputDT2[, StructureImage := paste0('<img src="http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/',geneId,'">')]
-      }else{
-        outputDT2[, StructureImage := paste0("http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/",geneId)]
-      }
+  		if (!exportCSV){
+  		  outputDT2[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
+  		}else{
+  		  outputDT2[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
+  		}
 
       # Even though a protocol can have multiple experiments, we still want to get the order of the columns from each experiment
       if (aggregate){
