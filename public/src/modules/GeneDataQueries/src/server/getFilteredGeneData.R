@@ -227,6 +227,7 @@ if (errorFlag){
         dataDT <- as.data.table(dataDF)
 }
 
+save(dataDT,file="dataDT.Rda")
 ### FUNCTIONS FOR PROCESSING DATA INTO ROWS/COLS ETC...#####
 
 
@@ -362,8 +363,6 @@ if (nrow(dataDT) > 0){
       }
 
       # Add a column with the compound structure
-# TODO replace hard-coded url with a reference to the config.properties
-# or use racas::getAcasFileLink which uses config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
   		  outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
@@ -388,12 +387,11 @@ if (nrow(dataDT) > 0){
       
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
-#TODO replace hard-coded url with a reference to the properies file
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
           if (length(urlSplit) > length(outputDT[[i]])){
             outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -404,7 +402,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues){
-          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
+          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues)
@@ -491,14 +489,12 @@ if (nrow(dataDT) > 0){
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
       
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
-      #aggregate
-      #csv handling
-      #TODO replace hard-coded url with a reference to the properies file
+#csv handling
       if (aggregate){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues2){
           split <-  strsplit(outputDT2[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
           if (length(urlSplit) > length(outputDT2[[i]])){
             outputDT2[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -509,7 +505,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues2){
-          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
+          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues2)
