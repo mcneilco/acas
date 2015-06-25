@@ -393,7 +393,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
           if (length(urlSplit) > length(outputDT[[i]])){
             outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -404,7 +404,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues){
-          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues)
@@ -498,7 +498,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues2){
           split <-  strsplit(outputDT2[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
           if (length(urlSplit) > length(outputDT2[[i]])){
             outputDT2[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -509,7 +509,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues2){
-          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues2)
