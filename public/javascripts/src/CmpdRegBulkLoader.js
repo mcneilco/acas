@@ -75,7 +75,7 @@
     AssignedProperty.prototype.validate = function(attrs) {
       var errors;
       errors = [];
-      if (attrs.required && attrs.dbProperty !== "corporate id" && attrs.dbProperty !== "project" && attrs.defaultVal === "") {
+      if (attrs.required && attrs.dbProperty !== "corporate id" && attrs.dbProperty !== "Project" && attrs.defaultVal === "") {
         errors.push({
           attribute: 'defaultVal',
           message: 'A default value must be assigned'
@@ -91,7 +91,7 @@
     AssignedProperty.prototype.validateProject = function() {
       var projectError;
       projectError = [];
-      if (this.get('required') && this.get('dbProperty') === "project" && this.get('defaultVal') === "unassigned") {
+      if (this.get('required') && this.get('dbProperty') === "Project" && this.get('defaultVal') === "unassigned") {
         projectError.push({
           attribute: 'dbProject',
           message: 'Project must be selected'
@@ -171,6 +171,30 @@
 
   })(Backbone.Collection);
 
+  window.BulkLoadFile = (function(superClass) {
+    extend(BulkLoadFile, superClass);
+
+    function BulkLoadFile() {
+      return BulkLoadFile.__super__.constructor.apply(this, arguments);
+    }
+
+    return BulkLoadFile;
+
+  })(Backbone.Model);
+
+  window.BulkLoadFileList = (function(superClass) {
+    extend(BulkLoadFileList, superClass);
+
+    function BulkLoadFileList() {
+      return BulkLoadFileList.__super__.constructor.apply(this, arguments);
+    }
+
+    BulkLoadFileList.prototype.model = BulkLoadFile;
+
+    return BulkLoadFileList;
+
+  })(Backbone.Collection);
+
   window.DetectSdfPropertiesController = (function(superClass) {
     extend(DetectSdfPropertiesController, superClass);
 
@@ -196,7 +220,7 @@
     DetectSdfPropertiesController.prototype.initialize = function() {
       this.numRecords = 100;
       this.tempName = "none";
-      this.mappings = null;
+      this.mappings = new AssignedPropertiesList();
       return this.project = "unassigned";
     };
 
@@ -237,43 +261,21 @@
     };
 
     DetectSdfPropertiesController.prototype.getProperties = function() {
-      var mappings, mappingsCollection, projectProp, sdfInfo;
+      var mappings, sdfInfo;
       this.$('.bv_detectedSdfPropertiesList').html("Loading...");
       this.disableInputs();
       this.$('.bv_deleteFile').attr('disabled', 'disabled');
-      mappings = null;
       if (this.mappings instanceof Backbone.Collection) {
         mappings = this.mappings.toJSON();
       } else {
         mappings = this.mappings;
       }
-      if (window.conf.cmpdReg.showProjectSelect) {
-        mappingsCollection = new Backbone.Collection(mappings);
-        projectProp = mappingsCollection.findWhere({
-          dbProperty: 'project'
-        });
-        if (projectProp != null) {
-          projectProp.set({
-            defaultVal: this.project
-          });
-          mappings = mappingsCollection.toJSON();
-        } else {
-          if (mappings === null) {
-            mappings = [];
-          }
-          mappings.push({
-            dbProperty: 'project',
-            sdfProperty: null,
-            required: true,
-            defaultVal: this.project
-          });
-        }
-      }
       sdfInfo = {
         fileName: this.fileName,
         numRecords: this.numRecords,
         templateName: this.tempName,
-        mappings: mappings
+        mappings: mappings,
+        userName: window.AppLaunchParams.loginUser.username
       };
       return $.ajax({
         type: 'POST',
@@ -287,6 +289,7 @@
         })(this),
         error: (function(_this) {
           return function(err) {
+            _this.handleReadError(err);
             return _this.serviceReturn = null;
           };
         })(this),
@@ -295,7 +298,16 @@
     };
 
     DetectSdfPropertiesController.prototype.handlePropertiesDetected = function(response) {
-      return this.trigger('propsDetected', response);
+      if (response === "Error") {
+        return this.handleReadError(response);
+      } else {
+        return this.trigger('propsDetected', response);
+      }
+    };
+
+    DetectSdfPropertiesController.prototype.handleReadError = function(err) {
+      this.$('.bv_detectedSdfPropertiesList').addClass('readError');
+      return this.$('.bv_detectedSdfPropertiesList').html("An error occurred reading the SD file. Please retry upload or contact an administrator.");
     };
 
     DetectSdfPropertiesController.prototype.handleFileRemoved = function() {
@@ -307,15 +319,16 @@
       return this.trigger('resetAssignProps');
     };
 
-    DetectSdfPropertiesController.prototype.showSdfProperties = function(sdfPropsList) {
+    DetectSdfPropertiesController.prototype.updatePropertiesRead = function(sdfPropsList, numRecordsRead) {
       var newLine, props;
-      if (this.numRecords === -1) {
-        this.$('.bv_recordsRead').html('All');
+      this.$('.bv_detectedSdfPropertiesList').removeClass('readError');
+      if (this.numRecords === -1 || (this.numRecords > numRecordsRead)) {
+        this.numRecords = numRecordsRead;
       } else {
-        this.$('.bv_recordsRead').html(this.numRecords);
         this.$('.bv_readMore').removeAttr('disabled');
         this.$('.bv_readAll').removeAttr('disabled');
       }
+      this.$('.bv_recordsRead').html(this.numRecords);
       newLine = "&#13;&#10;";
       props = "";
       sdfPropsList.each(function(prop) {
@@ -433,6 +446,9 @@
         } else {
           name = code;
         }
+        if (code.toLowerCase().indexOf("date") > -1) {
+          name += " (YYYY-MM-DD or MM-DD-YYYY)";
+        }
         newOption = new PickList({
           code: code,
           name: name
@@ -533,7 +549,9 @@
           return _this.trigger('assignedDbPropChanged');
         };
       })(this));
-      this.$('.bv_propInfo').append(apc.render().el);
+      if (!(window.conf.cmpdReg.showProjectSelect && prop.get('dbProperty') === "Project")) {
+        this.$('.bv_propInfo').append(apc.render().el);
+      }
       if (canDelete) {
         return apc.$('.bv_deleteProperty').show();
       }
@@ -606,8 +624,8 @@
           var option;
           option = new PickList();
           option.set({
-            code: temp.get('template'),
-            name: temp.get('template'),
+            code: temp.get('templateName'),
+            name: temp.get('templateName'),
             ignored: temp.get('ignored')
           });
           return templatePickList.add(option);
@@ -660,7 +678,7 @@
     AssignSdfPropertiesController.prototype.createPropertyCollections = function(properties) {
       this.sdfPropertiesList = new SdfPropertiesList(properties.sdfProperties);
       this.dbPropertiesList = new DbPropertiesList(properties.dbProperties);
-      this.assignedPropertiesList = new AssignedPropertiesList(properties.bulkloadProperties);
+      this.assignedPropertiesList = new AssignedPropertiesList(properties.bulkLoadProperties);
       this.assignedPropertiesList.on('change', (function(_this) {
         return function() {
           return _this.isValid();
@@ -672,9 +690,6 @@
       this.assignedPropertiesListController.render();
       this.showUnassignedDbProperties();
       this.$('.bv_addDbProperty').removeAttr('disabled');
-      if (window.conf.cmpdReg.showProjectSelect) {
-        this.handleDbProjectChanged();
-      }
       return this.isValid();
     };
 
@@ -698,39 +713,24 @@
     };
 
     AssignSdfPropertiesController.prototype.handleDbProjectChanged = function() {
-      var assignedProjectProp, project, projectProp;
+      var project;
       project = this.projectListController.getSelectedCode();
-      if (this.assignedPropertiesList != null) {
-        assignedProjectProp = this.assignedPropertiesList.findWhere({
-          dbProperty: "project"
-        });
-        if (assignedProjectProp != null) {
-          assignedProjectProp.set({
-            defaultVal: project
-          });
-        } else {
-          projectProp = new AssignedProperty({
-            sdfProperty: null,
-            dbProperty: "project",
-            defaultVal: project,
-            required: true
-          });
-          this.assignedPropertiesList.add(projectProp);
-        }
-      }
       this.isValid();
       return this.trigger('projectChanged', project);
     };
 
     AssignSdfPropertiesController.prototype.handleTemplateChanged = function() {
-      var mappings, templateName;
+      var mappings, match, templateName;
       templateName = this.templateListController.getSelectedCode();
       if (templateName === "none") {
-        mappings = null;
+        mappings = new AssignedPropertiesList();
       } else {
-        mappings = this.templates.findWhere({
-          template: templateName
-        }).get('mappings');
+        mappings = new AssignedPropertiesList(JSON.parse(this.templates.findWhere({
+          templateName: templateName
+        }).get('jsonTemplate')));
+        match = JSON.parse(this.templates.findWhere({
+          templateName: templateName
+        }).get('jsonTemplate'));
       }
       return this.trigger('templateChanged', templateName, mappings);
     };
@@ -839,22 +839,13 @@
     };
 
     AssignSdfPropertiesController.prototype.getProjectErrors = function() {
-      var projectError, projectProp;
+      var projectError;
       projectError = [];
-      if (this.assignedPropertiesList != null) {
-        projectProp = this.assignedPropertiesList.findWhere({
-          dbProperty: 'project'
+      if (this.projectListController.getSelectedCode() === "unassigned" || this.projectListController.getSelectedCode() === null) {
+        projectError.push({
+          attribute: 'dbProject',
+          message: 'Project must be selected'
         });
-        if (projectProp != null) {
-          projectError = projectProp.validateProject();
-        }
-      } else if (window.conf.cmpdReg.showProjectSelect) {
-        if (this.projectListController.getSelectedCode() === "unassigned" || this.projectListController.getSelectedCode() === null) {
-          projectError.push({
-            attribute: 'dbProject',
-            message: 'Project must be selected'
-          });
-        }
       }
       return projectError;
     };
@@ -935,6 +926,8 @@
 
     AssignSdfPropertiesController.prototype.handleRegCmpdsClicked = function() {
       var dataToPost, saveTemplateChecked, templateName;
+      this.$('.bv_regCmpds').attr('disabled', 'disabled');
+      this.$('.bv_registering').show();
       templateName = null;
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
       if (saveTemplateChecked) {
@@ -942,9 +935,10 @@
       }
       dataToPost = {
         templateName: templateName,
-        mappings: JSON.stringify(this.assignedPropertiesListController.collection.models),
+        jsonTemplate: JSON.stringify(this.assignedPropertiesListController.collection.models),
         recordedBy: window.AppLaunchParams.loginUser.username,
-        ignored: false
+        ignored: false,
+        mappings: JSON.stringify(this.assignedPropertiesListController.collection.models)
       };
       return $.ajax({
         type: 'POST',
@@ -952,6 +946,7 @@
         data: dataToPost,
         success: (function(_this) {
           return function(response) {
+            _this.$('.bv_registering').hide();
             return _this.trigger('saveComplete', response);
           };
         })(this),
@@ -962,6 +957,82 @@
         })(this),
         dataType: 'json'
       });
+    };
+
+    AssignSdfPropertiesController.prototype.saveTemplate = function() {
+      var dataToPost, templateName;
+      templateName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_templateName'));
+      dataToPost = {
+        templateName: templateName,
+        jsonTemplate: JSON.stringify(this.assignedPropertiesListController.collection.models),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        ignored: false
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/api/cmpdRegBulkLoader/saveTemplate",
+        data: dataToPost,
+        success: (function(_this) {
+          return function(response) {
+            console.log("save template complete");
+            if (response.id != null) {
+              return _this.registerCompounds();
+            } else {
+              return _this.handleSaveTemplateError();
+            }
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            _this.serviceReturn = null;
+            return _this.handleSaveTemplateError();
+          };
+        })(this),
+        dataType: 'json'
+      });
+    };
+
+    AssignSdfPropertiesController.prototype.handleSaveTemplateError = function() {
+      this.$('.bv_registering').hide();
+      this.$('.bv_errorMessage').html("An error occurred saving the template.");
+      return this.$('.bv_errorMessage').show();
+    };
+
+    AssignSdfPropertiesController.prototype.registerCompounds = function() {
+      var dataToPost;
+      dataToPost = {
+        filePath: templateName,
+        mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
+        username: window.AppLaunchParams.loginUser.username
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/api/cmpdRegBulkLoader/registerCmpds",
+        data: dataToPost,
+        success: (function(_this) {
+          return function(response) {
+            console.log("register compounds complete");
+            if (response.id != null) {
+              return console.log("successful reg");
+            } else {
+              return _this.handleRegisterCmpdsError();
+            }
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            _this.serviceReturn = null;
+            return _this.handleRegisterCmpdsError();
+          };
+        })(this),
+        dataType: 'json'
+      });
+    };
+
+    AssignSdfPropertiesController.prototype.handleRegisterCmpdsError = function(err) {
+      this.$('.bv_registering').hide();
+      this.$('.bv_errorMessage').html("An error occurred registering the compounds.");
+      return this.$('.bv_errorMessage').show();
     };
 
     return AssignSdfPropertiesController;
@@ -1031,7 +1102,7 @@
     BulkRegCmpdsController.prototype.handleSdfPropertiesDetected = function(properties) {
       this.assignSdfPropertiesController.createPropertyCollections(properties);
       this.detectSdfPropertiesController.mappings = this.assignSdfPropertiesController.assignedPropertiesList;
-      this.detectSdfPropertiesController.showSdfProperties(this.assignSdfPropertiesController.sdfPropertiesList);
+      this.detectSdfPropertiesController.updatePropertiesRead(this.assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead);
       this.$('.bv_assignProperties').show();
       this.$('.bv_saveOptions').show();
       return this.$('.bv_regCmpds').show();
@@ -1073,6 +1144,8 @@
     };
 
     BulkRegCmpdsSummaryController.prototype.render = function() {
+      console.log(this.summaryHTML);
+      this.summaryHTML = '<div>Registration completed:</div><div style="margin-top:15px;"><div>0 new compounds registered</div><div>0 new lots of existing compounds registered</div><div style="margin-top:15px;margin-bottom:10px;">1 errors have been written to /home/runner/privateUploads/BulkLoaderTestSDF_1_2015-06-24_errors.sdf</div><div style="margin-left:15px;">1 compounds had the error: Duplicate lot cannot be registered due to previously existing lot in database.</div>	';
       return this.$('.bv_regSummaryHTML').html(this.summaryHTML);
     };
 
@@ -1086,25 +1159,188 @@
 
   })(Backbone.View);
 
+  window.FileRowSummaryController = (function(superClass) {
+    extend(FileRowSummaryController, superClass);
+
+    function FileRowSummaryController() {
+      this.render = bind(this.render, this);
+      this.handleClick = bind(this.handleClick, this);
+      return FileRowSummaryController.__super__.constructor.apply(this, arguments);
+    }
+
+    FileRowSummaryController.prototype.tagName = 'tr';
+
+    FileRowSummaryController.prototype.className = 'dataTableRow';
+
+    FileRowSummaryController.prototype.events = {
+      "click": "handleClick"
+    };
+
+    FileRowSummaryController.prototype.handleClick = function() {
+      this.trigger("gotClick", this.model);
+      $(this.el).closest("table").find("tr").removeClass("info");
+      return $(this.el).addClass("info");
+    };
+
+    FileRowSummaryController.prototype.initialize = function() {
+      return this.template = _.template($('#FileRowSummaryView').html());
+    };
+
+    FileRowSummaryController.prototype.render = function() {
+      var toDisplay;
+      toDisplay = {
+        fileName: this.model.get('fileName'),
+        loadDate: UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('loadDate')),
+        loadUser: this.model.get('loadUser')
+      };
+      $(this.el).html(this.template(toDisplay));
+      return this;
+    };
+
+    return FileRowSummaryController;
+
+  })(Backbone.View);
+
+  window.FileSummaryTableController = (function(superClass) {
+    extend(FileSummaryTableController, superClass);
+
+    function FileSummaryTableController() {
+      this.render = bind(this.render, this);
+      this.selectedRowChanged = bind(this.selectedRowChanged, this);
+      return FileSummaryTableController.__super__.constructor.apply(this, arguments);
+    }
+
+    FileSummaryTableController.prototype.selectedRowChanged = function(row) {
+      return this.trigger("selectedRowUpdated", row);
+    };
+
+    FileSummaryTableController.prototype.render = function() {
+      this.template = _.template($('#FileSummaryTableView').html());
+      $(this.el).html(this.template);
+      if (this.collection.models.length === 0) {
+        $(".bv_noFilesFoundMessage").removeClass("hide");
+      } else {
+        $(".bv_noFilesFoundMessage").addClass("hide");
+        this.collection.each((function(_this) {
+          return function(file) {
+            var frsc;
+            frsc = new FileRowSummaryController({
+              model: file
+            });
+            frsc.on("gotClick", _this.selectedRowChanged);
+            return _this.$("tbody").append(frsc.render().el);
+          };
+        })(this));
+        this.$("table").dataTable({
+          oLanguage: {
+            sSearch: "Filter results: "
+          }
+        });
+      }
+      return this;
+    };
+
+    return FileSummaryTableController;
+
+  })(Backbone.View);
+
   window.PurgeFilesController = (function(superClass) {
     extend(PurgeFilesController, superClass);
 
     function PurgeFilesController() {
+      this.handlePurgeSuccess = bind(this.handlePurgeSuccess, this);
+      this.selectedFileUpdated = bind(this.selectedFileUpdated, this);
       return PurgeFilesController.__super__.constructor.apply(this, arguments);
     }
 
     PurgeFilesController.prototype.template = _.template($("#PurgeFilesView").html());
 
     PurgeFilesController.prototype.events = {
-      "click .bv_purgeFile": "handlePurgeFile"
+      "click .bv_purgeFileBtn": "handlePurgeFile"
     };
 
     PurgeFilesController.prototype.initialize = function() {
       $(this.el).empty();
-      return $(this.el).html(this.template());
+      $(this.el).html(this.template());
+      this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
+      this.$('.bv_purgeSummary').hide();
+      this.fileToPurge = null;
+      return this.getFiles();
     };
 
-    PurgeFilesController.prototype.handlePurgeFile = function() {};
+    PurgeFilesController.prototype.getFiles = function() {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/cmpdRegBulkLoader/getFilesToPurge",
+        dataType: "json",
+        success: (function(_this) {
+          return function(response) {
+            return _this.setupFileSummaryTable(response);
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return console.log("error getting files");
+          };
+        })(this)
+      });
+    };
+
+    PurgeFilesController.prototype.setupFileSummaryTable = function(files) {
+      if (files.length === 0) {
+        $('.bv_fileTableController').addClass("well");
+        $('.bv_fileTableController').html("No files to purge");
+        return $('.bv_purgeFileBtn').hide();
+      } else {
+        this.fileSummaryTable = new FileSummaryTableController({
+          collection: new BulkLoadFileList(files)
+        });
+        this.fileSummaryTable.on("selectedRowUpdated", this.selectedFileUpdated);
+        return $(".bv_fileTableController").html(this.fileSummaryTable.render().el);
+      }
+    };
+
+    PurgeFilesController.prototype.selectedFileUpdated = function(file) {
+      console.log("selected file updated");
+      console.log(file);
+      this.fileToPurge = file.get('id');
+      console.log(this.fileToPurge);
+      return this.$('.bv_purgeFileBtn').removeAttr('disabled');
+    };
+
+    PurgeFilesController.prototype.handlePurgeFile = function() {
+      var fileInfo;
+      this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
+      this.$('.bv_purgeSummary').hide();
+      fileInfo = {
+        fileId: this.fileToPurge
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/api/cmpdRegBulkLoader/purgeFile",
+        data: fileInfo,
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            _this.handlePurgeSuccess(response);
+            _this.$('.bv_registering').hide();
+            return _this.trigger('saveComplete', response);
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            return _this.serviceReturn = null;
+          };
+        })(this)
+      });
+    };
+
+    PurgeFilesController.prototype.handlePurgeSuccess = function(response) {
+      this.$('.bv_purgeSummary').html(response);
+      this.$('.bv_purgeSummary').show();
+      this.fileToPurge = null;
+      return this.getFiles();
+    };
 
     return PurgeFilesController;
 
@@ -1121,28 +1357,44 @@
 
     CmpdRegBulkLoaderAppController.prototype.events = {
       "click .bv_bulkRegDropdown": "handleBulkRegDropdownSelected",
-      "click .bv_purgeFileDropdown": "handlePurgeFileSelected"
+      "click .bv_purgeFileDropdown": "handlePurgeFileDropdownSelected"
     };
 
     CmpdRegBulkLoaderAppController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
       $(this.el).addClass('CmpdRegBulkLoaderAppController');
+      this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
+      this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+        this.$('.bv_adminDropdown').removeClass('disabled');
+      } else {
+        this.$('.bv_adminDropdown').removeClass('disabled');
+      }
       this.$('.bv_searchNavOption').hide();
-      return this.setupBulkRegCmpdsController();
+      this.setupBulkRegCmpdsController();
+      this.$('.bv_bulkRegSummary').show();
+      return this.setupBulkRegCmpdsSummaryController("none");
     };
 
     CmpdRegBulkLoaderAppController.prototype.handleBulkRegDropdownSelected = function() {
-      this.$('.bv_bulkReg').show();
-      this.$('.bv_purgeFiles').hide();
+      if (!this.$('.bv_bulkReg').is(':visible')) {
+        this.$('.bv_bulkReg').show();
+        this.setupBulkRegCmpdsController();
+        this.$('.bv_bulkRegSummary').hide();
+        this.$('.bv_purgeFiles').hide();
+      }
       return this.$('.bv_registerDropdown').dropdown('toggle');
     };
 
-    CmpdRegBulkLoaderAppController.prototype.handlePurgeFileSelected = function() {
-      this.$('.bv_adminDropdown').dropdown('toggle');
-      this.$('.bv_bulkReg').hide();
-      this.$('.bv_purgeFiles').show();
-      return this.setupPurgeFilesController();
+    CmpdRegBulkLoaderAppController.prototype.handlePurgeFileDropdownSelected = function() {
+      if (!this.$('.bv_purgeFiles').is(':visible')) {
+        this.$('.bv_bulkReg').hide();
+        this.$('.bv_bulkRegSummary').hide();
+        this.$('.bv_purgeFiles').show();
+        this.setupPurgeFilesController();
+      }
+      return this.$('.bv_adminDropdown').dropdown('toggle');
     };
 
     CmpdRegBulkLoaderAppController.prototype.setupBulkRegCmpdsController = function() {

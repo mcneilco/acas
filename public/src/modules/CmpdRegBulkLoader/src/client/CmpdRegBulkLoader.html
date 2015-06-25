@@ -49,8 +49,8 @@
 
     <div class="container" style="margin-left:15px;">
         <div class="bv_bulkReg"></div>
-        <div class="bv_bulkRegSummary"></div>
-        <div class="bv_purgeFiles"></div>
+        <div class="bv_bulkRegSummary hide"></div>
+        <div class="bv_purgeFiles hide"></div>
     </div>
 
 
@@ -151,6 +151,8 @@
                 </span>
             </span>
             <button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button>
+            <div class="bv_registering pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Registering...</div>
+            <div class="bv_errorMessage pull-right hide" style="margin-right:5px; padding-top:5px;color:red;"></div>
         </div>
         <div class="alert alert-warning bv_overwriteWarning hide" role="alert" style="margin-top:10px;width:375px;">
             <span class="bv_overwriteMessage"></span>
@@ -170,7 +172,7 @@
 <script type="text/template" id="AssignedPropertyView" xmlns="http://www.w3.org/1999/html">
 
     <div class="form-inline" style="margin-bottom:10px;margin-left:0px;">
-        <span class="bv_sdfProperty span2" style="margin-left:0px;text-align:right;">Corporate ID</span>
+        <span class="bv_sdfProperty span2" style="margin-top:5px;margin-left:0px;text-align:right;">Corporate ID</span>
         <span class="control-group bv_group_dbProperty">
             <select class="bv_dbProperty span3" style="margin-left:25px;width:307px;"></select>
         </span>
@@ -204,6 +206,28 @@
     </div>
 </script>
 
+<script type="text/template" id="FileRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_fileName'><%=fileName%></td>
+    <td class='bv_loadDate'><%=loadDate%></td>
+    <td class='bv_loadUser'><%=loadUser%></td>
+</script>
+
+<script type="text/template" id="FileSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+            <tr>
+                <th>File</th>
+                <th>Load Date</th>
+                <th>Load User</th>
+            </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+
+</script>
+
 <script type="text/template" id="PurgeFilesView" xmlns="http://www.w3.org/1999/html">
     <div class="span9">
         <h3>Purge Files</h3>
@@ -211,11 +235,12 @@
             <span>
                 <div class="well">Select a registration file to have its records purged from the database. Note that if there are any dependencies, you will not be able to purge the file.</div>
             </span>
+            <div class="bv_fileTableController"></div>
         </div>
         <div class="span9" style="margin-left:0px;">
-            <button type="button" class="btn bv_downloadSummary pull-right">Purge File</button>
+            <button type="button" class="btn bv_purgeFileBtn pull-right">Purge File</button>
         </div>
-        <div class="well bv_purgeSummary" style="background:#FFFFFF;margin-bottom:10px;">
+        <div class="well bv_purgeSummary span9 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
         </div>
     </div>
 </script>

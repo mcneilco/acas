@@ -2,7 +2,7 @@
 	exports.templates =
 		[
 			{
-				template: 'Template 1',
+				templateName: 'Template 1',
 				mappings:
 					[
 						{"dbProperty":"db1","sdfProperty":"prop1","required":true,"defaultVal":"1"}
@@ -31,7 +31,7 @@
 			}
 			,
 			{
-				template: 'Template 2',
+				templateName: 'Template 2',
 				mappings:
 					[
 						{"dbProperty": "db1", "sdfProperty": "prop1", "required": true, "defaultVal": "1"}
@@ -71,7 +71,7 @@
 				{"name":"db5", "dataType":"double", "required": false, "displayOrder":5}
 			]
 		,
-		"bulkloadProperties":[
+		"bulkLoadProperties":[
 			{"dbProperty": "db1", "sdfProperty":"prop1" , required: true, defaultVal: 1 },
 			{"dbProperty": "db2", "sdfProperty":"prop2" , required: true, defaultVal: 2}
 		]
@@ -106,7 +106,7 @@
 				{"name":"db10", "dataType":"double", "required": true, "displayOrder":10}
 			]
 		,
-		"bulkloadProperties":[
+		"bulkLoadProperties":[
 			{"dbProperty": "db1", "sdfProperty":"prop1" , required: true, defaultVal: 1 },
 			{"dbProperty": "db2", "sdfProperty":"prop2" , required: true, defaultVal: 2 }
 			{"dbProperty": "db9", "sdfProperty":"prop9" , required: true, defaultVal: 9 },
@@ -146,12 +146,37 @@
 				{"name":"salt equivalents", "dataType":"double", "required": false, "displayOrder":12}
 			]
 		,
-		"bulkloadProperties":[
+		"bulkLoadProperties":[
 			{"dbProperty": "db1", "sdfProperty":"prop1" , required: true },
 			{"dbProperty": "db2", "sdfProperty":"prop2" , required: true },
 			{"dbProperty": "db9", "sdfProperty":"prop9" , required: false },
 			{"dbProperty": "db10", "sdfProperty":"prop10" , required: false }
 		]
 	}
+
+	exports.file1 =
+		id: 1
+		fileName: "TestFile.csv"
+		loadDate: 1342080000000
+		loadUser: "bob"
+
+	exports.file2 =
+		id: 2
+		fileName: "TestFile2.csv"
+		loadDate: 1342020000000
+		loadUser: "joe"
+
+	exports.file3 =
+		id: 3
+		fileName: "TestFile3.csv"
+		loadDate: 1343920000000
+		loadUser: "jane"
+
+	exports.filesToPurge =
+		[
+			exports.file1,
+			exports.file2,
+			exports.file3
+		]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.cmpdRegBulkLoaderServiceTestJSON = window.cmpdRegBulkLoaderServiceTestJSON or {} else exports)

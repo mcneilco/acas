@@ -1,3 +1,18 @@
 .bv_browseFile form.fileupload div.row.fileupload-buttonbar div.span7.bv_manualFileSelect{
     padding-left:0px !important;
 }
+
+.bv_detectedSdfPropertiesList.readError{
+    color:red;
+}
+
+.bv_fileTableController{
+    margin-bottom:15px;
+}
+
+.bv_fileTableController.well{
+    background:#FFFFFF;
+    text-align: center;
+    font-weight: bold;
+    margin-bottom:0px;
+}

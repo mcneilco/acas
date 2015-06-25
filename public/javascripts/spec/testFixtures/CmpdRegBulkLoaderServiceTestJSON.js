@@ -2,7 +2,7 @@
   (function(exports) {
     exports.templates = [
       {
-        template: 'Template 1',
+        templateName: 'Template 1',
         mappings: [
           {
             "dbProperty": "db1",
@@ -63,7 +63,7 @@
         ],
         ignored: false
       }, {
-        template: 'Template 2',
+        templateName: 'Template 2',
         mappings: [
           {
             "dbProperty": "db1",
@@ -147,7 +147,7 @@
           "displayOrder": 5
         }
       ],
-      "bulkloadProperties": [
+      "bulkLoadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",
@@ -248,7 +248,7 @@
           "displayOrder": 10
         }
       ],
-      "bulkloadProperties": [
+      "bulkLoadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",
@@ -272,7 +272,7 @@
         }
       ]
     };
-    return exports.propertiesList3 = {
+    exports.propertiesList3 = {
       "sdfProperties": [
         {
           "name": "prop1",
@@ -372,7 +372,7 @@
           "displayOrder": 12
         }
       ],
-      "bulkloadProperties": [
+      "bulkLoadProperties": [
         {
           "dbProperty": "db1",
           "sdfProperty": "prop1",
@@ -392,6 +392,25 @@
         }
       ]
     };
+    exports.file1 = {
+      id: 1,
+      fileName: "TestFile.csv",
+      loadDate: 1342080000000,
+      loadUser: "bob"
+    };
+    exports.file2 = {
+      id: 2,
+      fileName: "TestFile2.csv",
+      loadDate: 1342020000000,
+      loadUser: "joe"
+    };
+    exports.file3 = {
+      id: 3,
+      fileName: "TestFile3.csv",
+      loadDate: 1343920000000,
+      loadUser: "jane"
+    };
+    return exports.filesToPurge = [exports.file1, exports.file2, exports.file3];
   })((typeof process === "undefined" || !process.versions ? window.cmpdRegBulkLoaderServiceTestJSON = window.cmpdRegBulkLoaderServiceTestJSON || {} : exports));
 
 }).call(this);
