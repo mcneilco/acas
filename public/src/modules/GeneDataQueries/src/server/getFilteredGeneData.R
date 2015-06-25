@@ -366,7 +366,7 @@ if (nrow(dataDT) > 0){
 # or use racas::getAcasFileLink which uses config.properties
       # For HTML display include <tags>. For csv just give the url.
       if (!exportCSV){
-  		  outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
+  		  outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'" style="height: 180px;">')]
       }else{
         outputDT[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
       }
@@ -393,7 +393,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height: 180px;"></a>'))
           if (length(urlSplit) > length(outputDT[[i]])){
             outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -404,7 +404,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues){
-          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          outputDT[[i]] <- sapply(outputDT[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height: 180px;"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues)
@@ -419,7 +419,7 @@ if (nrow(dataDT) > 0){
       # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
+        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" style="height:180px width:375px"></a>')],TRUE)
       }else{
         try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
@@ -469,7 +469,7 @@ if (nrow(dataDT) > 0){
   		myLogger$debug(paste0("current outputDT2 ", names(outputDT2)))
 
   		if (!exportCSV){
-  		  outputDT2[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
+  		  outputDT2[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'" style="height:180px">')]
   		}else{
   		  outputDT2[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
   		}
@@ -498,7 +498,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues2){
           split <-  strsplit(outputDT2[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          urlSplit <- sapply(split,function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style="height:180px"></a>'))
           if (length(urlSplit) > length(outputDT2[[i]])){
             outputDT2[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
           }else{
@@ -509,7 +509,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues2){
-          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'"></a>'))
+          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) paste0('<a href="http://192.168.99.100:3000/dataFiles/',x,'" target="_blank"><img src="http://192.168.99.100:3000/dataFiles/',x,'" style=height:180px"></a>'))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues2)
@@ -523,7 +523,7 @@ if (nrow(dataDT) > 0){
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
   		if (!exportCSV){
-  		  try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
+  		  try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" style="height:180px width:375px"></a>')],TRUE)
   		}else{
         try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }	
@@ -642,5 +642,6 @@ if (exportCSV){
 Rprof(NULL)
 
     
+
 
 
