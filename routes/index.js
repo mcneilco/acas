@@ -18,7 +18,8 @@
     app.get('/', exports.index);
     if (config.all.server.enableSpecRunner) {
       app.get('/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner);
-      return app.get('/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner);
+      app.get('/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner);
+      return app.get('/ExcelCompoundInfoAppSpecRunner', loginRoutes.ensureAuthenticated, exports.excelCompoundInfoAppSpecRunner);
     }
   };
 
@@ -109,6 +110,14 @@
         liveServiceTest: false,
         deployMode: global.deployMode
       }
+    });
+  };
+
+  exports.excelCompoundInfoAppSpecRunner = function(req, res) {
+    "use strict";
+    global.specRunnerTestmode = true;
+    return res.render('ExcelCompoundInfoAppSpecRunner', {
+      title: 'SeuratAddOns SpecRunner'
     });
   };
 

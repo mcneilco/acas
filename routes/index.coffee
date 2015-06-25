@@ -14,7 +14,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	if config.all.server.enableSpecRunner
 		app.get '/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner
 		app.get '/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner
-
+		app.get '/ExcelCompoundInfoAppSpecRunner', loginRoutes.ensureAuthenticated, exports.excelCompoundInfoAppSpecRunner
 
 exports.autoLaunchWithCode = (req, res) ->
 	moduleLaunchParams =
@@ -92,6 +92,18 @@ exports.specRunner = (req, res) ->
 			testMode: true
 			liveServiceTest: false
 			deployMode: global.deployMode
+	})
+
+exports.excelCompoundInfoAppSpecRunner = (req, res) ->
+	"use strict"
+	global.specRunnerTestmode = true
+
+
+	#scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.jasmineScripts, scriptPaths.specScripts)
+	#scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
+
+	res.render('ExcelCompoundInfoAppSpecRunner', {
+		title: 'SeuratAddOns SpecRunner'
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->

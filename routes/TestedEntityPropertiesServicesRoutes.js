@@ -3,7 +3,9 @@
     return app.post('/api/testedEntities/properties', exports.testedEntityProperties);
   };
 
-  exports.setupRoutes = function(app, loginRoutes) {};
+  exports.setupRoutes = function(app, loginRoutes) {
+    return app.post('/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties);
+  };
 
   exports.testedEntityProperties = function(req, resp) {
     var csUtilities, ents, i, j, k, l, len, len1, m, out, prop, prop2, ref, ref1, ref2;

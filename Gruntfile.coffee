@@ -223,6 +223,14 @@ module.exports = (grunt) ->
 					src: ["**"]
 					dest: "./public/src/modules"
 				]
+			public_jade:
+				files: [
+						expand: true
+						flatten: true
+						cwd: "public/src/"
+						src: ["modules/**/src/client/**/*.jade"]
+						dest: "./views"
+				]
 		execute:
 			prepare_module_includes:
 				options:
@@ -343,6 +351,9 @@ module.exports = (grunt) ->
 			copy_custom_modules:
 				files: "acas_custom/modules/**"
 				tasks: "copy:custom_modules"
+			copy_public_jade:
+				files: "acas_custom/modules/**/src/client/*.jade"
+				tasks: "copy:public_jade"
 			prepare_module_includes:
 				files:[
 						"conf/PrepareModuleIncludes.js"
