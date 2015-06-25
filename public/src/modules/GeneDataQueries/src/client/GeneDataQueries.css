@@ -283,7 +283,9 @@
     min-width: 50px;
 }
 
+
 .GeneIDQueryAppController .bv_headerCell{
     border-left: 1px solid black;
     border-right: 1px solid black;
+
 }
