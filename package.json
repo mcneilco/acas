@@ -32,6 +32,7 @@
     "temporary": ">= 0.0.0",
     "underscore": ">= 0.0.0",
     "winston": "*",
-    "winston-mongodb": "*"
+    "winston-mongodb": "*",
+    "mocha": "*"
   }
 }
