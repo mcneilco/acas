@@ -90,6 +90,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@tempName = "none"
 		@mappings = new AssignedPropertiesList()
 		@project = "unassigned"
+		@fileName = null
 
 	render: ->
 		$(@el).empty()
@@ -116,6 +117,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 
 	handleFileUploaded: (fileName) =>
 		@fileName = fileName
+		@trigger 'fileChanged', @fileName
 		@getProperties()
 
 	getProperties: =>
@@ -177,6 +179,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@numRecords = 100
 		@$('.bv_recordsRead').html 0
 		@trigger 'resetAssignProps'
+		@trigger 'fileChanged', @fileName
 
 	updatePropertiesRead: (sdfPropsList, numRecordsRead) ->
 		@$('.bv_detectedSdfPropertiesList').removeClass 'readError'
@@ -212,6 +215,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@getProperties()
 
 	handleTemplateChanged: (templateName, mappings) =>
+		console.log "handle template changed a"
 		@tempName = templateName
 		@mappings = mappings
 		if @fileName? and @fileName != null
@@ -359,6 +363,10 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		"click .bv_regCmpds": "handleRegCmpdsClicked"
 
 	initialize: ->
+#		if @options.fileName?
+#			@fileName = @options.fileName
+#		else
+		@fileName = null
 		$(@el).empty()
 		$(@el).html @template()
 		@getAndFormatTemplateOptions()
@@ -447,6 +455,9 @@ class window.AssignSdfPropertiesController extends Backbone.View
 					sdfProperty: sdfProperty
 				@assignedPropertiesList.add newAssignedProp
 
+	handleFileChanged: (newFileName) ->
+		@fileName = newFileName
+
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
 		project = @projectListController.getSelectedCode()
@@ -467,12 +478,14 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 
 	handleTemplateChanged: ->
+		console.log "handle template changed top"
 		templateName = @templateListController.getSelectedCode()
 		if templateName is "none"
 			mappings = new AssignedPropertiesList()
 		else
+			console.log @templates.findWhere({templateName: templateName}).get('jsonTemplate')
 			mappings = new AssignedPropertiesList (JSON.parse(@templates.findWhere({templateName: templateName}).get('jsonTemplate')))
-			match = JSON.parse @templates.findWhere({templateName: templateName}).get('jsonTemplate')
+#			match = JSON.parse @templates.findWhere({templateName: templateName}).get('jsonTemplate')
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
@@ -608,30 +621,15 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$("[data-toggle=tooltip]").tooltip();
 
 	handleRegCmpdsClicked: ->
+		console.log @fileName
 		@$('.bv_regCmpds').attr 'disabled', 'disabled'
 		@$('.bv_registering').show()
 		templateName = null
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
 		if saveTemplateChecked
-#			@saveTemplate()
-			templateName = UtilityFunctions::getTrimmedInput(@$('.bv_templateName'))
-		dataToPost =
-			templateName: templateName
-			jsonTemplate: JSON.stringify @assignedPropertiesListController.collection.models
-			recordedBy: window.AppLaunchParams.loginUser.username
-			ignored: false
-			mappings: JSON.stringify @assignedPropertiesListController.collection.models
-		$.ajax
-			type: 'POST'
-			url: "/api/cmpdRegBulkLoader"
-			data: dataToPost
-			success: (response) =>
-				@$('.bv_registering').hide()
-				@trigger 'saveComplete', response
-			error: (err) =>
-				@serviceReturn = null
-				#TODO handle save error
-			dataType: 'json'
+			@saveTemplate()
+		else
+			@registerCompounds()
 
 	saveTemplate: ->
 		templateName = UtilityFunctions::getTrimmedInput(@$('.bv_templateName'))
@@ -655,26 +653,25 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				@handleSaveTemplateError()
 			dataType: 'json'
 
-	handleSaveTemplateError: () ->
+	handleSaveTemplateError: ->
 		@$('.bv_registering').hide()
-		@$('.bv_errorMessage').html "An error occurred saving the template."
-		@$('.bv_errorMessage').show()
+		@$('.bv_saveErrorModal').modal('show')
+		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
+		@$('.bv_errorMessage').html "An error occurred while trying to save the template."
 
 	registerCompounds: ->
 		dataToPost =
-			filePath: templateName
+			filePath: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
-			username: window.AppLaunchParams.loginUser.username
+			userName: window.AppLaunchParams.loginUser.username
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
 			data: dataToPost
 			success: (response) =>
 				console.log "register compounds complete"
-				if response.id?
-					console.log "successful reg"
-				else
-					@handleRegisterCmpdsError()
+				@$('.bv_registering').hide()
+				@trigger 'saveComplete', response
 			error: (err) =>
 				@serviceReturn = null
 				@handleRegisterCmpdsError()
@@ -682,8 +679,9 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	handleRegisterCmpdsError: (err) ->
 		@$('.bv_registering').hide()
-		@$('.bv_errorMessage').html "An error occurred registering the compounds."
-		@$('.bv_errorMessage').show()
+		@$('.bv_saveErrorModal').modal('show')
+		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
+		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds."
 
 class window.BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
@@ -709,6 +707,8 @@ class window.BulkRegCmpdsController extends Backbone.View
 	setupAssignSdfPropertiesController: =>
 		@assignSdfPropertiesController = new AssignSdfPropertiesController
 			el: @$('.bv_assignSdfProperties')
+		@detectSdfPropertiesController.on 'fileChanged', (newFileName) =>
+			@assignSdfPropertiesController.handleFileChanged newFileName
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
 		@assignSdfPropertiesController.on 'projectChanged', (projectName) =>
@@ -746,9 +746,6 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 			@summaryHTML = ""
 
 	render: ->
-		console.log @summaryHTML
-#		@summaryHTML = '<p>Please fix the following errors and use the "Back" button at the bottom of this screen to upload a new version of the file.</p>\n  <h4 style=\"color:red\">Errors: 1 </h4>\n                         <ul><li> We encountered an internal error. Check the logs at 2015-06-24 14:41:53 </li></ul>\n  <h4>Summary</h4><p>Information:</p>\n                               <ul>\n                               <li>No. of Unique Input Entities: 10</li><li>Requested Pool Size(s): 2</li><li>Replicate Size: 2</li><li>Unique Pools Generated: 45</li><li>Total Pools Generated: 90</li><li>Plates Available: 4</li><li>Rows Excluded: A, B, O, P</li><li>Columns Excluded: 1, 2, 23, 24</li><li>No. of Wells Per Plate: 240</li><li>No. of Total Wells: 960</li>\n                               </ul>'
-		@summaryHTML = '<div>Registration completed:</div><div style="margin-top:15px;"><div>0 new compounds registered</div><div>0 new lots of existing compounds registered</div><div style="margin-top:15px;margin-bottom:10px;">1 errors have been written to /home/runner/privateUploads/BulkLoaderTestSDF_1_2015-06-24_errors.sdf</div><div style="margin-left:15px;">1 compounds had the error: Duplicate lot cannot be registered due to previously existing lot in database.</div>	'
 		@$('.bv_regSummaryHTML').html @summaryHTML
 
 	handleLoadAnotherSDF: ->
@@ -892,8 +889,6 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@$('.bv_adminDropdown').removeClass 'disabled'
 		@$('.bv_searchNavOption').hide()
 		@setupBulkRegCmpdsController()
-		@$('.bv_bulkRegSummary').show()
-		@setupBulkRegCmpdsSummaryController("none")
 
 
 	handleBulkRegDropdownSelected: ->

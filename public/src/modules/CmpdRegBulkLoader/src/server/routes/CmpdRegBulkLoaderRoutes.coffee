@@ -7,6 +7,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', loginRoutes.ensureAuthenticated, exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/readSDF', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderReadSdf
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
+	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
 	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 
@@ -99,7 +100,8 @@ exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 exports.saveTemplate = (req, resp) ->
 	console.log "exports.save template"
 	if req.query.testMode or global.specRunnerTestmode
-		resp.end '<p>Please fix the following errors and use the "Back" button at the bottom of this screen to upload a new version of the file.</p>\n  <h4 style=\"color:red\">Errors: 1 </h4>\n                         <ul><li> We encountered an internal error. Check the logs at 2015-06-24 14:41:53 </li></ul>\n  <h4>Summary</h4><p>Information:</p>\n                               <ul>\n                               <li>No. of Unique Input Entities: 10</li><li>Requested Pool Size(s): 2</li><li>Replicate Size: 2</li><li>Unique Pools Generated: 45</li><li>Total Pools Generated: 90</li><li>Plates Available: 4</li><li>Rows Excluded: A, B, O, P</li><li>Columns Excluded: 1, 2, 23, 24</li><li>No. of Wells Per Plate: 240</li><li>No. of Total Wells: 960</li>\n                               </ul>'
+		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
+		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.savedTemplateReturn
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/templates/saveTemplate"
@@ -120,86 +122,32 @@ exports.saveTemplate = (req, resp) ->
 				resp.end JSON.stringify "Error"
 		)
 
-postAssignedProperties = (req, resp) ->
-	config = require '../conf/compiled/conf.js'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	console.log "post assigned properties"
-	registerCompounds = (dataToSave, resp) ->
-		if req.query.testMode or global.specRunnerTestmode
-			console.log "register compounds"
-			resp.end JSON.stringify "Registration Summary here"
-		else
-			recordedBy = dataToSave.recordedBy
-			dataToSave.userName = recordedBy
-			delete dataToSave.recordedBy
-			console.log "info to register"
-			console.log dataToSave
-			#			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
-			request = require 'request'
-			request(
-				method: 'POST'
-				url: baseurl
-				body: dataToSave #TODO: need to remove templateName?
-				json: true
-			, (error, response, json) =>
-				if !error && response.statusCode == 200
-					console.log json
-					resp.json json
-				else
-					console.log 'got ajax error trying to register compounds'
-					console.log error
-					console.log json
-					console.log response
-			)
-
-	saveTemplate = (templateInfo, resp) ->
-		console.log "save template"
-		if req.query.testMode or global.specRunnerTestmode
-			registerCompounds templateInfo, resp
-		else
-			mappings = templateInfo.mappings
-			delete templateInfo.mappings
-			console.log templateInfo
-#			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/templates/saveTemplate"
-			request = require 'request'
-			request(
-				method: 'POST'
-				url: baseurl
-				body: templateInfo
-				json: true
-			, (error, response, json) =>
-				if !error && response.statusCode == 200
-					templateInfo.mappings = JSON.parse mappings
-					console.log "parsed JSON mappings"
-					console.log templateInfo
-					uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-					filePath = uploadsPath + "BulkLoaderTestSDF_1.sdf"
-					req.body.filePath = filePath
-					registerCompounds templateInfo, resp
-				else
-					console.log 'got ajax error trying to save template'
-					console.log error
-					console.log json
-					console.log response
-			)
-
-
-	if req.body.templateName != ""
-		saveTemplate req.body, resp
+exports.registerCmpds = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		console.log "register compounds"
+		resp.end JSON.stringify "Registration Summary here"
 	else
-		delete req.body.templateName
-		delete req.body.jsonTemplate
-		delete req.body.ignored
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		filePath = uploadsPath + "BulkLoaderTestSDF_1.sdf"
-		req.body.filePath = filePath
-		req.body.mappings = JSON.parse req.body.mappings
-		registerCompounds req.body, resp
-
-exports.postAssignedProperties = (req, resp) ->
-	postAssignedProperties req, resp
+		req.body.filePath = uploadsPath + req.body.filePath
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				console.log json
+				resp.json json
+			else
+				console.log 'got ajax error trying to register compounds'
+				console.log error
+				console.log json
+				console.log response
+		)
 
 exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode

@@ -221,7 +221,8 @@
       this.numRecords = 100;
       this.tempName = "none";
       this.mappings = new AssignedPropertiesList();
-      return this.project = "unassigned";
+      this.project = "unassigned";
+      return this.fileName = null;
     };
 
     DetectSdfPropertiesController.prototype.render = function() {
@@ -257,6 +258,7 @@
 
     DetectSdfPropertiesController.prototype.handleFileUploaded = function(fileName) {
       this.fileName = fileName;
+      this.trigger('fileChanged', this.fileName);
       return this.getProperties();
     };
 
@@ -316,7 +318,8 @@
       this.fileName = null;
       this.numRecords = 100;
       this.$('.bv_recordsRead').html(0);
-      return this.trigger('resetAssignProps');
+      this.trigger('resetAssignProps');
+      return this.trigger('fileChanged', this.fileName);
     };
 
     DetectSdfPropertiesController.prototype.updatePropertiesRead = function(sdfPropsList, numRecordsRead) {
@@ -360,6 +363,7 @@
     };
 
     DetectSdfPropertiesController.prototype.handleTemplateChanged = function(templateName, mappings) {
+      console.log("handle template changed a");
       this.tempName = templateName;
       this.mappings = mappings;
       if ((this.fileName != null) && this.fileName !== null) {
@@ -585,6 +589,7 @@
     };
 
     AssignSdfPropertiesController.prototype.initialize = function() {
+      this.fileName = null;
       $(this.el).empty();
       $(this.el).html(this.template());
       this.getAndFormatTemplateOptions();
@@ -712,6 +717,10 @@
       })(this));
     };
 
+    AssignSdfPropertiesController.prototype.handleFileChanged = function(newFileName) {
+      return this.fileName = newFileName;
+    };
+
     AssignSdfPropertiesController.prototype.handleDbProjectChanged = function() {
       var project;
       project = this.projectListController.getSelectedCode();
@@ -720,17 +729,18 @@
     };
 
     AssignSdfPropertiesController.prototype.handleTemplateChanged = function() {
-      var mappings, match, templateName;
+      var mappings, templateName;
+      console.log("handle template changed top");
       templateName = this.templateListController.getSelectedCode();
       if (templateName === "none") {
         mappings = new AssignedPropertiesList();
       } else {
+        console.log(this.templates.findWhere({
+          templateName: templateName
+        }).get('jsonTemplate'));
         mappings = new AssignedPropertiesList(JSON.parse(this.templates.findWhere({
           templateName: templateName
         }).get('jsonTemplate')));
-        match = JSON.parse(this.templates.findWhere({
-          templateName: templateName
-        }).get('jsonTemplate'));
       }
       return this.trigger('templateChanged', templateName, mappings);
     };
@@ -925,38 +935,17 @@
     };
 
     AssignSdfPropertiesController.prototype.handleRegCmpdsClicked = function() {
-      var dataToPost, saveTemplateChecked, templateName;
+      var saveTemplateChecked, templateName;
+      console.log(this.fileName);
       this.$('.bv_regCmpds').attr('disabled', 'disabled');
       this.$('.bv_registering').show();
       templateName = null;
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
       if (saveTemplateChecked) {
-        templateName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_templateName'));
+        return this.saveTemplate();
+      } else {
+        return this.registerCompounds();
       }
-      dataToPost = {
-        templateName: templateName,
-        jsonTemplate: JSON.stringify(this.assignedPropertiesListController.collection.models),
-        recordedBy: window.AppLaunchParams.loginUser.username,
-        ignored: false,
-        mappings: JSON.stringify(this.assignedPropertiesListController.collection.models)
-      };
-      return $.ajax({
-        type: 'POST',
-        url: "/api/cmpdRegBulkLoader",
-        data: dataToPost,
-        success: (function(_this) {
-          return function(response) {
-            _this.$('.bv_registering').hide();
-            return _this.trigger('saveComplete', response);
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            return _this.serviceReturn = null;
-          };
-        })(this),
-        dataType: 'json'
-      });
     };
 
     AssignSdfPropertiesController.prototype.saveTemplate = function() {
@@ -994,16 +983,17 @@
 
     AssignSdfPropertiesController.prototype.handleSaveTemplateError = function() {
       this.$('.bv_registering').hide();
-      this.$('.bv_errorMessage').html("An error occurred saving the template.");
-      return this.$('.bv_errorMessage').show();
+      this.$('.bv_saveErrorModal').modal('show');
+      this.$('.bv_saveErrorTitle').html("Error: Template Not Saved");
+      return this.$('.bv_errorMessage').html("An error occurred while trying to save the template.");
     };
 
     AssignSdfPropertiesController.prototype.registerCompounds = function() {
       var dataToPost;
       dataToPost = {
-        filePath: templateName,
+        filePath: this.fileName,
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
-        username: window.AppLaunchParams.loginUser.username
+        userName: window.AppLaunchParams.loginUser.username
       };
       return $.ajax({
         type: 'POST',
@@ -1012,11 +1002,8 @@
         success: (function(_this) {
           return function(response) {
             console.log("register compounds complete");
-            if (response.id != null) {
-              return console.log("successful reg");
-            } else {
-              return _this.handleRegisterCmpdsError();
-            }
+            _this.$('.bv_registering').hide();
+            return _this.trigger('saveComplete', response);
           };
         })(this),
         error: (function(_this) {
@@ -1031,8 +1018,9 @@
 
     AssignSdfPropertiesController.prototype.handleRegisterCmpdsError = function(err) {
       this.$('.bv_registering').hide();
-      this.$('.bv_errorMessage').html("An error occurred registering the compounds.");
-      return this.$('.bv_errorMessage').show();
+      this.$('.bv_saveErrorModal').modal('show');
+      this.$('.bv_saveErrorTitle').html("Error: Compounds Not Registered");
+      return this.$('.bv_errorMessage').html("An error occurred while trying to register the compounds.");
     };
 
     return AssignSdfPropertiesController;
@@ -1082,6 +1070,11 @@
       this.assignSdfPropertiesController = new AssignSdfPropertiesController({
         el: this.$('.bv_assignSdfProperties')
       });
+      this.detectSdfPropertiesController.on('fileChanged', (function(_this) {
+        return function(newFileName) {
+          return _this.assignSdfPropertiesController.handleFileChanged(newFileName);
+        };
+      })(this));
       this.assignSdfPropertiesController.on('templateChanged', (function(_this) {
         return function(templateName, mappings) {
           return _this.detectSdfPropertiesController.handleTemplateChanged(templateName, mappings);
@@ -1144,8 +1137,6 @@
     };
 
     BulkRegCmpdsSummaryController.prototype.render = function() {
-      console.log(this.summaryHTML);
-      this.summaryHTML = '<div>Registration completed:</div><div style="margin-top:15px;"><div>0 new compounds registered</div><div>0 new lots of existing compounds registered</div><div style="margin-top:15px;margin-bottom:10px;">1 errors have been written to /home/runner/privateUploads/BulkLoaderTestSDF_1_2015-06-24_errors.sdf</div><div style="margin-left:15px;">1 compounds had the error: Duplicate lot cannot be registered due to previously existing lot in database.</div>	';
       return this.$('.bv_regSummaryHTML').html(this.summaryHTML);
     };
 
@@ -1372,9 +1363,7 @@
         this.$('.bv_adminDropdown').removeClass('disabled');
       }
       this.$('.bv_searchNavOption').hide();
-      this.setupBulkRegCmpdsController();
-      this.$('.bv_bulkRegSummary').show();
-      return this.setupBulkRegCmpdsSummaryController("none");
+      return this.setupBulkRegCmpdsController();
     };
 
     CmpdRegBulkLoaderAppController.prototype.handleBulkRegDropdownSelected = function() {

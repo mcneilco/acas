@@ -53,7 +53,6 @@
         <div class="bv_purgeFiles hide"></div>
     </div>
 
-
 </script>
 
 <script type="text/template" id="BulkRegCmpdsView" xmlns="http://www.w3.org/1999/html">
@@ -152,7 +151,7 @@
             </span>
             <button type="button" class="btn btn-success bv_regCmpds pull-right" disabled="disabled">Register Compounds</button>
             <div class="bv_registering pull-right hide" style="margin-right:5px; padding-top:5px;color:red;">Registering...</div>
-            <div class="bv_errorMessage pull-right hide" style="margin-right:5px; padding-top:5px;color:red;"></div>
+            <!--<div class="bv_errorMessage pull-right hide" style="margin-right:5px; padding-top:5px;color:red;"></div>-->
         </div>
         <div class="alert alert-warning bv_overwriteWarning hide" role="alert" style="margin-top:10px;width:375px;">
             <span class="bv_overwriteMessage"></span>
@@ -164,6 +163,20 @@
                     <input type="radio" name="bv_overwrite" value="yes">Yes
                 </label>
             </span>
+        </div>
+    </div>
+
+    <div class="modal fade bv_saveErrorModal" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 class="modal-title bv_saveErrorTitle" style="color:red;"></h4>
+                </div>
+                <div class="modal-body" style="padding-left:0px;">
+                    <label class="bv_errorMessage" style="margin-left:30px;">The entered experiment name is already used by another experiment. Please enter in a new experiment name.</label>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -199,7 +212,8 @@
         <h3>Bulk Compound Registration Complete</h3>
         <h4 style="font-size:16px;">Registration Summary:</h4>
         <div class="well" style="background:#FFFFFF;margin-bottom:10px;">
-            <span class="bv_regSummaryHTML"></span>
+            <span class="bv_regSummaryHTML">
+            </span>
         </div>
         <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
         <button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</button>
