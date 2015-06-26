@@ -6,6 +6,7 @@
     app.get('/api/experiments/experimentName/:name', exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
+    app.get('/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind);
     app.post('/api/experiments', exports.postExperiment);
     app.put('/api/experiments/:id', exports.putExperiment);
     app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
@@ -17,6 +18,7 @@
     app.get('/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
+    app.get('/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', loginRoutes.ensureAuthenticated, exports.experimentValueByStateTypeKindAndValueTypeKind);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
@@ -153,7 +155,7 @@
         }
       }
       checkFilesAndUpdate = function(expt) {
-        var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
+        var completeExptUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(expt, false);
         filesToSave = fileVals.length;
         completeExptUpdate = function(exptToUpdate) {
@@ -172,12 +174,12 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(expt.codeName);
-          results = [];
-          for (i = 0, len = fileVals.length; i < len; i++) {
-            fv = fileVals[i];
-            results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
+          _results = [];
+          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+            fv = fileVals[_i];
+            _results.push(csUtilities.relocateEntityFile(fv, prefix, expt.codeName, fileSaveCompleted));
           }
-          return results;
+          return _results;
         } else {
           return resp.json(expt);
         }
@@ -216,7 +218,7 @@
   };
 
   exports.putExperiment = function(req, resp) {
-    var completeExptUpdate, exptToSave, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results;
+    var completeExptUpdate, exptToSave, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
     exptToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(exptToSave, true);
     filesToSave = fileVals.length;
@@ -236,16 +238,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      results = [];
-      for (i = 0, len = fileVals.length; i < len; i++) {
-        fv = fileVals[i];
+      _results = [];
+      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
+        fv = fileVals[_i];
         if (fv.id == null) {
-          results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          results.push(void 0);
+          _results.push(void 0);
         }
       }
-      return results;
+      return _results;
     } else {
       return completeExptUpdate();
     }
@@ -319,7 +321,7 @@
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {
-    var _, baseurl, config, experimentServiceTestJSON, resultViewerURL;
+    var baseurl, config, experimentServiceTestJSON, resultViewerURL, _;
     console.log(__dirname);
     _ = require('../public/src/lib/underscore.js');
     if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
@@ -409,6 +411,19 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+    }
+  };
+
+  exports.experimentValueByStateTypeKindAndValueTypeKind = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "/experiments/" + req.params.idOrCode + "/exptvalues/bystate/" + req.params.stateType + "/" + req.params.stateKind + "/byvalue/" + req.params.valueType + "/" + req.params.valueKind + "/json";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }

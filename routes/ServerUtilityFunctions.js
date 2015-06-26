@@ -1,5 +1,5 @@
 (function() {
-  var _, basicRScriptPreValidation, controllerRedirect;
+  var basicRScriptPreValidation, controllerRedirect, _;
 
   _ = require('underscore');
 
@@ -110,6 +110,81 @@
     })(this));
   };
 
+  exports.runRApacheFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
+    var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON, serverUtilityFunctions;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    csUtilities.logUsage("About to call RApache function: " + rFunction, JSON.stringify(req.body), req.body.user);
+    if (preValidationFunction != null) {
+      preValErrors = preValidationFunction.call(this, req.body);
+    } else {
+      preValErrors = basicRScriptPreValidation(req.body);
+    }
+    if (preValErrors.hasError) {
+      console.log(preValErrors);
+      returnFunction.call(this, JSON.stringify(preValErrors));
+      return;
+    }
+    requestBody = {
+      rScript: rScript,
+      rFunction: rFunction,
+      request: JSON.stringify(req.body)
+    };
+    if (req.query.testMode || global.specRunnerTestmode) {
+      runRFunctionServiceTestJSON = require('../public/javascripts/spec/testFixtures/runRFunctionServiceTestJSON.js');
+      console.log('test');
+      console.log(JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError));
+      return returnFunction.call(this, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse));
+    } else {
+      return request.post({
+        timeout: 6000000,
+        url: config.all.client.service.rapache.fullpath + "runfunction",
+        json: true,
+        body: JSON.stringify(requestBody)
+      }, (function(_this) {
+        return function(error, response, body) {
+          var message, messageText, result;
+          _this.serverError = error;
+          _this.responseJSON = body;
+          if (((_this.responseJSON != null) && (_this.responseJSON["RExecutionError"] != null)) || (_this.serverError != null)) {
+            if ((_this.responseJSON != null) && (_this.responseJSON["RExecutionError"] != null)) {
+              messageText = _this.responseJSON["RExecutionError"];
+            } else {
+              messageText = _this.serverError;
+            }
+            message = {
+              errorLevel: "error",
+              message: messageText
+            };
+            result = {
+              hasError: true,
+              hasWarning: false,
+              errorMessages: [message],
+              transactionId: null,
+              experimentId: null
+            };
+            returnFunction.call(_this, JSON.stringify(result));
+            return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), req.body.user);
+          } else {
+            returnFunction.call(_this, JSON.stringify(_this.responseJSON));
+            try {
+              if (_this.responseJSON.hasError) {
+                return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, JSON.stringify(_this.responseJSON), req.body.user);
+              } else {
+                return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", req.body.user);
+              }
+            } catch (_error) {
+              error = _error;
+              return console.log(error);
+            }
+          }
+        };
+      })(this));
+    }
+  };
+
   exports.runRScript = function(rScript) {
     var child, command, config, exec, rScriptCommand, serverUtilityFunctions;
     config = require('../conf/compiled/conf.js');
@@ -137,7 +212,8 @@
    */
 
   exports.setupRoutes = function(app) {
-    return app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+    app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+    return app.post('/api/runRApacheFunctionTest', exports.runRApacheFunctionTest);
   };
 
   exports.runRFunctionTest = function(request, response) {
@@ -145,6 +221,16 @@
       'Content-Type': 'application/json'
     });
     return exports.runRFunction(request, "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+      return response.end(rReturn);
+    });
+  };
+
+  exports.runRApacheFunctionTest = function(request, response) {
+    response.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    return exports.runRApacheFunction(request, "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+      console.log(rReturn);
       return response.end(rReturn);
     });
   };
@@ -188,13 +274,13 @@
   };
 
   exports.makeAbsolutePath = function(relativePath) {
-    var acasPath, d, dotMatches, i, numDotDots, ref;
+    var acasPath, d, dotMatches, numDotDots, _i;
     acasPath = process.env.PWD;
     dotMatches = relativePath.match(/\.\.\//g);
     if (dotMatches != null) {
       numDotDots = relativePath.match(/\.\.\//g).length;
       relativePath = relativePath.replace(/\.\.\//g, '');
-      for (d = i = 1, ref = numDotDots; 1 <= ref ? i <= ref : i >= ref; d = 1 <= ref ? ++i : --i) {
+      for (d = _i = 1; 1 <= numDotDots ? _i <= numDotDots : _i >= numDotDots; d = 1 <= numDotDots ? ++_i : --_i) {
         acasPath = acasPath.replace(/[^\/]+\/?$/, '');
       }
     } else {
@@ -205,14 +291,14 @@
   };
 
   exports.getFileValuesFromEntity = function(thing, ignoreSaved) {
-    var fvs, i, j, len, len1, ref, state, v, vals;
+    var fvs, state, v, vals, _i, _j, _len, _len1, _ref;
     fvs = [];
-    ref = thing.lsStates;
-    for (i = 0, len = ref.length; i < len; i++) {
-      state = ref[i];
+    _ref = thing.lsStates;
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      state = _ref[_i];
       vals = state.lsValues;
-      for (j = 0, len1 = vals.length; j < len1; j++) {
-        v = vals[j];
+      for (_j = 0, _len1 = vals.length; _j < _len1; _j++) {
+        v = vals[_j];
         if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
           if (!(ignoreSaved && (v.id != null))) {
             fvs.push(v);
@@ -236,10 +322,10 @@
   };
 
   exports.getPrefixFromEntityCode = function(code) {
-    var pref, redir, ref;
-    ref = controllerRedirect.controllerRedirectConf;
-    for (pref in ref) {
-      redir = ref[pref];
+    var pref, redir, _ref;
+    _ref = controllerRedirect.controllerRedirectConf;
+    for (pref in _ref) {
+      redir = _ref[pref];
       if (code.indexOf(pref) > -1) {
         return pref;
       }
@@ -283,23 +369,23 @@
   };
 
   exports.insertTransactionIntoEntity = function(transactionid, entity) {
-    var i, j, k, lab, len, len1, len2, ref, ref1, ref2, state, val;
+    var lab, state, val, _i, _j, _k, _len, _len1, _len2, _ref, _ref1, _ref2;
     entity.lsTransaction = transactionid;
     if (entity.lsLabels != null) {
-      ref = entity.lsLabels;
-      for (i = 0, len = ref.length; i < len; i++) {
-        lab = ref[i];
+      _ref = entity.lsLabels;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        lab = _ref[_i];
         lab.lsTransaction = transactionid;
       }
     }
     if (entity.lsStates != null) {
-      ref1 = entity.lsStates;
-      for (j = 0, len1 = ref1.length; j < len1; j++) {
-        state = ref1[j];
+      _ref1 = entity.lsStates;
+      for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+        state = _ref1[_j];
         state.lsTransaction = transactionid;
-        ref2 = state.lsValues;
-        for (k = 0, len2 = ref2.length; k < len2; k++) {
-          val = ref2[k];
+        _ref2 = state.lsValues;
+        for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+          val = _ref2[_k];
           val.lsTransaction = transactionid;
         }
       }

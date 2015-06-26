@@ -60,34 +60,34 @@
 	routeSet_8 = require("./routes/DoseResponseFitRoutes.js");
 	if (routeSet_8.setupAPIRoutes) {
 		routeSet_8.setupAPIRoutes(app); }
-	routeSet_9 = require("./routes/ExcelCompundInfoAppRoutes.js");
+	routeSet_9 = require("./routes/ExperimentBrowserRoutes.js");
 	if (routeSet_9.setupAPIRoutes) {
 		routeSet_9.setupAPIRoutes(app); }
-	routeSet_10 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_10 = require("./routes/ExperimentServiceRoutes.js");
 	if (routeSet_10.setupAPIRoutes) {
 		routeSet_10.setupAPIRoutes(app); }
-	routeSet_11 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_11 = require("./routes/FileServices.js");
 	if (routeSet_11.setupAPIRoutes) {
 		routeSet_11.setupAPIRoutes(app); }
-	routeSet_12 = require("./routes/FileServices.js");
+	routeSet_12 = require("./routes/GeneDataQueriesRoutes.js");
 	if (routeSet_12.setupAPIRoutes) {
 		routeSet_12.setupAPIRoutes(app); }
-	routeSet_13 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_13 = require("./routes/GenericDataParserRoutes.js");
 	if (routeSet_13.setupAPIRoutes) {
 		routeSet_13.setupAPIRoutes(app); }
-	routeSet_14 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_14 = require("./routes/LabelServiceRoutes.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
-	routeSet_15 = require("./routes/LabelServiceRoutes.js");
+	routeSet_15 = require("./routes/Logger.js");
 	if (routeSet_15.setupAPIRoutes) {
 		routeSet_15.setupAPIRoutes(app); }
-	routeSet_16 = require("./routes/Logger.js");
+	routeSet_16 = require("./routes/LoggingRoutes.js");
 	if (routeSet_16.setupAPIRoutes) {
 		routeSet_16.setupAPIRoutes(app); }
-	routeSet_17 = require("./routes/LoggingRoutes.js");
+	routeSet_17 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_17.setupAPIRoutes) {
 		routeSet_17.setupAPIRoutes(app); }
-	routeSet_18 = require("./routes/PreferredBatchIdService.js");
+	routeSet_18 = require("./routes/PreferredEntityCodeService.js");
 	if (routeSet_18.setupAPIRoutes) {
 		routeSet_18.setupAPIRoutes(app); }
 	routeSet_19 = require("./routes/PrimaryScreenProtocolRoutes.js");

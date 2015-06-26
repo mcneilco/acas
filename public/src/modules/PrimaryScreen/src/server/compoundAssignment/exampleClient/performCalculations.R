@@ -80,13 +80,20 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMinLevel=overallMinLevel,
                                                        overallMaxLevel=overallMaxLevel, parameters), by= assayBarcode]
   } else if (normalization == "plate order and row") {
+    # This now normlizes data by plate, then normalizes the normalized data by row across plates.
+    # This matches an earlier system
     resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
+    resultTable[,normalizedActivity:=computeNormalized(activity, wellType, flag,
                                                        overallMinLevel=overallMinLevel,
-                                                       overallMaxLevel=overallMaxLevel, parameters), by= list(assayBarcode,plateRow)]
+                                                       overallMaxLevel=overallMaxLevel, parameters), by= assayBarcode]
+    resultTable[,normalizedActivity:=computeNormalized(normalizedActivity, wellType, flag,
+                                                       overallMinLevel=overallMinLevel,
+                                                       overallMaxLevel=overallMaxLevel, parameters), by= plateRow]
   } else if (normalization == "plate order and tip") {
     stopUser("Normalization not coded for 'plate order and tip'.")
   } else if (normalization == "plate order & section by 8") {
+    # This now normlizes data by plate, then normalizes the normalized data by section across plates.
+    # This matches an earlier system
     getLetterInteger <- function(letter) {
       letter <- gsub("-","",letter)
       letterInteger <- 0
@@ -115,10 +122,14 @@ normalizeData <- function(resultTable, parameters) {
     } else {
       stopUser("Normalization not coded for this plate dimension.")
     }
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
+    resultTable[,normalizedActivity:=computeNormalized(activity, wellType, flag,
                                                        overallMinLevel=overallMinLevel,
                                                        overallMaxLevel=overallMaxLevel, parameters), 
-                by= list(assayBarcode,section)]
+                by= assayBarcode]
+    resultTable[,normalizedActivity:=computeNormalized(normalizedActivity, wellType, flag,
+                                                       overallMinLevel=overallMinLevel,
+                                                       overallMaxLevel=overallMaxLevel, parameters), 
+                by= section]
   } else {
     warnUser("No normalization applied.")
     resultTable$normalizedActivity <- resultTable$activity

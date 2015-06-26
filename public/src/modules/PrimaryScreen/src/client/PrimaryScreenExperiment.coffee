@@ -51,9 +51,9 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 				if indivModelErrors != null
 					for error in indivModelErrors
 						unless (matchReadName and error.attribute == 'readPosition')
-								modelErrors.push
-									attribute: error.attribute+':eq('+index+')'
-									message: error.message
+							modelErrors.push
+								attribute: error.attribute+':eq('+index+')'
+								message: error.message
 				currentReadName = model.get('readName')
 				if currentReadName of usedReadNames
 					modelErrors.push
@@ -241,9 +241,9 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'assayVolume'
 				message: "Assay volume must be a number"
 		if (attrs.assayVolume == "" or attrs.assayVolume == null) and (attrs.transferVolume != "" and attrs.transferVolume != null)
-				errors.push
-					attribute: 'assayVolume'
-					message: "Assay volume must be assigned"
+			errors.push
+				attribute: 'assayVolume'
+				message: "Assay volume must be assigned"
 		if attrs.volumeType == "dilution" && _.isNaN(attrs.dilutionFactor)
 			errors.push
 				attribute: 'dilutionFactor'
@@ -333,10 +333,10 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		type
 
-	copyProtocolAttributes: (protocol) =>
-		modelFitStatus = @getModelFitStatus().get('codeValue')
-		super(protocol)
-		@getModelFitStatus().set codeValue: modelFitStatus
+#	copyProtocolAttributes: (protocol) =>
+#		modelFitStatus = @getModelFitStatus().get('codeValue')
+#		super(protocol)
+#		@getModelFitStatus().set codeValue: modelFitStatus
 
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
@@ -872,7 +872,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@$('.bv_loadAnother').prop('disabled', false)
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
-#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
+	#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
 
 	initialize: ->
 		@allowedFileTypes = ['zip']
@@ -893,7 +893,6 @@ class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileVal
 		@analyzedPreviously = @options.analyzedPreviously
 		@analysisParameterController.render()
 		if @analyzedPreviously
-			console.log
 			@$('.bv_loadAnother').html("Re-Analyze")
 		@handleMSFormInvalid() #start invalid since file won't be loaded
 
@@ -1001,7 +1000,7 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		super()
-#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
+		#		@$('.bv_moduleTitle').html("Upload Data and Analyze")
 		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
@@ -1014,6 +1013,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 	initialize: ->
 		@model.on "saveSuccess", @handleExperimentSaved
 		@model.on 'statusChanged', @handleStatusChanged
+		@model.on 'changeProtocolParams', @handleAnalysisParamsChanged
 		@dataAnalysisController = null
 		$(@el).empty()
 		$(@el).html @template()
@@ -1193,6 +1193,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 				@$('.bv_loadAnother').attr('disabled', 'disabled')
 				@$('.bv_loadAnother').prop('disabled', true)
 
+	handleAnalysisParamsChanged: =>
+		if @dataAnalysisController?
+			@dataAnalysisController.undelegateEvents()
+		@setupDataAnalysisController(@options.uploadAndRunControllerName)
+		@setExperimentNotSaved()
+		@$('.bv_saveExperimentToAnalyze').html("Analysis parameters have changed. To analyze data, save the experiment first.")
 
 	setupDataAnalysisController: (dacClassName) ->
 		newArgs =
@@ -1235,7 +1241,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 								if json.length == 0
 									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									#								exp = new PrimaryScreenExperiment json
+#								exp = new PrimaryScreenExperiment json
 									lsKind = json.lsKind
 									if lsKind is "Bio Activity"
 										exp = new PrimaryScreenExperiment json

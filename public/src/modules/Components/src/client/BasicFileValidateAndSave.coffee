@@ -175,7 +175,7 @@ class window.BasicFileValidateAndSaveController extends Backbone.View
 		if json.results?.htmlSummary?
 			@$('.bv_htmlSummary').html(json.results.htmlSummary)
 		@$('.bv_validateStatusDropDown').modal("hide")
-		if json.results.csvDataPreview?
+		if json.results?.csvDataPreview?
 			@showCSVPreview json.results.csvDataPreview
 
 	handleSaveReturnSuccess: (json) =>

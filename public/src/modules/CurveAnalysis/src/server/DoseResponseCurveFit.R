@@ -1,5 +1,5 @@
 library(racas)
-
+library(data.table)
 myMessenger <- Messenger$new()
 myMessenger$logger <- createLogger(logName = "com.acas.doseresponse.fit.experiment", logToConsole = FALSE)
 myMessenger$logger$debug("dose response fit experiment initiated")
@@ -16,6 +16,7 @@ fitDoseResponse <- function(request){
   user <- request$user
   testMode <- as.logical(request$testMode)
   modelFitType <- request$modelFitType
-  myMessenger$capture_output(response <- api_doseResponse_experiment(simpleFitSettings, modelFitType, user, experimentCode, testMode))
+  modelFit <- racas::get_model_fit_from_type_code(modelFitType)
+  myMessenger$capture_output(response <- api_doseResponse_experiment(simpleFitSettings, modelFitType, user, experimentCode, testMode, modelFit))
   return(response)
 }

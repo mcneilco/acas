@@ -79,13 +79,22 @@ test_that("validateNumeric accepts factors", {
 })
 
 test_that("validateNumeric gives NA for non-numeric values", {
-  errorList<<-list()
-  expect_equal(validateNumeric("pi"), as.numeric(NA))
-  expect_identical(list("An entry was expected to be a number but was: 'pi'. Please enter a number instead."), errorList)
+  racasMessenger <- messenger()
+  racasMessenger$reset()
+  racasMessenger$logger <- logger(logName = "com.acas.test_unit_validateNumeric", reset=TRUE)
   
-  errorList<<-list()
+  expect_equal(validateNumeric("pi"), as.numeric(NA))
+  if (expect_equal(length(racasMessenger$errors), 1)$passed) {
+    expect_identical("An entry was expected to be a number but was: 'pi'. Please enter a number instead.", 
+                     racasMessenger$errors[[1]]$message)
+  }
+  
+  racasMessenger$reset()
   expect_true(is.na(validateNumeric(as.Date("2013-01-04"))))
-  expect_identical(list("An entry was expected to be a number but was: '2013-01-04'. Please enter a number instead."), errorList)
+  if (expect_equal(length(racasMessenger$errors), 1)$passed) {
+    expect_identical("An entry was expected to be a number but was: '2013-01-04'. Please enter a number instead.", 
+                     racasMessenger$errors[[1]]$message)
+  }
 })
 
 test_that("validateDate consistently returns a date (was bug RACAS#6)", {

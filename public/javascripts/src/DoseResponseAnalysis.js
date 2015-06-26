@@ -338,17 +338,19 @@
     };
 
     ModelFitTypeController.prototype.setupParameterController = function(modelFitType) {
-      var drap, drapType, drapcType, mfp;
-      drapType = (function() {
-        switch (modelFitType) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParameters;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParameters;
-          case "unassigned":
-            return "unassigned";
-        }
-      })();
+      var controllerClass, curveFitClasses, curvefitClassesCollection, drap, drapType, drapcType, mfp, parametersClass;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        codeValue: modelFitType
+      });
+      if (curveFitClasses != null) {
+        parametersClass = curveFitClasses.get('parametersClass');
+        drapType = window[parametersClass];
+        controllerClass = curveFitClasses.get('controllerClass');
+        drapcType = window[controllerClass];
+      } else {
+        drapType = 'unassigned';
+      }
       if (this.parameterController != null) {
         this.parameterController.undelegateEvents();
       }
@@ -367,14 +369,6 @@
         } else {
           drap = new drapType(this.model.getModelFitParameters());
         }
-        drapcType = (function() {
-          switch (modelFitType) {
-            case "4 parameter D-R":
-              return DoseResponseAnalysisParametersController;
-            case "Ki Fit":
-              return DoseResponseKiAnalysisParametersController;
-          }
-        })();
         this.parameterController = new drapcType({
           el: this.$('.bv_analysisParameterForm'),
           model: drap
@@ -631,5 +625,56 @@
     return DoseResponseAnalysisController;
 
   })(Backbone.View);
+
+  window.DoseResponsePlotCurveLL4 = (function(superClass) {
+    extend(DoseResponsePlotCurveLL4, superClass);
+
+    function DoseResponsePlotCurveLL4() {
+      this.render = bind(this.render, this);
+      return DoseResponsePlotCurveLL4.__super__.constructor.apply(this, arguments);
+    }
+
+    DoseResponsePlotCurveLL4.prototype.log10 = function(val) {
+      return Math.log(val) / Math.LN10;
+    };
+
+    DoseResponsePlotCurveLL4.prototype.render = function(brd, curve, plotWindow) {
+      var color, fct, intersect, log10;
+      log10 = this.log10;
+      fct = function(x) {
+        return curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10, x) / curve.ec50)));
+      };
+      brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {
+        strokeWidth: 2
+      });
+      if (curve.curveAttributes.EC50 != null) {
+        intersect = fct(log10(curve.curveAttributes.EC50));
+        if (curve.curveAttributes.Operator != null) {
+          color = '#ff0000';
+        } else {
+          color = '#808080';
+        }
+        brd.create('line', [[plotWindow[0], intersect], [log10(curve.curveAttributes.EC50), intersect]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+        return brd.create('line', [[log10(curve.curveAttributes.EC50), intersect], [log10(curve.curveAttributes.EC50), 0]], {
+          fixed: true,
+          straightFirst: false,
+          straightLast: false,
+          strokeWidth: 2,
+          dash: 3,
+          strokeColor: color
+        });
+      }
+    };
+
+    return DoseResponsePlotCurveLL4;
+
+  })(Backbone.Model);
 
 }).call(this);

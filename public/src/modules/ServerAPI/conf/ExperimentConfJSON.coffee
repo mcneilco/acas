@@ -27,6 +27,9 @@
 				kindName: "experiment metadata"
 			,
 				typeName: "metadata"
+				kindName: "custom experiment metadata"
+			,
+				typeName: "metadata"
 				kindName: "raw results locations"
 			,
 				typeName: "metadata"
@@ -142,6 +145,8 @@
 				typeName: "analysis parameter"
 			,
 				typeName: "experiment metadata"
+			,
+				typeName: "custom experiment metadata"
 			]
 
 		ddictkinds:

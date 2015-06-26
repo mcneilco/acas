@@ -80,17 +80,19 @@
     };
 
     DoseResponseFitController.prototype.setupParameterController = function(modelFitType) {
-      var drap, drapType, drapcType;
-      drapType = (function() {
-        switch (modelFitType) {
-          case "4 parameter D-R":
-            return DoseResponseAnalysisParameters;
-          case "Ki Fit":
-            return DoseResponseKiAnalysisParameters;
-          case "unassigned":
-            return "unassigned";
-        }
-      })();
+      var controllerClass, curveFitClasses, curvefitClassesCollection, drap, drapType, drapcType, parametersClass;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        code: modelFitType
+      });
+      if (curveFitClasses != null) {
+        parametersClass = curveFitClasses.get('parametersClass');
+        drapType = window[parametersClass];
+        controllerClass = curveFitClasses.get('parametersController');
+        drapcType = window[controllerClass];
+      } else {
+        drapType = 'unassigned';
+      }
       if (drapType === "unassigned") {
         this.$('.bv_analysisParameterForm').empty();
         return this.$('.bv_fitModelButton').hide();
@@ -101,14 +103,6 @@
         } else {
           drap = new drapType();
         }
-        drapcType = (function() {
-          switch (modelFitType) {
-            case "4 parameter D-R":
-              return DoseResponseAnalysisParametersController;
-            case "Ki Fit":
-              return DoseResponseKiAnalysisParametersController;
-          }
-        })();
         this.parameterController = new drapcType({
           el: this.$('.bv_analysisParameterForm'),
           model: drap
