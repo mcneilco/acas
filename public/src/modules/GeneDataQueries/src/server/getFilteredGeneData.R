@@ -584,7 +584,9 @@ if (nrow(dataDT) > 0){
 
   # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
   # so that the columns can be made wider in the .css
-  allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),"curveId","center")
+  imageClass <- ifelse(allColNamesDT[["lsKind"]] == "curve id","curveId","fileValue")
+
+  allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),imageClass,"center")
   setnames(allColNamesDT, "lsKind", "sTitle")
   
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))

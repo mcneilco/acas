@@ -279,6 +279,10 @@
     min-width: 180px !important;
 }
 
+.GeneIDQueryAppController .fileValue{
+    min-width: 200px !important;
+}
+
 .GeneIDQueryAppController .center{
     min-width: 50px;
 }
