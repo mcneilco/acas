@@ -147,7 +147,8 @@ postData.list <- fromJSON(postData)
 batchCodeList <- list()
 if (!is.null(postData.list$queryParams$batchCodes)) {
   geneData <- postData.list$queryParams$batchCodes
-  geneDataList <- strsplit(geneData, split="\\W")[[1]]
+  #split on whitespace (except "-", don't split on that bc it is used in batch codes)
+  geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
   
   if (length(geneDataList) > 0) {
@@ -164,15 +165,22 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
     
+    save(requestObject,geneNameList,geneDataList,file="genes.Rda")
+    
     genes <- fromJSON(geneNameList)$results
     batchCodeList <- list()
     for (i in 1:length(genes)){
       if (genes[[i]]$referenceName != ""){
         batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
       }
+      #Hack to include compound ids
+      else{
+        batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$requestName
+      }
     }
   }
 }
+save(batchCodeList,file="batchCodeList.Rda")
 
 searchParams <- list()
 if (length(postData.list$queryParams$experimentCodeList) > 1){
