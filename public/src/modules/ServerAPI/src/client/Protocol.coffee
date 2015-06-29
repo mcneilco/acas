@@ -153,6 +153,10 @@ class window.ProtocolBaseController extends BaseEntityController
 			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		if window.conf.protocol.hideAssayTreeRule
+			@$('.bv_group_assayTreeRule').hide()
+		else
+			@$('.bv_group_assayTreeRule').show()
 		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
 			$('.bv_closeSaveFailedModal').removeAttr('disabled')

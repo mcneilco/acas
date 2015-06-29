@@ -264,6 +264,11 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
+      if (window.conf.protocol.hideAssayTreeRule) {
+        this.$('.bv_group_assayTreeRule').hide();
+      } else {
+        this.$('.bv_group_assayTreeRule').show();
+      }
       this.model.on('notUniqueName', (function(_this) {
         return function() {
           _this.$('.bv_protocolSaveFailed').modal('show');
