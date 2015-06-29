@@ -1,5 +1,5 @@
 (function() {
-  var configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV, _;
+  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes', exports.getConfiguredEntityTypes);
@@ -19,18 +19,18 @@
     var codes, et;
     if (req.query.asCodes != null) {
       codes = (function() {
-        var _i, _len, _ref, _results;
-        _ref = configuredEntityTypes.entityTypes;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          et = _ref[_i];
-          _results.push({
+        var i, len, ref, results;
+        ref = configuredEntityTypes.entityTypes;
+        results = [];
+        for (i = 0, len = ref.length; i < len; i++) {
+          et = ref[i];
+          results.push({
             code: et.type + " " + et.kind,
             name: et.displayName,
             ignored: false
           });
         }
-        return _results;
+        return results;
       })();
       return resp.json(codes);
     } else {
@@ -81,14 +81,14 @@
         preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
           var out, outStr, res;
           out = (function() {
-            var _i, _len, _ref, _results;
-            _ref = codeResponse.results;
-            _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              res = _ref[_i];
-              _results.push(res.requestName + "," + res.preferredName);
+            var i, len, ref, results;
+            ref = codeResponse.results;
+            results = [];
+            for (i = 0, len = ref.length; i < len; i++) {
+              res = ref[i];
+              results.push(res.requestName + "," + res.preferredName);
             }
-            return _results;
+            return results;
           })();
           outStr = "Requested Name,Preferred Code\n" + out.join('\n');
           return resp.json({
@@ -105,11 +105,11 @@
   };
 
   formatCSVRequestAsReqArray = function(csvReq) {
-    var req, requests, _i, _len, _ref;
+    var i, len, ref, req, requests;
     requests = [];
-    _ref = csvReq.split('\n');
-    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-      req = _ref[_i];
+    ref = csvReq.split('\n');
+    for (i = 0, len = ref.length; i < len; i++) {
+      req = ref[i];
       if (req !== "") {
         requests.push({
           requestName: req
@@ -120,11 +120,11 @@
   };
 
   formatReqArratAsCSV = function(prefResp) {
-    var outStr, pref, preferreds, _i, _len;
+    var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
     outStr = "Requested Name,Preferred Code\n";
-    for (_i = 0, _len = preferreds.length; _i < _len; _i++) {
-      pref = preferreds[_i];
+    for (i = 0, len = preferreds.length; i < len; i++) {
+      pref = preferreds[i];
       outStr += pref.requestName + ',' + pref.preferredName + '\n';
     }
     return outStr;

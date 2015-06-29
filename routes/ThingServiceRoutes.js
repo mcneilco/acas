@@ -120,7 +120,7 @@
         }
       }
       checkFilesAndUpdate = function(thing) {
-        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results1;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(thing, false);
         filesToSave = fileVals.length;
         completeThingUpdate = function(thingToUpdate) {
@@ -139,13 +139,13 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(thing.codeName);
-          _results = [];
-          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-            fv = fileVals[_i];
+          results1 = [];
+          for (i = 0, len = fileVals.length; i < len; i++) {
+            fv = fileVals[i];
             console.log("updating file");
-            _results.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
+            results1.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
           }
-          return _results;
+          return results1;
         } else {
           return resp.json(thing);
         }
@@ -189,7 +189,7 @@
   };
 
   exports.putThing = function(req, resp) {
-    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, thingToSave, _i, _len, _results;
+    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results1, thingToSave;
     thingToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(thingToSave, true);
     filesToSave = fileVals.length;
@@ -209,16 +209,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      _results = [];
-      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-        fv = fileVals[_i];
+      results1 = [];
+      for (i = 0, len = fileVals.length; i < len; i++) {
+        fv = fileVals[i];
         if (fv.id == null) {
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          results1.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          _results.push(void 0);
+          results1.push(void 0);
         }
       }
-      return _results;
+      return results1;
     } else {
       return completeThingUpdate();
     }
@@ -303,13 +303,13 @@
   };
 
   exports.getThingCodesFromNamesOrCodes = function(codeRequest, callback) {
-    var baseurl, config, postBody, req, request, res, response, results, url, _i, _len, _ref;
+    var baseurl, config, i, len, postBody, ref, req, request, res, response, results, url;
     console.log("got to getThingCodesFormNamesOrCodes");
     if (global.specRunnerTestmode) {
       results = [];
-      _ref = codeRequest.requests;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        req = _ref[_i];
+      ref = codeRequest.requests;
+      for (i = 0, len = ref.length; i < len; i++) {
+        req = ref[i];
         res = {
           requestName: req.requestName
         };

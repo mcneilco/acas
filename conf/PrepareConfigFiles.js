@@ -1,5 +1,5 @@
 (function() {
-  var apacheHardCodedConfigs, csUtilities, flat, fs, getApacheCompileOptions, getApacheSpecificConfString, getRApacheSpecificConfString, getRFileHandlerString, getRFilesWithRoute, glob, os, path, properties, shell, sysEnv, underscoreDeepExtend, writeApacheConfFile, writeClientJSONFormat, writeJSONFormat, writePropertiesFormat, _;
+  var _, apacheHardCodedConfigs, csUtilities, flat, fs, getApacheCompileOptions, getApacheSpecificConfString, getRApacheSpecificConfString, getRFileHandlerString, getRFilesWithRoute, glob, os, path, properties, shell, sysEnv, underscoreDeepExtend, writeApacheConfFile, writeClientJSONFormat, writeJSONFormat, writePropertiesFormat;
 
   csUtilities = require("../public/src/conf/CustomerSpecificServerFunctions.js");
 
@@ -131,13 +131,13 @@
   };
 
   getRFilesWithRoute = function() {
-    var data, rFile, rFilePath, rFiles, route, routeMatch, routes, _i, _len;
+    var data, i, len, rFile, rFilePath, rFiles, route, routeMatch, routes;
     rFiles = glob.sync('public/src/modules/*/src/server/*.R', {
       cwd: path.resolve(__dirname, '..')
     });
     routes = [];
-    for (_i = 0, _len = rFiles.length; _i < _len; _i++) {
-      rFile = rFiles[_i];
+    for (i = 0, len = rFiles.length; i < len; i++) {
+      rFile = rFiles[i];
       rFilePath = path.resolve('..', rFile);
       data = fs.readFileSync(rFilePath, "utf8", function(err) {
         if (err) {
@@ -159,13 +159,13 @@
   };
 
   getRFileHandlerString = function(rFilesWithRoute, config, acasHome) {
-    var rFile, rapacheHandlerText, route, routes, _i, _len;
+    var i, len, rFile, rapacheHandlerText, route, routes;
     rapacheHandlerText = '<Location /' + config.all.client.service.rapache.path + '* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *>\n\tSetHandler r-handler\n\tRFileHandler ' + acasHome + '/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>';
     routes = [];
     routes.push('<Location /' + config.all.client.service.rapache.path + '/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>');
     routes.push('<Location /' + config.all.client.service.rapache.path + '/RApacheInfo>\n\tSetHandler r-info\n</Location>');
-    for (_i = 0, _len = rFilesWithRoute.length; _i < _len; _i++) {
-      rFile = rFilesWithRoute[_i];
+    for (i = 0, len = rFilesWithRoute.length; i < len; i++) {
+      rFile = rFilesWithRoute[i];
       route = rapacheHandlerText.replace('* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *', rFile.route);
       route = route.replace('* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *', rFile.filePath);
       routes.push(route);
@@ -174,10 +174,10 @@
   };
 
   getApacheCompileOptions = function() {
-    var apacheCommand, apacheVersion, compileOptionStrings, compileOptions, compileString, option, possibleCommand, posssibleCommands, _i, _j, _len, _len1;
+    var apacheCommand, apacheVersion, compileOptionStrings, compileOptions, compileString, i, j, len, len1, option, possibleCommand, posssibleCommands;
     posssibleCommands = ['httpd', 'apachectl', '/usr/sbin/apachectl', '/usr/sbin/httpd2-prefork', '/usr/sbin/httpd2'];
-    for (_i = 0, _len = posssibleCommands.length; _i < _len; _i++) {
-      possibleCommand = posssibleCommands[_i];
+    for (i = 0, len = posssibleCommands.length; i < len; i++) {
+      possibleCommand = posssibleCommands[i];
       if (shell.which(possibleCommand)) {
         apacheCommand = possibleCommand;
         break;
@@ -193,8 +193,8 @@
     compileOptionStrings = compileString.output.split("\n");
     compileOptions = [];
     apacheVersion = '';
-    for (_j = 0, _len1 = compileOptionStrings.length; _j < _len1; _j++) {
-      option = compileOptionStrings[_j];
+    for (j = 0, len1 = compileOptionStrings.length; j < len1; j++) {
+      option = compileOptionStrings[j];
       if (option.match('Server version')) {
         if (option.match('Ubuntu')) {
           apacheVersion = 'Ubuntu';
