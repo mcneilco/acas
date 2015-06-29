@@ -164,6 +164,24 @@
           }
         }
       }
+      if (saltEquiv != null) {
+        if (saltId != null) {
+          if (saltId.get('defaultVal') === "") {
+            errors.push({
+              attribute: 'defaultVal:eq(' + this.indexOf(saltId) + ')',
+              message: "Salt equivalent requires default value for salt type/id property"
+            });
+          }
+        }
+        if (saltType != null) {
+          if (saltType.get('defaultVal') === "") {
+            errors.push({
+              attribute: 'defaultVal:eq(' + this.indexOf(saltType) + ')',
+              message: "Salt equivalent requires default value for salt type/id property"
+            });
+          }
+        }
+      }
       return errors;
     };
 
@@ -234,7 +252,7 @@
 
     DetectSdfPropertiesController.prototype.setupBrowseFileController = function() {
       this.browseFileController = new LSFileChooserController({
-        el: this.$('.bv_browseFile'),
+        el: this.$('.bv_browseSdfFile'),
         formId: 'fieldBlah',
         maxNumberOfFiles: 1,
         requiresValidation: false,
@@ -363,7 +381,6 @@
     };
 
     DetectSdfPropertiesController.prototype.handleTemplateChanged = function(templateName, mappings) {
-      console.log("handle template changed a");
       this.tempName = templateName;
       this.mappings = mappings;
       if ((this.fileName != null) && this.fileName !== null) {
@@ -501,7 +518,8 @@
     };
 
     AssignedPropertyController.prototype.clear = function() {
-      return this.model.destroy();
+      this.model.destroy();
+      return this.trigger('modelRemoved');
     };
 
     return AssignedPropertyController;
@@ -551,6 +569,11 @@
       apc.on('assignedDbPropChanged', (function(_this) {
         return function() {
           return _this.trigger('assignedDbPropChanged');
+        };
+      })(this));
+      apc.on('modelRemoved', (function(_this) {
+        return function() {
+          return _this.collection.trigger('change');
         };
       })(this));
       if (!(window.conf.cmpdReg.showProjectSelect && prop.get('dbProperty') === "Project")) {
@@ -730,14 +753,10 @@
 
     AssignSdfPropertiesController.prototype.handleTemplateChanged = function() {
       var mappings, templateName;
-      console.log("handle template changed top");
       templateName = this.templateListController.getSelectedCode();
       if (templateName === "none") {
         mappings = new AssignedPropertiesList();
       } else {
-        console.log(this.templates.findWhere({
-          templateName: templateName
-        }).get('jsonTemplate'));
         mappings = new AssignedPropertiesList(JSON.parse(this.templates.findWhere({
           templateName: templateName
         }).get('jsonTemplate')));
@@ -802,15 +821,26 @@
           }
         }
       }
-      if (this.assignedPropertiesList.findWhere({
+      if ((this.assignedPropertiesList.findWhere({
         dbProperty: 'salt id'
-      }) || (this.assignedPropertiesList.findWhere({
+      }) != null) || (this.assignedPropertiesList.findWhere({
         dbProperty: 'salt type'
       }) != null)) {
         if (this.assignedPropertiesList.findWhere({
           dbProperty: 'salt equivalents'
         }) == null) {
           unassignedDbProps += newLine + 'salt equivalents (required for salt type/id)';
+        }
+      }
+      if (this.assignedPropertiesList.findWhere({
+        dbProperty: 'salt equivalents'
+      }) != null) {
+        if (!((this.assignedPropertiesList.findWhere({
+          dbProperty: 'salt id'
+        }) != null) || (this.assignedPropertiesList.findWhere({
+          dbProperty: 'salt type'
+        }) != null))) {
+          unassignedDbProps += newLine + 'salt id/type (required for salt equivalents)';
         }
       }
       this.$('.bv_unassignedProperties').html(unassignedDbProps);
@@ -935,11 +965,9 @@
     };
 
     AssignSdfPropertiesController.prototype.handleRegCmpdsClicked = function() {
-      var saveTemplateChecked, templateName;
-      console.log(this.fileName);
+      var saveTemplateChecked;
       this.$('.bv_regCmpds').attr('disabled', 'disabled');
       this.$('.bv_registering').show();
-      templateName = null;
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
       if (saveTemplateChecked) {
         return this.saveTemplate();
@@ -963,7 +991,6 @@
         data: dataToPost,
         success: (function(_this) {
           return function(response) {
-            console.log("save template complete");
             if (response.id != null) {
               return _this.registerCompounds();
             } else {
@@ -991,7 +1018,7 @@
     AssignSdfPropertiesController.prototype.registerCompounds = function() {
       var dataToPost;
       dataToPost = {
-        filePath: this.fileName,
+        fileName: this.fileName,
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
         userName: window.AppLaunchParams.loginUser.username
       };
@@ -1001,9 +1028,12 @@
         data: dataToPost,
         success: (function(_this) {
           return function(response) {
-            console.log("register compounds complete");
             _this.$('.bv_registering').hide();
-            return _this.trigger('saveComplete', response);
+            if (response === "Error") {
+              return _this.handleRegisterCmpdsError();
+            } else {
+              return _this.trigger('saveComplete', response);
+            }
           };
         })(this),
         error: (function(_this) {
@@ -1016,7 +1046,7 @@
       });
     };
 
-    AssignSdfPropertiesController.prototype.handleRegisterCmpdsError = function(err) {
+    AssignSdfPropertiesController.prototype.handleRegisterCmpdsError = function() {
       this.$('.bv_registering').hide();
       this.$('.bv_saveErrorModal').modal('show');
       this.$('.bv_saveErrorTitle').html("Error: Compounds Not Registered");
@@ -1122,8 +1152,7 @@
     BulkRegCmpdsSummaryController.prototype.template = _.template($("#BulkRegCmpdsSummaryView").html());
 
     BulkRegCmpdsSummaryController.prototype.events = {
-      "click .bv_loadAnother": "handleLoadAnotherSDF",
-      "click .bv_downloadSummary": "handleDownloadSummary"
+      "click .bv_loadAnother": "handleLoadAnotherSDF"
     };
 
     BulkRegCmpdsSummaryController.prototype.initialize = function() {
@@ -1143,8 +1172,6 @@
     BulkRegCmpdsSummaryController.prototype.handleLoadAnotherSDF = function() {
       return this.trigger('loadAnother');
     };
-
-    BulkRegCmpdsSummaryController.prototype.handleDownloadSummary = function() {};
 
     return BulkRegCmpdsSummaryController;
 
@@ -1255,7 +1282,8 @@
       $(this.el).html(this.template());
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
       this.$('.bv_purgeSummary').hide();
-      this.fileToPurge = null;
+      this.fileIdToPurge = null;
+      this.fileNameToPurge = null;
       return this.getFiles();
     };
 
@@ -1271,7 +1299,7 @@
         })(this),
         error: (function(_this) {
           return function(err) {
-            return console.log("error getting files");
+            return _this.handleGetFilesError();
           };
         })(this)
       });
@@ -1291,11 +1319,15 @@
       }
     };
 
+    PurgeFilesController.prototype.handleGetFilesError = function() {
+      $('.bv_fileTableController').addClass("well");
+      $('.bv_fileTableController').html("An error occurred when getting files");
+      return $('.bv_purgeFileBtn').hide();
+    };
+
     PurgeFilesController.prototype.selectedFileUpdated = function(file) {
-      console.log("selected file updated");
-      console.log(file);
-      this.fileToPurge = file.get('id');
-      console.log(this.fileToPurge);
+      this.fileIdToPurge = file.get('id');
+      this.fileNameToPurge = file.get('fileName');
       return this.$('.bv_purgeFileBtn').removeAttr('disabled');
     };
 
@@ -1304,7 +1336,7 @@
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
       this.$('.bv_purgeSummary').hide();
       fileInfo = {
-        fileId: this.fileToPurge
+        fileId: this.fileIdToPurge
       };
       return $.ajax({
         type: 'POST',
@@ -1320,7 +1352,8 @@
         })(this),
         error: (function(_this) {
           return function(err) {
-            return _this.serviceReturn = null;
+            _this.serviceReturn = null;
+            return _this.handlePurgeError();
           };
         })(this)
       });
@@ -1329,7 +1362,16 @@
     PurgeFilesController.prototype.handlePurgeSuccess = function(response) {
       this.$('.bv_purgeSummary').html(response);
       this.$('.bv_purgeSummary').show();
-      this.fileToPurge = null;
+      this.fileIdToPurge = null;
+      this.fileNameToPurge = null;
+      return this.getFiles();
+    };
+
+    PurgeFilesController.prototype.handlePurgeError = function() {
+      this.$('.bv_purgeSummary').html("An error occurred purging the file: " + this.fileNameToPurge);
+      this.$('.bv_purgeSummary').show();
+      this.fileIdToPurge = null;
+      this.fileNameToPurge = null;
       return this.getFiles();
     };
 
@@ -1360,7 +1402,7 @@
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
         this.$('.bv_adminDropdown').removeClass('disabled');
       } else {
-        this.$('.bv_adminDropdown').removeClass('disabled');
+        this.$('.bv_adminDropdown').addClass('disabled');
       }
       this.$('.bv_searchNavOption').hide();
       return this.setupBulkRegCmpdsController();
@@ -1394,7 +1436,9 @@
         return function(summary) {
           _this.$('.bv_bulkReg').hide();
           _this.$('.bv_bulkRegSummary').show();
-          return _this.setupBulkRegCmpdsSummaryController(summary);
+          _this.setupBulkRegCmpdsSummaryController(summary[0]);
+          _this.downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + summary[1];
+          return _this.$('.bv_downloadSummary').attr("href", _this.downloadUrl);
         };
       })(this));
     };
@@ -1405,10 +1449,10 @@
       }
       this.regCmpdsSummaryController = new BulkRegCmpdsSummaryController({
         el: this.$('.bv_bulkRegSummary'),
-        summaryHTML: summary
+        summaryHTML: summary['summary']
       });
       this.regCmpdsSummaryController.render();
-      return this.regCmpdsSummaryController.on('loadAnother', (function(_this) {
+      this.regCmpdsSummaryController.on('loadAnother', (function(_this) {
         return function() {
           if (_this.regCmpdsController != null) {
             _this.regCmpdsController.undelegateEvents();
@@ -1418,6 +1462,7 @@
           return _this.$('.bv_bulkReg').show();
         };
       })(this));
+      return $('.bv_downloadSummary').href = "http://www.google.com";
     };
 
     CmpdRegBulkLoaderAppController.prototype.setupPurgeFilesController = function() {

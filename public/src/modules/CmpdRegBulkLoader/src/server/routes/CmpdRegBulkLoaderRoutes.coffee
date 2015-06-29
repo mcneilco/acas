@@ -58,10 +58,8 @@ exports.getFilesToPurge = (req, resp) ->
 		resp.end JSON.stringify []
 
 exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
-	console.log "cmpdRegBulkLoaderReadSdf"
 	if req.query.testMode or global.specRunnerTestmode
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
-		console.log req.body
 		if req.body.templateName is "Template 1"
 			if req.body.numRecords < 300
 				resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.propertiesList
@@ -73,12 +71,8 @@ exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		config = require '../conf/compiled/conf.js'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		console.log uploadsPath
 		filePath = uploadsPath + req.body.fileName
 		req.body.fileName = filePath
-#		req.body.fileName = "/opt/acas_home/app/acas/privateUploads/cmpdreg_bulkload/ncisample9_with_props.sdf"
-		console.log req.body
-#		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/getSdfProperties"
 		request = require 'request'
 		request(
@@ -98,7 +92,6 @@ exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 		)
 
 exports.saveTemplate = (req, resp) ->
-	console.log "exports.save template"
 	if req.query.testMode or global.specRunnerTestmode
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
 		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.savedTemplateReturn
@@ -123,31 +116,82 @@ exports.saveTemplate = (req, resp) ->
 		)
 
 exports.registerCmpds = (req, resp) ->
-	if req.query.testMode or global.specRunnerTestmode
-		console.log "register compounds"
-		resp.end JSON.stringify "Registration Summary here"
-	else
+	createSummaryZip = (fileName, filePath, json) ->
+		#remove .sdf from fileName
+		fileName = fileName.substring(0, fileName.length-4)
+		zipFileName = fileName+".zip"
+		fs = require 'fs'
+		JSZip = require 'jszip'
+		zip = new JSZip()
+
+		for rFile in json.reportFiles
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			config = require '../conf/compiled/conf.js'
+			rFileName = rFile.slice(rFile.indexOf(fileName))
+			zip.file(rFileName, fs.readFileSync(rFile))
+		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
+		zipFilePath = movedUploadsPath+zipFileName
+
+		buffer = zip.generate({type:"nodebuffer"})
+		zipFilePath = "/home/runner/privateUploads/cmpdreg_bulkload/"+zipFileName
+		fs.writeFile zipFilePath, buffer, (err) ->
+			if err
+				resp.end "Summary ZIP file could not be created"
+			else
+				resp.json [json, zipFileName]
+
+	registerCmpds = (req, resp) ->
+		if req == "error"
+			resp.end JSON.stringify "Error"
+		else
+			if req.query.testMode or global.specRunnerTestmode
+				resp.end JSON.stringify "Registration Summary here"
+			else
+				fileName = req.body.fileName
+				delete req.body.fileName
+				config = require '../conf/compiled/conf.js'
+				baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
+				request = require 'request'
+				request(
+					method: 'POST'
+					url: baseurl
+					body: req.body
+					json: true
+				, (error, response, json) =>
+					if !error && response.statusCode == 200
+						createSummaryZip fileName, req.body.filePath, json
+					else
+						console.log 'got ajax error trying to register compounds'
+						console.log error
+						console.log json
+						console.log response
+						resp.end JSON.stringify "Error"
+				)
+
+	moveSdfFile = (req, resp, callback) ->
+		fileName = req.body.fileName
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/registerSdf"
+		fs = require 'fs'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		req.body.filePath = uploadsPath + req.body.filePath
-		request = require 'request'
-		request(
-			method: 'POST'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				console.log json
-				resp.json json
+		oldPath = uploadsPath + fileName
+		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/"
+		newPath = bulkLoadFolder + fileName
+		serverUtilityFunctions.ensureExists bulkLoadFolder, 0o0744, (err) ->
+			if err?
+				console.log "Can't find or create bulkload folder: " + bulkLoadFolder
+				callback "error", resp
 			else
-				console.log 'got ajax error trying to register compounds'
-				console.log error
-				console.log json
-				console.log response
-		)
+				fs.rename oldPath, newPath, (err) ->
+					if err?
+						console.log err
+						callback "error", resp
+					else
+						req.body.filePath = newPath
+						callback req, resp
+
+	moveSdfFile req, resp, registerCmpds
 
 exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode

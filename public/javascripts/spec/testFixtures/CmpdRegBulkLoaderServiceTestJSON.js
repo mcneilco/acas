@@ -7,43 +7,12 @@
         ignored: false
       }, {
         templateName: 'Template 2',
-        jsonTemplate: [
-          {
-            "dbProperty": "db1",
-            "sdfProperty": "prop1",
-            "required": true,
-            "defaultVal": "1"
-          }, {
-            "dbProperty": "db2",
-            "sdfProperty": "prop2",
-            "required": true,
-            "defaultVal": "2"
-          }, {
-            "dbProperty": "db3",
-            "required": true,
-            "sdfProperty": "prop3",
-            "defaultVal": "3"
-          }, {
-            "dbProperty": "db4",
-            "required": true,
-            "sdfProperty": "prop4",
-            "defaultVal": "4"
-          }, {
-            "dbProperty": "none",
-            "required": false,
-            "sdfProperty": "prop5",
-            "defaultVal": ""
-          }, {
-            "dbProperty": "db5",
-            "required": true,
-            "sdfProperty": null,
-            "defaultVal": ""
-          }
-        ],
+        jsonTemplate: '[ {"dbProperty": "db1", "sdfProperty": "prop1", "required": true, "defaultVal": "1"} , {"dbProperty": "db2", "sdfProperty": "prop2", "required": true, "defaultVal": "2"} , {"dbProperty": "db3", "required": true, "sdfProperty": "prop3", "defaultVal": "3"} , {"dbProperty": "db4", "required": true, "sdfProperty": "prop4", "defaultVal": "4"} , {"dbProperty": "none", "required": false, "sdfProperty": "prop5", "defaultVal": ""} , {"dbProperty": "db5", "required": true, "sdfProperty": null, "defaultVal": ""} ]',
         ignored: false
       }
     ];
     exports.savedTemplateReturn = {
+      "id": 50126,
       "ignored": false,
       "jsonTemplate": "[{\"dbProperty\":\"Project\",\"defaultVal\":\"project1\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Lot Comments\",\"defaultVal\":\"Default Comments\",\"required\":false,\"sdfProperty\":\"Lot Comments\"},{\"dbProperty\":\"none\",\"defaultVal\":\"\",\"required\":false,\"sdfProperty\":\"Formula\"},{\"dbProperty\":\"none\",\"defaultVal\":\"\",\"required\":false,\"sdfProperty\":\"Mol Weight\"},{\"dbProperty\":\"none\",\"defaultVal\":\"\",\"required\":false,\"sdfProperty\":\"CdId\"},{\"dbProperty\":\"Lot Synthesis Date\",\"defaultVal\":\"2015-06-23\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Lot Notebook Page\",\"defaultVal\":\"EG 1\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Lot Chemist\",\"defaultVal\":\"bob\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Lot Purity Measured By\",\"defaultVal\":\"NMR\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Parent Stereo Category\",\"defaultVal\":\"unknown\",\"required\":true,\"sdfProperty\":\"\"},{\"dbProperty\":\"Lot Number\",\"defaultVal\":\"22\",\"required\":false,\"sdfProperty\":\"\"}]",
       "recordedBy": "bob",

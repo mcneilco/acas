@@ -71,6 +71,17 @@ class window.AssignedPropertiesList extends Backbone.Collection
 					errors.push
 						attribute: 'defaultVal:eq('+@indexOf(saltEquiv)+')'
 						message: "Salt type/id requires default value for salt equivalents property"
+		if saltEquiv?
+			if saltId?
+				if saltId.get('defaultVal') is ""
+					errors.push
+						attribute: 'defaultVal:eq('+@indexOf(saltId)+')'
+						message: "Salt equivalent requires default value for salt type/id property"
+			if saltType?
+				if saltType.get('defaultVal') is ""
+					errors.push
+						attribute: 'defaultVal:eq('+@indexOf(saltType)+')'
+						message: "Salt equivalent requires default value for salt type/id property"
 		errors
 
 class window.BulkLoadFile extends Backbone.Model
@@ -100,13 +111,12 @@ class window.DetectSdfPropertiesController extends Backbone.View
 
 	setupBrowseFileController: =>
 		@browseFileController = new LSFileChooserController
-			el: @$('.bv_browseFile')
+			el: @$('.bv_browseSdfFile')
 			formId: 'fieldBlah',
 			maxNumberOfFiles: 1,
 			requiresValidation: false
 			url: UtilityFunctions::getFileServiceURL()
 			allowedFileTypes: ['sdf']
-		#			hideDelete: false
 		@browseFileController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@browseFileController.on 'amClean', =>
@@ -128,21 +138,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			mappings = @mappings.toJSON()
 		else
 			mappings = @mappings
-#		if window.conf.cmpdReg.showProjectSelect
-#			#don't add selected project to mappings until register button is clicked or else indexing for showing errors will be incorrect
-#			mappingsCollection = new Backbone.Collection mappings #change to collection to be able to search for project property
-#			projectProp = mappingsCollection.findWhere({dbProperty:'Project'})
-#			if projectProp?
-#				projectProp.set defaultVal: @project
-#				mappings = mappingsCollection.toJSON()
-#			else
-#				if mappings == null
-#					mappings = []
-#				mappings.push
-#					dbProperty: 'Project'
-#					sdfProperty: null
-#					required: true
-#					defaultVal: @project
 
 		sdfInfo =
 			fileName: @fileName
@@ -186,7 +181,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 
 		if @numRecords == -1 or (@numRecords > numRecordsRead)
 			@numRecords = numRecordsRead
-			#TODO: can/should service return with total number of records or is it ok to just display 'All' when all records are read?
 		else
 			@$('.bv_readMore').removeAttr('disabled')
 			@$('.bv_readAll').removeAttr('disabled')
@@ -215,7 +209,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@getProperties()
 
 	handleTemplateChanged: (templateName, mappings) =>
-		console.log "handle template changed a"
 		@tempName = templateName
 		@mappings = mappings
 		if @fileName? and @fileName != null
@@ -257,8 +250,6 @@ class window.AssignedPropertyController extends AbstractFormController
 
 	setupDbPropertiesSelect: ->
 		formattedDbProperties = @formatDbSelectOptions()
-#		@dbPropertiesList = new PickListList()
-#		@dbPropertiesList.url = "/api/codetables/properties/database"
 		@dbPropertiesListController = new PickListSelectController
 			el: @$('.bv_dbProperty')
 			collection: formattedDbProperties
@@ -272,7 +263,6 @@ class window.AssignedPropertyController extends AbstractFormController
 		formattedOptions = new PickListList()
 		@dbPropertiesList.each (dbProp) ->
 			code = dbProp.get('name')
-#			unless (window.conf.cmpdReg.showProjectSelect and code is "Project")
 			if dbProp.get('required')
 				name = code+"*"
 			else
@@ -298,7 +288,6 @@ class window.AssignedPropertyController extends AbstractFormController
 			else
 				@model.set required: false
 		else
-			#dbProp = none
 			@model.set required: false
 		@model.set dbProperty: dbProp
 
@@ -306,21 +295,16 @@ class window.AssignedPropertyController extends AbstractFormController
 
 	handleDefaultValChanged: ->
 		@model.set defaultVal: UtilityFunctions::getTrimmedInput @$('.bv_defaultVal')
-#		@trigger 'assignedDbPropChanged'
 
 	clear: =>
-#		@model.trigger 'amDirty'
 		@model.destroy()
-#		@attributeChanged()
+		@trigger 'modelRemoved'
 
 class window.AssignedPropertiesListController extends AbstractFormController
 	template: _.template($("#AssignedPropertiesListView").html())
 
 	events:
 		"click .bv_addDbProperty": "addNewProperty"
-
-#	initialize: ->
-#		@collection.on 'change', => @trigger 'checkIfCan
 
 	render: =>
 		$(@el).empty()
@@ -342,12 +326,12 @@ class window.AssignedPropertiesListController extends AbstractFormController
 			dbPropertiesList: @dbPropertiesList
 		apc.on 'assignedDbPropChanged', =>
 			@trigger 'assignedDbPropChanged'
+		apc.on 'modelRemoved', =>
+			@collection.trigger 'change'
 		unless (window.conf.cmpdReg.showProjectSelect and prop.get('dbProperty') is "Project")
 			@$('.bv_propInfo').append apc.render().el
 		if canDelete
 			apc.$('.bv_deleteProperty').show()
-#		apc.on 'updateState', =>
-#			@trigger 'updateState'
 
 
 
@@ -363,9 +347,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		"click .bv_regCmpds": "handleRegCmpdsClicked"
 
 	initialize: ->
-#		if @options.fileName?
-#			@fileName = @options.fileName
-#		else
 		@fileName = null
 		$(@el).empty()
 		$(@el).html @template()
@@ -441,8 +422,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@assignedPropertiesListController.render()
 		@showUnassignedDbProperties()
 		@$('.bv_addDbProperty').removeAttr('disabled')
-#		if window.conf.cmpdReg.showProjectSelect
-#			@handleDbProjectChanged()
 		@isValid()
 
 	addUnassignedSdfProperties: ->
@@ -461,31 +440,16 @@ class window.AssignSdfPropertiesController extends Backbone.View
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
 		project = @projectListController.getSelectedCode()
-#		if @assignedPropertiesList?
-#			#file has already been read at least once
-#			assignedProjectProp = @assignedPropertiesList.findWhere({dbProperty: "Project"})
-#			if assignedProjectProp?
-#				assignedProjectProp.set defaultVal: project
-#			else
-#				projectProp = new AssignedProperty
-#					sdfProperty: null
-#					dbProperty: "Project"
-#					defaultVal: project
-#					required: true
-#				@assignedPropertiesList.add projectProp
 		@isValid()
 		@trigger 'projectChanged', project
 
 
 	handleTemplateChanged: ->
-		console.log "handle template changed top"
 		templateName = @templateListController.getSelectedCode()
 		if templateName is "none"
 			mappings = new AssignedPropertiesList()
 		else
-			console.log @templates.findWhere({templateName: templateName}).get('jsonTemplate')
 			mappings = new AssignedPropertiesList (JSON.parse(@templates.findWhere({templateName: templateName}).get('jsonTemplate')))
-#			match = JSON.parse @templates.findWhere({templateName: templateName}).get('jsonTemplate')
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
@@ -528,9 +492,12 @@ class window.AssignSdfPropertiesController extends Backbone.View
 					unassignedDbProps = name
 				else
 					unassignedDbProps += newLine + name
-		if @assignedPropertiesList.findWhere({dbProperty: 'salt id'}) or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?
+		if @assignedPropertiesList.findWhere({dbProperty: 'salt id'})? or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?
 			unless @assignedPropertiesList.findWhere({dbProperty: 'salt equivalents'})?
 				unassignedDbProps += newLine + 'salt equivalents (required for salt type/id)'
+		if @assignedPropertiesList.findWhere({dbProperty: 'salt equivalents'})?
+			unless (@assignedPropertiesList.findWhere({dbProperty: 'salt id'})? or @assignedPropertiesList.findWhere({dbProperty: 'salt type'})?)
+				unassignedDbProps += newLine + 'salt id/type (required for salt equivalents)'
 		@$('.bv_unassignedProperties').html unassignedDbProps
 		@isValid()
 
@@ -560,11 +527,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	getProjectErrors: ->
 		projectError = []
-#		if @assignedPropertiesList?
-#			projectProp = @assignedPropertiesList.findWhere({dbProperty:'Project'})
-#			if projectProp?
-#				projectError = projectProp.validateProject()
-#		else if window.conf.cmpdReg.showProjectSelect
 		if @projectListController.getSelectedCode() is "unassigned" or @projectListController.getSelectedCode() is null
 			projectError.push
 				attribute: 'dbProject'
@@ -621,10 +583,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$("[data-toggle=tooltip]").tooltip();
 
 	handleRegCmpdsClicked: ->
-		console.log @fileName
 		@$('.bv_regCmpds').attr 'disabled', 'disabled'
 		@$('.bv_registering').show()
-		templateName = null
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
 		if saveTemplateChecked
 			@saveTemplate()
@@ -643,7 +603,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			url: "/api/cmpdRegBulkLoader/saveTemplate"
 			data: dataToPost
 			success: (response) =>
-				console.log "save template complete"
 				if response.id?
 					@registerCompounds()
 				else
@@ -661,7 +620,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	registerCompounds: ->
 		dataToPost =
-			filePath: @fileName
+			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
 		$.ajax
@@ -669,15 +628,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
 			data: dataToPost
 			success: (response) =>
-				console.log "register compounds complete"
 				@$('.bv_registering').hide()
-				@trigger 'saveComplete', response
+				if response is "Error"
+					@handleRegisterCmpdsError()
+				else
+					@trigger 'saveComplete', response
 			error: (err) =>
 				@serviceReturn = null
 				@handleRegisterCmpdsError()
 			dataType: 'json'
 
-	handleRegisterCmpdsError: (err) ->
+	handleRegisterCmpdsError: ->
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
@@ -735,7 +696,6 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 
 	events:
 		"click .bv_loadAnother": "handleLoadAnotherSDF"
-		"click .bv_downloadSummary": "handleDownloadSummary"
 
 	initialize: ->
 		$(@el).empty()
@@ -750,9 +710,6 @@ class window.BulkRegCmpdsSummaryController extends Backbone.View
 
 	handleLoadAnotherSDF: ->
 		@trigger 'loadAnother'
-
-	handleDownloadSummary: ->
-		#TODO: get links to download summary
 
 class window.FileRowSummaryController extends Backbone.View
 	tagName: 'tr'
@@ -812,7 +769,8 @@ class window.PurgeFilesController extends Backbone.View
 		$(@el).html @template()
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
 		@$('.bv_purgeSummary').hide()
-		@fileToPurge = null
+		@fileIdToPurge = null
+		@fileNameToPurge = null
 		@getFiles()
 
 	getFiles: ->
@@ -823,7 +781,7 @@ class window.PurgeFilesController extends Backbone.View
 			success: (response) =>
 				@setupFileSummaryTable(response)
 			error: (err) =>
-				console.log "error getting files"
+				@handleGetFilesError()
 
 	setupFileSummaryTable: (files) ->
 		if files.length == 0
@@ -837,18 +795,21 @@ class window.PurgeFilesController extends Backbone.View
 			@fileSummaryTable.on "selectedRowUpdated", @selectedFileUpdated
 			$(".bv_fileTableController").html @fileSummaryTable.render().el
 
+	handleGetFilesError: ->
+		$('.bv_fileTableController').addClass "well"
+		$('.bv_fileTableController').html "An error occurred when getting files"
+		$('.bv_purgeFileBtn').hide()
+
 	selectedFileUpdated: (file) =>
-		console.log "selected file updated"
-		console.log file
-		@fileToPurge = file.get('id')
-		console.log @fileToPurge
+		@fileIdToPurge = file.get('id')
+		@fileNameToPurge = file.get('fileName')
 		@$('.bv_purgeFileBtn').removeAttr 'disabled'
 
 	handlePurgeFile: ->
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
 		@$('.bv_purgeSummary').hide()
 		fileInfo =
-			fileId: @fileToPurge
+			fileId: @fileIdToPurge
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/purgeFile"
@@ -860,12 +821,20 @@ class window.PurgeFilesController extends Backbone.View
 				@trigger 'saveComplete', response
 			error: (err) =>
 				@serviceReturn = null
-				#TODO handle save error
+				@handlePurgeError()
 
 	handlePurgeSuccess: (response) =>
 		@$('.bv_purgeSummary').html response
 		@$('.bv_purgeSummary').show()
-		@fileToPurge = null
+		@fileIdToPurge = null
+		@fileNameToPurge = null
+		@getFiles()
+
+	handlePurgeError: ->
+		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge
+		@$('.bv_purgeSummary').show()
+		@fileIdToPurge = null
+		@fileNameToPurge = null
 		@getFiles()
 
 class window.CmpdRegBulkLoaderAppController extends Backbone.View
@@ -884,9 +853,7 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
 			@$('.bv_adminDropdown').removeClass 'disabled'
 		else
-#			@$('.bv_adminDropdown').addClass 'disabled'
-			#TODO: uncomment above line
-			@$('.bv_adminDropdown').removeClass 'disabled'
+			@$('.bv_adminDropdown').addClass 'disabled'
 		@$('.bv_searchNavOption').hide()
 		@setupBulkRegCmpdsController()
 
@@ -913,14 +880,16 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		@regCmpdsController.on 'saveComplete', (summary) =>
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkRegSummary').show()
-			@setupBulkRegCmpdsSummaryController(summary)
+			@setupBulkRegCmpdsSummaryController(summary[0])
+			@downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
+			@$('.bv_downloadSummary').attr "href", @downloadUrl
 
 	setupBulkRegCmpdsSummaryController: (summary) ->
 		if @regCmpdsSummaryController?
 			@regCmpdsSummaryController.undelegateEvents()
 		@regCmpdsSummaryController = new BulkRegCmpdsSummaryController
 			el: @$('.bv_bulkRegSummary')
-			summaryHTML: summary
+			summaryHTML: summary['summary']
 		@regCmpdsSummaryController.render()
 		@regCmpdsSummaryController.on 'loadAnother', =>
 			if @regCmpdsController?
@@ -928,6 +897,8 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsController()
 			@$('.bv_bulkRegSummary').hide()
 			@$('.bv_bulkReg').show()
+		$('.bv_downloadSummary').href = "http://www.google.com"
+
 
 	setupPurgeFilesController: ->
 		@purgeFilesController = new PurgeFilesController

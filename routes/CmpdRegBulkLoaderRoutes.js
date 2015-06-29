@@ -71,10 +71,8 @@
 
   exports.cmpdRegBulkLoaderReadSdf = function(req, resp) {
     var baseurl, cmpdRegBulkLoaderTestJSON, config, filePath, request, serverUtilityFunctions, uploadsPath;
-    console.log("cmpdRegBulkLoaderReadSdf");
     if (req.query.testMode || global.specRunnerTestmode) {
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
-      console.log(req.body);
       if (req.body.templateName === "Template 1") {
         if (req.body.numRecords < 300) {
           return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.propertiesList));
@@ -88,10 +86,8 @@
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       config = require('../conf/compiled/conf.js');
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
-      console.log(uploadsPath);
       filePath = uploadsPath + req.body.fileName;
       req.body.fileName = filePath;
-      console.log(req.body);
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/getSdfProperties";
       request = require('request');
       return request({
@@ -117,7 +113,6 @@
 
   exports.saveTemplate = function(req, resp) {
     var baseurl, cmpdRegBulkLoaderTestJSON, config, request;
-    console.log("exports.save template");
     if (req.query.testMode || global.specRunnerTestmode) {
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
       return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.savedTemplateReturn));
@@ -147,36 +142,99 @@
   };
 
   exports.registerCmpds = function(req, resp) {
-    var baseurl, config, request, serverUtilityFunctions, uploadsPath;
-    if (req.query.testMode || global.specRunnerTestmode) {
-      console.log("register compounds");
-      return resp.end(JSON.stringify("Registration Summary here"));
-    } else {
+    var createSummaryZip, moveSdfFile, registerCmpds;
+    createSummaryZip = function(fileName, filePath, json) {
+      var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, zip, zipFileName, zipFilePath;
+      fileName = fileName.substring(0, fileName.length - 4);
+      zipFileName = fileName + ".zip";
+      fs = require('fs');
+      JSZip = require('jszip');
+      zip = new JSZip();
+      ref = json.reportFiles;
+      for (i = 0, len = ref.length; i < len; i++) {
+        rFile = ref[i];
+        serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+        config = require('../conf/compiled/conf.js');
+        rFileName = rFile.slice(rFile.indexOf(fileName));
+        zip.file(rFileName, fs.readFileSync(rFile));
+      }
+      origUploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
+      movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/";
+      zipFilePath = movedUploadsPath + zipFileName;
+      buffer = zip.generate({
+        type: "nodebuffer"
+      });
+      zipFilePath = "/home/runner/privateUploads/cmpdreg_bulkload/" + zipFileName;
+      return fs.writeFile(zipFilePath, buffer, function(err) {
+        if (err) {
+          return resp.end("Summary ZIP file could not be created");
+        } else {
+          return resp.json([json, zipFileName]);
+        }
+      });
+    };
+    registerCmpds = function(req, resp) {
+      var baseurl, config, fileName, request;
+      if (req === "error") {
+        return resp.end(JSON.stringify("Error"));
+      } else {
+        if (req.query.testMode || global.specRunnerTestmode) {
+          return resp.end(JSON.stringify("Registration Summary here"));
+        } else {
+          fileName = req.body.fileName;
+          delete req.body.fileName;
+          config = require('../conf/compiled/conf.js');
+          baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/registerSdf";
+          request = require('request');
+          return request({
+            method: 'POST',
+            url: baseurl,
+            body: req.body,
+            json: true
+          }, (function(_this) {
+            return function(error, response, json) {
+              if (!error && response.statusCode === 200) {
+                return createSummaryZip(fileName, req.body.filePath, json);
+              } else {
+                console.log('got ajax error trying to register compounds');
+                console.log(error);
+                console.log(json);
+                console.log(response);
+                return resp.end(JSON.stringify("Error"));
+              }
+            };
+          })(this));
+        }
+      }
+    };
+    moveSdfFile = function(req, resp, callback) {
+      var bulkLoadFolder, config, fileName, fs, newPath, oldPath, serverUtilityFunctions, uploadsPath;
+      fileName = req.body.fileName;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       config = require('../conf/compiled/conf.js');
-      baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/registerSdf";
+      fs = require('fs');
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
-      req.body.filePath = uploadsPath + req.body.filePath;
-      request = require('request');
-      return request({
-        method: 'POST',
-        url: baseurl,
-        body: req.body,
-        json: true
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error && response.statusCode === 200) {
-            console.log(json);
-            return resp.json(json);
-          } else {
-            console.log('got ajax error trying to register compounds');
-            console.log(error);
-            console.log(json);
-            return console.log(response);
-          }
-        };
-      })(this));
-    }
+      oldPath = uploadsPath + fileName;
+      bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/";
+      newPath = bulkLoadFolder + fileName;
+      return serverUtilityFunctions.ensureExists(bulkLoadFolder, 0x1e4, function(err) {
+        if (err != null) {
+          console.log("Can't find or create bulkload folder: " + bulkLoadFolder);
+          return callback("error", resp);
+        } else {
+          return fs.rename(oldPath, newPath, function(err) {
+            if (err != null) {
+              console.log(err);
+              return callback("error", resp);
+            } else {
+              req.body.filePath = newPath;
+              return callback(req, resp);
+            }
+          });
+        }
+      });
+    };
+    return moveSdfFile(req, resp, registerCmpds);
   };
 
   exports.purgeFile = function(req, resp) {
