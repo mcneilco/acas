@@ -1,4 +1,5 @@
 
+# The following is needed when running in live mode (in excel)
 window.Office.initialize = (reason) ->
 	$(document).ready ->
 		window.logger = new ExcelAppLogger
@@ -7,6 +8,90 @@ window.Office.initialize = (reason) ->
 		window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
 			el: $('.bv_excelInsertCompoundPropertiesView')
 		insertCompoundPropertiesController.render()
+
+# The following is used for debugging the app in chrome
+#window.onload = ->
+#	window.logger = new ExcelAppLogger
+#		el: $('.bv_log')
+#	logger.render()
+#	window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+#		el: $('.bv_excelInsertCompoundPropertiesView')
+#	insertCompoundPropertiesController.render()
+
+
+class window.Attributes extends Backbone.Model
+	defaults:
+		insertColumnHeaders: true
+		includeRequestedID: true
+
+class window.AttributesController extends Backbone.View
+	initialize: ->
+		@template = _.template($("#AttributesControllerView").html())
+
+	render: =>
+		@$el.empty()
+		@attributes = new Attributes()
+		@$el.html @template @attributes.attributes
+
+
+class window.PropertyDescriptor extends Backbone.Model
+
+class window.PropertyDescriptorController extends Backbone.View
+	initialize: ->
+		@template =  _.template($("#PropertyDescriptorControllerView").html())
+
+	events: ->
+		'change .bv_propertyDescriptorCheckbox': 'handleDescriptorCheckboxChanged'
+
+	render: ->
+		@$el.empty()
+		@model.set 'isChecked', false
+		@$el.html @template(@model.attributes)
+		@$('.bv_descriptorLabel').text(@model.get('valueDescriptor').prettyName)
+		@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
+		@
+
+	handleDescriptorCheckboxChanged: ->
+		@model.set 'isChecked', @$('.bv_propertyDescriptorCheckbox').is(":checked")
+
+class window.PropertyDescriptorList extends Backbone.Collection
+	model: PropertyDescriptor
+
+class window.PropertyDescriptorListController extends Backbone.View
+	initialize: ->
+		@title = @options.title
+		@template = _.template($("#PropertyDescriptorListControllerView").html())
+		@collection = new PropertyDescriptorList()
+		@propertyControllersList = []
+		@collection.url = @options.url
+		@collection.fetch
+			success: =>
+				@collection.each (propertyDescriptor) =>
+					@addPropertyDescriptor(propertyDescriptor)
+				@trigger 'ready'
+			error: =>
+				console.log 'error fetching property descriptors from ' + @url
+
+	render:->
+		@$el.empty()
+		@$el.html @template()
+		@$('.propertyDescriptorListControllerTitle').html @title
+		@propertyControllersList.forEach (pdc) =>
+			@$('.bv_propertyDescriptorList').append pdc.render().el
+		@
+
+	getSelectedProperties: ->
+		selectedProperties = @collection.where({isChecked: true})
+		selectedPropertyNames = []
+		selectedProperties.forEach (selectedProperty) ->
+			selectedPropertyNames.push(selectedProperty.get('valueDescriptor').name)
+		return(selectedPropertyNames)
+
+	addPropertyDescriptor: (propertyDescriptor) ->
+		pdc = new PropertyDescriptorController
+			model: propertyDescriptor
+		@propertyControllersList.push pdc
+
 
 
 class window.ExcelInsertCompoundPropertiesController extends Backbone.View
@@ -20,6 +105,15 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+		@attributesController = new AttributesController
+			el: $('.bv_attributes')
+		@attributesController.render()
+		@parentPropertyDescriptorListController = new PropertyDescriptorListController
+			el: $('.bv_parentProperties')
+			title: 'Parent Properties'
+			url: '/api/parent/properties/descriptors'
+		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
+
 
 	handleGetPropertiesClicked: =>
 		#TODO make sure input is a single column or error
@@ -54,11 +148,11 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			dataType: 'json'
 			success: (json) =>
 				logger.log "got preferred id response"
-				@fetchPreferredRetun json
+				@fetchPreferredReturn json
 			error: (err) =>
 				console.log 'got ajax error fetching preferred ids'
 
-	fetchPreferredRetun: (json) ->
+	fetchPreferredReturn: (json) ->
 #		@outputArray = [["Input ID", "Preferred ID"]]
 		@preferredIds = []
 		for res in json.results
@@ -67,11 +161,15 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			@preferredIds.push prefName
 		@fetchCompoundProperties()
 
-	fetchCompoundProperties: ->
-		request =
-			properties: ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
-			entityIdStringLines: @preferredIds.join '\n'
+	getSelectedProperties: ->
+		selectedParentProperties = @parentPropertyDescriptorListController.getSelectedProperties()
+		return selectedParentProperties
 
+	fetchCompoundProperties: ->
+		selectedProperties = @getSelectedProperties()
+		request =
+			properties: selectedProperties
+			entityIdStringLines: @preferredIds.join '\n'
 		$.ajax
 			type: 'POST'
 			url: "/api/testedEntities/properties"

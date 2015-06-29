@@ -1,10 +1,12 @@
 (function() {
   exports.setupAPIRoutes = function(app) {
-    return app.post('/api/testedEntities/properties', exports.testedEntityProperties);
+    app.post('/api/testedEntities/properties', exports.testedEntityProperties);
+    return app.get('/api/parent/properties/descriptors', exports.parentPropertyDescriptors);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.post('/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties);
+    app.post('/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties);
+    return app.get('/api/parent/properties/descriptors', exports.parentPropertyDescriptors);
   };
 
   exports.testedEntityProperties = function(req, resp) {
@@ -52,6 +54,20 @@
           resp.statusCode = 500;
           return resp.end("problem with propery request, check log");
         }
+      });
+    }
+  };
+
+  exports.parentPropertyDescriptors = function(req, resp) {
+    var csUtilities, propertyDescriptorServiceTestJSON;
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    if (false) {
+      propertyDescriptorServiceTestJSON = require('../public/javascripts/spec/testFixtures/ParentPropertyDescriptorServiceTestJSON.js');
+      return resp.json(propertyDescriptorServiceTestJSON.parentPropertyDescriptors);
+    } else {
+      return csUtilities.getTestedEntityPropertyDescriptors('compoundParent', function(descriptorsJSON) {
+        console.log('here are the descriptors');
+        return resp.json(JSON.parse(descriptorsJSON));
       });
     }
   };

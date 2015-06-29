@@ -1,5 +1,27 @@
 
+<script type="text/template" id="AttributesControllerView">
+    <h5>Attributes</h5>
+    <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:52px;">
+        <input type="checkbox" name="bv_insertColumnHeaders" class="bv_insertColumnHeaders" style="margin-right:10px;" <% if (insertColumnHeaders) { %> checked="checked"<% }%> />Insert Column Headers
+    </span>
+    <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:52px;">
+        <input type="checkbox" name="bv_includeRequestedID" class="bv_includeRequestedID" style="margin-right:10px;" <% if (includeRequestedID) { %> checked="checked"<% }%> />Include Requested ID
+    </span>
+</script>
+
+<script type="text/template" id="PropertyDescriptorControllerView">
+    <label class="control-label bv_descriptorLabel" style="margin-bottom:5px;" data-toggle="tooltip" data-placement="right" title="Some descriptor tooltip">Some Descriptors</label>
+    <input type="checkbox" class="bv_propertyDescriptorCheckbox" style="margin-right:10px;" <% if (isChecked) { %> checked="checked"<% }%> />
+</script>
+
+<script type="text/template" id="PropertyDescriptorListControllerView">
+    <h5 class="propertyDescriptorListControllerTitle">Descriptors</h5>
+    <div class="bv_propertyDescriptorList"/>
+</script>
+
 <script type="text/template" id="ExcelInsertCompoundPropertiesView">
+    <div class="bv_attributes">Attributes</div>
+    <div class="bv_parentProperties">Parent Properties</div>
     <button class="bv_getProperties">Get Properties For Selected Compound IDs</button>
     <button class="bv_insertProperties">Insert Properties</button>
 </script>

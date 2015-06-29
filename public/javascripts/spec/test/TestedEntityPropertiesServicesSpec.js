@@ -8,6 +8,31 @@
   config = require('../../../../conf/compiled/conf.js');
 
   describe("Tested Entity Properties Services", function() {
+    describe("get parent property descriptors", function() {
+      before(function(done) {
+        return request("http://localhost:" + config.all.server.nodeapi.port + "/api/parent/properties/descriptors", (function(_this) {
+          return function(error, response, body) {
+            _this.descriptors = JSON.parse(body);
+            _this.response = response;
+            return done();
+          };
+        })(this));
+      });
+      it("should return an array of property descriptors", function() {
+        assert.equal(this.descriptors.length > 0, true);
+        return assert.equal(this.descriptors[0].valueDescriptor != null, true);
+      });
+      return it("each descriptor should have name, prettyName, description, valueType Name, and a multivalued keys", function() {
+        return assert.equal(this.descriptors.forEach(function(descriptor) {
+          assert.equal(descriptor.valueDescriptor.name != null, true);
+          assert.equal(descriptor.valueDescriptor.prettyName != null, true);
+          assert.equal(descriptor.valueDescriptor.description != null, true);
+          assert.equal(descriptor.valueDescriptor.valueType != null, true);
+          assert.equal(descriptor.valueDescriptor.valueType.name != null, true);
+          return assert.equal(descriptor.valueDescriptor.multivalued != null, true);
+        }));
+      });
+    });
     return describe("get calculated compound properties", function() {
       describe("when valid compounds sent with valid properties ONLY PASSES IN STUBS MODE", function() {
         var body;

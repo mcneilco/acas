@@ -4,6 +4,24 @@ request = require 'request'
 
 config = require '../../../../conf/compiled/conf.js'
 describe "Tested Entity Properties Services", ->
+	describe "get parent property descriptors", ->
+		before (done) ->
+			request "http://localhost:"+config.all.server.nodeapi.port+"/api/parent/properties/descriptors", (error, response, body) =>
+				@descriptors = JSON.parse(body)
+				@response = response
+				done()
+		it "should return an array of property descriptors", ->
+			assert.equal @descriptors.length > 0, true
+			assert.equal @descriptors[0].valueDescriptor?, true
+		it "each descriptor should have name, prettyName, description, valueType Name, and a multivalued keys", ->
+			assert.equal @descriptors.forEach (descriptor)->
+				assert.equal descriptor.valueDescriptor.name?, true
+				assert.equal descriptor.valueDescriptor.prettyName?, true
+				assert.equal descriptor.valueDescriptor.description?, true
+				assert.equal descriptor.valueDescriptor.valueType?, true
+				assert.equal descriptor.valueDescriptor.valueType.name?, true
+				assert.equal descriptor.valueDescriptor.multivalued?, true
+
 	describe "get calculated compound properties", ->
 		describe "when valid compounds sent with valid properties ONLY PASSES IN STUBS MODE", ->
 			body =
@@ -83,3 +101,4 @@ describe "Tested Entity Properties Services", ->
 			it "should have an empty string in the first result", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[1],""
+

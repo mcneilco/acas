@@ -1,8 +1,11 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/testedEntities/properties', exports.testedEntityProperties
+	app.get '/api/parent/properties/descriptors', exports.parentPropertyDescriptors
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
+	app.get '/api/parent/properties/descriptors', exports.parentPropertyDescriptors
+
 
 exports.testedEntityProperties = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
@@ -36,3 +39,15 @@ exports.testedEntityProperties = (req, resp) ->
 			else
 				resp.statusCode = 500
 				resp.end "problem with propery request, check log"
+
+exports.parentPropertyDescriptors = (req, resp) ->
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+
+#	if global.specRunnerTestmode
+	if false
+		propertyDescriptorServiceTestJSON = require '../public/javascripts/spec/testFixtures/ParentPropertyDescriptorServiceTestJSON.js'
+		resp.json propertyDescriptorServiceTestJSON.parentPropertyDescriptors
+	else
+		csUtilities.getTestedEntityPropertyDescriptors 'compoundParent', (descriptorsJSON)->
+			console.log 'here are the descriptors'
+			resp.json JSON.parse(descriptorsJSON)
