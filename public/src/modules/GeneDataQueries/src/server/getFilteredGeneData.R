@@ -20,7 +20,7 @@ configList <- racas::applicationSettings
 
 # Used to profile the code
 Rprof(filename = "Rprof.out", append = FALSE, interval = 0.0001,
-      memory.profiling = FALSE, gc.profiling = FALSE, 
+      memory.profiling = FALSE, gc.profiling = FALSE,
       line.profiling = TRUE, numfiles = 100L, bufsize = 10000L)
 
 
@@ -39,7 +39,7 @@ myLogger <- createLogger(logName = "1",
 #' @keywords JSON SQL, Advanced Query
 #' @export
 getSQLFromJSONFilterList <- function(searchFilters) {
-  
+
   termsSQL <- data.table()
   filterList <- 1
     for (filterList in 1:length(searchFilters)) {
@@ -123,7 +123,7 @@ getFullSQLQuery <- function(termsSQL, sqlString) {
 }
 ### END FUNCTIONS #####
 
-### GET INFO FROM ROO #####    
+### GET INFO FROM ROO #####
 if(is.null(GET$format)){
   exportCSV <- FALSE
   onlyPublicData <- "true"
@@ -150,7 +150,7 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
   #split on whitespace (except "-", don't split on that bc it is used in batch codes)
   geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
-  
+
   if (length(geneDataList) > 0) {
     requestList <- list()
     for (i in 1:length(geneDataList)){
@@ -164,9 +164,9 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
       customrequest='POST',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
-    
+
     save(requestObject,geneNameList,geneDataList,file="genes.Rda")
-    
+
     genes <- fromJSON(geneNameList)$results
     batchCodeList <- list()
     for (i in 1:length(genes)){
@@ -185,7 +185,7 @@ save(batchCodeList,file="batchCodeList.Rda")
 searchParams <- list()
 if (length(postData.list$queryParams$experimentCodeList) > 1){
   searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
-  
+
 } else {
   searchParams$experimentCodeList <- list()
   searchParams$experimentCodeList[1] <- postData.list$queryParams$experimentCodeList
@@ -220,7 +220,7 @@ dataCsv <- getURL(
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
-  
+
 
 errorFlag <- FALSE
 tryCatch({
@@ -269,7 +269,7 @@ arithMean <- function(data){
 }
 geomMean <- function(data){
   if (length(data) == 0){
-    return ("NA") 
+    return ("NA")
   }
   firstChar = substring(data,1,1)
   hasOperator <- firstChar =="<" | firstChar == ">"
@@ -285,7 +285,7 @@ geomMean <- function(data){
   return (paste0(finalOperator,roundString(gMean,sigfig)))
 }
 
-# This is bound to the global environment because pivotResults can't seem to find it otherwise. 
+# This is bound to the global environment because pivotResults can't seem to find it otherwise.
 # pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
 aggregateData <<- function(x,type){
   if (length(x)==1){
@@ -295,9 +295,9 @@ aggregateData <<- function(x,type){
     geomMean(x)
   }else if(type == "arithMean"){
     arithMean(x)
-  #curve curator does overlay with curve id's delimited by &  
+  #curve curator does overlay with curve id's delimited by &
   }else if(type == "curve"){
-    paste(x,sep=",",collapse=",")   
+    paste(x,sep=",",collapse=",")
   }else{
     paste(x,sep="<br>",collapse="<br>")
   }
@@ -334,17 +334,17 @@ if (nrow(dataDT) > 0){
 
   for (expt in experimentIdList){
     myLogger$debug(paste0("current experiment(/protocol) ", expt))
-    if(firstPass){      
+    if(firstPass){
       # Modify lsKind to include units and concentration info as well (if it exists)
       dataDT[resultUnit != "", lsKind := paste(lsKind," (",resultUnit,")",sep="")]
       dataDT[testedConcentration != "", lsKind := paste(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
-      
+
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
         options( scipen = -2 ) #This is to force scientific notation more often
         dataDT[,result := roundString(result,sigfig)]
       }
-      
+
       # Add operators to the front of result if they exist
       dataDT[,result := paste(operator,result,sep = '')]
 
@@ -353,22 +353,23 @@ if (nrow(dataDT) > 0){
         # Get list of properties to aggregate with geometirc mean from config
         geomList <- unlist(strsplit(configList$server.sar.geomMean,","))
         # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
-        dataDTFilter <- dataDT[protocolId == expt]   
+        dataDTFilter <- dataDT[protocolId == expt]
         outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
         outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
         outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result,"curve")]
         outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result,"other")]
-        
+
         # merge all subsets back into one outputDT
-        outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))              
+        outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
         experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
-        
-      }else{ 
-        outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]  
+
+      }else{
+        outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
         experimentName <- as.character(unique(outputDT$experimentName))
         codeName <- as.character(unique(outputDT$experimentCodeName))
-        outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName)) 
+        outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
       }
+      save(outputDT,file="outputDT.Rda")
 
       # Add a column with the compound structure
       # For HTML display include <tags>. For csv just give the url.
@@ -381,10 +382,10 @@ if (nrow(dataDT) > 0){
       if (aggregate){
         exptDataColumns <- c()
         for (codeName in experimentList$experimentCodeName){
-          exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)) 
+          exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV))
         }
       }else{ #aggregate is false
-  		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+  		  exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
       }
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
@@ -392,7 +393,7 @@ if (nrow(dataDT) > 0){
       # The regex keeps things like look like Ki (uM) but excludes Ki.x (which is from curve curator)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(paste0(x,"([^.]|$)"),names(outputDT),value=TRUE)))))
-      
+
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
       if (aggregate){
@@ -417,9 +418,9 @@ if (nrow(dataDT) > 0){
 
   		myLogger$debug("exptDataColumns is:")
   		myLogger$debug(exptDataColumns)
-  		
+
   		#setcolorder(outputDT, c("geneId",exptDataColumns))
-   		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))   
+   		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))
 
       # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
       # For csv, only output url, without html tags
@@ -430,15 +431,16 @@ if (nrow(dataDT) > 0){
         try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
 
-#changed experimentName to expt 
+# changed experimentName to expt
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(expt, "::", colName))
   		}
+
   		firstPass <- FALSE
-  
-  		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))		
+
+  		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
   		orderCols$order <- as.integer(as.character(orderCols$order))
-  		
+
       if (aggregate){
   		  colNamesDF <- subset(dataDT, protocolId == expt, select=c(protocolId, experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }else{
@@ -452,17 +454,17 @@ if (nrow(dataDT) > 0){
 
     } else {
   		myLogger$debug(paste0("current firstPass ", firstPass))
-      
+
   		#aggregate and pivot the data
   		if (aggregate){
-  		  # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)		  
-  		  dataDTFilter <- dataDT[protocolId == expt]         
+  		  # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
+  		  dataDTFilter <- dataDT[protocolId == expt]
   		  outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
   		  outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
   		  outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result,"curve")]
   		  outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result,"other")]
   		  # merge all subsets back into one outputDT
-  		  outputDT2 <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))        
+  		  outputDT2 <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
   		  experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
   		}else{
   		  outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
@@ -487,15 +489,15 @@ if (nrow(dataDT) > 0){
           exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) )
         }
       }else{
-        exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV) 
+        exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
       }
-      
+
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
-      
+
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
       if (aggregate){
@@ -517,20 +519,20 @@ if (nrow(dataDT) > 0){
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues2)
-      
+
       # save a list of all fileValues
       fileValues <- c(fileValues,fileValues2)
 
   		#setcolorder(outputDT2, c("geneId",exptDataColumns))
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
-  
+
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
   		if (!exportCSV){
   		  try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
   		}else{
         try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
-      }	
+      }
 #changed experimentName to expt
       for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(expt, "::", colName))
@@ -553,11 +555,24 @@ if (nrow(dataDT) > 0){
       }
   }
 
+
+
+  # generate aaData
+  columns = gsub('\\W','',names(outputDT))
+  numCols = length(columns)
+  aaData = list()
+  for (i in 1:length(outputDT[[1]])){
+    aaData[[i]] = list()
+    for (j in 1:numCols){
+      aaData[[i]][[columns[j]]]=outputDT[[i,j]]
+    }
+  }
+
   outputDF <- as.data.frame(outputDT)
   names(outputDF) <- NULL
   outputDT.list <- as.list(as.data.frame(t(outputDF)))
   names(outputDT.list) <- NULL
-  
+
 # function to convert lsType to sType(used in js datatables)
   setType <- function(lsType){
     if (lsType == "stringValue"){
@@ -567,7 +582,7 @@ if (nrow(dataDT) > 0){
     }
     return(sType)
   }
-  
+
   allColNamesDF$originalOrder <- seq(1:nrow(allColNamesDF))
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , exptColName := paste0(experimentName, '::', lsKind)]
@@ -588,23 +603,26 @@ if (nrow(dataDT) > 0){
 
   allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),imageClass,"center")
   setnames(allColNamesDT, "lsKind", "sTitle")
-  
-  aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
-  aoColumnsDF <- rbind(data.frame(sTitle="Compound Structure", sClass="StructureImage"), aoColumnsDF)
-  aoColumnsDF <- rbind(data.frame(sTitle="Batch Code", sClass="center"), aoColumnsDF)
-  
-  
+  allColNamesDT[,mData := columns[3:length(columns)]]
+
+  aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass, mData)))
+  aoColumnsDF <- rbind(data.frame(sTitle="Batch Image", sClass="StructureImage", mData="StructureImage"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle="Batch Code", sClass="center", mData="geneId"), aoColumnsDF)
+
+
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
-  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText='Compound Information'), groupHeadersDF)
-  
+  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText='Tested Entity Information'), groupHeadersDF)
+
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
-  
+
   groupHeadersDF.list <- as.list(as.data.frame(t(groupHeadersDF)))
   names(groupHeadersDF.list) <- NULL
-  
+
+  save(outputDT.list,file="aaData.Rda")
+
   responseJson <- list()
-  responseJson$results$data$aaData <- outputDT.list
+  responseJson$results$data$aaData <- aaData
   responseJson$results$data$iTotalRecords <- nrow(outputDT)
   responseJson$results$data$iTotalDisplayRecords <- nrow(outputDT)
   responseJson$results$data$aoColumns <- aoColumnsDF.list
@@ -614,9 +632,9 @@ if (nrow(dataDT) > 0){
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
   setStatus(status=200L)
-  
+
 } else { #no results
-  
+
   responseJson <- list()
   responseJson$results$data$aaData <- list()
   responseJson$results$data$iTotalRecords <- 0
@@ -624,20 +642,20 @@ if (nrow(dataDT) > 0){
   responseJson$results$data$aoColumns <- list()
   responseJson$results$data$groupHeaders <- list()
   responseJson$results$htmlSummary <- "NO Resulsts"
-  responseJson$hasError <- TRUE	
+  responseJson$hasError <- TRUE
   responseJson$hasWarning <- FALSE
   error1 <- list(errorLevel="error", message="No results found.")
   error2 <- list(errorLevel="error", message="Please load more data.")
   responseJson$errorMessages <- list(error1, error2)
   setStatus(status=506L)
-  
+
 }
 
 if (exportCSV){
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/text")
   write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
-  
+
 } else {
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/json")
@@ -646,7 +664,3 @@ if (exportCSV){
 
 #stops timing the code profiling
 Rprof(NULL)
-
-    
-
-
