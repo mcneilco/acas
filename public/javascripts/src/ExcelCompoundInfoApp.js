@@ -136,7 +136,7 @@
         })(this),
         error: (function(_this) {
           return function() {
-            return console.log('error fetching property descriptors from route: ' + _this.collection.url);
+            return logger.log('error fetching property descriptors from route: ' + _this.collection.url);
           };
         })(this)
       });
@@ -183,6 +183,9 @@
 
     function ExcelInsertCompoundPropertiesController() {
       this.handleInsertPropertiesClicked = bind(this.handleInsertPropertiesClicked, this);
+      this.parseInputArray = bind(this.parseInputArray, this);
+      this.setErrorStatus = bind(this.setErrorStatus, this);
+      this.setPropertyLookUpStatus = bind(this.setPropertyLookUpStatus, this);
       this.handleGetPropertiesClicked = bind(this.handleGetPropertiesClicked, this);
       this.render = bind(this.render, this);
       return ExcelInsertCompoundPropertiesController.__super__.constructor.apply(this, arguments);
@@ -216,19 +219,26 @@
         url: '/api/compound/parent/property/descriptors'
       });
       this.parentPropertyDescriptorListController.on('ready', this.parentPropertyDescriptorListController.render);
-      return this.$("[data-toggle=popover]").popover({
+      this.$("[data-toggle=popover]").popover({
         html: true,
         content: '1. Choose Properties to look up.<br /> 2. Select input IDs in workbook.<br /> 3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br /> 4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br /> 5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
       });
+      return Office.context.document.addHandlerAsync(Office.EventType.DocumentSelectionChanged, (function(_this) {
+        return function() {
+          return _this.setErrorStatus("");
+        };
+      })(this));
     };
 
     ExcelInsertCompoundPropertiesController.prototype.handleGetPropertiesClicked = function() {
-      logger.log("got Get Properties Clicked");
+      logger.log("Get Properties Clicked");
+      logger.log(this.setPropertyLookUpStatus);
+      this.setPropertyLookUpStatus("Loading...");
       return Office.context.document.getSelectedDataAsync('matrix', (function(_this) {
         return function(result) {
           if (result.status === 'succeeded') {
             logger.log("Fetched data");
-            return _this.fetchPreferred(result.value);
+            return _this.parseInputArray(result.value);
           } else {
             return logger.log(result.error.name + ': ' + result.error.name);
           }
@@ -236,12 +246,52 @@
       })(this));
     };
 
+    ExcelInsertCompoundPropertiesController.prototype.setPropertyLookUpStatus = function(status) {
+      return this.$('.bv_propertyLookUpStatus').html(status);
+    };
+
+    ExcelInsertCompoundPropertiesController.prototype.setErrorStatus = function(status) {
+      this.setPropertyLookUpStatus('');
+      this.$('.bv_errorStatus').html(status);
+      if (status === "") {
+        return this.$('.bv_errorStatus').addClass('hide');
+      } else {
+        return this.$('.bv_errorStatus').removeClass('hide');
+      }
+    };
+
+    ExcelInsertCompoundPropertiesController.prototype.parseInputArray = function(inputArray) {
+      var error, i, len, req, request;
+      error = false;
+      if (inputArray != null) {
+        request = {
+          requests: []
+        };
+        for (i = 0, len = inputArray.length; i < len; i++) {
+          req = inputArray[i];
+          if (req.length > 1) {
+            error = true;
+            this.setErrorStatus('Select a single column');
+            break;
+          } else {
+            request.requests.push({
+              requestName: req[0]
+            });
+          }
+        }
+      }
+      if (!error) {
+        return this.fetchPreferred(request);
+      }
+    };
+
+    ExcelInsertCompoundPropertiesController.prototype.showError = function(error) {};
+
     ExcelInsertCompoundPropertiesController.prototype.handleInsertPropertiesClicked = function() {
       return this.insertTable(this.outputArray);
     };
 
     ExcelInsertCompoundPropertiesController.prototype.insertTable = function(dataArray) {
-      logger.log(dataArray);
       return Office.context.document.setSelectedDataAsync(dataArray, {
         coercionType: 'matrix'
       }, (function(_this) {
@@ -253,19 +303,9 @@
       })(this));
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.fetchPreferred = function(inputArray) {
-      var i, len, req, request;
+    ExcelInsertCompoundPropertiesController.prototype.fetchPreferred = function(request) {
+      this.setPropertyLookUpStatus("Fetching preferred ids...");
       logger.log("starting addPreferred");
-      logger.log(inputArray);
-      request = {
-        requests: []
-      };
-      for (i = 0, len = inputArray.length; i < len; i++) {
-        req = inputArray[i];
-        request.requests.push({
-          requestName: req[0]
-        });
-      }
       return $.ajax({
         type: 'POST',
         url: "/api/preferredBatchId",
@@ -279,7 +319,8 @@
         })(this),
         error: (function(_this) {
           return function(err) {
-            return console.log('got ajax error fetching preferred ids');
+            _this.setErrorStatus("Error fetching preferred ids");
+            return logger.log('got ajax error fetching preferred ids');
           };
         })(this)
       });
@@ -307,6 +348,7 @@
 
     ExcelInsertCompoundPropertiesController.prototype.fetchCompoundProperties = function() {
       var request, selectedProperties;
+      this.setPropertyLookUpStatus("Fetching properties...");
       selectedProperties = this.getSelectedProperties();
       request = {
         properties: selectedProperties.parent,
@@ -325,7 +367,8 @@
         })(this),
         error: (function(_this) {
           return function(err) {
-            return console.log('got ajax error fetching compound properties');
+            _this.setErrorStatus("Error fetching properties");
+            return logger.log('got ajax error fetching properties');
           };
         })(this)
       });
@@ -333,7 +376,8 @@
 
     ExcelInsertCompoundPropertiesController.prototype.fetchCompoundPropertiesReturn = function(json) {
       logger.log(json.resultCSV);
-      return this.outputArray = this.convertCSVToMatrix(json.resultCSV);
+      this.outputArray = this.convertCSVToMatrix(json.resultCSV);
+      return this.setPropertyLookUpStatus("Data ready to insert...");
     };
 
     ExcelInsertCompoundPropertiesController.prototype.convertCSVToMatrix = function(csv) {

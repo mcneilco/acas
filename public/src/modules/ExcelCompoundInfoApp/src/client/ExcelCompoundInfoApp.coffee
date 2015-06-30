@@ -70,7 +70,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 					@addPropertyDescriptor(propertyDescriptor)
 				@trigger 'ready'
 			error: =>
-				console.log 'error fetching property descriptors from route: ' + @collection.url
+				logger.log 'error fetching property descriptors from route: ' + @collection.url
 
 	render:->
 		@$el.empty()
@@ -125,34 +125,61 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 								3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br />
 								4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br />
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
-
+		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
+				@setErrorStatus ""
 
 	handleGetPropertiesClicked: =>
 		#TODO make sure input is a single column or error
-		logger.log "got Get Properties Clicked"
+		logger.log "Get Properties Clicked"
+		logger.log @setPropertyLookUpStatus
+		@setPropertyLookUpStatus "Loading..."
 		Office.context.document.getSelectedDataAsync 'matrix', (result) =>
 			if result.status == 'succeeded'
 				logger.log "Fetched data"
-#				logger.log result.value
-				@fetchPreferred result.value
+				@parseInputArray result.value
 			else
 				logger.log result.error.name + ': ' + result.error.name
+
+	setPropertyLookUpStatus: (status) =>
+	  @.$('.bv_propertyLookUpStatus').html status
+
+	setErrorStatus: (status) =>
+		@setPropertyLookUpStatus ''
+		@.$('.bv_errorStatus').html status
+		if status == ""
+			@.$('.bv_errorStatus').addClass('hide')
+		else
+			@.$('.bv_errorStatus').removeClass('hide')
+
+	parseInputArray: (inputArray) =>
+		error = false
+		if inputArray?
+			request = requests: []
+			for req in inputArray
+				if req.length > 1
+					error = true
+					@setErrorStatus 'Select a single column'
+					break
+				else
+					request.requests.push requestName: req[0]
+		if not error
+			@fetchPreferred request
+
+
+	showError: (error) ->
+
 
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
 
 	insertTable: (dataArray) ->
-		logger.log dataArray
 		Office.context.document.setSelectedDataAsync dataArray, coercionType: 'matrix', (result) =>
 			if result.status != 'succeeded'
 				logger.log result.error.name + ':' + result.error.message
 
-	fetchPreferred: (inputArray) ->
+	fetchPreferred: (request) ->
+		@setPropertyLookUpStatus "Fetching preferred ids..."
 		logger.log "starting addPreferred"
-		logger.log inputArray
-		request = requests: []
-		for req in inputArray
-			request.requests.push requestName: req[0]
 		$.ajax
 			type: 'POST'
 			url: "/api/preferredBatchId"
@@ -162,7 +189,8 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 				logger.log "got preferred id response"
 				@fetchPreferredReturn json
 			error: (err) =>
-				console.log 'got ajax error fetching preferred ids'
+				@setErrorStatus "Error fetching preferred ids"
+				logger.log 'got ajax error fetching preferred ids'
 
 	fetchPreferredReturn: (json) ->
 #		@outputArray = [["Input ID", "Preferred ID"]]
@@ -180,6 +208,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		return selectedParentProperties
 
 	fetchCompoundProperties: ->
+		@setPropertyLookUpStatus "Fetching properties..."
 		selectedProperties = @getSelectedProperties()
 		request =
 			properties: selectedProperties.parent
@@ -193,11 +222,14 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 				logger.log "got compound property response"
 				@fetchCompoundPropertiesReturn json
 			error: (err) =>
-				console.log 'got ajax error fetching compound properties'
+				@setErrorStatus "Error fetching properties"
+				logger.log 'got ajax error fetching properties'
 
 	fetchCompoundPropertiesReturn: (json) ->
 		logger.log json.resultCSV
 		@outputArray = @convertCSVToMatrix json.resultCSV
+		@setPropertyLookUpStatus "Data ready to insert..."
+
 
 	convertCSVToMatrix: (csv) ->
 		outMatrix = []
