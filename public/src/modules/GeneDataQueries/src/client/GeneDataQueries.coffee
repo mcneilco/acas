@@ -99,22 +99,86 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@setQueryOnlyMode()
 
 
-	handleSearchRequested: (searchStr) =>
-		@lastSearch = searchStr
-		@$('.bv_searchStatusDropDown').modal
-		backdrop: "static"
-		@$('.bv_searchStatusDropDown').modal "show"
+
+
+
+
+
+	getAllExpts: ->
+		console.log("at getAllExpts")
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQuery"
+			url: "api/getGeneExperiments"
+			dataType: 'json'
 			data:
-				geneIDs: searchStr
+				geneIDs: @lastSearch
+			success: @handleGetGeneExperimentsReturnSimple
+			error: (err) =>
+				@serviceReturn = null
+
+	handleGetGeneExperimentsReturnSimple: (json) =>
+		data = json.results.experimentData
+		experimentCodeList = []
+		experimentCodeList.push(expt.id) for expt in data
+		@codesList =  experimentCodeList
+		@getQueryParamsSimple()
+
+
+	getQueryParamsSimple: ->
+
+		searchFilter =
+			booleanFilter: "and"
+			advancedFilter: ""
+		queryParams =
+			batchCodes: @lastSearch
+			experimentCodeList: @codesList
+			searchFilters: searchFilter
+			aggregate: "false"
+
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQueryAdvanced"
+			dataType: 'json'
+			data:
+				queryParams: queryParams
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn
 			error: (err) =>
 				@serviceReturn = null
-			dataType: 'json'
+
+
+	handleSearchRequested: (searchStr) =>
+		@lastSearch = searchStr
+		@$('.bv_searchStatusDropDown').modal
+		backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
+
+		console.log(searchStr)
+		@getAllExpts()
+
+
+
+
+
+
+
+	# handleSearchRequested: (searchStr) =>
+	# 	@lastSearch = searchStr
+	# 	@$('.bv_searchStatusDropDown').modal
+	# 	backdrop: "static"
+	# 	@$('.bv_searchStatusDropDown').modal "show"
+	# 	$.ajax
+	# 		type: 'POST'
+	# 		url: "api/geneDataQuery"
+	# 		data:
+	# 			geneIDs: searchStr
+	# 			maxRowsToReturn: 10000
+	# 			user: window.AppLaunchParams.loginUserName
+	# 		success: @handleSearchReturn
+	# 		error: (err) =>
+	# 			@serviceReturn = null
+	# 		dataType: 'json'
 
 	handleSearchReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
@@ -171,9 +235,9 @@ class window.ExperimentTreeController extends Backbone.View
 		@trigger 'disableNext'
 		@setupTree()
 		@handleAggregationChanged()
-		
+
 		@
-	
+
 	setupTree: ->
 		@$('.bv_tree').jstree
 			core:
@@ -628,4 +692,3 @@ class window.GeneIDQueryAppController extends Backbone.View
 		@$('.bv_helpModal').modal
 			backdrop: "static"
 		@$('.bv_helpModal').modal "show"
-

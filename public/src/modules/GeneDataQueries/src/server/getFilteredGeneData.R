@@ -238,8 +238,6 @@ if (length(batchCodeList) != 0){
   dataDT <- dataDT[testedLot %in% batchCodeList]
 }
 
-
-
 save(dataDT,file="dataDT.Rda")
 ### FUNCTIONS FOR PROCESSING DATA INTO ROWS/COLS ETC...#####
 
