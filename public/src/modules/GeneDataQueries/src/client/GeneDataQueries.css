@@ -43,12 +43,13 @@
 }
 
 .GeneIDQueryAppController .gidAdvancedNavSearchButtonStart {
-    margin-top: 5px;
-    margin-left: 306px;
+    margin-top: 15px;
+    margin-left: 0px;
 }
 
 .GeneIDQueryAppController .gidAdvancedNavSearchButtonTop {
     margin-top: 0 !important;
+		margin-left: 15px;
 }
 
 .GeneIDQueryAppController .bv_gidACASBadgeTop {
@@ -72,6 +73,11 @@
 .GeneIDQueryAppController .resultsWell {
 	margin-top: 100px !important;
 }
+
+.GeneIDQueryAppController .bv_resultsView {
+	margin: 15px !important;
+}
+
 
 .GeneIDQueryAppController .bv_gidDownloadCSV {
     margin-bottom: 10px;
@@ -214,10 +220,21 @@
 
 .GeneIDQueryAppController .radioOr {
     padding-left: 25px !important;
+
 }
 
 .GeneIDQueryAppController .radioTrue {
-    padding-left: 25px !important;
+    padding-left: 15px !important;
+		padding-top: 8px ;
+}
+.GeneIDQueryAppController .radioFalse {
+		padding-top: 8px ;
+		padding-left: 1px;
+}
+
+.GeneIDQueryAppController .aggregationRadios {
+		margin-top: 3px !important;
+		margin-right: 5px !important;
 }
 
 .radioAdvancedFilter {

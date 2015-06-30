@@ -6,6 +6,8 @@ class window.GeneIDQueryInputController extends Backbone.View
 		"click .bv_gidNavAdvancedSearchButton": "handleAdvanceModeRequested"
 		"keyup .bv_gidListString": "handleInputFieldChanged"
 		"keydown .bv_gidListString": "handleKeyInInputField"
+		"click .bv_aggregation_true": "handleAggregationChanged"
+		"click .bv_aggregation_false": "handleAggregationChanged"
 
 	render: =>
 		$(@el).empty()
@@ -13,6 +15,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@$('.bv_search').attr('disabled','disabled')
 		@$('.bv_gidACASBadgeTop').hide()
 		@$('.bv_searchNavbar').hide()
+		@handleAggregationChanged()
 
 		@
 
@@ -21,6 +24,9 @@ class window.GeneIDQueryInputController extends Backbone.View
 			@$('.bv_search').removeAttr('disabled')
 		else
 			@$('.bv_search').attr('disabled','disabled')
+
+	handleAggregationChanged: =>
+		@aggregate = @$("input[name='bv_aggregation']:checked").val()
 
 	handleKeyInInputField: (e) =>
 		if e.keyCode == 13
@@ -99,31 +105,25 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@setQueryOnlyMode()
 
 
-
-
-
-
-
-	getAllExpts: ->
+	getAllExperimentNames: ->
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
 			dataType: 'json'
 			data:
 				geneIDs: @lastSearch
-			success: @handleGetGeneExperimentsReturnSimple
+			success: @handleGetExperimentsReturn
 			error: (err) =>
 				@serviceReturn = null
 
-	handleGetGeneExperimentsReturnSimple: (json) =>
+	handleGetExperimentsReturn: (json) =>
 		data = json.results.experimentData
 		experimentCodeList = []
 		experimentCodeList.push(expt.id) for expt in data
 		@codesList =  experimentCodeList
-		@getQueryParamsSimple()
+		@runRequestedSearch()
 
-
-	getQueryParamsSimple: ->
+	runRequestedSearch: ->
 		searchFilter =
 			booleanFilter: "and"
 			advancedFilter: ""
@@ -131,7 +131,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			batchCodes: @lastSearch
 			experimentCodeList: @codesList
 			searchFilters: searchFilter
-			aggregate: "false"
+			aggregate: @queryInputController.aggregate
 
 		$.ajax
 			type: 'POST'
@@ -151,7 +151,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@$('.bv_searchStatusDropDown').modal
 			backdrop: "static"
 		@$('.bv_searchStatusDropDown').modal "show"
-		@getAllExpts()
+		@getAllExperimentNames()
 
 	# handleSearchRequested: (searchStr) =>
 	# 	@lastSearch = searchStr
