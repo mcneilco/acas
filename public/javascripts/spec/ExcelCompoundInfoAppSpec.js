@@ -92,7 +92,7 @@
           window.propertyDescriptorListController = new PropertyDescriptorListController({
             el: $("#fixture"),
             title: 'Parent Properties',
-            url: '/api/parent/properties/descriptors'
+            url: '/api/compound/parent/property/descriptors'
           });
           window.propertyDescriptorListController.on('ready', function() {
             window.propertyDescriptorListController.render();
@@ -115,15 +115,34 @@
       });
     });
     return describe("Excel Compound Info App controller", function() {
-      beforeEach(function() {
-        window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController({
-          el: $('.bv_excelInsertCompoundPropertiesView')
-        });
-        return insertCompoundPropertiesController.render();
+      beforeEach(function(done) {
+        setTimeout((function() {
+          window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController({
+            el: $("#fixture")
+          });
+          window.insertCompoundPropertiesController.render();
+          window.insertCompoundPropertiesController.batchPropertyDescriptorListController.on('ready', function() {
+            return done();
+          });
+        }), 100);
       });
       describe("Basic existence tests", function() {
         return it("should be defined", function() {
-          return expect(insertCompoundPropertiesController).toBeDefined();
+          expect(insertCompoundPropertiesController).toBeDefined();
+          expect(insertCompoundPropertiesController.attributesController).toBeDefined();
+          expect(insertCompoundPropertiesController.parentPropertyDescriptorListController).toBeDefined();
+          return expect(insertCompoundPropertiesController.batchPropertyDescriptorListController).toBeDefined();
+        });
+      });
+      describe("getSelectedProperties", function() {
+        return it("should return an array of properties with a batch and parent key", function() {
+          var selectedProperties;
+          window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click();
+          window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[1].click();
+          window.insertCompoundPropertiesController.$('.bv_parentProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click();
+          selectedProperties = window.insertCompoundPropertiesController.getSelectedProperties();
+          expect(selectedProperties.parent.length).toEqual(1);
+          return expect(selectedProperties.batch.length).toEqual(2);
         });
       });
       return describe("handleGetPropertiesClicked", function() {

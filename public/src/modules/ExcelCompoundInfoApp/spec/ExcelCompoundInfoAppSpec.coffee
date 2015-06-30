@@ -66,7 +66,7 @@ describe "Excel Compound Info App module testing", ->
 				window.propertyDescriptorListController = new PropertyDescriptorListController
 					el: $("#fixture")
 					title: 'Parent Properties'
-					url: '/api/parent/properties/descriptors'
+					url: '/api/compound/parent/property/descriptors'
 				window.propertyDescriptorListController.on 'ready', ->
 					window.propertyDescriptorListController.render()
 					done()
@@ -83,14 +83,35 @@ describe "Excel Compound Info App module testing", ->
 				expect(window.propertyDescriptorListController.$('.bv_propertyDescriptorList .bv_descriptorLabel').length).toBeGreaterThan(0)
 
 	describe "Excel Compound Info App controller", ->
-		beforeEach ->
-			window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
-				el: $('.bv_excelInsertCompoundPropertiesView')
-			insertCompoundPropertiesController.render()
-
+		beforeEach (done) ->
+			setTimeout (->
+				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					el: $("#fixture")
+				window.insertCompoundPropertiesController.render()
+				window.insertCompoundPropertiesController.batchPropertyDescriptorListController.on 'ready', ->
+					done()
+				return
+			), 100
+			return
+#		beforeEach (done)->
+#			window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+#				el: $("#fixture")
+#
+#			insertCompoundPropertiesController.render()
 		describe "Basic existence tests", ->
 			it "should be defined", ->
 				expect(insertCompoundPropertiesController).toBeDefined()
+				expect(insertCompoundPropertiesController.attributesController).toBeDefined()
+				expect(insertCompoundPropertiesController.parentPropertyDescriptorListController).toBeDefined()
+				expect(insertCompoundPropertiesController.batchPropertyDescriptorListController).toBeDefined()
+		describe "getSelectedProperties", ->
+			it "should return an array of properties with a batch and parent key", ->
+				window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click()
+				window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[1].click()
+				window.insertCompoundPropertiesController.$('.bv_parentProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click()
+				selectedProperties =  window.insertCompoundPropertiesController.getSelectedProperties()
+				expect(selectedProperties.parent.length).toEqual(1)
+				expect(selectedProperties.batch.length).toEqual(2)
 
 		describe "handleGetPropertiesClicked", ->
 			it "should call fetchPrepared if result.status is 'succeeded'", ->

@@ -1,5 +1,5 @@
 
-# The following is needed when running in live mode (in excel)
+# The following is needed when running specs and live
 window.Office.initialize = (reason) ->
 	$(document).ready ->
 		window.logger = new ExcelAppLogger
@@ -70,7 +70,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 					@addPropertyDescriptor(propertyDescriptor)
 				@trigger 'ready'
 			error: =>
-				console.log 'error fetching property descriptors from ' + @url
+				console.log 'error fetching property descriptors from route: ' + @collection.url
 
 	render:->
 		@$el.empty()
@@ -108,11 +108,23 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@attributesController = new AttributesController
 			el: $('.bv_attributes')
 		@attributesController.render()
+		@batchPropertyDescriptorListController = new PropertyDescriptorListController
+			el: $('.bv_batchProperties')
+			title: 'Batch Properties'
+			url: '/api/compound/batch/property/descriptors'
+		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
 		@parentPropertyDescriptorListController = new PropertyDescriptorListController
 			el: $('.bv_parentProperties')
 			title: 'Parent Properties'
-			url: '/api/parent/properties/descriptors'
+			url: '/api/compound/parent/property/descriptors'
 		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
+		@$("[data-toggle=popover]").popover
+			html: true
+			content: '1. Choose Properties to look up.<br />
+								2. Select input IDs in workbook.<br />
+								3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br />
+								4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br />
+								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
 
 
 	handleGetPropertiesClicked: =>
@@ -162,13 +174,15 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@fetchCompoundProperties()
 
 	getSelectedProperties: ->
-		selectedParentProperties = @parentPropertyDescriptorListController.getSelectedProperties()
+		selectedParentProperties = []
+		selectedParentProperties.parent = @parentPropertyDescriptorListController.getSelectedProperties()
+		selectedParentProperties.batch = @batchPropertyDescriptorListController.getSelectedProperties()
 		return selectedParentProperties
 
 	fetchCompoundProperties: ->
 		selectedProperties = @getSelectedProperties()
 		request =
-			properties: selectedProperties
+			properties: selectedProperties.parent
 			entityIdStringLines: @preferredIds.join '\n'
 		$.ajax
 			type: 'POST'

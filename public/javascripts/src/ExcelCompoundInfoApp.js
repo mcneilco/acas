@@ -136,7 +136,7 @@
         })(this),
         error: (function(_this) {
           return function() {
-            return console.log('error fetching property descriptors from ' + _this.url);
+            return console.log('error fetching property descriptors from route: ' + _this.collection.url);
           };
         })(this)
       });
@@ -204,12 +204,22 @@
         el: $('.bv_attributes')
       });
       this.attributesController.render();
+      this.batchPropertyDescriptorListController = new PropertyDescriptorListController({
+        el: $('.bv_batchProperties'),
+        title: 'Batch Properties',
+        url: '/api/compound/batch/property/descriptors'
+      });
+      this.batchPropertyDescriptorListController.on('ready', this.batchPropertyDescriptorListController.render);
       this.parentPropertyDescriptorListController = new PropertyDescriptorListController({
         el: $('.bv_parentProperties'),
         title: 'Parent Properties',
-        url: '/api/parent/properties/descriptors'
+        url: '/api/compound/parent/property/descriptors'
       });
-      return this.parentPropertyDescriptorListController.on('ready', this.parentPropertyDescriptorListController.render);
+      this.parentPropertyDescriptorListController.on('ready', this.parentPropertyDescriptorListController.render);
+      return this.$("[data-toggle=popover]").popover({
+        html: true,
+        content: '1. Choose Properties to look up.<br /> 2. Select input IDs in workbook.<br /> 3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br /> 4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br /> 5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
+      });
     };
 
     ExcelInsertCompoundPropertiesController.prototype.handleGetPropertiesClicked = function() {
@@ -289,7 +299,9 @@
 
     ExcelInsertCompoundPropertiesController.prototype.getSelectedProperties = function() {
       var selectedParentProperties;
-      selectedParentProperties = this.parentPropertyDescriptorListController.getSelectedProperties();
+      selectedParentProperties = [];
+      selectedParentProperties.parent = this.parentPropertyDescriptorListController.getSelectedProperties();
+      selectedParentProperties.batch = this.batchPropertyDescriptorListController.getSelectedProperties();
       return selectedParentProperties;
     };
 
@@ -297,7 +309,7 @@
       var request, selectedProperties;
       selectedProperties = this.getSelectedProperties();
       request = {
-        properties: selectedProperties,
+        properties: selectedProperties.parent,
         entityIdStringLines: this.preferredIds.join('\n')
       };
       return $.ajax({
