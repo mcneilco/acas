@@ -198,12 +198,15 @@
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(prot) {
-            var prsc;
-            prsc = new ProtocolRowSummaryController({
-              model: prot
-            });
-            prsc.on("gotClick", _this.selectedRowChanged);
-            return _this.$("tbody").append(prsc.render().el);
+            var hideStatusesList, prsc;
+            hideStatusesList = window.conf.entity.hideStatuses;
+            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(prot.getStatus().get('codeValue')) > -1 && !UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
+              prsc = new ProtocolRowSummaryController({
+                model: prot
+              });
+              prsc.on("gotClick", _this.selectedRowChanged);
+              return _this.$("tbody").append(prsc.render().el);
+            }
           };
         })(this));
         this.$("table").dataTable({

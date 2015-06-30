@@ -225,14 +225,14 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		experimentBestName = @model.get('lsLabels').pickBestName()
 		if experimentBestName
 			experimentBestName = @model.get('lsLabels').pickBestName().get('labelText')
-		protocolBestName = @model.get('protocol').get('lsLabels').pickBestName()
-		if protocolBestName
-			protocolBestName = @model.get('protocol').get('lsLabels').pickBestName().get('labelText')
+#		protocolBestName = @model.get('protocol').get('lsLabels').pickBestName()
+#		if protocolBestName
+#			protocolBestName = @model.get('protocol').get('lsLabels').pickBestName().get('labelText')
 		toDisplay =
 			experimentName: experimentBestName
 			experimentCode: @model.get('codeName')
 			protocolCode: @model.get('protocol').get("codeName")
-			protocolName: protocolBestName
+#			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
