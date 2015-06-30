@@ -165,8 +165,6 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
 
-    save(requestObject,geneNameList,geneDataList,file="genes.Rda")
-
     genes <- fromJSON(geneNameList)$results
     batchCodeList <- list()
     for (i in 1:length(genes)){
@@ -234,6 +232,13 @@ if (errorFlag){
 } else {
         dataDT <- as.data.table(dataDF)
 }
+
+# Hack to filter by batch code since it isn't happening on the roo side.
+if (length(batchCodeList) != 0){
+  dataDT <- dataDT[testedLot %in% batchCodeList]
+}
+
+
 
 save(dataDT,file="dataDT.Rda")
 ### FUNCTIONS FOR PROCESSING DATA INTO ROWS/COLS ETC...#####
@@ -398,7 +403,6 @@ if (nrow(dataDT) > 0){
 #csv handling
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
-        save(fileValues, outputDT,file="files.Rda")
         for (i in fileValues){
           split <-  strsplit(outputDT[[i]],"<br>")
           urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
@@ -503,7 +507,6 @@ if (nrow(dataDT) > 0){
 #csv handling
       if (aggregate){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
-        save(fileValues2,outputDT2,file="fileValues2.Rda")
         for (i in fileValues2){
           split <-  strsplit(outputDT2[[i]],"<br>")
           urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
@@ -620,8 +623,6 @@ if (nrow(dataDT) > 0){
 
   groupHeadersDF.list <- as.list(as.data.frame(t(groupHeadersDF)))
   names(groupHeadersDF.list) <- NULL
-
-  save(outputDT.list,file="aaData.Rda")
 
   responseJson <- list()
   responseJson$results$data$aaData <- aaData
