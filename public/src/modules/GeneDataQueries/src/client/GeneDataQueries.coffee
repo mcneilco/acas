@@ -105,7 +105,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 
 	getAllExpts: ->
-		console.log("at getAllExpts")
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -125,7 +124,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 
 	getQueryParamsSimple: ->
-
 		searchFilter =
 			booleanFilter: "and"
 			advancedFilter: ""
@@ -151,17 +149,9 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	handleSearchRequested: (searchStr) =>
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
-		backdrop: "static"
+			backdrop: "static"
 		@$('.bv_searchStatusDropDown').modal "show"
-
-		console.log(searchStr)
 		@getAllExpts()
-
-
-
-
-
-
 
 	# handleSearchRequested: (searchStr) =>
 	# 	@lastSearch = searchStr
