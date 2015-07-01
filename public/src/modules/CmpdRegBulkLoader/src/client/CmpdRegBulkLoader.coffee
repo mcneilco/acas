@@ -762,7 +762,9 @@ class window.PurgeFilesController extends Backbone.View
 	template: _.template($("#PurgeFilesView").html())
 
 	events:
-		"click .bv_purgeFileBtn": "handlePurgeFile"
+		"click .bv_purgeFileBtn": "handlePurgeFileBtnClicked"
+		"click .bv_cancelPurge": "handleCancelBtnClicked"
+		"click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked"
 
 	initialize: ->
 		$(@el).empty()
@@ -803,11 +805,41 @@ class window.PurgeFilesController extends Backbone.View
 	selectedFileUpdated: (file) =>
 		@fileIdToPurge = file.get('id')
 		@fileNameToPurge = file.get('fileName')
+		@$('.bv_purgedFileName').html @fileNameToPurge
 		@$('.bv_purgeFileBtn').removeAttr 'disabled'
 
-	handlePurgeFile: ->
+	handlePurgeFileBtnClicked: ->
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
 		@$('.bv_purgeSummary').hide()
+		@$('.bv_purging').hide()
+		@$('.bv_purgeButtons').show()
+		@$('.bv_dependencyCheckModal').modal
+			backdrop: 'static'
+		fileInfo =
+			fileId: @fileIdToPurge
+		$.ajax
+			type: 'POST'
+			url: "/api/cmpdRegBulkLoader/checkFileDependencies"
+			data: fileInfo
+			dataType: 'json'
+			success: (response) =>
+				@$('.bv_dependencyCheckModal').modal "hide"
+				@$('.bv_confirmPurgeFile').modal
+					backdrop: 'static'
+				@$('.bv_dependenciesSummary').html response
+			error: (err) =>
+				@serviceReturn = null
+				@$('.bv_dependencyCheckModal').modal "hide"
+				@$('.bv_dependenciesCheckErrorModal').modal 'show'
+#					backdrop: 'static'
+				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies."
+
+	handleCancelBtnClicked: ->
+		@$('.bv_confirmPurgeFile').modal "hide"
+
+	handleConfirmPurgeFileBtnClicked: ->
+		@$('.bv_purgeButtons').hide()
+		@$('.bv_purging').show()
 		fileInfo =
 			fileId: @fileIdToPurge
 		$.ajax
@@ -824,6 +856,7 @@ class window.PurgeFilesController extends Backbone.View
 				@handlePurgeError()
 
 	handlePurgeSuccess: (response) =>
+		@$('.bv_confirmPurgeFile').modal "hide"
 		@$('.bv_purgeSummary').html response
 		@$('.bv_purgeSummary').show()
 		@fileIdToPurge = null

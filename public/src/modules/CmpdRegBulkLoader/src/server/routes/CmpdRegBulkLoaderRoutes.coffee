@@ -9,6 +9,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
 	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
+	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 
 exports.cmpdRegBulkLoaderIndex = (req, res) ->
@@ -192,6 +193,13 @@ exports.registerCmpds = (req, resp) ->
 						callback req, resp
 
 	moveSdfFile req, resp, registerCmpds
+
+exports.checkFileDependencies = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		resp.end JSON.stringify "File has 10 parents and 10 lots"
+	else
+		resp.end JSON.stringify "Check file dependencies not implemented yet"
+
 
 exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode

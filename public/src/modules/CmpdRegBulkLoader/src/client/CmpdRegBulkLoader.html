@@ -257,4 +257,68 @@
         <div class="well bv_purgeSummary span9 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
         </div>
     </div>
+
+    <div class='modal bv_dependencyCheckModal hide'>
+        <div class="modal-header">
+            <h3>Checking dependencies</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal hide bv_confirmPurgeFile">
+        <div class="modal-header">
+            <h4>Confirm Purge</h4>
+        </div>
+        <div class="modal-body">
+            <div class="bv_purgeWarningMessage">
+                <p>Are you sure you would like to purge the file?</p>
+                <span class="bv_dependenciesSummary"></span>
+            </div>
+            <div class="bv_deletingStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Deleting Experiment</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_filePurgedSuccessfullyMessage hide">
+                <p>The file <span class="bv_purgedFileName"></span> has successfully been purged</p>
+            </div>
+            <div class="bv_errorDeletingExperimentMessage hide">
+                <p>An error occurred purging the file <span class="bv_purgedFileName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+		    <span class="bv_purgeButtons">
+		      <a href="#" class="btn bv_cancelPurge">Cancel</a>
+		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
+			  </span>
+		    <!--<span class="bv_okayButton hide">-->
+			    <!--<a href="#" class="btn btn-primary bv_cancelPurge">Okay</a>-->
+		    <!--</span>-->
+            <span class="bv_purging hide" style="color:red;">Purging...</span>
+        </div>
+    </div>
+
+    <div class='modal bv_dependenciesCheckErrorModal hide'>
+        <div class="modal-header">
+            <button type="button" class="close bv_closeSaveFailedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+            <h4 style="color:red;margin-top:0px;margin-bottom:0px;">Error</h4>
+        </div>
+        <div class="modal-body">
+            <div class="bv_dependenciesCheckError"></div>
+        </div>
+    </div>
+
 </script>

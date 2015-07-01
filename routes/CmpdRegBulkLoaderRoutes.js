@@ -11,6 +11,7 @@
     app.post('/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate);
     app.post('/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds);
     app.post('/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties);
+    app.post('/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies);
     return app.post('/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile);
   };
 
@@ -235,6 +236,14 @@
       });
     };
     return moveSdfFile(req, resp, registerCmpds);
+  };
+
+  exports.checkFileDependencies = function(req, resp) {
+    if (req.query.testMode || global.specRunnerTestmode) {
+      return resp.end(JSON.stringify("File has 10 parents and 10 lots"));
+    } else {
+      return resp.end(JSON.stringify("Check file dependencies not implemented yet"));
+    }
   };
 
   exports.purgeFile = function(req, resp) {

@@ -1274,7 +1274,9 @@
     PurgeFilesController.prototype.template = _.template($("#PurgeFilesView").html());
 
     PurgeFilesController.prototype.events = {
-      "click .bv_purgeFileBtn": "handlePurgeFile"
+      "click .bv_purgeFileBtn": "handlePurgeFileBtnClicked",
+      "click .bv_cancelPurge": "handleCancelBtnClicked",
+      "click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked"
     };
 
     PurgeFilesController.prototype.initialize = function() {
@@ -1328,13 +1330,55 @@
     PurgeFilesController.prototype.selectedFileUpdated = function(file) {
       this.fileIdToPurge = file.get('id');
       this.fileNameToPurge = file.get('fileName');
+      this.$('.bv_purgedFileName').html(this.fileNameToPurge);
       return this.$('.bv_purgeFileBtn').removeAttr('disabled');
     };
 
-    PurgeFilesController.prototype.handlePurgeFile = function() {
+    PurgeFilesController.prototype.handlePurgeFileBtnClicked = function() {
       var fileInfo;
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
       this.$('.bv_purgeSummary').hide();
+      this.$('.bv_purging').hide();
+      this.$('.bv_purgeButtons').show();
+      this.$('.bv_dependencyCheckModal').modal({
+        backdrop: 'static'
+      });
+      fileInfo = {
+        fileId: this.fileIdToPurge
+      };
+      return $.ajax({
+        type: 'POST',
+        url: "/api/cmpdRegBulkLoader/checkFileDependencies",
+        data: fileInfo,
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            _this.$('.bv_dependencyCheckModal').modal("hide");
+            _this.$('.bv_confirmPurgeFile').modal({
+              backdrop: 'static'
+            });
+            return _this.$('.bv_dependenciesSummary').html(response);
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            _this.serviceReturn = null;
+            _this.$('.bv_dependencyCheckModal').modal("hide");
+            _this.$('.bv_dependenciesCheckErrorModal').modal('show');
+            return _this.$('.bv_dependenciesCheckError').html("There has been an error checking the dependencies.");
+          };
+        })(this)
+      });
+    };
+
+    PurgeFilesController.prototype.handleCancelBtnClicked = function() {
+      return this.$('.bv_confirmPurgeFile').modal("hide");
+    };
+
+    PurgeFilesController.prototype.handleConfirmPurgeFileBtnClicked = function() {
+      var fileInfo;
+      this.$('.bv_purgeButtons').hide();
+      this.$('.bv_purging').show();
       fileInfo = {
         fileId: this.fileIdToPurge
       };
@@ -1360,6 +1404,7 @@
     };
 
     PurgeFilesController.prototype.handlePurgeSuccess = function(response) {
+      this.$('.bv_confirmPurgeFile').modal("hide");
       this.$('.bv_purgeSummary').html(response);
       this.$('.bv_purgeSummary').show();
       this.fileIdToPurge = null;
