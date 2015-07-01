@@ -25,7 +25,7 @@
 
     Attributes.prototype.defaults = {
       insertColumnHeaders: true,
-      includeRequestedID: true
+      includeRequestedID: false
     };
 
     return Attributes;
@@ -36,6 +36,10 @@
     extend(AttributesController, superClass);
 
     function AttributesController() {
+      this.getIncludeRequestedID = bind(this.getIncludeRequestedID, this);
+      this.getInsertColumnHeaders = bind(this.getInsertColumnHeaders, this);
+      this.handleIncludeRequestedID = bind(this.handleIncludeRequestedID, this);
+      this.handleInsertColumnHeaders = bind(this.handleInsertColumnHeaders, this);
       this.render = bind(this.render, this);
       return AttributesController.__super__.constructor.apply(this, arguments);
     }
@@ -44,10 +48,33 @@
       return this.template = _.template($("#AttributesControllerView").html());
     };
 
+    AttributesController.prototype.events = function() {
+      return {
+        'change .bv_insertColumnHeaders': 'handleInsertColumnHeaders',
+        'change .bv_includeRequestedID': 'handleIncludeRequestedID'
+      };
+    };
+
     AttributesController.prototype.render = function() {
       this.$el.empty();
-      this.attributes = new Attributes();
-      return this.$el.html(this.template(this.attributes.attributes));
+      this.model = new Attributes();
+      return this.$el.html(this.template(this.model.attributes));
+    };
+
+    AttributesController.prototype.handleInsertColumnHeaders = function() {
+      return this.model.set('insertColumnHeaders', this.$('.bv_insertColumnHeaders').is(":checked"));
+    };
+
+    AttributesController.prototype.handleIncludeRequestedID = function() {
+      return this.model.set('includeRequestedID', this.$('.bv_includeRequestedID').is(":checked"));
+    };
+
+    AttributesController.prototype.getInsertColumnHeaders = function() {
+      return this.model.get('insertColumnHeaders');
+    };
+
+    AttributesController.prototype.getIncludeRequestedID = function() {
+      return this.model.get('includeRequestedID');
     };
 
     return AttributesController;
@@ -182,6 +209,7 @@
     extend(ExcelInsertCompoundPropertiesController, superClass);
 
     function ExcelInsertCompoundPropertiesController() {
+      this.fetchCompoundPropertiesReturn = bind(this.fetchCompoundPropertiesReturn, this);
       this.handleInsertPropertiesClicked = bind(this.handleInsertPropertiesClicked, this);
       this.parseInputArray = bind(this.parseInputArray, this);
       this.setErrorStatus = bind(this.setErrorStatus, this);
@@ -232,7 +260,6 @@
 
     ExcelInsertCompoundPropertiesController.prototype.handleGetPropertiesClicked = function() {
       logger.log("Get Properties Clicked");
-      logger.log(this.setPropertyLookUpStatus);
       this.setPropertyLookUpStatus("Loading...");
       return Office.context.document.getSelectedDataAsync('matrix', (function(_this) {
         return function(result) {
@@ -284,8 +311,6 @@
         return this.fetchPreferred(request);
       }
     };
-
-    ExcelInsertCompoundPropertiesController.prototype.showError = function(error) {};
 
     ExcelInsertCompoundPropertiesController.prototype.handleInsertPropertiesClicked = function() {
       return this.insertTable(this.outputArray);
@@ -375,9 +400,33 @@
     };
 
     ExcelInsertCompoundPropertiesController.prototype.fetchCompoundPropertiesReturn = function(json) {
-      logger.log(json.resultCSV);
-      this.outputArray = this.convertCSVToMatrix(json.resultCSV);
+      var csv;
+      csv = json.resultCSV;
+      logger.log(this.attributesController.getIncludeRequestedID());
+      if (!this.attributesController.getIncludeRequestedID() | !this.attributesController.getInsertColumnHeaders()) {
+        csv = this.removeCSVAttributes(csv, !this.attributesController.getIncludeRequestedID(), !this.attributesController.getInsertColumnHeaders());
+        logger.log(csv);
+      }
+      this.outputArray = this.convertCSVToMatrix(csv);
       return this.setPropertyLookUpStatus("Data ready to insert...");
+    };
+
+    ExcelInsertCompoundPropertiesController.prototype.removeCSVAttributes = function(csv, removeFirstColumn, removeHeader) {
+      var newCsv, split;
+      split = csv.split('\n');
+      if (removeHeader) {
+        split = split.slice(1);
+      }
+      if (removeFirstColumn) {
+        split = split.map(function(line) {
+          var columns;
+          columns = line.split(',');
+          columns.splice(0, 1);
+          return columns;
+        });
+      }
+      newCsv = split.join('\n');
+      return newCsv;
     };
 
     ExcelInsertCompoundPropertiesController.prototype.convertCSVToMatrix = function(csv) {

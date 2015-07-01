@@ -17,7 +17,7 @@ exports.compoundInfoIndex = (req, resp) ->
 			firstName: "no",
 			lastName: "user"
 
-	return resp.render 'ExcelCompoundInfoApp',
+	return resp.render 'CIExcelCompoundPropertiesApp',
 		title: 'Compound Info'
 		AppLaunchParams:
 			loginUserName: loginUserName

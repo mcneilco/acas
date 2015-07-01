@@ -22,16 +22,32 @@ window.Office.initialize = (reason) ->
 class window.Attributes extends Backbone.Model
 	defaults:
 		insertColumnHeaders: true
-		includeRequestedID: true
+		includeRequestedID: false
 
 class window.AttributesController extends Backbone.View
 	initialize: ->
 		@template = _.template($("#AttributesControllerView").html())
 
+	events: ->
+		'change .bv_insertColumnHeaders': 'handleInsertColumnHeaders'
+		'change .bv_includeRequestedID': 'handleIncludeRequestedID'
+
 	render: =>
 		@$el.empty()
-		@attributes = new Attributes()
-		@$el.html @template @attributes.attributes
+		@model = new Attributes()
+		@$el.html @template @model.attributes
+
+	handleInsertColumnHeaders: =>
+		@model.set 'insertColumnHeaders', @$('.bv_insertColumnHeaders').is(":checked")
+
+	handleIncludeRequestedID: =>
+		@model.set 'includeRequestedID', @$('.bv_includeRequestedID').is(":checked")
+
+	getInsertColumnHeaders: =>
+		@model.get 'insertColumnHeaders'
+
+	getIncludeRequestedID: =>
+		@model.get 'includeRequestedID'
 
 
 class window.PropertyDescriptor extends Backbone.Model
@@ -131,7 +147,6 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	handleGetPropertiesClicked: =>
 		#TODO make sure input is a single column or error
 		logger.log "Get Properties Clicked"
-		logger.log @setPropertyLookUpStatus
 		@setPropertyLookUpStatus "Loading..."
 		Office.context.document.getSelectedDataAsync 'matrix', (result) =>
 			if result.status == 'succeeded'
@@ -164,10 +179,6 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 					request.requests.push requestName: req[0]
 		if not error
 			@fetchPreferred request
-
-
-	showError: (error) ->
-
 
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
@@ -225,10 +236,29 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 				@setErrorStatus "Error fetching properties"
 				logger.log 'got ajax error fetching properties'
 
-	fetchCompoundPropertiesReturn: (json) ->
-		logger.log json.resultCSV
-		@outputArray = @convertCSVToMatrix json.resultCSV
+	fetchCompoundPropertiesReturn: (json) =>
+		csv = json.resultCSV
+		logger.log @attributesController.getIncludeRequestedID()
+		if !@attributesController.getIncludeRequestedID() | !@attributesController.getInsertColumnHeaders()
+			csv = @removeCSVAttributes csv, !@attributesController.getIncludeRequestedID(), !@attributesController.getInsertColumnHeaders()
+			logger.log csv
+
+		@outputArray = @convertCSVToMatrix csv
 		@setPropertyLookUpStatus "Data ready to insert..."
+
+	removeCSVAttributes: (csv, removeFirstColumn, removeHeader)->
+		split = csv.split('\n')
+		if removeHeader
+			split = split.slice(1)
+
+		if removeFirstColumn
+			split = split.map((line) ->
+				columns = line.split ','
+				columns.splice 0, 1
+				columns
+			)
+		newCsv = split.join('\n')
+		return newCsv
 
 
 	convertCSVToMatrix: (csv) ->
