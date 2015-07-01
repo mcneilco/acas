@@ -57,12 +57,14 @@ class window.GeneIDQueryResultController extends Backbone.View
 				bProcessing: true
 				aoColumnDefs:[
 					{bSortable: false, aTargets: [1]},
-					{sType: "lsThing", aTargets: ["_all"]}
+					{sType: "lsThing", aTargets: ["_all"]},
+					{fnCreatedCell: (nTd, sData, oData, iRow, iCol)=>
+						val = @model.get('ids')[iRow][iCol]
+						nTd.setAttribute('id',val)
+					, aTargets: ["_all"]}
 					]
-
-#				sDom : "Rlfrtip"
-#	uncomment the following line to disable sorting in the dataTable
-#				bSort: false
+	# uncomment the following line to disable sorting in the dataTable
+	# 			bSort: false
 		else
 			@$('.bv_resultTable').hide()
 			@$('.bv_noResultsFound').show()
@@ -123,7 +125,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@codesList =  experimentCodeList
 		@runRequestedSearch()
 
-	runRequestedSearch: ->
+	getQueryParams: ->
 		searchFilter =
 			booleanFilter: "and"
 			advancedFilter: ""
@@ -133,12 +135,13 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			searchFilters: searchFilter
 			aggregate: @queryInputController.aggregate
 
+	runRequestedSearch: ->
 		$.ajax
 			type: 'POST'
 			url: "api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
-				queryParams: queryParams
+				queryParams: @getQueryParams()
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @handleSearchReturn

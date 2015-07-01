@@ -199,12 +199,11 @@ aggregate <- as.logical(postData.list$queryParams$aggregate)
 
 if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 	termsSQL <- getSQLFromJSONFilterList(postData.list$queryParams$searchFilters$filters)
-#myLogger$debug("here is the termsSQL")
-#myLogger$debug(termsSQL)
-
+  #myLogger$debug("here is the termsSQL")
+  #myLogger$debug(termsSQL)
 	advancedSqlQuery <- getFullSQLQuery(termsSQL, postData.list$queryParams$searchFilters$advancedFilter)
-#myLogger$debug("here is the advancedSqlQuery")
-#myLogger$debug(advancedSqlQuery)
+  #myLogger$debug("here is the advancedSqlQuery")
+  #myLogger$debug(advancedSqlQuery)
 	searchParams$advancedFilterSQL <- advancedSqlQuery
 }
 
@@ -311,7 +310,7 @@ pivotResults <- function(geneId, lsKind, result, aggType="other"){
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  return(dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType))
+  return(dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType,fill=NA))
 }
 
 # wrapper function so that reduce can be called on data.table.merge with non-default arguments
@@ -357,22 +356,24 @@ if (nrow(dataDT) > 0){
         geomList <- unlist(strsplit(configList$server.sar.geomMean,","))
         # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
         dataDTFilter <- dataDT[protocolId == expt]
-        outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result,"geomMean")]
-        outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result,"arithMean")]
-        outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result,"curve")]
-        outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result,"other")]
+        outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result, "geomMean")]
+        outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result, "arithMean")]
+        outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result, "curve")]
+        outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result, "other")]
 
         # merge all subsets back into one outputDT
         outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
         experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
 
       }else{
+        dataDT[,result := strsplit(paste(result,id,sep=","),",")]
         outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
         experimentName <- as.character(unique(outputDT$experimentName))
         codeName <- as.character(unique(outputDT$experimentCodeName))
         outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
       }
-      save(outputDT,file="outputDT.Rda")
+      save(outputDT,file="outputDT1.Rda")
+
 
       # Add a column with the compound structure
       # For HTML display include <tags>. For csv just give the url.
@@ -414,7 +415,7 @@ if (nrow(dataDT) > 0){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues){
-          outputDT[[i]] <- sapply(outputDT[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
+          outputDT[[i]] <- sapply(outputDT[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else list(c(paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" style="height:200px"></a>'),x[2])))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues)
@@ -429,10 +430,14 @@ if (nrow(dataDT) > 0){
       # For csv, only output url, without html tags
       # TODO replace hard-coded url with a reference to config.properties
       if (!exportCSV){
-        try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) list(c(paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2]))),TRUE)
+        # try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
       }else{
-        try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
+        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) list(c(paste0('http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2]))),TRUE)
+
+        # try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
+      save(outputDT,file="test1.Rda")
 
 # changed experimentName to expt
   		for (colName in exptDataColumns){
@@ -518,7 +523,7 @@ if (nrow(dataDT) > 0){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
         # Replace inlineFileValue with a link to the file
         for (i in fileValues2){
-          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
+          outputDT2[[i]] <- sapply(outputDT2[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else list(c(paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" style="height:200px"></a>'),x[2])))
         }
       }
       exptDataColumns <- c(exptDataColumns,fileValues2)
@@ -532,14 +537,17 @@ if (nrow(dataDT) > 0){
   		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
   		# TODO replace hard-coded url with a reference to config.properties
   		if (!exportCSV){
-  		  try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
+        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) list(c(paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2]))),TRUE)
+  		  # try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
   		}else{
-        try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
+        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) list(c(paste0('http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2]))),TRUE)
+        # try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
       }
 #changed experimentName to expt
       for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(expt, "::", colName))
   		}
+      save(outputDT,outputDT2,file="outputs.Rda")
   		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
   		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
   		orderCols$order <- as.integer(as.character(orderCols$order))
@@ -558,16 +566,19 @@ if (nrow(dataDT) > 0){
       }
   }
 
-
+  save(outputDT,file="outputDT.Rda")
 
   # generate aaData
   columns = gsub('\\W','',names(outputDT))
   numCols = length(columns)
   aaData = list()
+  ids = list()
   for (i in 1:length(outputDT[[1]])){
     aaData[[i]] = list()
+    ids[[i]] = list()
     for (j in 1:numCols){
-      aaData[[i]][[columns[j]]]=outputDT[[i,j]]
+      aaData[[i]][[columns[j]]]=if (is.null(outputDT[[i,j]][1])) NA else outputDT[[i,j]][1]
+      ids[[i]][[j]]=outputDT[[i,j]][2]
     }
   }
 
@@ -628,6 +639,7 @@ if (nrow(dataDT) > 0){
   responseJson$results$data$iTotalDisplayRecords <- nrow(outputDT)
   responseJson$results$data$aoColumns <- aoColumnsDF.list
   responseJson$results$data$groupHeaders <- groupHeadersDF.list
+  responseJson$results$ids <- ids
   responseJson$results$htmlSummary <- "OK"
   responseJson$hasError <- FALSE
   responseJson$hasWarning <- FALSE
