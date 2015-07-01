@@ -455,10 +455,17 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   require(data.table)
   
+  entityType <- "compound"
+  entityKind <- "batch name"
+  if (mainCode == "Gene ID") {
+    entityType <- "gene"
+    entityKind <- "entrez gene"
+  }
+  
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
   if (is.null(newBatchIds)) {
@@ -466,30 +473,27 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   }
   
   # Give warning and error messages for changed or missing id's
-  for (batchId in newBatchIds) {
-    if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
-      addError(paste0(mainCode, " '", batchId["requestName"], 
+  for (row in 1:nrow(newBatchIds)) {
+    if (is.null(newBatchIds$Preferred.Code[row]) || is.na(newBatchIds$Preferred.Code[row]) || newBatchIds$Preferred.Code[row] == "") {
+      addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
-    } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
-                     "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
+    } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
+      warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
+                     "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
     }
   }
 
   # Put the batch id's into a useful format
-  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
-  names(preferredIdFrame) <- names(newBatchIds[[1]])
-  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+  prefDT <- as.data.table(newBatchIds)
+  setnames(prefDT, c("Requested.Name", "Preferred.Code"), c("requestName", "preferredName"))
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
-  if (!is.null(preferredIdFrame$referenceName)) {
-    prefDT <- as.data.table(preferredIdFrame)
+  if (!is.null(prefDT$referenceName)) {
     prefDT[ referenceName == "", referenceName := preferredName ]
-    preferredIdFrame <- as.data.frame(prefDT)
-    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- prefDT$referenceName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   } else {
-    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- prefDT$preferredName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   }
   
   #### ================= Check the value kinds =======================================================
