@@ -293,16 +293,19 @@ aggregateData <<- function(x,type){
   if (length(x)==1){
     return (x)
   }
+  values = sapply(x,function(a) a[1])
+  ids = paste(sapply(x,function(a) a[2]),collapse=",")
   if (type == "geomMean"){
-    geomMean(x)
+    value = geomMean(values)
   }else if(type == "arithMean"){
-    arithMean(x)
+    value = arithMean(values)
   #curve curator does overlay with curve id's delimited by &
   }else if(type == "curve"){
-    paste(x,sep=",",collapse=",")
+    value = paste(values,collapse=",")
   }else{
-    paste(x,sep="<br>",collapse="<br>")
+    value = paste(values,collapse="<br>")
   }
+  return(list(c(value,ids)))
 }
 
 pivotResults <- function(geneId, lsKind, result, aggType="other"){
@@ -349,6 +352,8 @@ if (nrow(dataDT) > 0){
 
       # Add operators to the front of result if they exist
       dataDT[,result := paste(operator,result,sep = '')]
+      # add id's to the results as the second item in a list
+      dataDT[,result := strsplit(paste(result,id,sep=","),",")]
 
       #aggregate and pivot the data
       if (aggregate){
@@ -366,7 +371,6 @@ if (nrow(dataDT) > 0){
         experimentList <- unique(dataDT[protocolId == expt,experimentName,by = c("experimentCodeName","experimentId")])
 
       }else{
-        dataDT[,result := strsplit(paste(result,id,sep=","),",")]
         outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
         experimentName <- as.character(unique(outputDT$experimentName))
         codeName <- as.character(unique(outputDT$experimentCodeName))
@@ -573,10 +577,10 @@ if (nrow(dataDT) > 0){
   numCols = length(columns)
   aaData = list()
   ids = list()
-  for (i in 1:length(outputDT[[1]])){
+  for (i in seq_along(outputDT[[1]])){
     aaData[[i]] = list()
     ids[[i]] = list()
-    for (j in 1:numCols){
+    for (j in seq(numCols)){
       aaData[[i]][[columns[j]]]=if (is.null(outputDT[[i,j]][1])) NA else outputDT[[i,j]][1]
       ids[[i]][[j]]=outputDT[[i,j]][2]
     }
