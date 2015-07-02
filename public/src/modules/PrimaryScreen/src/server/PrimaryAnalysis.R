@@ -1,3 +1,4 @@
+
 # PrimaryAnalysis.R
 #
 #
@@ -1674,7 +1675,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-  
+  # debug(specificDataPreProcessor)
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
   }
@@ -1742,16 +1743,30 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # GREEN (instrument-specific)
     instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
-    instrumentData <- specificDataPreProcessor(parameters=parameters, 
-                                               folderToParse=fullPathToParse, 
-                                               errorEnv=errorEnv, 
-                                               dryRun=dryRun, 
-                                               instrumentClass=instrumentReadParams$dataFormat, 
-                                               testMode=testMode,
-                                               tempFilePath=specDataPrepFileLocation)
+    # TODO: add config server.service.genericSpecificPreProcessor
+    if (FALSE) {
+      instrumentData <- specificDataPreProcessor(parameters=parameters, 
+                                                 folderToParse=fullPathToParse, 
+                                                 errorEnv=errorEnv, 
+                                                 dryRun=dryRun, 
+                                                 instrumentClass=instrumentReadParams$dataFormat, 
+                                                 testMode=testMode,
+                                                 tempFilePath=specDataPrepFileLocation)
+    } else {
+      instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters, 
+                                                              folderToParse=fullPathToParse, 
+                                                              errorEnv=errorEnv, 
+                                                              dryRun=dryRun, 
+                                                              instrumentClass=instrumentReadParams$dataFormat, 
+                                                              testMode=testMode,
+                                                              tempFilePath=specDataPrepFileLocation)
+    }
     
+    save(instrumentData, file="instrumentData.Rda")
     # RED (client-specific)
     # getCompoundAssignments
+    
+    
     
     resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, testMode, parameters, tempFilePath=specDataPrepFileLocation)
     
@@ -2719,9 +2734,10 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   library('racas')
   
   globalMessenger <- messenger()$reset()
-  developmentMode <- FALSE
+  globalMessenger$devMode <- TRUE
+  developmentMode <- TRUE
   options("scipen"=15)
-  #save(request, file="request.Rda")
+  save(request, file="request.Rda")
   
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
