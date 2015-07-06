@@ -243,11 +243,14 @@ save(dataDT,file="dataDT.Rda")
 
 # A function to take in a string and round using signif() if possible before converting back to a string.
 # if the string cannot be coersed into a numeric type, the original string is returned as is.
+# This is a vectorized function
 # e.g roundString("retest", 3) = "retest"
 #     roundString("128479823", 3) = "1.28e+08"
 sigfig <- 4 #TODO pull from a config
 roundString <- function(string,sigfigs=4){
-  num <- as.numeric(string)
+  # The warning given here is about strings being coersed to NA, since we rely on
+  # this behavior in the next line, we can ignore these warnings
+  num <- suppressWarnings(as.numeric(string))
   ifelse(is.na(num), string, as.character(signif(num,sigfigs)) )
 }
 
@@ -289,23 +292,26 @@ geomMean <- function(data){
 
 # This is bound to the global environment because pivotResults can't seem to find it otherwise.
 # pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
-aggregateData <<- function(x,type){
-  if (length(x)==1){
-    return (x)
+# Since it's global the variable names are verbose to minimize accidental modification of important things
+aggregateData <<- function(dataVector,type){
+  if (length(dataVector)==1){
+    return (dataVector)
   }
-  values = sapply(x,function(a) a[1])
-  ids = paste(sapply(x,function(a) a[2]),collapse=",")
+  agData.values = sapply(dataVector,function(a) a[1])
+  agData.ids = paste(sapply(dataVector,function(a) a[2]),collapse=",")
+
   if (type == "geomMean"){
-    value = geomMean(values)
+    agData.value = geomMean(agData.values)
   }else if(type == "arithMean"){
-    value = arithMean(values)
-  #curve curator does overlay with curve id's delimited by &
+    agData.value = arithMean(agData.values)
+  #curve renderer does overlay with curve id's delimited by ,
   }else if(type == "curve"){
-    value = paste(values,collapse=",")
+    agData.value = paste(agData.values,collapse=",")
   }else{
-    value = paste(values,collapse="<br>")
+    agData.value = paste(agData.values,collapse="<br>")
   }
-  return(list(c(value,ids)))
+
+  return(list(c(agData.value,agData.ids)))
 }
 
 pivotResults <- function(geneId, lsKind, result, aggType="other"){
@@ -400,19 +406,23 @@ if (nrow(dataDT) > 0){
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
       # The regex keeps things like look like Ki (uM) but excludes Ki.x (which is from curve curator)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
+      # Note that the implementation of unique guaruntees that order is preserved just like intersect
       exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(paste0(x,"([^.]|$)"),names(outputDT),value=TRUE)))))
 
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
+        save(fileValues, outputDT,file="images.Rda")
         for (i in fileValues){
-          split <-  strsplit(outputDT[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
-          if (length(urlSplit) > length(outputDT[[i]])){
-            outputDT[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
+          ids <- sapply(outputDT[[i]],function(x) x[2])
+          split <-  strsplit(sapply(outputDT[[i]],function(x) if(is.null(x)) NA else x[1]),"<br>")
+          urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'), simplify=FALSE)
+          if (length(urlSplit[[1]]) > 1){
+            urlCombined <- sapply(urlSplit,function(x) paste(x,collapse = "<br>"))
+            outputDT[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
           }else{
-            outputDT[[i]] <- urlSplit
+            outputDT[[i]] <- strsplit(paste(urlSplit,ids,sep="::"),split="::")
           }
         }
       }else{ #aggregate is false
@@ -507,20 +517,25 @@ if (nrow(dataDT) > 0){
       # old code: exptDataColumns <- intersect(exptDataColumns, names(outputDT))
       # Can't take intersect anymore because lsKind might be modified with concentration info.
       # Instead use sapply and grep to keep values of exptDataColums which have a value of outputDT as part of their name (in the same order as exptDataColums)
+      # The regex keeps things like look like Ki (uM) but excludes Ki.x (which is from curve curator)
       # unique(paste(unlist(...))) just ensures the the output is a single-demensional list with no duplicates (like the result of intersect)
-      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(x,names(outputDT2),value=TRUE)))))
+      # Note that the implementation of unique guaruntees that order is preserved just like intersect
+      exptDataColumns <- unique(paste(unlist(sapply(exptDataColumns,function(x) grep(paste0(x,"([^.]|$)"),names(outputDT2),value=TRUE)))))
 
       # Get names of inlineFileValue thigs if they exist (e.g. Western Blot) and add them to exptDataColums
 #csv handling
       if (aggregate){
         fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
         for (i in fileValues2){
-          split <-  strsplit(outputDT2[[i]],"<br>")
-          urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'))
-          if (length(urlSplit) > length(outputDT2[[i]])){
-            outputDT2[[i]] <- apply(urlSplit,2,function(x) paste(x,sep="<br>",collapse="<br>"))
+          save(i,outputDT2,file="test3.Rda")
+          ids <- sapply(outputDT2[[i]],function(x) x[2])
+          split <-  strsplit(sapply(outputDT2[[i]],function(x) if(is.null(x)) NA else x[1]),"<br>")
+          urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'),simplify=FALSE)
+          if (length(urlSplit[[1]]) > 1){
+            urlCombined <- sapply(urlSplit,function(x) paste(x,collapse = "<br>"))
+            outputDT2[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
           }else{
-            outputDT2[[i]] <- urlSplit
+            outputDT2[[i]] <- strsplit(paste(urlSplit,ids,sep="::"),split="::")
           }
         }
       }else{

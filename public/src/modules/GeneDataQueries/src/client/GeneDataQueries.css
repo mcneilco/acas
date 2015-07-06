@@ -290,6 +290,7 @@
 /*Properties so that curves display at a readable size*/
 .GeneIDQueryAppController .curveId{
     min-width: 380px !important;
+		text-align: center;
 }
 
 .GeneIDQueryAppController .StructureImage{
@@ -298,6 +299,7 @@
 
 .GeneIDQueryAppController .fileValue{
     min-width: 200px !important;
+		text-align: center;
 }
 
 .GeneIDQueryAppController .center{
