@@ -61,12 +61,15 @@
   };
 
   exports.getFilesToPurge = function(req, resp) {
-    var cmpdRegBulkLoaderTestJSON;
+    var baseurl, cmpdRegBulkLoaderTestJSON, config, serverUtilityFunctions;
     if (req.query.testMode || global.specRunnerTestmode) {
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
       return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.filesToPurge));
     } else {
-      return resp.end(JSON.stringify([]));
+      config = require('../conf/compiled/conf.js');
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/files";
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 
@@ -239,10 +242,32 @@
   };
 
   exports.checkFileDependencies = function(req, resp) {
+    var baseurl, config, request, serverUtilityFunctions;
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("File has 10 parents and 10 lots"));
     } else {
-      return resp.end(JSON.stringify("Check file dependencies not implemented yet"));
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/checkDependencies";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body.fileInfo,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.json(json);
+          } else {
+            console.log('got ajax error trying to check dependencies');
+            console.log(error);
+            console.log(json);
+            console.log(response);
+            return resp.end(JSON.stringify("Error"));
+          }
+        };
+      })(this));
     }
   };
 

@@ -55,8 +55,10 @@ exports.getFilesToPurge = (req, resp) ->
 		cmpdRegBulkLoaderTestJSON = require '../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js'
 		resp.end JSON.stringify cmpdRegBulkLoaderTestJSON.filesToPurge
 	else
-#		resp.end JSON.stringify "get files to purge not implemented"
-		resp.end JSON.stringify []
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/files"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.cmpdRegBulkLoaderReadSdf = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -198,7 +200,25 @@ exports.checkFileDependencies = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "File has 10 parents and 10 lots"
 	else
-		resp.end JSON.stringify "Check file dependencies not implemented yet"
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/checkDependencies"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.fileInfo
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.log 'got ajax error trying to check dependencies'
+				console.log error
+				console.log json
+				console.log response
+				resp.end JSON.stringify "Error"
+		)
 
 
 exports.purgeFile = (req, resp) ->

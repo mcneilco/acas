@@ -272,13 +272,12 @@
         </div>
     </div>
 
-    <div class="modal hide bv_confirmPurgeFile">
+    <div class="modal hide bv_showDependenciesModal">
         <div class="modal-header">
-            <h4>Confirm Purge</h4>
+            <h4 class="bv_showDependenciesTitle"></h4>
         </div>
         <div class="modal-body">
             <div class="bv_purgeWarningMessage">
-                <p>Are you sure you would like to purge the file?</p>
                 <span class="bv_dependenciesSummary"></span>
             </div>
             <div class="bv_deletingStatusIndicator hide">
@@ -303,10 +302,8 @@
 		    <span class="bv_purgeButtons">
 		      <a href="#" class="btn bv_cancelPurge">Cancel</a>
 		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
+		      <a href="#" class="btn btn-primary bv_okay">Ok</a>
 			  </span>
-		    <!--<span class="bv_okayButton hide">-->
-			    <!--<a href="#" class="btn btn-primary bv_cancelPurge">Okay</a>-->
-		    <!--</span>-->
             <span class="bv_purging hide" style="color:red;">Purging...</span>
         </div>
     </div>

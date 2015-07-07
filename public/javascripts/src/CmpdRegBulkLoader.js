@@ -1208,8 +1208,8 @@
       var toDisplay;
       toDisplay = {
         fileName: this.model.get('fileName'),
-        loadDate: UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('loadDate')),
-        loadUser: this.model.get('loadUser')
+        loadDate: UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('recordedDate')),
+        loadUser: this.model.get('recordedBy')
       };
       $(this.el).html(this.template(toDisplay));
       return this;
@@ -1276,7 +1276,8 @@
     PurgeFilesController.prototype.events = {
       "click .bv_purgeFileBtn": "handlePurgeFileBtnClicked",
       "click .bv_cancelPurge": "handleCancelBtnClicked",
-      "click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked"
+      "click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked",
+      "click .bv_okay": "handleOkayClicked"
     };
 
     PurgeFilesController.prototype.initialize = function() {
@@ -1284,7 +1285,7 @@
       $(this.el).html(this.template());
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
       this.$('.bv_purgeSummary').hide();
-      this.fileIdToPurge = null;
+      this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
     };
@@ -1328,7 +1329,8 @@
     };
 
     PurgeFilesController.prototype.selectedFileUpdated = function(file) {
-      this.fileIdToPurge = file.get('id');
+      console.log(file);
+      this.fileInfoToPurge = file;
       this.fileNameToPurge = file.get('fileName');
       this.$('.bv_purgedFileName').html(this.fileNameToPurge);
       return this.$('.bv_purgeFileBtn').removeAttr('disabled');
@@ -1336,6 +1338,7 @@
 
     PurgeFilesController.prototype.handlePurgeFileBtnClicked = function() {
       var fileInfo;
+      console.log("handle Purge file btn clicked");
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
       this.$('.bv_purgeSummary').hide();
       this.$('.bv_purging').hide();
@@ -1344,7 +1347,7 @@
         backdrop: 'static'
       });
       fileInfo = {
-        fileId: this.fileIdToPurge
+        fileInfo: JSON.parse(JSON.stringify(this.fileInfoToPurge))
       };
       return $.ajax({
         type: 'POST',
@@ -1353,11 +1356,22 @@
         dataType: 'json',
         success: (function(_this) {
           return function(response) {
+            if (response.canPurge) {
+              _this.$('.bv_showDependenciesTitle').html("Confirm Purge");
+              _this.$('.bv_cancelPurge').show();
+              _this.$('.bv_confirmPurgeFileButton').show();
+              _this.$('.bv_okay').hide();
+            } else {
+              _this.$('.bv_showDependenciesTitle').html("Can Not Purge");
+              _this.$('.bv_cancelPurge').hide();
+              _this.$('.bv_confirmPurgeFileButton').hide();
+              _this.$('.bv_okay').show();
+            }
+            _this.$('.bv_dependenciesSummary').html(response.summary);
             _this.$('.bv_dependencyCheckModal').modal("hide");
-            _this.$('.bv_confirmPurgeFile').modal({
+            return _this.$('.bv_showDependenciesModal').modal({
               backdrop: 'static'
             });
-            return _this.$('.bv_dependenciesSummary').html(response);
           };
         })(this),
         error: (function(_this) {
@@ -1372,7 +1386,7 @@
     };
 
     PurgeFilesController.prototype.handleCancelBtnClicked = function() {
-      return this.$('.bv_confirmPurgeFile').modal("hide");
+      return this.$('.bv_showDependenciesModal').modal("hide");
     };
 
     PurgeFilesController.prototype.handleConfirmPurgeFileBtnClicked = function() {
@@ -1380,7 +1394,7 @@
       this.$('.bv_purgeButtons').hide();
       this.$('.bv_purging').show();
       fileInfo = {
-        fileId: this.fileIdToPurge
+        fileInfo: JSON.parse(JSON.stringify(this.fileInfoToPurge))
       };
       return $.ajax({
         type: 'POST',
@@ -1403,11 +1417,15 @@
       });
     };
 
+    PurgeFilesController.prototype.handleOkayClicked = function() {
+      return this.$('.bv_showDependenciesModal').modal("hide");
+    };
+
     PurgeFilesController.prototype.handlePurgeSuccess = function(response) {
-      this.$('.bv_confirmPurgeFile').modal("hide");
+      this.$('.bv_showDependenciesModal').modal("hide");
       this.$('.bv_purgeSummary').html(response);
       this.$('.bv_purgeSummary').show();
-      this.fileIdToPurge = null;
+      this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
     };
@@ -1415,7 +1433,7 @@
     PurgeFilesController.prototype.handlePurgeError = function() {
       this.$('.bv_purgeSummary').html("An error occurred purging the file: " + this.fileNameToPurge);
       this.$('.bv_purgeSummary').show();
-      this.fileIdToPurge = null;
+      this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
     };
@@ -1497,7 +1515,7 @@
         summaryHTML: summary['summary']
       });
       this.regCmpdsSummaryController.render();
-      this.regCmpdsSummaryController.on('loadAnother', (function(_this) {
+      return this.regCmpdsSummaryController.on('loadAnother', (function(_this) {
         return function() {
           if (_this.regCmpdsController != null) {
             _this.regCmpdsController.undelegateEvents();
@@ -1507,10 +1525,12 @@
           return _this.$('.bv_bulkReg').show();
         };
       })(this));
-      return $('.bv_downloadSummary').href = "http://www.google.com";
     };
 
     CmpdRegBulkLoaderAppController.prototype.setupPurgeFilesController = function() {
+      if (this.purgeFilesController != null) {
+        this.purgeFilesController.undelegateEvents();
+      }
       return this.purgeFilesController = new PurgeFilesController({
         el: this.$('.bv_purgeFiles')
       });

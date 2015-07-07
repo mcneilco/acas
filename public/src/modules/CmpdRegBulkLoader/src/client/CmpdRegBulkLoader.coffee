@@ -728,8 +728,8 @@ class window.FileRowSummaryController extends Backbone.View
 	render: =>
 		toDisplay =
 			fileName: @model.get('fileName')
-			loadDate: UtilityFunctions::convertMSToYMDDate(@model.get('loadDate'))
-			loadUser: @model.get('loadUser')
+			loadDate: UtilityFunctions::convertMSToYMDDate(@model.get('recordedDate'))
+			loadUser: @model.get('recordedBy')
 		$(@el).html(@template(toDisplay))
 
 		@
@@ -765,13 +765,14 @@ class window.PurgeFilesController extends Backbone.View
 		"click .bv_purgeFileBtn": "handlePurgeFileBtnClicked"
 		"click .bv_cancelPurge": "handleCancelBtnClicked"
 		"click .bv_confirmPurgeFileButton": "handleConfirmPurgeFileBtnClicked"
+		"click .bv_okay": "handleOkayClicked"
 
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
 		@$('.bv_purgeSummary').hide()
-		@fileIdToPurge = null
+		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
@@ -803,12 +804,14 @@ class window.PurgeFilesController extends Backbone.View
 		$('.bv_purgeFileBtn').hide()
 
 	selectedFileUpdated: (file) =>
-		@fileIdToPurge = file.get('id')
+		console.log file
+		@fileInfoToPurge = file
 		@fileNameToPurge = file.get('fileName')
 		@$('.bv_purgedFileName').html @fileNameToPurge
 		@$('.bv_purgeFileBtn').removeAttr 'disabled'
 
 	handlePurgeFileBtnClicked: ->
+		console.log "handle Purge file btn clicked"
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
 		@$('.bv_purgeSummary').hide()
 		@$('.bv_purging').hide()
@@ -816,17 +819,28 @@ class window.PurgeFilesController extends Backbone.View
 		@$('.bv_dependencyCheckModal').modal
 			backdrop: 'static'
 		fileInfo =
-			fileId: @fileIdToPurge
+			fileInfo: JSON.parse(JSON.stringify @fileInfoToPurge)
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/checkFileDependencies"
 			data: fileInfo
 			dataType: 'json'
 			success: (response) =>
+				if response.canPurge
+					@$('.bv_showDependenciesTitle').html "Confirm Purge"
+					@$('.bv_cancelPurge').show()
+					@$('.bv_confirmPurgeFileButton').show()
+					@$('.bv_okay').hide()
+				else
+					@$('.bv_showDependenciesTitle').html "Can Not Purge"
+					@$('.bv_cancelPurge').hide()
+					@$('.bv_confirmPurgeFileButton').hide()
+					@$('.bv_okay').show()
+				@$('.bv_dependenciesSummary').html response.summary
 				@$('.bv_dependencyCheckModal').modal "hide"
-				@$('.bv_confirmPurgeFile').modal
+				@$('.bv_showDependenciesModal').modal
 					backdrop: 'static'
-				@$('.bv_dependenciesSummary').html response
+
 			error: (err) =>
 				@serviceReturn = null
 				@$('.bv_dependencyCheckModal').modal "hide"
@@ -835,13 +849,13 @@ class window.PurgeFilesController extends Backbone.View
 				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies."
 
 	handleCancelBtnClicked: ->
-		@$('.bv_confirmPurgeFile').modal "hide"
+		@$('.bv_showDependenciesModal').modal "hide"
 
 	handleConfirmPurgeFileBtnClicked: ->
 		@$('.bv_purgeButtons').hide()
 		@$('.bv_purging').show()
 		fileInfo =
-			fileId: @fileIdToPurge
+			fileInfo: JSON.parse(JSON.stringify @fileInfoToPurge)
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/purgeFile"
@@ -855,18 +869,21 @@ class window.PurgeFilesController extends Backbone.View
 				@serviceReturn = null
 				@handlePurgeError()
 
+	handleOkayClicked: ->
+		@$('.bv_showDependenciesModal').modal "hide"
+
 	handlePurgeSuccess: (response) =>
-		@$('.bv_confirmPurgeFile').modal "hide"
+		@$('.bv_showDependenciesModal').modal "hide"
 		@$('.bv_purgeSummary').html response
 		@$('.bv_purgeSummary').show()
-		@fileIdToPurge = null
+		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
 	handlePurgeError: ->
 		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge
 		@$('.bv_purgeSummary').show()
-		@fileIdToPurge = null
+		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
@@ -930,9 +947,9 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@setupBulkRegCmpdsController()
 			@$('.bv_bulkRegSummary').hide()
 			@$('.bv_bulkReg').show()
-		$('.bv_downloadSummary').href = "http://www.google.com"
-
 
 	setupPurgeFilesController: ->
+		if @purgeFilesController?
+			@purgeFilesController.undelegateEvents()
 		@purgeFilesController = new PurgeFilesController
 			el: @$('.bv_purgeFiles')
