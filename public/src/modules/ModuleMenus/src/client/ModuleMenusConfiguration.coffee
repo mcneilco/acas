@@ -59,6 +59,11 @@ window.ModuleMenusConfiguration =
 		isHeader: true
 		menuName: "Admin"
 	,
+		isHeader: false
+		menuName: "Admin Panel"
+		mainControllerClassName: "AdminPanelController"
+		autoLaunchName: "admin_panel"
+	,
 		isHeader: false, menuName: "Logging"
 		mainControllerClassName: "LoggingController"
 	]
