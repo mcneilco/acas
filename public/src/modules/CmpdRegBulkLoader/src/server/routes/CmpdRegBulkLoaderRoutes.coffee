@@ -180,6 +180,11 @@ exports.registerCmpds = (req, resp) ->
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		oldPath = uploadsPath + fileName
 		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/"
+		while fs.existsSync(bulkLoadFolder + '/' + fileName)
+			fileName = fileName.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, (s, index, ext) ->
+				' (' + ((parseInt(index, 10) or 0) + 1) + ')' + (ext or '')
+			)
+
 		newPath = bulkLoadFolder + fileName
 		serverUtilityFunctions.ensureExists bulkLoadFolder, 0o0744, (err) ->
 			if err?
@@ -200,7 +205,6 @@ exports.checkFileDependencies = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "File has 10 parents and 10 lots"
 	else
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/checkDependencies"
 		request = require 'request'
@@ -225,4 +229,21 @@ exports.purgeFile = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		resp.end JSON.stringify "Successful purge in stubsMode."
 	else
-		resp.end JSON.stringify "purge file not implemented yet"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.cmpdReg.persistence.fullpath+"bulkload/purge"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.fileInfo
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.log 'got ajax error trying to purge'
+				console.log error
+				console.log json
+				console.log response
+				resp.end JSON.stringify "Error"
+		)

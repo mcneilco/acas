@@ -220,6 +220,11 @@
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
       oldPath = uploadsPath + fileName;
       bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/";
+      while (fs.existsSync(bulkLoadFolder + '/' + fileName)) {
+        fileName = fileName.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, function(s, index, ext) {
+          return ' (' + ((parseInt(index, 10) || 0) + 1) + ')' + (ext || '');
+        });
+      }
       newPath = bulkLoadFolder + fileName;
       return serverUtilityFunctions.ensureExists(bulkLoadFolder, 0x1e4, function(err) {
         if (err != null) {
@@ -242,11 +247,10 @@
   };
 
   exports.checkFileDependencies = function(req, resp) {
-    var baseurl, config, request, serverUtilityFunctions;
+    var baseurl, config, request;
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("File has 10 parents and 10 lots"));
     } else {
-      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/checkDependencies";
       request = require('request');
@@ -272,10 +276,31 @@
   };
 
   exports.purgeFile = function(req, resp) {
+    var baseurl, config, request;
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("Successful purge in stubsMode."));
     } else {
-      return resp.end(JSON.stringify("purge file not implemented yet"));
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/purge";
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: baseurl,
+        body: req.body.fileInfo,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.json(json);
+          } else {
+            console.log('got ajax error trying to purge');
+            console.log(error);
+            console.log(json);
+            console.log(response);
+            return resp.end(JSON.stringify("Error"));
+          }
+        };
+      })(this));
     }
   };
 

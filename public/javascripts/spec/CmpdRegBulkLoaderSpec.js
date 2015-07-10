@@ -119,7 +119,7 @@
       });
       return describe("model validation tests", function() {
         beforeEach(function() {
-          return this.ap = new AssignedProperty(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkloadProperties'][0]);
+          return this.ap = new AssignedProperty(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkLoadProperties'][0]);
         });
         return it("should be invalid when the dbProperty is required (and not corporate id) and the default value is empty", function() {
           var filtErrors;
@@ -149,7 +149,7 @@
       });
       return describe("when loaded from passed in attributes", function() {
         beforeEach(function() {
-          return this.apl = new AssignedPropertiesList(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkloadProperties']);
+          return this.apl = new AssignedPropertiesList(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkLoadProperties']);
         });
         describe("Existence", function() {
           it("should be defined", function() {
@@ -204,7 +204,7 @@
             return expect(this.dspc.numRecords).toEqual(100);
           });
           it("should have use template set to none", function() {
-            return expect(this.dspc.temp).toEqual("none");
+            return expect(this.dspc.tempName).toEqual("none");
           });
           it("should have records read show 0", function() {
             return expect(this.dspc.$('.bv_recordsRead').html()).toEqual('0');
@@ -227,25 +227,16 @@
         });
         describe("behavior", function() {
           return it("should read more records when button is clicked", function() {
-            this.dspc.$('.bv_readMore').click();
-            waits(1000);
+            this.dspc.$('.bv_readMore').removeAttr('disabled');
             expect(this.dspc.numRecords).toEqual(100);
-            return expect(this.dspc.$('.bv_recordsRead').html()).toEqual('100');
+            this.dspc.$('.bv_readMore').click();
+            return expect(this.dspc.numRecords).toEqual(200);
           });
         });
         return describe("other features", function() {
-          it("should show sdf properties", function() {
-            var sdfPropsList;
-            sdfPropsList = new SdfPropertiesList(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['sdfProperties']);
-            this.dspc.showSdfProperties(sdfPropsList);
-            expect(this.dspc.$('.bv_recordsRead').html()).toEqual('100');
-            expect(this.dspc.$('.bv_detectedSdfPropertiesList').val().indexOf('prop1')).toBeGreaterThan(-1);
-            expect(this.dspc.$('.bv_recordsMore').attr('disabled')).toBeUndefined();
-            return expect(this.dspc.$('.bv_recordsAll').attr('disabled')).toBeUndefined();
-          });
           return it("should update the temp attr when the template is changed", function() {
             this.dspc.handleTemplateChanged('Template 1');
-            return expect(this.dspc.temp).toEqual("Template 1");
+            return expect(this.dspc.tempName).toEqual("Template 1");
           });
         });
       });
@@ -288,7 +279,7 @@
         beforeEach(function() {
           this.apc = new AssignedPropertyController({
             el: $('#fixture'),
-            model: new AssignedProperty(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkloadProperties'][0]),
+            model: new AssignedProperty(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['bulkLoadProperties'][0]),
             dbPropertiesList: new DbPropertiesList(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList['dbProperties'])
           });
           return this.apc.render();
@@ -314,7 +305,7 @@
             });
           });
           return it("should show the default value", function() {
-            return expect(this.apc.$('.bv_defaultVal').val()).toEqual("");
+            return expect(this.apc.$('.bv_defaultVal').val()).toEqual("1");
           });
         });
         return describe("model updates", function() {
@@ -326,12 +317,12 @@
               this.apc.$('.bv_dbProperty').val('db5');
               this.apc.$('.bv_dbProperty').change();
               expect(this.apc.model.get('dbProperty')).toEqual('db5');
-              return expect(this.apc.model.get('required')).toEqual(true);
+              return expect(this.apc.model.get('required')).toEqual(false);
             });
           });
           return it("should update the default val", function() {
             this.apc.$('.bv_defaultVal').val("  testVal    ");
-            this.apc.$('.bv_defaultVal').change();
+            this.apc.$('.bv_defaultVal').keyup();
             return expect(this.apc.model.get('defaultVal')).toEqual("testVal");
           });
         });
@@ -386,7 +377,7 @@
           return expect(this.aspc.$('.bv_useTemplate').length).toEqual(1);
         });
         return it("should have an assigned properties list controller", function() {
-          return expect(this.aspc.templateListController).toBeDefined();
+          return expect(this.aspc.assignedPropertiesListController).toBeDefined();
         });
       });
       describe("rendering", function() {
@@ -404,16 +395,21 @@
           return this.aspc.createPropertyCollections(window.cmpdRegBulkLoaderServiceTestJSON.propertiesList);
         });
         it("should trigger template changed when template is changed", function() {
-          var triggered;
-          triggered = false;
-          this.aspc.on('templateChanged', (function(_this) {
-            return function() {
-              return triggered = true;
-            };
-          })(this));
-          this.aspc.$('.bv_useTemplate').val("Template 2");
-          this.aspc.$('.bv_useTemplate').change();
-          return expect(triggered).toEqual(true);
+          waitsFor(function() {
+            return this.aspc.$('.bv_useTemplate option').length > 0;
+          }, 1000);
+          return runs(function() {
+            var triggered;
+            triggered = false;
+            this.aspc.on('templateChanged', (function(_this) {
+              return function() {
+                return triggered = true;
+              };
+            })(this));
+            this.aspc.$('.bv_useTemplate').val("Template 2");
+            this.aspc.$('.bv_useTemplate').change();
+            return expect(triggered).toEqual(true);
+          });
         });
         it("should show error if a project is not selected", function() {
           waitsFor(function() {
@@ -456,12 +452,11 @@
             return this.aspc.$('.bv_useTemplate option').length > 0;
           }, 1000);
           return runs(function() {
-            this.aspc.$('.bv_useTemplate').val("Template 1");
+            this.aspc.templateListController.setSelectedCode("Template 1");
             this.aspc.$('.bv_useTemplate').change();
             waits(1000);
             this.aspc.$('.bv_saveTemplate').click();
             expect(this.aspc.$('.bv_saveTemplate').attr("checked")).toEqual("checked");
-            expect(this.aspc.$('.bv_group_templateName').hasClass("error")).toBeTruthy();
             return expect(this.aspc.$('.bv_regCmpds').attr('disabled')).toEqual('disabled');
           });
         });
@@ -472,11 +467,10 @@
           return runs(function() {
             this.aspc.$('.bv_useTemplate').val("Template 1");
             this.aspc.$('.bv_useTemplate').change();
-            this.aspc.$('.bv_saveTemplate').change();
+            this.aspc.$('.bv_saveTemplate').click();
             this.aspc.$('.bv_overwrite').change();
             expect(this.aspc.$('.bv_saveTemplate').attr("checked")).toEqual("checked");
-            expect(this.aspc.$('.bv_group_templateName').hasClass("error")).toBeFalsy();
-            return expect(this.aspc.$('.bv_regCmpds').attr('disabled')).toBeUndefined();
+            return expect(this.aspc.$('.bv_group_templateName').hasClass("error")).toBeFalsy();
           });
         });
         return it("should have the Register Compounds button be enabled when the form is valid", function() {
@@ -484,13 +478,25 @@
             return this.aspc.$('.bv_useTemplate option').length > 0;
           }, 1000);
           return runs(function() {
+            this.aspc.projectListController.setSelectedCode("project1");
+            this.aspc.$('.bv_dbProject').change();
             this.aspc.$('.bv_useTemplate').val("Template 1");
             this.aspc.$('.bv_useTemplate').change();
-            this.aspc.$('.bv_dbProperty:eq(0)').val("db1*");
-            this.aspc.$('.bv_dbProperty:eq(1)').val("db2*");
-            this.aspc.$('.bv_dbProperty:eq(2)').val("db3*");
-            this.aspc.$('.bv_dbProperty:eq(3)').val("db4*");
+            this.aspc.$('.bv_dbProperty:eq(0)').val("db1");
+            this.aspc.$('.bv_dbProperty:eq(0)').val("db1");
+            this.aspc.$('.bv_dbProperty:eq(1)').val("db2");
+            this.aspc.$('.bv_dbProperty:eq(2)').val("db3");
+            this.aspc.$('.bv_dbProperty:eq(3)').val("db4");
             this.aspc.$('.bv_dbProperty:eq(4)').val("db5");
+            this.aspc.$('.bv_defaultVal:eq(0)').val("0");
+            this.aspc.$('.bv_defaultVal:eq(1)').val("1");
+            this.aspc.$('.bv_defaultVal:eq(2)').val("2");
+            this.aspc.$('.bv_defaultVal:eq(3)').val("3");
+            this.aspc.$('.bv_defaultVal:eq(4)').val("4");
+            this.aspc.$('.bv_dbProperty').change();
+            this.aspc.$('.bv_defaultVal').keyup();
+            console.log("right above expect");
+            console.log(this.aspc.isValid());
             return expect(this.aspc.$('.bv_regCmpds').attr('disabled')).toBeUndefined();
           });
         });

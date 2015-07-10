@@ -318,6 +318,7 @@
     };
 
     DetectSdfPropertiesController.prototype.handlePropertiesDetected = function(response) {
+      console.log("handle properties detected");
       if (response === "Error") {
         return this.handleReadError(response);
       } else {
@@ -342,6 +343,7 @@
 
     DetectSdfPropertiesController.prototype.updatePropertiesRead = function(sdfPropsList, numRecordsRead) {
       var newLine, props;
+      console.log("updatePropertiesRead");
       this.$('.bv_detectedSdfPropertiesList').removeClass('readError');
       if (this.numRecords === -1 || (this.numRecords > numRecordsRead)) {
         this.numRecords = numRecordsRead;
@@ -371,7 +373,10 @@
     };
 
     DetectSdfPropertiesController.prototype.readMoreRecords = function() {
+      console.log("read more records");
+      console.log(this.numRecords);
       this.numRecords += 100;
+      console.log(this.numRecords);
       return this.getProperties();
     };
 
@@ -766,7 +771,9 @@
 
     AssignSdfPropertiesController.prototype.handleSaveTemplateCheckboxChanged = function() {
       var currentTempName, saveTemplateChecked;
+      console.log("handle Save Template Checkbox changed");
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
+      console.log(saveTemplateChecked);
       if (saveTemplateChecked) {
         this.$('.bv_templateName').removeAttr('disabled');
         currentTempName = this.templateListController.getSelectedCode();
@@ -853,6 +860,7 @@
       validCheck = true;
       validAp = this.validateAssignedProperties();
       if (!validAp) {
+        console.log("invalid ap");
         validCheck = false;
       }
       otherErrors = [];
@@ -866,16 +874,21 @@
       otherErrors.push.apply(otherErrors, this.getTemplateErrors());
       this.showValidationErrors(otherErrors);
       if (this.$('.bv_unassignedProperties').html() !== "") {
+        console.log("unassigned prop");
+        console.log(this.$('.bv_unassignedProperties').html());
         validCheck = false;
       }
       if (otherErrors.length > 0) {
+        console.log("other errors");
+        console.log(otherErrors);
         validCheck = false;
       }
       if (validCheck) {
-        return this.$('.bv_regCmpds').removeAttr('disabled');
+        this.$('.bv_regCmpds').removeAttr('disabled');
       } else {
-        return this.$('.bv_regCmpds').attr('disabled', 'disabled');
+        this.$('.bv_regCmpds').attr('disabled', 'disabled');
       }
+      return validCheck;
     };
 
     AssignSdfPropertiesController.prototype.getProjectErrors = function() {
@@ -1012,7 +1025,7 @@
       this.$('.bv_registering').hide();
       this.$('.bv_saveErrorModal').modal('show');
       this.$('.bv_saveErrorTitle').html("Error: Template Not Saved");
-      return this.$('.bv_errorMessage').html("An error occurred while trying to save the template.");
+      return this.$('.bv_errorMessage').html("An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator.");
     };
 
     AssignSdfPropertiesController.prototype.registerCompounds = function() {
@@ -1050,7 +1063,7 @@
       this.$('.bv_registering').hide();
       this.$('.bv_saveErrorModal').modal('show');
       this.$('.bv_saveErrorTitle').html("Error: Compounds Not Registered");
-      return this.$('.bv_errorMessage').html("An error occurred while trying to register the compounds.");
+      return this.$('.bv_errorMessage').html("An error occurred while trying to register the compounds. Please try again or contact an administrator.");
     };
 
     return AssignSdfPropertiesController;
@@ -1284,7 +1297,7 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
-      this.$('.bv_purgeSummary').hide();
+      this.$('.bv_purgeSummaryWrapper').hide();
       this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
@@ -1324,23 +1337,20 @@
 
     PurgeFilesController.prototype.handleGetFilesError = function() {
       $('.bv_fileTableController').addClass("well");
-      $('.bv_fileTableController').html("An error occurred when getting files");
+      $('.bv_fileTableController').html("An error occurred when getting files to purge. Please try refreshing the page or contact an administrator.");
       return $('.bv_purgeFileBtn').hide();
     };
 
     PurgeFilesController.prototype.selectedFileUpdated = function(file) {
-      console.log(file);
       this.fileInfoToPurge = file;
       this.fileNameToPurge = file.get('fileName');
-      this.$('.bv_purgedFileName').html(this.fileNameToPurge);
       return this.$('.bv_purgeFileBtn').removeAttr('disabled');
     };
 
     PurgeFilesController.prototype.handlePurgeFileBtnClicked = function() {
       var fileInfo;
-      console.log("handle Purge file btn clicked");
       this.$('.bv_purgeFileBtn').attr('disabled', 'disabled');
-      this.$('.bv_purgeSummary').hide();
+      this.$('.bv_purgeSummaryWrapper').hide();
       this.$('.bv_purging').hide();
       this.$('.bv_purgeButtons').show();
       this.$('.bv_dependencyCheckModal').modal({
@@ -1379,7 +1389,7 @@
             _this.serviceReturn = null;
             _this.$('.bv_dependencyCheckModal').modal("hide");
             _this.$('.bv_dependenciesCheckErrorModal').modal('show');
-            return _this.$('.bv_dependenciesCheckError').html("There has been an error checking the dependencies.");
+            return _this.$('.bv_dependenciesCheckError').html("There has been an error checking the dependencies. Please try again or contact an administrator.");
           };
         })(this)
       });
@@ -1403,9 +1413,12 @@
         dataType: 'json',
         success: (function(_this) {
           return function(response) {
-            _this.handlePurgeSuccess(response);
-            _this.$('.bv_registering').hide();
-            return _this.trigger('saveComplete', response);
+            _this.$('.bv_purging').hide();
+            if (response.success) {
+              return _this.handlePurgeSuccess(response);
+            } else {
+              return _this.handlePurgeError();
+            }
           };
         })(this),
         error: (function(_this) {
@@ -1422,17 +1435,21 @@
     };
 
     PurgeFilesController.prototype.handlePurgeSuccess = function(response) {
+      var downloadUrl;
       this.$('.bv_showDependenciesModal').modal("hide");
-      this.$('.bv_purgeSummary').html(response);
-      this.$('.bv_purgeSummary').show();
+      this.$('.bv_purgeSummary').html(response.summary);
+      downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + response.fileName;
+      this.$('.bv_purgedFileName').attr("href", downloadUrl);
+      this.$('.bv_purgedFileName').html(response.fileName);
+      this.$('.bv_purgeSummaryWrapper').show();
       this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
     };
 
     PurgeFilesController.prototype.handlePurgeError = function() {
-      this.$('.bv_purgeSummary').html("An error occurred purging the file: " + this.fileNameToPurge);
-      this.$('.bv_purgeSummary').show();
+      this.$('.bv_purgeSummary').html("An error occurred purging the file: " + this.fileNameToPurge + " .Please try again or contact an administrator.");
+      this.$('.bv_purgeSummaryWrapper').show();
       this.fileInfoToPurge = null;
       this.fileNameToPurge = null;
       return this.getFiles();
@@ -1497,11 +1514,12 @@
       });
       return this.regCmpdsController.on('saveComplete', (function(_this) {
         return function(summary) {
+          var downloadUrl;
           _this.$('.bv_bulkReg').hide();
           _this.$('.bv_bulkRegSummary').show();
           _this.setupBulkRegCmpdsSummaryController(summary[0]);
-          _this.downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + summary[1];
-          return _this.$('.bv_downloadSummary').attr("href", _this.downloadUrl);
+          downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + summary[1];
+          return _this.$('.bv_downloadSummary').attr("href", downloadUrl);
         };
       })(this));
     };

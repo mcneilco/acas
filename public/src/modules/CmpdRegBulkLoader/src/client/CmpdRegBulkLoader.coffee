@@ -158,6 +158,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
+		console.log "handle properties detected"
 		if response is "Error"
 			@handleReadError(response)
 		else
@@ -177,6 +178,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@trigger 'fileChanged', @fileName
 
 	updatePropertiesRead: (sdfPropsList, numRecordsRead) ->
+		console.log "updatePropertiesRead"
 		@$('.bv_detectedSdfPropertiesList').removeClass 'readError'
 
 		if @numRecords == -1 or (@numRecords > numRecordsRead)
@@ -201,7 +203,10 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@$('.bv_readAll').attr 'disabled', 'disabled'
 
 	readMoreRecords: ->
+		console.log "read more records"
+		console.log @numRecords
 		@numRecords += 100
+		console.log @numRecords
 		@getProperties()
 
 	readAllRecords: ->
@@ -453,7 +458,9 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
+		console.log "handle Save Template Checkbox changed"
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
+		console.log saveTemplateChecked
 		if saveTemplateChecked
 			@$('.bv_templateName').removeAttr('disabled')
 			currentTempName = @templateListController.getSelectedCode()
@@ -506,6 +513,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		validCheck = true
 		validAp = @validateAssignedProperties()
 		unless validAp
+			console.log "invalid ap"
 			validCheck = false
 		otherErrors = []
 		if window.conf.cmpdReg.showProjectSelect
@@ -516,14 +524,20 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		otherErrors.push @getTemplateErrors()...
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
+			console.log "unassigned prop"
+			console.log @$('.bv_unassignedProperties').html()
 			validCheck = false
 		if otherErrors.length > 0
+			console.log "other errors"
+			console.log otherErrors
 			validCheck = false
 
 		if validCheck
 			@$('.bv_regCmpds').removeAttr('disabled')
 		else
 			@$('.bv_regCmpds').attr 'disabled','disabled'
+
+		validCheck
 
 	getProjectErrors: ->
 		projectError = []
@@ -616,7 +630,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
-		@$('.bv_errorMessage').html "An error occurred while trying to save the template."
+		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
 
 	registerCompounds: ->
 		dataToPost =
@@ -642,7 +656,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_registering').hide()
 		@$('.bv_saveErrorModal').modal('show')
 		@$('.bv_saveErrorTitle').html "Error: Compounds Not Registered"
-		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds."
+		@$('.bv_errorMessage').html "An error occurred while trying to register the compounds. Please try again or contact an administrator."
 
 class window.BulkRegCmpdsController extends Backbone.View
 	template: _.template($("#BulkRegCmpdsView").html())
@@ -771,7 +785,7 @@ class window.PurgeFilesController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
-		@$('.bv_purgeSummary').hide()
+		@$('.bv_purgeSummaryWrapper').hide()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
@@ -800,20 +814,18 @@ class window.PurgeFilesController extends Backbone.View
 
 	handleGetFilesError: ->
 		$('.bv_fileTableController').addClass "well"
-		$('.bv_fileTableController').html "An error occurred when getting files"
+		$('.bv_fileTableController').html "An error occurred when getting files to purge. Please try refreshing the page or contact an administrator."
 		$('.bv_purgeFileBtn').hide()
 
 	selectedFileUpdated: (file) =>
-		console.log file
 		@fileInfoToPurge = file
 		@fileNameToPurge = file.get('fileName')
-		@$('.bv_purgedFileName').html @fileNameToPurge
+#		@$('.bv_requestedPurgeFileName').html @fileNameToPurge
 		@$('.bv_purgeFileBtn').removeAttr 'disabled'
 
 	handlePurgeFileBtnClicked: ->
-		console.log "handle Purge file btn clicked"
 		@$('.bv_purgeFileBtn').attr 'disabled', 'disabled'
-		@$('.bv_purgeSummary').hide()
+		@$('.bv_purgeSummaryWrapper').hide()
 		@$('.bv_purging').hide()
 		@$('.bv_purgeButtons').show()
 		@$('.bv_dependencyCheckModal').modal
@@ -846,7 +858,7 @@ class window.PurgeFilesController extends Backbone.View
 				@$('.bv_dependencyCheckModal').modal "hide"
 				@$('.bv_dependenciesCheckErrorModal').modal 'show'
 #					backdrop: 'static'
-				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies."
+				@$('.bv_dependenciesCheckError').html "There has been an error checking the dependencies. Please try again or contact an administrator."
 
 	handleCancelBtnClicked: ->
 		@$('.bv_showDependenciesModal').modal "hide"
@@ -862,9 +874,11 @@ class window.PurgeFilesController extends Backbone.View
 			data: fileInfo
 			dataType: 'json'
 			success: (response) =>
-				@handlePurgeSuccess(response)
-				@$('.bv_registering').hide()
-				@trigger 'saveComplete', response
+				@$('.bv_purging').hide()
+				if response.success
+					@handlePurgeSuccess(response)
+				else
+					@handlePurgeError()
 			error: (err) =>
 				@serviceReturn = null
 				@handlePurgeError()
@@ -874,15 +888,19 @@ class window.PurgeFilesController extends Backbone.View
 
 	handlePurgeSuccess: (response) =>
 		@$('.bv_showDependenciesModal').modal "hide"
-		@$('.bv_purgeSummary').html response
-		@$('.bv_purgeSummary').show()
+#		@$('.bv_filePurgedSuccessfullyMessage').show()
+		@$('.bv_purgeSummary').html response.summary
+		downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" + response.fileName
+		@$('.bv_purgedFileName').attr "href", downloadUrl
+		@$('.bv_purgedFileName').html response.fileName
+		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
 
 	handlePurgeError: ->
-		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge
-		@$('.bv_purgeSummary').show()
+		@$('.bv_purgeSummary').html "An error occurred purging the file: "+ @fileNameToPurge + " .Please try again or contact an administrator."
+		@$('.bv_purgeSummaryWrapper').show()
 		@fileInfoToPurge = null
 		@fileNameToPurge = null
 		@getFiles()
@@ -931,8 +949,8 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 			@$('.bv_bulkReg').hide()
 			@$('.bv_bulkRegSummary').show()
 			@setupBulkRegCmpdsSummaryController(summary[0])
-			@downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
-			@$('.bv_downloadSummary').attr "href", @downloadUrl
+			downloadUrl = window.conf.datafiles.downloadurl.prefix + "cmpdreg_bulkload/" +summary[1]
+			@$('.bv_downloadSummary').attr "href", downloadUrl
 
 	setupBulkRegCmpdsSummaryController: (summary) ->
 		if @regCmpdsSummaryController?

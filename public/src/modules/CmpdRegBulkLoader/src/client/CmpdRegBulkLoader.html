@@ -131,11 +131,10 @@
             <!--</div>-->
 
             <div class="bv_assignedPropertiesList"></div>
-            <span>The following required database properties still need to be assigned:</span>
-            <!--<div class="well bv_unassignedProperties" style="margin-top:5px;"></div>-->
-            <div>
+            <span class="form-inline">The following required database properties still need to be assigned:</span>
+            <span class="form-inline">
                 <textarea class="bv_unassignedProperties" rows="5" style="width:816px; resize:none;margin-top:5px;color:red;" disabled="disabled" placeholder="All required database properties have been assigned."></textarea>
-            </div>
+            </span>
         </div>
 
     </div>
@@ -200,7 +199,7 @@
 
 <script type="text/template" id="AssignedPropertiesListView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_propInfo"></div>
-    <span class="span8" style="margin-bottom:15px;margin-left:60px;">
+    <span class="" style="margin-bottom:15px;margin-left:60px;">
         <!--<span class="span5"></span>-->
         <button type="button" class="btn bv_addDbProperty pull-right" disabled="disabled">Add Database Property</button>
     </span>
@@ -216,7 +215,7 @@
             </span>
         </div>
         <button type="button" class="btn btn-success bv_loadAnother pull-right" style="margin-left:10px;">Load Another</button>
-        <a button type="button" class="btn bv_downloadSummary pull-right" href="http://www.yahoo.com">Download Summary Files</a>
+        <a button type="button" class="btn bv_downloadSummary pull-right">Download Summary Files</a>
     </div>
 </script>
 
@@ -254,7 +253,12 @@
         <div class="span9" style="margin-left:0px;">
             <button type="button" class="btn bv_purgeFileBtn pull-right">Purge File</button>
         </div>
-        <div class="well bv_purgeSummary span9 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
+        <div class="well bv_purgeSummaryWrapper span9 hide" style="background:#FFFFFF;width:830px;margin-top:10px;margin-bottom:10px;margin-left:0px;">
+            <div class="bv_purgeSummary"></div>
+            <div class="bv_downloadPurgedFile" style="margin-top:15px;">Click to download the original purged file:
+                <a class="bv_purgedFileName"></a>
+            </div>
+
         </div>
     </div>
 
@@ -291,18 +295,18 @@
                     </td>
                 </tr>
             </div>
-            <div class="bv_filePurgedSuccessfullyMessage hide">
-                <p>The file <span class="bv_purgedFileName"></span> has successfully been purged</p>
-            </div>
-            <div class="bv_errorDeletingExperimentMessage hide">
-                <p>An error occurred purging the file <span class="bv_purgedFileName"></span>.  Please contact support for additional help.</p>
-            </div>
+            <!--<div class="bv_filePurgedSuccessfullyMessage hide">-->
+                <!--<p>The file <span class="bv_requestedPurgeFileName"></span> has successfully been purged</p>-->
+            <!--</div>-->
+            <!--<div class="bv_filePurgedFailedMessage hide">-->
+                <!--<p>An error occurred purging the file <span class="bv_requestedPurgeFileName"></span>.  Please contact support for additional help.</p>-->
+            <!--</div>-->
         </div>
         <div class="modal-footer">
 		    <span class="bv_purgeButtons">
 		      <a href="#" class="btn bv_cancelPurge">Cancel</a>
 		      <a href="#" class="btn btn-danger bv_confirmPurgeFileButton">Purge File</a>
-		      <a href="#" class="btn btn-primary bv_okay">Ok</a>
+		      <a href="#" class="btn btn-primary bv_okay">OK</a>
 			  </span>
             <span class="bv_purging hide" style="color:red;">Purging...</span>
         </div>
