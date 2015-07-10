@@ -260,7 +260,7 @@ action: `userFlagStatus`
 
 action: `save`
 
-[Needs Test Fixture - request](./spec/readmMeResources/saveRequest.coffee)
+[Needs Test Fixture - save Request](./spec/readmMeResources/saveRequest.coffee)
 
 [Needs Test Fixture - save Response](./spec/readmMeResources/saveResponse.coffee)
 
