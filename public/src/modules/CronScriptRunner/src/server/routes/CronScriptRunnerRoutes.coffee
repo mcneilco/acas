@@ -43,6 +43,7 @@ exports.putCronScriptRunner = (req, resp) ->
 		resp.json respCron
 	else
 		#TODO put changes to persistence
+		#TODO update cron in memory with changed input JSON, script name, etc
 		code = req.params.code
 		cronJob = global.cronJobs[code]
 		unless cronJob?
