@@ -2,7 +2,9 @@
 
 ## Description ##
 The CurveAnalysis Module has 2 main parts
+
 1. Dose Response Fit - validates, saves and fits a "Dose Response" formatted SEL file
+
 2. Curve Curator - Allows the user to curate individual curve fits
 
 ### Dose Response Fit ###
