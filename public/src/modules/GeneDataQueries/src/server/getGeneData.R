@@ -29,7 +29,7 @@ if (!is.null(postData.list$geneIDs)) {
   geneData <- postData.list$geneIDs
   geneDataList <- strsplit(geneData, split="\\W")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
-  
+
   if (length(geneDataList) > 0) {
     requestList <- list()
     for (i in 1:length(geneDataList)){
@@ -42,7 +42,7 @@ if (!is.null(postData.list$geneIDs)) {
       customrequest='POST',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
-    
+
     genes <- fromJSON(geneNameList)$results
     batchCodeList <- list()
     for (i in 1:length(genes)){
@@ -86,7 +86,7 @@ if (nrow(dataDT) > 0){
       firstPass <- FALSE
       colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
       allColNamesDF <- merge(data.frame(lsKind=colNames), colNamesDF)
-      
+
     } else {
       outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
       experimentName <- dataDT[experimentId == expt, unique(experimentName)]
@@ -101,13 +101,13 @@ if (nrow(dataDT) > 0){
       allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
     }
   }
-  
+
   outputDF <- as.data.frame(outputDT)
   names(outputDF) <- NULL
   outputDT.list <- as.list(as.data.frame(t(outputDF)))
   names(outputDT.list) <- NULL
-  
-  
+
+
   setType <- function(lsType){
     if (lsType == "stringValue"){
       sType <- "string"
@@ -116,28 +116,28 @@ if (nrow(dataDT) > 0){
     }
     return(sType)
   }
-  
+
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   allColNamesDT$sClass <- "center"
   setnames(allColNamesDT, "lsKind", "sTitle")
-  
-  
+
+
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
   aoColumnsDF <- rbind(data.frame(sTitle="Gene ID", sClass="center"), aoColumnsDF)
-  
-  
+
+
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
   groupHeadersDF <- rbind(data.frame(numberOfColumns=1, titleText=' '), groupHeadersDF)
-  
+
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
-  
+
   groupHeadersDF.list <- as.list(as.data.frame(t(groupHeadersDF)))
   names(groupHeadersDF.list) <- NULL
-  
+
   responseJson <- list()
   responseJson$results$data$aaData <- outputDT.list
   responseJson$results$data$iTotalRecords <- nrow(outputDT)
@@ -149,9 +149,9 @@ if (nrow(dataDT) > 0){
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
   setStatus(status=200L)
-  
+
 } else {
-  
+
   responseJson <- list()
   responseJson$results$data$aaData <- list()
   responseJson$results$data$iTotalRecords <- 0
@@ -165,7 +165,7 @@ if (nrow(dataDT) > 0){
   error2 <- list(errorLevel="error", message="Please load more data.")
   responseJson$errorMessages <- list(error1, error2)
   setStatus(status=506L)
-  
+
 }
 
 if (exportCSV){
@@ -176,5 +176,5 @@ if (exportCSV){
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/json")
   cat(toJSON(responseJson))
-  
+
 }

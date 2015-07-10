@@ -30,12 +30,12 @@ getExcelColumnFromNumber <- function(number) {
   #
   # Returns:
   #   An excel-style set of column names (i.e. "B" or "AR")
-  
+
   if (any(number < 1)) {
     warnUser(paste("An invalid column number was attempted to be turned into a letter:",number))
     return("none")
   }
-  
+
   return(vapply(X=number, FUN.VALUE=c(""), FUN=function(number) {
     divisionResult <- floor((number-1)/26)
     remainder <- (number-1)%%26
@@ -55,7 +55,7 @@ getHiddenColumns <- function(classRow, errorEnv) {
   #
   # Returns:
   #	  a boolean vector of which results are hidden
-  
+
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\((.*)\\).*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
@@ -63,16 +63,16 @@ getHiddenColumns <- function(classRow, errorEnv) {
   shownColumns <- grepl("shown",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!hiddenColumns & !shownColumns & !defaultColumns)
-  
+
   # Error handling for unknown entries rather than 'shown' or 'hidden'
   if(length(unknownColumns) > 0) {
     if(length(unknownColumns) == 1) {
-      addError(paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '", 
+      addError(paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '",
                                        dataShown[unknownColumns],
                                        "'. Please enter 'shown' or 'hidden'."), errorEnv)
     } else {
-      addError(paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
-                                       ", there are unknown entries in the parentheses that cannot be understood: '", 
+      addError(paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "),
+                                       ", there are unknown entries in the parentheses that cannot be understood: '",
                                        paste0(dataShown[unknownColumns], collapse="', '"),
                                        "'. Please enter 'shown' or 'hidden'."), errorEnv)
     }
@@ -88,33 +88,33 @@ getLinkColumns <- function(classRow, errorEnv) {
   #
   # Returns:
   #	  a logical vector of which results are links
-  
+
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\[(.*)\\].*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
   linkColumns <- grepl("link",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!linkColumns & !defaultColumns)
-  
+
   # Error handling for unknown entries rather than 'link'
   if(length(unknownColumns) > 0) {
     if(length(unknownColumns) == 1) {
       addError(paste0("In Datatype column ", getExcelColumnFromNumber(unknownColumns),
-                      ", there is an entry in the brackets that cannot be understood: '", 
+                      ", there is an entry in the brackets that cannot be understood: '",
                       dataShown[unknownColumns],
                       "'. Please enter 'link' or nothing."), errorEnv)
     } else {
-      addError(paste0("In Datatype columns ", paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
-                      ", there are unknown entries in the brackets that cannot be understood: '", 
+      addError(paste0("In Datatype columns ", paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "),
+                      ", there are unknown entries in the brackets that cannot be understood: '",
                       paste0(dataShown[unknownColumns], collapse="', '"),
                       "'. Please enter 'link' or nothing."), errorEnv)
     }
   }
-  
+
   if (sum(linkColumns) > 1) {
     stopUser("Only one column may be marked as [link].")
   }
-  
+
   return(linkColumns)
 }
 
@@ -126,7 +126,7 @@ getHiddenColumns <- function(classRow, errorEnv) {
   #
   # Returns:
   #	  a boolean vector of which results are hidden
-  
+
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\((.*)\\).*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
@@ -134,16 +134,16 @@ getHiddenColumns <- function(classRow, errorEnv) {
   shownColumns <- grepl("shown",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!hiddenColumns & !shownColumns & !defaultColumns)
-  
+
   # Error handling for unknown entries rather than 'shown' or 'hidden'
   if(length(unknownColumns) > 0) {
     if(length(unknownColumns) == 1) {
-      addError(paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '", 
+      addError(paste0("In Datatype column ",getExcelColumnFromNumber(unknownColumns),", there is an entry in the parentheses that cannot be understood: '",
                                        dataShown[unknownColumns],
                                        "'. Please enter 'shown' or 'hidden'."), errorEnv)
     } else {
-      addError(paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
-                                       ", there are unknown entries in the parentheses that cannot be understood: '", 
+      addError(paste0("In Datatype columns ",paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "),
+                                       ", there are unknown entries in the parentheses that cannot be understood: '",
                                        paste0(dataShown[unknownColumns], collapse="', '"),
                                        "'. Please enter 'shown' or 'hidden'."), errorEnv)
     }
@@ -158,33 +158,33 @@ getLinkColumns <- function(classRow, errorEnv) {
   #
   # Returns:
   #	  a logical vector of which results are links
-  
+
   # Pull out info about hidden columns
   dataShown <- gsub(".*\\[(.*)\\].*||.*", "\\1",classRow)
   dataShown[is.na(dataShown)] <- ""
   linkColumns <- grepl("link",dataShown,ignore.case=TRUE)
   defaultColumns <- dataShown %in% ""
   unknownColumns <- which(!linkColumns & !defaultColumns)
-  
+
   # Error handling for unknown entries rather than 'link'
   if(length(unknownColumns) > 0) {
     if(length(unknownColumns) == 1) {
       addError(paste0("In Datatype column ", getExcelColumnFromNumber(unknownColumns),
-                      ", there is an entry in the brackets that cannot be understood: '", 
+                      ", there is an entry in the brackets that cannot be understood: '",
                       dataShown[unknownColumns],
                       "'. Please enter 'link' or nothing."), errorEnv)
     } else {
-      addError(paste0("In Datatype columns ", paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "), 
-                      ", there are unknown entries in the brackets that cannot be understood: '", 
+      addError(paste0("In Datatype columns ", paste0(sapply(unknownColumns,getExcelColumnFromNumber),collapse = ", "),
+                      ", there are unknown entries in the brackets that cannot be understood: '",
                       paste0(dataShown[unknownColumns], collapse="', '"),
                       "'. Please enter 'link' or nothing."), errorEnv)
     }
   }
-  
+
   if (sum(linkColumns) > 1) {
     stopUser("Only one column may be marked as [link].")
   }
-  
+
   return(linkColumns)
 }
 
@@ -199,9 +199,9 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
   #
   # Returns:
   #	  a character vector of the datatypes (without 'hidden' or 'link' information)
-  
+
   require('gdata')
-  
+
   if(lockCorpBatchId) {
     # Check that the first entry says Datatype (users may try to enter data if we don't warn them)
     if (is.na(classRow[1])) {
@@ -212,40 +212,40 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
                                        "Right now, it is '", classRow[1], "'."), errorEnv)
     }
   }
-  
+
   # Remove the hidden/shown info
   classRow <- trim(gsub("\\(.*)","",classRow))
-  
+
   # Remove the link info
   # Remove the hidden/shown info
   classRow <- trim(gsub("\\[.*]","",classRow))
-  
+
   classRow[clobColumns] <- "Clob"
-  
+
   # Check if the datatypes are entered correctly
   badClasses <- setdiff(classRow[1:length(classRow)>1], c("Text","Number","Date","Clob", "Code", "", "Standard Deviation", "Comments", "Image File", NA))
-  
+
   # Let the user know about empty datatypes
   emptyClasses <- which(is.na(classRow) | trim(classRow) == "")
   if(length(emptyClasses) > 0) {
     if(length(emptyClasses) == 1) {
       warnUser(paste0("Column ", getExcelColumnFromNumber(emptyClasses), " (" , LabelRow[emptyClasses], ") does not have a Datatype entered. ",
-                     "The loader will attempt to interpret entries in column ", 
-                     getExcelColumnFromNumber(emptyClasses), 
+                     "The loader will attempt to interpret entries in column ",
+                     getExcelColumnFromNumber(emptyClasses),
                      " as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
     } else {
-      warnUser(paste("Columns", 
-                    paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
-                    "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)), 
+      warnUser(paste("Columns",
+                    paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "),
+                    "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
                     "do not have a Datatype entered.",
                     "The loader will attempt to interpret entries in columns",
-                    paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "), 
+                    paste(sapply(emptyClasses[1:length(emptyClasses)-1],getExcelColumnFromNumber),collapse=", "),
                     "and", getExcelColumnFromNumber(tail(emptyClasses,n=1)),
                     "as numbers, but it may not work very well. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
     }
     classRow[is.na(classRow) | classRow==""] <- "Number"
   }
-  
+
   if(length(badClasses) > 0) {
     # Change common datatypes to those used by R
     oldClassRow <- classRow
@@ -265,14 +265,14 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
       classRow[i][grep(pattern = "image", classRow[i], ignore.case = TRUE)] <- "Image File"
       # Accept differences in capitalization
       if (tolower(classRow[i]) != tolower(oldClassRow[i]) & !is.na(LabelRow[i])) {
-        warnUser(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i], 
-                       "' as a datatype and interpreted it as '", classRow[i], 
+        warnUser(paste0("In column \"", LabelRow[i], "\", the loader found '", oldClassRow[i],
+                       "' as a datatype and interpreted it as '", classRow[i],
                        "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."))
       }
     }
-    
+
     # Those that can't be interpreted throw errors
-    unhandledClasses <- setdiff(classRow[1:length(classRow) > 1], 
+    unhandledClasses <- setdiff(classRow[1:length(classRow) > 1],
                                 c("Text","Number","Date","Clob","Code","Standard Deviation","Comments", "", "Image File"))
     if (length(unhandledClasses)>0) {
       addError(paste0("The loader found classes in the Datatype row that it does not understand: '",
@@ -280,7 +280,7 @@ validateCalculatedResultDatatypes <- function(classRow, LabelRow, lockCorpBatchI
                       "'. Please enter 'Number', 'Text', 'Date', 'Standard Deviation', 'Image File', or 'Comments'."), errorEnv)
     }
   }
-  
+
   # Return classRow
   return(classRow)
 }
@@ -298,9 +298,9 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
   # Returns:
   #  A data frame containing the column heading, Value Kind, Units, concentration, ConcUnits, reshapeText,
   #       time, timeUnit, uncertaintyType, and isComment, with one row for each non-ignored header
-  
+
   require('gdata')
-  
+
   valueKindWoExtras <- valueKindsVector[is.na(uncertaintyType) & !commentCol]
 
   if(any(duplicated(unlist(valueKindWoExtras)))) {
@@ -309,13 +309,13 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                     paste(unlist(valueKindWoExtras[duplicated(unlist(valueKindWoExtras))]),collapse=", "),
                     ". All column headings must be unique."))
   }
-  
+
   emptyValueKinds <- is.na(valueKindsVector) | (trim(valueKindsVector) == "")
   if (any(emptyValueKinds)) {
     stopUser(paste0("Column ", paste(getExcelColumnFromNumber(which(emptyValueKinds)), collapse=", "), " has a blank column header. ",
                 "Please enter a column header before reuploading."))
   }
-  
+
   dataColumns <- c()
   for(col in 1:length(valueKindsVector)) {
     column <- as.character(valueKindsVector[[col]])
@@ -323,31 +323,30 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
       dataColumns <- c(dataColumns,column)
     }
   }
-  
+
   fillerArray <- array(dim = length(dataColumns))
-  
-  returnDataFrame <- data.frame("DataColumn" = fillerArray, "valueKind" = fillerArray, 
-                                "Units" = fillerArray, "Conc" = fillerArray, 
+
+  returnDataFrame <- data.frame("DataColumn" = fillerArray, "valueKind" = fillerArray,
+                                "Units" = fillerArray, "Conc" = fillerArray,
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
   returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
-  returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns) 
-  concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
+  returnDataFrame$Units <- gsub(".*\\((.*)\\).*||(.*)", "\\1",dataColumns)
+  concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns)
   returnDataFrame$Conc <- as.numeric(gsub("[^0-9\\.]", "", concAndUnits))
   returnDataFrame$concUnits <- as.character(gsub("[^a-zA-Z]", "", concAndUnits))
-  timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns) 
+  timeAndUnits <- gsub("([^\\{]+)(\\{(.*)\\})?.*", "\\3", dataColumns)
   returnDataFrame$time <- as.numeric(gsub("[^0-9\\.]", "", timeAndUnits))
   returnDataFrame$timeUnit <- as.character(gsub("[^a-zA-Z]", "", timeAndUnits))
   # Mark standard deviation and comments with a text string
-  returnDataFrame$reshapeText <- ifelse(!is.na(uncertaintyType[2:length(uncertaintyType)]), 
+  returnDataFrame$reshapeText <- ifelse(!is.na(uncertaintyType[2:length(uncertaintyType)]),
                                         paste0(uncertaintyCodeWord, dataColumns), dataColumns)
-  returnDataFrame$reshapeText <- ifelse(commentCol[2:length(commentCol)], 
+  returnDataFrame$reshapeText <- ifelse(commentCol[2:length(commentCol)],
                                         paste0(commentCodeWord, returnDataFrame$reshapeText), returnDataFrame$reshapeText)
   returnDataFrame$uncertaintyType <- uncertaintyType[2:length(uncertaintyType)]
   returnDataFrame$isComment <- commentCol[2:length(commentCol)]
-  
+
   # Return a data frame with the units separated from the type, and with uncertainties and comments marked
-  return(returnDataFrame)
 }
 
 translateClassToValueType <- function(x, reverse = F) {
@@ -385,9 +384,9 @@ getExperimentColumns <- function(experimentCode){
         } else {
 		sampleDataFile <- paste0(filePath, "/", fileName)
         }
-		
+
 		#	sampleDataFile <- "/Users/goshiro2014/Documents/McNeilco_2012/clients/Chanda_Lab/development/sampleData/upload RNAseq-140724_6_50rows.xlsx"
-		sheet <- 1 
+		sheet <- 1
 		header <- FALSE
 		numberOfRows <- 25
 #		wb <- XLConnect::loadWorkbook(sampleDataFile)
@@ -409,7 +408,7 @@ getExperimentColumns <- function(experimentCode){
 		)
 
 	}
-	
+
 	if (!errorFileFlag){
 		inputFormat <- "Gene ID Data"
 
@@ -439,7 +438,7 @@ getExperimentColumns <- function(experimentCode){
 
 		# Get the line containing the value kinds
 		calculatedResultsValueKindRow <- calculatedResults[1:nrow(calculatedResults) == 1, ]
-  
+
 		# Mark standard deviation columns (designed to allow standard error as well in future)
 		uncertaintyType <- rep(NA, length(classRow))
 		uncertaintyType[tolower(classRow) == "standard deviation"] <- tolower(classRow)[tolower(classRow) == "standard deviation"]
@@ -458,12 +457,12 @@ getExperimentColumns <- function(experimentCode){
 
 	    # Add data class and hidden/shown to the valueKinds
 	    if (!is.null(mainCode)) {
-	      notMainCode <- (calculatedResultsValueKindRow != mainCode) & 
+	      notMainCode <- (calculatedResultsValueKindRow != mainCode) &
 	        (is.null(link) | (calculatedResultsValueKindRow != "link"))
 	    } else {
 	      notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
 	    }
- 
+
 	    valueKinds$dataClass <- classRow[notMainCode]
 	    valueKinds$valueType <- translateClassToValueType(valueKinds$dataClass)
 
@@ -480,37 +479,37 @@ getExperimentColumns <- function(experimentCode){
 	return(valueKinds)
 }
 
-createStateValue <- function (lsType = "lsType", lsKind = "lsKind", stringValue = NULL, 
-    fileValue = NULL, urlValue = NULL, publicData = TRUE, ignored = FALSE, 
-    dateValue = NULL, clobValue = NULL, blobValue = NULL, valueOperator = NULL, 
-    operatorType = NULL, numericValue = NULL, sigFigs = NULL, 
-    uncertainty = NULL, uncertaintyType = NULL, numberOfReplicates = NULL, 
-    valueUnit = NULL, unitType = NULL, comments = NULL, lsTransaction = NULL, 
-    codeValue = NULL, recordedBy = "username", lsState = NULL, 
+createStateValue <- function (lsType = "lsType", lsKind = "lsKind", stringValue = NULL,
+    fileValue = NULL, urlValue = NULL, publicData = TRUE, ignored = FALSE,
+    dateValue = NULL, clobValue = NULL, blobValue = NULL, valueOperator = NULL,
+    operatorType = NULL, numericValue = NULL, sigFigs = NULL,
+    uncertainty = NULL, uncertaintyType = NULL, numberOfReplicates = NULL,
+    valueUnit = NULL, unitType = NULL, comments = NULL, lsTransaction = NULL,
+    codeValue = NULL, recordedBy = "username", lsState = NULL,
     testMode = FALSE, recordedDate = as.numeric(format(Sys.time(),
-    "%s")) * 1000, codeType = NULL, codeKind = NULL, codeOrigin = NULL) 
+    "%s")) * 1000, codeType = NULL, codeKind = NULL, codeOrigin = NULL)
 {
-    stateValue = list(lsState = lsState, lsType = lsType, lsKind = lsKind, 
-        stringValue = stringValue, fileValue = fileValue, urlValue = urlValue, 
-        dateValue = dateValue, clobValue = clobValue, blobValue = blobValue, 
-        operatorKind = valueOperator, operatorType = if (is.null(valueOperator)) NULL else "comparison", 
-        numericValue = numericValue, sigFigs = sigFigs, uncertainty = uncertainty, 
-        uncertaintyType = uncertaintyType, numberOfReplicates = numberOfReplicates, 
-        unitKind = valueUnit, comments = comments, ignored = ignored, 
-        publicData = publicData, codeValue = codeValue, codeOrigin = codeOrigin, 
-        codeType = codeType, codeKind = codeKind, recordedBy = recordedBy, 
-        recordedDate = if (testMode) 1376954591000 else recordedDate, 
+    stateValue = list(lsState = lsState, lsType = lsType, lsKind = lsKind,
+        stringValue = stringValue, fileValue = fileValue, urlValue = urlValue,
+        dateValue = dateValue, clobValue = clobValue, blobValue = blobValue,
+        operatorKind = valueOperator, operatorType = if (is.null(valueOperator)) NULL else "comparison",
+        numericValue = numericValue, sigFigs = sigFigs, uncertainty = uncertainty,
+        uncertaintyType = uncertaintyType, numberOfReplicates = numberOfReplicates,
+        unitKind = valueUnit, comments = comments, ignored = ignored,
+        publicData = publicData, codeValue = codeValue, codeOrigin = codeOrigin,
+        codeType = codeType, codeKind = codeKind, recordedBy = recordedBy,
+        recordedDate = if (testMode) 1376954591000 else recordedDate,
         lsTransaction = lsTransaction)
     return(stateValue)
 }
 
-createExperimentState <- function (experimentValues = NULL, recordedBy = "userName", lsType = "lsType", 
-    lsKind = "lsKind", comments = "", lsTransaction = NULL, experiment = NULL, 
-    testMode = FALSE) 
+createExperimentState <- function (experimentValues = NULL, recordedBy = "userName", lsType = "lsType",
+    lsKind = "lsKind", comments = "", lsTransaction = NULL, experiment = NULL,
+    testMode = FALSE)
 {
-    experimentState = list(experiment = experiment, lsValues = experimentValues, 
-        recordedBy = recordedBy, lsType = lsType, lsKind = lsKind, 
-        comments = comments, lsTransaction = lsTransaction, ignored = FALSE, 
+    experimentState = list(experiment = experiment, lsValues = experimentValues,
+        recordedBy = recordedBy, lsType = lsType, lsKind = lsKind,
+        comments = comments, lsTransaction = lsTransaction, ignored = FALSE,
         recordedDate = if (testMode) 1376954591000 else as.numeric(format(Sys.time(), "%s")) * 1000)
     return(experimentState)
 }
@@ -521,10 +520,10 @@ removeEmptyValues <- function(values) {
   #
   # Input: values, a list of values for a single state
   # Returns: a list of the same structure, but with elements removed if they contain no data
-  
+
   values <- lapply(values, nullifyIfNoData)
   values[sapply(values, is.null)] <- NULL
-  
+
   return(values)
 }
 
@@ -532,11 +531,11 @@ nullifyIfNoData <- function(value) {
   # A helper function for removeEmptyValues
   # Input: a single value object (which is a list)
   # Returns: the value if it stores data, or NULL otherwise
-  
+
   if(!(value$lsType %in% c("stringValue", "dateValue", "clobValue", "numericValue", "codeValue"))) {
     stop(paste("Please modify nullifyIfNoData to accept", value$lsType))
   }
-  
+
   #If there is no data recorded, set to NULL (the "" is for the notebook field)
   if ((is.null(value$dateValue) || is.na(value$dateValue)) &&
         (is.null(value$clobValue) || is.na(value$clobValue)) &&
@@ -545,7 +544,7 @@ nullifyIfNoData <- function(value) {
         (is.null(value$stringValue) || is.na(value$stringValue) || value$stringValue == "")) {
     value <- NULL
   }
-  
+
   return(value)
 }
 
@@ -591,9 +590,9 @@ saveExptDataColOrder <- function(codeName){
 		## create new experiment state to store the column order information (we will have state tuples for each order)
 		lsTransaction <- experiment$lsTransaction
 		recordedBy <- experiment$recordedBy
-		experimentStates <- list() 
+		experimentStates <- list()
 		for (i in 1:nrow(exptDataColumns)){
-		  experimentStates[[i]] <- createExperimentState(experimentValues = generateExperimentValues(dataRow=exptDataColumns[i,],	
+		  experimentStates[[i]] <- createExperimentState(experimentValues = generateExperimentValues(dataRow=exptDataColumns[i,],
 		                                                                                             recordedBy = recordedBy,
 		                                                                                             lsTransaction = lsTransaction
 		  ),
@@ -610,19 +609,11 @@ saveExptDataColOrder <- function(codeName){
 		  error = function(ex) {
 		  resultFlag <<- FALSE
 		})
-		
-		
+
+
 	} else {
 		resultFlag <- FALSE
 	}
-	
+
 	return(resultFlag)
 }
-
-
-
-
-
-
-
-
