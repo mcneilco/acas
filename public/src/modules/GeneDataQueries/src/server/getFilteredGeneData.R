@@ -14,7 +14,6 @@ source('getExperimentColOrder.R')
 
 # Load the configs
 configList <- racas::applicationSettings
-save(configList,file="configs.Rda")
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
@@ -133,8 +132,6 @@ if(is.null(GET$format)){
 }
 
 postData <- rawToChar(receiveBin())
-save(postData,file="postData.Rda")
-
 myLogger$debug(postData)
 
 #postData <- '{"queryParams":{"batchCodes":"29 60","experimentCodeList":["EXPT-00017","tags_EXPT-00017","PROT-00014","_External data_Published Influenza Datasets"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
@@ -191,7 +188,6 @@ searchParams$batchCodeList <- batchCodeList
 searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
-save(searchParams,file="searchParams.rda")
 
 # Whether or not to aggregate on protocol
 aggregate <- as.logical(postData.list$queryParams$aggregate)
@@ -209,7 +205,6 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 myLogger$debug("here is the final searchParams")
 myLogger$debug(toJSON(searchParams))
 myLogger$debug(searchParams)
-save(searchParams,file="searchParams.Rda")
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
 dataCsv <- getURL(
@@ -217,7 +212,6 @@ dataCsv <- getURL(
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
-
 
 errorFlag <- FALSE
 tryCatch({
@@ -232,14 +226,7 @@ if (errorFlag){
         dataDT <- as.data.table(dataDF)
 }
 
-# # Hack to filter by batch code since it isn't happening on the roo side.
-# if (length(batchCodeList) != 0){
-#   dataDT <- dataDT[testedLot %in% batchCodeList]
-# }
-
-save(dataDT,file="dataDT.Rda")
 ### FUNCTIONS FOR PROCESSING DATA INTO ROWS/COLS ETC...#####
-
 
 # A function to take in a string and round using signif() if possible before converting back to a string.
 # if the string cannot be coersed into a numeric type, the original string is returned as is.
@@ -330,13 +317,6 @@ myMerge <- function(x,y){
   merge(x,y,by="geneId",all=TRUE)
 }
 
-
-
-
-### PROCESS DATA INTO ROWS/COLS ETC...#####
-
-
-
 # A function to aggregate (or not) and pivot dataDT
 # dataDT is the data returned from the server in a data.table
 # expt is the experiment or protocol id for the current group of data
@@ -362,7 +342,6 @@ aggAndPivot <- function(dataDT, expt){
     }else{   # For HTML display include <tags>.
       outputDT[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
     }
-
 
   }else{ # Aggregate is false
     outputDT <- dataDT[experimentId == expt , pivotResults(testedLot, lsKind, result)]
@@ -398,7 +377,6 @@ getColOrder <- function(experimentList, outputDT){
 }
 
 
-
 # Modifies inlineFileValue columns to display a link to the uploaded image (e.g. Western Blot)
 # fileValues is a list of the lsKind (column name) of each column to be modified
 modifyFileValues <- function(outputDT, fileValues){
@@ -427,10 +405,23 @@ modifyFileValues <- function(outputDT, fileValues){
 }
 
 
+# Function to modify the curve id column to display a render of the actual curve
+# curveIdCol is the column from outputDT containing curve id's
+# For csv, only output url, without html tags
+modifyCurveValues <- function(curveIdCol){
+  if (!exportCSV){
+    sapply(curveIdCol, function(x) list(c(paste0('<a href="http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2])))
+  }else{
+    sapply(curveIdCol, function(x) list(c(paste0('http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2])))
+  }
+}
 
-if (nrow(dataDT) > 0){
+
+### PROCESS DATA RETURNED FROM SERVER #####
+
+
+if (nrow(dataDT) > 0){  # If data was returned from the server
   firstPass <- TRUE
-
 
 # Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
   if (aggregate){
@@ -443,6 +434,7 @@ if (nrow(dataDT) > 0){
     experimentIdList <- experimentIdDT$experimentId
   }
 
+  # loop through all experiments/protocols
   for (expt in experimentIdList){
     myLogger$debug(paste0("current experiment(/protocol) ", expt))
     if(firstPass){
@@ -454,13 +446,15 @@ if (nrow(dataDT) > 0){
 
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
-        options( scipen = -2 ) #This is to force scientific notation more often
+        options( scipen = -2 )  # forces scientific notation more often
         dataDT[, result := roundString(result,sigfig)]
       }
 
       # Add operators to the front of result if they exist
       dataDT[, result := paste(operator,result,sep = '')]
-      # add id's to the results as the second item in a list
+
+      # Add id's to the results as the second item in a list
+      # This means that each element in the data.table is a two-element list: list(result,id)
       dataDT[, result := strsplit(paste(result,id,sep=","),",")]
 
       # Aggregate and pivot the data as well as add a StructureImage column
@@ -488,27 +482,17 @@ if (nrow(dataDT) > 0){
       outputDT <- modifyFileValues(outputDT, fileValues)
       exptDataColumns <- c(exptDataColumns,fileValues)
 
-
+      # Modify curve id column to display curve
+      if (!is.null(outputDT[["curve id"]])){  # column exists
+        outputDT[["curve id"]] <- modifyCurveValues(outputDT[["curve id"]])
+      }
 
   		myLogger$debug("exptDataColumns is:")
   		myLogger$debug(exptDataColumns)
 
-  		#setcolorder(outputDT, c("geneId",exptDataColumns))
+  		# Get the data in same order as the column titles
    		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))
 
-      # Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
-      # For csv, only output url, without html tags
-      # TODO replace hard-coded url with a reference to config.properties
-      if (!exportCSV){
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) list(c(paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2]))),TRUE)
-        # try(outputDT[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
-      }else{
-        try(outputDT[["curve id"]] <- sapply(outputDT[["curve id"]],function(x) list(c(paste0('http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2]))),TRUE)
-
-        # try(outputDT[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
-      }
-
-# changed experimentName to expt
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(expt, "::", colName))
   		}
@@ -523,14 +507,14 @@ if (nrow(dataDT) > 0){
       }else{
   		  colNamesDF <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }
+
       colNamesDF <- unique(colNamesDF)
-      # Get rid of any columns that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
+      # Get rid of any column names that have the same lsKind (e.g. two "Slope" will appear if some values are strings and some are numbers)
       colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
-      save(colNamesDF, orderCols, exptDataColumns, file="debug.Rda")
   		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
   		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
 
-    } else {
+    } else {  # firstPass is false
   		myLogger$debug(paste0("current firstPass ", firstPass))
 
   		# Aggregate and pivot the data as well as add a StructureImage column
@@ -558,26 +542,20 @@ if (nrow(dataDT) > 0){
       }
       outputDT2 <- modifyFileValues(outputDT2, fileValues2)
       exptDataColumns <- c(exptDataColumns,fileValues2)
+      fileValues <- c(fileValues,fileValues2)  # save a list of all fileValues
 
-      # save a list of all fileValues
-      fileValues <- c(fileValues,fileValues2)
-
-  		#setcolorder(outputDT2, c("geneId",exptDataColumns))
+  		# Get the data in same order as the column titles
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
 
-  		# Try to convert curve id values into images from the server. If there is no "curve id" column, try fails and nothing happens
-  		# TODO replace hard-coded url with a reference to config.properties
-  		if (!exportCSV){
-        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) list(c(paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2]))),TRUE)
-  		  # try(outputDT2[,`curve id` := paste0('<a href="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" target="_blank"><img src="http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',`curve id`,'&showAxes=true&labelAxes=true" height="180" width="375"></a>')],TRUE)
-  		}else{
-        try(outputDT2[["curve id"]] <- sapply(outputDT2[["curve id"]],function(x) list(c(paste0('http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2]))),TRUE)
-        # try(outputDT2[,`curve id` := paste0("http://192.168.99.100:3000/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=",`curve id`,"&showAxes=true&labelAxes=true")],TRUE)
+      # Modify curve id column to display curve
+      if (!is.null(outputDT2[["curve id"]])){  # column exists
+        outputDT2[["curve id"]] <- modifyCurveValues(outputDT2[["curve id"]])
       }
-#changed experimentName to expt
+
       for (colName in exptDataColumns){
   			setnames(outputDT2, colName, paste0(expt, "::", colName))
   		}
+
   		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
   		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
   		orderCols$order <- as.integer(as.character(orderCols$order))
@@ -587,6 +565,7 @@ if (nrow(dataDT) > 0){
       }else{
         colNamesDF2 <- subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind))
       }
+
   		colNamesDF2 <- unique(colNamesDF2)
   		#   Get rid of any columns that have the same lsKind (e.g. two Slopes will appear if some values are strings and some are numbers, this gets rid of that)
   		colNamesDF2 <- subset(colNamesDF2,!duplicated(colNamesDF2[["lsKind"]]))
@@ -594,11 +573,9 @@ if (nrow(dataDT) > 0){
   		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
   		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
       }
-  }
+  }  # Done iterating through experiments/protocols
 
-  save(outputDT,file="outputDT.Rda")
-
-  # generate aaData
+  # Generate aaData for display in javascript datatable
   columns = gsub('\\W','',names(outputDT))
   numCols = length(columns)
   aaData = list()
@@ -617,7 +594,7 @@ if (nrow(dataDT) > 0){
   outputDT.list <- as.list(as.data.frame(t(outputDF)))
   names(outputDT.list) <- NULL
 
-# function to convert lsType to sType(used in js datatables)
+  # function to convert lsType to sType (used in js datatables)
   setType <- function(lsType){
     if (lsType == "stringValue"){
       sType <- "string"
@@ -641,8 +618,8 @@ if (nrow(dataDT) > 0){
     allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   }
 
-  # If the lsKind is either curve id or any of the names which will hold external images, want to give them unique class
-  # so that the columns can be made wider in the .css
+  # If the lsKind is either curve id or any of the names which will hold external images, want to give them a unique class
+  #   so that the columns can be made wider in the .css
   imageClass <- ifelse(allColNamesDT[["lsKind"]] == "curve id","curveId","fileValue")
 
   allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),imageClass,"center")
@@ -675,8 +652,6 @@ if (nrow(dataDT) > 0){
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
   setStatus(status=200L)
-  save(responseJson,file="json.Rda")
-
 
 } else { #no results
   responseJson <- list()
