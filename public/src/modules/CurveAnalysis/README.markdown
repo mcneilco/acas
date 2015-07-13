@@ -236,8 +236,8 @@ Finally, the `CurveDetailController` passes a [jsxgraph](http://jsxgraph.uni-bay
 
 Actions:
 
-The `Reset` button **GET**'s the following route `/api/curve/detail/:id` which cause the `CurveEditorController` to re-render from the saved state of the curve.
+Clicking on the `Reset` button causes the `CurveEditorController` to re-render from the saved state of the curve by **GET**'ing the route `/api/curve/detail/:id` (outlined above)
 
-`Reject`, `Approve`, `Save` buttons and `Fit Parameters change` or `points update change` produce a **PUT** request to `/api/curve/detail/:id` with a the different `action`.  
+Clicking on the `Reject`, `Approve`, or `Save` buttons or causing the fitParameters or points to change,  will make a round trip to the server with a **PUT** request to `/api/curve/detail/:id` with a different `action`.
 
-THe `Reject`, `Approve`, `Fit Parameters change` and `points update change` actions do not save the curve to the database. Instead, they persist the curve state to the server through the the `rSession` attribute which does not change with calls to their **PUT** actions.  Only the `Save` action persists the data to the database and only it produces new `curveId` and` `rSession` attributes. The `Save` action will also cause the appropriate thumbnail to **GET** it's model and retrieve a new updated thumnail by a call to the stub service outlined above.
+The `Reject`, `Approve`, `Fit Parameters change` and `points update change` actions do not save the curve to the database. Instead, they persist the curve state to the server through the `rSession`.  Only the `Save` action persists the data to the database and only it produces new `curveId` and `rSession` attributes. The `Save` action will also update the corresponding `CurveSummaryController`'s (thumbnail) model with the new curveId, which will intern cause the `CurveSummaryController` retrieve a new updated curve image.
