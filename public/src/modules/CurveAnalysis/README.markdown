@@ -173,39 +173,39 @@ Each of these need Test Fixtures:
 
 action: `userFlagStatus`
 
-[Needs Test Fixture - userFlagStatus Reject Request](./spec/readmMeResources/userFlagStatusRejectRequest.coffee)
+[Needs Test Fixture - userFlagStatus Reject Request](./spec/readmeResources/userFlagStatusRejectRequest.coffee)
 
-[Needs Test Fixture - userFlagStatus Reject Response](./spec/readmMeResources/userFlagStatusRejectResponse.coffee)
+[Needs Test Fixture - userFlagStatus Reject Response](./spec/readmeResources/userFlagStatusRejectResponse.coffee)
 
-[Needs Test Fixture - userFlagStatus Approve Request](./spec/readmMeResources/userFlagStatusApproveRequest.coffee)
+[Needs Test Fixture - userFlagStatus Approve Request](./spec/readmeResources/userFlagStatusApproveRequest.coffee)
 
-[Needs Test Fixture - userFlagStatus Approve Response](./spec/readmMeResources/userFlagStatusApproveResponse.coffee)
+[Needs Test Fixture - userFlagStatus Approve Response](./spec/readmeResources/userFlagStatusApproveResponse.coffee)
 
 `Save` `button click`
 
 action: `save`
 
-[Needs Test Fixture - save Request](./spec/readmMeResources/saveRequest.coffee)
+[Needs Test Fixture - save Request](./spec/readmeResources/saveRequest.coffee)
 
-[Needs Test Fixture - save Response](./spec/readmMeResources/saveResponse.coffee)
+[Needs Test Fixture - save Response](./spec/readmeResources/saveResponse.coffee)
 
 
 `Fit Parameters` `change`
 
 action `parametersChanged`
 
-[Needs Test Fixture - parametersChanged Request](./spec/readmMeResources/parametersChangedRequest.coffee)
+[Needs Test Fixture - parametersChanged Request](./spec/readmeResources/parametersChangedRequest.coffee)
 
-[Needs Test Fixture - parametersChanged Response](./spec/readmMeResources/parametersChangedResponse.coffee)
+[Needs Test Fixture - parametersChanged Response](./spec/readmeResources/parametersChangedResponse.coffee)
 
 
 `Points` `change`
 
 action: `pointsChanged`
 
-[Needs Test Fixture - pointsChanged Request](./spec/readmMeResources/pointsChangedRequest.coffee)
+[Needs Test Fixture - pointsChanged Request](./spec/readmeResources/pointsChangedRequest.coffee)
 
-[Needs Test Fixture - pointsChanged Response](./spec/readmMeResources/pointsChangedResponse.coffee)
+[Needs Test Fixture - pointsChanged Response](./spec/readmeResources/pointsChangedResponse.coffee)
 
 **GET** `/curveCurator/*`
 
