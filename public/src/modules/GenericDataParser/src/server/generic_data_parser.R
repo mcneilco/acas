@@ -1534,9 +1534,10 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
-        addError(paste0("Experiment '",experimentName,
-                                         "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
-                                         "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
+        warnUser(paste0("Experiment '",experimentName,
+                        "' does not exist in the protocol that you entered, but it does exist in '", 
+                        getPreferredProtocolName(protocolOfExperiment), 
+                        "'. Reloading the file will update the data and change the protocol."))
         experiment <- experimentList[[1]]
       }
     } else {
