@@ -1,17 +1,17 @@
 # CurveAnalysis Module #
 
 ## Description ##
-The CurveAnalysis Module has 2 main parts
+The CurveAnalysis Module has two main parts
 
-1. Dose Response Fit - validates, saves and fits a "Dose Response" formatted SEL file
+1. **Dose Response Fit** - Validates, saves and fits a "Dose Response" formatted SEL file
 
-2. Curve Curator - Allows the user to curate individual curve fits
+2. **Curve Curator** - Allows the user to edit individual curve fits
 
 ### Dose Response Fit ###
 ![Dose Response](./spec/readmeResources/DoseResponseTab.png)
 #### [Main Controller](./src/client/DoseResponseFit.coffee) `DoseResponseFitController` ####
 
-##### Routes #####
+#### Routes ####
 
 **POST** `/api/doseResponseCurveFit`
 
@@ -31,14 +31,14 @@ Example Responses
 
 [Actual Response Error (coffee) ](./spec/readmeResources/bulkFitSuccessResponse.coffee)
 
-##### Code Walkthrough #####
+#### Code Walkthrough ####
 
 The validate and upload portion of curve analysis "Upload Data" tab follows the `BasicFileValidateAndSaveController` mechanism of SEL and is covered elsewhere.
 
 ##### Model Fit Tab #####
-The second tab "Model Fit" is only rendered after a successful validate and save. When the Model Fit Tab `ModelFitTypeController` is rendered, the route `/api/codetables/model%20fit/type` [(code table test fixture)](../Components/spec/testFixtures/codeTableServiceTestJSON.coffee) is used to create models for a `PickListSelectController` of "Model Fit Type" code choices.
+The second tab "Model Fit", only is rendered after a successful validate and save. When the Model Fit Tab's controller `ModelFitTypeController`, is rendered, it instantiates a new `PickListSelectController` with the url `/api/codetables/model%20fit/type` [(code table test fixture)](../Components/spec/testFixtures/codeTableServiceTestJSON.coffee) to populate the list of model fit type choices.
 
-When the picklist selection is changed the controller uses the following configuration settings to create a new "parametersController" (e.g. DoseResponseAnalysisParametersController) along with it's "parametersClass" model (e.g. DoseResponseAnalysisParameters):
+When the "Model Fit Type" selection is changed, the controller uses a configuration file setting to create a new "parametersController" (e.g. DoseResponseAnalysisParametersController) along with it's "parametersClass" model (e.g. DoseResponseAnalysisParameters):
 
 ```properties
 client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
@@ -59,11 +59,11 @@ modelFitType:4 parameter D-R
 testMode:false
 ```
 
-This data is sent via a **FORM POST** to the following route bulk fit route `api/doseResponseCurveFit`
+This data is sent via a **FORM POST** to the bulk fit route `api/doseResponseCurveFit`
 
-The bulk fit route calls the following R script `src/server/DoseResponseCurveFit.R` and function `fitDoseResponse` with the requested data as a list object.
+The bulk fit route calls the following R script `src/server/DoseResponseCurveFit.R` and R function `fitDoseResponse` with the requested data as a list object.
 
-The fitDoseResponse interprets the request and then sources the cooresponding `renderingHint`'s `RSource` code referenced in the acas configuration `client.curvefit.modelfitparameter.classes` referenced above)
+The `fitDoseResponse` R function reads the request and then sources the corresponding `renderingHint`'s `RSource` code referenced in the acas configuration `client.curvefit.modelfitparameter.classes` (referenced above).
 
 The `RSource` file returns a `modelFit` Object which is used in the call to bulk fit the experiment
 
@@ -95,7 +95,7 @@ On either success or fail of the fit, the function creates an html string and sa
 racas::update_experiment_model_fit_html(experimentCode, html = response$result$htmlSummary)
 ```
 
-Finally, the dose response code returns the following data structure back to the GUI (the "htmlSummary" is the same summary saved to the database)
+Finally, the dose response code returns the following JSON structure back to the GUI (the `htmlSummary` attribute is the same summary saved to the database)
 
 Example on success:
 
