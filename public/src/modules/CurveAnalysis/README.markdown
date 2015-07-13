@@ -11,6 +11,26 @@ The CurveAnalysis Module has 2 main parts
 ![Dose Response](./spec/readmeResources/DoseResponseTab.png)
 #### [Main Controller](./src/client/DoseResponseFit.coffee) `DoseResponseFitController` ####
 
+##### Routes #####
+
+**POST** `/api/doseResponseCurveFit`
+
+Example Requests
+
+[Test Fixture goodDataRequest](./spec/DoseResponseFitServiceSpec.coffee)
+
+[Test Fixture badDataRequest](./spec/DoseResponseFitServiceSpec.coffee)
+
+Example Responses
+
+[Test Fixture returnExampleSuccess](./spec/DoseResponseFitServiceSpec.coffee)
+
+[Test Fixture returnExampleError](./spec/DoseResponseFitServiceSpec.coffee)
+
+[Actual Response Success (coffee)](./spec/readmeResources/bulkFitSuccessResponse.coffee)
+
+[Actual Response Error (coffee) ](./spec/readmeResources/bulkFitSuccessResponse.coffee)
+
 ##### Code Walkthrough #####
 
 The validate and upload portion of curve analysis "Upload Data" tab follows the `BasicFileValidateAndSaveController` mechanism of SEL and is covered elsewhere.
@@ -111,90 +131,22 @@ Embedded in the html is the button to take the user to curve curator which looks
 ```<a href="/curveCurator/EXPT-00000001" target="_blank" class="btn">Curate</a>```
 
 ### Curve Curator ###
-#### Screen Shot ###
 ![Dose Response](./spec/readmeResources/CurveCurator.png)
 
 #### [Main Controller](./src/client/CurveCurator.coffee) `DoseResponseFitController` ####
 
-#### Code Walkthrough ####
-
-##### The Left Hand Side #####
-
-The left hand thumbnails and sort options are populated with a **GET** request to `api/curves/stubs/EXPT-00000001`
-
-Example Response:
+#### Routes ####
+**GET** `/api/curves/stubs/:exptCode`
 
 [Test Fixture Needed](./spec/readmeResources/stubs.coffee)
 
-```coffee
-curves: [
-  algorithmFlagStatus: ""
-  category: "sigmoid"
-  curveAttributes:
-    EC50: "0.614400000000000000"
-    SSE: 1038.34
-    SST: 31286.4333
-    algorithmFlagStatus: ""
-    compoundCode: "CMPD-0000011-01A"
-    renderingHint: "4 parameter D-R"
-    rsquare: null
-    userFlagStatus: ""
-
-  curveid: "AG-00000001_2"
-  userFlagStatus: ""
-,
-  algorithmFlagStatus: ""
-  category: "sigmoid"
-  curveAttributes:
-    EC50: "0.701700000000000000"
-    SSE: 3712.1391
-    SST: 46131.0078
-    algorithmFlagStatus: ""
-    compoundCode: "CMPD-0000012-01A"
-    renderingHint: "4 parameter D-R"
-    rsquare: null
-    userFlagStatus: ""
-
-  curveid: "AG-00000002_2"
-  userFlagStatus: ""
-,
-  etc
-]
-sortOptions: [
-  code: "compoundCode"
-  name: "Compound Code"
-,
-  code: "EC50"
-  name: "EC50"
-,
-  code: "SST"
-  name: "SST"
-,
-  code: "SSE"
-  name: "SSE"
-,
-  code: "rsquare"
-  name: "R^2"
-,
-  code: "userFlagStatus"
-  name: "User Flag Status"
-,
-  code: "userFlagStatus"
-  name: "Algorithm Flag Status"
- ]
-```
-
-The GUI then populates the sort options and **GET**'s the following api route to retrieve the thumbnail images:
+**GET**  `/api/curve/render/*`
 
 `/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=AG-00000001_2&showAxes=true&axes=y&labelAxes=false`
 
 ![Thumbnail](./spec/testFixtures/testThumbs/AG-00439996_6863.png)
 
-##### Actions #####
-![CurveCurator](./spec/readmeResources/Thumbnail.png)
-
-Clicking on the left hand side thumbnail button **POST**'s an updated `userFlagStatus` to
-`/api/curve/stub/AG-00000001_2` which proxies the post to the rApache route `/curve/stub` which updates the flag status (changing reported parameters and anything else the fit would like to change), saves the new curve to the database, and returns a new curveid to the GUI.  Here are the options, requests and responses
+**POST** '/api/curve/stub/:id'
 
 Each of these need Test Fixtures:
 
@@ -210,32 +162,12 @@ Each of these need Test Fixtures:
 
 [Example Response approve ](./spec/readmeResources/thumbnail-approve-response.coffee)
 
-
-##### The Right Hand Side #####
-
-When the left hand side is populated, the first curve id returned by the "stubs service" is rendered on the right hand side with a **GET** to the following api route  `/api/curve/detail/AG-00000001_2` which proxies the **GET** request to the rApache route `/curve/detail`
-
-Example Response:
+**GET** `/api/curve/detail/:id`
 
 [Test Fixture - curveDetail](./spec/testFixtures/curveCuratorTestFixtures.coffee)
 
-The GUI uses the JSON to populate the various fields. Model Fit Summary, Reported Values, Parameter Std. Errors and Fit Metrics are all direct html inserts from the response.  Category, Compound Code, userFlagStatus and algorithmFlagStatus areas are all character insertions.  The Fit Criteria is rehydrated using the same attributes from the global fit and is the same parametersController and parametersClass used in the bulk fit. Finally, the curator controller passes a [jsxgraph](http://jsxgraph.uni-bayreuth.de/wp/) [board](http://jsxgraph.uni-bayreuth.de/docs/symbols/JXG.Board.html), along with the `plotData.curve` and `plotData.plotWindow` values to the appropriate plotCurveClass found by parsing the `client.curvefit.modelfitparameter.classes` config (e.g. [DoseResponsePlotCurveLL4](../PrimaryScreen/src/client/DoseResponseAnalysis.coffee)). The `plotCurveClass` takes `plotData.curve` and `plotData.plotWindow` and plots the fitted line
+**PUT** `/api/curve/detail/:id`
 
-Actions:
-
-
-
-The `Reset` button
-
-**GET**'s the following route which is outlined above as well
-
-`/api/curve/detail/AG-00000001_3`
-
-[Test Fixture - curveDetail](./spec/testFixtures/curveCuratorTestFixtures.coffee)
-
-`Reject`, `Approve`, `Save` buttons and `Fit Parameters change` or `points update change`
-
-Any of the proceding actions produce a **PUT** request to `/api/curve/detail/AG-00000001_2` with a different `action`
 
 `Reject`/`Approve` `button click`
 
@@ -275,5 +207,37 @@ action: `pointsChanged`
 
 [Needs Test Fixture - pointsChanged Response](./spec/readmMeResources/pointsChangedResponse.coffee)
 
+**GET** `/curveCurator/*`
 
-Only the save action actually saves data to the database and only it produces a new Curve ID. The save action will cause the appropriate thumbnail to **GET** it's model and retrieve a new updated thumnail by a call to the stub service outlined above.
+#### Code Walkthrough ####
+
+When the `CurveCuratorController` is instantiated, it instantiates a `CurveSummaryListController` (left hand side), which controls the thumbnails, filters and sorting options. It also instantiates a `CurveEditorController` (right hand side), which controls the editing of a single curve.
+
+##### The Left Hand Side `CurveCuratorController` #####
+
+The `CurveSummaryListController` **GETS**'s the `/api/curves/stubs/:exptCode` route and uses the `curves` attribute to instantiate a collection of `CurveSummaryControllers` (the thumbnails) and uses the `sortOptions` attribute to populate the filters and sorting options.
+
+The `CurveSummaryControllers` (thumbnails), use the `curveId` attribute and a call to the api route
+ `/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=AG-00000001_2&showAxes=true&axes=y&labelAxes=false` to render the curve image.
+
+##### Actions #####
+![CurveCurator](./spec/readmeResources/Thumbnail.png)
+
+Clicking on one of the left hand side thumbnail (`CurveSummaryController`) buttons **POST**'s an updated `userFlagStatus` to
+`/api/curve/stub/:id` (proxies the **POST** to the rApache route `/curve/stub`).  This route then updates the given curve id's `user flag status` (changing reported parameters and anything else the fit would like to change), saves the new curve to the database, and returns a "curve stub" (with a new curve id), back to the `CurveListController` which forces the `CurveSummaryController` to rerender with the new curve attributes including a new image.
+
+##### The Right Hand Side #####
+
+When the left hand side is populated, the first curve id returned by the `/api/curves/stubs/:exptCode` service is rendered on the right hand side by the `CurveDetailController` by parsing the JSON returned with a **GET** to the api route `/api/curve/detail/:id` (this route proxies the **GET** request to the rApache route `/curve/detail`) and creating a `CurveDetail` model.
+
+The `CurveDetail` model attributes: `fitSummary` (Fit Summary), `reportedValues` (Reported Values), `parameterStdErrors` (Parameter Std. Errors) and `curveErrors` (Fit Metrics) are all direct html inserts.  `category` (Category), `compoundCode` (No label), `userFlagStatus` (User Approved) and `algorithmFlagStatus` (Algorithm) areas are all character insertions.  The `fitCriteria` attributed is used to "rehydrate" is rehydrated `parametersClass` by the `parametersController` used in the bulk fit. The `CurveDetail` model also contains an `rSession` attribute which is sent between the GUI and Server while the user is editing a curve.
+
+Finally, the `CurveDetailController` passes a [jsxgraph](http://jsxgraph.uni-bayreuth.de/wp/) [board](http://jsxgraph.uni-bayreuth.de/docs/symbols/JXG.Board.html), along with the `plotData.curve` and `plotData.plotWindow` values to the appropriate plotCurveClass found by parsing the `client.curvefit.modelfitparameter.classes` config (e.g. [DoseResponsePlotCurveLL4](../PrimaryScreen/src/client/DoseResponseAnalysis.coffee)). The `plotCurveClass` takes `plotData.curve` and `plotData.plotWindow` and plots the fitted line.
+
+Actions:
+
+The `Reset` button **GET**'s the following route `/api/curve/detail/:id` which cause the `CurveEditorController` to re-render from the saved state of the curve.
+
+`Reject`, `Approve`, `Save` buttons and `Fit Parameters change` or `points update change` produce a **PUT** request to `/api/curve/detail/:id` with a the different `action`.  
+
+THe `Reject`, `Approve`, `Fit Parameters change` and `points update change` actions do not save the curve to the database. Instead, they persist the curve state to the server through the the `rSession` attribute which does not change with calls to their **PUT** actions.  Only the `Save` action persists the data to the database and only it produces new `curveId` and` `rSession` attributes. The `Save` action will also cause the appropriate thumbnail to **GET** it's model and retrieve a new updated thumnail by a call to the stub service outlined above.
