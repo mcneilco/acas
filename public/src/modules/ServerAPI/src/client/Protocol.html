@@ -155,6 +155,43 @@
         </div>
     </div>
 
+    <div class="modal hide bv_confirmDeleteProtocolModal">
+        <div class="modal-header">
+            <button type="button" class="close bv_closeDeleteProtocolModal" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Delete Protocol</h3>
+        </div>
+        <div class="modal-body">
+            <div class="bv_deleteWarningMessage">
+                <p>Are you sure you would like to delete this protocol?</p>
+            </div>
+            <div class="bv_deletingStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Deleting Protocol</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_protocolDeletedSuccessfullyMessage hide">
+                <p>The Protocol <span class="bv_protocolCodeName"></span> has been successfully deleted</p>
+            </div>
+            <div class="bv_errorDeletingProtocolMessage hide">
+                <p>An error occurred deleting Protocol <span class="bv_protocolCodeName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+		    <span class="bv_deleteButtons">
+		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
+		      <a href="#" class="btn btn-danger bv_confirmDeleteProtocolButton">Delete Protocol</a>
+			  </span>
+		    <span class="bv_okayButton hide" data-dismiss="modal">
+			    <a href="#" class="btn bv_closeDeleteProtocolModal">Okay</a>
+		    </span>
+        </div>
+    </div>
 
 </script>
 

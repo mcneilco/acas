@@ -258,7 +258,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 			@collection.each (exp) =>
 				hideStatusesList = window.conf.entity.hideStatuses
 				#non-admin users can't see experiments with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
 					ersc = new ExperimentRowSummaryController
 						model: exp
 					ersc.on "gotClick", @selectedRowChanged

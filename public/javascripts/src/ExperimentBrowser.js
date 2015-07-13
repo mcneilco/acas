@@ -384,7 +384,7 @@
           return function(exp) {
             var ersc, hideStatusesList;
             hideStatusesList = window.conf.entity.hideStatuses;
-            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(exp.getStatus().get('codeValue')) > -1 && !UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
+            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(exp.getStatus().get('codeValue')) > -1 && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
               ersc = new ExperimentRowSummaryController({
                 model: exp
               });

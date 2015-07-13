@@ -1185,9 +1185,12 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@trigger 'analysis-completed'
 
 	handleStatusChanged: =>
+		console.log "handleStatusChanged"
 		if @dataAnalysisController != null
+			console.log "has dac"
 			if @model.isEditable()
 				@dataAnalysisController.enableFields()
+				console.log "model is editable"
 			else
 				@dataAnalysisController.disableAll()
 				@$('.bv_loadAnother').attr('disabled', 'disabled')
