@@ -162,7 +162,7 @@
   };
 
   exports.isUserAdmin = function(user) {
-    var _, adminRoles, isAdmin;
+    var adminRoles, isAdmin, _;
     _ = require('underscore');
     adminRoles = _.filter(user.roles, function(role) {
       return role.roleEntry.roleName === 'admin';
@@ -308,23 +308,23 @@
   };
 
   exports.getTestedEntityProperties = function(propertyList, entityList, callback) {
-    var ents, i, j, k, l, len, len1, m, out, prop, prop2, ref;
+    var ents, i, j, out, prop, prop2, _i, _j, _k, _len, _len1, _ref;
     if (propertyList.indexOf('ERROR') > -1) {
       callback(null);
       return;
     }
     ents = entityList.split('\n');
     out = "id,";
-    for (k = 0, len = propertyList.length; k < len; k++) {
-      prop = propertyList[k];
+    for (_i = 0, _len = propertyList.length; _i < _len; _i++) {
+      prop = propertyList[_i];
       out += prop + ",";
     }
     out = out.slice(0, -1) + '\n';
-    for (i = l = 0, ref = ents.length - 2; 0 <= ref ? l <= ref : l >= ref; i = 0 <= ref ? ++l : --l) {
+    for (i = _j = 0, _ref = ents.length - 2; 0 <= _ref ? _j <= _ref : _j >= _ref; i = 0 <= _ref ? ++_j : --_j) {
       out += ents[i] + ",";
       j = 0;
-      for (m = 0, len1 = propertyList.length; m < len1; m++) {
-        prop2 = propertyList[m];
+      for (_k = 0, _len1 = propertyList.length; _k < _len1; _k++) {
+        prop2 = propertyList[_k];
         if (ents[i].indexOf('ERROR') < 0) {
           out += i + j++;
         } else {
@@ -338,11 +338,11 @@
   };
 
   exports.getPreferredBatchIds = function(requests, callback) {
-    var k, len, req, request, res, response, results;
+    var config, req, request, res, response, results, _i, _len;
     if (global.specRunnerTestmode) {
       results = [];
-      for (k = 0, len = requests.length; k < len; k++) {
-        req = requests[k];
+      for (_i = 0, _len = requests.length; _i < _len; _i++) {
+        req = requests[_i];
         res = {
           requestName: req.requestName
         };
@@ -358,10 +358,11 @@
       response = results;
       return callback(response);
     } else {
+      config = require('../../../conf/compiled/conf.js');
       request = require('request');
       return request({
         method: 'POST',
-        url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName",
+        url: config.all.server.service.external.preferred.batchid.url,
         json: true,
         body: requests
       }, (function(_this) {
@@ -380,11 +381,11 @@
   };
 
   exports.getPreferredParentIds = function(requests, callback) {
-    var k, len, req, res, response, results;
+    var config, req, request, res, response, results, _i, _len;
     if (global.specRunnerTestmode) {
       results = [];
-      for (k = 0, len = requests.length; k < len; k++) {
-        req = requests[k];
+      for (_i = 0, _len = requests.length; _i < _len; _i++) {
+        req = requests[_i];
         res = {
           requestName: req.requestName
         };
@@ -402,7 +403,25 @@
       response = results;
       return callback(response);
     } else {
-      return console.log("real function not implemented");
+      config = require('../../../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.server.service.external.preferred.batchid.url + "/parent",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
     }
   };
 

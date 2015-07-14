@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, config, csUtilities, fs, parseResponse, request;
+  var assert, config, csUtilities, fs, parseResponse, request, _;
 
   assert = require('assert');
 
@@ -365,16 +365,16 @@
         return describe("when 1000 batches sent", function() {
           var i, num, requests;
           requests = (function() {
-            var j, results;
-            results = [];
-            for (i = j = 1; j <= 1000; i = ++j) {
+            var _i, _results;
+            _results = [];
+            for (i = _i = 1; _i <= 1000; i = ++_i) {
               num = "000000000" + i;
               num = num.substr(num.length - 9);
-              results.push({
+              _results.push({
                 requestName: "DNS" + num + "::1"
               });
             }
-            return results;
+            return _results;
           })();
           before(function(done) {
             this.timeout(20000);
@@ -400,11 +400,11 @@
         requestData = {
           requests: [
             {
-              requestName: "DNS000000001"
+              requestName: "CMPD-0000001"
             }, {
-              requestName: "DNS000673874"
+              requestName: "CMPD-0000002"
             }, {
-              requestName: "DNS999999999"
+              requestName: "CMPD-999999999"
             }
           ]
         };
@@ -426,7 +426,7 @@
           return assert.equal(this.response[0].requestName, this.response[0].preferredName);
         });
         it("should have the batch an alias", function() {
-          return assert.equal(this.response[1].preferredName, "DNS000001234");
+          return assert.equal(this.response[1].preferredName, "CMPD-0000002");
         });
         return it("should not return an alias if the batch is not valid", function() {
           return assert.equal(this.response[2].preferredName, "");
