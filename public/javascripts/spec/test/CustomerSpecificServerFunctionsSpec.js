@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, config, csUtilities, fs, parseResponse, request;
+  var assert, config, csUtilities, fs, parseResponse, request, _;
 
   assert = require('assert');
 
@@ -324,7 +324,6 @@
       });
     });
     describe("get preferred batchids", function() {
-      global.specRunnerTestmode = true;
       describe("when valid, alias, and invalid batches sent", function() {
         var requestData;
         requestData = {
@@ -365,16 +364,16 @@
         return describe("when 1000 batches sent", function() {
           var i, num, requests;
           requests = (function() {
-            var j, results;
-            results = [];
-            for (i = j = 1; j <= 1000; i = ++j) {
+            var _i, _results;
+            _results = [];
+            for (i = _i = 1; _i <= 1000; i = ++_i) {
               num = "000000000" + i;
               num = num.substr(num.length - 9);
-              results.push({
+              _results.push({
                 requestName: "DNS" + num + "::1"
               });
             }
-            return results;
+            return _results;
           })();
           before(function(done) {
             this.timeout(20000);
@@ -410,7 +409,6 @@
         };
         before(function(done) {
           this.timeout(20000);
-          global.specRunnerTestmode = true;
           return csUtilities.getPreferredParentIds(requestData.requests, (function(_this) {
             return function(response) {
               _this.response = response;

@@ -217,7 +217,7 @@ describe "Base ACAS Customer Specific Function Tests", ->
 
 
 	describe "get preferred batchids", ->
-		global.specRunnerTestmode = true #set to true to excercise stub
+		#global.specRunnerTestmode = true #set to true to excercise stub
 		describe "when valid, alias, and invalid batches sent", ->
 			requestData =
 				requests: [
@@ -265,7 +265,7 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				]
 			before (done) ->
 				@.timeout(20000)
-				global.specRunnerTestmode = true
+				#global.specRunnerTestmode = true
 				csUtilities.getPreferredParentIds requestData.requests, (response) =>
 					@response = response
 					console.log response
