@@ -3,7 +3,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/entitymeta/preferredCodes', exports.preferredCodesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/api/entitymeta/configuredEntityTypes', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
+	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
 	app.post '/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
