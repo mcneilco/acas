@@ -1,4 +1,3 @@
-
 # PrimaryAnalysis.R
 #
 #
@@ -1665,7 +1664,7 @@ autoFlagWells <- function(resultTable, parameters) {
   } else if(parameters$thresholdType == "efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
     thresholdType <- "percent efficacy"
-    
+    resultTable <<- resultTable
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
     resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
@@ -1790,7 +1789,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-  
+  exampleClient <- FALSE
   # TODO: Test structure
   clientName <- "exampleClient"
   # END: Test structure
@@ -1800,7 +1799,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                           clientName)
   compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
   lapply(compoundAssignmentFileList, source)
-  # debug(specificDataPreProcessor)
+  
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
   }
@@ -1821,7 +1820,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   parameters <- getExperimentParameters(inputParameters)
   
   if(parameters$autoHitSelection) {
-    if(parameters$thresholdType != "efficacy" && parameters$thresholdType != "sd") {
+    if(is.null(parameters$thresholdType)) {
+      stopUser("No hit selection parameter was calculated because no threshold was selected.")
+    } else if(parameters$thresholdType != "efficacy" && parameters$thresholdType != "sd") {
       if(length(unique(grepl(parameters$thresholdType, parameters$transformationRuleList))) < 2 && 
          !grepl(parameters$thresholdType, parameters$transformationRuleList)) {
         stopUser(paste0("Hit selection parameter (", parameters$thresholdType, ") not calculated in transformation section."))
@@ -1869,7 +1870,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
     # TODO: add config server.service.genericSpecificPreProcessor
-    if (FALSE) {
+    # exampleClient is set at the head of runMain function
+    if (exampleClient) {
       instrumentData <- specificDataPreProcessor(parameters=parameters, 
                                                  folderToParse=fullPathToParse, 
                                                  errorEnv=errorEnv, 
@@ -1892,9 +1894,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # RED (client-specific)
     # getCompoundAssignments
     
-    
-    
-    if (FALSE) {
+    # TODO: add config server.service.genericSpecificPreProcessor
+    # exampleClient is set at the head of runMain function
+    if (exampleClient) {
       resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, 
                                             testMode, parameters, 
                                             tempFilePath=specDataPrepFileLocation)
@@ -1931,8 +1933,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   
-  
-  if(FALSE){
+  # TODO: add config server.service.genericSpecificPreProcessor
+  # exampleClient is set at the head of runMain function
+  if(exampleClient){
     resultTable <- performCalculations(resultTable, parameters)
   } else {
     resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, instrumentData)
@@ -2203,7 +2206,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       #       source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
       #                        clientName,"createPDF.R"))
       
-      pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+      pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment, dryRun)
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                            racas::applicationSettings$client.port,
@@ -2237,7 +2240,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       }
       activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
       
-      pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+      pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo, 
                                  threshold = hitThreshold, experiment, dryRun, activityName) 
       
       summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
@@ -2272,7 +2275,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       hitThreshold <- ""
     }
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
-    pdfLocation <- createPDF(resultTable, parameters, summaryInfo, 
+    pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo, 
                              threshold = hitThreshold, experiment, dryRun, activityName) 
     summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                          racas::applicationSettings$client.port,
@@ -2324,7 +2327,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       overrideLocation <- paste0("experiments/",experiment$codeName,"/analysis/", experiment$codeName, "_Override.csv")
       write.csv(userOverrideFrame, paste0(racas::getUploadedFilePath(overrideLocation)), na = "", row.names=FALSE)
       
-      pdfLocation <- createPDF(resultTable, analysisGroupData, parameters, summaryInfo, 
+      pdfLocation <- createPDF(resultTable, instrumentData$assayData, analysisGroupData, parameters, summaryInfo, 
                                threshold = efficacyThreshold, experiment)
       if (parameters$aggregateReplicates != "no") {
         source("public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R")

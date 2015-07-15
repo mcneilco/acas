@@ -1,6 +1,6 @@
 specificDataPreProcessorStat1Stat2Seq <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, 
                                                   instrumentClass=instrumentReadParams$dataFormat, testMode, tempFilePath=tempFilePath) {
-
+  folderToParse <<- folderToParse 
   fileNameTable <- validateInputFiles(folderToParse)
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
@@ -8,7 +8,8 @@ specificDataPreProcessorStat1Stat2Seq <- function(parameters=parameters, folderT
   
   resultList <- apply(fileNameTable,1,combineFiles)
   resultTable <- as.data.table(do.call("rbind",resultList))
-  assayData <- data.table(assayFileName=resultTable$fileName, assayBarcode=as.character(resultTable$barcode),
+  assayData <- data.table(assayFileName=unlist(lapply(lapply(lapply(resultTable$fileName, strsplit, split="/"), unlist), tail, n=1)), 
+                          assayBarcode=as.character(resultTable$barcode),
                           plateOrder=as.numeric(as.factor(resultTable$barcode)), 
                           rowName=substring(resultTable$well, 1,1), 
                           colName=substring(resultTable$well, 2,3),

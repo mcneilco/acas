@@ -33,7 +33,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
       "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error),
       "User name" = recordedBy))
   
-  containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode)
+  containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)), testMode=TRUE)
   
   # Throw errors if the Is.New.Plate is not true
   newBarcodeList <- unique(logFile$Destination.Barcode[!(logFile$Destination.Barcode %in% containerTable$BARCODE)])
