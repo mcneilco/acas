@@ -46,6 +46,8 @@ source("public/src/conf/customFunctions.R")
 
 #moved in from seperate file because it was not found by the R code
 adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
+  inputColumnTable <<- inputColumnTable
+  inputDataTable <<- inputDataTable
   # inputColumnTable: 
   #   userReadPosition: null if "match names" = TRUE in GUI
   #   userReadName: character
@@ -75,7 +77,16 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
-      } else if(calculation == "Calc: (R2/R1)*100") {
+      } else if(calculation == "Calc: (maximum-minimum)/minimum"){
+        if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
+          inputDataTable[ , calculatedRead := (as.integer(inputDataTable[, get(inputColumnTable[userReadOrder==1]$newActivityColName)]) -
+                                                 as.integer(inputDataTable[, get(inputColumnTable[userReadOrder==2]$newActivityColName)])) 
+                          / as.integer(inputDataTable[, get(inputColumnTable[userReadOrder==2]$newActivityColName)])]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      }else if(calculation == "Calc: (R2/R1)*100") {
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
                                                  get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
@@ -112,6 +123,13 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
                                                activityColName="HAC: Heavy Atom Count",
                                                newActivityColName=paste0("R",hacReadOrder," {HAC: Heavy Atom Count}"))
           inputColumnTable <- rbind(inputColumnTable, newInputColumnTableRow)
+        } else if(calculation == "Calc: (R1-R2)/R2"){
+          if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
+            inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
+                                                   get(inputColumnTable[userReadOrder==2]$newActivityColName)) 
+                            * get(inputColumnTable[userReadOrder==2]$newActivityColName)]
+            setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+          }
           
           # Call the service to get the heavy atom count
           heavyAtomCount <- data.table(batchCode=unique(inputDataTable$batchCode),
