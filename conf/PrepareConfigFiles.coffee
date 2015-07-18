@@ -220,7 +220,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 		apacheSpecificConfs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
 		apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
 	apacheSpecificConfs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
-
+	apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
 	if Boolean(config.all.client.use.ssl)
 		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 	else
