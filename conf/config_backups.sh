@@ -61,7 +61,7 @@ if [ -d "$BACKUP_DIRECTORY" ]; then
 	echo "	exists $BACKUP_DIRECTORY"
 else
 	echo "	creating $BACKUP_DIRECTORY"
-	mkdir $BACKUP_DIRECTORY/$client_deployMode
+	mkdir "$BACKUP_DIRECTORY/$client_deployMode"
 fi
 
 ###Now setup the base backup location for seurat instance
