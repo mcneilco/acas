@@ -285,7 +285,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   if(nrow(newDdictValues) > 0) {
     userLabels <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$userLabel
     userWarnText <- paste0("<ul><li>",paste0(userLabels, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
-    warnUser(paste0("The following select list items have not been registerd previously and will be created:<br>", userWarnText))
+    warnUser(paste0("The following select list items have not been registered previously and will be created:<br>", userWarnText))
     if(!dryRun) {
       newDdictValuesDF <- newDdictValues[ , c("shortName","labelText","lsKind","lsType"), with = FALSE]
       setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
