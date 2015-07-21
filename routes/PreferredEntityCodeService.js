@@ -1,66 +1,92 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV;
+  var configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV, _;
 
   exports.setupAPIRoutes = function(app) {
-    app.get('/api/entitymeta/configuredEntityTypes', exports.getConfiguredEntityTypes);
-    return app.post('/api/entitymeta/preferredCodes', exports.preferredCodes);
+    app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
+    return app.post('/api/entitymeta/preferredCodes', exports.preferredCodesRoute);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
-    app.get('/api/entitymeta/configuredEntityTypes', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypes);
-    return app.post('/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodes);
+    app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
+    return app.post('/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
 
   _ = require('underscore');
 
-  exports.getConfiguredEntityTypes = function(req, resp) {
+  exports.getConfiguredEntityTypesRoute = function(req, resp) {
+    var asCodes;
+    if (req.params.asCodes != null) {
+      asCodes = true;
+    } else {
+      asCodes = false;
+    }
+    return exports.getConfiguredEntityTypes(asCodes, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.getConfiguredEntityTypes = function(asCodes, callback) {
     var codes, et;
-    if (req.query.asCodes != null) {
+    console.log("asCodes: " + asCodes);
+    if (asCodes) {
       codes = (function() {
-        var i, len, ref, results;
-        ref = configuredEntityTypes.entityTypes;
-        results = [];
-        for (i = 0, len = ref.length; i < len; i++) {
-          et = ref[i];
-          results.push({
+        var _i, _len, _ref, _results;
+        _ref = configuredEntityTypes.entityTypes;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          et = _ref[_i];
+          _results.push({
             code: et.type + " " + et.kind,
             name: et.displayName,
             ignored: false
           });
         }
-        return results;
+        return _results;
       })();
-      return resp.json(codes);
+      return callback(codes);
     } else {
-      return resp.json(configuredEntityTypes.entityTypes);
+      return callback(configuredEntityTypes.entityTypes);
     }
   };
 
-  exports.preferredCodes = function(req, resp) {
+  exports.preferredCodesRoute = function(req, resp) {
+    var requestData;
+    requestData = {
+      type: req.body.type,
+      kind: req.body.kind,
+      entityIdStringLines: req.body.entityIdStringLines
+    };
+    return exports.preferredCodes(requestData, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.preferredCodes = function(requestData, callback) {
     var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
-    if (req.body.type === "compound") {
-      reqHashes = formatCSVRequestAsReqArray(req.body.entityIdStringLines);
-      if (req.body.kind === "batch name") {
+    console.log(global.specRunnerTestmode);
+    if (requestData.type === "compound") {
+      reqHashes = formatCSVRequestAsReqArray(requestData.entityIdStringLines);
+      if (requestData.kind === "batch name") {
         preferredBatchService = require("./PreferredBatchIdService.js");
         preferredBatchService.getPreferredCompoundBatchIDs(reqHashes, function(json) {
           var prefResp;
           prefResp = JSON.parse(json);
-          return resp.json({
-            type: req.body.type,
-            kind: req.body.kind,
+          return callback({
+            type: requestData.type,
+            kind: requestData.kind,
             resultCSV: formatReqArratAsCSV(prefResp.results)
           });
         });
         return;
-      } else if (req.body.kind === "parent name") {
+      } else if (requestData.kind === "parent name") {
         console.log("looking up compound parents");
         csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
         csUtilities.getPreferredParentIds(reqHashes, function(prefResp) {
-          return resp.json({
-            type: req.body.type,
-            kind: req.body.kind,
+          return callback({
+            type: requestData.type,
+            kind: requestData.kind,
             resultCSV: formatReqArratAsCSV(prefResp)
           });
         });
@@ -68,30 +94,30 @@
       }
     } else {
       entityType = _.where(configuredEntityTypes.entityTypes, {
-        type: req.body.type,
-        kind: req.body.kind
+        type: requestData.type,
+        kind: requestData.kind
       });
       if (entityType.length === 1 && entityType[0].codeOrigin === "ACAS LSThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
           thingType: entityType[0].type,
           thingKind: entityType[0].kind,
-          requests: formatCSVRequestAsReqArray(req.body.entityIdStringLines)
+          requests: formatCSVRequestAsReqArray(requestData.entityIdStringLines)
         };
         preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
           var out, outStr, res;
           out = (function() {
-            var i, len, ref, results;
-            ref = codeResponse.results;
-            results = [];
-            for (i = 0, len = ref.length; i < len; i++) {
-              res = ref[i];
-              results.push(res.requestName + "," + res.preferredName);
+            var _i, _len, _ref, _results;
+            _ref = codeResponse.results;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              res = _ref[_i];
+              _results.push(res.requestName + "," + res.preferredName);
             }
-            return results;
+            return _results;
           })();
           outStr = "Requested Name,Preferred Code\n" + out.join('\n');
-          return resp.json({
+          return callback({
             type: codeResponse.thingType,
             kind: codeResponse.thingKind,
             resultCSV: outStr
@@ -105,11 +131,11 @@
   };
 
   formatCSVRequestAsReqArray = function(csvReq) {
-    var i, len, ref, req, requests;
+    var req, requests, _i, _len, _ref;
     requests = [];
-    ref = csvReq.split('\n');
-    for (i = 0, len = ref.length; i < len; i++) {
-      req = ref[i];
+    _ref = csvReq.split('\n');
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      req = _ref[_i];
       if (req !== "") {
         requests.push({
           requestName: req
@@ -120,11 +146,11 @@
   };
 
   formatReqArratAsCSV = function(prefResp) {
-    var i, len, outStr, pref, preferreds;
+    var outStr, pref, preferreds, _i, _len;
     preferreds = prefResp;
     outStr = "Requested Name,Preferred Code\n";
-    for (i = 0, len = preferreds.length; i < len; i++) {
-      pref = preferreds[i];
+    for (_i = 0, _len = preferreds.length; _i < _len; _i++) {
+      pref = preferreds[_i];
       outStr += pref.requestName + ',' + pref.preferredName + '\n';
     }
     return outStr;
