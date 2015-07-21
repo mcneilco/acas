@@ -344,7 +344,7 @@
       toDisplay = {
         experimentName: experimentBestName,
         experimentCode: this.model.get('codeName'),
-        protocolName: this.model.get('protocol').get("codeName"),
+        protocolCode: this.model.get('protocol').get("codeName"),
         scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
@@ -382,12 +382,15 @@
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(exp) {
-            var ersc;
-            ersc = new ExperimentRowSummaryController({
-              model: exp
-            });
-            ersc.on("gotClick", _this.selectedRowChanged);
-            return _this.$("tbody").append(ersc.render().el);
+            var ersc, hideStatusesList;
+            hideStatusesList = window.conf.entity.hideStatuses;
+            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(exp.getStatus().get('codeValue')) > -1 && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
+              ersc = new ExperimentRowSummaryController({
+                model: exp
+              });
+              ersc.on("gotClick", _this.selectedRowChanged);
+              return _this.$("tbody").append(ersc.render().el);
+            }
           };
         })(this));
         this.$("table").dataTable({

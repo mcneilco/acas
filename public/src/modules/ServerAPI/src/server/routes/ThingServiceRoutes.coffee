@@ -239,3 +239,53 @@ exports.getAssemblies = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
+	console.log "got to getThingCodesFormNamesOrCodes"
+	if global.specRunnerTestmode
+		results = []
+		for req in codeRequest.requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("ambiguous") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("name") > -1
+				res.preferredName = "GENE1111"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response =
+			thingType: codeRequest.thingType
+			thingKind: codeRequest.thingKind
+			results: results
+
+		callback response
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/getCodeNameFromNameRequest?"
+		url = baseurl+"thingType=#{codeRequest.thingType}&thingKind=#{codeRequest.thingKind}"
+		postBody = requests: codeRequest.requests
+		console.log postBody
+		console.log url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: postBody
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			console.log json
+			if !error and !json.error
+				callback
+					thingType: codeRequest.thingType
+					thingKind: codeRequest.thingKind
+					results: json.results
+			else
+				console.log 'got ajax error trying to lookup lsThing name'
+				console.log error
+				console.log jsonthing
+				console.log response
+				callback json
+		)
+
+

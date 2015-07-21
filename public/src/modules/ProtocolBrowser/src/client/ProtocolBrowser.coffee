@@ -119,11 +119,14 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				prsc = new ProtocolRowSummaryController
-					model: prot
-				prsc.on "gotClick", @selectedRowChanged
+				hideStatusesList = window.conf.entity.hideStatuses
+				#non-admin users can't see protocols with statuses in hideStatusesList
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+					prsc = new ProtocolRowSummaryController
+						model: prot
+					prsc.on "gotClick", @selectedRowChanged
 
-				@$("tbody").append prsc.render().el
+					@$("tbody").append prsc.render().el
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
 		@

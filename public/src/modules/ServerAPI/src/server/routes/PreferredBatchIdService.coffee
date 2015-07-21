@@ -6,7 +6,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/testRoute', loginRoutes.ensureAuthenticated, exports.testRoute
 
 exports.preferredBatchId = (req, resp) ->
-	#oracle = require "db-oracle"
+	requests = req.body.requests
+	exports.getPreferredCompoundBatchIDs requests, (results) ->
+		resp.end results
+
+exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 	_ = require "underscore"
 	each = require "each"
 	request = require 'request'
@@ -16,16 +20,14 @@ exports.preferredBatchId = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 	possibleServiceTypes = ['NewLineSepBulkPost','SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
 
-	requests = req.body.requests
 	if serviceType not in possibleServiceTypes
 		errorMessage = "client.service.external.preferred.batchid.type '#{serviceType}' is not in possible service types #{possibleServiceTypes}"
 		console.log errorMessage
-		resp.end errorMessage
+		callback errorMessage
 
 	if serviceType == "NewLineSepBulkPost" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
 		csUtilities.getPreferredBatchIds requests, (preferredResp) ->
-			resp.json
+			callback JSON.stringify
 				error: false
 				errorMessages: []
 				results: preferredResp
@@ -36,7 +38,7 @@ exports.preferredBatchId = (req, resp) ->
 			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
 		(rReturn) ->
-			resp.end rReturn
+			callback rReturn
 		)
 	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function
@@ -45,7 +47,7 @@ exports.preferredBatchId = (req, resp) ->
 			"public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R",
 			"acasCmpdRegBatchCheck",
 		(rReturn) ->
-			resp.end rReturn
+			callback rReturn
 		)
 	else if serviceType == "GeneCodeCheckByR" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function
@@ -54,7 +56,7 @@ exports.preferredBatchId = (req, resp) ->
 			"public/src/modules/ServerAPI/src/server/AcasGeneBatchCheck.R",
 			"acasGeneCodeCheck",
 		(rReturn) ->
-			resp.end rReturn
+			callback rReturn
 		)
 	else
 		each(requests
@@ -109,7 +111,7 @@ exports.preferredBatchId = (req, resp) ->
 				errorMessages: []
 				results: requests
 			console.log JSON.stringify(answer)
-			resp.json answer
+			callback JSON.stringify(answer)
 
 
 checkBatch_TestMode = (batchName) ->

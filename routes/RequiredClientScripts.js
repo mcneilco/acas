@@ -108,6 +108,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/PrimaryScreenTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
+	"/javascripts/spec/testFixtures/RunRFunctionServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingInteractionTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingTestJSON.js",

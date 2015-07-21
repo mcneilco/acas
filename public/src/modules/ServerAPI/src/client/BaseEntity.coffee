@@ -120,6 +120,7 @@ class window.BaseEntity extends Backbone.Model
 			when "complete" then return true
 			when "approved" then return false
 			when "rejected" then return false
+			when "deleted" then return false
 		return true
 
 	validate: (attrs) ->
@@ -395,11 +396,14 @@ class window.BaseEntityController extends AbstractFormController
 		@handleValueChanged "Notebook", value
 
 	handleStatusChanged: =>
+		console.log "handle status changed"
 		value = @statusListController.getSelectedCode()
 		if (value is "approved" or value is "rejected") and !@isValid()
 			value = value.charAt(0).toUpperCase() + value.substring(1);
 			alert 'All fields must be valid before changing the status to "'+ value + '"'
 			@statusListController.setSelectedCode @model.getStatus().get('codeValue')
+		else if value is "deleted"
+			@handleDeleteStatusChosen()
 		else
 			@handleValueChanged "Status", value
 			# this is required in addition to model change event watcher only for spec. real app works without it
@@ -426,10 +430,13 @@ class window.BaseEntityController extends AbstractFormController
 			@$('.bv_status').removeAttr('disabled')
 			@$('.bv_lock').show()
 			@$('.bv_newEntity').removeAttr('disabled')
+			if @model.getStatus().get('codeValue') is "deleted"
+				@$('.bv_status').attr 'disabled', 'disabled'
 		if @model.isNew()
 			@$('.bv_status').attr("disabled", "disabled")
 		else
-			@$('.bv_status').removeAttr("disabled")
+			unless @model.getStatus().get('codeValue') is "deleted"
+				@$('.bv_status').removeAttr("disabled")
 		@model.trigger 'statusChanged'
 
 	beginSave: =>
@@ -512,6 +519,10 @@ class window.BaseEntityController extends AbstractFormController
 	checkDisplayMode: =>
 		if @readOnly is true
 			@displayInReadOnlyMode()
+		else if @model.getStatus().get('codeValue') is "deleted"
+			@disableAllInputs()
+			@$('.bv_newEntity').removeAttr('disabled')
+			@$('.bv_newEntity').removeAttr('disabled')
 
 	displayInReadOnlyMode: =>
 		@$(".bv_save").hide()

@@ -180,3 +180,47 @@ describe "Thing Service testing", ->
 			it "should return a thing", ->
 				assert.equal @responseJSON, true
 
+
+
+#	This function is used to lookup or just confirm codes of lsThings
+#	It uses Roo route:
+#	http://host5.labsynch.com:8080/acas/public/docs/#!/api-ls-thing-controller/getCodeNameFromName
+#	Sample result format
+#				thingType: "parent"
+#				thingKind: "gene"
+#TODO return meaningfule error messages associated with a specific request. Roo service does not support this yet
+#				results: [
+#					requestName: "GENE1234"
+#					preferredName: "GENE1234"
+#				,
+#					requestName: "some Gene name"
+#					preferredName: "GENE1111"
+#				,
+#					requestName: "ambiguousName"
+#					preferredName: ""
+#				]
+	describe "Function to lookup codeNames by names or codeNames", ->
+		before (done) ->
+			global.specRunnerTestmode = true
+			preferredThingService = require "../../../../routes/ThingServiceRoutes.js"
+			requestData =
+				thingType: "parent"
+				thingKind: "gene"
+				requests: [
+					{requestName: "GENE1234"} #in stubsMode returns a match
+					{requestName: "some Gene name"} #in stubsMode returns a match
+					{requestName: "ambiguousName"} #in stubsMode returns a match
+				]
+			preferredThingService.getThingCodesFormNamesOrCodes requestData, (codeResponse) =>
+				@codeResponse = codeResponse
+				console.log @codeResponse
+				done()
+		it "should return three responses", ->
+			assert.equal @codeResponse.results.length, 3
+		it "should return the matching result in the first response", ->
+			assert.equal @codeResponse.results[0].preferredName, "GENE1234"
+		it "should return the code matching the name in the second response", ->
+			assert.equal @codeResponse.results[1].preferredName, "GENE1111"
+		it "should return the no result in the third response", ->
+			assert.equal @codeResponse.results[2].preferredName, ""
+

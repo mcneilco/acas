@@ -337,4 +337,73 @@
     return callback(out);
   };
 
+  exports.getPreferredBatchIds = function(requests, callback) {
+    var k, len, req, request, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.preferredName = "DNS000001234::7";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.getPreferredParentIds = function(requests, callback) {
+    var k, len, req, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.preferredName = "DNS000001234";
+        } else if (req.requestName.indexOf("compoundName") > -1) {
+          res.preferredName = "CMPD000001234";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      return console.log("real function not implemented");
+    }
+  };
+
 }).call(this);

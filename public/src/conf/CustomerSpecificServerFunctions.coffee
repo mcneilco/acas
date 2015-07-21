@@ -259,3 +259,57 @@ exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
 		out = out.slice(0,-1) + '\n'
 
 	callback out
+
+
+exports.getPreferredBatchIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234::7"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else #not spec mode
+		request = require 'request'
+		request
+			method: 'POST'
+			url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
+
+exports.getPreferredParentIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234"
+			else if req.requestName.indexOf("compoundName") > -1
+				res.preferredName = "CMPD000001234"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else
+		console.log "real function not implemented"
+
+

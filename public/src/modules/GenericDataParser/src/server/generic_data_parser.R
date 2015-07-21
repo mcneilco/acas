@@ -455,10 +455,17 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   require(data.table)
   
+  entityType <- "compound"
+  entityKind <- "batch name"
+  if (mainCode == "Gene ID") {
+    entityType <- "gene"
+    entityKind <- "entrez gene"
+  }
+  
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId(batchIds, testMode=testMode)
+  newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
   if (is.null(newBatchIds)) {
@@ -466,30 +473,27 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   }
   
   # Give warning and error messages for changed or missing id's
-  for (batchId in newBatchIds) {
-    if (is.null(batchId["preferredName"]) || batchId["preferredName"] == "") {
-      addError(paste0(mainCode, " '", batchId["requestName"], 
+  for (row in 1:nrow(newBatchIds)) {
+    if (is.null(newBatchIds$Preferred.Code[row]) || is.na(newBatchIds$Preferred.Code[row]) || newBatchIds$Preferred.Code[row] == "") {
+      addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row], 
                                         "' has not been registered in the system. Contact your system administrator for help."))
-    } else if (as.character(batchId["requestName"]) != as.character(batchId["preferredName"])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", batchId["requestName"], 
-                     "', was replaced by preferred ", mainCode, " '", batchId["preferredName"], 
+    } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
+      warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
+                     "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
                      "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
     }
   }
 
   # Put the batch id's into a useful format
-  preferredIdFrame <- as.data.frame(do.call("rbind", newBatchIds), stringsAsFactors=FALSE)
-  names(preferredIdFrame) <- names(newBatchIds[[1]])
-  preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+  prefDT <- as.data.table(newBatchIds)
+  setnames(prefDT, c("Requested.Name", "Preferred.Code"), c("requestName", "preferredName"))
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
-  if (!is.null(preferredIdFrame$referenceName)) {
-    prefDT <- as.data.table(preferredIdFrame)
+  if (!is.null(prefDT$referenceName)) {
     prefDT[ referenceName == "", referenceName := preferredName ]
-    preferredIdFrame <- as.data.frame(prefDT)
-    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$referenceName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- prefDT$referenceName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   } else {
-    calculatedResults$batchCode[batchesToCheck] <- preferredIdFrame$preferredName[match(calculatedResults$batchCode[batchesToCheck],preferredIdFrame$requestName)]
+    calculatedResults$batchCode[batchesToCheck] <- prefDT$preferredName[match(calculatedResults$batchCode[batchesToCheck],prefDT$requestName)]
   }
   
   #### ================= Check the value kinds =======================================================
@@ -1530,9 +1534,10 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
       if (duplicateNamesAllowed) {
         experiment <- NA
       } else {
-        addError(paste0("Experiment '",experimentName,
-                                         "' does not exist in the protocol that you entered, but it does exist in '", getPreferredProtocolName(protocolOfExperiment), 
-                                         "'. Either change the experiment name or use the protocol in which this experiment currently exists."))
+        warnUser(paste0("Experiment '",experimentName,
+                        "' does not exist in the protocol that you entered, but it does exist in '", 
+                        getPreferredProtocolName(protocolOfExperiment), 
+                        "'. Reloading the file will update the data and change the protocol."))
         experiment <- experimentList[[1]]
       }
     } else {
@@ -1859,8 +1864,20 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   }
   if(hideAllData) subjectData$publicData <- FALSE
   
+  # Assigning analysisGroupIDs based on batchCode
+  analysisGroupIndices <- which(vapply(stateGroups, function(x) {x$entityKind}, "")=="analysis group")
+  if (length(analysisGroupIndices > 0)) {
+    subjectData$analysisGroupID <- plyr::id(subjectData[, "batchCode", drop=F])
+  } else {
+    subjectData$analysisGroupID <- 1
+  }
   
   # code names
+  analysisGroupCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="document_analysis group", 
+                                                     labelTypeAndKind="id_codeName",
+                                                     numberOfLabels=max(subjectData$analysisGroupID)),
+                                       use.names=FALSE)
+  
   subjectCodeNameList <- unlist(getAutoLabels(thingTypeAndKind="document_subject", 
                                               labelTypeAndKind="id_codeName", 
                                               numberOfLabels=max(subjectData$subjectID)),
@@ -1884,21 +1901,38 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     }
   }
   
-  # Analysis group
-  analysisGroup <- createAnalysisGroup(experiment=experiment,lsTransaction=lsTransaction,recordedBy=recordedBy)
+  # Analysis groups
+  analysisGroups <- lapply(FUN= createAnalysisGroup, X= analysisGroupCodeNameList, lsType="default", lsKind="default",
+                            recordedBy=recordedBy, lsTransaction=lsTransaction, experiment=experiment, 
+                           treatmentGroups=NULL, analysisGroupStates=NULL)
   
-  savedAnalysisGroup <- saveAnalysisGroup(analysisGroup)
+  # This is a workaround for the jsonArray analysisGroup save not returning id's
+  savedAnalysisGroups <- lapply(analysisGroups, saveAnalysisGroup)
+  
+  analysisGroupIds <- vapply(savedAnalysisGroups, getElement, c(1), "id")
+  
+  subjectData$analysisGroupID <- analysisGroupIds[match(subjectData$analysisGroupID,1:length(analysisGroupIds))]
   
   # Treatment Groups
-  treatmentGroups <- lapply(FUN= createTreatmentGroup, X= treatmentGroupCodeNameList, lsType="default", lsKind="default",
-                            recordedBy=recordedBy, lsTransaction=lsTransaction, analysisGroup=savedAnalysisGroup, 
-                            subjects=NULL,treatmentGroupStates=NULL)
+  subjectData$treatmentGroupCodeName <- treatmentGroupCodeNameList[subjectData$treatmentGroupID]
+  
+  createRawOnlyTreatmentGroup <- function(subjectData) {
+    return(createTreatmentGroup(
+      analysisGroup=list(id=subjectData$analysisGroupID[1],version=0),
+      codeName=subjectData$treatmentGroupCodeName[1],
+      recordedBy=recordedBy,
+      lsTransaction=lsTransaction))
+  }
+  
+  treatmentGroups <- dlply(.data= subjectData, .variables= .(treatmentGroupID), .fun= createRawOnlyTreatmentGroup)
+  names(treatmentGroups) <- NULL
   
   savedTreatmentGroups <- saveAcasEntities(treatmentGroups, "treatmentgroups")
   
-  treatmentGroupIds <- sapply(savedTreatmentGroups, function(x) x$id)
+  treatmentGroupIds <- vapply(savedTreatmentGroups, function(x) x$id, FUN.VALUE = c(1))
   
-  subjectData$treatmentGroupID <- treatmentGroupIds[match(subjectData$treatmentGroupID,1:length(treatmentGroupIds))]
+  subjectData$treatmentGroupID <- treatmentGroupIds[subjectData$treatmentGroupID]
+  
   
   # Reorganization to match formats
   nameChange <- c(mainCode='batchCode', 'originalMainID'='originalBatchCode')
@@ -2034,7 +2068,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
       analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
       if (length(analysisGroupIndices > 0)) {
         analysisGroupData <- treatmentGroupData
-        analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = "analysisGroupID"))
+        analysisGroupData <- rbind.fill(
+          analysisGroupData, 
+          meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = c("analysisGroupID", "treatmentGroupID"))
+        )
         if (!is.null(curveNames)) {
           curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                   valueKind = curveNames, 
@@ -2050,8 +2087,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                          stringsAsFactors=FALSE)
           analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
         }
-        analysisGroupData$analysisGroupID <- savedAnalysisGroup$id
-        analysisGroupData$stateID <- paste0(analysisGroupData$analysisGroupID, "-", analysisGroupData$stateGroupIndex)
+        analysisGroupData$stateID <- plyr::id(analysisGroupData[,c("analysisGroupID", "stateGroupIndex", "treatmentGroupID")])
         stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData, 
                                                     entityKind = "analysisgroup", 
                                                     stateGroups = stateGroups,
@@ -2063,6 +2099,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
         analysisGroupData$stateID <- stateAndVersion$entityStateId
         analysisGroupData$stateVersion <- stateAndVersion$entityStateVersion
         
+        analysisGroupData <- combineDose(analysisGroupData)
         analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
         #### Analysis Group Values =====================================================================
         savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
@@ -2422,7 +2459,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   validateSubjectData(subjectData, dryRun)
   
   # If there are errors, do not allow an upload
-  errorFree <- length(c(errorList, messenger()$errors))==0
+  errorFree <- length(messenger()$errors)==0
   
   # When not on a dry run, creates a transaction for all of these
   lsTransaction <- NULL
@@ -2469,7 +2506,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   newExperiment <- class(experiment[[1]])!="list" && is.na(experiment[[1]])
   
   # If there are errors, do not allow an upload (yes, this is needed a second time)
-  errorFree <- length(c(errorList, messenger()$errors))==0
+  errorFree <- length(messenger()$errors)==0
   
   # Delete any old data under the same experiment name (delete and reload)
   deletedExperimentCodes <- NULL
@@ -2655,8 +2692,8 @@ combineDose <- function(entityData, replacedFakeBatchCode = NULL, optionalColumn
   
   internalCombine <- function(x) {
     if ("Dose" %in% x$valueKind && "batch code" %in% x$valueKind) {
-      x[x$valueKind == "batch code", "concentration"] <- x[x$valueKind == "Dose", "numericValue"]
-      x[x$valueKind == "batch code", "concUnit"] <- x[x$valueKind == "Dose", "valueUnit"]
+      x[x$valueKind == "batch code", "concentration"] <- unique(x[x$valueKind == "Dose", "numericValue"])
+      x[x$valueKind == "batch code", "concUnit"] <- unique(x[x$valueKind == "Dose", "valueUnit"])
       return(x[x$valueKind != "Dose", ])
     } else {
       return(x)
@@ -2675,6 +2712,11 @@ parseGenericData <- function(request) {
   #   hasError (boolean)
   #   hasWarning (boolean)
   #   errorMessages (list)
+  
+  # Remove these 3 lines in 1.7
+  racasMessenger <- messenger()
+  racasMessenger$reset()
+  racasMessenger$logger <- logger(logName = "com.mcneilco.acas.genericDataParser", reset=TRUE)
   
   options("scipen"=15)
   # This is used for development: outputs the JSON rather than sending it to the
@@ -2701,9 +2743,6 @@ parseGenericData <- function(request) {
   configList <- racas::applicationSettings
   
   experiment <- NULL
-  
-  # If there is a global defined by another R code, this will overwrite it
-  errorList <<- list()
   
   # Make this local once all are fixed
   errorEnv <- globalenv()
@@ -2737,7 +2776,6 @@ parseGenericData <- function(request) {
   warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  allTextErrors <- c(allTextErrors, errorList)
   hasError <- length(allTextErrors) > 0
   hasWarning <- length(warningList) > 0
   

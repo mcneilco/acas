@@ -1,6 +1,6 @@
 library(racas)
 
-pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_group_results", "api_curve_params", "api_dose_response"), tableSpace = NA, intermediateTableSpaceOptions = c(), indexOptions = c()) {
+pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_group_results", "api_curve_params", "api_dose_response"), tableSpace = NA, intermediateTableSpaceOptions = c(), indexOptions = c(), schema = "acas", intermediateSchema = racas::applicationSettings$server.database.username) {
   args <- match.arg(tables, several.ok = TRUE)
   formal.args <- formals(sys.function(sys.parent()))
   choices <- eval(formal.args$tables)
@@ -15,9 +15,9 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_protocol) {
     #PINGPONG api_protocol to pp_api_protocol
     apiProtocolSuccess <- tryCatch({
-      apiProtocolUpdated <- racas::pingPong(originView = list(schema = "acas", name = "api_protocol"),
-                                     destinationViewName = list(schema = "acas", name = "pp_api_protocol"),
-                                     intermediateTablePrefix = list(schema = racas::applicationSettings$server.database.username, 
+      apiProtocolUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_protocol"),
+                                     destinationViewName = list(schema = schema, name = "pp_api_protocol"),
+                                     intermediateTablePrefix = list(schema = intermediateSchema,
                                                                     name = "api_protocol",
                                                                     tableSpace = tableSpace, options = intermediateTableSpaceOptions),
                                      primaryKey = "protocol_id")
@@ -34,9 +34,9 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_experiment) {
     #PINGPONG api_experiment to pp_api_experiment
     apiExperimentSuccess <- tryCatch({
-      apiExperimentUpdated <- racas::pingPong(originView = list(schema = "acas", name = "api_experiment"), 
-                                       destinationViewName = list(schema = "acas", name = "pp_api_experiment"),
-                                       intermediateTablePrefix = list(schema = racas::applicationSettings$server.database.username, 
+      apiExperimentUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_experiment"),
+                                       destinationViewName = list(schema = schema, name = "pp_api_experiment"),
+                                       intermediateTablePrefix = list(schema = intermediateSchema,
                                                                       name = "api_experiment",
                                                                       tableSpace = tableSpace, options = intermediateTableSpaceOptions),
                                        primaryKey = "id",
@@ -54,9 +54,9 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_analysis_group_results) {
     #PINGPONG api_analysis_group_results to pp_api_analysis_group_results
     apiAnalysisResultsSuccess <- tryCatch({
-      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = "acas", name = "api_analysis_group_results"), 
-                                            destinationViewName = list(schema = "acas", name = "pp_api_analysis_group_results"),
-                                            intermediateTablePrefix = list(schema = racas::applicationSettings$server.database.username, 
+      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_analysis_group_results"),
+                                            destinationViewName = list(schema = schema, name = "pp_api_analysis_group_results"),
+                                            intermediateTablePrefix = list(schema = intermediateSchema,
                                                                            name = "api_analysis_group_results",
                                                                            tableSpace = tableSpace, options = intermediateTableSpaceOptions),
                                             primaryKey = "agv_id",
@@ -74,9 +74,9 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_curve_params) {
     #PINGPONG api_curve_params to pp_api_curve_params
     apiAnalysisResultsSuccess <- tryCatch({
-      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = "acas", name = "api_curve_params"),
-                                            destinationViewName = list(schema = "acas", name = "pp_api_curve_params"),
-                                            intermediateTablePrefix = list(schema = racas::applicationSettings$server.database.username, 
+      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_curve_params"),
+                                            destinationViewName = list(schema = schema, name = "pp_api_curve_params"),
+                                            intermediateTablePrefix = list(schema = intermediateSchema,
                                                                            name = "api_curve_params",
                                                                            tableSpace = tableSpace, options = intermediateTableSpaceOptions),
                                             primaryKey = "valueId",
@@ -94,9 +94,9 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_dose_response) {
     #PINGPONG api_dose_response to pp_api_dose_response
     apiAnalysisResultsSuccess <- tryCatch({
-      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = "acas", name = "api_dose_response"),
-                                            destinationViewName = list(schema = "acas", name = "pp_api_dose_response"),
-                                            intermediateTablePrefix = list(schema = racas::applicationSettings$server.database.username, 
+      apiAnalysisResultsUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_dose_response"),
+                                            destinationViewName = list(schema = schema, name = "pp_api_dose_response"),
+                                            intermediateTablePrefix = list(schema = intermediateSchema,
                                                                            name = "api_dose_response",
                                                                            tableSpace = tableSpace, options = intermediateTableSpaceOptions),
                                             primaryKey = "responseSubjectValueId",
