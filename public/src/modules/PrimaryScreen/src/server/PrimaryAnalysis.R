@@ -46,8 +46,6 @@ source("public/src/conf/customFunctions.R")
 
 #moved in from seperate file because it was not found by the R code
 adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
-  inputColumnTable <<- inputColumnTable
-  inputDataTable <<- inputDataTable
   # inputColumnTable: 
   #   userReadPosition: null if "match names" = TRUE in GUI
   #   userReadName: character

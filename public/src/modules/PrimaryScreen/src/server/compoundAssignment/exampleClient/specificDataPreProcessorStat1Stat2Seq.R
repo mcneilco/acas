@@ -1,6 +1,5 @@
 specificDataPreProcessorStat1Stat2Seq <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, 
                                                   instrumentClass=instrumentReadParams$dataFormat, testMode, tempFilePath=tempFilePath) {
-  folderToParse <<- folderToParse 
   fileNameTable <- validateInputFiles(folderToParse)
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371

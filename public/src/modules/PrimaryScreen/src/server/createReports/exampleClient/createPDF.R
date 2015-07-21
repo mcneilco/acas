@@ -102,7 +102,7 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   allResultTable[, fluorescent := as.character(assayData$fluorescent)]
   allResultTable[, timePoints := as.character(assayData$timePoints)]
   allResultTable[, sequence := as.character(assayData$sequence)]
-  allResultTableCreatePDF <<- allResultTable
+
   setkeyv(allResultTable, c("assayBarcode", "batchCode"))
     
   plotFigure <- function(xData,yData, barcode, well, batchCode, title) {
