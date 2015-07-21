@@ -84,6 +84,12 @@
     margin-left: 1017px;
 }
 
+.GeneIDQueryAppController .bv_addDataRequest{
+    margin-bottom: 10px;
+    margin-left: 1017px;
+}
+
+
 .GeneIDQueryAppController .bv_downloadCSV {
     margin-left: 5px;
 }
@@ -310,5 +316,10 @@
 .GeneIDQueryAppController .bv_headerCell{
     border-left: 1px solid black;
     border-right: 1px solid black;
+}
 
+body .GeneIDQueryAppController .bv_addDataModal{
+		width: 60% !important;
+    margin-left: -30% !important;
+		max-height: 80% !important;
 }
