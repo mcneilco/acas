@@ -189,6 +189,8 @@ searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
 
+expt = searchParams$experimentCodeList
+
 # Whether or not to aggregate on protocol
 aggregate <- as.logical(postData.list$queryParams$aggregate)
 
@@ -279,7 +281,6 @@ geomMean <- function(data){
 
 # This is bound to the global environment because pivotResults can't seem to find it otherwise.
 # pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
-# Since it's global the variable names are verbose to minimize accidental modification of important things
 aggregateData <<- function(dataVector,type){
   if (length(dataVector)==1){
     return (dataVector)
@@ -302,14 +303,14 @@ aggregateData <<- function(dataVector,type){
 }
 
 pivotResults <- function(geneId, lsKind, result, aggType="other"){
-  #hack to make aggType a global variable b/c dcast is not finding it >:(
-  aggType <<- aggType
+  #hack to push aggType up an environment since dcast.data.table isn't finding it >:(
+  pivotResults.aggType <<- aggType
 
   exptSubset <- data.table(geneId, lsKind, result)
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = aggType, fill=list(NA))
+  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = pivotResults.aggType, fill=list(NA))
 }
 
 # wrapper function so that reduce can be called on data.table.merge with non-default arguments
@@ -337,20 +338,22 @@ aggAndPivot <- function(dataDT, expt){
     outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
 
     # Add a column with the compound structure
+    isGene <- substr(outputDT[["geneId"]],1,4) == "GENE"
     if (!exportCSV){  # For csv just give the url
-      outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
+      outputDT[, StructureImage := ifelse(isGene,"",paste0('<img src="',configList$client.service.external.structure.url,geneId,'">'))]
     }else{   # For HTML display include <tags>.
-      outputDT[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
+      outputDT[, StructureImage := ifelse(isGene,"",paste0(configList$client.service.external.structure.url,geneId))]
     }
 
   }else{ # Aggregate is false
     outputDT <- dataDT[experimentId == expt , pivotResults(testedLot, lsKind, result)]
 
     # Add a column with the compound structure
+    isGene <- substr(outputDT[["geneId"]],1,4) == "GENE"
     if (!exportCSV){  # For csv just give the url
-      outputDT[, StructureImage := paste0('<img src="',configList$client.service.external.structure.url,geneId,'">')]
+      outputDT[, StructureImage := ifelse(isGene,"",paste0('<img src="',configList$client.service.external.structure.url,geneId,'">'))]
     }else{   # For HTML display include <tags>.
-      outputDT[, StructureImage := paste0(configList$client.service.external.structure.url,geneId)]
+      outputDT[, StructureImage := ifelse(isGene,"",paste0(configList$client.service.external.structure.url,geneId))]
     }
 
   }
@@ -358,7 +361,7 @@ aggAndPivot <- function(dataDT, expt){
 
 
 # A function that calls getExperimentColNames to get all column names for current
-#   experiment/protocol
+#   experiment/protocol in the order from the original SEL file.
 # exptCodes is data.table that has a column experimentCodeName and contains all the experiments in
 #   current experiment/protocol. (yes, there is only one experiment in list is aggregate = false)
 getColOrder <- function(experimentList, outputDT){
@@ -443,6 +446,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       dataDT[resultUnit != "", lsKind := paste(lsKind," (",resultUnit,")",sep="")]
       dataDT[testedConcentration != "", lsKind := paste(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
       dataDT[testedTime != "", lsKind := paste(lsKind, " for ", roundString(testedTime), " time units", sep="")]
+      #TODO change "time units" to be the actual units...
 
       # Keep only 4 sig-figs if displying in browser
       if (!exportCSV){
@@ -464,10 +468,12 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       if (aggregate){
         experimentList <- unique(dataDT[protocolId == expt,experimentCodeName, by = c("experimentCodeName","experimentId")])  # list of experiments in this protocol
         protocolName <- protocolIdDT[protocolId==expt][["protocolName"]]
+        currentPassName <- protocolName
       }else{
         experimentList <- unique(dataDT[experimentId == expt,experimentCodeName, by = c("experimentCodeName","experimentId")])  # only has one element, but it allows use of same code for aggregate/not
-        experimentName <- experimentList$experimentCodeName
+        experimentName <- experimentIdDT[experimentId==expt][["experimentName"]]
         codeName <- experimentIdDT[experimentId==expt][["experimentCodeName"]]
+        currentPassName <- experimentName
       }
 
       # get the columns in outputDT in the same order as in the SEL file(s)
@@ -494,7 +500,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
    		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))
 
   		for (colName in exptDataColumns){
-  			setnames(outputDT, colName, paste0(expt, "::", colName))
+  			setnames(outputDT, colName, paste0(currentPassName, "::", colName))
   		}
 
   		firstPass <- FALSE
@@ -524,10 +530,12 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       if (aggregate){
         experimentList <- unique(dataDT[protocolId == expt,experimentCodeName, by = c("experimentCodeName","experimentId")])  # list of experiments in this protocol
         protocolName <- protocolIdDT[protocolId==expt][["protocolName"]]
+        currentPassName <- protocolName
       }else{
         experimentList <- unique(dataDT[experimentId == expt,experimentCodeName, by = c("experimentCodeName","experimentId")])  # only has one element, but it allows use of same code for aggregate/not
-        experimentName <- experimentList$experimentCodeName
+        experimentName <- experimentIdDT[experimentId==expt][["experimentName"]]
         codeName <- experimentIdDT[experimentId==expt][["experimentCodeName"]]
+        currentPassName <- experimentName
       }
 
       # get the columns in outputDT in the same order as in the SEL file(s)
@@ -553,7 +561,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       }
 
       for (colName in exptDataColumns){
-  			setnames(outputDT2, colName, paste0(expt, "::", colName))
+  			setnames(outputDT2, colName, paste0(currentPassName, "::", colName))
   		}
 
   		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
@@ -627,7 +635,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   allColNamesDT[,mData := columns[3:length(columns)]]
 
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass, mData)))
-  aoColumnsDF <- rbind(data.frame(sTitle="Batch Image", sClass="StructureImage", mData="StructureImage"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle="Batch Information", sClass="StructureImage", mData="StructureImage"), aoColumnsDF)
   aoColumnsDF <- rbind(data.frame(sTitle="Batch Code", sClass="center", mData="geneId"), aoColumnsDF)
 
 
@@ -647,7 +655,12 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   responseJson$results$data$aoColumns <- aoColumnsDF.list
   responseJson$results$data$groupHeaders <- groupHeadersDF.list
   responseJson$results$ids <- ids
+  responseJson$results$aggregate <- aggregate
+  responseJson$results$batchCodes <- batchCodeList
+  responseJson$results$experimentCodeList <- searchParams$experimentCodeList
+  responseJson$results$searchFilters <- postData.list$queryParams$searchFilters
   responseJson$results$htmlSummary <- "OK"
+  responseJson$
   responseJson$hasError <- FALSE
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
@@ -670,6 +683,10 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
 }
 
 if (exportCSV){
+  names = names(outputDT)[c(-1,-2)] # names of all the data columns
+  outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
+  setnames(outputDT, "geneId", "Batch Code"); setnames(outputDT, "StructureImage", "Batch Information")
+  
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/text")
   write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)

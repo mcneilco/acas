@@ -71,6 +71,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 			@$('.bv_resultTable').hide()
 			@$('.bv_noResultsFound').show()
 			@$('.bv_gidDownloadCSV').hide()
+			@$('.bv_addData').hide()
 
 		@
 
@@ -187,6 +188,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		$('.bv_searchForm')
 			.appendTo('.bv_searchNavbar')
+		@$('.bv_addData').hide()
 		@$('.bv_gidSearchStart').hide()
 		@$('.bv_gidACASBadge').hide()
 		@$('.bv_gidACASBadgeTop').show()
@@ -205,10 +207,10 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	handleDownLoadCSVRequested: =>
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQuery?format=csv"
+			url: "api/geneDataQueryAdvanced?format=csv"
 			dataType: 'json'
 			data:
-				geneIDs: @lastSearch
+				queryParams: @getQueryParams()
 				maxRowsToReturn: 10000
 				user: window.AppLaunchParams.loginUserName
 			success: @resultController.showCSVFileLink
@@ -488,16 +490,6 @@ class window.ExperimentResultFilterController extends Backbone.View
 			@$('.bv_advancedBoolContainer').hide()
 
 
-
-
-
-
-
-
-
-
-
-
 class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	template: _.template($("#AdvancedExperimentResultsQueryView").html())
 
@@ -623,6 +615,8 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 			@resultController.on 'addDataRequested', @handleAddDataRequested
 		else
+			@searchCodes = json.results.batchCodes.join() # update search parameters so csv gets correct data
+			@experimentList = json.results.experimentCodeList
 			@resultController.model.clear().set(json.results)
 		@resultController.render()
 		@$('.bv_getFiltersView').hide()
@@ -653,24 +647,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		else
 			@addData.model.clear().set(@resultsJson)
 			@addData.render()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 class window.AddDataToReport extends Backbone.View
@@ -793,14 +769,6 @@ class window.AddDataToReport extends Backbone.View
 
 	handleAddDataReturn: (json) =>
 		@trigger 'requestResults', json
-
-
-
-
-
-
-
-
 
 
 class window.GeneIDQueryAppController extends Backbone.View
