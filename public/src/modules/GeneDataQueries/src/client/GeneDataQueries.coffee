@@ -48,7 +48,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		console.log("model data is " + @model.get('data'))
 		if @model.get('data').iTotalRecords > 0
 			@$('.bv_noResultsFound').hide()
 			@setupHeaders()
@@ -94,7 +93,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 			show: true
 
 	handleAddDataClicked: =>
-		console.log("triggering add Data")
 		@trigger 'addDataRequested'
 
 
@@ -619,14 +617,12 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultsJson = json.results
 		if !@dataAdded
-			console.log("made one resultController")
 			@resultController = new GeneIDQueryResultController
 				model: new Backbone.Model json.results
 				el: $('.bv_advResultsView')
 			@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 			@resultController.on 'addDataRequested', @handleAddDataRequested
 		else
-			console.log("in the else case")
 			@resultController.model.clear().set(json.results)
 		@resultController.render()
 		@$('.bv_getFiltersView').hide()
@@ -650,15 +646,11 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	handleAddDataRequested: =>
 		if !@dataAdded
 			@dataAdded = true
-			console.log("No data added yet")
-			console.log("resultsJson is " + @resultsJson)
 			@addData = new AddDataToReport
 				model: new Backbone.Model @resultsJson
 				el: @$('.bv_advResultsView')
 			@addData.on 'requestResults', @handleSearchReturn
 		else
-			console.log("data added before")
-			console.log("resultsJson is " + @resultsJson)
 			@addData.model.clear().set(@resultsJson)
 			@addData.render()
 
@@ -718,7 +710,6 @@ class window.AddDataToReport extends Backbone.View
 				@serviceReturn = null
 
 	handleGetAddDataTreeReturn: (json) =>
-		console.log("in return tree data")
 		@$('.bv_searchStatusDropDown').modal "hide"
 		if !@$('.bv_addDataModal').length #if the template hasn't been added
 			$(@el).append @template()
@@ -726,7 +717,7 @@ class window.AddDataToReport extends Backbone.View
 			backdrop: "static"
 		@$('.bv_addDataModal').modal "show"
 		if json.results.experimentData.length > 0
-			results = json.results.experimentData 
+			results = json.results.experimentData
 			@setupTree(results)
 
 	setupTree: (results) ->
@@ -755,7 +746,6 @@ class window.AddDataToReport extends Backbone.View
 			$(".bv_aggregation_true").prop("checked",true)
 
 		expts = @model.get("experimentCodeList")
-		console.log("experiment list is " + expts)
 		@exptLength = expts.length
 		@$(".bv_addDataTree").jstree('open_node',expts)
 		@$(".bv_addDataTree").jstree('select_node',expts)
@@ -763,7 +753,6 @@ class window.AddDataToReport extends Backbone.View
 		parents =[]
 		parents.push(@$(".bv_addDataTree").jstree('get_parent',i)) for i in expts when @$(".bv_addDataTree").jstree('is_leaf',i)
 		@$(".bv_addDataTree").jstree('disable_node',parents)
-		console.log("parents list is " + parents)
 
 	handleSearchClear: =>
 		@$('.bv_searchVal').val("")
@@ -803,7 +792,6 @@ class window.AddDataToReport extends Backbone.View
 				@serviceReturn = null
 
 	handleAddDataReturn: (json) =>
-		console.log("got data back")
 		@trigger 'requestResults', json
 
 
