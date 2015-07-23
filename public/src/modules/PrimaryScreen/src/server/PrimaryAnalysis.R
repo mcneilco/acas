@@ -1498,7 +1498,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   addList <- list()
   for(column in requiredColNames) {
     if(!grepl("^R[0-9]+ \\{Calc: *", column) && !grepl("^Activity*", column)) { # check to see if the column name is not a calculated read
-      if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
+      if(!any(column == colnames(inputDataTable))) {
         inputDataTable[[column]] <- as.numeric(NA)
         addList[[length(addList) + 1]] <- column
       }
@@ -1779,6 +1779,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
+  
+  # knock out the controls with NA values
+  # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
+  # but those aren't created until later in the code
+  resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
+              c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
   
   resultTable <- performCalculations(resultTable, parameters)
   

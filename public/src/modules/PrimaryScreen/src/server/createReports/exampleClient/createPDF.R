@@ -27,6 +27,7 @@ createPDF <- function(resultTable, parameters, summaryInfo, threshold, experimen
   
   if(nrow(resultTable[wellType == "NC", ]) != 1 & nrow(resultTable[wellType == "PC", ]) != 1) {
     # density plot needs at least 2 points to select a bandwidth automatically
+    # this function already handles 0 points but does not handle 1 point. This is a workaround.
     createDensityPlot(resultTable$normalizedActivity, resultTable$wellType, threshold = threshold, margins = c(25,4,4,8), activityName)
   }
   
