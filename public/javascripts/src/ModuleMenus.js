@@ -23,6 +23,7 @@
     };
 
     ModuleMenusController.prototype.initialize = function() {
+      var i, len, modLink, module, ref, ref1, results;
       $(this.el).html(this.template());
       this.moduleLauncherList = new ModuleLauncherList(this.options.menuListJSON);
       this.moduleLauncherMenuListController = new ModuleLauncherMenuListController({
@@ -61,7 +62,17 @@
         this.$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage);
       }
       if (window.conf.moduleMenus.copyrightMessage != null) {
-        return this.$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage);
+        this.$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage);
+      }
+      if (((ref = window.conf.moduleMenus.modules) != null ? ref.external : void 0) != null) {
+        ref1 = $.parseJSON(window.conf.moduleMenus.modules.external);
+        results = [];
+        for (i = 0, len = ref1.length; i < len; i++) {
+          module = ref1[i];
+          modLink = '<li><a href="' + module.href + '"target="_blank">' + module.displayName + '</a></li>';
+          results.push(this.$('.bv_externalACASModules').append(modLink));
+        }
+        return results;
       }
     };
 
@@ -74,8 +85,10 @@
       return this;
     };
 
-    ModuleMenusController.prototype.events = {
-      'click .bv_headerName': "handleHome"
+    ModuleMenusController.prototype.events = function() {
+      return {
+        'click .bv_headerName': "handleHome"
+      };
     };
 
     ModuleMenusController.prototype.handleHome = function() {
