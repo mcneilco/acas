@@ -1,5 +1,5 @@
 (function() {
-  var assert, config, csUtilities, fs, parseResponse, request, _;
+  var _, assert, config, csUtilities, fs, parseResponse, request;
 
   assert = require('assert');
 
@@ -364,16 +364,16 @@
         return describe("when 1000 batches sent", function() {
           var i, num, requests;
           requests = (function() {
-            var _i, _results;
-            _results = [];
-            for (i = _i = 1; _i <= 1000; i = ++_i) {
+            var j, results;
+            results = [];
+            for (i = j = 1; j <= 1000; i = ++j) {
               num = "000000000" + i;
               num = num.substr(num.length - 9);
-              _results.push({
+              results.push({
                 requestName: "DNS" + num + "::1"
               });
             }
-            return _results;
+            return results;
           })();
           before(function(done) {
             this.timeout(20000);
