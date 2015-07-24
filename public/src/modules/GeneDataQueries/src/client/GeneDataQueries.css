@@ -84,14 +84,23 @@
     margin-left: 1017px;
 }
 
+.GeneIDQueryAppController .bv_downloadCSV {
+    margin-left: 5px;
+}
+
 .GeneIDQueryAppController .bv_addDataRequest{
     margin-bottom: 10px;
     margin-left: 1017px;
 }
 
+.GeneIDQueryAppController .bv_gidDownloadCSVSimple {
+    margin-bottom: 10px;
+    margin-left: 987px;
+}
 
-.GeneIDQueryAppController .bv_downloadCSV {
-    margin-left: 5px;
+.GeneIDQueryAppController .bv_addDataRequestSimple{
+    margin-bottom: 10px;
+    margin-left: 1007px;
 }
 
 .GeneIDQueryAppController .gidNamesHeader {
@@ -311,7 +320,6 @@
 .GeneIDQueryAppController .center{
     min-width: 50px;
 }
-
 
 .GeneIDQueryAppController .bv_headerCell{
     border-left: 1px solid black;

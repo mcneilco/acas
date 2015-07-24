@@ -196,6 +196,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		$('.bv_searchForm')
 			.appendTo('.bv_searchNavbar')
 		@$('.bv_addData').html "Show/Hide Data"
+		@$('.bv_gidDownloadCSV').addClass('bv_gidDownloadCSVSimple')
+		@$('.bv_addDataRequest').addClass('bv_addDataRequestSimple')
 		@$('.bv_gidSearchStart').hide()
 		@$('.bv_gidACASBadge').hide()
 		@$('.bv_gidACASBadgeTop').show()
