@@ -111,7 +111,14 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			@trigger 'requestAdvancedMode'
 		@queryInputController.render()
 		@setQueryOnlyMode()
+		@dataAdded = false
 
+	handleSearchRequested: (searchStr) =>
+		@lastSearch = searchStr
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
+		@getAllExperimentNames()
 
 	getAllExperimentNames: ->
 		$.ajax
@@ -155,13 +162,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 				@serviceReturn = null
 
 
-	handleSearchRequested: (searchStr) =>
-		@lastSearch = searchStr
-		@$('.bv_searchStatusDropDown').modal
-			backdrop: "static"
-		@$('.bv_searchStatusDropDown').modal "show"
-		@getAllExperimentNames()
-
 	# handleSearchRequested: (searchStr) =>
 	# 	@lastSearch = searchStr
 	# 	@$('.bv_searchStatusDropDown').modal
@@ -181,14 +181,21 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 	handleSearchReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
-		@resultController = new GeneIDQueryResultController
-			model: new Backbone.Model json.results
-			el: $('.bv_resultsView')
+		@resultsJson = json.results
+		if !@dataAdded
+			@resultController = new GeneIDQueryResultController
+				model: new Backbone.Model json.results
+				el: $('.bv_resultsView')
+			@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
+			@resultController.on 'addDataRequested', @handleShowHideExperiments
+		else
+			@searchCodes = json.results.batchCodes.join() # update search parameters so csv gets correct data
+			@experimentList = json.results.experimentCodeList
+			@resultController.model.clear().set(json.results)
 		@resultController.render()
-		@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
 		$('.bv_searchForm')
 			.appendTo('.bv_searchNavbar')
-		@$('.bv_addData').hide()
+		@$('.bv_addData').html "Show/Hide Data"
 		@$('.bv_gidSearchStart').hide()
 		@$('.bv_gidACASBadge').hide()
 		@$('.bv_gidACASBadgeTop').show()
@@ -216,6 +223,141 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			success: @resultController.showCSVFileLink
 			error: (err) =>
 				@serviceReturn = null
+
+
+	handleShowHideExperiments: =>
+		if !@dataAdded
+			@dataAdded = true
+			@addData = new ShowHideExpts
+				model: new Backbone.Model @resultsJson
+				el: @$('.bv_resultsView')
+			@addData.on 'requestResults', @handleSearchReturn
+		else
+			@addData.model.clear().set(@resultsJson)
+			@addData.render()
+
+
+
+class window.ShowHideExpts extends Backbone.View
+	template: _.template($("#AddDataView").html())
+	events:
+		"click .bv_searchClear": "handleSearchClear"
+		"click .bv_addDataTree": "handleSelectionChanged"
+		"click .bv_displayResults": "handleDisplayResuts"
+		"click .bv_aggregation_true": "handleAggregationChanged"
+		"click .bv_aggregation_false": "handleAggregationChanged"
+
+	initialize: ->
+		$(@el).append @template()
+		@render()
+
+	render: ->
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
+		@getBatchCodes()
+
+	getBatchCodes: ->
+		data = @model.get('data')
+		allBatchCodes = []
+		$(data.aaData).each (key,value) ->
+			allBatchCodes.push(value.geneId)
+		@allBatchCodes = allBatchCodes
+		@gotoShowTree()
+
+	gotoShowTree: ->
+		$.ajax
+			type: 'POST'
+			url: "api/getGeneExperiments"
+			dataType: 'json'
+			data:
+				geneIDs: @allBatchCodes
+			success: @handleGetAddDataTreeReturn
+			error: (err) =>
+				@serviceReturn = null
+
+	handleGetAddDataTreeReturn: (json) =>
+		@$('.bv_searchStatusDropDown').modal "hide"
+		if !@$('.bv_addDataModal').length #if the template hasn't been added
+			$(@el).append @template()
+		@$('.bv_addDataModal').modal
+			backdrop: "static"
+		@$('.bv_addDataModal').modal "show"
+		@$('.bv_aggregation_true').prop("disabled",false)
+		@$('.bv_aggregation_false').prop("disabled",false)
+		if json.results.experimentData.length > 0
+			results = json.results.experimentData
+			@setupTree(results)
+
+	setupTree: (results) ->
+		@$('.bv_addDataTree').jstree
+			core:
+				data: results
+			search:
+				fuzzy: false
+			plugins: [ "checkbox", "search" ]
+
+		@$('.bv_addDataTree').bind "hover_node.jstree", (e, data) ->
+			$(e.target).attr("title", data.node.original.description)
+
+		to = false
+		@$(".bv_searchVal").keyup =>
+			clearTimeout to  if to
+			to = setTimeout(->
+				v = @$(".bv_searchVal").val()
+				@$(".bv_tree").jstree(true).search v
+				return
+			, 250)
+			return
+
+		aggregate = @model.get("aggregate")
+		if aggregate
+			$(".bv_aggregation_true").prop("checked",true)
+
+		expts = @model.get("experimentCodeList")
+		@exptLength = expts.length
+		@$(".bv_addDataTree").jstree('select_node',expts)
+
+
+	handleAggregationChanged: =>
+		@aggregate = @$("input[name='bv_aggregation']:checked").val()
+
+	handleSearchClear: =>
+		@$('.bv_searchVal').val("")
+
+	getSelectedExperiments: ->
+		@$('.bv_addDataTree').jstree('get_selected')
+
+	handleSelectionChanged: =>
+		@selected = @getSelectedExperiments()
+		@$('.bv_displayResults').prop("disabled",false)
+
+	getQueryParams: ->
+		queryParams =
+			batchCodes: @allBatchCodes.join()
+			experimentCodeList: @selected
+			searchFilters: @model.get("searchFilters")
+			aggregate: @aggregate
+
+	handleDisplayResuts: ->
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
+
+		$.ajax
+			type: 'POST'
+			url: "api/geneDataQueryAdvanced"
+			dataType: 'json'
+			data:
+				queryParams: @getQueryParams()
+				maxRowsToReturn: 10000
+				user: window.AppLaunchParams.loginUserName
+			success: @handleAddDataReturn
+			error: (err) =>
+				@serviceReturn = null
+
+	handleAddDataReturn: (json) =>
+		@trigger 'requestResults', json
 
 
 
