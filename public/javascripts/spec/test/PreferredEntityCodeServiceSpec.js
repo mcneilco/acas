@@ -43,7 +43,7 @@
       });
       return describe("when requested as list of codes", function() {
         before(function(done) {
-          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/configuredEntityTypes?asCodes=true", (function(_this) {
+          return request("http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/configuredEntityTypes/asCodes", (function(_this) {
             return function(error, response, body) {
               _this.responseJSON = parseResponse(body);
               return done();
@@ -60,7 +60,7 @@
         });
       });
     });
-    return describe("get preferred entity codeName for supplied name or codeName", function() {
+    describe("get preferred entity codeName for supplied name or codeName", function() {
       describe("when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
@@ -360,6 +360,104 @@
           var res;
           res = this.responseJSON.resultCSV.split('\n');
           return assert.equal(res[3].split(',')[1], "");
+        });
+      });
+    });
+    return describe("direct function API tests", function() {
+      var codeService;
+      codeService = require('../../../../routes/PreferredEntityCodeService.js');
+      describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
+        var requestData;
+        requestData = {
+          type: "gene",
+          kind: "entrez gene",
+          entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return codeService.preferredCodes(requestData, (function(_this) {
+            return function(response) {
+              _this.responseJSON = response;
+              console.log(response);
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested Type", function() {
+          return assert.equal(this.responseJSON.type, "gene");
+        });
+        it("should return the requested Kind", function() {
+          return assert.equal(this.responseJSON.kind, "entrez gene");
+        });
+        it("should have the first line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[0], "GENE-000002");
+        });
+        it("should have the first line result second result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[1].split(',')[1], "GENE-000002");
+        });
+        it("should have the second line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[0], "CPAMD5");
+        });
+        it("should have the second line result second result column with the code", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[2].split(',')[1], "GENE-000003");
+        });
+        it("should have the third line query in first result column", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[0], "ambiguousName");
+        });
+        return it("should have the third line result second result column with no result", function() {
+          var res;
+          res = this.responseJSON.resultCSV.split('\n');
+          return assert.equal(res[3].split(',')[1], "");
+        });
+      });
+      return describe("available entity type list", function() {
+        describe("when requested as fully detailed list", function() {
+          before(function(done) {
+            return codeService.getConfiguredEntityTypes(false, (function(_this) {
+              return function(response) {
+                _this.responseJSON = response;
+                return done();
+              };
+            })(this));
+          });
+          it("should return an array of entity types", function() {
+            return assert.equal(this.responseJSON.length > 0, true);
+          });
+          return it("should return entity type descriptions with required attributes", function() {
+            assert.equal(this.responseJSON[0].type != null, true);
+            assert.equal(this.responseJSON[0].kind != null, true);
+            assert.equal(this.responseJSON[0].displayName != null, true);
+            assert.equal(this.responseJSON[0].codeOrigin != null, true);
+            return assert.equal(this.responseJSON[0].sourceExternal != null, true);
+          });
+        });
+        return describe("when requested as list of codes", function() {
+          before(function(done) {
+            return codeService.getConfiguredEntityTypes(true, (function(_this) {
+              return function(response) {
+                _this.responseJSON = response;
+                return done();
+              };
+            })(this));
+          });
+          it("should return an array of entity types", function() {
+            return assert.equal(this.responseJSON.length > 0, true);
+          });
+          return it("should return entity type descriptions with required attributes", function() {
+            assert.equal(this.responseJSON[0].code != null, true);
+            assert.equal(this.responseJSON[0].name != null, true);
+            return assert.equal(this.responseJSON[0].ignored != null, true);
+          });
         });
       });
     });

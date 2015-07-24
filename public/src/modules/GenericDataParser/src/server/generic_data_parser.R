@@ -285,7 +285,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   if(nrow(newDdictValues) > 0) {
     userLabels <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$userLabel
     userWarnText <- paste0("<ul><li>",paste0(userLabels, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
-    warnUser(paste0("The following select list items have not been registerd previously and will be created:<br>", userWarnText))
+    warnUser(paste0("The following select list items have not been registered previously and will be created:<br>", userWarnText))
     if(!dryRun) {
       newDdictValuesDF <- newDdictValues[ , c("shortName","labelText","lsKind","lsType"), with = FALSE]
       setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
@@ -676,7 +676,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
-  #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
+  #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds ("Text", "Number", etc.)
   #   dryRun:                 A boolean indicating whether the data should be saved
   #   reserved:               A character vector of value kinds that are not allowed
   #
@@ -718,16 +718,16 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   }
   
   # Use na.rm = TRUE because any types of NA will already have thrown an error (in validateCalculatedResultDatatypes)
+  problemFrame <- data.frame(oldValueKinds = c(), stringsAsFactors=FALSE)
   if(any(wrongValueTypes, na.rm = TRUE)) {
-    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
+    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds, stringsAsFactors=FALSE)
     problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
-      addError( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
-                                        "' instead of '", problemFrame$oldValueKindTypes[row], "'. Please enter '", problemFrame$matchingValueKindTypes[row],
-                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."),)
+      warnUser( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
+                                        "' instead of '", problemFrame$oldValueKindTypes[row], "'. Are you sure you want this datatype?"))
     }
   }
   
@@ -736,19 +736,22 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
     warnUser(paste0("The following column headers have never been loaded in an experiment before: '", 
                    paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
                    " headers that were used previously. If this is a new protocol, you can proceed without worry."))
-    if (!dryRun) {
-      # Create the new valueKinds, using the correct valueType
-      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- getAllValueTypes()
-      valueTypes <- sapply(valueTypesList, getElement, "typeName")
-      valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
-      
-      # This is for the curveNames, but would catch other added values as well
-      valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
-      saveValueKinds(newValueKinds, valueKindTypes)
-    }
   }
+  if (!dryRun && (length(newValueKinds) > 0 || nrow(problemFrame) > 0)) {
+    # Create the new valueKinds, using the correct valueType
+    # TODO: also check that valueKinds have the correct valueType when being loaded a second time
+    valueTypesList <- getAllValueTypes()
+    valueTypes <- sapply(valueTypesList, getElement, "typeName")
+    # Add problemFrame$oldValueKinds to newValueKinds, as we now save them
+    newValueKinds <- c(problemFrame$oldValueKinds, newValueKinds)
+    valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
+    valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
+    
+    # This is for the curveNames, but would catch other added values as well
+    valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
+    saveValueKinds(newValueKinds, valueKindTypes)
+  }
+  
   return(NULL)
 }
 

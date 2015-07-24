@@ -185,9 +185,9 @@ log() {
         echo -n "$STRING " > /etc/rhgb/temp/rhgb-console
     fi
     if [ "$mode" = "success" ]; then
-        log_success_msg $"$STRING"
+        success $"$STRING"
     else
-        log_failure_msg $"$STRING"
+        failure $"$STRING"
     fi
     echo
     if [ "${RHGB_STARTED:-}" != "" -a -w /etc/rhgb/temp/rhgb-console ]; then
