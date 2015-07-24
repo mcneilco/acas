@@ -439,7 +439,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -449,23 +449,46 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   testMode:                 A boolean
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   mainCode:                 A string, normally the corporate batch ID
+  #   inputFormat:              The format of the input file
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
   
   require(data.table)
   
-  entityType <- "compound"
-  entityKind <- "batch name"
-  if (mainCode == "Gene ID") {
-    entityType <- "gene"
-    entityKind <- "entrez gene"
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  
+  if (!(mainCode %in% entityTypeAndKindTable$displayName)) {
+    stopUser(paste0(mainCode, " is not valid in the first column. It should be something like 'Corporate Batch ID'."))
   }
+  
+  entityType <- entityTypeAndKindTable[displayName == mainCode, type][[1]]
+  entityKind <- entityTypeAndKindTable[displayName == mainCode, kind][[1]]
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
+  
+  if (inputFormat == "Gene ID Data") {
+    requestIds <- list()
+    requestIds$requests <- lapply(batchIds, function(input) {return(list(requestName=input))})
+    response <- fromJSON(postURLcheckStatus(
+      paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+      toJSON(requestIds)))$results
+    preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
+    names(preferredIdFrame) <- names(response[[1]])
+    preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+    preferredIdDT <- as.data.table(preferredIdFrame)
+    setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
+    newBatchIds <- as.data.frame(preferredIdDT)
+  } else {
+    newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
+  }
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
   if (is.null(newBatchIds)) {
@@ -476,14 +499,16 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   for (row in 1:nrow(newBatchIds)) {
     if (is.null(newBatchIds$Preferred.Code[row]) || is.na(newBatchIds$Preferred.Code[row]) || newBatchIds$Preferred.Code[row] == "") {
       addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row], 
-                                        "' has not been registered in the system. Contact your system administrator for help."))
+                      "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
-                     "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
-                     "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
+        warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
+                        "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
+                        "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      }
     }
   }
-
+  
   # Put the batch id's into a useful format
   prefDT <- as.data.table(newBatchIds)
   setnames(prefDT, c("Requested.Name", "Preferred.Code"), c("requestName", "preferredName"))
@@ -2415,12 +2440,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   inputFormat <- as.character(validatedMetaData$Format)
   
-  if (inputFormat == "Gene ID Data") {
-    mainCode <- "Gene ID"
-  } else {
-    mainCode <- "Corporate Batch ID"
-  }
-  
   rawOnlyFormat <- inputFormat %in% names(customFormatSettings)
   
   formatParameters <- getFormatParameters(rawOnlyFormat, customFormatSettings, inputFormat)
@@ -2431,7 +2450,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  
+  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
+    mainCode <- calculatedResults[2, 1] #Getting this from its standard position
+  } else {
+    mainCode <- "Corporate Batch ID"
+  }
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
@@ -2453,7 +2476,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode, 
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode)
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
