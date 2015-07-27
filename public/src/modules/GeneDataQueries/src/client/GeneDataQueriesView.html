@@ -5,9 +5,17 @@
 	        <p class="lead bv_gidACASBadge">ACAS</p>
 	        <div class="form-inline bv_searchForm">
 		        <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
-	            <input type="text" class="span4 bv_gidListString" placeholder="Search by gene IDs..." />
+	            <input type="text" class="span5 bv_gidListString" placeholder="Seach by Batch Code, Name, ID..." />
                 <button type="button" class="btn btn-primary bv_search">Search</button>
+                <label class="radio radioFalse">
+                  <input type="radio" name="bv_aggregation" class="bv_aggregation_false aggregationRadios" value="false" checked="checked">Display results separately
+                </label>
+                <label class="radio radioTrue">
+                  <input type="radio" name="bv_aggregation" class="bv_aggregation_true aggregationRadios" value="true">Display results aggregated by protocol
+                </label>
                 <button type="button" class="btn btn-default bv_gidNavAdvancedSearchButton gidAdvancedNavSearchButtonStart">Advanced Search</button>
+
+
             </div>
         </div>
     </div>
@@ -25,6 +33,9 @@
         <div class="span3 bv_gidDownloadCSV">
             <span>Download .CSV</span>
             <button class="btn bv_downloadCSV"><i class="icon-download-alt"></i></button>
+        </div>
+        <div class="span2 bv_addDataRequest">
+            <button class="btn bv_addData">Add Data to Report</button>
         </div>
 		<table cellpadding="0" cellspacing="0" border="0" class="display bv_resultTable">
 	        <thead>
@@ -73,6 +84,21 @@
 <script type="text/template" id="GeneIDQuerySearchView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_inputView"></div>
     <div class="bv_resultsView"></div>
+
+    <div class="modal bv_searchStatusDropDown hide">
+        <div class="modal-header">
+            <h3>Loading</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width:100%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </script>
 
 <script type="text/template" id="ExperimentTreeView" xmlns="http://www.w3.org/1999/html">
@@ -84,6 +110,14 @@
             <button class="btn bv_searchClear">Clear</button>
         </div>
         <div class="span12 bv_tree">tree goes here</div>
+        <div class="form-inline span8 gidAggregation">
+            <label class="radio radioFalse">
+                <input type="radio" name="bv_aggregation" class="bv_aggregation_false aggregationRadios" value="false" checked="checked">Display results separately
+            </label>
+            <label class="radio radioTrue">
+                <input type="radio" name="bv_aggregation" class="bv_aggregation_true aggregationRadios" value="true">Display results aggregated by protocol
+            </label>
+        </div>
     </div>
 
 </script>
@@ -185,7 +219,7 @@
 <script type="text/template" id="GeneIDQueryAppView" xmlns="http://www.w3.org/1999/html">
     <div class="navbar navbar-fixed-top navbar-inverse bv_gidMainNavbar">
         <div class="navbar-inner">
-            <span class="brand chandaACAS">FluOMICS ACAS</span>
+            <span class="brand chandaACAS">ACAS Simple Reporting</span>
             <ul class="nav">
             </ul>
         </div>
@@ -193,7 +227,7 @@
 
     <div class="navbar navbar-fixed-top">
         <div class="well well-small bv_advancedQueryNavbar gidAdvancedSearchNavWellTop">
-            <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
+            <div class="lead pull-left bv_gidACASBadgeTop">ACAS Simple Reporting</div>
             <div class="span2 gidAdvancedSearchNavbarTitle"><strong>Advanced Search</strong></div>
 
         </div>
@@ -235,4 +269,34 @@
             <button class="btn pull-right bv_gidNavSettingsButton disabled hide"><i class="icon-wrench"></i></button>
         </div>
     </div>
+</script>
+
+<script type="text/template" id="AddDataView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="modal hide fade bv_addDataModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Add Data</h3>
+        </div>
+        <div class="modal-body bv_modalMessage">
+            <div class="form-inline gidFilterExperimentsInput">
+                <input class="bv_searchVal" type="text" placeholder="Filter experiments by keywords">
+                <button class="btn bv_searchClear">Clear</button>
+            </div>
+            <div class="span8 bv_addDataTree">tree goes here</div>
+            <div class="form-inline span8 gidAggregation">
+                <label class="radio radioFalse">
+                    <input type="radio" name="bv_aggregation" class="bv_aggregation_false aggregationRadio" value="false" checked="checked" disabled>Display results separately
+                </label>
+                <label class="radio radioTrue">
+                    <input type="radio" name="bv_aggregation" class="bv_aggregation_true aggregationRadio" value="true" disabled>Display results aggregated by protocol
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn bv_displayResults" data-dismiss="modal" aria-hidden="true" disabled="disabled">Display New Results</button>
+        </div>
+    </div>
+
 </script>

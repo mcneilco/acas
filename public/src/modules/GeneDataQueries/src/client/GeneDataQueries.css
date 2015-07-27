@@ -43,12 +43,13 @@
 }
 
 .GeneIDQueryAppController .gidAdvancedNavSearchButtonStart {
-    margin-top: 5px;
-    margin-left: 306px;
+    margin-top: 15px;
+    margin-left: 0px;
 }
 
 .GeneIDQueryAppController .gidAdvancedNavSearchButtonTop {
     margin-top: 0 !important;
+		margin-left: 15px;
 }
 
 .GeneIDQueryAppController .bv_gidACASBadgeTop {
@@ -73,6 +74,11 @@
 	margin-top: 100px !important;
 }
 
+.GeneIDQueryAppController .bv_resultsView {
+	margin: 15px !important;
+}
+
+
 .GeneIDQueryAppController .bv_gidDownloadCSV {
     margin-bottom: 10px;
     margin-left: 1017px;
@@ -80,6 +86,21 @@
 
 .GeneIDQueryAppController .bv_downloadCSV {
     margin-left: 5px;
+}
+
+.GeneIDQueryAppController .bv_addDataRequest{
+    margin-bottom: 10px;
+    margin-left: 1017px;
+}
+
+.GeneIDQueryAppController .bv_gidDownloadCSVSimple {
+    margin-bottom: 10px;
+    margin-left: 987px;
+}
+
+.GeneIDQueryAppController .bv_addDataRequestSimple{
+    margin-bottom: 10px;
+    margin-left: 1007px;
 }
 
 .GeneIDQueryAppController .gidNamesHeader {
@@ -214,6 +235,21 @@
 
 .GeneIDQueryAppController .radioOr {
     padding-left: 25px !important;
+
+}
+
+.GeneIDQueryAppController .radioTrue {
+    padding-left: 15px !important;
+		padding-top: 8px ;
+}
+.GeneIDQueryAppController .radioFalse {
+		padding-top: 8px ;
+		padding-left: 1px;
+}
+
+.GeneIDQueryAppController .aggregationRadios {
+		margin-top: 3px !important;
+		margin-right: 5px !important;
 }
 
 .radioAdvancedFilter {
@@ -255,4 +291,43 @@
 .GeneIDQueryAppController .helpLinks {
     margin-top: 10px;
     margin-left: 185px;
+}
+
+.GeneIDQueryAppController .container {
+    margin-left: 0px !important;
+    margin-right:0px !important;
+}
+
+.GeneIDQueryAppController .bv_advancedQueryContainer{
+    padding-right: 30px !important;
+}
+
+/*Properties so that curves display at a readable size*/
+.GeneIDQueryAppController .curveId{
+    min-width: 380px !important;
+		text-align: center;
+}
+
+.GeneIDQueryAppController .StructureImage{
+    min-width: 180px !important;
+}
+
+.GeneIDQueryAppController .fileValue{
+    min-width: 200px !important;
+		text-align: center;
+}
+
+.GeneIDQueryAppController .center{
+    min-width: 50px;
+}
+
+.GeneIDQueryAppController .bv_headerCell{
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+}
+
+body .GeneIDQueryAppController .bv_addDataModal{
+		width: 60% !important;
+    margin-left: -30% !important;
+		max-height: 80% !important;
 }
