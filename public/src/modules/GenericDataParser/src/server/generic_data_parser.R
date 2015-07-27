@@ -2286,7 +2286,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
-  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  #analysisGroupData$unitKind <- analysisGroupData$valueUnit (Removed for ACASDEV-259)
   analysisGroupData$operatorKind <- analysisGroupData$valueOperator
   analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
   analysisGroupData$lsType <- "default"
