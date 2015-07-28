@@ -445,7 +445,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       # Modify lsKind to include units, concentration info, and time duration as well (if it exists)
       dataDT[resultUnit != "", lsKind := paste(lsKind," (",resultUnit,")",sep="")]
       dataDT[testedConcentration != "", lsKind := paste(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
-      dataDT[testedTime != "", lsKind := paste(lsKind, " for ", roundString(testedTime), " time units", sep="")]
+      dataDT[testedTime != "", lsKind := paste(lsKind, "for", roundString(testedTime), testedTimeUnit, sep=" ")]
       #TODO change "time units" to be the actual units...
 
       # Keep only 4 sig-figs if displying in browser
@@ -686,7 +686,7 @@ if (exportCSV){
   names = names(outputDT)[c(-1,-2)] # names of all the data columns
   outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
   setnames(outputDT, "geneId", "Batch Code"); setnames(outputDT, "StructureImage", "Batch Information")
-  
+
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/text")
   write.csv(outputDT, file="", row.names=FALSE, quote=TRUE)
