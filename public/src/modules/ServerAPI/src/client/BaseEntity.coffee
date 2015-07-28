@@ -396,7 +396,6 @@ class window.BaseEntityController extends AbstractFormController
 		@handleValueChanged "Notebook", value
 
 	handleStatusChanged: =>
-		console.log "handle status changed"
 		value = @statusListController.getSelectedCode()
 		if (value is "approved" or value is "rejected") and !@isValid()
 			value = value.charAt(0).toUpperCase() + value.substring(1);

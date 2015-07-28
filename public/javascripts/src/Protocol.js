@@ -353,7 +353,6 @@
     };
 
     ProtocolBaseController.prototype.handleDeleteStatusChosen = function() {
-      console.log("handle delete status");
       this.$(".bv_deleteButtons").removeClass("hide");
       this.$(".bv_okayButton").addClass("hide");
       this.$(".bv_errorDeletingProtocolMessage").addClass("hide");
@@ -367,7 +366,6 @@
     };
 
     ProtocolBaseController.prototype.handleCloseProtocolModal = function() {
-      console.log("close expt modal");
       return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
     };
 

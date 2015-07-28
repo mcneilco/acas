@@ -645,7 +645,6 @@
 
     BaseEntityController.prototype.handleStatusChanged = function() {
       var value;
-      console.log("handle status changed");
       value = this.statusListController.getSelectedCode();
       if ((value === "approved" || value === "rejected") && !this.isValid()) {
         value = value.charAt(0).toUpperCase() + value.substring(1);

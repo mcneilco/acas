@@ -1803,12 +1803,9 @@
     };
 
     PrimaryScreenAnalysisController.prototype.handleStatusChanged = function() {
-      console.log("handleStatusChanged");
       if (this.dataAnalysisController !== null) {
-        console.log("has dac");
         if (this.model.isEditable()) {
-          this.dataAnalysisController.enableFields();
-          return console.log("model is editable");
+          return this.dataAnalysisController.enableFields();
         } else {
           this.dataAnalysisController.disableAll();
           this.$('.bv_loadAnother').attr('disabled', 'disabled');
