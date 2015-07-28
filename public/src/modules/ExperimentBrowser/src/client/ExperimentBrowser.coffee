@@ -225,14 +225,14 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		experimentBestName = @model.get('lsLabels').pickBestName()
 		if experimentBestName
 			experimentBestName = @model.get('lsLabels').pickBestName().get('labelText')
-#		protocolBestName = @model.get('protocol').get('lsLabels').pickBestName()
-#		if protocolBestName
-#			protocolBestName = @model.get('protocol').get('lsLabels').pickBestName().get('labelText')
+		protocolBestName = @model.get('protocol').get('lsLabels').pickBestName()
+		if protocolBestName
+			protocolBestName = @model.get('protocol').get('lsLabels').pickBestName().get('labelText')
 		toDisplay =
 			experimentName: experimentBestName
 			experimentCode: @model.get('codeName')
 			protocolCode: @model.get('protocol').get("codeName")
-#			protocolName: protocolBestName
+			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
 			status: @model.getStatus().get("codeValue")
 			analysisStatus: @model.getAnalysisStatus().get("codeValue")
@@ -256,9 +256,11 @@ class window.ExperimentSummaryTableController extends Backbone.View
 		else
 			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
 			@collection.each (exp) =>
-				hideStatusesList = window.conf.entity.hideStatuses
+				hideStatusesList = null
+				if window.conf.entity?.hideStatuses?
+					hideStatusesList = window.conf.entity.hideStatuses
 				#non-admin users can't see experiments with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and !(UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]))
 					ersc = new ExperimentRowSummaryController
 						model: exp
 					ersc.on "gotClick", @selectedRowChanged
