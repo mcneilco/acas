@@ -3134,7 +3134,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
         link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
-        formatParameters = formatParameters, concColumn = "Dose (uM)",
+        formatParameters = formatParameters, concColumn = subjectData[2,2],# 2,2 is usually Dose (uM)
         codeAssignments = codeAssignments)
       
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"
