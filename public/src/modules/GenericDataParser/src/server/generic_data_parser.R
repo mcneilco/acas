@@ -1065,7 +1065,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     if (!("Rendering Hint" %in% names(results))) {
       stopUser("Dose Response data must have a 'Rendering Hint' column.")
     }
-    doseResponseHint <- unique(results[["Rendering Hint"]])
+    doseResponseHint <- unique(results[["Rendering Hint"]][!is.na(results[["Rendering Hint"]]) & results[["Rendering Hint"]] != ""])
     if (length(doseResponseHint) > 1) {
       stopUser(paste0("Only one Rendering Hint can be used within one file. ",
                       "Split different kinds of curves into multiple experiments."))
