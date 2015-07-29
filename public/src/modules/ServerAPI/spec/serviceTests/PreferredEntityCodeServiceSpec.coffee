@@ -51,7 +51,7 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON[0].sourceExternal?, true
 		describe "when requested as list of codes", ->
 			before (done) ->
-				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes?asCodes=true", (error, response, body) =>
+				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes/asCodes", (error, response, body) =>
 					@responseJSON = parseResponse(body)
 					done()
 			it "should return an array of entity types", ->
@@ -266,6 +266,70 @@ describe  "Preferred Entity code service tests", ->
 			it "should have the third line result second result column with no result", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1], ""
+
+	describe "direct function API tests", ->
+		codeService = require '../../../../routes/PreferredEntityCodeService.js'
+
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
+			requestData =
+				type: "gene"
+				kind: "entrez gene"
+				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
+			before (done) ->
+				@.timeout(20000)
+				codeService.preferredCodes requestData, (response) =>
+					@responseJSON = response
+					console.log response
+					done()
+			it "should return the requested Type", ->
+				assert.equal @responseJSON.type, "gene"
+			it "should return the requested Kind", ->
+				assert.equal @responseJSON.kind, "entrez gene"
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "GENE-000002"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "GENE-000002"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "CPAMD5"
+			it "should have the second line result second result column with the code", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], "GENE-000003"
+			it "should have the third line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[0], "ambiguousName"
+			it "should have the third line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[1], ""
+
+		describe "available entity type list", ->
+			describe "when requested as fully detailed list", ->
+				before (done) ->
+					codeService.getConfiguredEntityTypes false, (response) =>
+						@responseJSON = response
+						done()
+				it "should return an array of entity types", ->
+					assert.equal @responseJSON.length > 0, true
+				it "should return entity type descriptions with required attributes", ->
+					assert.equal @responseJSON[0].type?, true
+					assert.equal @responseJSON[0].kind?, true
+					assert.equal @responseJSON[0].displayName?, true
+					assert.equal @responseJSON[0].codeOrigin?, true
+					assert.equal @responseJSON[0].sourceExternal?, true
+			describe "when requested as list of codes", ->
+				before (done) ->
+					codeService.getConfiguredEntityTypes true, (response) =>
+						@responseJSON = response
+						done()
+				it "should return an array of entity types", ->
+					assert.equal @responseJSON.length > 0, true
+				it "should return entity type descriptions with required attributes", ->
+					assert.equal @responseJSON[0].code?, true
+					assert.equal @responseJSON[0].name?, true
+					assert.equal @responseJSON[0].ignored?, true
+
 
 #TODO real implementation of getThingCodesFormNamesOrCodes
 #TODO test in live mode for compounds batch, compound parent, and lsthing protein

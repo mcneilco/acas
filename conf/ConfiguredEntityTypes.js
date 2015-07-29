@@ -28,7 +28,7 @@
       type: "gene",
       kind: "entrez gene",
       codeOrigin: "ACAS LSThing",
-      displayName: "Protein Batch",
+      displayName: "Gene ID",
       sourceExternal: false
     }
   ];

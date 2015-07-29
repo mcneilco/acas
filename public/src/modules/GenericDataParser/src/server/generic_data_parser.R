@@ -285,7 +285,7 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
   if(nrow(newDdictValues) > 0) {
     userLabels <- selectListItems[match(newDdictValues$lsKind, selectListItems$lsKind),]$userLabel
     userWarnText <- paste0("<ul><li>",paste0(userLabels, ': ', as.character(newDdictValues$labelText),collapse='</li><li>'),"</li></ul>")
-    warnUser(paste0("The following select list items have not been registerd previously and will be created:<br>", userWarnText))
+    warnUser(paste0("The following select list items have not been registered previously and will be created:<br>", userWarnText))
     if(!dryRun) {
       newDdictValuesDF <- newDdictValues[ , c("shortName","labelText","lsKind","lsType"), with = FALSE]
       setnames(newDdictValuesDF, c("code", "name", "codeKind", "codeType"))
@@ -439,7 +439,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -449,23 +449,46 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   testMode:                 A boolean
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   mainCode:                 A string, normally the corporate batch ID
+  #   inputFormat:              The format of the input file
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
   
   require(data.table)
   
-  entityType <- "compound"
-  entityKind <- "batch name"
-  if (mainCode == "Gene ID") {
-    entityType <- "gene"
-    entityKind <- "entrez gene"
+  entityTypeAndKindList <- fromJSON(getURLcheckStatus(paste0(racas::applicationSettings$server.nodeapi.path, 
+                                                             "/api/entitymeta/configuredEntityTypes/"), 
+                                                             requireJSON = TRUE))
+  # Expected column names: 'type', 'kind', 'codeOrigin', 'displayName', 'sourceExternal'
+  entityTypeAndKindTable <- as.data.table(do.call(rbind, entityTypeAndKindList))
+  entityTypeAndKindTable[, displayName := unlist(displayName)]
+  
+  if (!(mainCode %in% entityTypeAndKindTable$displayName)) {
+    stopUser(paste0(mainCode, " is not valid in the first column. It should be something like 'Corporate Batch ID'."))
   }
+  
+  entityType <- entityTypeAndKindTable[displayName == mainCode, type][[1]]
+  entityKind <- entityTypeAndKindTable[displayName == mainCode, kind][[1]]
   
   # Get the current batch Ids
   batchesToCheck <- calculatedResults$originalMainID != replaceFakeCorpBatchId
   batchIds <- unique(calculatedResults$batchCode[batchesToCheck])
-  newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
+  
+  if (inputFormat == "Gene ID Data") {
+    requestIds <- list()
+    requestIds$requests <- lapply(batchIds, function(input) {return(list(requestName=input))})
+    response <- fromJSON(postURLcheckStatus(
+      paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+      toJSON(requestIds)))$results
+    preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
+    names(preferredIdFrame) <- names(response[[1]])
+    preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+    preferredIdDT <- as.data.table(preferredIdFrame)
+    setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
+    newBatchIds <- as.data.frame(preferredIdDT)
+  } else {
+    newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
+  }
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
   if (is.null(newBatchIds)) {
@@ -476,14 +499,16 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   for (row in 1:nrow(newBatchIds)) {
     if (is.null(newBatchIds$Preferred.Code[row]) || is.na(newBatchIds$Preferred.Code[row]) || newBatchIds$Preferred.Code[row] == "") {
       addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row], 
-                                        "' has not been registered in the system. Contact your system administrator for help."))
+                      "' has not been registered in the system. Contact your system administrator for help."))
     } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
-      warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
-                     "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
-                     "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
+        warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
+                        "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row], 
+                        "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+      }
     }
   }
-
+  
   # Put the batch id's into a useful format
   prefDT <- as.data.table(newBatchIds)
   setnames(prefDT, c("Requested.Name", "Preferred.Code"), c("requestName", "preferredName"))
@@ -676,7 +701,7 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   #
   # Args:
   #   neededValueKinds:       A character vector listed column headers
-  #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds
+  #   neededValueKindTypes:   A character vector of the valueTypes of the above kinds ("Text", "Number", etc.)
   #   dryRun:                 A boolean indicating whether the data should be saved
   #   reserved:               A character vector of value kinds that are not allowed
   #
@@ -718,16 +743,16 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
   }
   
   # Use na.rm = TRUE because any types of NA will already have thrown an error (in validateCalculatedResultDatatypes)
+  problemFrame <- data.frame(oldValueKinds = c(), stringsAsFactors=FALSE)
   if(any(wrongValueTypes, na.rm = TRUE)) {
-    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds)
+    problemFrame <- data.frame(oldValueKinds = comparisonFrame$oldValueKinds, stringsAsFactors=FALSE)
     problemFrame$oldValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$oldValueKindTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame$matchingValueKindTypes <- c("Number", "Text", "Date", "Clob", "Image File")[match(comparisonFrame$matchingValueTypes, c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue"))]
     problemFrame <- problemFrame[wrongValueTypes, ]
     
     for (row in 1:nrow(problemFrame)) {
-      addError( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
-                                        "' instead of '", problemFrame$oldValueKindTypes[row], "'. Please enter '", problemFrame$matchingValueKindTypes[row],
-                                        "' in the Datatype row for '", problemFrame$oldValueKinds[row], "'."),)
+      warnUser( paste0("Column header '", problemFrame$oldValueKinds[row], "' is registered in the system as '", problemFrame$matchingValueKindTypes[row],
+                                        "' instead of '", problemFrame$oldValueKindTypes[row], "'. Are you sure you want this datatype?"))
     }
   }
   
@@ -736,19 +761,22 @@ validateValueKinds <- function(neededValueKinds, neededValueKindTypes, dryRun, r
     warnUser(paste0("The following column headers have never been loaded in an experiment before: '", 
                    paste(newValueKinds,collapse="', '"), "'. If you have loaded a similar experiment before, please use the same",
                    " headers that were used previously. If this is a new protocol, you can proceed without worry."))
-    if (!dryRun) {
-      # Create the new valueKinds, using the correct valueType
-      # TODO: also check that valueKinds have the correct valueType when being loaded a second time
-      valueTypesList <- getAllValueTypes()
-      valueTypes <- sapply(valueTypesList, getElement, "typeName")
-      valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
-      valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
-      
-      # This is for the curveNames, but would catch other added values as well
-      valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
-      saveValueKinds(newValueKinds, valueKindTypes)
-    }
   }
+  if (!dryRun && (length(newValueKinds) > 0 || nrow(problemFrame) > 0)) {
+    # Create the new valueKinds, using the correct valueType
+    # TODO: also check that valueKinds have the correct valueType when being loaded a second time
+    valueTypesList <- getAllValueTypes()
+    valueTypes <- sapply(valueTypesList, getElement, "typeName")
+    # Add problemFrame$oldValueKinds to newValueKinds, as we now save them
+    newValueKinds <- c(problemFrame$oldValueKinds, newValueKinds)
+    valueKindTypes <- neededValueKindTypes[match(newValueKinds, neededValueKinds)]
+    valueKindTypes <- c("numericValue", "stringValue", "dateValue", "clobValue", "inlineFileValue")[match(valueKindTypes, c("Number", "Text", "Date", "Clob", "Image File"))]
+    
+    # This is for the curveNames, but would catch other added values as well
+    valueKindTypes[is.na(valueKindTypes)] <- "stringValue"
+    saveValueKinds(newValueKinds, valueKindTypes)
+  }
+  
   return(NULL)
 }
 
@@ -1037,7 +1065,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     if (!("Rendering Hint" %in% names(results))) {
       stopUser("Dose Response data must have a 'Rendering Hint' column.")
     }
-    doseResponseHint <- unique(results[["Rendering Hint"]])
+    doseResponseHint <- unique(results[["Rendering Hint"]][!is.na(results[["Rendering Hint"]]) & results[["Rendering Hint"]] != ""])
     if (length(doseResponseHint) > 1) {
       stopUser(paste0("Only one Rendering Hint can be used within one file. ",
                       "Split different kinds of curves into multiple experiments."))
@@ -2258,7 +2286,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
-  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  #analysisGroupData$unitKind <- analysisGroupData$valueUnit (Removed for ACASDEV-259)
   analysisGroupData$operatorKind <- analysisGroupData$valueOperator
   analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
   analysisGroupData$lsType <- "default"
@@ -2412,12 +2440,6 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   inputFormat <- as.character(validatedMetaData$Format)
   
-  if (inputFormat == "Gene ID Data") {
-    mainCode <- "Gene ID"
-  } else {
-    mainCode <- "Corporate Batch ID"
-  }
-  
   rawOnlyFormat <- inputFormat %in% names(customFormatSettings)
   
   formatParameters <- getFormatParameters(rawOnlyFormat, customFormatSettings, inputFormat)
@@ -2428,7 +2450,11 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   calculatedResults <- getSection(genericDataFileDataFrame, lookFor = formatParameters$lookFor, transpose = FALSE)
   
   # Organize the Calculated Results
-  
+  if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
+    mainCode <- calculatedResults[2, 1] #Getting this from its standard position
+  } else {
+    mainCode <- "Corporate Batch ID"
+  }
   calculateGroupingID <- if (rawOnlyFormat) {calculateTreatmemtGroupID} else {NA}
   calculatedResults <- organizeCalculatedResults(
     calculatedResults, inputFormat, formatParameters, mainCode, 
@@ -2450,7 +2476,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode, 
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode)
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
@@ -3108,7 +3134,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
         link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
-        formatParameters = formatParameters, concColumn = "Dose (uM)",
+        formatParameters = formatParameters, concColumn = subjectData[2,2],# 2,2 is usually Dose (uM)
         codeAssignments = codeAssignments)
       
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"

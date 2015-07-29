@@ -434,7 +434,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_useProtocolParameters').removeAttr("disabled")
 
 	handleDeleteStatusChosen: =>
-		console.log "handle delete status"
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingExperimentMessage").addClass "hide"
@@ -447,7 +446,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			backdrop: 'static'
 
 	handleCloseExperimentModal: =>
-		console.log "close expt modal"
 		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
 
 	handleConfirmDeleteExperimentClicked: =>

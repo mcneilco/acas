@@ -324,7 +324,6 @@
       });
     });
     describe("get preferred batchids", function() {
-      global.specRunnerTestmode = true;
       describe("when valid, alias, and invalid batches sent", function() {
         var requestData;
         requestData = {
@@ -410,7 +409,6 @@
         };
         before(function(done) {
           this.timeout(20000);
-          global.specRunnerTestmode = true;
           return csUtilities.getPreferredParentIds(requestData.requests, (function(_this) {
             return function(response) {
               _this.response = response;
