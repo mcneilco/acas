@@ -338,7 +338,7 @@
   };
 
   exports.getPreferredBatchIds = function(requests, callback) {
-    var k, len, req, request, res, response, results;
+    var config, k, len, req, request, res, response, results;
     if (global.specRunnerTestmode) {
       results = [];
       for (k = 0, len = requests.length; k < len; k++) {
@@ -358,10 +358,11 @@
       response = results;
       return callback(response);
     } else {
+      config = require('../../../conf/compiled/conf.js');
       request = require('request');
       return request({
         method: 'POST',
-        url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName",
+        url: config.all.server.service.external.preferred.batchid.url,
         json: true,
         body: requests
       }, (function(_this) {
@@ -380,7 +381,7 @@
   };
 
   exports.getPreferredParentIds = function(requests, callback) {
-    var k, len, req, res, response, results;
+    var config, k, len, req, request, res, response, results;
     if (global.specRunnerTestmode) {
       results = [];
       for (k = 0, len = requests.length; k < len; k++) {
@@ -402,7 +403,25 @@
       response = results;
       return callback(response);
     } else {
-      return console.log("real function not implemented");
+      config = require('../../../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.server.service.external.preferred.batchid.url + "/parent",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
     }
   };
 

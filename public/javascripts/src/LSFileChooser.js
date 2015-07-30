@@ -114,6 +114,7 @@
     };
 
     LSFileChooserController.prototype.events = {
+      'click .bv_deleteFile': 'handleFileValueChanged',
       'click .bv_cancelFile': 'handleDeleteFileUIChanges'
     };
 
@@ -135,6 +136,10 @@
           return this.$('.bv_manualFileSelect').show();
         }
       }
+    };
+
+    LSFileChooserController.prototype.handleFileValueChanged = function() {
+      return this.trigger('fileDeleted');
     };
 
     LSFileChooserController.prototype.handleDeleteFileUIChanges = function() {

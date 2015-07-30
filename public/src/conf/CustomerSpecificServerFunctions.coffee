@@ -277,10 +277,11 @@ exports.getPreferredBatchIds = (requests, callback) ->
 
 		callback response
 	else #not spec mode
+		config = require '../../../conf/compiled/conf.js'
 		request = require 'request'
 		request
 			method: 'POST'
-			url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName"
+			url: config.all.server.service.external.preferred.batchid.url
 			json: true
 			body: requests
 		, (error, response, json) =>
@@ -310,6 +311,20 @@ exports.getPreferredParentIds = (requests, callback) ->
 
 		callback response
 	else
-		console.log "real function not implemented"
+		config = require '../../../conf/compiled/conf.js'
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.server.service.external.preferred.batchid.url+"/parent"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
 
 
