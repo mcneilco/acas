@@ -4,6 +4,7 @@
     app.get('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail);
     app.put('/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail);
     app.post('/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub);
+    app.get('/api/curve/render/*', loginRoutes.ensureAuthenticated, exports.renderCurve);
     return app.get('/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex);
   };
 
@@ -210,6 +211,17 @@
         deployMode: global.deployMode
       }
     });
+  };
+
+  exports.renderCurve = function(req, resp) {
+    var config, rapacheCall, redirectQuery, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    redirectQuery = req._parsedUrl.query;
+    console.log(redirectQuery);
+    console.log(req.query);
+    rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery;
+    return req.pipe(request(rapacheCall)).pipe(resp);
   };
 
 }).call(this);

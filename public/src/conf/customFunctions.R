@@ -54,6 +54,7 @@ createRawOnlyTreatmentGroupData <- function(subjectData, sigFigs, inputFormat) {
       "dateValue" = if (length(unique(subjectData$dateValue)) == 1) subjectData$dateValue[1] else NA,
       "publicData" = subjectData$publicData[1],
       treatmentGroupID = subjectData$treatmentGroupID[1],
+      analysisGroupID = subjectData$analysisGroup[1],
       stateGroupIndex = subjectData$stateGroupIndex[1],
       stateID = if(all(is.na(subjectData$stateID))) NA else max(subjectData$stateID, na.rm = T),
       stateVersion = subjectData$stateVersion[1],

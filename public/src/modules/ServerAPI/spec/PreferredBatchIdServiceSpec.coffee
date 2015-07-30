@@ -82,19 +82,19 @@ describe 'PreferredBatchId Service testing', ->
 		else if serviceType == "SingleBatchNameQueryString" || serviceType == "NewLineSepBulkPost"
 			@requestData =
 				requests: [
-					{requestName: "CMPD000000001::1"} #normal
-					{requestName: "CMPD000673874::1"} #alias
+					{requestName: "CMPD-0000001-01A"} #normal
+					{requestName: "CMPD-0000002-01A"} #alias
 					{requestName: "none_2222:1"} #none
 				]
 			@expectedResponse =
 				error: false
 				errorMessages: []
 				results: [
-					requestName: "CMPD000000001::1"
-					preferredName: "CMPD000000001::1"
+					requestName: "CMPD-0000001-01A"
+					preferredName: "CMPD-0000001-01A"
 				,
-					requestName: "CMPD000673874::1"
-					preferredName: "CMPD000001234::7"
+					requestName: "CMPD-0000002-01A"
+					preferredName: "CMPD-0000002-01A"
 				,
 					requestName: "none_2222:1"
 					preferredName: ""

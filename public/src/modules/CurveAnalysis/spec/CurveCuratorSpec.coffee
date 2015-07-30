@@ -426,6 +426,20 @@ describe "Curve Curator Module testing", ->
 						expect(@ccc.$('.bv_sortBy').val()).toEqual "none"
 						expect(@ccc.$(".bv_sortDirection_ascending").prop("disabled")).toEqual true
 						expect(@ccc.$(".bv_sortDirection_descending").prop("disabled")).toEqual true
+			describe "approve uncurated", ->
+				beforeEach ->
+					runs ->
+						@uncuratedCurvesAtStart =  @ccc.curveListController.toRender.filter (cs) ->
+							cs.get("userFlagStatus")==""
+						@ccc.$('.bv_approve_uncurated').click()
+					waitsFor =>
+						@uncuratedCurvesAfterButtonClick =  @ccc.curveListController.csControllers.filter (cs) ->
+							cs.model.get("userFlagStatus")==""
+						@uncuratedCurvesAfterButtonClick.length == 0
+				it "should approve all curves that have not been curated", ->
+					expect(@uncuratedCurvesAtStart.length) > 0
+					expect(@uncuratedCurvesAfterButtonClick.length) == 0
+
 			describe "filter option select display", ->
 				it "filterOption select should populate with options", ->
 					runs ->

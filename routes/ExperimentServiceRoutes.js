@@ -6,6 +6,7 @@
     app.get('/api/experiments/experimentName/:name', exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', exports.experimentById);
+    app.get('/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind);
     app.post('/api/experiments', exports.postExperiment);
     app.put('/api/experiments/:id', exports.putExperiment);
     app.get('/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename);
@@ -17,6 +18,7 @@
     app.get('/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName);
     app.get('/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename);
     app.get('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById);
+    app.get('/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', loginRoutes.ensureAuthenticated, exports.experimentValueByStateTypeKindAndValueTypeKind);
     app.post('/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment);
     app.put('/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment);
     app.get('/api/experiments/genericSearch/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericExperimentSearch);
@@ -409,6 +411,19 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+    }
+  };
+
+  exports.experimentValueByStateTypeKindAndValueTypeKind = function(req, resp) {
+    var baseurl, config, experimentServiceTestJSON;
+    if (global.specRunnerTestmode) {
+      experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
+      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "/experiments/" + req.params.idOrCode + "/exptvalues/bystate/" + req.params.stateType + "/" + req.params.stateKind + "/byvalue/" + req.params.valueType + "/" + req.params.valueKind + "/json";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }

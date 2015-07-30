@@ -9,7 +9,6 @@ describe "Tested Entity Properties Services", ->
 			body =
 				properties: ["HEAVY_ATOM_COUNT", "MONOISOTOPIC_MASS"]
 				entityIdStringLines: "FRD76\nFRD2\nFRD78\n"
-			console.log body
 			before (done) ->
 				@.timeout(20000)
 				request.post

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # chkconfig: 2345 64 02
 # description: start and stop the acas app.js, server.js and apache instance
 # processname: acas
@@ -17,11 +17,54 @@ if [ -f /etc/redhat-release ]; then
     OS=`cat /etc/redhat-release | awk {'print $1}'`
     VER=`cut -d ' ' -f 3 /etc/redhat-release`
     . /etc/init.d/functions
+    apacheCMD='/usr/sbin/httpd'
 elif [ -f /etc/lsb-release ]; then
     . /etc/lsb-release
     OS=$DISTRIB_ID
     VER=$DISTRIB_RELEASE
     . /lib/lsb/init-functions
+    action() {
+      local STRING rc
+
+      STRING=$1
+      echo -n "$STRING "
+      shift
+      "$@" && success $"$STRING" || failure $"$STRING"
+      rc=$?
+      echo
+      return $rc
+    }
+    success() {
+      [ "$BOOTUP" != "verbose" -a -z "$LSB" ] && echo_success
+      return 0
+    }
+    failure() {
+      rc=$?
+      [ "$BOOTUP" != "verbose" -a -z "$LSB" ] && echo_failure
+      return $rc
+    }
+    echo_success() {
+      [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+      echo -n "[  "
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_SUCCESS
+      echo -n $"OK"
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+      echo -n "  ]"
+      echo -ne "\r"
+      return 0
+    }
+    
+    echo_failure() {
+      [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
+      echo -n "["
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_FAILURE
+      echo -n $"FAILED"
+      [ "$BOOTUP" = "color" ] && $SETCOLOR_NORMAL
+      echo -n "]"
+      echo -ne "\r"
+      return 1
+    }
+    apacheCMD='/usr/sbin/apache2'
 elif [ -f /etc/debian_version ]; then
     OS=Debian  # XXX or Ubuntu??
     VER=$(cat /etc/debian_version)
@@ -74,13 +117,14 @@ stop_server() {
 }
 
 apache_running() {
-    pidofproc -p $ACAS_HOME/bin/apache.pid 2>&1 >/dev/null
+    pidofproc -p $ACAS_HOME/bin/apache.pid "DAEMON" 2>&1 >/dev/null
     return $?
     #[ `pgrep $pid` ] && echo 'running' || echo 'running'
 }
 
 start_apache() {
-    startCommand=" /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
+    
+    startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
@@ -89,7 +133,7 @@ start_apache() {
 }
 
 stop_apache() {
-    stopCommand="/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null"
+    stopCommand="$apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k stop 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         stopCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($stopCommand)\""
     fi
@@ -98,7 +142,7 @@ stop_apache() {
 }
 
 apache_reload() {
-    reloadCommand="/usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null"
+    reloadCommand="$apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k graceful 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         reloadCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($reloadCommand)\""
     fi
@@ -253,7 +297,6 @@ get_status() {
 ##             Edit the variables below for your installation                 ##
 ################################################################################
 ################################################################################
-
 # SETUP ACAS_HOME path
 scriptPath=$(readlink -f ${BASH_SOURCE[0]})
 ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)

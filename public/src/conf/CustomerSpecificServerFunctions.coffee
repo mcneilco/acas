@@ -259,3 +259,72 @@ exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
 		out = out.slice(0,-1) + '\n'
 
 	callback out
+
+
+exports.getPreferredBatchIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234::7"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else #not spec mode
+		config = require '../../../conf/compiled/conf.js'
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.server.service.external.preferred.batchid.url
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
+
+exports.getPreferredParentIds = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.preferredName = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.preferredName = "DNS000001234"
+			else if req.requestName.indexOf("compoundName") > -1
+				res.preferredName = "CMPD000001234"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else
+		config = require '../../../conf/compiled/conf.js'
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.server.service.external.preferred.batchid.url+"/parent"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
+
+

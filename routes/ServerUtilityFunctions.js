@@ -110,6 +110,81 @@
     })(this));
   };
 
+  exports.runRApacheFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
+    var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON, serverUtilityFunctions;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    csUtilities.logUsage("About to call RApache function: " + rFunction, JSON.stringify(req.body), req.body.user);
+    if (preValidationFunction != null) {
+      preValErrors = preValidationFunction.call(this, req.body);
+    } else {
+      preValErrors = basicRScriptPreValidation(req.body);
+    }
+    if (preValErrors.hasError) {
+      console.log(preValErrors);
+      returnFunction.call(this, JSON.stringify(preValErrors));
+      return;
+    }
+    requestBody = {
+      rScript: rScript,
+      rFunction: rFunction,
+      request: JSON.stringify(req.body)
+    };
+    if (req.query.testMode || global.specRunnerTestmode) {
+      runRFunctionServiceTestJSON = require('../public/javascripts/spec/testFixtures/runRFunctionServiceTestJSON.js');
+      console.log('test');
+      console.log(JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError));
+      return returnFunction.call(this, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse));
+    } else {
+      return request.post({
+        timeout: 6000000,
+        url: config.all.client.service.rapache.fullpath + "runfunction",
+        json: true,
+        body: JSON.stringify(requestBody)
+      }, (function(_this) {
+        return function(error, response, body) {
+          var message, messageText, result;
+          _this.serverError = error;
+          _this.responseJSON = body;
+          if (((_this.responseJSON != null) && (_this.responseJSON["RExecutionError"] != null)) || (_this.serverError != null)) {
+            if ((_this.responseJSON != null) && (_this.responseJSON["RExecutionError"] != null)) {
+              messageText = _this.responseJSON["RExecutionError"];
+            } else {
+              messageText = _this.serverError;
+            }
+            message = {
+              errorLevel: "error",
+              message: messageText
+            };
+            result = {
+              hasError: true,
+              hasWarning: false,
+              errorMessages: [message],
+              transactionId: null,
+              experimentId: null
+            };
+            returnFunction.call(_this, JSON.stringify(result));
+            return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), req.body.user);
+          } else {
+            returnFunction.call(_this, JSON.stringify(_this.responseJSON));
+            try {
+              if (_this.responseJSON.hasError) {
+                return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, JSON.stringify(_this.responseJSON), req.body.user);
+              } else {
+                return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", req.body.user);
+              }
+            } catch (_error) {
+              error = _error;
+              return console.log(error);
+            }
+          }
+        };
+      })(this));
+    }
+  };
+
   exports.runRScript = function(rScript) {
     var child, command, config, exec, rScriptCommand, serverUtilityFunctions;
     config = require('../conf/compiled/conf.js');
@@ -137,7 +212,8 @@
    */
 
   exports.setupRoutes = function(app) {
-    return app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+    app.post('/api/runRFunctionTest', exports.runRFunctionTest);
+    return app.post('/api/runRApacheFunctionTest', exports.runRApacheFunctionTest);
   };
 
   exports.runRFunctionTest = function(request, response) {
@@ -145,6 +221,16 @@
       'Content-Type': 'application/json'
     });
     return exports.runRFunction(request, "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+      return response.end(rReturn);
+    });
+  };
+
+  exports.runRApacheFunctionTest = function(request, response) {
+    response.writeHead(200, {
+      'Content-Type': 'application/json'
+    });
+    return exports.runRApacheFunction(request, "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R", "runRFunctionTest", function(rReturn) {
+      console.log(rReturn);
       return response.end(rReturn);
     });
   };

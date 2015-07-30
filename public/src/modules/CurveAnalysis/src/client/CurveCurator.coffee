@@ -42,11 +42,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@$el.empty()
 		@$el.html @template()
 		if @model?
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curve').type})
+			plotCurveClass =  window[curveFitClasses.get 'plotCurveClass']
+
 			@$('.bv_plotWindow').attr('id', "bvID_plotWindow_" + @model.cid)
 			@doseResponseKnockoutPanelController= new DoseResponseKnockoutPanelController
 				el: @$('.bv_doseResponseKnockoutPanel')
 			@doseResponseKnockoutPanelController.render()
-			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'))
+			@initJSXGraph(@model.get('points'), @model.get('curve'), @model.get('plotWindow'), @$('.bv_plotWindow').attr('id'), plotCurveClass)
 			@
 		else
 			@$el.html "Plot data not loaded"
@@ -77,11 +81,12 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@model.trigger 'change'
 		return
 
-	initJSXGraph: (points, curve, plotWindow, divID) =>
-		@points = points
-		log10 = (val) ->
-			Math.log(val) / Math.LN10
+	log10: (val) ->
+		Math.log(val) / Math.LN10
 
+	initJSXGraph: (points, curve, plotWindow, divID, plotCurveClass) =>
+		@points = points
+		log10 = @log10
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
@@ -238,38 +243,8 @@ class window.DoseResponsePlotController extends AbstractFormController
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
 
 		if curve?
-			if curve.type == "4 parameter D-R"
-				fct = (x) ->
-					curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ec50)))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ec50?
-					intersect = fct(log10(curve.reported_ec50))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ec50),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ec50),intersect],[log10(curve.reported_ec50),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-			if curve.type == "Ki Fit"
-				fct = (x) ->
-					#Max + (Min - Max)/(1+10^(X-log(10^logKi*(1+ligandConc/Kd))))
-					#    cParm + (parmMat[,1]-cParm)/(1+10^(log10(dose)-log10(parmMat[,3]*(1+parmMat[,4]/parmMat[,5]))))
-					#'max + (min-max)/(1+10^(log10(x)-log10(ki*(1+ligandConc/kd))))'
-					curve.max + (curve.min - curve.max) / (1 + Math.pow(10,(x-log10(curve.ki*(1 + curve.ligandConc/curve.kd)))))
-				brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-				if curve.reported_ki?
-					intersect = fct(log10(curve.reported_ki))
-					if curve.reported_operator?
-						color = '#ff0000'
-					else
-						color = '#808080'
-					#				Horizontal Line
-					brd.create('line',[[plotWindow[0],intersect],[log10(curve.reported_ki),intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-					#				Vertical Line
-					brd.create('line',[[log10(curve.reported_ki),intersect],[log10(curve.reported_ki),0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-
+			curvePlot = new plotCurveClass()
+			curvePlot.render(brd, curve, plotWindow)
 
 		getMouseCoords = (e) ->
 			cPos = brd.getCoordsTopLeftCorner(e)
@@ -359,32 +334,47 @@ class window.CurveDetail extends Backbone.Model
 			@set fitSettings: new DoseResponseAnalysisParameters(@get('fitSettings'))
 
 	parse: (resp) =>
-		drapType = switch resp.renderingHint
-			when "4 parameter D-R" then DoseResponseAnalysisParameters
-			when "Ki Fit" then DoseResponseKiAnalysisParameters
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: resp.renderingHint})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
 		if resp.fitSettings not instanceof drapType
 			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
 class window.CurveEditorController extends Backbone.View
 	template: _.template($("#CurveEditorView").html())
+	defaults:
+		locked: false
+
 	events:
 		'click .bv_reset': 'handleResetClicked'
 		'click .bv_update': 'handleUpdateClicked'
 		'click .bv_approve': 'handleApproveClicked'
 		'click .bv_reject': 'handleRejectClicked'
 
+	initialize: =>
+		if @options.locked
+			@locked = @options.locked
+
 	render: =>
 		@$el.empty()
 		if @model?
 			@$el.html @template()
-			drapcType = switch @model.get('renderingHint')
-				when "4 parameter D-R" then DoseResponseAnalysisParametersController
-				when "Ki Fit" then DoseResponseKiAnalysisParametersController
+			if @locked
+				@$('.bv_update').attr 'disabled', 'disabled'
+
+			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('renderingHint')})
+			if curveFitClasses?
+				controllerClass =  curveFitClasses.get 'parametersController'
+				drapcType = window[controllerClass]
 			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"
+
 			@drapc.render()
 
 			@stopListening @drapc.model, 'change'
@@ -398,6 +388,7 @@ class window.CurveEditorController extends Backbone.View
 			@stopListening @drpc.model, 'change'
 			@listenTo @drpc.model, 'change', @handlePointsChanged
 
+			@$('.bv_compoundCode').html @model.get('compoundCode')
 			@$('.bv_reportedValues').html @model.get('reportedValues')
 			@$('.bv_fitSummary').html @model.get('fitSummary')
 			@$('.bv_parameterStdErrors').html @model.get('parameterStdErrors')
@@ -591,6 +582,8 @@ class window.CurveSummaryController extends Backbone.View
 	template: _.template($("#CurveSummaryView").html())
 	tagName: 'div'
 	className: 'bv_curveSummary'
+	defaults:
+		locked: false
 	events:
 		'click .bv_group_thumbnail': 'setSelected'
 		'click .bv_userApprove': 'userApprove'
@@ -599,6 +592,9 @@ class window.CurveSummaryController extends Backbone.View
 
 	initialize: ->
 		@model.on 'change', @render
+		if @options.locked
+			@locked = @options.locked
+
 
 	render: =>
 		@$el.empty()
@@ -607,10 +603,14 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = window.conf.service.rapache.fullpath+"curve/render/dr/?legend=false&showGrid=false&height=120&width=250&curveIds="
-			curveUrl += @model.get('curveid') + "&showAxes=false&labelAxes=false"
+			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl += @model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
+
+		if @locked
+			@$('.bv_flagUser').attr 'disabled', 'disabled'
+
 		if @model.get('algorithmFlagStatus') == 'no fit'
 			@$('.bv_pass').hide()
 			@$('.bv_fail').show()
@@ -648,6 +648,10 @@ class window.CurveSummaryController extends Backbone.View
 #		@model.on 'change', @render
 		@
 
+	approveUncurated: =>
+		if @model.get("userFlagStatus") == ""
+			@userApprove()
+
 	userApprove: ->
 		@approveReject("approved")
 
@@ -668,7 +672,6 @@ class window.CurveSummaryController extends Backbone.View
 		@model.save(userFlagStatus: userFlagStatus, user: window.AppLaunchParams.loginUserName, {
 			wait: true,
 			success: =>
-#				UtilityFunctions::hideProgressModal $('.bv_curveCuratorDropDown')
 				@enableSummary()
 				if @$el.hasClass('selected')
 					@trigger 'selected', @
@@ -705,7 +708,11 @@ class window.CurveSummaryController extends Backbone.View
 
 class window.CurveSummaryListController extends Backbone.View
 	template: _.template($("#CurveSummaryListView").html())
+	defaults:
+		locked: false
 	initialize: ->
+		if @options.locked
+			@locked = @options.locked
 		@filterKey = 'all'
 		@sortKey = 'none'
 		@sortAscending = true
@@ -714,6 +721,7 @@ class window.CurveSummaryListController extends Backbone.View
 			@initiallySelectedCurveID = @options.selectedCurve
 		else
 			@initiallySelectedCurveID = "NA"
+		@on 'handleApproveUncurated', @handleApproveUncurated
 
 	render: =>
 		@$el.empty()
@@ -737,8 +745,13 @@ class window.CurveSummaryListController extends Backbone.View
 			@toRender = new Backbone.Collection @toRender
 
 		i = 1
+		@csControllers = []
 		@toRender.each (cs) =>
-			csController = new CurveSummaryController(model: cs)
+			csController = new CurveSummaryController
+				model: cs
+				locked: @locked
+			csController.on "approveUncurated", csController.approveUncurated
+			@csControllers.push csController
 			@$('.bv_curveSummaries').append(csController.render().el)
 			csController.on 'selected', @selectionUpdated
 			csController.on 'showCurveEditorDirtyPanel', @showCurveEditorDirtyPanel
@@ -775,6 +788,11 @@ class window.CurveSummaryListController extends Backbone.View
 			who.clearSelected()
 			@showCurveEditorDirtyPanel()
 
+	handleApproveUncurated: ->
+		for curveSummaryController in @csControllers
+			curveSummaryController.trigger 'approveUncurated'
+
+
 	showCurveEditorDirtyPanel: =>
 		@curveEditorDirtyPanel.show()
 
@@ -789,23 +807,32 @@ class window.CurveSummaryListController extends Backbone.View
 
 class window.CurveCuratorController extends Backbone.View
 	template: _.template($("#CurveCuratorView").html())
+	defaults:
+		locked: false
+
 	events:
 		'change .bv_filterBy': 'handleFilterChanged'
 		'change .bv_sortBy': 'handleSortChanged'
 		'click .bv_sortDirection_ascending': 'handleSortChanged'
 		'click .bv_sortDirection_descending': 'handleSortChanged'
+		'click .bv_approve_uncurated': 'handleApproveUncuratedClicked'
 
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+
 		if @model?
+			if @locked
+				@$('.bv_approve_uncurated').attr 'disabled', 'disabled'
 			@curveListController = new CurveSummaryListController
 				el: @$('.bv_curveList')
 				collection: @model.get 'curves'
 				selectedCurve: @initiallySelectedCurveID
+				locked: @locked
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
+				locked: @locked
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
@@ -846,6 +873,9 @@ class window.CurveCuratorController extends Backbone.View
 
 		@
 
+	handleApproveUncuratedClicked: =>
+		@curveListController.trigger 'handleApproveUncurated'
+
 	handleCurveDetailSaved: (oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus) =>
 		@curveListController.collection.updateCurveSummary(oldID, newID, dirty, category, userFlagStatus, algorithmFlagStatus)
 
@@ -870,6 +900,48 @@ class window.CurveCuratorController extends Backbone.View
 					backdrop: "static"
 				@$('.bv_badExperimentCode').modal "show"
 
+	showBadExperimentModal: ->
+		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')
+
+	handleWarnUserLockedExperiment: (exptCode, curveID)->
+		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		@$('.bv_experimentLocked').modal "show"
+		@$('.bv_experimentLocked').on "hidden", =>
+			@getCurvesFromExperimentCode(exptCode, curveID)
+
+	checkLocked: (experiment, status) =>
+		expt = [experiment]
+		lockFilters = $.parseJSON window.conf.experiment.lockwhenapproved.filter
+		experimentMatchesAFilter = false
+		_.each lockFilters, (filter) ->
+			test = _.where(expt, filter)
+			if test.length > 0
+				experimentMatchesAFilter = true
+		shouldLock = (status == 'approved') & experimentMatchesAFilter
+		return shouldLock
+
+	setupCurator: (exptCode, curveID)=>
+		$.ajax
+			type: 'GET'
+			url: "/api/experiments/"+exptCode+"/exptvalues/bystate/metadata/experiment metadata/byvalue/codeValue/experiment status"
+			dataType: 'json'
+			success: (json) =>
+				if json.length == 0
+					@showBadExperimentModal()
+				else
+					experiment = json[0].lsState.experiment
+					status = json[0].codeValue
+					shouldLock = @checkLocked(experiment, status)
+					if shouldLock
+						@locked = true
+						@handleWarnUserLockedExperiment(exptCode, curveID)
+					else
+						@locked = false
+						@getCurvesFromExperimentCode(exptCode, curveID)
+			error: (err) =>
+				@showBadExperimentModal
+
 	curveSelectionUpdated: (who) =>
 		UtilityFunctions::showProgressModal @$('.bv_curveCuratorDropDown')
 		curveDetail = new CurveDetail id: who.model.get('curveid')
@@ -882,7 +954,6 @@ class window.CurveCuratorController extends Backbone.View
 				@$('.bv_badCurveID').modal
 					backdrop: "static"
 				@$('.bv_badCurveID').modal "show"
-
 
 	handleGetCurveDetailReturn: (json) =>
 		@curveEditorController.setModel new CurveDetail(json)
