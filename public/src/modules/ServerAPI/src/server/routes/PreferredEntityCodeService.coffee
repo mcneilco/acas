@@ -1,12 +1,14 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/preferredCodes', exports.preferredCodesRoute
+	app.post '/api/entitymeta/referenceCodes', exports.referenceCodesRoute
 	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute
+	app.post '/api/entitymeta/referenceCodes', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
@@ -30,16 +32,16 @@ exports.getConfiguredEntityTypes = (asCodes, callback) ->
 	else
 		callback configuredEntityTypes.entityTypes
 
-exports.preferredCodesRoute = (req, resp) ->
+exports.referenceCodesRoute = (req, resp) ->
 	requestData =
 		type: req.body.type
 		kind: req.body.kind
 		entityIdStringLines: req.body.entityIdStringLines
 
-	exports.preferredCodes requestData, (json) ->
+	exports.referenceCodes requestData, (json) ->
 		resp.json json
 
-exports.preferredCodes = (requestData, callback) ->
+exports.referenceCodes = (requestData, callback) ->
 	console.log global.specRunnerTestmode
 	#Note specRunnerTestMode is handled within functions called from here
 	if requestData.type is "compound"
@@ -88,6 +90,11 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 
 exports.getSpecificEntityType = (displayName, callback) ->
 	callback configuredEntityTypes.entityTypesbyDisplayName[displayName]
+
+exports.pickBestLabelsRoute = (req, resp) ->
+
+exports.pickBestLabels = (requestData, callback) ->
+
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []

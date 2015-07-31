@@ -3,14 +3,14 @@
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
-    app.post('/api/entitymeta/preferredCodes', exports.preferredCodesRoute);
-    return app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificConfiguredEntityType);
+    app.post('/api/entitymeta/referenceCodes', exports.referenceCodesRoute);
+    return app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
-    app.post('/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute);
-    return app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificConfiguredEntityType);
+    app.post('/api/entitymeta/referenceCodes', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
+    return app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
@@ -53,19 +53,19 @@
     }
   };
 
-  exports.preferredCodesRoute = function(req, resp) {
+  exports.referenceCodesRoute = function(req, resp) {
     var requestData;
     requestData = {
       type: req.body.type,
       kind: req.body.kind,
       entityIdStringLines: req.body.entityIdStringLines
     };
-    return exports.preferredCodes(requestData, function(json) {
+    return exports.referenceCodes(requestData, function(json) {
       return resp.json(json);
     });
   };
 
-  exports.preferredCodes = function(requestData, callback) {
+  exports.referenceCodes = function(requestData, callback) {
     var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
     console.log(global.specRunnerTestmode);
     if (requestData.type === "compound") {
@@ -132,10 +132,12 @@
     return resp.end("problem with preferred Code request: code type and kind are unknown to system");
   };
 
-  exports.getSpecificConfiguredEntityType = function(req, resp) {
-    var displayName;
-    displayName = decodeURI(req.params.displayName);
+  exports.getSpecificEntityTypeRoute = function(req, resp) {
     return resp.json(configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]);
+  };
+
+  exports.getSpecificEntityType = function(displayName, callback) {
+    return callback(configuredEntityTypes.entityTypesbyDisplayName[displayName]);
   };
 
   formatCSVRequestAsReqArray = function(csvReq) {

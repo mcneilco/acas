@@ -59,7 +59,7 @@
           return assert.equal(this.responseJSON[0].ignored != null, true);
         });
       });
-      return describe.only("when a specific entity type is requested by displayName", function() {
+      return describe("when a specific entity type is requested by displayName", function() {
         var entityType;
         entityType = encodeURIComponent("Corporate Parent ID");
         before(function(done) {
@@ -90,7 +90,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -135,7 +135,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -162,7 +162,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -212,7 +212,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -267,7 +267,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -327,7 +327,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/preferredCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -394,7 +394,7 @@
         };
         before(function(done) {
           this.timeout(20000);
-          return codeService.preferredCodes(requestData, (function(_this) {
+          return codeService.referenceCodes(requestData, (function(_this) {
             return function(response) {
               _this.responseJSON = response;
               console.log(response);
@@ -439,7 +439,7 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
-      return describe("available entity type list", function() {
+      describe("available entity type list", function() {
         describe("when requested as fully detailed list", function() {
           before(function(done) {
             return codeService.getConfiguredEntityTypes(false, (function(_this) {
@@ -478,6 +478,73 @@
             return assert.equal(this.responseJSON[0].ignored != null, true);
           });
         });
+      });
+      return describe("specific entity type details", function() {
+        before(function(done) {
+          return codeService.getSpecificEntityType("Corporate Parent ID", (function(_this) {
+            return function(response) {
+              _this.responseJSON = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return entity type descriptions with required attributes", function() {
+          assert.equal(this.responseJSON.type != null, true);
+          assert.equal(this.responseJSON.kind != null, true);
+          assert.equal(this.responseJSON.displayName != null, true);
+          assert.equal(this.responseJSON.codeOrigin != null, true);
+          return assert.equal(this.responseJSON.sourceExternal != null, true);
+        });
+      });
+    });
+  });
+
+  describe.only("pickBestLabels service test", function() {
+    return describe("for lsThings", function() {
+      var body;
+      body = {
+        referenceCodes: "GENE-000002\nGENE-000003",
+        displayName: "Gene ID"
+      };
+      before(function(done) {
+        this.timeout(20000);
+        return request.post({
+          url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/pickBestLabels",
+          json: true,
+          body: body
+        }, (function(_this) {
+          return function(error, response, body) {
+            _this.serverError = error;
+            _this.responseJSON = body;
+            console.log(_this.responseJSON);
+            _this.serverResponse = response;
+            return done();
+          };
+        })(this));
+      });
+      it("should return an object with the correct fields", function() {
+        assert(this.responseJSON.displayName != null);
+        return assert(this.responseJSON.resultCSV != null);
+      });
+      it("should have the first line query in second row, first column", function() {
+        var res;
+        res = this.responseJSON.resultCSV.split('\n');
+        return assert.equal(res[1].split(',')[0], "GENE-000002");
+      });
+      it("should have the first line result in second row, second column", function() {
+        var res;
+        res = this.responseJSON.resultCSV.split('\n');
+        return assert.equal(res[1].split(',')[1], "1");
+      });
+      it("should have the second line query in third row, first column", function() {
+        var res;
+        res = this.responseJSON.resultCSV.split('\n');
+        return assert.equal(res[2].split(',')[0], "GENE-000003");
+      });
+      return it("should have the second line result in third row, second column", function() {
+        var res;
+        res = this.responseJSON.resultCSV.split('\n');
+        return assert.equal(res[2].split(',')[1], "2");
       });
     });
   });

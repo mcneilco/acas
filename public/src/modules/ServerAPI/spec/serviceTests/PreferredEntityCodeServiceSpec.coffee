@@ -82,7 +82,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -113,7 +113,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -133,7 +133,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -167,7 +167,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -204,7 +204,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -244,7 +244,7 @@ describe  "Preferred Entity code service tests", ->
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/preferredCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -289,7 +289,7 @@ describe  "Preferred Entity code service tests", ->
 				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
-				codeService.preferredCodes requestData, (response) =>
+				codeService.referenceCodes requestData, (response) =>
 					@responseJSON = response
 					console.log response
 					done()
@@ -341,7 +341,7 @@ describe  "Preferred Entity code service tests", ->
 					assert.equal @responseJSON[0].code?, true
 					assert.equal @responseJSON[0].name?, true
 					assert.equal @responseJSON[0].ignored?, true
-		describe.only "specific entity type details", ->
+		describe "specific entity type details", ->
 			before (done) ->
 				codeService.getSpecificEntityType "Corporate Parent ID", (response) =>
 					@responseJSON = response
@@ -353,9 +353,39 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON.codeOrigin?, true
 				assert.equal @responseJSON.sourceExternal?, true
 
-describe "pickBestLabels service test", ->
-	describe "for lsThings"
+#TODO implement pickBestLabels
+describe.only "pickBestLabels service test", ->
+	describe "for lsThings", ->
+		body =
+			referenceCodes: "GENE-000002\nGENE-000003"
+			displayName: "Gene ID"
 		before (done) ->
+			@.timeout(20000)
+			request.post
+				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/pickBestLabels"
+				json: true
+				body: body
+			, (error, response, body) =>
+				@serverError = error
+				@responseJSON = body
+				console.log @responseJSON
+				@serverResponse = response
+				done()
+		it "should return an object with the correct fields", ->
+			assert @responseJSON.displayName?
+			assert @responseJSON.resultCSV?
+		it "should have the first line query in second row, first column", ->
+			res = @responseJSON.resultCSV.split('\n')
+			assert.equal res[1].split(',')[0], "GENE-000002"
+		it "should have the first line result in second row, second column", ->
+			res = @responseJSON.resultCSV.split('\n')
+			assert.equal res[1].split(',')[1], "1"
+		it "should have the second line query in third row, first column", ->
+			res = @responseJSON.resultCSV.split('\n')
+			assert.equal res[2].split(',')[0], "GENE-000003"
+		it "should have the second line result in third row, second column", ->
+			res = @responseJSON.resultCSV.split('\n')
+			assert.equal res[2].split(',')[1], "2"
 
 
 
