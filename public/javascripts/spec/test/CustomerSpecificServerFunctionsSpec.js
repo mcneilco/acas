@@ -399,11 +399,11 @@
         requestData = {
           requests: [
             {
-              requestName: "DNS000000001"
+              requestName: "CMPD-0000001"
             }, {
-              requestName: "DNS000673874"
+              requestName: "CMPD-0000002"
             }, {
-              requestName: "DNS999999999"
+              requestName: "CMPD-999999999"
             }
           ]
         };
@@ -424,7 +424,7 @@
           return assert.equal(this.response[0].requestName, this.response[0].preferredName);
         });
         it("should have the batch an alias", function() {
-          return assert.equal(this.response[1].preferredName, "DNS000001234");
+          return assert.equal(this.response[1].preferredName, "CMPD-0000002");
         });
         return it("should not return an alias if the batch is not valid", function() {
           return assert.equal(this.response[2].preferredName, "");

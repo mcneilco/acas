@@ -147,7 +147,7 @@
 
   exports.registerCmpds = function(req, resp) {
     var createSummaryZip, moveSdfFile, registerCmpds;
-    createSummaryZip = function(fileName, filePath, json) {
+    createSummaryZip = function(fileName, json) {
       var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, zip, zipFileName, zipFilePath;
       fileName = fileName.substring(0, fileName.length - 4);
       zipFileName = fileName + ".zip";
@@ -159,7 +159,7 @@
         rFile = ref[i];
         serverUtilityFunctions = require('./ServerUtilityFunctions.js');
         config = require('../conf/compiled/conf.js');
-        rFileName = rFile.slice(rFile.indexOf(fileName));
+        rFileName = rFile.replace(config.all.server.service.persistence.filePath + '/cmpdreg_bulkload', '');
         zip.file(rFileName, fs.readFileSync(rFile));
       }
       origUploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
@@ -198,7 +198,7 @@
           }, (function(_this) {
             return function(error, response, json) {
               if (!error && response.statusCode === 200) {
-                return createSummaryZip(fileName, req.body.filePath, json);
+                return createSummaryZip(fileName, json);
               } else {
                 console.log('got ajax error trying to register compounds');
                 console.log(error);
@@ -237,6 +237,7 @@
               return callback("error", resp);
             } else {
               req.body.filePath = newPath;
+              req.body.fileName = fileName;
               return callback(req, resp);
             }
           });

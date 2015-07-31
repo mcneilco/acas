@@ -1065,7 +1065,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     if (!("Rendering Hint" %in% names(results))) {
       stopUser("Dose Response data must have a 'Rendering Hint' column.")
     }
-    doseResponseHint <- unique(results[["Rendering Hint"]])
+    doseResponseHint <- unique(results[["Rendering Hint"]][!is.na(results[["Rendering Hint"]]) & results[["Rendering Hint"]] != ""])
     if (length(doseResponseHint) > 1) {
       stopUser(paste0("Only one Rendering Hint can be used within one file. ",
                       "Split different kinds of curves into multiple experiments."))
@@ -2286,7 +2286,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
-  analysisGroupData$unitKind <- analysisGroupData$valueUnit
+  #analysisGroupData$unitKind <- analysisGroupData$valueUnit (Removed for ACASDEV-259)
   analysisGroupData$operatorKind <- analysisGroupData$valueOperator
   analysisGroupData$tempStateId <- as.numeric(as.factor(analysisGroupData$tempStateId))
   analysisGroupData$lsType <- "default"
@@ -3134,7 +3134,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
         link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
-        formatParameters = formatParameters, concColumn = "Dose (uM)",
+        formatParameters = formatParameters, concColumn = subjectData[2,2],# 2,2 is usually Dose (uM)
         codeAssignments = codeAssignments)
       
       intermedList$subjectData$valueKind[intermedList$subjectData$valueKind == "Dose"] <- "concentration"
