@@ -119,7 +119,7 @@ exports.saveTemplate = (req, resp) ->
 		)
 
 exports.registerCmpds = (req, resp) ->
-	createSummaryZip = (fileName, filePath, json) ->
+	createSummaryZip = (fileName, json) ->
 		#remove .sdf from fileName
 		fileName = fileName.substring(0, fileName.length-4)
 		zipFileName = fileName+".zip"
@@ -130,7 +130,7 @@ exports.registerCmpds = (req, resp) ->
 		for rFile in json.reportFiles
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			config = require '../conf/compiled/conf.js'
-			rFileName = rFile.slice(rFile.indexOf(fileName))
+			rFileName = rFile.replace(config.all.server.service.persistence.filePath+'/cmpdreg_bulkload', '')
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
@@ -163,7 +163,7 @@ exports.registerCmpds = (req, resp) ->
 					json: true
 				, (error, response, json) =>
 					if !error && response.statusCode == 200
-						createSummaryZip fileName, req.body.filePath, json
+						createSummaryZip fileName, json
 					else
 						console.log 'got ajax error trying to register compounds'
 						console.log error
@@ -197,6 +197,7 @@ exports.registerCmpds = (req, resp) ->
 						callback "error", resp
 					else
 						req.body.filePath = newPath
+						req.body.fileName = fileName
 						callback req, resp
 
 	moveSdfFile req, resp, registerCmpds

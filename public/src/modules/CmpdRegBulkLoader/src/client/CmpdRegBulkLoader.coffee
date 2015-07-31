@@ -637,6 +637,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
+		console.log @fileName
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"

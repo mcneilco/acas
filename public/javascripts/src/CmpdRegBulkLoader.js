@@ -1035,6 +1035,7 @@
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
         userName: window.AppLaunchParams.loginUser.username
       };
+      console.log(this.fileName);
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/registerCmpds",
