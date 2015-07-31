@@ -1,12 +1,12 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
 	app.post '/api/entitymeta/preferredCodes', exports.preferredCodesRoute
-	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificConfiguredEntityType
+	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
 	app.post '/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute
-	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificConfiguredEntityType
+	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
@@ -83,9 +83,11 @@ exports.preferredCodes = (requestData, callback) ->
 	resp.statusCode = 500
 	resp.end "problem with preferred Code request: code type and kind are unknown to system"
 
-exports.getSpecificConfiguredEntityType = (req, resp) ->
-	displayName = decodeURI(req.params.displayName)
+exports.getSpecificEntityTypeRoute = (req, resp) ->
 	resp.json configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]
+
+exports.getSpecificEntityType = (displayName, callback) ->
+	callback configuredEntityTypes.entityTypesbyDisplayName[displayName]
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []

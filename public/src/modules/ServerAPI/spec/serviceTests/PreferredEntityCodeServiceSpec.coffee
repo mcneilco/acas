@@ -60,7 +60,7 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON[0].code?, true
 				assert.equal @responseJSON[0].name?, true
 				assert.equal @responseJSON[0].ignored?, true
-		describe.only "when a specific entity type is requested by displayName", ->
+		describe "when a specific entity type is requested by displayName", ->
 			entityType = encodeURIComponent("Corporate Parent ID")
 			before (done) ->
 				request "http://"+config.all.client.host+":"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes/displayName/"+entityType, (error, response, body) =>
@@ -341,6 +341,22 @@ describe  "Preferred Entity code service tests", ->
 					assert.equal @responseJSON[0].code?, true
 					assert.equal @responseJSON[0].name?, true
 					assert.equal @responseJSON[0].ignored?, true
+		describe.only "specific entity type details", ->
+			before (done) ->
+				codeService.getSpecificEntityType "Corporate Parent ID", (response) =>
+					@responseJSON = response
+					done()
+			it "should return entity type descriptions with required attributes", ->
+				assert.equal @responseJSON.type?, true
+				assert.equal @responseJSON.kind?, true
+				assert.equal @responseJSON.displayName?, true
+				assert.equal @responseJSON.codeOrigin?, true
+				assert.equal @responseJSON.sourceExternal?, true
+
+describe "pickBestLabels service test", ->
+	describe "for lsThings"
+		before (done) ->
+
 
 
 #TODO real implementation of getThingCodesFormNamesOrCodes
