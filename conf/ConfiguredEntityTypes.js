@@ -1,4 +1,6 @@
 (function() {
+  var entity, i, len, ref;
+
   exports.entityTypes = [
     {
       type: "compound",
@@ -32,5 +34,13 @@
       sourceExternal: false
     }
   ];
+
+  exports.entityTypesbyDisplayName = {};
+
+  ref = exports.entityTypes;
+  for (i = 0, len = ref.length; i < len; i++) {
+    entity = ref[i];
+    exports.entityTypesbyDisplayName[entity.displayName] = entity;
+  }
 
 }).call(this);

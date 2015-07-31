@@ -1,10 +1,12 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
 	app.post '/api/entitymeta/preferredCodes', exports.preferredCodesRoute
+	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificConfiguredEntityType
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
 	app.post '/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute
+	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificConfiguredEntityType
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
@@ -80,6 +82,10 @@ exports.preferredCodes = (requestData, callback) ->
 	#this is the fall-through. All trapped cases should "return"
 	resp.statusCode = 500
 	resp.end "problem with preferred Code request: code type and kind are unknown to system"
+
+exports.getSpecificConfiguredEntityType = (req, resp) ->
+	displayName = decodeURI(req.params.displayName)
+	resp.json configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []

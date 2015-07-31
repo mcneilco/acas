@@ -30,3 +30,6 @@ exports.entityTypes = [
 	displayName: "Gene ID"
 	sourceExternal: false
 ]
+
+exports.entityTypesbyDisplayName = {} #convert to an object keyed by displayName
+exports.entityTypesbyDisplayName[entity.displayName] = entity for entity in exports.entityTypes

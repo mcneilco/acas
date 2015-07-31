@@ -3,12 +3,14 @@
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
-    return app.post('/api/entitymeta/preferredCodes', exports.preferredCodesRoute);
+    app.post('/api/entitymeta/preferredCodes', exports.preferredCodesRoute);
+    return app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificConfiguredEntityType);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
-    return app.post('/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute);
+    app.post('/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute);
+    return app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificConfiguredEntityType);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
@@ -128,6 +130,12 @@
     }
     resp.statusCode = 500;
     return resp.end("problem with preferred Code request: code type and kind are unknown to system");
+  };
+
+  exports.getSpecificConfiguredEntityType = function(req, resp) {
+    var displayName;
+    displayName = decodeURI(req.params.displayName);
+    return resp.json(configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]);
   };
 
   formatCSVRequestAsReqArray = function(csvReq) {

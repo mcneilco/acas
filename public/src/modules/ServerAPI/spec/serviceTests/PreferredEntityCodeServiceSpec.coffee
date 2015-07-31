@@ -60,6 +60,18 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON[0].code?, true
 				assert.equal @responseJSON[0].name?, true
 				assert.equal @responseJSON[0].ignored?, true
+		describe.only "when a specific entity type is requested by displayName", ->
+			entityType = encodeURIComponent("Corporate Parent ID")
+			before (done) ->
+				request "http://"+config.all.client.host+":"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes/displayName/"+entityType, (error, response, body) =>
+					@responseJSON = parseResponse(body)
+					done()
+			it "should return an object with all the required attributes", ->
+				assert @responseJSON.type?
+				assert @responseJSON.kind?
+				assert @responseJSON.displayName?
+				assert @responseJSON.codeOrigin?
+				assert @responseJSON.sourceExternal?
 
 	describe "get preferred entity codeName for supplied name or codeName", ->
 		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", ->

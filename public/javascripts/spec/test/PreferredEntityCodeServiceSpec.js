@@ -41,7 +41,7 @@
           return assert.equal(this.responseJSON[0].sourceExternal != null, true);
         });
       });
-      return describe("when requested as list of codes", function() {
+      describe("when requested as list of codes", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/configuredEntityTypes/asCodes", (function(_this) {
             return function(error, response, body) {
@@ -57,6 +57,25 @@
           assert.equal(this.responseJSON[0].code != null, true);
           assert.equal(this.responseJSON[0].name != null, true);
           return assert.equal(this.responseJSON[0].ignored != null, true);
+        });
+      });
+      return describe.only("when a specific entity type is requested by displayName", function() {
+        var entityType;
+        entityType = encodeURIComponent("Corporate Parent ID");
+        before(function(done) {
+          return request("http://" + config.all.client.host + ":" + config.all.server.nodeapi.port + "/api/entitymeta/configuredEntityTypes/displayName/" + entityType, (function(_this) {
+            return function(error, response, body) {
+              _this.responseJSON = parseResponse(body);
+              return done();
+            };
+          })(this));
+        });
+        return it("should return an object with all the required attributes", function() {
+          assert(this.responseJSON.type != null);
+          assert(this.responseJSON.kind != null);
+          assert(this.responseJSON.displayName != null);
+          assert(this.responseJSON.codeOrigin != null);
+          return assert(this.responseJSON.sourceExternal != null);
         });
       });
     });
