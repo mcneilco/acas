@@ -70,7 +70,7 @@ exports.preferredCodes = (requestData, callback) ->
 				requests: formatCSVRequestAsReqArray(requestData.entityIdStringLines)
 			preferredThingService.getThingCodesFromNamesOrCodes reqHashes, (codeResponse) ->
 				out = for res in codeResponse.results
-					res.requestName + "," + res.preferredName
+					res.requestName + "," + res.referenceName
 				outStr =  "Requested Name,Preferred Code\n"+out.join('\n')
 				callback
 					type: codeResponse.thingType
