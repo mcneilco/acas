@@ -4,13 +4,15 @@
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
     app.post('/api/entitymeta/referenceCodes', exports.referenceCodesRoute);
-    return app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
+    app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
+    return app.post('/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
     app.post('/api/entitymeta/referenceCodes', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
-    return app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
+    app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
+    return app.post('/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
@@ -56,8 +58,7 @@
   exports.referenceCodesRoute = function(req, resp) {
     var requestData;
     requestData = {
-      type: req.body.type,
-      kind: req.body.kind,
+      displayName: req.body.displayName,
       entityIdStringLines: req.body.entityIdStringLines
     };
     return exports.referenceCodes(requestData, function(json) {
@@ -68,6 +69,10 @@
   exports.referenceCodes = function(requestData, callback) {
     var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
     console.log(global.specRunnerTestmode);
+    exports.getSpecificEntityType(requestData.displayName, function(json) {
+      requestData.type = json.type;
+      return requestData.kind = json.kind;
+    });
     if (requestData.type === "compound") {
       reqHashes = formatCSVRequestAsReqArray(requestData.entityIdStringLines);
       if (requestData.kind === "batch name") {
@@ -114,11 +119,11 @@
             results = [];
             for (i = 0, len = ref.length; i < len; i++) {
               res = ref[i];
-              results.push(res.requestName + "," + res.preferredName);
+              results.push(res.requestName + "," + res.referenceName);
             }
             return results;
           })();
-          outStr = "Requested Name,Preferred Code\n" + out.join('\n');
+          outStr = "Requested Name,Reference Code\n" + out.join('\n');
           return callback({
             type: codeResponse.thingType,
             kind: codeResponse.thingKind,
@@ -139,6 +144,19 @@
   exports.getSpecificEntityType = function(displayName, callback) {
     return callback(configuredEntityTypes.entityTypesbyDisplayName[displayName]);
   };
+
+  exports.pickBestLabelsRoute = function(req, resp) {
+    var requestData;
+    requestData = {
+      displayName: req.body.displayName,
+      referenceCodes: req.body.referenceCodes
+    };
+    return exports.referenceCodes(requestData, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.pickBestLabels = function(requestData, callback) {};
 
   formatCSVRequestAsReqArray = function(csvReq) {
     var i, len, ref, req, requests;

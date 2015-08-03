@@ -76,8 +76,7 @@ describe  "Preferred Entity code service tests", ->
 	describe "get preferred entity codeName for supplied name or codeName", ->
 		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", ->
 			body =
-				type: "parent"
-				kind: "protein"
+				displayName: "Protein Parent"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
@@ -100,15 +99,14 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal res[0].split(',').length, 2
 			it "should have a header row", ->
 				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[0], "Requested Name,Preferred Code"
+				assert.equal res[0], "Requested Name,Reference Code"
 			it "should have the query first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "PROT1"
 
 		describe "when valid compounds sent with invalid type info", ->
 			body =
-				type: "ERROR"
-				kind: "protein"
+				displayName: "ERROR"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
@@ -127,8 +125,7 @@ describe  "Preferred Entity code service tests", ->
 
 		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
-				type: "compound"
-				kind: "batch name"
+				displayName: "Corporate Batch ID"
 				entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
 			before (done) ->
 				@.timeout(20000)
@@ -161,8 +158,7 @@ describe  "Preferred Entity code service tests", ->
 
 		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
-				type: "compound"
-				kind: "parent name"
+				displayName: "Corporate Parent ID"
 				entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
 			before (done) ->
 				@.timeout(20000)
@@ -198,8 +194,7 @@ describe  "Preferred Entity code service tests", ->
 
 		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
 			body =
-				type: "parent"
-				kind: "protein"
+				displayName: "Protein Parent"
 				entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
@@ -236,10 +231,9 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1], ""
 
-		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
+		describe.only "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
 			body =
-				type: "gene"
-				kind: "entrez gene"
+				displayName: "Gene ID"
 				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
@@ -284,8 +278,7 @@ describe  "Preferred Entity code service tests", ->
 
 		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
 			requestData =
-				type: "gene"
-				kind: "entrez gene"
+				displayName: "Gene ID"
 				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
@@ -354,11 +347,11 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON.sourceExternal?, true
 
 #TODO implement pickBestLabels
-describe.only "pickBestLabels service test", ->
+describe "pickBestLabels service test", ->
 	describe "for lsThings", ->
 		body =
-			referenceCodes: "GENE-000002\nGENE-000003"
 			displayName: "Gene ID"
+			referenceCodes: "GENE-000002\nGENE-000003"
 		before (done) ->
 			@.timeout(20000)
 			request.post

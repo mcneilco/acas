@@ -83,8 +83,7 @@
       describe("when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
-          type: "parent",
-          kind: "protein",
+          displayName: "Protein Parent",
           entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
         };
         before(function(done) {
@@ -117,7 +116,7 @@
         it("should have a header row", function() {
           var res;
           res = this.responseJSON.resultCSV.split('\n');
-          return assert.equal(res[0], "Requested Name,Preferred Code");
+          return assert.equal(res[0], "Requested Name,Reference Code");
         });
         return it("should have the query first result column", function() {
           var res;
@@ -128,8 +127,7 @@
       describe("when valid compounds sent with invalid type info", function() {
         var body;
         body = {
-          type: "ERROR",
-          kind: "protein",
+          displayName: "ERROR",
           entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
         };
         before(function(done) {
@@ -155,8 +153,7 @@
       describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
-          type: "compound",
-          kind: "batch name",
+          displayName: "Corporate Batch ID",
           entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
         };
         before(function(done) {
@@ -205,8 +202,7 @@
       describe("when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
-          type: "compound",
-          kind: "parent name",
+          displayName: "Corporate Parent ID",
           entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
         };
         before(function(done) {
@@ -260,8 +256,7 @@
       describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
         var body;
         body = {
-          type: "parent",
-          kind: "protein",
+          displayName: "Protein Parent",
           entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
         };
         before(function(done) {
@@ -317,11 +312,10 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
-      return describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
+      return describe.only("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
         var body;
         body = {
-          type: "gene",
-          kind: "entrez gene",
+          displayName: "Gene ID",
           entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
         };
         before(function(done) {
@@ -388,8 +382,7 @@
       describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
         var requestData;
         requestData = {
-          type: "gene",
-          kind: "entrez gene",
+          displayName: "Gene ID",
           entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
         };
         before(function(done) {
@@ -499,12 +492,12 @@
     });
   });
 
-  describe.only("pickBestLabels service test", function() {
+  describe("pickBestLabels service test", function() {
     return describe("for lsThings", function() {
       var body;
       body = {
-        referenceCodes: "GENE-000002\nGENE-000003",
-        displayName: "Gene ID"
+        displayName: "Gene ID",
+        referenceCodes: "GENE-000002\nGENE-000003"
       };
       before(function(done) {
         this.timeout(20000);

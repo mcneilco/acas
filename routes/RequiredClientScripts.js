@@ -69,7 +69,9 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/TagList.js",
-	"/javascripts/src/ThingInteraction.js"
+	"/javascripts/src/TestModule.js",
+	"/javascripts/src/ThingInteraction.js",
+	"/javascripts/src/node.js"
 ];
 
 exports.jasmineScripts = [
@@ -89,6 +91,8 @@ exports.specScripts = [
 	"/src/modules/Components/spec/testFixtures/projectServiceTestJSON.js",
 	"/src/modules/DocForBatches/spec/testFixtures/testJSON.js",
 	"/src/modules/Logging/spec/testFixtures/LoggingTestJSON.js",
+	"/src/modules/TestModule/spec/testFixtures/TestModuleTestJSON.js",
+	"/src/modules/node/spec/testFixtures/nodeTestJSON.js",
 	"/javascripts/spec/testFixtures/AttachFileCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/AttachFileTestJSON.js",
 	"/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js",
@@ -112,6 +116,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/RunRFunctionServiceTestJSON.js",
+	"/javascripts/spec/testFixtures/TestModuleCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingInteractionTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingTestJSON.js",
@@ -119,6 +124,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/codeTablePutTestJSON.js",
 	"/javascripts/spec/testFixtures/codeTableServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
+	"/javascripts/spec/testFixtures/nodeCodeTableTestJSON.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AdminPanelSpec.js",
@@ -162,7 +168,11 @@ exports.specScripts = [
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
+	"/javascripts/spec/TestModuleServicesSpec.js",
+	"/javascripts/spec/TestModuleSpec.js",
 	"/javascripts/spec/ThingInteractionSpec.js",
 	"/javascripts/spec/ThingSpec.js",
-	"/javascripts/spec/UtilityFunctionsSpec.js"
+	"/javascripts/spec/UtilityFunctionsSpec.js",
+	"/javascripts/spec/nodeServicesSpec.js",
+	"/javascripts/spec/nodeSpec.js"
 ]

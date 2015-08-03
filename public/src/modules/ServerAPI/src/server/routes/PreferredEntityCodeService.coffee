@@ -34,8 +34,7 @@ exports.getConfiguredEntityTypes = (asCodes, callback) ->
 
 exports.referenceCodesRoute = (req, resp) ->
 	requestData =
-		type: req.body.type
-		kind: req.body.kind
+		displayName: req.body.displayName
 		entityIdStringLines: req.body.entityIdStringLines
 
 	exports.referenceCodes requestData, (json) ->
@@ -44,6 +43,12 @@ exports.referenceCodesRoute = (req, resp) ->
 exports.referenceCodes = (requestData, callback) ->
 	console.log global.specRunnerTestmode
 	#Note specRunnerTestMode is handled within functions called from here
+
+	# type and kind
+	exports.getSpecificEntityType requestData.displayName, (json) ->
+		requestData.type = json.type
+		requestData.kind = json.kind
+
 	if requestData.type is "compound"
 		reqHashes = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
 		if requestData.kind is "batch name"
@@ -74,8 +79,8 @@ exports.referenceCodes = (requestData, callback) ->
 				requests: formatCSVRequestAsReqArray(requestData.entityIdStringLines)
 			preferredThingService.getThingCodesFromNamesOrCodes reqHashes, (codeResponse) ->
 				out = for res in codeResponse.results
-					res.requestName + "," + res.preferredName
-				outStr =  "Requested Name,Preferred Code\n"+out.join('\n')
+					res.requestName + "," + res.referenceName
+				outStr =  "Requested Name,Reference Code\n"+out.join('\n')
 				callback
 					type: codeResponse.thingType
 					kind: codeResponse.thingKind
@@ -92,6 +97,12 @@ exports.getSpecificEntityType = (displayName, callback) ->
 	callback configuredEntityTypes.entityTypesbyDisplayName[displayName]
 
 exports.pickBestLabelsRoute = (req, resp) ->
+	requestData =
+		displayName: req.body.displayName
+		referenceCodes: req.body.referenceCodes
+
+	exports.referenceCodes requestData, (json) ->
+		resp.json json
 
 exports.pickBestLabels = (requestData, callback) ->
 

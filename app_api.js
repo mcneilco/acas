@@ -117,15 +117,21 @@
 	routeSet_27 = require("./routes/SetupRoutes.js");
 	if (routeSet_27.setupAPIRoutes) {
 		routeSet_27.setupAPIRoutes(app); }
-	routeSet_28 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_28 = require("./routes/TestModuleRoutes.js");
 	if (routeSet_28.setupAPIRoutes) {
 		routeSet_28.setupAPIRoutes(app); }
-	routeSet_29 = require("./routes/ThingServiceRoutes.js");
+	routeSet_29 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
 	if (routeSet_29.setupAPIRoutes) {
 		routeSet_29.setupAPIRoutes(app); }
-	routeSet_30 = require("./routes/ValidateCloneNameService.js");
+	routeSet_30 = require("./routes/ThingServiceRoutes.js");
 	if (routeSet_30.setupAPIRoutes) {
 		routeSet_30.setupAPIRoutes(app); }
+	routeSet_31 = require("./routes/ValidateCloneNameService.js");
+	if (routeSet_31.setupAPIRoutes) {
+		routeSet_31.setupAPIRoutes(app); }
+	routeSet_32 = require("./routes/nodeRoutes.js");
+	if (routeSet_32.setupAPIRoutes) {
+		routeSet_32.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));
