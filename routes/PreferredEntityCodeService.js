@@ -112,7 +112,7 @@
             results = [];
             for (i = 0, len = ref.length; i < len; i++) {
               res = ref[i];
-              results.push(res.requestName + "," + res.preferredName);
+              results.push(res.requestName + "," + res.referenceName);
             }
             return results;
           })();
