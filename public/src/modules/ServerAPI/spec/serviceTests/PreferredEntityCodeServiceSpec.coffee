@@ -41,14 +41,13 @@ describe  "Preferred Entity code service tests", ->
 				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes", (error, response, body) =>
 					@responseJSON = parseResponse(body)
 					done()
-			it "should return an array of entity types", ->
-				assert.equal @responseJSON.length > 0, true
+			key = "Corporate Parent ID"
 			it "should return entity type descriptions with required attributes", ->
-				assert.equal @responseJSON[0].type?, true
-				assert.equal @responseJSON[0].kind?, true
-				assert.equal @responseJSON[0].displayName?, true
-				assert.equal @responseJSON[0].codeOrigin?, true
-				assert.equal @responseJSON[0].sourceExternal?, true
+				assert.equal @responseJSON[key].type?, true
+				assert.equal @responseJSON[key].kind?, true
+				assert.equal @responseJSON[key].displayName?, true
+				assert.equal @responseJSON[key].codeOrigin?, true
+				assert.equal @responseJSON[key].sourceExternal?, true
 		describe "when requested as list of codes", ->
 			before (done) ->
 				request "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/configuredEntityTypes/asCodes", (error, response, body) =>
@@ -74,14 +73,14 @@ describe  "Preferred Entity code service tests", ->
 				assert @responseJSON.sourceExternal?
 
 	describe "get preferred entity codeName for supplied name or codeName", ->
-		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", ->
+		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE [CSV FORMAT]", ->
 			body =
 				displayName: "Protein Parent"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -104,10 +103,65 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "PROT1"
 
-		describe "when valid compounds sent with invalid type info", ->
+		describe "when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE [JSON FORMAT]", ->
+			body =
+				displayName: "Protein Parent"
+				requests: [
+					{requestName: "PROT1"},
+					{requestName: "PROT2"},
+					{requestName: "PROT3"}
+				]
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
+				assert.equal @serverResponse.statusCode,200
+			it "should return the given displayName \n", ->
+				assert.equal @responseJSON.displayName, "Protein Parent"
+			it "should have 3 results", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should return requestName", ->
+				res = @responseJSON.results
+				assert.equal res[0].requestName, "PROT1"
+				assert.equal res[1].requestName, "PROT2"
+				assert.equal res[2].requestName, "PROT3"
+
+		describe "when valid compounds sent with invalid type info [CSV FORMAT]", ->
 			body =
 				displayName: "ERROR"
 				entityIdStringLines: "PROT1\nPROT2\nPROT3\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return a failure status code", ->
+				assert.equal @serverResponse.statusCode,500
+
+		describe "when valid compounds sent with invalid type info [JSON FORMAT]", ->
+			body =
+				displayName: "ERROR"
+				requests: [
+					{requestName: "PROT1"}
+					{requestName: "PROT2"}
+					{requestName: "PROT3"}
+				]
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -123,14 +177,14 @@ describe  "Preferred Entity code service tests", ->
 			it "should return a failure status code", ->
 				assert.equal @serverResponse.statusCode,500
 
-		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", ->
+		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE [CSV FORAMT]", ->
 			body =
 				displayName: "Corporate Batch ID"
 				entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
 			before (done) ->
 				@.timeout(20000)
 				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
 					json: true
 					body: body
 				, (error, response, body) =>
@@ -139,10 +193,8 @@ describe  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
-			it "should return the requested Type", ->
-				assert.equal @responseJSON.type, "compound"
-			it "should return the requested Kind", ->
-				assert.equal @responseJSON.kind, "batch name"
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Corporate Batch ID"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "CMPD-0000001-01"
@@ -156,10 +208,14 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[2].split(',')[1], ""
 
-		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE", ->
+		describe "when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE [JSON FORAMT]", ->
 			body =
-				displayName: "Corporate Parent ID"
-				entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
+				displayName: "Corporate Batch ID"
+				requests: [
+					{requestName: "CMPD-0000001-01"}
+					{requestName: "none_2222:1"}
+					{requestName: "CMPD-0000002-01"}
+				]
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -172,10 +228,37 @@ describe  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
-			it "should return the requested Type", ->
-				assert.equal @responseJSON.type, "compound"
-			it "should return the requested Kind", ->
-				assert.equal @responseJSON.kind, "parent name"
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.kind, "Corporate Batch ID"
+			it "should return an array of results the same length as the array of requests", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should have request in each results object", ->
+				assert.equal @responseJSON.results[0].requestName, "CMPD-0000001-01"
+				assert.equal @responseJSON.results[1].requestName, "none_2222:1"
+				assert.equal @responseJSON.results[2].requestName, "CMPD-0000002-01"
+			it "should have the correct result for each request", ->
+				assert.equal @responseJSON.results[0].referenceCode, "CMPD-0000001-01"
+				assert.equal @responseJSON.results[0].referenceCode, ""
+				assert.equal @responseJSON.results[0].referenceCode, "CMPD-0000002-01"
+
+		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE [CSV FORMAT]", ->
+			body =
+				displayName: "Corporate Parent ID"
+				entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Corporate Parent ID"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "CMPD-0000001"
@@ -192,10 +275,14 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1].indexOf('CMPD')>-1, true
 
-		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", ->
+		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE [JSON FORMAT]", ->
 			body =
-				displayName: "Protein Parent"
-				entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
+				displayName: "Corporate Parent ID"
+				requests: [
+					{requestName: "CMPD-0000001"}
+					{requestName: "CMPD-999999999"}
+					{requestName: "compoundName"}
+				]
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -208,10 +295,37 @@ describe  "Preferred Entity code service tests", ->
 					console.log @responseJSON
 					@serverResponse = response
 					done()
-			it "should return the requested Type", ->
-				assert.equal @responseJSON.type, "parent"
-			it "should return the requested Kind", ->
-				assert.equal @responseJSON.kind, "protein"
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Corporate Parent ID"
+			it "should return an array of results the same length as the array of requests", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should have request in each results object", ->
+				assert.equal @responseJSON.results[0].requestName, "CMPD-0000001"
+				assert.equal @responseJSON.results[1].requestName, "CMPD-999999999"
+				assert.equal @responseJSON.results[2].requestName, "compoundName"
+			it "should have the correct result for each request", ->
+				assert.equal @responseJSON.results[0].referenceCode, "CMPD-0000001"
+				assert.equal @responseJSON.results[1].referenceCode, ""
+				assert.equal @responseJSON.results[2].referenceCode.indexOf('CMPD')>-1, true
+
+		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE [CSV FORMAT]", ->
+			body =
+				displayName: "Protein Parent"
+				entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Protein Parent"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "GENE1234"
@@ -231,10 +345,87 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1], ""
 
-		describe.only "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
+		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE [JSON FORMAT]", ->
+			body =
+				displayName: "Protein Parent"
+				request: [
+					{requestName: "GENE1234"}
+					{requestName: "some Gene name"}
+					{requestName: "ambiguousName"}
+				]
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					done()
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Protein Parent"
+			it "should return an array of results the same length as the array of requests", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should have request in each results object", ->
+				assert.equal @responseJSON.results[0].requestName, "GENE1234"
+				assert.equal @responseJSON.results[1].requestName, "some Gene name"
+				assert.equal @responseJSON.results[2].requestName, "ambiguousName"
+			it "should have the correct result for each request", ->
+				assert.equal @responseJSON.results[0].referenceCode, "GENE1234"
+				assert.equal @responseJSON.results[1].referenceCode, "GENE1111"
+				assert.equal @responseJSON.results[2].referenceCode, ""
+
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [CSV FORMAT]", ->
 			body =
 				displayName: "Gene ID"
 				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
+			before (done) ->
+				@.timeout(20000)
+				request.post
+					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/referenceCodes/csv"
+					json: true
+					body: body
+				, (error, response, body) =>
+					@serverError = error
+					@responseJSON = body
+					console.log @responseJSON
+					@serverResponse = response
+					console.log @serverResponse.statusCode
+					done()
+			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
+				assert.equal @serverResponse.statusCode,200
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.type, "Gene ID"
+			it "should have the first line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[0], "GENE-000002"
+			it "should have the first line result second result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[1].split(',')[1], "GENE-000002"
+			it "should have the second line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[0], "CPAMD5"
+			it "should have the second line result second result column with the code", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[2].split(',')[1], "GENE-000003"
+			it "should have the third line query in first result column", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[0], "ambiguousName"
+			it "should have the third line result second result column with no result", ->
+				res = @responseJSON.resultCSV.split('\n')
+				assert.equal res[3].split(',')[1], ""
+
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [JSON FORMAT]", ->
+			body =
+				displayName: "Gene ID"
+				requests: [
+					{requestName: "GENE-000002"}
+					{requestName: "CPAMD5"}
+					{requestName: "ambiguousName"}
+				]
 			before (done) ->
 				@.timeout(20000)
 				request.post
@@ -250,46 +441,35 @@ describe  "Preferred Entity code service tests", ->
 					done()
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
-			it "should return the requested Type", ->
-				assert.equal @responseJSON.type, "gene"
-			it "should return the requested Kind", ->
-				assert.equal @responseJSON.kind, "entrez gene"
-			it "should have the first line query in first result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[1].split(',')[0], "GENE-000002"
-			it "should have the first line result second result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[1].split(',')[1], "GENE-000002"
-			it "should have the second line query in first result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[0], "CPAMD5"
-			it "should have the second line result second result column with the code", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[2].split(',')[1], "GENE-000003"
-			it "should have the third line query in first result column", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[3].split(',')[0], "ambiguousName"
-			it "should have the third line result second result column with no result", ->
-				res = @responseJSON.resultCSV.split('\n')
-				assert.equal res[3].split(',')[1], ""
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.type, "Gene ID"
+			it "should return an array of results the same length as the array of requests", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should have request in each results object", ->
+				assert.equal @responseJSON.results[0].requestName, "GENE-000002"
+				assert.equal @responseJSON.results[1].requestName, "CPAMD5"
+				assert.equal @responseJSON.results[2].requestName, "ambiguousName"
+			it "should have the correct result for each request", ->
+				assert.equal @responseJSON.results[0].referenceCode, "GENE-000002"
+				assert.equal @responseJSON.results[1].referenceCode, "GENE-000003"
+				assert.equal @responseJSON.results[2].referenceCode, ""
 
 	describe "direct function API tests", ->
 		codeService = require '../../../../routes/PreferredEntityCodeService.js'
 
-		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", ->
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [CSV FORMAT]", ->
+			csv = true
 			requestData =
 				displayName: "Gene ID"
 				entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
 			before (done) ->
 				@.timeout(20000)
-				codeService.referenceCodes requestData, (response) =>
+				codeService.referenceCodes requestData, csv, (response) =>
 					@responseJSON = response
 					console.log response
 					done()
-			it "should return the requested Type", ->
-				assert.equal @responseJSON.type, "gene"
-			it "should return the requested Kind", ->
-				assert.equal @responseJSON.kind, "entrez gene"
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.displayName, "Gene ID"
 			it "should have the first line query in first result column", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[1].split(',')[0], "GENE-000002"
@@ -309,20 +489,47 @@ describe  "Preferred Entity code service tests", ->
 				res = @responseJSON.resultCSV.split('\n')
 				assert.equal res[3].split(',')[1], ""
 
+		describe "when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [JSON FORMAT]", ->
+			csv = false
+			requestData =
+				displayName: "Gene ID"
+				requests: [
+					{requestName: "GENE-000002"}
+					{requestName: "CPAMD5"}
+					{requestName: "ambiguousName"}
+				]
+			before (done) ->
+				@.timeout(20000)
+				codeService.referenceCodes requestData, csv, (response) =>
+					@responseJSON = response
+					console.log response
+					done()
+			it "should return the requested displayName", ->
+				assert.equal @responseJSON.type, "Gene ID"
+			it "should return an array of results the same length as the array of requests", ->
+				assert.equal @responseJSON.results.length, 3
+			it "should have request in each results object", ->
+				assert.equal @responseJSON.results[0].requestName, "GENE-000002"
+				assert.equal @responseJSON.results[1].requestName, "CPAMD5"
+				assert.equal @responseJSON.results[2].requestName, "ambiguousName"
+			it "should have the correct result for each request", ->
+				assert.equal @responseJSON.results[0].referenceCode, "GENE-000002"
+				assert.equal @responseJSON.results[1].referenceCode, "GENE-000003"
+				assert.equal @responseJSON.results[2].referenceCode, ""
+
 		describe "available entity type list", ->
-			describe "when requested as fully detailed list", ->
+			describe "when requested as fully detailed object", ->
 				before (done) ->
 					codeService.getConfiguredEntityTypes false, (response) =>
 						@responseJSON = response
 						done()
-				it "should return an array of entity types", ->
-					assert.equal @responseJSON.length > 0, true
 				it "should return entity type descriptions with required attributes", ->
-					assert.equal @responseJSON[0].type?, true
-					assert.equal @responseJSON[0].kind?, true
-					assert.equal @responseJSON[0].displayName?, true
-					assert.equal @responseJSON[0].codeOrigin?, true
-					assert.equal @responseJSON[0].sourceExternal?, true
+					key = "Corporate Parent ID"
+					assert.equal @responseJSON[key].type?, true
+					assert.equal @responseJSON[key].kind?, true
+					assert.equal @responseJSON[key].displayName?, true
+					assert.equal @responseJSON[key].codeOrigin?, true
+					assert.equal @responseJSON[key].sourceExternal?, true
 			describe "when requested as list of codes", ->
 				before (done) ->
 					codeService.getConfiguredEntityTypes true, (response) =>
@@ -334,7 +541,7 @@ describe  "Preferred Entity code service tests", ->
 					assert.equal @responseJSON[0].code?, true
 					assert.equal @responseJSON[0].name?, true
 					assert.equal @responseJSON[0].ignored?, true
-		describe "specific entity type details", ->
+		describe "when requested as specific entity type details", ->
 			before (done) ->
 				codeService.getSpecificEntityType "Corporate Parent ID", (response) =>
 					@responseJSON = response
@@ -379,6 +586,25 @@ describe "pickBestLabels service test", ->
 		it "should have the second line result in third row, second column", ->
 			res = @responseJSON.resultCSV.split('\n')
 			assert.equal res[2].split(',')[1], "2"
+
+# describe "searchForEntities service test", ->
+# 	decribe "for lsThings", ->
+# 		body =
+# 			searchText: "A1BG"
+# 		before (done) ->
+# 			@.timeout(20000)
+# 			request.post
+# 				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/searchForEntities"
+# 				json: true
+# 				body: body
+# 			, (error, response, body) =>
+# 				@serverError = error
+# 				@responseJSON = body
+# 				console.log @responseJSON
+# 				@serverResponse = response
+# 				done()
+# 		it "should return an object with the correct fields", ->
+# 			assert @responseJSON.resultCSV?
 
 
 

@@ -22,6 +22,7 @@
   describe("Preferred Entity code service tests", function() {
     describe("available entity type list", function() {
       describe("when requested as fully detailed list", function() {
+        var key;
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/configuredEntityTypes", (function(_this) {
             return function(error, response, body) {
@@ -30,15 +31,13 @@
             };
           })(this));
         });
-        it("should return an array of entity types", function() {
-          return assert.equal(this.responseJSON.length > 0, true);
-        });
+        key = "Corporate Parent ID";
         return it("should return entity type descriptions with required attributes", function() {
-          assert.equal(this.responseJSON[0].type != null, true);
-          assert.equal(this.responseJSON[0].kind != null, true);
-          assert.equal(this.responseJSON[0].displayName != null, true);
-          assert.equal(this.responseJSON[0].codeOrigin != null, true);
-          return assert.equal(this.responseJSON[0].sourceExternal != null, true);
+          assert.equal(this.responseJSON[key].type != null, true);
+          assert.equal(this.responseJSON[key].kind != null, true);
+          assert.equal(this.responseJSON[key].displayName != null, true);
+          assert.equal(this.responseJSON[key].codeOrigin != null, true);
+          return assert.equal(this.responseJSON[key].sourceExternal != null, true);
         });
       });
       describe("when requested as list of codes", function() {
@@ -89,7 +88,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -133,7 +132,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -159,7 +158,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -208,7 +207,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -262,7 +261,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -312,7 +311,7 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
-      return describe.only("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
+      return describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
         var body;
         body = {
           displayName: "Gene ID",
@@ -321,7 +320,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
             json: true,
             body: body
           }, (function(_this) {

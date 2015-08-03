@@ -1,18 +1,21 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV;
+  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV,
+    hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
-    app.post('/api/entitymeta/referenceCodes', exports.referenceCodesRoute);
     app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
-    return app.post('/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute);
+    app.post('/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute);
+    app.post('/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute);
+    return app.post('/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
-    app.post('/api/entitymeta/referenceCodes', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
     app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
-    return app.post('/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
+    app.post('/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
+    app.post('/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
+    return app.post('/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated, exports.searchForEntitiesRoute);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
@@ -32,18 +35,19 @@
   };
 
   exports.getConfiguredEntityTypes = function(asCodes, callback) {
-    var codes, et;
+    var codes, et, name;
     console.log("asCodes: " + asCodes);
     if (asCodes) {
       codes = (function() {
-        var i, len, ref, results;
+        var ref, results;
         ref = configuredEntityTypes.entityTypes;
         results = [];
-        for (i = 0, len = ref.length; i < len; i++) {
-          et = ref[i];
+        for (name in ref) {
+          if (!hasProp.call(ref, name)) continue;
+          et = ref[name];
           results.push({
             code: et.type + " " + et.kind,
-            name: et.displayName,
+            name: name,
             ignored: false
           });
         }
@@ -55,18 +59,36 @@
     }
   };
 
-  exports.referenceCodesRoute = function(req, resp) {
-    var requestData;
-    requestData = {
-      displayName: req.body.displayName,
-      entityIdStringLines: req.body.entityIdStringLines
-    };
-    return exports.referenceCodes(requestData, function(json) {
+  exports.getSpecificEntityTypeRoute = function(req, resp) {
+    var displayName;
+    displayName = req.params.displayName;
+    return exports.getSpecificEntityType(displayName, function(json) {
       return resp.json(json);
     });
   };
 
-  exports.referenceCodes = function(requestData, callback) {
+  exports.getSpecificEntityType = function(displayName, callback) {
+    return callback(configuredEntityTypes.entityTypes[displayName]);
+  };
+
+  exports.referenceCodesRoute = function(req, resp) {
+    var csv, requestData;
+    requestData = {
+      displayName: req.body.displayName,
+      entityIdStringLines: req.body.entityIdStringLines
+    };
+    if (req.params.csv === "csv") {
+      csv = true;
+    } else {
+      csv = false;
+    }
+    console.log("csv is " + csv);
+    return exports.referenceCodes(csv, requestData, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.referenceCodes = function(csv, requestData, callback) {
     var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
     console.log(global.specRunnerTestmode);
     exports.getSpecificEntityType(requestData.displayName, function(json) {
@@ -81,8 +103,7 @@
           var prefResp;
           prefResp = JSON.parse(json);
           return callback({
-            type: requestData.type,
-            kind: requestData.kind,
+            displayName: requestData.displayName,
             resultCSV: formatReqArratAsCSV(prefResp.results)
           });
         });
@@ -92,8 +113,7 @@
         csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
         csUtilities.getPreferredParentIds(reqHashes, function(prefResp) {
           return callback({
-            type: requestData.type,
-            kind: requestData.kind,
+            displayName: requestData.displayName,
             resultCSV: formatReqArratAsCSV(prefResp)
           });
         });
@@ -137,14 +157,6 @@
     return resp.end("problem with preferred Code request: code type and kind are unknown to system");
   };
 
-  exports.getSpecificEntityTypeRoute = function(req, resp) {
-    return resp.json(configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]);
-  };
-
-  exports.getSpecificEntityType = function(displayName, callback) {
-    return callback(configuredEntityTypes.entityTypesbyDisplayName[displayName]);
-  };
-
   exports.pickBestLabelsRoute = function(req, resp) {
     var requestData;
     requestData = {
@@ -157,6 +169,18 @@
   };
 
   exports.pickBestLabels = function(requestData, callback) {};
+
+  exports.searchForEntitiesRoute = function(req, resp) {
+    var requestData;
+    requestData = {
+      requestTexts: req.body.requestTexts
+    };
+    return exports.searchForEntities(requestData, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.searchForEntities = function(requestData, callback) {};
 
   formatCSVRequestAsReqArray = function(csvReq) {
     var i, len, ref, req, requests;

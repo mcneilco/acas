@@ -1,14 +1,16 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/referenceCodes', exports.referenceCodesRoute
 	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute
+	app.post '/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/referenceCodes', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
+	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
@@ -24,27 +26,42 @@ exports.getConfiguredEntityTypesRoute = (req, resp) ->
 exports.getConfiguredEntityTypes = (asCodes, callback) ->
 	console.log "asCodes: "+asCodes
 	if asCodes
-		codes = for et in configuredEntityTypes.entityTypes
+		codes = for own name, et of configuredEntityTypes.entityTypes
 			code: et.type+" "+et.kind #Should we store this explicitly in the config?
-			name: et.displayName
+			name: name
 			ignored: false
 		callback codes
 	else
 		callback configuredEntityTypes.entityTypes
 
+exports.getSpecificEntityTypeRoute = (req, resp) ->
+	displayName = req.params.displayName
+	exports.getSpecificEntityType displayName, (json) ->
+		resp.json json
+
+exports.getSpecificEntityType = (displayName, callback) ->
+	callback configuredEntityTypes.entityTypes[displayName]
+
 exports.referenceCodesRoute = (req, resp) ->
 	requestData =
 		displayName: req.body.displayName
+	if req.params.csv == "csv"
+		csv = true
 		entityIdStringLines: req.body.entityIdStringLines
+	else
+		csv = false
 
-	exports.referenceCodes requestData, (json) ->
+
+	console.log("csv is " + csv)
+
+	exports.referenceCodes requestData, csv, (json) ->
 		resp.json json
 
-exports.referenceCodes = (requestData, callback) ->
+exports.referenceCodes = (requestData, csv, callback) ->
 	console.log global.specRunnerTestmode
 	#Note specRunnerTestMode is handled within functions called from here
 
-	# type and kind
+	# convert displayName to type and kind
 	exports.getSpecificEntityType requestData.displayName, (json) ->
 		requestData.type = json.type
 		requestData.kind = json.kind
@@ -56,8 +73,7 @@ exports.referenceCodes = (requestData, callback) ->
 			preferredBatchService.getPreferredCompoundBatchIDs reqHashes , (json) ->
 				prefResp = JSON.parse(json)
 				callback
-					type: requestData.type
-					kind: requestData.kind
+					displayName: requestData.displayName
 					resultCSV: formatReqArratAsCSV(prefResp.results)
 			return
 		else if requestData.kind is "parent name"
@@ -65,8 +81,7 @@ exports.referenceCodes = (requestData, callback) ->
 			csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
 			csUtilities.getPreferredParentIds reqHashes , (prefResp) ->
 				callback
-					type: requestData.type
-					kind: requestData.kind
+					displayName: requestData.displayName
 					resultCSV: formatReqArratAsCSV(prefResp)
 			return
 	else
@@ -90,12 +105,6 @@ exports.referenceCodes = (requestData, callback) ->
 	resp.statusCode = 500
 	resp.end "problem with preferred Code request: code type and kind are unknown to system"
 
-exports.getSpecificEntityTypeRoute = (req, resp) ->
-	resp.json configuredEntityTypes.entityTypesbyDisplayName[req.params.displayName]
-
-exports.getSpecificEntityType = (displayName, callback) ->
-	callback configuredEntityTypes.entityTypesbyDisplayName[displayName]
-
 exports.pickBestLabelsRoute = (req, resp) ->
 	requestData =
 		displayName: req.body.displayName
@@ -105,7 +114,17 @@ exports.pickBestLabelsRoute = (req, resp) ->
 		resp.json json
 
 exports.pickBestLabels = (requestData, callback) ->
+# TODO implement
 
+exports.searchForEntitiesRoute = (req,resp) ->
+	requestData =
+		requestTexts: req.body.requestTexts
+
+	exports.searchForEntities requestData, (json) ->
+		resp.json json
+
+exports.searchForEntities = (requestData, callback) ->
+#TODO implement
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []
