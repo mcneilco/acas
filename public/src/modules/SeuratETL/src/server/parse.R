@@ -1,39 +1,26 @@
 # ROUTE: /seuratETL/parse
 
-library(reshape)
-library(data.table)
-library(jsonlite)
-library(racas)
+suppressMessages(library(reshape))
+suppressMessages(library(data.table))
 
-
-#' Title
+#' Read Seurat Text or File
 #'
-#' @param pathToSeuratFile 
+#' @param pathToSeuratFile can be a path to a file (xls, xlsx, or csv) or the text content of a csv file
+#' @param file boolean forces a xlsx or xls file path to be read as a csv
 #'
-#' @return
+#' @return data.table of seurat content
 #' @export
 #'
-#' @examples 
-#' #working example
-#' pathToSeuratFileGuy <- "~/Desktop/Seurat-Example-Files/Basic_Assay_Data_Temp_Guy.csv"
-#' genericExperiment <- parseSeuratFileToSELContentJSON(pathToSeuratFileGuy)
-#' writeLines(jsonlite::fromJSON(genericExperiment)$result$selContent[1], con = "~/Desktop/testGeneric.csv")
-#' 
-#' #working example
-#' selContentJSON <- parseSeuratFileToSELContentJSON("~/Desktop/Seurat-Example-Files/PH-NKM_20140811_KRASG12D-BODIPY_GDP__Dissociation_assay_database-update_with_perInh_xlsx_arr.csv")
-#' writeLines(jsonlite::fromJSON(selContentJSON)$results$selContent[1], con = "~/Desktop/testDoseResponse.csv")
-#' 
-#' #missing values, thows an error
-#' pathToSeuratFileMissing <- "~/Desktop/Seurat-Example-Files/PH-NKM_20140811_KRASG12D-BODIPY_GDP__Dissociation_assay_database-update_with_perInh_xlsx_arr missing values.csv"
-#' ErrorExperiment <- parseSeuratFileToSELContentJSON(pathToSeuratFileMissing)
-#' 
+#' @examples
 readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
+  
   if(file == TRUE) {
     fileExt <- tolower(file_ext(pathToSeuratFile))
   } else {
     fileExt <- NA
   }
   if(file == TRUE && fileExt %in% c("xlsx", "xls")) {
+    library(XLConnect)
     wb <- XLConnect::loadWorkbook(pathToSeuratFile)
     sheetToRead <- which(!unlist(lapply(XLConnect::getSheets(wb), XLConnect::isSheetHidden, object = wb)))[1]
     seuratFileContents <- as.data.table(XLConnect::readWorksheet(wb, sheet = sheetToRead, header = TRUE, dateTimeFormat="%Y-%m-%d", check.names = TRUE))
@@ -54,7 +41,18 @@ readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
   return(seuratFileContents)
 }
 
+#' parseSeuratFileToSELContentJSON
+#'
+#' @param pathToSeuratFile see \code{\link{readSeuratFile}}
+#'
+#' @return character json array of protocolName, experimentName and sel content
+#' @export
+#'
+#' @examples
 parseSeuratFileToSELContentJSON <- function(pathToSeuratFile) {
+  
+  library(racas)
+  library(jsonlite)
   errorMessages <- list()
   myMessenger <- messenger(racas = TRUE)$reset()
   # use if to check hasErrors in myMessenger
@@ -76,22 +74,54 @@ parseSeuratFileToSELContentJSON <- function(pathToSeuratFile) {
   return(jsonlite::toJSON(response, auto_unbox=TRUE))
 }
 
+
+#' stopUser
+#'
+#' wraps racas function for use when racas is not being used
+#' 
+#' @param message 
+#'
+#' @return error
+#' @export
+#'
+#' @examples
+stopUser <- function(message) {
+  
+  racasLoaded <- paste("package", "racas", sep = ":") %in% search()
+  if(racasLoaded) {
+    racas::stopUser(message)
+  } else {
+    stop(message)
+  }
+}
+
+#' validateSeuratFileContent
+#' 
+#' function to check for seurat csv content issues before attempting to parse to sel content
+#'
+#' @param seuratFileContent 
+#'
+#' @return error if validation fails
+#' @export
+#'
+#' @examples
 validateSeuratFileContent <- function(seuratFileContent) {
+  
   #if the field doesn't exist OR if there are missing cases
   if(is.null(seuratFileContent$Assay.Name) || !all(complete.cases(seuratFileContent$Assay.Name))){
-    stopUser("Assay Name not found")
+    stopUser("Assay Name not found for some or all results")
   }
   if(is.null(seuratFileContent$Lot.Number) || !all(complete.cases(seuratFileContent$Lot.Number))){
-    stopUser("Lot Number not found")
+    stopUser("Lot Number not found for some or all results")
   }
   if(is.null(seuratFileContent$Corporate.ID) || !all(complete.cases(seuratFileContent$Corporate.ID))){
-    stopUser("Corporate Batch ID not found")
+    stopUser("Corporate ID not found for some or all results")
   }
   if(is.null(seuratFileContent$Expt.Result.Type) || !all(complete.cases(seuratFileContent$Expt.Result.Type))){
-    stopUser("Experiment result type was not specified")
+    stopUser("Experiment result type was not specified for some or all results")
   }
   if(is.null(seuratFileContent$Expt.Result.Units) || !all(complete.cases(seuratFileContent$Expt.Result.Units))){
-    stopUser("Experiment result unit was not specified")
+    stopUser("Experiment result unit was not specified for some or all results")
   }
   if(is.null(seuratFileContent$Expt.Result.Value) || is.null(seuratFileContent$Expt.Result.Desc) || 
      !Reduce('&', Reduce('|', list(complete.cases(seuratFileContent$Expt.Result.Value), complete.cases(seuratFileContent$Expt.Result.Desc))))){
@@ -99,22 +129,53 @@ validateSeuratFileContent <- function(seuratFileContent) {
   }
 }
 
+#' parseSeuratFileContentToSELContentList
+#'
+#' @param seuratFileContent data.frame of seurat upload content 
+#'
+#' @return data.table of sel content with columns protocolName, experimentName, and selContent (csv string)
+#' @export
+#'
+#' @examples
 parseSeuratFileContentToSELContentList <- function(seuratFileContent) {
+  
   validateSeuratFileContent(seuratFileContent)
   seuratFileContent[ , c('Assay.Name','Assay.Protocol') := makeExperimentNamesUnique(seuratFileContent[ , c("Assay.Name", "Assay.Protocol"), with = FALSE], by = c("Assay.Name"))]
   seuratFileContent[ , c("value", "type") := makeValueString(.SD, Expt.Result.Type), by=Expt.Result.Type]
   selContent <- seuratFileContent[ , convertSeuratTableToSELContent(.SD), by = c("Assay.Protocol", "Assay.Name"), .SDcols = 1:ncol(seuratFileContent)]
   setnames(selContent, c("experimentName", "protocolName", "selContent"))
-  #selContentJSON <- jsonlite::toJSON(selContent)
   return(selContent)
 }
 
+#' file_ext
+#'
+#' get file extension
+#' 
+#' @param x 
+#'
+#' @return character file extension
+#' @export
+#'
+#' @examples
 file_ext <- function(x) {
+  
   pos <- regexpr("\\.([[:alnum:]]+)$", x)
   ifelse(pos > -1L, substring(x, pos + 1L), "")
 }
 
+#' makeExperimentNamesUnique
+#' 
+#' replaces "Assay.Protocol" columns with a unique experiment name incremented with an "_1" or "_2" depending on how many times the experiment is repeated
+#'
+#' @param experimentNames  data frame with "Assay.Protocol" column and "by" columns
+#' @param by columns which to make experiments unique by 
+#'
+#' @return data.table with the same number of columns as experimentNames but with a replaced Assay.Protocol to make it unique
+#' @export
+#'
+#' @examples
 makeExperimentNamesUnique <- function(experimentNames, by) {
+  
   outNames <- names(experimentNames)
   experimentNames <- copy(experimentNames)
   experimentNames[ , originalOrder := row.names(experimentNames)]
@@ -122,7 +183,6 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   setkeyv(experimentNames, c("Assay.Protocol", by))
   exptNames <- unique(experimentNames)
   setkey(exptNames,"Assay.Protocol")
-  #experimentNames[repeatedSequenced > 1]
   exptNames[, repeatedSequenced := sequence(rle(exptNames$Assay.Protocol)$lengths)-1]
   exptNames[ , 'Assay.Protocol.Old' := get('Assay.Protocol')]
   exptNames[repeatedSequenced > 0, 'Assay.Protocol' := paste0(Assay.Protocol,"_",repeatedSequenced)]
@@ -132,7 +192,20 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   setkey(outData,originalOrder)
   outData[ , outNames, with = FALSE]
 }
+
+#' makeValueString
+#'
+#' can over ride data type field here
+#' 
+#' @param exptRow data.frame row of seurat csv content row
+#' @param resultType result type
+#'
+#' @return
+#' @export
+#'
+#' @examples
 makeValueString <- function(exptRow, resultType) {
+  
   # Sets the global list of values, the first two are just hard coded
   if (resultType == "Assay Date") type <- "Date"
   else if (resultType == "IC50") type <- "Number"
@@ -146,7 +219,17 @@ makeValueString <- function(exptRow, resultType) {
   return(list(val, type))
 }
 
+#' getSELFormat
+#'
+#' if there are any rawResults columns then make this a "Dose Response" format sel file
+#' @param seuratExperiment data.frame of seurat csv content
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getSELFormat <- function(seuratExperiment){
+  
   rawResultColumns <- unlist(getRawResultsColumns(seuratExperiment))
   if (length(rawResultColumns)<1){
     format <- "Generic"
@@ -156,7 +239,18 @@ getSELFormat <- function(seuratExperiment){
   return(format)
 }
 
+#' convertSeuratTableToSELContent
+#'
+#' function to convert seurat experiment to an sel character string
+#' 
+#' @param seuratExperiment data.frame of seurat csv content
+#'
+#' @return character csv content of sel file
+#' @export
+#'
+#' @examples
 convertSeuratTableToSELContent <- function(seuratExperiment) {
+  
   ops <- options()
   on.exit(options(ops))
   options(scipen=99)
@@ -187,7 +281,19 @@ convertSeuratTableToSELContent <- function(seuratExperiment) {
   return(out)
 }
 
+#' getHeaderLines
+#'  
+#'  takes seurat sel experiment content and returns the sel header lines
+#'
+#' @param seuratExperiment data.frame of seurat experiment csv content
+#' @param format format of sel content (Generic, Dose Response...etc)
+#'
+#' @return character string of csv content
+#' @export
+#'
+#' @examples
 getHeaderLines <- function(seuratExperiment, format) {
+  
   hl <- "Experiment Meta Data"
   hl[[2]] <- paste0("Format,", format)
   protocolName <- seuratExperiment$Assay.Name[[1]]
@@ -213,9 +319,19 @@ getHeaderLines <- function(seuratExperiment, format) {
   return(hl)
 }
 
+#' pivotExperimentRawResults
+#'
+#' finds and pivots seurat sel MP.Result and MP.Conc columns into an SEL raw results data.table
+#' 
+#' @param seuratExperiment data.frame of seurat experiment csv content 
+#'
+#' @return data.table of sel formatted raw results
+#' @export
+#'
+#' @examples
 pivotExperimentRawResults <- function(seuratExperiment) {
+  
   rawResultColumns <- getRawResultsColumns(seuratExperiment)
-#   rawData <- reshape(seuratExperiment[ seuratExperiment$Expt.Result.Type == "curve id",], idvar = "Expt.Result.Desc", varying = c(rawResultColumns), v.names = c("MP.Conc.","MP.Result.","MP.Flag."), direction = "long")
   concData <- reshape(seuratExperiment[ seuratExperiment$Expt.Result.Type == "curve id",], idvar = "Expt.Result.Desc", varying = c(rawResultColumns$concColumnIndexes), v.names = c("MP.Conc."), direction = "long")
   resultData <- reshape(seuratExperiment[ seuratExperiment$Expt.Result.Type == "curve id",], idvar = "Expt.Result.Desc", varying = c(rawResultColumns$resultColumnIndexes), v.names = c("MP.Result."), direction = "long")
   setkey(concData, value, time)
@@ -224,19 +340,26 @@ pivotExperimentRawResults <- function(seuratExperiment) {
   rawData <- rawData[ !is.na(MP.Conc.) & !is.na(MP.Result.) ]
   doseColName <- paste0("Dose (", seuratExperiment$Expt.Result.Units[[1]],")")
   responseColName <- paste0("Response (", rawData$MP.Result.Type[[1]],")")
-#   flagColName <- "Flag"
   setnames(rawData, "MP.Conc.", doseColName)
   setnames(rawData, "MP.Result.", responseColName)
-#   setnames(rawData, "MP.Flag.", flagColName)
   setnames(rawData, "value", "curve id")
-#   rawData <- rawData[,c("curve id",doseColName, responseColName, flagColName), with = FALSE]
   rawData <- rawData[,c("curve id",doseColName, responseColName), with = FALSE]
   rawData[ , flag := as.character(NA)]
   setkey(rawData)
   return(rawData)
 }
 
+#' pivotExperimentCalculatedResults
+#'
+#' pivots the content of a seurat formatted experiment to calulated results section of an ACAS SEL file
+#' @param seuratExperiment seuratExperiment data.frame of seurat experiment csv content 
+#'
+#' @return data.table of sel formatted calculated results
+#' @export
+#'
+#' @examples
 pivotExperimentCalculatedResults <- function(seuratExperiment) {
+  
   seuratExperiment <- copy(seuratExperiment)
   seuratExperiment[ ,corp_batch_name := paste0(Corporate.ID, "-",Lot.Number)]
   #Sometimes Expt_Batch_Number is not set correctly, 
@@ -293,7 +416,16 @@ pivotExperimentCalculatedResults <- function(seuratExperiment) {
   return(castExpt)
 }
 
+#' aggregateValues
+#'
+#' @param vals usually a unique set of values
+#'
+#' @return
+#' @export
+#'
+#' @examples
 aggregateValues <- function (vals) {
+  
   firstVal = vals[[1]]
   allMatch = TRUE
   for (val in vals) {
@@ -303,11 +435,22 @@ aggregateValues <- function (vals) {
   if (allMatch) 
     return(firstVal)
   else {
-    logger$error("SEURAT_BUG_DUPLICATE_ENTRIES")
-    return("SEURAT_BUG_DUPLICATE_ENTRIES")
+    stop("SEURAT_BUG_DUPLICATE_ENTRIES")
   }
 }
+
+#' getColumnHeaders
+#' 
+#' This function takes pivoted ACAS SEL content and determines the correct column headers for the calculated results
+#'
+#' @param castExpt calculated results section of an ACAS SEL file after it has been pivoted from seurat results
+#'
+#' @return
+#' @export
+#'
+#' @examples
 getColumnHeaders <- function(castExpt) {
+  
   headers <- c()
   dataTypes <- c()
   dataTypeDesc <- NULL
@@ -366,14 +509,37 @@ getColumnHeaders <- function(castExpt) {
   hLines[[2]] <- paste(headers, collapse=",")
   return(hLines)
 }
-getRawResultsHeaders <- function(ic50colname) {
+
+#' getRawResultsHeaders
+#' 
+#' returns a string to be inserted as raw results headers
+#'
+#' @return
+#' @export
+#'
+#' @examples
+getRawResultsHeaders <- function() {
+  
   # create RawResults headers
   rawResultsHeaders <- I(",,,")
   rawResultsHeaders[2] <- "Raw Results,,,"
   rawResultsHeaders[3] <- "temp id,x,y,flag"
   return(rawResultsHeaders)
 }
+
+#' padHeadColumns
+#' 
+#' pads csv calculated results header string content with extra commas
+#' 
+#' @param headLines csv string content
+#' @param cols number of desired columns in csv
+#'
+#' @return character of padded columns
+#' @export
+#'
+#' @examples
 padHeadColumns <- function(headLines, cols) {
+  
   if (cols <=2) return(headLines)
   tStr = ""
   for (c in 3:cols) {
@@ -384,7 +550,20 @@ padHeadColumns <- function(headLines, cols) {
   }
   return(headLines)
 }
+
+#' padRawHeadColumns
+#' 
+#' pads csv raw header string content with extra commas
+#' 
+#' @param headLines csv string content
+#' @param cols number of desired columns in csv
+#'
+#' @return character of padded columns
+#' @export
+#'
+#' @examples
 padRawHeadColumns <- function(headLines, cols) {
+  
   if (cols <=4) return(headLines)
   tStr = ""
   for (c in 5:cols) {
@@ -395,7 +574,9 @@ padRawHeadColumns <- function(headLines, cols) {
   }
   return(headLines)
 }
+
 write_csv <- function(x, file, rows = 1000L, colNames = TRUE, ...) {
+  
   if(colNames) {
     col.names = TRUE
   } else {
@@ -426,6 +607,7 @@ dataframe_to_csvstring <- function(x, ...) {
   write_csv(x,t, ...)
   csv_string <- readChar(t, file.info(t)$size)
 }
+
 getRawResultsColumns <- function(seuratExperiment){
   
   #rawResultColumnIndexes <- grep("^MP.Conc.[0-9]|^MP.Result.[0-9]|^MP.Flag.[0-9]", names(seuratExperiment))
@@ -446,14 +628,32 @@ addCurveDataLines <-function(seuratExperiment) {
   seuratExperiment <- rbind(seuratExperiment, curveIDRows, renderingHintRows, fill = TRUE)
   return(seuratExperiment)
 }
+
 runMain <- function() {
-  
+# Test if we are in rApache or not
   if(exists("GET")) {
-    # Test if we are in rApache Or not
     csv_data <- rawToChar(receiveBin(-1))
     # FREAD function in data.table only reads as a string if it has atleast one "\n" character
     selContent <- parseSeuratFileToSELContentJSON(paste0(csv_data,"\n"))
     cat(selContent)
+    
+  } else {
+    args <- commandArgs(TRUE)
+    if(length(args) > 0) {
+      file <- args[[1]]
+      outFolder <- args[[2]]
+      seuratFileContent <- readSeuratFile(file)
+      selContent <- parseSeuratFileContentToSELContentList(seuratFileContent)
+      dir.create(path = outFolder, showWarnings = FALSE)
+      setkey(selContent)
+      out <- selContent[ , {
+          outProtocolFolder <- file.path(outFolder,protocolName)
+          dir.create(path = outProtocolFolder, showWarnings = FALSE)
+          outExperiment <- file.path(outProtocolFolder, paste0(experimentName,".csv"))
+          cat(paste0("writing file ", outExperiment, "\n"))
+          writeLines(selContent, con = outExperiment)
+        }, by = key(selContent)]
+    }
   }
 }
 runMain()
