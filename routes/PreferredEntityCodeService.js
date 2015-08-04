@@ -1,5 +1,5 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV,
+  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV, formatReqArratAsJSON,
     hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
@@ -74,51 +74,51 @@
   exports.referenceCodesRoute = function(req, resp) {
     var csv, requestData;
     requestData = {
-      displayName: req.body.displayName,
-      entityIdStringLines: req.body.entityIdStringLines
+      displayName: req.body.displayName
     };
     if (req.params.csv === "csv") {
       csv = true;
+      requestData.entityIdStringLines = req.body.entityIdStringLines;
     } else {
       csv = false;
+      requestData.requests = req.body.requests;
     }
-    console.log("csv is " + csv);
-    return exports.referenceCodes(csv, requestData, function(json) {
+    return exports.referenceCodes(requestData, csv, function(json) {
       return resp.json(json);
     });
   };
 
-  exports.referenceCodes = function(csv, requestData, callback) {
-    var csUtilities, entityType, preferredBatchService, preferredThingService, reqHashes;
+  exports.referenceCodes = function(requestData, csv, callback) {
+    var csUtilities, entityType, preferredThingService, reqHashes, reqList;
     console.log(global.specRunnerTestmode);
+    console.log("csv is " + csv);
+    console.log("request Data is " + JSON.stringify(requestData));
     exports.getSpecificEntityType(requestData.displayName, function(json) {
       requestData.type = json.type;
-      return requestData.kind = json.kind;
+      requestData.kind = json.kind;
+      return requestData.sourceExternal = json.sourceExternal;
     });
-    if (requestData.type === "compound") {
-      reqHashes = formatCSVRequestAsReqArray(requestData.entityIdStringLines);
-      if (requestData.kind === "batch name") {
-        preferredBatchService = require("./PreferredBatchIdService.js");
-        preferredBatchService.getPreferredCompoundBatchIDs(reqHashes, function(json) {
-          var prefResp;
-          prefResp = JSON.parse(json);
-          return callback({
-            displayName: requestData.displayName,
-            resultCSV: formatReqArratAsCSV(prefResp.results)
-          });
-        });
-        return;
-      } else if (requestData.kind === "parent name") {
-        console.log("looking up compound parents");
-        csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-        csUtilities.getPreferredParentIds(reqHashes, function(prefResp) {
+    if (csv) {
+      reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines);
+    } else {
+      reqList = requestData.requests;
+    }
+    if (requestData.sourceExternal) {
+      console.log("looking up external entity");
+      csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+      csUtilities.getExternalReferenceCodes(requestData.displayName, reqList, function(prefResp) {
+        if (csv) {
           return callback({
             displayName: requestData.displayName,
             resultCSV: formatReqArratAsCSV(prefResp)
           });
-        });
-        return;
-      }
+        } else {
+          return callback({
+            displayName: requestData.displayName,
+            results: formatReqArratAsJSON(prefResp, "preferredName")
+          });
+        }
+      });
     } else {
       entityType = _.where(configuredEntityTypes.entityTypes, {
         type: requestData.type,
@@ -129,32 +129,38 @@
         reqHashes = {
           thingType: entityType[0].type,
           thingKind: entityType[0].kind,
-          requests: formatCSVRequestAsReqArray(requestData.entityIdStringLines)
+          requests: reqList
         };
         preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
           var out, outStr, res;
-          out = (function() {
-            var i, len, ref, results;
-            ref = codeResponse.results;
-            results = [];
-            for (i = 0, len = ref.length; i < len; i++) {
-              res = ref[i];
-              results.push(res.requestName + "," + res.referenceName);
-            }
-            return results;
-          })();
-          outStr = "Requested Name,Reference Code\n" + out.join('\n');
-          return callback({
-            type: codeResponse.thingType,
-            kind: codeResponse.thingKind,
-            resultCSV: outStr
-          });
+          if (csv) {
+            out = (function() {
+              var i, len, ref, results;
+              ref = codeResponse.results;
+              results = [];
+              for (i = 0, len = ref.length; i < len; i++) {
+                res = ref[i];
+                results.push(res.requestName + "," + res.referenceName);
+              }
+              return results;
+            })();
+            outStr = "Requested Name,Reference Code\n" + out.join('\n');
+            return callback({
+              displayName: requestData.displayName,
+              resultCSV: outStr
+            });
+          } else {
+            return callback({
+              displayName: requestData.displayName,
+              results: formatReqArratAsJSON(codeResponse.results, "referenceName")
+            });
+          }
         });
         return;
       }
+      callback.statusCode = 500;
+      return callback.end("problem with internal preferred Code request: code type and kind are unknown to system");
     }
-    resp.statusCode = 500;
-    return resp.end("problem with preferred Code request: code type and kind are unknown to system");
   };
 
   exports.pickBestLabelsRoute = function(req, resp) {
@@ -200,12 +206,25 @@
   formatReqArratAsCSV = function(prefResp) {
     var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
-    outStr = "Requested Name,Preferred Code\n";
+    outStr = "Requested Name,Reference Code\n";
     for (i = 0, len = preferreds.length; i < len; i++) {
       pref = preferreds[i];
       outStr += pref.requestName + ',' + pref.preferredName + '\n';
     }
     return outStr;
+  };
+
+  formatReqArratAsJSON = function(prefResp, referenceCodeLocation) {
+    var i, len, out, pref;
+    out = [];
+    for (i = 0, len = prefResp.length; i < len; i++) {
+      pref = prefResp[i];
+      out.push({
+        requestName: pref.requestName,
+        referenceCode: pref[referenceCodeLocation]
+      });
+    }
+    return out;
   };
 
 }).call(this);

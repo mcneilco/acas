@@ -91,7 +91,7 @@ describe  "Preferred Entity code service tests", ->
 					done()
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
-			it "should return 5 rows including a trailing \n", ->
+			it "should return 5 rows including a trailing newline", ->
 				assert.equal @responseJSON.resultCSV.split('\n').length, 5
 			it "should have 2 columns", ->
 				res = @responseJSON.resultCSV.split('\n')
@@ -229,7 +229,7 @@ describe  "Preferred Entity code service tests", ->
 					@serverResponse = response
 					done()
 			it "should return the requested displayName", ->
-				assert.equal @responseJSON.kind, "Corporate Batch ID"
+				assert.equal @responseJSON.displayName, "Corporate Batch ID"
 			it "should return an array of results the same length as the array of requests", ->
 				assert.equal @responseJSON.results.length, 3
 			it "should have request in each results object", ->
@@ -238,8 +238,8 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON.results[2].requestName, "CMPD-0000002-01"
 			it "should have the correct result for each request", ->
 				assert.equal @responseJSON.results[0].referenceCode, "CMPD-0000001-01"
-				assert.equal @responseJSON.results[0].referenceCode, ""
-				assert.equal @responseJSON.results[0].referenceCode, "CMPD-0000002-01"
+				assert.equal @responseJSON.results[1].referenceCode, ""
+				assert.equal @responseJSON.results[2].referenceCode, "CMPD-0000002-01"
 
 		describe "when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE [CSV FORMAT]", ->
 			body =
@@ -348,7 +348,7 @@ describe  "Preferred Entity code service tests", ->
 		describe "when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE [JSON FORMAT]", ->
 			body =
 				displayName: "Protein Parent"
-				request: [
+				requests: [
 					{requestName: "GENE1234"}
 					{requestName: "some Gene name"}
 					{requestName: "ambiguousName"}
@@ -442,7 +442,7 @@ describe  "Preferred Entity code service tests", ->
 			it "should return a success status code if in stubsMode, otherwise, this will fail", ->
 				assert.equal @serverResponse.statusCode,200
 			it "should return the requested displayName", ->
-				assert.equal @responseJSON.type, "Gene ID"
+				assert.equal @responseJSON.displayName, "Gene ID"
 			it "should return an array of results the same length as the array of requests", ->
 				assert.equal @responseJSON.results.length, 3
 			it "should have request in each results object", ->
@@ -554,38 +554,38 @@ describe  "Preferred Entity code service tests", ->
 				assert.equal @responseJSON.sourceExternal?, true
 
 #TODO implement pickBestLabels
-describe "pickBestLabels service test", ->
-	describe "for lsThings", ->
-		body =
-			displayName: "Gene ID"
-			referenceCodes: "GENE-000002\nGENE-000003"
-		before (done) ->
-			@.timeout(20000)
-			request.post
-				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/pickBestLabels"
-				json: true
-				body: body
-			, (error, response, body) =>
-				@serverError = error
-				@responseJSON = body
-				console.log @responseJSON
-				@serverResponse = response
-				done()
-		it "should return an object with the correct fields", ->
-			assert @responseJSON.displayName?
-			assert @responseJSON.resultCSV?
-		it "should have the first line query in second row, first column", ->
-			res = @responseJSON.resultCSV.split('\n')
-			assert.equal res[1].split(',')[0], "GENE-000002"
-		it "should have the first line result in second row, second column", ->
-			res = @responseJSON.resultCSV.split('\n')
-			assert.equal res[1].split(',')[1], "1"
-		it "should have the second line query in third row, first column", ->
-			res = @responseJSON.resultCSV.split('\n')
-			assert.equal res[2].split(',')[0], "GENE-000003"
-		it "should have the second line result in third row, second column", ->
-			res = @responseJSON.resultCSV.split('\n')
-			assert.equal res[2].split(',')[1], "2"
+# describe "pickBestLabels service test", ->
+# 	describe "for lsThings", ->
+# 		body =
+# 			displayName: "Gene ID"
+# 			referenceCodes: "GENE-000002\nGENE-000003"
+# 		before (done) ->
+# 			@.timeout(20000)
+# 			request.post
+# 				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/entitymeta/pickBestLabels"
+# 				json: true
+# 				body: body
+# 			, (error, response, body) =>
+# 				@serverError = error
+# 				@responseJSON = body
+# 				console.log @responseJSON
+# 				@serverResponse = response
+# 				done()
+# 		it "should return an object with the correct fields", ->
+# 			assert @responseJSON.displayName?
+# 			assert @responseJSON.resultCSV?
+# 		it "should have the first line query in second row, first column", ->
+# 			res = @responseJSON.resultCSV.split('\n')
+# 			assert.equal res[1].split(',')[0], "GENE-000002"
+# 		it "should have the first line result in second row, second column", ->
+# 			res = @responseJSON.resultCSV.split('\n')
+# 			assert.equal res[1].split(',')[1], "1"
+# 		it "should have the second line query in third row, first column", ->
+# 			res = @responseJSON.resultCSV.split('\n')
+# 			assert.equal res[2].split(',')[0], "GENE-000003"
+# 		it "should have the second line result in third row, second column", ->
+# 			res = @responseJSON.resultCSV.split('\n')
+# 			assert.equal res[2].split(',')[1], "2"
 
 # describe "searchForEntities service test", ->
 # 	decribe "for lsThings", ->

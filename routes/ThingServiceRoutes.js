@@ -314,11 +314,11 @@
           requestName: req.requestName
         };
         if (req.requestName.indexOf("ambiguous") > -1) {
-          res.preferredName = "";
+          res.referenceName = "";
         } else if (req.requestName.indexOf("name") > -1) {
-          res.preferredName = "GENE1111";
+          res.referenceName = "GENE1111";
         } else {
-          res.preferredName = req.requestName;
+          res.referenceName = req.requestName;
         }
         results.push(res);
       }

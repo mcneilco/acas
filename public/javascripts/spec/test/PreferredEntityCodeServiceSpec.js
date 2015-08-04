@@ -79,7 +79,7 @@
       });
     });
     describe("get preferred entity codeName for supplied name or codeName", function() {
-      describe("when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE", function() {
+      describe("when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE [CSV FORMAT]", function() {
         var body;
         body = {
           displayName: "Protein Parent",
@@ -88,7 +88,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -104,7 +104,7 @@
         it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
           return assert.equal(this.serverResponse.statusCode, 200);
         });
-        it("should return 5 rows including a trailing \n", function() {
+        it("should return 5 rows including a trailing newline", function() {
           return assert.equal(this.responseJSON.resultCSV.split('\n').length, 5);
         });
         it("should have 2 columns", function() {
@@ -123,7 +123,54 @@
           return assert.equal(res[1].split(',')[0], "PROT1");
         });
       });
-      describe("when valid compounds sent with invalid type info", function() {
+      describe("when valid compounds sent with valid type info ONLY PASSES IN STUBS MODE [JSON FORMAT]", function() {
+        var body;
+        body = {
+          displayName: "Protein Parent",
+          requests: [
+            {
+              requestName: "PROT1"
+            }, {
+              requestName: "PROT2"
+            }, {
+              requestName: "PROT3"
+            }
+          ]
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
+          return assert.equal(this.serverResponse.statusCode, 200);
+        });
+        it("should return the given displayName \n", function() {
+          return assert.equal(this.responseJSON.displayName, "Protein Parent");
+        });
+        it("should have 3 results", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        return it("should return requestName", function() {
+          var res;
+          res = this.responseJSON.results;
+          assert.equal(res[0].requestName, "PROT1");
+          assert.equal(res[1].requestName, "PROT2");
+          return assert.equal(res[2].requestName, "PROT3");
+        });
+      });
+      describe("when valid compounds sent with invalid type info [CSV FORMAT]", function() {
         var body;
         body = {
           displayName: "ERROR",
@@ -132,7 +179,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -149,16 +196,24 @@
           return assert.equal(this.serverResponse.statusCode, 500);
         });
       });
-      describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE", function() {
+      describe("when valid compounds sent with invalid type info [JSON FORMAT]", function() {
         var body;
         body = {
-          displayName: "Corporate Batch ID",
-          entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
+          displayName: "ERROR",
+          requests: [
+            {
+              requestName: "PROT1"
+            }, {
+              requestName: "PROT2"
+            }, {
+              requestName: "PROT3"
+            }
+          ]
         };
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -171,11 +226,34 @@
             };
           })(this));
         });
-        it("should return the requested Type", function() {
-          return assert.equal(this.responseJSON.type, "compound");
+        return it("should return a failure status code", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
         });
-        it("should return the requested Kind", function() {
-          return assert.equal(this.responseJSON.kind, "batch name");
+      });
+      describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE [CSV FORAMT]", function() {
+        var body;
+        body = {
+          displayName: "Corporate Batch ID",
+          entityIdStringLines: "CMPD-0000001-01\nnone_2222:1\nCMPD-0000002-01\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Corporate Batch ID");
         });
         it("should have the first line query in first result column", function() {
           var res;
@@ -198,16 +276,24 @@
           return assert.equal(res[2].split(',')[1], "");
         });
       });
-      describe("when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE", function() {
+      describe("when valid small molecule batch names are passed in ONLY PASSES IN STUBS MODE [JSON FORAMT]", function() {
         var body;
         body = {
-          displayName: "Corporate Parent ID",
-          entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
+          displayName: "Corporate Batch ID",
+          requests: [
+            {
+              requestName: "CMPD-0000001-01"
+            }, {
+              requestName: "none_2222:1"
+            }, {
+              requestName: "CMPD-0000002-01"
+            }
+          ]
         };
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -220,11 +306,47 @@
             };
           })(this));
         });
-        it("should return the requested Type", function() {
-          return assert.equal(this.responseJSON.type, "compound");
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Corporate Batch ID");
         });
-        it("should return the requested Kind", function() {
-          return assert.equal(this.responseJSON.kind, "parent name");
+        it("should return an array of results the same length as the array of requests", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        it("should have request in each results object", function() {
+          assert.equal(this.responseJSON.results[0].requestName, "CMPD-0000001-01");
+          assert.equal(this.responseJSON.results[1].requestName, "none_2222:1");
+          return assert.equal(this.responseJSON.results[2].requestName, "CMPD-0000002-01");
+        });
+        return it("should have the correct result for each request", function() {
+          assert.equal(this.responseJSON.results[0].referenceCode, "CMPD-0000001-01");
+          assert.equal(this.responseJSON.results[1].referenceCode, "");
+          return assert.equal(this.responseJSON.results[2].referenceCode, "CMPD-0000002-01");
+        });
+      });
+      describe("when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE [CSV FORMAT]", function() {
+        var body;
+        body = {
+          displayName: "Corporate Parent ID",
+          entityIdStringLines: "CMPD-0000001\nCMPD-999999999\ncompoundName\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Corporate Parent ID");
         });
         it("should have the first line query in first result column", function() {
           var res;
@@ -252,16 +374,24 @@
           return assert.equal(res[3].split(',')[1].indexOf('CMPD') > -1, true);
         });
       });
-      describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE", function() {
+      describe("when valid small molecule Parent names are passed in ONLY PASSES IN STUBS MODE [JSON FORMAT]", function() {
         var body;
         body = {
-          displayName: "Protein Parent",
-          entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
+          displayName: "Corporate Parent ID",
+          requests: [
+            {
+              requestName: "CMPD-0000001"
+            }, {
+              requestName: "CMPD-999999999"
+            }, {
+              requestName: "compoundName"
+            }
+          ]
         };
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
             json: true,
             body: body
           }, (function(_this) {
@@ -274,11 +404,47 @@
             };
           })(this));
         });
-        it("should return the requested Type", function() {
-          return assert.equal(this.responseJSON.type, "parent");
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Corporate Parent ID");
         });
-        it("should return the requested Kind", function() {
-          return assert.equal(this.responseJSON.kind, "protein");
+        it("should return an array of results the same length as the array of requests", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        it("should have request in each results object", function() {
+          assert.equal(this.responseJSON.results[0].requestName, "CMPD-0000001");
+          assert.equal(this.responseJSON.results[1].requestName, "CMPD-999999999");
+          return assert.equal(this.responseJSON.results[2].requestName, "compoundName");
+        });
+        return it("should have the correct result for each request", function() {
+          assert.equal(this.responseJSON.results[0].referenceCode, "CMPD-0000001");
+          assert.equal(this.responseJSON.results[1].referenceCode, "");
+          return assert.equal(this.responseJSON.results[2].referenceCode.indexOf('CMPD') > -1, true);
+        });
+      });
+      describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE [CSV FORMAT]", function() {
+        var body;
+        body = {
+          displayName: "Protein Parent",
+          entityIdStringLines: "GENE1234\nsome Gene name\nambiguousName\n"
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Protein Parent");
         });
         it("should have the first line query in first result column", function() {
           var res;
@@ -311,7 +477,54 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
-      return describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
+      describe("when valid lsthing parent names are passed in ONLY PASSES IN STUBS MODE [JSON FORMAT]", function() {
+        var body;
+        body = {
+          displayName: "Protein Parent",
+          requests: [
+            {
+              requestName: "GENE1234"
+            }, {
+              requestName: "some Gene name"
+            }, {
+              requestName: "ambiguousName"
+            }
+          ]
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Protein Parent");
+        });
+        it("should return an array of results the same length as the array of requests", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        it("should have request in each results object", function() {
+          assert.equal(this.responseJSON.results[0].requestName, "GENE1234");
+          assert.equal(this.responseJSON.results[1].requestName, "some Gene name");
+          return assert.equal(this.responseJSON.results[2].requestName, "ambiguousName");
+        });
+        return it("should have the correct result for each request", function() {
+          assert.equal(this.responseJSON.results[0].referenceCode, "GENE1234");
+          assert.equal(this.responseJSON.results[1].referenceCode, "GENE1111");
+          return assert.equal(this.responseJSON.results[2].referenceCode, "");
+        });
+      });
+      describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [CSV FORMAT]", function() {
         var body;
         body = {
           displayName: "Gene ID",
@@ -320,7 +533,7 @@
         before(function(done) {
           this.timeout(20000);
           return request.post({
-            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes?format=csv",
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes/csv",
             json: true,
             body: body
           }, (function(_this) {
@@ -337,11 +550,8 @@
         it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
           return assert.equal(this.serverResponse.statusCode, 200);
         });
-        it("should return the requested Type", function() {
-          return assert.equal(this.responseJSON.type, "gene");
-        });
-        it("should return the requested Kind", function() {
-          return assert.equal(this.responseJSON.kind, "entrez gene");
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.type, "Gene ID");
         });
         it("should have the first line query in first result column", function() {
           var res;
@@ -374,19 +584,71 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
+      return describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [JSON FORMAT]", function() {
+        var body;
+        body = {
+          displayName: "Gene ID",
+          requests: [
+            {
+              requestName: "GENE-000002"
+            }, {
+              requestName: "CPAMD5"
+            }, {
+              requestName: "ambiguousName"
+            }
+          ]
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return request.post({
+            url: "http://localhost:" + config.all.server.nodeapi.port + "/api/entitymeta/referenceCodes",
+            json: true,
+            body: body
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              console.log(_this.responseJSON);
+              _this.serverResponse = response;
+              console.log(_this.serverResponse.statusCode);
+              return done();
+            };
+          })(this));
+        });
+        it("should return a success status code if in stubsMode, otherwise, this will fail", function() {
+          return assert.equal(this.serverResponse.statusCode, 200);
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Gene ID");
+        });
+        it("should return an array of results the same length as the array of requests", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        it("should have request in each results object", function() {
+          assert.equal(this.responseJSON.results[0].requestName, "GENE-000002");
+          assert.equal(this.responseJSON.results[1].requestName, "CPAMD5");
+          return assert.equal(this.responseJSON.results[2].requestName, "ambiguousName");
+        });
+        return it("should have the correct result for each request", function() {
+          assert.equal(this.responseJSON.results[0].referenceCode, "GENE-000002");
+          assert.equal(this.responseJSON.results[1].referenceCode, "GENE-000003");
+          return assert.equal(this.responseJSON.results[2].referenceCode, "");
+        });
+      });
     });
     return describe("direct function API tests", function() {
       var codeService;
       codeService = require('../../../../routes/PreferredEntityCodeService.js');
-      describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded", function() {
-        var requestData;
+      describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [CSV FORMAT]", function() {
+        var csv, requestData;
+        csv = true;
         requestData = {
           displayName: "Gene ID",
           entityIdStringLines: "GENE-000002\nCPAMD5\nambiguousName\n"
         };
         before(function(done) {
           this.timeout(20000);
-          return codeService.referenceCodes(requestData, (function(_this) {
+          return codeService.referenceCodes(requestData, csv, (function(_this) {
             return function(response) {
               _this.responseJSON = response;
               console.log(response);
@@ -394,11 +656,8 @@
             };
           })(this));
         });
-        it("should return the requested Type", function() {
-          return assert.equal(this.responseJSON.type, "gene");
-        });
-        it("should return the requested Kind", function() {
-          return assert.equal(this.responseJSON.kind, "entrez gene");
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.displayName, "Gene ID");
         });
         it("should have the first line query in first result column", function() {
           var res;
@@ -431,8 +690,50 @@
           return assert.equal(res[3].split(',')[1], "");
         });
       });
+      describe("when valid lsthing entrez gene names or codes are passed in ONLY PASSES IN LIVE MODE with genes loaded [JSON FORMAT]", function() {
+        var csv, requestData;
+        csv = false;
+        requestData = {
+          displayName: "Gene ID",
+          requests: [
+            {
+              requestName: "GENE-000002"
+            }, {
+              requestName: "CPAMD5"
+            }, {
+              requestName: "ambiguousName"
+            }
+          ]
+        };
+        before(function(done) {
+          this.timeout(20000);
+          return codeService.referenceCodes(requestData, csv, (function(_this) {
+            return function(response) {
+              _this.responseJSON = response;
+              console.log(response);
+              return done();
+            };
+          })(this));
+        });
+        it("should return the requested displayName", function() {
+          return assert.equal(this.responseJSON.type, "Gene ID");
+        });
+        it("should return an array of results the same length as the array of requests", function() {
+          return assert.equal(this.responseJSON.results.length, 3);
+        });
+        it("should have request in each results object", function() {
+          assert.equal(this.responseJSON.results[0].requestName, "GENE-000002");
+          assert.equal(this.responseJSON.results[1].requestName, "CPAMD5");
+          return assert.equal(this.responseJSON.results[2].requestName, "ambiguousName");
+        });
+        return it("should have the correct result for each request", function() {
+          assert.equal(this.responseJSON.results[0].referenceCode, "GENE-000002");
+          assert.equal(this.responseJSON.results[1].referenceCode, "GENE-000003");
+          return assert.equal(this.responseJSON.results[2].referenceCode, "");
+        });
+      });
       describe("available entity type list", function() {
-        describe("when requested as fully detailed list", function() {
+        describe("when requested as fully detailed object", function() {
           before(function(done) {
             return codeService.getConfiguredEntityTypes(false, (function(_this) {
               return function(response) {
@@ -441,15 +742,14 @@
               };
             })(this));
           });
-          it("should return an array of entity types", function() {
-            return assert.equal(this.responseJSON.length > 0, true);
-          });
           return it("should return entity type descriptions with required attributes", function() {
-            assert.equal(this.responseJSON[0].type != null, true);
-            assert.equal(this.responseJSON[0].kind != null, true);
-            assert.equal(this.responseJSON[0].displayName != null, true);
-            assert.equal(this.responseJSON[0].codeOrigin != null, true);
-            return assert.equal(this.responseJSON[0].sourceExternal != null, true);
+            var key;
+            key = "Corporate Parent ID";
+            assert.equal(this.responseJSON[key].type != null, true);
+            assert.equal(this.responseJSON[key].kind != null, true);
+            assert.equal(this.responseJSON[key].displayName != null, true);
+            assert.equal(this.responseJSON[key].codeOrigin != null, true);
+            return assert.equal(this.responseJSON[key].sourceExternal != null, true);
           });
         });
         return describe("when requested as list of codes", function() {
@@ -471,7 +771,7 @@
           });
         });
       });
-      return describe("specific entity type details", function() {
+      return describe("when requested as specific entity type details", function() {
         before(function(done) {
           return codeService.getSpecificEntityType("Corporate Parent ID", (function(_this) {
             return function(response) {

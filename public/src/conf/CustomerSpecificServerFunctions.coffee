@@ -261,6 +261,19 @@ exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
 	callback out
 
 
+exports.getExternalReferenceCodes = (displayName, requests, callback) ->
+	if displayName == "Corporate Batch ID"
+		console.log "looking up compound batches"
+		exports.getPreferredBatchIds requests, (response) ->
+			callback response
+	else if displayName == "Corporate Parent ID"
+		console.log "looking up compound parents"
+		exports.getPreferredParentIds requests, (response) ->
+			callback response
+	else
+		callback.statusCode = 500
+		callback.end "problem with external preferred Code request: code type and kind are unknown to system"
+
 exports.getPreferredBatchIds = (requests, callback) ->
 	if global.specRunnerTestmode
 		results = []
@@ -271,7 +284,7 @@ exports.getPreferredBatchIds = (requests, callback) ->
 			else if req.requestName.indexOf("673874") > -1
 				res.preferredName = "DNS000001234::7"
 			else
-				res.preferredName = req.requestName
+				res.preferredName = checkBatch_TestMode(req.requestName)
 			results.push res
 		response = results
 
@@ -328,3 +341,13 @@ exports.getPreferredParentIds = (requests, callback) ->
 				callback null
 
 
+checkBatch_TestMode = (requestName) ->
+	idComps = requestName.split("_")
+	pref = idComps[0];
+	respId = "";
+	switch pref
+		when "norm" then respId = batchName.requestName
+		when "none" then respId = ""
+		when  "alias" then respId = "norm_"+idComps[1]+"A"
+		else respId = requestName
+	return respId

@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var fs, serverUtilityFunctions;
+  var checkBatch_TestMode, fs, serverUtilityFunctions;
 
   serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
 
@@ -337,6 +337,23 @@
     return callback(out);
   };
 
+  exports.getExternalReferenceCodes = function(displayName, requests, callback) {
+    if (displayName === "Corporate Batch ID") {
+      console.log("looking up compound batches");
+      return exports.getPreferredBatchIds(requests, function(response) {
+        return callback(response);
+      });
+    } else if (displayName === "Corporate Parent ID") {
+      console.log("looking up compound parents");
+      return exports.getPreferredParentIds(requests, function(response) {
+        return callback(response);
+      });
+    } else {
+      callback.statusCode = 500;
+      return callback.end("problem with external preferred Code request: code type and kind are unknown to system");
+    }
+  };
+
   exports.getPreferredBatchIds = function(requests, callback) {
     var config, k, len, req, request, res, response, results;
     if (global.specRunnerTestmode) {
@@ -351,7 +368,7 @@
         } else if (req.requestName.indexOf("673874") > -1) {
           res.preferredName = "DNS000001234::7";
         } else {
-          res.preferredName = req.requestName;
+          res.preferredName = checkBatch_TestMode(req.requestName);
         }
         results.push(res);
       }
@@ -423,6 +440,27 @@
         };
       })(this));
     }
+  };
+
+  checkBatch_TestMode = function(requestName) {
+    var idComps, pref, respId;
+    idComps = requestName.split("_");
+    pref = idComps[0];
+    respId = "";
+    switch (pref) {
+      case "norm":
+        respId = batchName.requestName;
+        break;
+      case "none":
+        respId = "";
+        break;
+      case "alias":
+        respId = "norm_" + idComps[1] + "A";
+        break;
+      default:
+        respId = requestName;
+    }
+    return respId;
   };
 
 }).call(this);
