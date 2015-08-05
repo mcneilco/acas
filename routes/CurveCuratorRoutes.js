@@ -221,7 +221,6 @@
     console.log(redirectQuery);
     console.log(req.query);
     rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery;
-    console.log(rapacheCall);
     return req.pipe(request(rapacheCall)).pipe(resp);
   };
 

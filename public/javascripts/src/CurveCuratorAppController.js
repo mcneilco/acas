@@ -63,7 +63,7 @@
 
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_loadCurvesModal'));
-      this.ccc.getCurvesFromExperimentCode(exptCode, curveID);
+      this.ccc.setupCurator(exptCode, curveID);
       return $.ajax({
         type: 'GET',
         url: "/api/experiments/resultViewerURL/" + exptCode,

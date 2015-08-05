@@ -205,6 +205,8 @@
           return false;
         case "rejected":
           return false;
+        case "deleted":
+          return false;
       }
       return true;
     };
@@ -648,6 +650,8 @@
         value = value.charAt(0).toUpperCase() + value.substring(1);
         alert('All fields must be valid before changing the status to "' + value + '"');
         return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
+      } else if (value === "deleted") {
+        return this.handleDeleteStatusChosen();
       } else {
         this.handleValueChanged("Status", value);
         this.updateEditable();
@@ -678,11 +682,16 @@
         this.$('.bv_status').removeAttr('disabled');
         this.$('.bv_lock').show();
         this.$('.bv_newEntity').removeAttr('disabled');
+        if (this.model.getStatus().get('codeValue') === "deleted") {
+          this.$('.bv_status').attr('disabled', 'disabled');
+        }
       }
       if (this.model.isNew()) {
         this.$('.bv_status').attr("disabled", "disabled");
       } else {
-        this.$('.bv_status').removeAttr("disabled");
+        if (this.model.getStatus().get('codeValue') !== "deleted") {
+          this.$('.bv_status').removeAttr("disabled");
+        }
       }
       return this.model.trigger('statusChanged');
     };
@@ -793,6 +802,10 @@
     BaseEntityController.prototype.checkDisplayMode = function() {
       if (this.readOnly === true) {
         return this.displayInReadOnlyMode();
+      } else if (this.model.getStatus().get('codeValue') === "deleted") {
+        this.disableAllInputs();
+        this.$('.bv_newEntity').removeAttr('disabled');
+        return this.$('.bv_newEntity').removeAttr('disabled');
       }
     };
 

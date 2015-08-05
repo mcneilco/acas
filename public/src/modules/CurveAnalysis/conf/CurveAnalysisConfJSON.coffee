@@ -303,6 +303,20 @@
 				code: "curvefit ko"
 				name: "Exclude from CurveFits"
 				ignored: false
+			,
+				codeType: "user well flags"
+				codeKind: "flag observation"
+				codeOrigin: "ACAS DDICT"
+				code: "tox"
+				name: "Compound Toxic"
+				ignored: false
+			,
+				codeType: "user well flags"
+				codeKind: "flag observation"
+				codeOrigin: "ACAS DDICT"
+				code: "pass trend"
+				name: "Pass Trend"
+				ignored: false
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.curveAnalysisConfJSON = window.curveAnalysisConfJSON or {} else exports)
