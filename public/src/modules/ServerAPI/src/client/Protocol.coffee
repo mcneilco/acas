@@ -220,7 +220,6 @@ class window.ProtocolBaseController extends BaseEntityController
 			selectedCode: @model.getAssayStage().get('codeValue')
 
 	handleDeleteStatusChosen: =>
-		console.log "handle delete status"
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingProtocolMessage").addClass "hide"
@@ -233,7 +232,6 @@ class window.ProtocolBaseController extends BaseEntityController
 			backdrop: 'static'
 
 	handleCloseProtocolModal: =>
-		console.log "close expt modal"
 		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
 
 	handleConfirmDeleteProtocolClicked: =>

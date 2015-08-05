@@ -6,7 +6,7 @@
  */
 
 (function() {
-  var fs, serverUtilityFunctions;
+  var checkBatch_TestMode, fs, serverUtilityFunctions;
 
   serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
 
@@ -337,8 +337,43 @@
     return callback(out);
   };
 
+  exports.getExternalReferenceCodes = function(displayName, requests, callback) {
+    if (displayName === "Corporate Batch ID") {
+      console.log("looking up compound batches");
+      return exports.getPreferredBatchIds(requests, function(response) {
+        return callback(response);
+      });
+    } else if (displayName === "Corporate Parent ID") {
+      console.log("looking up compound parents");
+      return exports.getPreferredParentIds(requests, function(response) {
+        return callback(response);
+      });
+    } else {
+      callback.statusCode = 500;
+      return callback.end("problem with external preferred Code request: code type and kind are unknown to system");
+    }
+  };
+
+  exports.getExternalBestLabel = function(displayName, requests, callback) {
+    if (displayName === "Corporate Batch ID") {
+      console.log("looking up compound batches");
+      return exports.getBatchBestLabels(requests, function(response) {
+        return callback(response);
+      });
+    } else if (displayName === "Corporate Parent ID") {
+      console.log("looking up compound parents");
+      return exports.getParentBestLabels(requests, function(response) {
+        console.log(JSON.stringify(response));
+        return callback(response);
+      });
+    } else {
+      callback.statusCode = 500;
+      return callback.end("problem with external best label request: displayName is unknown to system");
+    }
+  };
+
   exports.getPreferredBatchIds = function(requests, callback) {
-    var k, len, req, request, res, response, results;
+    var config, k, len, req, request, res, response, results;
     if (global.specRunnerTestmode) {
       results = [];
       for (k = 0, len = requests.length; k < len; k++) {
@@ -351,17 +386,18 @@
         } else if (req.requestName.indexOf("673874") > -1) {
           res.preferredName = "DNS000001234::7";
         } else {
-          res.preferredName = req.requestName;
+          res.preferredName = checkBatch_TestMode(req.requestName);
         }
         results.push(res);
       }
       response = results;
       return callback(response);
     } else {
+      config = require('../../../conf/compiled/conf.js');
       request = require('request');
       return request({
         method: 'POST',
-        url: "http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName",
+        url: config.all.server.service.external.preferred.batchid.url,
         json: true,
         body: requests
       }, (function(_this) {
@@ -380,7 +416,7 @@
   };
 
   exports.getPreferredParentIds = function(requests, callback) {
-    var k, len, req, res, response, results;
+    var config, k, len, req, request, res, response, results;
     if (global.specRunnerTestmode) {
       results = [];
       for (k = 0, len = requests.length; k < len; k++) {
@@ -402,8 +438,135 @@
       response = results;
       return callback(response);
     } else {
-      return console.log("real function not implemented");
+      config = require('../../../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.server.service.external.preferred.batchid.url + "/parent",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
     }
+  };
+
+  exports.getBatchBestLabels = function(requests, callback) {
+    var config, k, len, req, request, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("1111") > -1) {
+          res.preferredName = "1111";
+        } else if (req.requestName.indexOf("1234") > -1) {
+          res.preferredName = "1234::7";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      config = require('../../../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.server.service.external.preferred.batchid.url,
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
+    }
+  };
+
+  exports.getParentBestLabels = function(requests, callback) {
+    var config, k, len, req, request, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("1111") > -1) {
+          res.preferredName = "1111";
+        } else if (req.requestName.indexOf("1234") > -1) {
+          res.preferredName = "1234";
+        } else if (req.requestName.indexOf("CMPD000001234") > -1) {
+          res.preferredName = "1234";
+        } else {
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      config = require('../../../conf/compiled/conf.js');
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.server.service.external.preferred.batchid.url + "/parent",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
+    }
+  };
+
+  checkBatch_TestMode = function(requestName) {
+    var idComps, pref, respId;
+    idComps = requestName.split("_");
+    pref = idComps[0];
+    respId = "";
+    switch (pref) {
+      case "norm":
+        respId = batchName.requestName;
+        break;
+      case "none":
+        respId = "";
+        break;
+      case "alias":
+        respId = "norm_" + idComps[1] + "A";
+        break;
+      default:
+        respId = requestName;
+    }
+    return respId;
   };
 
 }).call(this);

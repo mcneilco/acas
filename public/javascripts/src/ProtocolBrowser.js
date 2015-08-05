@@ -198,8 +198,11 @@
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(prot) {
-            var hideStatusesList, prsc;
-            hideStatusesList = window.conf.entity.hideStatuses;
+            hideStatusesList;
+            var hideStatusesList, prsc, ref;
+            if (((ref = window.conf.entity) != null ? ref.hideStatuses : void 0) != null) {
+              hideStatusesList = window.conf.entity.hideStatuses;
+            }
             if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(prot.getStatus().get('codeValue')) > -1 && !UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
               prsc = new ProtocolRowSummaryController({
                 model: prot

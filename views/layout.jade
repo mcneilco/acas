@@ -15,6 +15,7 @@ html
         link(rel='stylesheet', href='/src/lib/jsxgraph/jsxgraph.css')
         link(rel='stylesheet', href='/src/lib/jstree/themes/default/style.min.css')
         // inserted by PrepareModuleIncludes
+        link(rel="stylesheet", href="/src/modules/CmpdRegBulkLoader/src/client/CmpdRegBulkLoader.css")
         link(rel="stylesheet", href="/src/modules/Components/src/client/style.css")
         link(rel="stylesheet", href="/src/modules/CurveAnalysis/src/client/DoseResponseFit.css")
         link(rel="stylesheet", href="/src/modules/CurveAnalysis/src/client/style.css")
@@ -27,6 +28,8 @@ html
         link(rel="stylesheet", href="/src/modules/ProtocolBrowser/src/client/style.css")
         link(rel="stylesheet", href="/src/modules/ServerAPI/src/client/AttachFile.css")
         link(rel="stylesheet", href="/src/modules/TestModule/src/client/TestModule.css")
+        link(rel="stylesheet", href="/src/modules/node/src/client/node.css")
+        include ../public/src/modules/CmpdRegBulkLoader/src/client/CmpdRegBulkLoader.html
         include ../public/src/modules/Components/src/client/BasicFileValidateAndSaveView.html
         include ../public/src/modules/Components/src/client/LSFileChooserView.html
         include ../public/src/modules/Components/src/client/LSFileInputView.html
@@ -57,6 +60,7 @@ html
         include ../public/src/modules/ServerAPI/src/client/Experiment.html
         include ../public/src/modules/ServerAPI/src/client/Protocol.html
         include ../public/src/modules/TestModule/src/client/TestModuleView.html
+        include ../public/src/modules/node/src/client/nodeView.html
 
         // end inserted by PrepareModuleIncludes
         -each script in scripts
