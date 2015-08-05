@@ -1,12 +1,12 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatReqArratAsCSV, formatReqArratAsJSON,
+  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV,
     hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute);
     app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
     app.post('/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute);
-    app.post('/api/entitymeta/pickBestLabels', exports.pickBestLabelsRoute);
+    app.post('/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute);
     return app.post('/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute);
   };
 
@@ -14,7 +14,7 @@
     app.get('/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute);
     app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
     app.post('/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
-    app.post('/api/entitymeta/pickBestLabels', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
+    app.post('/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
     return app.post('/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated, exports.searchForEntitiesRoute);
   };
 
@@ -47,7 +47,7 @@
           et = ref[name];
           results.push({
             code: et.type + " " + et.kind,
-            name: name,
+            displayName: name,
             ignored: false
           });
         }
@@ -92,7 +92,6 @@
     var csUtilities, entityType, preferredThingService, reqHashes, reqList;
     console.log(global.specRunnerTestmode);
     console.log("csv is " + csv);
-    console.log("request Data is " + JSON.stringify(requestData));
     exports.getSpecificEntityType(requestData.displayName, function(json) {
       requestData.type = json.type;
       requestData.kind = json.kind;
@@ -110,25 +109,22 @@
         if (csv) {
           return callback({
             displayName: requestData.displayName,
-            resultCSV: formatReqArratAsCSV(prefResp)
+            resultCSV: formatReqArrayAsCSV(prefResp)
           });
         } else {
           return callback({
             displayName: requestData.displayName,
-            results: formatReqArratAsJSON(prefResp, "preferredName")
+            results: formatJSONReferenceCode(prefResp, "preferredName")
           });
         }
       });
     } else {
-      entityType = _.where(configuredEntityTypes.entityTypes, {
-        type: requestData.type,
-        kind: requestData.kind
-      });
-      if (entityType.length === 1 && entityType[0].codeOrigin === "ACAS LSThing") {
+      entityType = configuredEntityTypes.entityTypes[requestData.displayName];
+      if (entityType.codeOrigin === "ACAS LSThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
-          thingType: entityType[0].type,
-          thingKind: entityType[0].kind,
+          thingType: entityType.type,
+          thingKind: entityType.kind,
           requests: reqList
         };
         preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
@@ -152,7 +148,7 @@
           } else {
             return callback({
               displayName: requestData.displayName,
-              results: formatReqArratAsJSON(codeResponse.results, "referenceName")
+              results: formatJSONReferenceCode(codeResponse.results, "referenceName")
             });
           }
         });
@@ -164,29 +160,155 @@
   };
 
   exports.pickBestLabelsRoute = function(req, resp) {
-    var requestData;
+    var csv, requestData;
     requestData = {
-      displayName: req.body.displayName,
-      referenceCodes: req.body.referenceCodes
+      displayName: req.body.displayName
     };
-    return exports.referenceCodes(requestData, function(json) {
+    if (req.params.csv === "csv") {
+      csv = true;
+      requestData.referenceCodes = req.body.referenceCodes;
+    } else {
+      csv = false;
+      requestData.requests = req.body.requests;
+    }
+    return exports.pickBestLabels(requestData, csv, function(json) {
       return resp.json(json);
     });
   };
 
-  exports.pickBestLabels = function(requestData, callback) {};
+  exports.pickBestLabels = function(requestData, csv, callback) {
+    var csUtilities, entityType, preferredThingService, reqHashes, reqList;
+    exports.getSpecificEntityType(requestData.displayName, function(json) {
+      requestData.type = json.type;
+      requestData.kind = json.kind;
+      return requestData.sourceExternal = json.sourceExternal;
+    });
+    if (csv) {
+      reqList = formatCSVRequestAsReqArray(requestData.referenceCodes);
+    } else {
+      reqList = requestData.requests;
+    }
+    if (requestData.sourceExternal) {
+      console.log("looking up external entity");
+      csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+      csUtilities.getExternalBestLabel(requestData.displayName, reqList, function(prefResp) {
+        if (csv) {
+          return callback({
+            displayName: requestData.displayName,
+            resultCSV: formatReqArrayAsCSV(prefResp)
+          });
+        } else {
+          return callback({
+            displayName: requestData.displayName,
+            results: formatJSONBestLabel(prefResp, "preferredName")
+          });
+        }
+      });
+    } else {
+      entityType = configuredEntityTypes.entityTypes[requestData.displayName];
+      if (entityType.codeOrigin === "ACAS LSThing") {
+        preferredThingService = require("./ThingServiceRoutes.js");
+        reqHashes = {
+          thingType: entityType.type,
+          thingKind: entityType.kind,
+          requests: reqList
+        };
+        preferredThingService.getThingCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
+          var out, outStr, res;
+          if (csv) {
+            out = (function() {
+              var i, len, ref, results;
+              ref = codeResponse.results;
+              results = [];
+              for (i = 0, len = ref.length; i < len; i++) {
+                res = ref[i];
+                results.push(res.requestName + "," + res.preferredName);
+              }
+              return results;
+            })();
+            outStr = "Requested Name,Best Label\n" + out.join('\n');
+            return callback({
+              displayName: requestData.displayName,
+              resultCSV: outStr
+            });
+          } else {
+            return callback({
+              displayName: requestData.displayName,
+              results: formatJSONBestLabel(codeResponse.results, "preferredName")
+            });
+          }
+        });
+        return;
+      }
+      callback.statusCode = 500;
+      return callback.end("problem with internal best label request: code type and kind are unknown to system");
+    }
+  };
 
   exports.searchForEntitiesRoute = function(req, resp) {
     var requestData;
     requestData = {
-      requestTexts: req.body.requestTexts
+      requestText: req.body.requestText
     };
     return exports.searchForEntities(requestData, function(json) {
       return resp.json(json);
     });
   };
 
-  exports.searchForEntities = function(requestData, callback) {};
+  exports.searchForEntities = function(requestData, callback) {
+    var asCodes, csv, entity, entitySearchData, i, j, len, len1, match, matchList, ref, resultsList;
+    asCodes = true;
+    exports.getConfiguredEntityTypes(asCodes, function(json) {
+      return requestData.entityTypes = json;
+    });
+    matchList = [];
+    csv = false;
+    ref = requestData.entityTypes;
+    for (i = 0, len = ref.length; i < len; i++) {
+      entity = ref[i];
+      entitySearchData = {
+        displayName: entity.displayName,
+        requests: [
+          {
+            requestName: requestData.requestText
+          }
+        ]
+      };
+      exports.referenceCodes(entitySearchData, csv, function(searchResults) {
+        if (searchResults.results[0].referenceCode !== "") {
+          console.log("found a match for " + entity.displayName);
+          matchList.push({
+            displayName: entity.displayName,
+            requestText: requestData.requestText,
+            referenceCode: searchResults.results[0].referenceCode
+          });
+          return console.log("length of matchList is now " + matchList.length);
+        }
+      });
+    }
+    console.log("final length of matchList is " + matchList.length);
+    resultsList = [];
+    for (j = 0, len1 = matchList.length; j < len1; j++) {
+      match = matchList[j];
+      entitySearchData = {
+        displayName: match.displayName,
+        requests: [
+          {
+            requestName: match.referenceCode
+          }
+        ]
+      };
+      exports.pickBestLabels(entitySearchData, csv, function(searchResults) {
+        match.bestLabel = searchResults.results[0].bestLabel;
+        return resultsList.push({
+          bestLabel: searchResults.results[0].bestLabel
+        });
+      });
+    }
+    return callback({
+      results: matchList
+    });
+  };
 
   formatCSVRequestAsReqArray = function(csvReq) {
     var i, len, ref, req, requests;
@@ -203,7 +325,7 @@
     return requests;
   };
 
-  formatReqArratAsCSV = function(prefResp) {
+  formatReqArrayAsCSV = function(prefResp) {
     var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
     outStr = "Requested Name,Reference Code\n";
@@ -214,7 +336,7 @@
     return outStr;
   };
 
-  formatReqArratAsJSON = function(prefResp, referenceCodeLocation) {
+  formatJSONReferenceCode = function(prefResp, referenceCodeLocation) {
     var i, len, out, pref;
     out = [];
     for (i = 0, len = prefResp.length; i < len; i++) {
@@ -222,6 +344,19 @@
       out.push({
         requestName: pref.requestName,
         referenceCode: pref[referenceCodeLocation]
+      });
+    }
+    return out;
+  };
+
+  formatJSONBestLabel = function(prefResp, referenceCodeLocation) {
+    var i, len, out, pref;
+    out = [];
+    for (i = 0, len = prefResp.length; i < len; i++) {
+      pref = prefResp[i];
+      out.push({
+        requestName: pref.requestName,
+        bestLabel: pref[referenceCodeLocation]
       });
     }
     return out;

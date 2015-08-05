@@ -261,6 +261,7 @@ exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
 	callback out
 
 
+
 exports.getExternalReferenceCodes = (displayName, requests, callback) ->
 	if displayName == "Corporate Batch ID"
 		console.log "looking up compound batches"
@@ -273,6 +274,21 @@ exports.getExternalReferenceCodes = (displayName, requests, callback) ->
 	else
 		callback.statusCode = 500
 		callback.end "problem with external preferred Code request: code type and kind are unknown to system"
+
+exports.getExternalBestLabel = (displayName, requests, callback) ->
+	if displayName == "Corporate Batch ID"
+		console.log "looking up compound batches"
+		exports.getBatchBestLabels requests, (response) ->
+			callback response
+	else if displayName == "Corporate Parent ID"
+		console.log "looking up compound parents"
+		exports.getParentBestLabels requests, (response) ->
+			console.log(JSON.stringify(response))
+			callback response
+	else
+		callback.statusCode = 500
+		callback.end "problem with external best label request: displayName is unknown to system"
+
 
 exports.getPreferredBatchIds = (requests, callback) ->
 	if global.specRunnerTestmode
@@ -340,6 +356,72 @@ exports.getPreferredParentIds = (requests, callback) ->
 				console.log json
 				callback null
 
+
+exports.getBatchBestLabels = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("1111") > -1
+				res.preferredName = "1111"
+			else if req.requestName.indexOf("1234") > -1
+				res.preferredName = "1234::7"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else #not spec mode
+		config = require '../../../conf/compiled/conf.js'
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.server.service.external.preferred.batchid.url
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
+
+exports.getParentBestLabels = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("1111") > -1
+				res.preferredName = "1111"
+			else if req.requestName.indexOf("1234") > -1
+				res.preferredName = "1234"
+			else if req.requestName.indexOf("CMPD000001234") > -1
+				res.preferredName = "1234"
+			else
+				res.preferredName = req.requestName
+			results.push res
+		response = results
+
+		callback response
+	else
+		config = require '../../../conf/compiled/conf.js'
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.server.service.external.preferred.batchid.url+"/parent"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null
 
 checkBatch_TestMode = (requestName) ->
 	idComps = requestName.split("_")

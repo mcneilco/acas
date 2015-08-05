@@ -248,10 +248,16 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 			res = requestName: req.requestName
 			if req.requestName.indexOf("ambiguous") > -1
 				res.referenceName = ""
+				res.preferredName = ""
 			else if req.requestName.indexOf("name") > -1
 				res.referenceName = "GENE1111"
+				res.preferredName = "1111"
+			else if req.requestName.indexOf("1111") > -1
+				res.referenceName = "GENE1111"
+				res.preferredName = "1111"
 			else
 				res.referenceName = req.requestName
+				res.preferredName = req.requestName
 			results.push res
 		response =
 			thingType: codeRequest.thingType
