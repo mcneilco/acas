@@ -487,7 +487,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
     newBatchIds <- as.data.frame(preferredIdDT)
   } else {
-    newBatchIds <- getPreferredId2(batchIds, entityType = entityType, entityKind = entityKind)
+    newBatchIds <- getPreferredId2(batchIds, displayName = mainCode)
   }
   
   # If the preferred Id service does not return anything, errors will already be thrown, just move on
