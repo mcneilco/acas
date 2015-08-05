@@ -36,7 +36,7 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@trigger 'search-requested', $.trim(@$('.bv_gidListString').val())
 
 	handleAdvanceModeRequested: =>
-		@trigger 'requestAdvancedMode'
+		@trigger 'requestAdvancedMode', $.trim(@$('.bv_gidListString').val()), @aggregate
 
 
 class window.GeneIDQueryResultController extends Backbone.View
@@ -48,6 +48,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		console.log(@model.get('data').iTotalRecords)
 		if @model.get('data').iTotalRecords > 0
 			@$('.bv_noResultsFound').hide()
 			@setupHeaders()
@@ -107,11 +108,13 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@queryInputController = new GeneIDQueryInputController
 				el: @$('.bv_inputView')
 		@queryInputController.on 'search-requested', @handleSearchRequested
-		@queryInputController.on 'requestAdvancedMode', =>
-			@trigger 'requestAdvancedMode'
+		@queryInputController.on 'requestAdvancedMode', @requestFilterExperiments
 		@queryInputController.render()
 		@setQueryOnlyMode()
 		@dataAdded = false
+
+	requestFilterExperiments: (searchStr, aggregate) =>
+		@trigger 'requestAdvancedMode', searchStr, aggregate
 
 	handleSearchRequested: (searchStr) =>
 		@lastSearch = searchStr
@@ -641,12 +644,13 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@dataAdded = false
-		@gotoStepGetCodes()
+		# @gotoStepGetCodes()
+		@fromCodesToExptTree()
 
 	handleNextClicked: =>
 		switch @nextStep
-			when 'fromCodesToExptTree'
-				@fromCodesToExptTree()
+			# when 'fromCodesToExptTree'
+			# 	@fromCodesToExptTree()
 			when 'fromExptTreeToFilters'
 				@fromExptTreeToFilters()
 			when 'fromFiltersToResults'
@@ -654,17 +658,17 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			when 'gotoRestart'
 				@trigger 'requestRestartAdvancedQuery'
 
-	gotoStepGetCodes: ->
-		@nextStep = 'fromCodesToExptTree'
-		@$('.bv_getCodesView').show()
-		@$('.bv_getExperimentsView').hide()
-		@$('.bv_getFiltersView').hide()
-		@$('.bv_advResultsView').hide()
-		@$('.bv_cancel').html 'Cancel'
-		@$('.bv_noExperimentsFound').hide()
+	# gotoStepGetCodes: ->
+	# 	@nextStep = 'fromCodesToExptTree'
+	# 	@$('.bv_getCodesView').show()
+	# 	@$('.bv_getExperimentsView').hide()
+	# 	@$('.bv_getFiltersView').hide()
+	# 	@$('.bv_advResultsView').hide()
+	# 	@$('.bv_cancel').html 'Cancel'
+	# 	@$('.bv_noExperimentsFound').hide()
 
 	fromCodesToExptTree: ->
-		@searchCodes = $.trim @$('.bv_codesField').val()
+		@searchCodes = @model.get('searchStr')
 		@$('.bv_searchStatusDropDown').modal
 			backdrop: "static"
 		@$('.bv_searchStatusDropDown').modal "show"
@@ -731,7 +735,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			batchCodes: @searchCodes
 			experimentCodeList: @experimentList
 			searchFilters: @erfc.getSearchFilters()
-			aggregate: @etc.aggregate
+			aggregate: @model.get('aggregate')
 
 	fromFiltersToResults: ->
 		@$('.bv_searchStatusDropDown').modal
@@ -935,10 +939,13 @@ class window.GeneIDQueryAppController extends Backbone.View
 		@$('.bv_advancedQueryContainer').hide()
 		@$('.bv_advancedQueryNavbar').hide()
 		@$('.bv_basicQueryView').show()
-		@aerqc.on 'requestAdvancedMode', =>
-			@startAdvanceedQueryWizard()
+		@aerqc.on 'requestAdvancedMode', @startAdvancedQueryWizard
 
-	startAdvanceedQueryWizard: =>
+	startAdvancedQueryWizard: (searchStr, aggregate) =>
+		console.log("The search text is: " + searchStr + "\n Aggregate is: " + aggregate)
+		searchParams =
+			searchStr: searchStr
+			aggregate: aggregate
 		@$('.bv_next').html "Next"
 		@$('.bv_next').removeAttr 'disabled'
 		@$('.bv_addData').hide()
@@ -948,6 +955,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 		@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc = new AdvancedExperimentResultsQueryController
 			el: @$('.bv_advancedQueryView')
+			model: new Backbone.Model searchParams
 		@aerqc.on 'enableNext', =>
 			@$('.bv_next').removeAttr 'disabled'
 		@aerqc.on 'disableNext', =>
@@ -958,8 +966,8 @@ class window.GeneIDQueryAppController extends Backbone.View
 			@$('.bv_advancedQueryContainer').removeClass 'gidAdvancedQueryContainerPadding'
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
 			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsResultsView'
-		@aerqc.on 'requestRestartAdvancedQuery', =>
-			@startAdvanceedQueryWizard()
+		@aerqc.on 'requestRestartAdvancedQuery', => #TODO doesn't need to be here?
+			@startAdvancedQueryWizard()
 		@aerqc.on 'changeNextToNewQuery', =>
 			@$('.bv_next').html "New Query"
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'

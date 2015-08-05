@@ -207,6 +207,7 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 myLogger$debug("here is the final searchParams")
 myLogger$debug(toJSON(searchParams))
 myLogger$debug(searchParams)
+save(searchParams, file="searchParams.Rda")
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
 dataCsv <- getURL(
@@ -422,7 +423,7 @@ modifyCurveValues <- function(curveIdCol){
 
 ### PROCESS DATA RETURNED FROM SERVER #####
 
-
+save(dataDT, file='dataDT.Rda')
 if (nrow(dataDT) > 0){  # If data was returned from the server
   firstPass <- TRUE
 

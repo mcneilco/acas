@@ -1,7 +1,7 @@
 <script type="text/template" id="GeneIDQueryInputView" xmlns="http://www.w3.org/1999/html">
 
     <div class="span11">
-        <div class="span6 offset3 bv_gidSearchStart" style="padding-top:200px;">
+        <div class="span7 offset3 bv_gidSearchStart" style="padding-top:200px;">
 	        <p class="lead bv_gidACASBadge">ACAS</p>
 	        <div class="form-inline bv_searchForm">
 		        <div class="lead pull-left bv_gidACASBadgeTop">ACAS</div>
@@ -13,7 +13,8 @@
                 <label class="radio radioTrue">
                   <input type="radio" name="bv_aggregation" class="bv_aggregation_true aggregationRadios" value="true">Display results aggregated by protocol
                 </label>
-                <button type="button" class="btn btn-default bv_gidNavAdvancedSearchButton gidAdvancedNavSearchButtonStart">Advanced Search</button>
+                <button type="button" class="btn btn-default bv_searchAdv bv_gidNavAdvancedSearchButton gidAdvancedNavSearchButtonStart">Filter by Experiment</button>
+
 
 
             </div>
@@ -110,14 +111,6 @@
             <button class="btn bv_searchClear">Clear</button>
         </div>
         <div class="span12 bv_tree">tree goes here</div>
-        <div class="form-inline span8 gidAggregation">
-            <label class="radio radioFalse">
-                <input type="radio" name="bv_aggregation" class="bv_aggregation_false aggregationRadios" value="false" checked="checked">Display results separately
-            </label>
-            <label class="radio radioTrue">
-                <input type="radio" name="bv_aggregation" class="bv_aggregation_true aggregationRadios" value="true">Display results aggregated by protocol
-            </label>
-        </div>
     </div>
 
 </script>

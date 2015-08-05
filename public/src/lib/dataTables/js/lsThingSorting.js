@@ -5,7 +5,6 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
 // All values prefaced with a ">" sign are sorted as largest
 // Also handles scientific notation
 
-
     "lsThing-pre": function ( a ) {
         var operator =a[0];
 
