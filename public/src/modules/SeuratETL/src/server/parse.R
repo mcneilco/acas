@@ -3,12 +3,14 @@
 suppressMessages(library(reshape))
 suppressMessages(library(data.table))
 
-#' Read Seurat Text or File
+#' readSeuratFile
+#' 
+#' Reads Seurat formatted assay upload file or the character representation of that file
 #'
-#' @param pathToSeuratFile can be a path to a file (xls, xlsx, or csv) or the text content of a csv file
-#' @param file boolean forces a xlsx or xls file path to be read as a csv
+#' @param pathToSeuratFile character Can be a path to a file (xls, xlsx, or csv) or the text content of a csv file
+#' @param file boolean Forces a xlsx or xls file path to be read as a csv
 #'
-#' @return data.table of seurat content
+#' @return data.table Seurat assay upload content
 #' @export
 #'
 #' @examples
@@ -42,10 +44,12 @@ readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
 }
 
 #' parseSeuratFileToSELContentJSON
+#' 
+#' Parse Seurat assay upload content to ACAS SEL formatted content and return JSON representation
 #'
 #' @param pathToSeuratFile see \code{\link{readSeuratFile}}
 #'
-#' @return character json array of protocolName, experimentName and sel content
+#' @return character JSON array with protocolName, experimentName and selContent keys
 #' @export
 #'
 #' @examples
@@ -74,14 +78,13 @@ parseSeuratFileToSELContentJSON <- function(pathToSeuratFile) {
   return(jsonlite::toJSON(response, auto_unbox=TRUE))
 }
 
-
 #' stopUser
 #'
-#' wraps racas function for use when racas is not being used
+#' Wraps the racas package function for use when racas is not being used
 #' 
-#' @param message 
+#' @param message character Value to error
 #'
-#' @return error
+#' @return
 #' @export
 #'
 #' @examples
@@ -97,9 +100,9 @@ stopUser <- function(message) {
 
 #' validateSeuratFileContent
 #' 
-#' function to check for seurat csv content issues before attempting to parse to sel content
+#' Checks for seurat csv content issues before attempting to parse to sel content
 #'
-#' @param seuratFileContent 
+#' @param seuratFileContent data.frame of Seurat assay upload content
 #'
 #' @return error if validation fails
 #' @export
@@ -130,8 +133,10 @@ validateSeuratFileContent <- function(seuratFileContent) {
 }
 
 #' parseSeuratFileContentToSELContentList
+#' 
+#' Takes Seurat formatted assay upload content and returns an ACAS SEL content data.table
 #'
-#' @param seuratFileContent data.frame of seurat upload content 
+#' @param seuratFileContent data.table Seurat assay upload content
 #'
 #' @return data.table of sel content with columns protocolName, experimentName, and selContent (csv string)
 #' @export
@@ -149,11 +154,11 @@ parseSeuratFileContentToSELContentList <- function(seuratFileContent) {
 
 #' file_ext
 #'
-#' get file extension
+#' Gets the file extension for a file name
 #' 
 #' @param x 
 #'
-#' @return character file extension
+#' @return character The files extension
 #' @export
 #'
 #' @examples
@@ -165,10 +170,10 @@ file_ext <- function(x) {
 
 #' makeExperimentNamesUnique
 #' 
-#' replaces "Assay.Protocol" columns with a unique experiment name incremented with an "_1" or "_2" depending on how many times the experiment is repeated
+#' Replaces "Assay.Protocol" columns with a unique experiment name incremented with an "_1" or "_2" depending on how many times the experiment is repeated
 #'
-#' @param experimentNames  data frame with "Assay.Protocol" column and "by" columns
-#' @param by columns which to make experiments unique by 
+#' @param experimentNames data.frame Has "Assay.Protocol" columns as well as columns specified in by
+#' @param by character Columns which to make experiments unique by 
 #'
 #' @return data.table with the same number of columns as experimentNames but with a replaced Assay.Protocol to make it unique
 #' @export
@@ -195,10 +200,10 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
 
 #' makeValueString
 #'
-#' can over ride data type field here
+#' Helper function to override data type field
 #' 
-#' @param exptRow data.frame row of seurat csv content row
-#' @param resultType result type
+#' @param exptRow data.frame Row of Seurat assay upload csv content
+#' @param resultType character The Result type of the row
 #'
 #' @return
 #' @export
@@ -221,10 +226,11 @@ makeValueString <- function(exptRow, resultType) {
 
 #' getSELFormat
 #'
-#' if there are any rawResults columns then make this a "Dose Response" format sel file
-#' @param seuratExperiment data.frame of seurat csv content
+#' Gets the Format of the SEL header block
+#' 
+#' @param seuratExperiment data.table Seurat assay upload experiment content
 #'
-#' @return
+#' @return character The format for SEL header block
 #' @export
 #'
 #' @examples
@@ -241,9 +247,9 @@ getSELFormat <- function(seuratExperiment){
 
 #' convertSeuratTableToSELContent
 #'
-#' function to convert seurat experiment to an sel character string
+#' Converts Seurat experiment to an ACAS SEL character string
 #' 
-#' @param seuratExperiment data.frame of seurat csv content
+#' @param seuratExperiment data.table Seurat assay upload experiment content
 #'
 #' @return character csv content of sel file
 #' @export
@@ -283,10 +289,10 @@ convertSeuratTableToSELContent <- function(seuratExperiment) {
 
 #' getHeaderLines
 #'  
-#'  takes seurat sel experiment content and returns the sel header lines
+#' Gets the header lines for the SEL content from a Seurat experiment
 #'
-#' @param seuratExperiment data.frame of seurat experiment csv content
-#' @param format format of sel content (Generic, Dose Response...etc)
+#' @param seuratExperiment data.table Seurat assay upload experiment content
+#' @param format character Format of sel file (Generic, Dose Response...etc)
 #'
 #' @return character string of csv content
 #' @export
@@ -321,11 +327,11 @@ getHeaderLines <- function(seuratExperiment, format) {
 
 #' pivotExperimentRawResults
 #'
-#' finds and pivots seurat sel MP.Result and MP.Conc columns into an SEL raw results data.table
+#' Finds and pivots seurat sel MP.Result and MP.Conc columns into an SEL raw results data.table
 #' 
-#' @param seuratExperiment data.frame of seurat experiment csv content 
+#' @param seuratExperiment data.table Seurat assay upload experiment content
 #'
-#' @return data.table of sel formatted raw results
+#' @return data.table SEL formatted raw results
 #' @export
 #'
 #' @examples
@@ -351,10 +357,11 @@ pivotExperimentRawResults <- function(seuratExperiment) {
 
 #' pivotExperimentCalculatedResults
 #'
-#' pivots the content of a seurat formatted experiment to calulated results section of an ACAS SEL file
-#' @param seuratExperiment seuratExperiment data.frame of seurat experiment csv content 
+#' Pivots (transposes) the content of a seurat formatted experiment to calulated results section of an ACAS SEL file
+#' 
+#' @param seuratExperiment data.table Seurat assay upload experiment content
 #'
-#' @return data.table of sel formatted calculated results
+#' @return data.table SEL format calculated results
 #' @export
 #'
 #' @examples
@@ -575,6 +582,20 @@ padRawHeadColumns <- function(headLines, cols) {
   return(headLines)
 }
 
+#' write_csv
+#'
+#' Faster version of write.csv
+#' 
+#' @param x object To write to csv
+#' @param file character Rile to write to
+#' @param rows numeric Rows to write at a time
+#' @param colNames logical Should it write the column headers or not
+#' @param ... 
+#'
+#' @return
+#' @export
+#'
+#' @examples
 write_csv <- function(x, file, rows = 1000L, colNames = TRUE, ...) {
   
   if(colNames) {
@@ -601,13 +622,36 @@ write_csv <- function(x, file, rows = 1000L, colNames = TRUE, ...) {
   }
 }
 
+#' dataframe_to_csvstring
+#' 
+#' Convert a data.frame to csv string
+#'
+#' @param x data.frame To write to string
+#' @param ... Addtitional parameters to pass to write_csv
+#'
+#' @return character csv string representation of x
+#' @export
+#'
+#' @examples
 dataframe_to_csvstring <- function(x, ...) {
+  
   t <- tempfile()
   on.exit(unlink(t))
   write_csv(x,t, ...)
   csv_string <- readChar(t, file.info(t)$size)
 }
 
+
+#' getRawResultsColumns
+#' 
+#' Function to get the column indexes of raw results
+#'
+#' @param seuratExperiment data.table Seurat assay upload experiment content
+#'
+#' @return list With concColumnIndexes and resultColumnIndexes
+#' @export
+#'
+#' @examples
 getRawResultsColumns <- function(seuratExperiment){
   
   #rawResultColumnIndexes <- grep("^MP.Conc.[0-9]|^MP.Result.[0-9]|^MP.Flag.[0-9]", names(seuratExperiment))
@@ -616,7 +660,18 @@ getRawResultsColumns <- function(seuratExperiment){
   return(list(concColumnIndexes = concColumnIndexes, resultColumnIndexes = resultColumnIndexes))
 }
 
+#' addCurveDataLines
+#' 
+#' Function to add curve data lines to a seurat experiment
+#'
+#' @param seuratExperiment data.frame of seurat experiment csv content  
+#'
+#' @return
+#' @export
+#'
+#' @examples
 addCurveDataLines <-function(seuratExperiment) {
+  
   rawResultColumns <- unlist(getRawResultsColumns(seuratExperiment))
   isCurveIDRow <- rowSums(seuratExperiment[,rawResultColumns,with=FALSE],na.rm = TRUE) != 0
   isCurveIDRow[is.na(isCurveIDRow)] <- FALSE
@@ -629,7 +684,28 @@ addCurveDataLines <-function(seuratExperiment) {
   return(seuratExperiment)
 }
 
+#' print_usage
+#' 
+#' Function to print usage
+#'
+#' @return 
+#' @export
+#'
+#' @examples
+print_usage <- function() {
+  
+  cat("Usage:  Rscript /path/to/seurat_upload_format.csv /path/to/script/output/folder\n")
+}
+#' runMain
+#' 
+#' Wrapper function that changes output depending on the environment (Rapache or if command args were passed in)
+#'
+#' @return If "GET" is present (RApache) then return the sel content as a string.  If command args are present, then create a folder and output sel csv files
+#' @export
+#'
+#' @examples
 runMain <- function() {
+  
 # Test if we are in rApache or not
   if(exists("GET")) {
     csv_data <- rawToChar(receiveBin(-1))
@@ -639,7 +715,7 @@ runMain <- function() {
     
   } else {
     args <- commandArgs(TRUE)
-    if(length(args) > 0) {
+    if(length(args) == 2) {
       file <- args[[1]]
       outFolder <- args[[2]]
       seuratFileContent <- readSeuratFile(file)
@@ -653,6 +729,8 @@ runMain <- function() {
           cat(paste0("writing file ", outExperiment, "\n"))
           writeLines(selContent, con = outExperiment)
         }, by = key(selContent)]
+    } else {
+      print_usage()
     }
   }
 }
