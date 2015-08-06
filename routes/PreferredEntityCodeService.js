@@ -1,5 +1,5 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV,
+  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV, runSingleSearch,
     hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
@@ -90,7 +90,7 @@
 
   exports.referenceCodes = function(requestData, csv, callback) {
     var csUtilities, entityType, preferredThingService, reqHashes, reqList;
-    console.log(global.specRunnerTestmode);
+    console.log("stubs mode is: " + global.specRunnerTestmode);
     console.log("csv is " + csv);
     exports.getSpecificEntityType(requestData.displayName, function(json) {
       requestData.type = json.type;
@@ -256,16 +256,22 @@
   };
 
   exports.searchForEntities = function(requestData, callback) {
-    var asCodes, csv, entity, entitySearchData, i, j, len, len1, match, matchList, ref, resultsList;
+    var asCodes, counter, csv, entity, entitySearchData, i, len, matchList, numTypes, ref, results;
     asCodes = true;
     exports.getConfiguredEntityTypes(asCodes, function(json) {
       return requestData.entityTypes = json;
     });
+    console.log("request Text is: " + requestData.requestText);
+    console.log("there are " + requestData.entityTypes.length + " types of entities to search");
     matchList = [];
+    counter = 0;
+    numTypes = requestData.entityTypes.length;
     csv = false;
     ref = requestData.entityTypes;
+    results = [];
     for (i = 0, len = ref.length; i < len; i++) {
       entity = ref[i];
+      console.log("searching for entity: " + entity.displayName);
       entitySearchData = {
         displayName: entity.displayName,
         requests: [
@@ -274,39 +280,50 @@
           }
         ]
       };
-      exports.referenceCodes(entitySearchData, csv, function(searchResults) {
-        if (searchResults.results[0].referenceCode !== "") {
-          console.log("found a match for " + entity.displayName);
-          matchList.push({
-            displayName: entity.displayName,
-            requestText: requestData.requestText,
-            referenceCode: searchResults.results[0].referenceCode
-          });
-          return console.log("length of matchList is now " + matchList.length);
+      results.push(runSingleSearch(entitySearchData, csv, function(result) {
+        if (result !== 0) {
+          matchList.push(result);
         }
-      });
+        counter = counter + 1;
+        console.log("returned number " + counter);
+        console.log("found " + matchList.length + " possible matches");
+        if (counter === numTypes) {
+          return callback({
+            results: matchList
+          });
+        }
+      }));
     }
-    console.log("final length of matchList is " + matchList.length);
-    resultsList = [];
-    for (j = 0, len1 = matchList.length; j < len1; j++) {
-      match = matchList[j];
-      entitySearchData = {
-        displayName: match.displayName,
-        requests: [
-          {
-            requestName: match.referenceCode
-          }
-        ]
-      };
-      exports.pickBestLabels(entitySearchData, csv, function(searchResults) {
-        match.bestLabel = searchResults.results[0].bestLabel;
-        return resultsList.push({
-          bestLabel: searchResults.results[0].bestLabel
+    return results;
+  };
+
+  runSingleSearch = function(searchData, csv, callback) {
+    return exports.referenceCodes(searchData, csv, function(searchResults) {
+      var match;
+      if (searchResults.results[0].referenceCode !== "") {
+        match = {
+          displayName: searchData.displayName,
+          referenceCode: searchResults.results[0].referenceCode,
+          requestName: searchResults.results[0].requestName,
+          requests: [
+            {
+              requestName: searchResults.results[0].referenceCode
+            }
+          ]
+        };
+        return exports.pickBestLabels(match, csv, function(results1) {
+          var finalObject;
+          finalObject = {
+            displayName: match.displayName,
+            requestText: match.requestName,
+            referenceCode: match.referenceCode,
+            bestLabel: results1.results[0].bestLabel
+          };
+          return callback(finalObject);
         });
-      });
-    }
-    return callback({
-      results: matchList
+      } else {
+        return callback(0);
+      }
     });
   };
 

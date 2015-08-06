@@ -967,7 +967,7 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.dataAdded = false;
-      return this.fromCodesToExptTree();
+      return this.fromSearchtoCodes();
     };
 
     AdvancedExperimentResultsQueryController.prototype.handleNextClicked = function() {
@@ -979,6 +979,17 @@
         case 'gotoRestart':
           return this.trigger('requestRestartAdvancedQuery');
       }
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.fromSearchtoCodes = function() {
+      var j, len, searchString, searchTerms, term;
+      searchString = this.model.get('searchStr');
+      searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
+      for (j = 0, len = searchTerms.length; j < len; j++) {
+        term = searchTerms[j];
+        console.log(term);
+      }
+      return this.fromCodesToExptTree();
     };
 
     AdvancedExperimentResultsQueryController.prototype.fromCodesToExptTree = function() {
@@ -1032,6 +1043,13 @@
       }
     };
 
+    AdvancedExperimentResultsQueryController.prototype.handleResultsClicked = function() {
+      this.$('.bv_getExperimentsView').hide();
+      this.trigger('nextToGotoResults');
+      this.experimentList = this.etc.getSelectedExperiments();
+      return this.fromFiltersToResults();
+    };
+
     AdvancedExperimentResultsQueryController.prototype.fromExptTreeToFilters = function() {
       this.experimentList = this.etc.getSelectedExperiments();
       this.$('.bv_searchStatusDropDown').modal;
@@ -1079,11 +1097,16 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.getQueryParams = function() {
-      var queryParams;
+      var noFilters, queryParams, searchFilters;
+      noFilters = {
+        booleanFilter: "and",
+        advancedFilter: ""
+      };
+      searchFilters = this.erfc != null ? this.erfc.getSearchFilters() : noFilters;
       return queryParams = {
         batchCodes: this.searchCodes,
         experimentCodeList: this.experimentList,
-        searchFilters: this.erfc.getSearchFilters(),
+        searchFilters: searchFilters,
         aggregate: this.model.get('aggregate')
       };
     };
@@ -1356,6 +1379,7 @@
     function GeneIDQueryAppController() {
       this.handleHelpClicked = bind(this.handleHelpClicked, this);
       this.handleCancelClicked = bind(this.handleCancelClicked, this);
+      this.handleResultsClicked = bind(this.handleResultsClicked, this);
       this.handleNextClicked = bind(this.handleNextClicked, this);
       this.startAdvancedQueryWizard = bind(this.startAdvancedQueryWizard, this);
       this.startBasicQueryWizard = bind(this.startBasicQueryWizard, this);
@@ -1366,6 +1390,7 @@
 
     GeneIDQueryAppController.prototype.events = {
       "click .bv_next": "handleNextClicked",
+      "click .bv_toResults": "handleResultsClicked",
       "click .bv_cancel": "handleCancelClicked",
       "click .bv_gidNavHelpButton": "handleHelpClicked"
     };
@@ -1426,7 +1451,7 @@
       this.aerqc.on('nextToGotoResults', (function(_this) {
         return function() {
           _this.$('.bv_next').html("Go to Results");
-          _this.$('.bv_toResults').addClass('bv_hidden');
+          _this.$('.bv_toResults').hide();
           _this.$('.gidAdvancedSearchButtons').addClass('gidAdvancedSearchButtonsStepThree');
           return _this.$('.gidAdvancedSearchButtons').removeClass('gidAdvancedSearchButtonsNewQuery');
         };
@@ -1442,7 +1467,7 @@
       })(this));
       this.aerqc.on('requestRestartAdvancedQuery', (function(_this) {
         return function() {
-          _this.$('.bv_toResults').removeClass('bv_hidden');
+          _this.$('.bv_toResults').show();
           _this.$('.gidAdvancedSearchButtonsResultsView').removeClass('gidAdvancedSearchButtonsStepThree');
           _this.$('.gidAdvancedSearchButtonsResultsView').addClass('gidAdvancedSearchButtonsNewQuery');
           return _this.startBasicQueryWizard();
@@ -1464,6 +1489,12 @@
     GeneIDQueryAppController.prototype.handleNextClicked = function() {
       if (this.aerqc != null) {
         return this.aerqc.handleNextClicked();
+      }
+    };
+
+    GeneIDQueryAppController.prototype.handleResultsClicked = function() {
+      if (this.aerqc != null) {
+        return this.aerqc.handleResultsClicked();
       }
     };
 

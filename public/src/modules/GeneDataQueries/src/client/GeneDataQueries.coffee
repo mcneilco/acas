@@ -645,7 +645,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		$(@el).html @template()
 		@dataAdded = false
 		# @gotoStepGetCodes()
-		@fromCodesToExptTree()
+		@fromSearchtoCodes()
 
 	handleNextClicked: =>
 		switch @nextStep
@@ -666,6 +666,16 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	# 	@$('.bv_advResultsView').hide()
 	# 	@$('.bv_cancel').html 'Cancel'
 	# 	@$('.bv_noExperimentsFound').hide()
+
+	fromSearchtoCodes: ->
+		searchString = @model.get('searchStr')
+		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except -
+		for term in searchTerms
+			console.log(term)
+
+
+		@fromCodesToExptTree()
+
 
 	fromCodesToExptTree: ->
 		@searchCodes = @model.get('searchStr')
@@ -702,6 +712,13 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@trigger 'changeNextToNewQuery'
 			@nextStep = 'gotoRestart'
 
+	# only availible during tree view - skips filters step
+	handleResultsClicked: ->
+		@$('.bv_getExperimentsView').hide()
+		@trigger 'nextToGotoResults'
+		@experimentList = @etc.getSelectedExperiments()
+		@fromFiltersToResults()
+
 	fromExptTreeToFilters: ->
 		@experimentList = @etc.getSelectedExperiments()
 		@$('.bv_searchStatusDropDown').modal
@@ -733,10 +750,15 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@nextStep = 'fromFiltersToResults'
 
 	getQueryParams: ->
+		noFilters =
+			booleanFilter: "and"
+			advancedFilter: ""
+		searchFilters = if @erfc? then @erfc.getSearchFilters() else noFilters
+
 		queryParams =
 			batchCodes: @searchCodes
 			experimentCodeList: @experimentList
-			searchFilters: @erfc.getSearchFilters()
+			searchFilters: searchFilters
 			aggregate: @model.get('aggregate')
 
 	fromFiltersToResults: ->
@@ -925,6 +947,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
 	events:
 		"click .bv_next": "handleNextClicked"
+		"click .bv_toResults": "handleResultsClicked"
 		"click .bv_cancel": "handleCancelClicked"
 		"click .bv_gidNavHelpButton": "handleHelpClicked"
 
@@ -968,7 +991,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 			@$('.bv_next').html "Filter on Values"
 		@aerqc.on 'nextToGotoResults', =>
 			@$('.bv_next').html "Go to Results"
-			@$('.bv_toResults').addClass('bv_hidden')
+			@$('.bv_toResults').hide()
 			@$('.gidAdvancedSearchButtons').addClass('gidAdvancedSearchButtonsStepThree')
 			@$('.gidAdvancedSearchButtons').removeClass('gidAdvancedSearchButtonsNewQuery')
 		@aerqc.on 'requestShowResultsMode', =>
@@ -978,7 +1001,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
 			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsResultsView'
 		@aerqc.on 'requestRestartAdvancedQuery', =>
-			@$('.bv_toResults').removeClass('bv_hidden')
+			@$('.bv_toResults').show()
 			@$('.gidAdvancedSearchButtonsResultsView').removeClass 'gidAdvancedSearchButtonsStepThree'
 			@$('.gidAdvancedSearchButtonsResultsView').addClass 'gidAdvancedSearchButtonsNewQuery'
 			@startBasicQueryWizard()
@@ -994,6 +1017,10 @@ class window.GeneIDQueryAppController extends Backbone.View
 	handleNextClicked: =>
 		if @aerqc?
 			@aerqc.handleNextClicked()
+
+	handleResultsClicked: =>
+		if @aerqc?
+			@aerqc.handleResultsClicked()
 
 	handleCancelClicked: =>
 		@startBasicQueryWizard()
