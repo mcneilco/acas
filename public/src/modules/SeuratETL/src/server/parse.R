@@ -28,13 +28,13 @@ readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
     seuratFileContents <- as.data.table(XLConnect::readWorksheet(wb, sheet = sheetToRead, header = TRUE, dateTimeFormat="%Y-%m-%d", check.names = TRUE))
   } else {
     seuratFileContents <- as.data.table(suppressWarnings(read.csv(pathToSeuratFile, na.strings = c("", "NA"), 
-                                colClasses = c("Expt Batch Number" = "character", 
-                                               "Assay Protocol" = "character",
-                                               "Expt Result Operator" = "character",
-                                               "Expt Concentration" = "character",
-                                               "Expt Conc Units" = "character",
-                                               "Expt Result Desc" = "character"),
-                                stringsAsFactors = FALSE,
+                                colClasses = c("Expt.Batch.Number" = "character", 
+                                               "Assay.Protocol" = "character",
+                                               "Expt.Result.Operator" = "character",
+                                               "Expt.Concentration" = "character",
+                                               "Expt.Conc.Units" = "character",
+                                               "Expt.Result.Desc" = "character"),
+                                stringsAsFactors = FALSE
                                   )))
     setnames(seuratFileContents, make.names(names(seuratFileContents)))
     if("Expt Date" %in% names(seuratFileContents)) {
@@ -130,6 +130,12 @@ validateSeuratFileContent <- function(seuratFileContent) {
   if(is.null(seuratFileContent$Expt.Result.Value) & is.null(seuratFileContent$Expt.Result.Desc)){
     stopUser("Experiment result value and description are both missing")
   }
+  columnsToAddIfMissing <- c("Expt.Concentration", "Expt.Conc.Units")
+  missingColumnIndexes <- which(!columnsToAddIfMissing %in% names(seuratFileContent))
+  if(length(missingColumnIndexes) > 0) {
+    missingColumns <- columnsToAddIfMissing[missingColumnIndexes]
+    seuratFileContent[ , missingColumns := rep(as.character(NA),length(missingColumns)), with = FALSE]
+  }
   return(seuratFileContent)
 }
 
@@ -144,8 +150,9 @@ validateSeuratFileContent <- function(seuratFileContent) {
 #'
 #' @examples
 parseSeuratFileContentToSELContentList <- function(seuratFileContent) {
-  if(file.exists("validateSeuratFileContent.R")) {
-    source("validateSeuratFileContent.R", local = FALSE)
+  if(file.exists("customerValidateSeuratFileContent.R")) {
+    source("customerValidateSeuratFileContent.R", local = FALSE)
+    seuratFileContent <- customerValidateSeuratFileContent(seuratFileContent)
   }
   seuratFileContent <- validateSeuratFileContent(seuratFileContent)
   seuratFileContent[ , c('Assay.Name','Assay.Protocol') := makeExperimentNamesUnique(seuratFileContent[ , c("Assay.Name", "Assay.Protocol"), with = FALSE], by = c("Assay.Name"))]
