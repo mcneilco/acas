@@ -205,42 +205,50 @@ exports.searchForEntities = (requestData, callback) ->
 	exports.getConfiguredEntityTypes asCodes, (json) ->
 		requestData.entityTypes = json
 
+	console.log("request Text is: "+ requestData.requestText)
+	console.log "there are "+requestData.entityTypes.length+" types of entities to search"
 	matchList = []
+	counter = 0
+	numTypes = requestData.entityTypes.length
 	csv = false
 
 	# Search using referenceCodes
 	for entity in requestData.entityTypes
+		console.log "searching for entity: "+entity.displayName
 		entitySearchData =
 			displayName: entity.displayName
-			requests: [
-				requestName: requestData.requestText
-			]
-		exports.referenceCodes entitySearchData, csv, (searchResults) ->
-			if searchResults.results[0].referenceCode != ""
-				console.log("found a match for "+entity.displayName)
-				matchList.push
-					displayName: entity.displayName
-					requestText: requestData.requestText
-					referenceCode: searchResults.results[0].referenceCode
-				console.log("length of matchList is now "+ matchList.length)
+			requests:
+				[requestName: requestData.requestText]
+
+		runSingleSearch entitySearchData, csv, (result) ->
+			if result != 0
+				matchList.push(result)
+			counter = counter + 1
+			console.log "returned number "+counter
+			console.log("found "+ matchList.length+ " possible matches")
+			if counter == numTypes
+				callback
+					results: matchList
 
 
-	console.log("final length of matchList is "+ matchList.length)
-	resultsList = []
-	# Pick best label for each returned result
-	for match in matchList
-		entitySearchData =
-			displayName: match.displayName
-			requests:[
-				requestName: match.referenceCode
-			]
-		exports.pickBestLabels entitySearchData, csv, (searchResults) ->
-			match.bestLabel = searchResults.results[0].bestLabel
-			resultsList.push
-				bestLabel: searchResults.results[0].bestLabel
+runSingleSearch = (searchData, csv, callback) ->
+	exports.referenceCodes searchData, csv, (searchResults) ->
+		if searchResults.results[0].referenceCode != ""
+			match =
+				displayName: searchData.displayName
+				referenceCode: searchResults.results[0].referenceCode
+				requestName: searchResults.results[0].requestName
+				requests:
+					[requestName: searchResults.results[0].referenceCode]
 
-	callback
-	  results:matchList
+			exports.pickBestLabels match, csv, (results1) ->
+				finalObject =
+					displayName: match.displayName
+					requestText: match.requestName
+					referenceCode: match.referenceCode
+					bestLabel: results1.results[0].bestLabel
+				callback finalObject
+		else callback 0
 
 
 ####################################################################

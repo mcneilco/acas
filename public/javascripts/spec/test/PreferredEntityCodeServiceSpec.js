@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, config, parseResponse, request;
+  var _, arrayContains, assert, config, parseResponse, request;
 
   assert = require('assert');
 
@@ -1287,29 +1287,18 @@
         return assert(this.responseJSON.results != null);
       });
       it("should return the correct number of results", function() {
-        return assert.equal(this.responseJSON.results.length, 3);
+        return assert.equal(this.responseJSON.results.length, 5);
       });
       it("should return correct information about the matches", function() {
-        assert.equal(this.responseJSON.results[0].requestText, "1111");
-        assert.equal(this.responseJSON.results[0].bestLabel, "1111");
-        assert.equal(this.responseJSON.results[0].referenceCode, "GENE1111");
-        assert.equal(this.responseJSON.results[1].requestText, "1111");
-        assert.equal(this.responseJSON.results[1].bestLabel, "1111");
-        assert.equal(this.responseJSON.results[1].referenceCode, "GENE1111");
-        assert.equal(this.responseJSON.results[2].requestText, "1111");
-        assert.equal(this.responseJSON.results[2].bestLabel, "1111");
-        return assert.equal(this.responseJSON.results[2].referenceCode, "GENE1111");
+        assert(arrayContains(this.responseJSON.results, "requestText", "1111"));
+        assert(arrayContains(this.responseJSON.results, 'bestLabel', "1111"));
+        assert(arrayContains(this.responseJSON.results, 'referenceCode', "GENE1111"));
+        return assert(arrayContains(this.responseJSON.results, 'referenceCode', "1111"));
       });
       return it("should find a match for each type of lsThing", function() {
-        assert(_.isMatch(this.responseJSON.results, {
-          "displayName": "Gene ID"
-        }));
-        assert(_.isMatch(this.responseJSON.results, {
-          "displayName": "Protein Batch"
-        }));
-        return assert(_.isMatch(this.responseJSON.results, {
-          "displayName": "Protein Parent "
-        }));
+        assert(arrayContains(this.responseJSON.results, "displayName", "Gene ID"));
+        assert(arrayContains(this.responseJSON.results, "displayName", "Protein Batch"));
+        return assert(arrayContains(this.responseJSON.results, "displayName", "Protein Parent"));
       });
     });
     return describe("for compoundReg with multiple matches ONLY PASSES IN STUBS MODE [JSON FORMAT]", function() {
@@ -1337,37 +1326,31 @@
         return assert(this.responseJSON.results != null);
       });
       it("should return the correct number of results", function() {
-        return assert.equal(this.responseJSON.results.length, 2);
+        return assert.equal(this.responseJSON.results.length, 5);
       });
       it("should return correct information about the matches", function() {
-        assert(_.isMatch(this.responseJSON.results, {
-          requestText: "673874"
-        }));
-        assert(_.isMatch(this.responseJSON.results, {
-          bestLabel: "1234::7"
-        }));
-        assert(_.isMatch(this.responseJSON.results, {
-          referenceCode: "DNS000001234::7"
-        }));
-        assert(_.isMatch(this.responseJSON.results, {
-          requestText: "673874"
-        }));
-        assert(_.isMatch(this.responseJSON.results, {
-          bestLabel: "1234::7"
-        }));
-        return assert(_.isMatch(this.responseJSON.results, {
-          referenceCode: "DNS000001234"
-        }));
+        assert(arrayContains(this.responseJSON.results, "requestText", "673874"));
+        assert(arrayContains(this.responseJSON.results, "bestLabel", "1234"));
+        assert(arrayContains(this.responseJSON.results, "referenceCode", "DNS000001234::7"));
+        assert(arrayContains(this.responseJSON.results, "bestLabel", "1234::7"));
+        return assert(arrayContains(this.responseJSON.results, "referenceCode", "DNS000001234"));
       });
       return it("should find a match for each type of compound Reg entity", function() {
-        assert(_.isMatch(this.responseJSON.results, {
-          "displayName": "Corporate Parent ID"
-        }));
-        return assert(_.isMatch(this.responseJSON.results, {
-          "displayName": "Corporate Batch ID"
-        }));
+        assert(arrayContains(this.responseJSON.results, "displayName", "Corporate Parent ID"));
+        return assert(arrayContains(this.responseJSON.results, "displayName", "Corporate Batch ID"));
       });
     });
   });
+
+  arrayContains = function(array, key, value) {
+    var i, len, object;
+    for (i = 0, len = array.length; i < len; i++) {
+      object = array[i];
+      if (object[key] === value) {
+        return true;
+      }
+    }
+    return false;
+  };
 
 }).call(this);
