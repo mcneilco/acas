@@ -907,21 +907,16 @@ describe "searchForEntities service test", ->
 		it "should return an object with the correct fields", ->
 			assert @responseJSON.results?
 		it "should return the correct number of results", ->
-			assert.equal @responseJSON.results.length, 3
+			assert.equal @responseJSON.results.length, 5
 		it "should return correct information about the matches", ->
-			assert.equal @responseJSON.results[0].requestText, "1111"
-			assert.equal @responseJSON.results[0].bestLabel, "1111"
-			assert.equal @responseJSON.results[0].referenceCode, "GENE1111"
-			assert.equal @responseJSON.results[1].requestText, "1111"
-			assert.equal @responseJSON.results[1].bestLabel, "1111"
-			assert.equal @responseJSON.results[1].referenceCode, "GENE1111"
-			assert.equal @responseJSON.results[2].requestText, "1111"
-			assert.equal @responseJSON.results[2].bestLabel, "1111"
-			assert.equal @responseJSON.results[2].referenceCode, "GENE1111"
+			assert arrayContains(@responseJSON.results, "requestText", "1111")
+			assert arrayContains(@responseJSON.results, 'bestLabel', "1111")
+			assert arrayContains(@responseJSON.results, 'referenceCode', "GENE1111")
+			assert arrayContains(@responseJSON.results, 'referenceCode', "1111")
 		it "should find a match for each type of lsThing", ->
-			assert _.isMatch(@responseJSON.results, {"displayName":"Gene ID"})
-			assert _.isMatch(@responseJSON.results, {"displayName":"Protein Batch"})
-			assert _.isMatch(@responseJSON.results, {"displayName":"Protein Parent "})
+			assert arrayContains(@responseJSON.results, "displayName","Gene ID")
+			assert arrayContains(@responseJSON.results, "displayName","Protein Batch")
+			assert arrayContains(@responseJSON.results, "displayName","Protein Parent")
 	describe "for compoundReg with multiple matches ONLY PASSES IN STUBS MODE [JSON FORMAT]", ->
 		body =
 			requestText: "673874"
@@ -940,19 +935,23 @@ describe "searchForEntities service test", ->
 		it "should return an object with the correct fields", ->
 			assert @responseJSON.results?
 		it "should return the correct number of results", ->
-			assert.equal @responseJSON.results.length, 2
+			assert.equal @responseJSON.results.length, 5
 		it "should return correct information about the matches", ->
-			assert _.isMatch(@responseJSON.results, {requestText:"673874"})
-			assert _.isMatch(@responseJSON.results, {bestLabel:"1234::7"})
-			assert _.isMatch(@responseJSON.results, {referenceCode:"DNS000001234::7"})
-			assert _.isMatch(@responseJSON.results, {requestText:"673874"})
-			assert _.isMatch(@responseJSON.results, {bestLabel:"1234::7"})
-			assert _.isMatch(@responseJSON.results, {referenceCode:"DNS000001234"})
+			assert arrayContains(@responseJSON.results, "requestText","673874")
+			assert arrayContains(@responseJSON.results, "bestLabel","1234")
+			assert arrayContains(@responseJSON.results, "referenceCode","DNS000001234::7")
+			assert arrayContains(@responseJSON.results, "bestLabel","1234::7")
+			assert arrayContains(@responseJSON.results, "referenceCode","DNS000001234")
 		it "should find a match for each type of compound Reg entity", ->
-			assert _.isMatch(@responseJSON.results, {"displayName":"Corporate Parent ID"})
-			assert _.isMatch(@responseJSON.results, {"displayName":"Corporate Batch ID"})
+			assert arrayContains(@responseJSON.results, "displayName","Corporate Parent ID")
+			assert arrayContains(@responseJSON.results, "displayName","Corporate Batch ID")
 
+arrayContains = (array, key, value) ->
+	for object in array
+		if object[key] == value
+			return true
 
+	return false
 
 #TODO real implementation of getThingCodesFormNamesOrCodes
 #TODO test in live mode for compounds batch, compound parent, and lsthing protein

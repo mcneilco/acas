@@ -972,8 +972,6 @@
 
     AdvancedExperimentResultsQueryController.prototype.handleNextClicked = function() {
       switch (this.nextStep) {
-        case 'fromCodesToExptTree':
-          return this.fromCodesToExptTree();
         case 'fromExptTreeToFilters':
           return this.fromExptTreeToFilters();
         case 'fromFiltersToResults':
@@ -983,20 +981,8 @@
       }
     };
 
-    AdvancedExperimentResultsQueryController.prototype.gotoStepGetCodes = function() {
-      this.nextStep = 'fromCodesToExptTree';
-      this.$('.bv_getCodesView').show();
-      this.$('.bv_getExperimentsView').hide();
-      this.$('.bv_getFiltersView').hide();
-      this.$('.bv_advResultsView').hide();
-      this.$('.bv_cancel').html('Cancel');
-      return this.$('.bv_noExperimentsFound').hide();
-    };
-
     AdvancedExperimentResultsQueryController.prototype.fromCodesToExptTree = function() {
       this.searchCodes = this.model.get('searchStr');
-      console.log("in adv. results controller");
-      console.log(this.searchCodes);
       this.$('.bv_searchStatusDropDown').modal({
         backdrop: "static"
       });
@@ -1019,6 +1005,7 @@
 
     AdvancedExperimentResultsQueryController.prototype.handleGetGeneExperimentsReturn = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
+      this.trigger('nextToFilterOnVals');
       if (json.results.experimentData.length > 0) {
         this.etc = new ExperimentTreeController({
           el: this.$('.bv_getExperimentsView'),
@@ -1070,6 +1057,7 @@
 
     AdvancedExperimentResultsQueryController.prototype.handleGetExperimentSearchAttributesReturn = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
+      this.trigger('nextToGotoResults');
       this.erfc = new ExperimentResultFilterController({
         el: this.$('.bv_getFiltersView'),
         filterOptions: new Backbone.Collection(json.results.experiments)
@@ -1420,12 +1408,27 @@
       });
       this.aerqc.on('enableNext', (function(_this) {
         return function() {
-          return _this.$('.bv_next').removeAttr('disabled');
+          _this.$('.bv_next').removeAttr('disabled');
+          return _this.$('.bv_toResults').removeAttr('disabled');
         };
       })(this));
       this.aerqc.on('disableNext', (function(_this) {
         return function() {
-          return _this.$('.bv_next').attr('disabled', 'disabled');
+          _this.$('.bv_next').attr('disabled', 'disabled');
+          return _this.$('.bv_toResults').attr('disabled', 'disabled');
+        };
+      })(this));
+      this.aerqc.on('nextToFilterOnVals', (function(_this) {
+        return function() {
+          return _this.$('.bv_next').html("Filter on Values");
+        };
+      })(this));
+      this.aerqc.on('nextToGotoResults', (function(_this) {
+        return function() {
+          _this.$('.bv_next').html("Go to Results");
+          _this.$('.bv_toResults').addClass('bv_hidden');
+          _this.$('.gidAdvancedSearchButtons').addClass('gidAdvancedSearchButtonsStepThree');
+          return _this.$('.gidAdvancedSearchButtons').removeClass('gidAdvancedSearchButtonsNewQuery');
         };
       })(this));
       this.aerqc.on('requestShowResultsMode', (function(_this) {
@@ -1439,7 +1442,10 @@
       })(this));
       this.aerqc.on('requestRestartAdvancedQuery', (function(_this) {
         return function() {
-          return _this.startAdvancedQueryWizard();
+          _this.$('.bv_toResults').removeClass('bv_hidden');
+          _this.$('.gidAdvancedSearchButtonsResultsView').removeClass('gidAdvancedSearchButtonsStepThree');
+          _this.$('.gidAdvancedSearchButtonsResultsView').addClass('gidAdvancedSearchButtonsNewQuery');
+          return _this.startBasicQueryWizard();
         };
       })(this));
       this.aerqc.on('changeNextToNewQuery', (function(_this) {

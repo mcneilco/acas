@@ -684,6 +684,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 	handleGetGeneExperimentsReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
+		@trigger 'nextToFilterOnVals'
 		if json.results.experimentData.length > 0
 			@etc = new ExperimentTreeController
 				el: @$('.bv_getExperimentsView')
@@ -718,6 +719,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 	handleGetExperimentSearchAttributesReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
+		@trigger 'nextToGotoResults'
 		@erfc = new ExperimentResultFilterController
 			el: @$('.bv_getFiltersView')
 			filterOptions: new Backbone.Collection json.results.experiments
@@ -958,16 +960,28 @@ class window.GeneIDQueryAppController extends Backbone.View
 			model: new Backbone.Model searchParams
 		@aerqc.on 'enableNext', =>
 			@$('.bv_next').removeAttr 'disabled'
+			@$('.bv_toResults').removeAttr 'disabled'
 		@aerqc.on 'disableNext', =>
 			@$('.bv_next').attr 'disabled', 'disabled'
+			@$('.bv_toResults').attr 'disabled', 'disabled'
+		@aerqc.on 'nextToFilterOnVals', =>
+			@$('.bv_next').html "Filter on Values"
+		@aerqc.on 'nextToGotoResults', =>
+			@$('.bv_next').html "Go to Results"
+			@$('.bv_toResults').addClass('bv_hidden')
+			@$('.gidAdvancedSearchButtons').addClass('gidAdvancedSearchButtonsStepThree')
+			@$('.gidAdvancedSearchButtons').removeClass('gidAdvancedSearchButtonsNewQuery')
 		@aerqc.on 'requestShowResultsMode', =>
 			@$('.bv_next').html "New Query"
 			@$('.bv_addData').show()
 			@$('.bv_advancedQueryContainer').removeClass 'gidAdvancedQueryContainerPadding'
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
 			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsResultsView'
-		@aerqc.on 'requestRestartAdvancedQuery', => #TODO doesn't need to be here?
-			@startAdvancedQueryWizard()
+		@aerqc.on 'requestRestartAdvancedQuery', =>
+			@$('.bv_toResults').removeClass('bv_hidden')
+			@$('.gidAdvancedSearchButtonsResultsView').removeClass 'gidAdvancedSearchButtonsStepThree'
+			@$('.gidAdvancedSearchButtonsResultsView').addClass 'gidAdvancedSearchButtonsNewQuery'
+			@startBasicQueryWizard()
 		@aerqc.on 'changeNextToNewQuery', =>
 			@$('.bv_next').html "New Query"
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'

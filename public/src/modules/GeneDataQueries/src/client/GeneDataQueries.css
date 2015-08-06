@@ -271,11 +271,19 @@
 }
 
 .GeneIDQueryAppController .gidAdvancedSearchButtons {
-    padding-left: 772px;
+    padding-left: 587px;
 }
 
 .GeneIDQueryAppController .gidAdvancedSearchButtonsNewQuery {
     padding-left: 730px;
+}
+
+.GeneIDQueryAppController .gidAdvancedSearchButtonsStepThree {
+    padding-left: 717px;
+}
+
+.GeneIDQueryAppController .bv_hidden{
+		display: none !important;
 }
 
 .GeneIDQueryAppController .gidAdvancedSearchButtonsResultsView {
