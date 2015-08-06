@@ -27,14 +27,15 @@ readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
     sheetToRead <- which(!unlist(lapply(XLConnect::getSheets(wb), XLConnect::isSheetHidden, object = wb)))[1]
     seuratFileContents <- as.data.table(XLConnect::readWorksheet(wb, sheet = sheetToRead, header = TRUE, dateTimeFormat="%Y-%m-%d", check.names = TRUE))
   } else {
-    seuratFileContents <- fread(pathToSeuratFile, na.strings = c("", "NA"), 
+    seuratFileContents <- as.data.table(suppressWarnings(read.csv(pathToSeuratFile, na.strings = c("", "NA"), 
                                 colClasses = c("Expt Batch Number" = "character", 
                                                "Assay Protocol" = "character",
                                                "Expt Result Operator" = "character",
                                                "Expt Concentration" = "character",
                                                "Expt Conc Units" = "character",
                                                "Expt Result Desc" = "character"),
-                                stringsAsFactors = FALSE)
+                                stringsAsFactors = FALSE,
+                                  )))
     setnames(seuratFileContents, make.names(names(seuratFileContents)))
     if("Expt Date" %in% names(seuratFileContents)) {
       seuratFileContents$'Expt Date' <- as.POSIXct(unlist(suppressWarnings(lapply(seuratFileContents$`Expt Date`, validateDate))))
@@ -126,10 +127,10 @@ validateSeuratFileContent <- function(seuratFileContent) {
   if(is.null(seuratFileContent$Expt.Result.Units) || !all(complete.cases(seuratFileContent$Expt.Result.Units))){
     stopUser("Experiment result unit was not specified for some or all results")
   }
-  if(is.null(seuratFileContent$Expt.Result.Value) || is.null(seuratFileContent$Expt.Result.Desc) || 
-     !Reduce('&', Reduce('|', list(complete.cases(seuratFileContent$Expt.Result.Value), complete.cases(seuratFileContent$Expt.Result.Desc))))){
-    stopUser("Experiment result value and/or description is missing.")
+  if(is.null(seuratFileContent$Expt.Result.Value) & is.null(seuratFileContent$Expt.Result.Desc)){
+    stopUser("Experiment result value and description are both missing")
   }
+  return(seuratFileContent)
 }
 
 #' parseSeuratFileContentToSELContentList
@@ -143,8 +144,10 @@ validateSeuratFileContent <- function(seuratFileContent) {
 #'
 #' @examples
 parseSeuratFileContentToSELContentList <- function(seuratFileContent) {
-  
-  validateSeuratFileContent(seuratFileContent)
+  if(file.exists("validateSeuratFileContent.R")) {
+    source("validateSeuratFileContent.R", local = FALSE)
+  }
+  seuratFileContent <- validateSeuratFileContent(seuratFileContent)
   seuratFileContent[ , c('Assay.Name','Assay.Protocol') := makeExperimentNamesUnique(seuratFileContent[ , c("Assay.Name", "Assay.Protocol"), with = FALSE], by = c("Assay.Name"))]
   seuratFileContent[ , c("value", "type") := makeValueString(.SD, Expt.Result.Type), by=Expt.Result.Type]
   selContent <- seuratFileContent[ , convertSeuratTableToSELContent(.SD), by = c("Assay.Protocol", "Assay.Name"), .SDcols = 1:ncol(seuratFileContent)]
@@ -734,4 +737,5 @@ runMain <- function() {
     }
   }
 }
+options(warn=1)
 runMain()
