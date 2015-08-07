@@ -152,7 +152,9 @@ validateSeuratFileContent <- function(seuratFileContent) {
 parseSeuratFileContentToSELContentList <- function(seuratFileContent) {
   if(file.exists("customerValidateSeuratFileContent.R")) {
     source("customerValidateSeuratFileContent.R", local = FALSE)
-    seuratFileContent <- customerValidateSeuratFileContent(seuratFileContent)
+    if(exists("customerValidateSeuratFileContent") && class(customerValidateSeuratFileContent) == "function" ) {
+      seuratFileContent <- customerValidateSeuratFileContent(seuratFileContent)
+    }
   }
   seuratFileContent <- validateSeuratFileContent(seuratFileContent)
   seuratFileContent[ , c('Assay.Name','Assay.Protocol') := makeExperimentNamesUnique(seuratFileContent[ , c("Assay.Name", "Assay.Protocol"), with = FALSE], by = c("Assay.Name"))]
