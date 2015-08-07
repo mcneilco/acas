@@ -88,7 +88,6 @@
     GeneIDQueryResultController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      console.log(this.model.get('data').iTotalRecords);
       if (this.model.get('data').iTotalRecords > 0) {
         this.$('.bv_noResultsFound').hide();
         this.setupHeaders();
@@ -201,7 +200,6 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr) {
-      console.log("going to search on " + searchStr);
       this.lastSearch = searchStr;
       this.$('.bv_searchStatusDropDown').modal({
         backdrop: "static"
@@ -212,7 +210,6 @@
 
     GeneIDQuerySearchController.prototype.fromSearchtoCodes = function() {
       var j, len, results1, searchString, searchTerms, term;
-      console.log("about to run a search for the terms");
       this.counter = 0;
       searchString = this.lastSearch;
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
@@ -221,7 +218,6 @@
       results1 = [];
       for (j = 0, len = searchTerms.length; j < len; j++) {
         term = searchTerms[j];
-        console.log("search on " + term);
         results1.push($.ajax({
           type: 'POST',
           url: "api/entitymeta/searchForEntities",
@@ -264,9 +260,9 @@
       var displayNames, jsonSearch;
       displayNames = _.uniq(_.pluck(this.searchResults, "displayName"));
       if (displayNames.length <= 1) {
-        this.searchCodes = _.pluck(this.searchResults, "referenceCode").join(" ");
+        this.lastSearch = _.pluck(this.searchResults, "referenceCode").join(" ");
         console.log("all search terms from same type/kind, going to get experiments");
-        return this.fromCodesToExptTree();
+        return this.getAllExperimentNames();
       } else {
         this.$('.bv_searchStatusDropDown').modal("hide");
         jsonSearch = {
@@ -282,11 +278,10 @@
     };
 
     GeneIDQuerySearchController.prototype.refCodesToSearchStr = function(displayName) {
-      console.log("made it back to controller");
       console.log("chosen entityType is " + displayName);
       this.lastSearch = _.pluck(_.where(this.searchResults, {
         displayName: displayName
-      }), "referenceCode");
+      }), "referenceCode").join(" ");
       return this.getAllExperimentNames();
     };
 
@@ -1091,7 +1086,6 @@
       results1 = [];
       for (j = 0, len = searchTerms.length; j < len; j++) {
         term = searchTerms[j];
-        console.log("search on " + term);
         results1.push($.ajax({
           type: 'POST',
           url: "api/entitymeta/searchForEntities",
@@ -1152,11 +1146,10 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.refCodesToSearchStr = function(displayName) {
-      console.log("made it back to controller");
       console.log("chosen entityType is " + displayName);
       this.searchCodes = _.pluck(_.where(this.searchResults, {
         displayName: displayName
-      }), "referenceCode");
+      }), "referenceCode").join(" ");
       return this.fromCodesToExptTree();
     };
 

@@ -147,33 +147,34 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
   #split on whitespace (except "-", don't split on that bc it is used in batch codes)
   geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
-
-  if (length(geneDataList) > 0) {
-    requestList <- list()
-    for (i in 1:length(geneDataList)){
-      requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
-    }
-    requestObject <- list()
-    requestObject$requests <- requestList
-    geneNameList <- getURL(
-      #			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
-      paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
-      customrequest='POST',
-      httpheader=c('Content-Type'='application/json'),
-      postfields=toJSON(requestObject))
-
-    genes <- fromJSON(geneNameList)$results
-    batchCodeList <- list()
-    for (i in 1:length(genes)){
-      if (genes[[i]]$referenceName != ""){
-        batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
-      }
-      #Hack to include compound ids
-      else{
-        batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$requestName
-      }
-    }
-  }
+  batchCodeList <- geneDataList
+  #
+  # if (length(geneDataList) > 0) {
+  #   requestList <- list()
+  #   for (i in 1:length(geneDataList)){
+  #     requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
+  #   }
+  #   requestObject <- list()
+  #   requestObject$requests <- requestList
+  #   geneNameList <- getURL(
+  #     #			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
+  #     paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
+  #     customrequest='POST',
+  #     httpheader=c('Content-Type'='application/json'),
+  #     postfields=toJSON(requestObject))
+  #
+  #   genes <- fromJSON(geneNameList)$results
+  #   batchCodeList <- list()
+  #   for (i in 1:length(genes)){
+  #     if (genes[[i]]$referenceName != ""){
+  #       batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
+  #     }
+  #     #Hack to include compound ids
+  #     else{
+  #       batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$requestName
+  #     }
+  #   }
+  # }
 }
 
 searchParams <- list()

@@ -48,7 +48,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
-		console.log(@model.get('data').iTotalRecords)
 		if @model.get('data').iTotalRecords > 0
 			@$('.bv_noResultsFound').hide()
 			@setupHeaders()
@@ -117,7 +116,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@trigger 'requestAdvancedMode', searchStr, aggregate
 
 	handleSearchRequested: (searchStr) =>
-		console.log "going to search on "+ searchStr
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
 			backdrop: "static"
@@ -125,14 +123,12 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@fromSearchtoCodes()
 
 	fromSearchtoCodes: ->
-		console.log "about to run a search for the terms"
 		@counter = 0
 		searchString = @lastSearch
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
 		@numTerms = searchTerms.length
 		@searchResults = []
 		for term in searchTerms
-			console.log "search on " + term
 			$.ajax
 				type: 'POST'
 				url: "api/entitymeta/searchForEntities"
@@ -158,9 +154,9 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
 		if displayNames.length <= 1
-			@searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
+			@lastSearch = _.pluck(@searchResults,"referenceCode").join(" ")
 			console.log "all search terms from same type/kind, going to get experiments"
-			@fromCodesToExptTree()
+			@getAllExperimentNames()
 		else
 			@$('.bv_searchStatusDropDown').modal "hide"
 			jsonSearch =
@@ -174,9 +170,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			# @fromCodesToExptTree()
 
 	refCodesToSearchStr: (displayName) =>
-		console.log "made it back to controller"
 		console.log "chosen entityType is "+ displayName
-		@lastSearch = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode")
+		@lastSearch = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode").join(" ")
 		@getAllExperimentNames()
 
 
@@ -755,7 +750,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			backdrop: "static"
 		@$('.bv_searchStatusDropDown').modal "show"
 		for term in searchTerms
-			console.log "search on " + term
 			$.ajax
 				type: 'POST'
 				url: "api/entitymeta/searchForEntities"
@@ -794,14 +788,10 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 				el: @$('.bv_chooseEntityView')
 				model: new Backbone.Model jsonSearch
 			@entityController.on 'entitySelected' , @refCodesToSearchStr
-			console.log("multiple entity types found")
-			# @searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
-			# @fromCodesToExptTree()
 
 	refCodesToSearchStr: (displayName) =>
-		console.log "made it back to controller"
 		console.log "chosen entityType is "+ displayName
-		@searchCodes = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode")
+		@searchCodes = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode").join(" ")
 		@fromCodesToExptTree()
 
 
