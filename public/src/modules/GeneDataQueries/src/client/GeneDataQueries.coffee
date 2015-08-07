@@ -931,7 +931,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@dataAdded = true
 			@addData = new AddDataToReport
 				model: new Backbone.Model @resultsJson
-				el: @$('.bv_advResultsView')
+				el: @$('.bv_addDataView')
 			@addData.on 'requestResults', @handleSearchReturn
 		else
 			@addData.model.clear().set(@resultsJson)

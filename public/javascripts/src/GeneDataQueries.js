@@ -1140,8 +1140,7 @@
           el: this.$('.bv_chooseEntityView'),
           model: new Backbone.Model(jsonSearch)
         });
-        this.entityController.on('entitySelected', this.refCodesToSearchStr);
-        return console.log("multiple entity types found");
+        return this.entityController.on('entitySelected', this.refCodesToSearchStr);
       }
     };
 
@@ -1340,7 +1339,7 @@
         this.dataAdded = true;
         this.addData = new AddDataToReport({
           model: new Backbone.Model(this.resultsJson),
-          el: this.$('.bv_advResultsView')
+          el: this.$('.bv_addDataView')
         });
         return this.addData.on('requestResults', this.handleSearchReturn);
       } else {

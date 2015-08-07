@@ -68,8 +68,6 @@ experimentNodes <- getURL(
 	httpheader=c('Content-Type'='application/json'),
 	postfields=batchCodes.Json)
 
-save(batchCodeList, batchCodes.Json, experimentNodes, file="batchCodes.Rda")
-
 if (length(fromJSON(experimentNodes)) > 1){
 
 	responseJson <- list()

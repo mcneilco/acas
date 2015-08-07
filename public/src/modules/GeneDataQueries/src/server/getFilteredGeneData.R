@@ -147,7 +147,11 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
   #split on whitespace (except "-", don't split on that bc it is used in batch codes)
   geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
-  batchCodeList <- geneDataList
+  if (length(geneDataList) == 1) {
+    batchCodeList <- list(geneDataList)
+  }else{
+      batchCodeList <- geneDataList
+  }
   #
   # if (length(geneDataList) > 0) {
   #   requestList <- list()
