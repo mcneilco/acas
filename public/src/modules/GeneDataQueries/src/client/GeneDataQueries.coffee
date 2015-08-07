@@ -315,8 +315,8 @@ class window.ShowHideExpts extends Backbone.View
 			, 250)
 			return
 
-		aggregate = @model.get("aggregate")
-		if aggregate
+		@aggregate = @model.get("aggregate")
+		if @aggregate
 			$(".bv_aggregation_true").prop("checked",true)
 
 		expts = @model.get("experimentCodeList")
@@ -326,6 +326,8 @@ class window.ShowHideExpts extends Backbone.View
 
 	handleAggregationChanged: =>
 		@aggregate = @$("input[name='bv_aggregation']:checked").val()
+		if @$('.bv_addDataTree').jstree('get_selected').length > 0
+			@$('.bv_displayResults').prop("disabled",false)
 
 	handleSearchClear: =>
 		@$('.bv_searchVal').val("")
@@ -335,7 +337,10 @@ class window.ShowHideExpts extends Backbone.View
 
 	handleSelectionChanged: =>
 		@selected = @getSelectedExperiments()
-		@$('.bv_displayResults').prop("disabled",false)
+		if @$('.bv_addDataTree').jstree('get_selected').length > 0
+			@$('.bv_displayResults').prop("disabled",false)
+		else
+			@$('.bv_displayResults').prop("disabled",true)
 
 	getQueryParams: ->
 		queryParams =
@@ -366,7 +371,18 @@ class window.ShowHideExpts extends Backbone.View
 
 
 
+
+
+
+
+########################################################
 ################  Advanced-mode queries ################
+########################################################
+
+
+
+
+
 
 class window.ExperimentTreeController extends Backbone.View
 	template: _.template($("#ExperimentTreeView").html())
@@ -644,6 +660,10 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@dataAdded = false
+		@$('.bv_getExperimentsView').hide()
+		@$('.bv_getFiltersView').hide()
+		@$('.bv_advResultsView').hide()
+		@$('.bv_noExperimentsFound').hide()
 		# @gotoStepGetCodes()
 		@fromSearchtoCodes()
 
@@ -668,20 +688,69 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	# 	@$('.bv_noExperimentsFound').hide()
 
 	fromSearchtoCodes: ->
+		@counter = 0
 		searchString = @model.get('searchStr')
-		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except -
+		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
+		@numTerms = searchTerms.length
+		@searchResults = []
+		@$('.bv_searchStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_searchStatusDropDown').modal "show"
 		for term in searchTerms
-			console.log(term)
+			console.log "search on " + term
+			$.ajax
+				type: 'POST'
+				url: "api/entitymeta/searchForEntities"
+				dataType: 'json'
+				data:
+					requestText: term
+				success: @handleEntitySearchReturn
+				error: (err) =>
+					@serviceReturn = null
 
 
+	handleEntitySearchReturn: (json) =>
+		@counter = @counter + 1
+		if json.results.length > 0
+			console.log "found a match for term "+ json.results[0].requestText
+			for result in json.results
+				@searchResults.push
+					displayName: result.displayName
+					referenceCode: result.referenceCode
+		if @counter >= @numTerms
+			console.log "All searches returned, going to filter"
+			@filterOnDisplayName()
+
+
+	filterOnDisplayName: ->
+		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
+		if displayNames.length <= 1
+			@searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
+			console.log "all search terms from same type/kind, going to get experiments"
+			@fromCodesToExptTree()
+		else
+			@$('.bv_searchStatusDropDown').modal "hide"
+			jsonSearch =
+				results: @searchResults
+			@entityController = new ChooseEntityTypeController
+				el: @$('.bv_chooseEntityView')
+				model: new Backbone.Model jsonSearch
+			@entityController.on 'entitySelected' , @refCodesToSearchStr
+			console.log("multiple entity types found")
+			# @searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
+			# @fromCodesToExptTree()
+
+	refCodesToSearchStr: (displayName) =>
+		console.log "made it back to controller"
+		console.log "chosen entityType is "+ displayName
+		@searchCodes = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode")
 		@fromCodesToExptTree()
 
 
 	fromCodesToExptTree: ->
-		@searchCodes = @model.get('searchStr')
-		@$('.bv_searchStatusDropDown').modal
-			backdrop: "static"
-		@$('.bv_searchStatusDropDown').modal "show"
+		console.log "search Codes is:" + @searchCodes
+		if not @searchCodes?
+			@searchCodes = @model.get('searchStr')
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -821,6 +890,35 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@addData.render()
 
 
+class window.ChooseEntityTypeController extends Backbone.View
+	template: _.template($("#ChooseEntityTypeView").html())
+	events:
+		"click .bv_continue": "handleContinue"
+		"click .bv_entityTypeRadio": "handleSelectionChanged"
+
+	initialize: ->
+		$(@el).append @template()
+		entityTypes = _.uniq(_.pluck(@model.get('results'),'displayName'))
+		console.log "entities are "+ entityTypes
+		for type in entityTypes
+			button = @$('.entityTypeRadio').clone().removeClass('entityTypeRadio')
+			button.contents().attr("value",type).html(type)
+			button.appendTo('.entityTypes')
+		@$('.entityTypeRadio').remove()
+		@render()
+
+	render: ->
+		@$('.bv_chooseEntityTypeModal').modal
+			backdrop: "static"
+		@$('.bv_chooseEntityTypeModal').modal "show"
+
+	handleSelectionChanged: ->
+		@$('.bv_continue').prop("disabled",false)
+		@displayName = @$("input[name='bv_entityType']:checked").val()
+
+	handleContinue: ->
+		@trigger 'entitySelected', @displayName
+
 class window.AddDataToReport extends Backbone.View
 	template: _.template($("#AddDataView").html())
 	events:
@@ -829,6 +927,7 @@ class window.AddDataToReport extends Backbone.View
 		"click .bv_displayResults": "handleDisplayResuts"
 
 	initialize: ->
+		$(@el).empty()
 		$(@el).append @template()
 		@render()
 
@@ -1007,6 +1106,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 			@startBasicQueryWizard()
 		@aerqc.on 'changeNextToNewQuery', =>
 			@$('.bv_next').html "New Query"
+			@$('.bv_toResults').hide()
 			@$('.bv_controlButtonContainer').removeClass 'gidAdvancedSearchButtons'
 			@$('.bv_controlButtonContainer').addClass 'gidAdvancedSearchButtonsNewQuery'
 		@aerqc.render()
@@ -1023,6 +1123,9 @@ class window.GeneIDQueryAppController extends Backbone.View
 			@aerqc.handleResultsClicked()
 
 	handleCancelClicked: =>
+		@$('.bv_toResults').show()
+		@$('.gidAdvancedSearchButtonsResultsView').removeClass 'gidAdvancedSearchButtonsStepThree'
+		@$('.gidAdvancedSearchButtonsResultsView').addClass 'gidAdvancedSearchButtonsNewQuery'
 		@startBasicQueryWizard()
 
 	handleHelpClicked: =>

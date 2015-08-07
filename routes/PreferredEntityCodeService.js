@@ -257,6 +257,11 @@
 
   exports.searchForEntities = function(requestData, callback) {
     var asCodes, counter, csv, entity, entitySearchData, i, len, matchList, numTypes, ref, results;
+    if (requestData.requestText === '') {
+      callback({
+        results: []
+      });
+    }
     asCodes = true;
     exports.getConfiguredEntityTypes(asCodes, function(json) {
       return requestData.entityTypes = json;

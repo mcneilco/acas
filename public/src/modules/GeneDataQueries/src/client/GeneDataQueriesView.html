@@ -178,13 +178,13 @@
 <script type="text/template" id="AdvancedExperimentResultsQueryView" xmlns="http://www.w3.org/1999/html">
         <div class="span3 pull-left gidAdvancedQueryWizardTitle">Advanced Query Wizard</div>
             <div class="bv_getCodesView">
-                <div class="span2 gidAdvancedSearchSteps">Step 1 of 3</div>
+                <!-- <div class="span2 gidAdvancedSearchSteps">Step 1 of 3</div>
 
                     <div class="span12 well well-small gidAdvancedSearchWell">
                         <h5 class="gidAdvancedSearchStepTitles">Filter Data By Gene IDs:</h5>
                         <textarea class="bv_codesField" rows="3" placeholder="Optional list of Gene IDs"></textarea>
 
-                    </div>
+                    </div> -->
                 <div class="bv_noExperimentsFound span12">
                     <div class="alert span9 fiona"><strong>No Results:</strong> No experiments found for these genes.</div>
                 </div>
@@ -193,6 +193,7 @@
     <div class="bv_getExperimentsView"></div>
     <div class="bv_getFiltersView"></div>
     <div class="bv_advResultsView"></div>
+    <div class="bv_chooseEntityView"></div>
 
         <div class="modal bv_searchStatusDropDown hide">
             <div class="modal-header">
@@ -290,6 +291,30 @@
         <div class="modal-footer">
             <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
             <button class="btn bv_displayResults" data-dismiss="modal" aria-hidden="true" disabled="disabled">Display New Results</button>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="ChooseEntityTypeView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="modal hide fade bv_chooseEntityTypeModal">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Choose Entity Type</h3>
+        </div>
+        <div class="modal-body bv_modalMessage">
+            <div><p>The search returned results for mutiple entity types. Which entity type would you like to generate a report for?</p></div>
+            <div class="form span4 entityTypes">
+                <label class="radio entityTypeRadio">
+                    <input type="radio" name="bv_entityType" class="bv_entityTypeRadio">
+                    <p>filler text</p>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-danger" data-dismiss="modal" aria-hidden="true">Cancel</button>
+            <button class="btn bv_continue" data-dismiss="modal" aria-hidden="true" disabled="disabled">Continue</button>
         </div>
     </div>
 

@@ -200,6 +200,8 @@ exports.searchForEntitiesRoute = (req,resp) ->
 		resp.json json
 
 exports.searchForEntities = (requestData, callback) ->
+	if requestData.requestText == ''
+		callback results: []
 	# get a list of all entity types
 	asCodes = true
 	exports.getConfiguredEntityTypes asCodes, (json) ->
