@@ -172,6 +172,8 @@
       this.setQueryOnlyMode = bind(this.setQueryOnlyMode, this);
       this.handleSearchReturn = bind(this.handleSearchReturn, this);
       this.handleGetExperimentsReturn = bind(this.handleGetExperimentsReturn, this);
+      this.refCodesToSearchStr = bind(this.refCodesToSearchStr, this);
+      this.handleEntitySearchReturn = bind(this.handleEntitySearchReturn, this);
       this.handleSearchRequested = bind(this.handleSearchRequested, this);
       this.requestFilterExperiments = bind(this.requestFilterExperiments, this);
       return GeneIDQuerySearchController.__super__.constructor.apply(this, arguments);
@@ -199,11 +201,92 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr) {
+      console.log("going to search on " + searchStr);
       this.lastSearch = searchStr;
       this.$('.bv_searchStatusDropDown').modal({
         backdrop: "static"
       });
       this.$('.bv_searchStatusDropDown').modal("show");
+      return this.fromSearchtoCodes();
+    };
+
+    GeneIDQuerySearchController.prototype.fromSearchtoCodes = function() {
+      var j, len, results1, searchString, searchTerms, term;
+      console.log("about to run a search for the terms");
+      this.counter = 0;
+      searchString = this.lastSearch;
+      searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
+      this.numTerms = searchTerms.length;
+      this.searchResults = [];
+      results1 = [];
+      for (j = 0, len = searchTerms.length; j < len; j++) {
+        term = searchTerms[j];
+        console.log("search on " + term);
+        results1.push($.ajax({
+          type: 'POST',
+          url: "api/entitymeta/searchForEntities",
+          dataType: 'json',
+          data: {
+            requestText: term
+          },
+          success: this.handleEntitySearchReturn,
+          error: (function(_this) {
+            return function(err) {
+              return _this.serviceReturn = null;
+            };
+          })(this)
+        }));
+      }
+      return results1;
+    };
+
+    GeneIDQuerySearchController.prototype.handleEntitySearchReturn = function(json) {
+      var j, len, ref, result;
+      this.counter = this.counter + 1;
+      if (json.results.length > 0) {
+        console.log("found a match for term " + json.results[0].requestText);
+        ref = json.results;
+        for (j = 0, len = ref.length; j < len; j++) {
+          result = ref[j];
+          this.searchResults.push({
+            displayName: result.displayName,
+            referenceCode: result.referenceCode
+          });
+        }
+      }
+      if (this.counter >= this.numTerms) {
+        console.log("All searches returned, going to filter");
+        return this.filterOnDisplayName();
+      }
+    };
+
+    GeneIDQuerySearchController.prototype.filterOnDisplayName = function() {
+      var displayNames, jsonSearch;
+      displayNames = _.uniq(_.pluck(this.searchResults, "displayName"));
+      if (displayNames.length <= 1) {
+        this.searchCodes = _.pluck(this.searchResults, "referenceCode").join(" ");
+        console.log("all search terms from same type/kind, going to get experiments");
+        return this.fromCodesToExptTree();
+      } else {
+        this.$('.bv_searchStatusDropDown').modal("hide");
+        jsonSearch = {
+          results: this.searchResults
+        };
+        this.entityController = new ChooseEntityTypeController({
+          el: this.$('.bv_chooseEntityView'),
+          model: new Backbone.Model(jsonSearch)
+        });
+        this.entityController.on('entitySelected', this.refCodesToSearchStr);
+        return console.log("multiple entity types found");
+      }
+    };
+
+    GeneIDQuerySearchController.prototype.refCodesToSearchStr = function(displayName) {
+      console.log("made it back to controller");
+      console.log("chosen entityType is " + displayName);
+      this.lastSearch = _.pluck(_.where(this.searchResults, {
+        displayName: displayName
+      }), "referenceCode");
       return this.getAllExperimentNames();
     };
 
@@ -1293,6 +1376,7 @@
 
     ChooseEntityTypeController.prototype.initialize = function() {
       var button, entityTypes, j, len, type;
+      $(this.el).empty();
       $(this.el).append(this.template());
       entityTypes = _.uniq(_.pluck(this.model.get('results'), 'displayName'));
       console.log("entities are " + entityTypes);

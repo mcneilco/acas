@@ -106,7 +106,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@queryInputController = new GeneIDQueryInputController
-				el: @$('.bv_inputView')
+			el: @$('.bv_inputView')
 		@queryInputController.on 'search-requested', @handleSearchRequested
 		@queryInputController.on 'requestAdvancedMode', @requestFilterExperiments
 		@queryInputController.render()
@@ -117,11 +117,68 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@trigger 'requestAdvancedMode', searchStr, aggregate
 
 	handleSearchRequested: (searchStr) =>
+		console.log "going to search on "+ searchStr
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
 			backdrop: "static"
 		@$('.bv_searchStatusDropDown').modal "show"
+		@fromSearchtoCodes()
+
+	fromSearchtoCodes: ->
+		console.log "about to run a search for the terms"
+		@counter = 0
+		searchString = @lastSearch
+		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
+		@numTerms = searchTerms.length
+		@searchResults = []
+		for term in searchTerms
+			console.log "search on " + term
+			$.ajax
+				type: 'POST'
+				url: "api/entitymeta/searchForEntities"
+				dataType: 'json'
+				data:
+					requestText: term
+				success: @handleEntitySearchReturn
+				error: (err) =>
+					@serviceReturn = null
+
+	handleEntitySearchReturn: (json) =>
+		@counter = @counter + 1
+		if json.results.length > 0
+			console.log "found a match for term "+ json.results[0].requestText
+			for result in json.results
+				@searchResults.push
+					displayName: result.displayName
+					referenceCode: result.referenceCode
+		if @counter >= @numTerms
+			console.log "All searches returned, going to filter"
+			@filterOnDisplayName()
+
+	filterOnDisplayName: ->
+		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
+		if displayNames.length <= 1
+			@searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
+			console.log "all search terms from same type/kind, going to get experiments"
+			@fromCodesToExptTree()
+		else
+			@$('.bv_searchStatusDropDown').modal "hide"
+			jsonSearch =
+				results: @searchResults
+			@entityController = new ChooseEntityTypeController
+				el: @$('.bv_chooseEntityView')
+				model: new Backbone.Model jsonSearch
+			@entityController.on 'entitySelected' , @refCodesToSearchStr
+			console.log("multiple entity types found")
+			# @searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
+			# @fromCodesToExptTree()
+
+	refCodesToSearchStr: (displayName) =>
+		console.log "made it back to controller"
+		console.log "chosen entityType is "+ displayName
+		@lastSearch = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode")
 		@getAllExperimentNames()
+
 
 	getAllExperimentNames: ->
 		$.ajax
@@ -610,6 +667,7 @@ class window.ExperimentResultFilterTermListController extends Backbone.View
 	updateCollection: ->
 		@trigger "updateFilterModels"
 
+
 class window.ExperimentResultFilterController extends Backbone.View
 	template: _.template($("#ExperimentResultFilterView").html())
 	events:
@@ -897,6 +955,7 @@ class window.ChooseEntityTypeController extends Backbone.View
 		"click .bv_entityTypeRadio": "handleSelectionChanged"
 
 	initialize: ->
+		$(@el).empty()
 		$(@el).append @template()
 		entityTypes = _.uniq(_.pluck(@model.get('results'),'displayName'))
 		console.log "entities are "+ entityTypes
@@ -918,6 +977,7 @@ class window.ChooseEntityTypeController extends Backbone.View
 
 	handleContinue: ->
 		@trigger 'entitySelected', @displayName
+
 
 class window.AddDataToReport extends Backbone.View
 	template: _.template($("#AddDataView").html())
