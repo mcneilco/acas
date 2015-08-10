@@ -494,24 +494,44 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   if (is.null(newBatchIds)) {
     return(calculatedResults)
   }
-  
+
   # Give warning and error messages for changed or missing id's
-  for (row in 1:nrow(newBatchIds)) {
-    if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
-      addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row], 
-                      "' has not been registered in the system. Contact your system administrator for help."))
-    } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Reference.Code[row])) {
-      if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
-        warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row], 
-                        "', was replaced by preferred ", mainCode, " '", newBatchIds$Reference.Code[row], 
-                        "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+  if (mainCode == "Gene ID"){
+      for (row in 1:nrow(newBatchIds)) {
+        if (is.null(newBatchIds$referenceName[row]) || is.na(newBatchIds$referenceName[row]) || newBatchIds$referenceName[row] == "") {
+          addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
+                          "' has not been registered in the system. Contact your system administrator for help."))
+        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$referenceName[row])) {
+          if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
+            warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row],
+                            "', was replaced by preferred ", mainCode, " '", newBatchIds$referenceName[row],
+                            "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+          }
+        }
+      }
+    }else{
+
+      for (row in 1:nrow(newBatchIds)) {
+        if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
+          addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
+                          "' has not been registered in the system. Contact your system administrator for help."))
+        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Reference.Code[row])) {
+          if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
+            warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row],
+                            "', was replaced by preferred ", mainCode, " '", newBatchIds$Reference.Code[row],
+                            "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
+          }
+        }
       }
     }
-  }
-  
-  # Put the batch id's into a useful format
-  prefDT <- as.data.table(newBatchIds)
-  setnames(prefDT, c("Requested.Name", "Reference.Code"), c("requestName", "preferredName"))
+
+    # Put the batch id's into a useful format
+    prefDT <- as.data.table(newBatchIds)
+    if (mainCode == "Gene ID"){
+      setnames(prefDT, c("Requested.Name", "referenceName"), c("requestName", "preferredName"))
+    }else{
+      setnames(prefDT, c("Requested.Name", "Reference.Code"), c("requestName", "preferredName"))
+    }
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
   if (!is.null(prefDT$referenceName)) {
