@@ -303,6 +303,9 @@ ACAS_HOME=$(cd "$(dirname "$scriptPath")"/..; pwd)
 echo "ACAS_HOME=$ACAS_HOME"
 cd $ACAS_HOME
 
+# get customer specific environment
+[ -f $ACAS_HOME/bin/setenv.sh ] && . $ACAS_HOME/bin/setenv.sh  || echo "$ACAS_HOME/bin/setenv.sh not found"
+
 #Get ACAS config variables
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
