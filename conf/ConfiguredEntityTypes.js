@@ -1,36 +1,40 @@
 (function() {
-  exports.entityTypes = [
-    {
-      type: "compound",
-      kind: "parent name",
-      codeOrigin: "ACAS CmpdReg",
-      displayName: "Corporate Parent ID",
+  exports.entityTypes = {
+    'Corporate Parent ID': {
+      type: 'compound',
+      kind: 'parent name',
+      codeOrigin: 'ACAS CmpdReg',
+      displayName: 'Corporate Parent ID',
       sourceExternal: true
-    }, {
-      type: "compound",
-      kind: "batch name",
-      codeOrigin: "ACAS CmpdReg",
-      displayName: "Corporate Batch ID",
+    },
+    'Corporate Batch ID': {
+      type: 'compound',
+      kind: 'batch name',
+      codeOrigin: 'ACAS CmpdReg',
+      displayName: 'Corporate Batch ID',
       sourceExternal: true
-    }, {
-      type: "parent",
-      kind: "protein",
-      codeOrigin: "ACAS LSThing",
-      displayName: "Protein Parent",
+    },
+    'Protein Parent': {
+      type: 'parent',
+      kind: 'protein',
+      codeOrigin: 'ACAS LSThing',
+      displayName: 'Protein Parent',
       sourceExternal: false
-    }, {
-      type: "batch",
-      kind: "protein",
-      codeOrigin: "ACAS LSThing",
-      displayName: "Protein Batch",
+    },
+    'Protein Batch': {
+      type: 'batch',
+      kind: 'protein',
+      codeOrigin: 'ACAS LSThing',
+      displayName: 'Protein Batch',
       sourceExternal: false
-    }, {
-      type: "gene",
-      kind: "entrez gene",
-      codeOrigin: "ACAS LSThing",
-      displayName: "Gene ID",
+    },
+    'Gene ID': {
+      type: 'gene',
+      kind: 'entrez gene',
+      codeOrigin: 'ACAS LSThing',
+      displayName: 'Gene ID',
       sourceExternal: false
     }
-  ];
+  };
 
 }).call(this);

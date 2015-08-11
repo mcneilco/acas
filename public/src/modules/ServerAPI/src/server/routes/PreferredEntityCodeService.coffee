@@ -1,13 +1,24 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/preferredCodes', exports.preferredCodesRoute
+	app.get '/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute
+	app.post '/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute
+	app.post '/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
-	app.post '/api/entitymeta/preferredCodes', loginRoutes.ensureAuthenticated, exports.preferredCodesRoute
+	app.get '/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute
+	app.post '/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
+	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
+	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 
 configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
+
+
+####################################################################
+#   ENTITY TYPES
+####################################################################
 
 exports.getConfiguredEntityTypesRoute = (req, resp) ->
 	if req.params.asCodes?
@@ -20,66 +31,229 @@ exports.getConfiguredEntityTypesRoute = (req, resp) ->
 exports.getConfiguredEntityTypes = (asCodes, callback) ->
 	console.log "asCodes: "+asCodes
 	if asCodes
-		codes = for et in configuredEntityTypes.entityTypes
+		codes = for own name, et of configuredEntityTypes.entityTypes
 			code: et.type+" "+et.kind #Should we store this explicitly in the config?
-			name: et.displayName
+			displayName: name
 			ignored: false
 		callback codes
 	else
 		callback configuredEntityTypes.entityTypes
 
-exports.preferredCodesRoute = (req, resp) ->
-	requestData =
-		type: req.body.type
-		kind: req.body.kind
-		entityIdStringLines: req.body.entityIdStringLines
 
-	exports.preferredCodes requestData, (json) ->
+exports.getSpecificEntityTypeRoute = (req, resp) ->
+	displayName = req.params.displayName
+	exports.getSpecificEntityType displayName, (json) ->
 		resp.json json
 
-exports.preferredCodes = (requestData, callback) ->
-	console.log global.specRunnerTestmode
-	#Note specRunnerTestMode is handled within functions called from here
-	if requestData.type is "compound"
-		reqHashes = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
-		if requestData.kind is "batch name"
-			preferredBatchService = require "./PreferredBatchIdService.js"
-			preferredBatchService.getPreferredCompoundBatchIDs reqHashes , (json) ->
-				prefResp = JSON.parse(json)
-				callback
-					type: requestData.type
-					kind: requestData.kind
-					resultCSV: formatReqArratAsCSV(prefResp.results)
-			return
-		else if requestData.kind is "parent name"
-			console.log "looking up compound parents"
-			csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-			csUtilities.getPreferredParentIds reqHashes , (prefResp) ->
-				callback
-					type: requestData.type
-					kind: requestData.kind
-					resultCSV: formatReqArratAsCSV(prefResp)
-			return
+exports.getSpecificEntityType = (displayName, callback) ->
+	callback configuredEntityTypes.entityTypes[displayName]
+
+
+####################################################################
+#   REFERENCE CODES
+####################################################################
+
+exports.referenceCodesRoute = (req, resp) ->
+	requestData =
+		displayName: req.body.displayName
+
+	if req.params.csv == "csv"
+		csv = true
+		requestData.entityIdStringLines = req.body.entityIdStringLines
 	else
-		entityType = _.where configuredEntityTypes.entityTypes, type: requestData.type, kind: requestData.kind
-		if entityType.length is 1 and entityType[0].codeOrigin is "ACAS LSThing"
+		csv = false
+		requestData.requests = req.body.requests
+
+	exports.referenceCodes requestData, csv, (json) ->
+		resp.json json
+
+exports.referenceCodes = (requestData, csv, callback) ->
+	console.log global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
+	console.log("csv is " + csv)
+
+	# convert displayName to type and kind
+	exports.getSpecificEntityType requestData.displayName, (json) ->
+		requestData.type = json.type
+		requestData.kind = json.kind
+		requestData.sourceExternal = json.sourceExternal
+
+	if csv
+		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
+	else
+		reqList = requestData.requests
+
+	if requestData.sourceExternal
+		console.log("looking up external entity")
+		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities.getExternalReferenceCodes requestData.displayName, reqList, (prefResp) ->
+			if csv
+				callback
+					displayName: requestData.displayName
+					resultCSV: formatReqArrayAsCSV(prefResp)
+			else
+				callback
+					displayName: requestData.displayName
+					results: formatJSONReferenceCode(prefResp, "preferredName")
+		return
+
+	else  # internal source
+		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
+		if entityType.codeOrigin is "ACAS LSThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
-				thingType: entityType[0].type
-				thingKind: entityType[0].kind
-				requests: formatCSVRequestAsReqArray(requestData.entityIdStringLines)
+				thingType: entityType.type
+				thingKind: entityType.kind
+				requests: reqList
 			preferredThingService.getThingCodesFromNamesOrCodes reqHashes, (codeResponse) ->
-				out = for res in codeResponse.results
-					res.requestName + "," + res.referenceName
-				outStr =  "Requested Name,Preferred Code\n"+out.join('\n')
-				callback
-					type: codeResponse.thingType
-					kind: codeResponse.thingKind
-					resultCSV: outStr
+				if csv
+					out = for res in codeResponse.results
+						res.requestName + "," + res.referenceName
+					outStr =  "Requested Name,Reference Code\n"+out.join('\n')
+					callback
+						displayName: requestData.displayName
+						resultCSV: outStr
+				else
+					callback
+						displayName: requestData.displayName
+						results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
-	#this is the fall-through. All trapped cases should "return"
-	resp.statusCode = 500
-	resp.end "problem with preferred Code request: code type and kind are unknown to system"
+		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
+		callback.statusCode = 500
+		callback.end "problem with internal preferred Code request: code type and kind are unknown to system"
+
+####################################################################
+# BEST LABELS
+####################################################################
+
+exports.pickBestLabelsRoute = (req, resp) ->
+	requestData =
+		displayName: req.body.displayName
+
+	if req.params.csv == "csv"
+		csv = true
+		requestData.referenceCodes = req.body.referenceCodes
+	else
+		csv = false
+		requestData.requests = req.body.requests
+
+	exports.pickBestLabels requestData, csv, (json) ->
+		resp.json json
+
+exports.pickBestLabels = (requestData, csv, callback) ->
+	exports.getSpecificEntityType requestData.displayName, (json) ->
+		requestData.type = json.type
+		requestData.kind = json.kind
+		requestData.sourceExternal = json.sourceExternal
+
+	if csv
+		reqList = formatCSVRequestAsReqArray(requestData.referenceCodes)
+	else
+		reqList = requestData.requests
+
+	if requestData.sourceExternal
+		console.log("looking up external entity")
+		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities.getExternalBestLabel requestData.displayName, reqList, (prefResp) ->
+			if csv
+				callback
+					displayName: requestData.displayName
+					resultCSV: formatReqArrayAsCSV(prefResp)
+			else
+				callback
+					displayName: requestData.displayName
+					results: formatJSONBestLabel(prefResp, "preferredName")
+		return
+
+	else  # sourceExternal = false
+		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
+		if entityType.codeOrigin is "ACAS LSThing"
+			preferredThingService = require "./ThingServiceRoutes.js"
+			reqHashes =
+				thingType: entityType.type
+				thingKind: entityType.kind
+				requests: reqList
+			preferredThingService.getThingCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+				if csv
+					out = for res in codeResponse.results
+						res.requestName + "," + res.preferredName
+					outStr =  "Requested Name,Best Label\n"+out.join('\n')
+					callback
+						displayName: requestData.displayName
+						resultCSV: outStr
+				else
+					callback
+						displayName: requestData.displayName
+						results: formatJSONBestLabel(codeResponse.results, "preferredName")
+			return
+		callback.statusCode = 500
+		callback.end "problem with internal best label request: code type and kind are unknown to system"
+
+####################################################################
+# ENTITY SEARCH
+####################################################################
+
+exports.searchForEntitiesRoute = (req,resp) ->
+	requestData =
+		requestText: req.body.requestText
+
+	exports.searchForEntities requestData, (json) ->
+		resp.json json
+
+exports.searchForEntities = (requestData, callback) ->
+	# get a list of all entity types
+	asCodes = true
+	exports.getConfiguredEntityTypes asCodes, (json) ->
+		requestData.entityTypes = json
+
+	console.log("request Text is: "+ requestData.requestText)
+	console.log "there are "+requestData.entityTypes.length+" types of entities to search"
+	matchList = []
+	counter = 0
+	numTypes = requestData.entityTypes.length
+	csv = false
+
+	# Search using referenceCodes
+	for entity in requestData.entityTypes
+		console.log "searching for entity: "+entity.displayName
+		entitySearchData =
+			displayName: entity.displayName
+			requests:
+				[requestName: requestData.requestText]
+
+		runSingleSearch entitySearchData, csv, (result) ->
+			if result != 0
+				matchList.push(result)
+			counter = counter + 1
+			console.log "returned number "+counter
+			console.log("found "+ matchList.length+ " possible matches")
+			if counter == numTypes
+				callback
+					results: matchList
+
+
+runSingleSearch = (searchData, csv, callback) ->
+	exports.referenceCodes searchData, csv, (searchResults) ->
+		if searchResults.results[0].referenceCode != ""
+			match =
+				displayName: searchData.displayName
+				referenceCode: searchResults.results[0].referenceCode
+				requestName: searchResults.results[0].requestName
+				requests:
+					[requestName: searchResults.results[0].referenceCode]
+
+			exports.pickBestLabels match, csv, (results1) ->
+				finalObject =
+					displayName: match.displayName
+					requestText: match.requestName
+					referenceCode: match.referenceCode
+					bestLabel: results1.results[0].bestLabel
+				callback finalObject
+		else callback 0
+
+
+####################################################################
+# HELPER FUNCTIONS
+####################################################################
 
 formatCSVRequestAsReqArray = (csvReq) ->
 	requests = []
@@ -89,10 +263,27 @@ formatCSVRequestAsReqArray = (csvReq) ->
 
 	return requests
 
-formatReqArratAsCSV = (prefResp) ->
+formatReqArrayAsCSV = (prefResp) ->
 	preferreds = prefResp
-	outStr =  "Requested Name,Preferred Code\n"
+	outStr =  "Requested Name,Reference Code\n"
 	for pref in preferreds
 		outStr += pref.requestName + ',' + pref.preferredName + '\n'
 
 	return outStr
+
+# Needed to make names match spec
+formatJSONReferenceCode = (prefResp,referenceCodeLocation) ->
+	out = []
+	for pref in prefResp
+		out.push
+			requestName: pref.requestName
+			referenceCode: pref[referenceCodeLocation]
+	return out
+
+formatJSONBestLabel = (prefResp,referenceCodeLocation) ->
+	out = []
+	for pref in prefResp
+		out.push
+			requestName: pref.requestName
+			bestLabel: pref[referenceCodeLocation]
+	return out
