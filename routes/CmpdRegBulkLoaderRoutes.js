@@ -160,8 +160,6 @@
         serverUtilityFunctions = require('./ServerUtilityFunctions.js');
         config = require('../conf/compiled/conf.js');
         splitNames = rFile.split("/cmpdreg_bulkload/");
-        console.log("splitNames");
-        console.log(splitNames);
         rFileName = splitNames[1];
         zip.file(rFileName, fs.readFileSync(rFile));
       }
