@@ -87,11 +87,14 @@
     };
 
     GeneIDQueryResultController.prototype.render = function() {
+      var sortingType;
       $(this.el).empty();
       $(this.el).html(this.template());
       if (this.model.get('data').iTotalRecords > 0) {
         this.$('.bv_noResultsFound').hide();
         this.setupHeaders();
+        sortingType = String(window.conf.sar.sorting);
+        console.log(sortingType);
         this.$('.bv_resultTable').dataTable({
           aaData: this.model.get('data').aaData,
           aoColumns: this.model.get('data').aoColumns,
@@ -102,7 +105,7 @@
               bSortable: false,
               aTargets: [1]
             }, {
-              sType: "lsThing",
+              sType: sortingType,
               aTargets: ["_all"]
             }, {
               fnCreatedCell: (function(_this) {

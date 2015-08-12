@@ -51,6 +51,8 @@ class window.GeneIDQueryResultController extends Backbone.View
 		if @model.get('data').iTotalRecords > 0
 			@$('.bv_noResultsFound').hide()
 			@setupHeaders()
+			sortingType = String(window.conf.sar.sorting)
+			console.log sortingType
 			@$('.bv_resultTable').dataTable
 				aaData: @model.get('data').aaData
 				aoColumns: @model.get('data').aoColumns
@@ -58,7 +60,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 				bProcessing: true
 				aoColumnDefs:[
 					{bSortable: false, aTargets: [1]},
-					{sType: "lsThing", aTargets: ["_all"]},
+					{sType: sortingType, aTargets: ["_all"]},
 					# add ids as an html tag to each cell
 					{fnCreatedCell: (nTd, sData, oData, iRow, iCol)=>
 						val = @model.get('ids')[iRow][iCol]
