@@ -61,7 +61,6 @@
     extend(AssignedProperty, superClass);
 
     function AssignedProperty() {
-      this.validate = bind(this.validate, this);
       return AssignedProperty.__super__.constructor.apply(this, arguments);
     }
 
@@ -70,22 +69,6 @@
       dbProperty: "none",
       defaultVal: "",
       required: false
-    };
-
-    AssignedProperty.prototype.validate = function(attrs) {
-      var errors;
-      errors = [];
-      if (attrs.required && attrs.dbProperty !== "corporate id" && attrs.dbProperty !== "Project" && attrs.defaultVal === "") {
-        errors.push({
-          attribute: 'defaultVal',
-          message: 'A default value must be assigned'
-        });
-      }
-      if (errors.length > 0) {
-        return errors;
-      } else {
-        return null;
-      }
     };
 
     AssignedProperty.prototype.validateProject = function() {
@@ -1475,9 +1458,16 @@
     };
 
     CmpdRegBulkLoaderAppController.prototype.initialize = function() {
+      var projectName, ref;
       $(this.el).empty();
       $(this.el).html(this.template());
       $(this.el).addClass('CmpdRegBulkLoaderAppController');
+      if (((ref = window.conf.cmpdReg) != null ? ref.projectName : void 0) != null) {
+        projectName = window.conf.cmpdReg.projectName;
+        this.$('.bv_headerName').html("BULK COMPOUND REGISTRATION: Project " + projectName);
+      } else {
+        this.$('.bv_headerName').html("BULK COMPOUND REGISTRATION");
+      }
       this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
       this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {

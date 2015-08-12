@@ -19,16 +19,16 @@ class window.AssignedProperty extends Backbone.Model
 		defaultVal: ""
 		required: false
 
-	validate: (attrs) =>
-		errors = []
-		if attrs.required and attrs.dbProperty != "corporate id" and attrs.dbProperty != "Project" and attrs.defaultVal == ""
-			errors.push
-				attribute: 'defaultVal'
-				message: 'A default value must be assigned'
-		if errors.length > 0
-			return errors
-		else
-			return null
+#	validate: (attrs) =>
+#		errors = []
+#		if attrs.required and attrs.dbProperty != "corporate id" and attrs.dbProperty != "Project" and attrs.defaultVal == ""
+#			errors.push
+#				attribute: 'defaultVal'
+#				message: 'A default value must be assigned'
+#		if errors.length > 0
+#			return errors
+#		else
+#			return null
 
 	validateProject: ->
 		projectError = []
@@ -917,6 +917,12 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		$(@el).addClass 'CmpdRegBulkLoaderAppController'
+		if window.conf.cmpdReg?.projectName?
+			projectName = window.conf.cmpdReg.projectName
+			@$('.bv_headerName').html "BULK COMPOUND REGISTRATION: Project "+ projectName
+		else
+			@$('.bv_headerName').html "BULK COMPOUND REGISTRATION"
+
 		@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
 		@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
