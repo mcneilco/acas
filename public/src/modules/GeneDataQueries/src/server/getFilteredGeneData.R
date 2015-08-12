@@ -14,6 +14,7 @@ source('getExperimentColOrder.R')
 
 # Load the configs
 configList <- racas::applicationSettings
+save(configList, file="config.Rda")
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
@@ -144,7 +145,7 @@ postData.list <- fromJSON(postData)
 batchCodeList <- list()
 if (!is.null(postData.list$queryParams$batchCodes)) {
   geneData <- postData.list$queryParams$batchCodes
-  #split on whitespace (except "-", don't split on that bc it is used in batch codes)
+  #split on whitespace (except "-", don't split on that bc it is used in batch and reference codes)
   geneDataList <- strsplit(geneData, split="[^A-Za-z0-9_-]")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
   if (length(geneDataList) == 1) {
@@ -285,9 +286,9 @@ geomMean <- function(data){
   return (paste0(finalOperator,roundString(gMean,sigfig)))
 }
 
-# This is bound to the global environment because pivotResults can't seem to find it otherwise.
-# pretty sure it's due to something related to this bug: https://github.com/Rdatatable/data.table/issues/713
-aggregateData <<- function(dataVector,type){
+# needs to be named fun.aggregate --Thanks BB
+# http://stackoverflow.com/questions/24542976/how-to-pass-fun-aggregate-as-argument-to-dcast-data-table
+fun.aggregate <- function(dataVector,type){
   if (length(dataVector)==1){
     return (dataVector)
   }
@@ -309,14 +310,12 @@ aggregateData <<- function(dataVector,type){
 }
 
 pivotResults <- function(geneId, lsKind, result, aggType="other"){
-  #hack to push aggType up an environment since dcast.data.table isn't finding it >:(
-  pivotResults.aggType <<- aggType
 
   exptSubset <- data.table(geneId, lsKind, result)
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = aggregateData, type = pivotResults.aggType, fill=list(NA))
+  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = fun.aggregate, type = aggType, fill=list(NA))
 }
 
 # wrapper function so that reduce can be called on data.table.merge with non-default arguments
@@ -343,24 +342,8 @@ aggAndPivot <- function(dataDT, expt){
     # merge all subsets back into one outputDT
     outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
 
-    # Add a column with the compound structure
-    isGene <- substr(outputDT[["geneId"]],1,4) == "GENE"
-    if (!exportCSV){  # For csv just give the url
-      outputDT[, StructureImage := ifelse(isGene,"",paste0('<img src="',configList$client.service.external.structure.url,geneId,'">'))]
-    }else{   # For HTML display include <tags>.
-      outputDT[, StructureImage := ifelse(isGene,"",paste0(configList$client.service.external.structure.url,geneId))]
-    }
-
   }else{ # Aggregate is false
     outputDT <- dataDT[experimentId == expt , pivotResults(testedLot, lsKind, result)]
-
-    # Add a column with the compound structure
-    isGene <- substr(outputDT[["geneId"]],1,4) == "GENE"
-    if (!exportCSV){  # For csv just give the url
-      outputDT[, StructureImage := ifelse(isGene,"",paste0('<img src="',configList$client.service.external.structure.url,geneId,'">'))]
-    }else{   # For HTML display include <tags>.
-      outputDT[, StructureImage := ifelse(isGene,"",paste0(configList$client.service.external.structure.url,geneId))]
-    }
 
   }
 }
@@ -467,7 +450,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       # This means that each element in the data.table is a two-element list: list(result,id)
       dataDT[, result := strsplit(paste(result,id,sep=","),",")]
 
-      # Aggregate and pivot the data as well as add a StructureImage column
+      # Aggregate and pivot the data
       outputDT <- aggAndPivot(dataDT, expt)
 
       # Store info about current protocol/experiment
@@ -503,7 +486,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   		myLogger$debug(exptDataColumns)
 
   		# Get the data in same order as the column titles
-   		outputDT <- subset(outputDT, ,sel=c("geneId","StructureImage", exptDataColumns))
+   		outputDT <- subset(outputDT, ,sel=c("geneId", exptDataColumns))
 
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(currentPassName, "::", colName))
@@ -529,7 +512,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
     } else {  # firstPass is false
   		myLogger$debug(paste0("current firstPass ", firstPass))
 
-  		# Aggregate and pivot the data as well as add a StructureImage column
+  		# Aggregate and pivot the data
       outputDT2 <- aggAndPivot(dataDT, expt)
 
       # Store info about current protocol/experiment
@@ -559,7 +542,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       fileValues <- c(fileValues,fileValues2)  # save a list of all fileValues
 
   		# Get the data in same order as the column titles
-  		outputDT2 <- subset(outputDT2, ,sel=c("geneId","StructureImage",exptDataColumns))
+  		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
 
       # Modify curve id column to display curve
       if (!is.null(outputDT2[["curve id"]])){  # column exists
@@ -570,7 +553,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   			setnames(outputDT2, colName, paste0(currentPassName, "::", colName))
   		}
 
-  		outputDT <- merge(outputDT, outputDT2, by=c("geneId","StructureImage"), all=TRUE)
+  		outputDT <- merge(outputDT, outputDT2, by=c("geneId"), all=TRUE)
   		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
   		orderCols$order <- as.integer(as.character(orderCols$order))
 
@@ -638,15 +621,14 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
 
   allColNamesDT$sClass <- ifelse(allColNamesDT[["lsKind"]] %in% c("curve id",fileValues),imageClass,"center")
   setnames(allColNamesDT, "lsKind", "sTitle")
-  allColNamesDT[,mData := columns[3:length(columns)]]
+  allColNamesDT[,mData := columns[2:length(columns)]]
 
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass, mData)))
-  aoColumnsDF <- rbind(data.frame(sTitle="Batch Information", sClass="StructureImage", mData="StructureImage"), aoColumnsDF)
-  aoColumnsDF <- rbind(data.frame(sTitle="Batch Code", sClass="center", mData="geneId"), aoColumnsDF)
+  aoColumnsDF <- rbind(data.frame(sTitle=fromJSON(configList$server.sar.defaultTitle), sClass="center referenceCode", mData="geneId"), aoColumnsDF)
 
 
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
-  groupHeadersDF <- rbind(data.frame(numberOfColumns=2, titleText='Tested Entity Information'), groupHeadersDF)
+  groupHeadersDF <- rbind(data.frame(numberOfColumns=1, titleText=''), groupHeadersDF)
 
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
@@ -691,7 +673,7 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
 if (exportCSV){
   names = names(outputDT)[c(-1,-2)] # names of all the data columns
   outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
-  setnames(outputDT, "geneId", "Batch Code"); setnames(outputDT, "StructureImage", "Batch Information")
+  setnames(outputDT, "geneId", "Reference Code");
 
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/text")
