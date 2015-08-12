@@ -15,6 +15,7 @@ html
         link(rel='stylesheet', href='/src/lib/jsxgraph/jsxgraph.css')
         link(rel='stylesheet', href='/src/lib/jstree/themes/default/style.min.css')
         // inserted by PrepareModuleIncludes
+        link(rel="stylesheet", href="/src/modules/AdminPanel/src/client/style.css")
         link(rel="stylesheet", href="/src/modules/CmpdRegBulkLoader/src/client/CmpdRegBulkLoader.css")
         link(rel="stylesheet", href="/src/modules/Components/src/client/style.css")
         link(rel="stylesheet", href="/src/modules/CurveAnalysis/src/client/DoseResponseFit.css")
@@ -24,11 +25,11 @@ html
         link(rel="stylesheet", href="/src/modules/Logging/src/client/Logging.css")
         link(rel="stylesheet", href="/src/modules/Login/src/client/login.css")
         link(rel="stylesheet", href="/src/modules/ModuleMenus/src/client/style.css")
-        link(rel="stylesheet", href="/src/modules/node/src/client/node.css")
         link(rel="stylesheet", href="/src/modules/ProtocolBrowser/src/client/style.css")
         link(rel="stylesheet", href="/src/modules/ServerAPI/src/client/AttachFile.css")
         link(rel="stylesheet", href="/src/modules/TestModule/src/client/TestModule.css")
         link(rel="stylesheet", href="/src/modules/node/src/client/node.css")
+        include ../public/src/modules/AdminPanel/src/client/AdminPanel.html
         include ../public/src/modules/CmpdRegBulkLoader/src/client/CmpdRegBulkLoader.html
         include ../public/src/modules/Components/src/client/BasicFileValidateAndSaveView.html
         include ../public/src/modules/Components/src/client/LSFileChooserView.html
@@ -47,7 +48,6 @@ html
         include ../public/src/modules/Logging/src/client/LoggingView.html
         include ../public/src/modules/ModuleMenus/src/client/ModuleLauncherView.html
         include ../public/src/modules/ModuleMenus/src/client/ModuleMenusView.html
-        include ../public/src/modules/node/src/client/nodeView.html
         include ../public/src/modules/PrimaryScreen/src/client/DoseResponseAnalysisView.html
         include ../public/src/modules/PrimaryScreen/src/client/DoseResponseKiAnalysisView.html
         include ../public/src/modules/PrimaryScreen/src/client/PrimaryScreenAppControllerView.html
