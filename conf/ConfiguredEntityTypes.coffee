@@ -5,6 +5,7 @@ exports.entityTypes =
     codeOrigin: 'ACAS CmpdReg'
     displayName: 'Corporate Parent ID'
     sourceExternal: true
+    parent: true
 
   'Corporate Batch ID':
     type: 'compound'
@@ -12,6 +13,7 @@ exports.entityTypes =
     codeOrigin: 'ACAS CmpdReg'
     displayName: 'Corporate Batch ID'
     sourceExternal: true
+    parent: false
 
   'Protein Parent':
     type: 'parent'
@@ -19,6 +21,7 @@ exports.entityTypes =
     codeOrigin: 'ACAS LSThing'
     displayName: 'Protein Parent'
     sourceExternal: false
+    parent: true
 
   'Protein Batch':
     type: 'batch'
@@ -26,6 +29,7 @@ exports.entityTypes =
     codeOrigin: 'ACAS LSThing'
     displayName: 'Protein Batch'
     sourceExternal: false
+    parent: false
 
   'Gene ID':
     type: 'gene'
@@ -33,4 +37,4 @@ exports.entityTypes =
     codeOrigin: 'ACAS LSThing'
     displayName: 'Gene ID'
     sourceExternal: false
-
+    parent: false
