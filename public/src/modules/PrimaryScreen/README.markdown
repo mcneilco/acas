@@ -58,45 +58,71 @@ The instruments folder holds three items:
 
 
 #### Instrument Classes ####
-aka **data format**
+see Instrument Read Param List above (#7)
 
 The instrument classes can be found in ./src/server/instrumentSpecific
 
 These folders contain the actual code that will be used to parse the files. There are currently three main instrument classes:
 
-1. **List Format - Single File** - these files have data in a "list" format - every well has a single row - and there is only one data set per file
-2. **Plate Format - Single File** - these files have data in a "plate" format - the data is in an assay plate row by column format so needs to be transposed so that every well has a single row - and there is only one data set per file
-3. **Plate Format - Multi File** - these files also have data in a "plate format", but there are multiple data sets per file
+1. **List Format - Single File per plate** - these files have data in a "list" format - every well has a single row - and there is only one data set per file
+2. **Plate Format - Single File per plate** - these files have data in a "plate" format - the data is in an assay plate row by column format so needs to be transposed so that every well has a single row - and there is only one data set per file
+3. **Plate Format - Multi Files per plate** - these files also have data in a "plate format", but there are multiple data sets per file. Coding for this format has not been completed as of 7/31/2015
 
 
-#### Expected Output ####
+#### Expected Output of Specific Data Pre Processor ####
 
 Named list with three items:
+
 1. **plateAssociationDT** - derived from the plate association file, this will include up to 8 columns:
+
   * **plateOrder** - (numeric): an index of the plate order
+  
   * **readPosition** - (numeric): an index of the read within the assay plate file
+  
   * **assayBarcode** - (text): taken from the plate association file
+  
   * **compoundBarcode_1** - (text): taken from the plate association file, this will just be compoundBarcode if there are only 2 columns in the plate association file
+  
   * **sidecarBarcode** - (text): taken from the plate association file, this will not show up if there are only 2 columns in the plate association file
+  
   * **assayFileName** - (text): the name of the file associated with the assayBarcode
+  
   * **instrumentType** - (text): the verified instrument for each file - this will match what the user input
+  
   * **dataTitle** - (text) the titles/reads that are found in the assay plate file
+  
 2. **assayData** - this is the result of parsing the assay plate files, this will have a row per well and includes the following columns:
+
   * **assayFileName** - (text): the name of the file associated with the assayBarcode
+  
   * **assayBarcode** - (text): taken from the plate association file
+  
   * **plateOrder** - (numeric): the plate that the well is found on
+  
   * **rowName** - (text): the row designation, buffered to 2 characters with a "-". (eg: "-A" or "AA")
+  
   * **colName** - (text): the column designation, buffered to 2 characters with a "0" **verify this with a plate format instrument**
+  
   * **wellReference** - (text): the concatenation of rowName and colName with the last three characters being the column (eg: A001 for row A column 1 & A012 for row A column 12)
+  
   * data - there will be one column for every **dataTitle** found in the **plateAssociationDT**
+  
 3. **userInputReadTable** - this is a read table based off the reads from the GUI with some extra columns
+
   * **userReadOrder** - (numeric) - 1:n, in the order as received from the GUI
+  
   * **userReadPosition** - (numeric) - received from the GUI - this is the column # that the data is found in (or, in the case of plate format instruments, the nth position of the data)
+  
   * **userReadName** - (text) - this is provided by d dict values
+  
   * **activityCol** - TRUE or FALSE (only one can be TRUE) - this is the read that will be used as the "raw values" for all of the calculations
+  
   * **calculatedRead** - TRUE or FALSE - this is determined by the code based on the read name (it recognizes reads that begin with "Calc:" as calculated reads
+  
   * **activityColName** - (text) - this is the activity name identified by the code based off the read position
+  
   * **newActivityColName** - (text) - this is what will replace the **activityColName** in the data, the format is: "Rn {read name}" (eg: "R3 {Calc: R2/R1}")
+
 
 ### Compound Assignment ###
 

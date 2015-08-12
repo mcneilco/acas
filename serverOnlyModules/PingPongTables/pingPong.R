@@ -34,8 +34,8 @@ pingPong <- function(tables = c("api_protocol", "api_experiment", "api_analysis_
   if(shouldCreate$api_experiment) {
     #PINGPONG api_experiment to pp_api_experiment
     apiExperimentSuccess <- tryCatch({
-      apiExperimentUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_experiment"),
-                                       destinationViewName = list(schema = schema, name = "pp_api_experiment"),
+      apiExperimentUpdated <- racas::pingPong(originView = list(schema = schema, name = "api_experiment_approved"),
+                                       destinationViewName = list(schema = schema, name = "pp_api_experiment_approved"),
                                        intermediateTablePrefix = list(schema = intermediateSchema,
                                                                       name = "api_experiment",
                                                                       tableSpace = tableSpace, options = intermediateTableSpaceOptions),

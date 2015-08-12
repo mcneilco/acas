@@ -46,7 +46,10 @@ exports.getSpecificEntityTypeRoute = (req, resp) ->
 		resp.json json
 
 exports.getSpecificEntityType = (displayName, callback) ->
-	callback configuredEntityTypes.entityTypes[displayName]
+	if configuredEntityTypes.entityTypes[displayName]?
+		callback configuredEntityTypes.entityTypes[displayName]
+	else
+		callback {}
 
 
 ####################################################################
@@ -202,6 +205,7 @@ exports.searchForEntitiesRoute = (req,resp) ->
 exports.searchForEntities = (requestData, callback) ->
 	if requestData.requestText == ''
 		callback results: []
+
 	# get a list of all entity types
 	asCodes = true
 	exports.getConfiguredEntityTypes asCodes, (json) ->

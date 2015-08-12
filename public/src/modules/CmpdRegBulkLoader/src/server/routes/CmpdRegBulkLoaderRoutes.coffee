@@ -130,14 +130,15 @@ exports.registerCmpds = (req, resp) ->
 		for rFile in json.reportFiles
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			config = require '../conf/compiled/conf.js'
-			rFileName = rFile.replace(config.all.server.service.persistence.filePath+'/cmpdreg_bulkload', '')
+			splitNames = rFile.split ("/cmpdreg_bulkload/")
+			rFileName = splitNames[1]
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
 		zipFilePath = movedUploadsPath+zipFileName
 
 		buffer = zip.generate({type:"nodebuffer"})
-		zipFilePath = "/home/runner/privateUploads/cmpdreg_bulkload/"+zipFileName
+		zipFilePath = config.all.server.service.persistence.filePath+"/cmpdreg_bulkload/"+zipFileName
 		fs.writeFile zipFilePath, buffer, (err) ->
 			if err
 				resp.end "Summary ZIP file could not be created"

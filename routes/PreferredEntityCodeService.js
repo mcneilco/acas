@@ -68,7 +68,11 @@
   };
 
   exports.getSpecificEntityType = function(displayName, callback) {
-    return callback(configuredEntityTypes.entityTypes[displayName]);
+    if (configuredEntityTypes.entityTypes[displayName] != null) {
+      return callback(configuredEntityTypes.entityTypes[displayName]);
+    } else {
+      return callback({});
+    }
   };
 
   exports.referenceCodesRoute = function(req, resp) {

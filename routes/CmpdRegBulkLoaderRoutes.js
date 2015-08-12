@@ -148,7 +148,7 @@
   exports.registerCmpds = function(req, resp) {
     var createSummaryZip, moveSdfFile, registerCmpds;
     createSummaryZip = function(fileName, json) {
-      var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, zip, zipFileName, zipFilePath;
+      var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, splitNames, zip, zipFileName, zipFilePath;
       fileName = fileName.substring(0, fileName.length - 4);
       zipFileName = fileName + ".zip";
       fs = require('fs');
@@ -159,7 +159,8 @@
         rFile = ref[i];
         serverUtilityFunctions = require('./ServerUtilityFunctions.js');
         config = require('../conf/compiled/conf.js');
-        rFileName = rFile.replace(config.all.server.service.persistence.filePath + '/cmpdreg_bulkload', '');
+        splitNames = rFile.split("/cmpdreg_bulkload/");
+        rFileName = splitNames[1];
         zip.file(rFileName, fs.readFileSync(rFile));
       }
       origUploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
@@ -168,7 +169,7 @@
       buffer = zip.generate({
         type: "nodebuffer"
       });
-      zipFilePath = "/home/runner/privateUploads/cmpdreg_bulkload/" + zipFileName;
+      zipFilePath = config.all.server.service.persistence.filePath + "/cmpdreg_bulkload/" + zipFileName;
       return fs.writeFile(zipFilePath, buffer, function(err) {
         if (err) {
           return resp.end("Summary ZIP file could not be created");

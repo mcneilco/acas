@@ -218,8 +218,6 @@
     request = require('request');
     config = require('../conf/compiled/conf.js');
     redirectQuery = req._parsedUrl.query;
-    console.log(redirectQuery);
-    console.log(req.query);
     rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery;
     return req.pipe(request(rapacheCall)).pipe(resp);
   };
