@@ -74,6 +74,7 @@
       this.handleAddDataClicked = bind(this.handleAddDataClicked, this);
       this.showCSVFileLink = bind(this.showCSVFileLink, this);
       this.handleDownloadCSVClicked = bind(this.handleDownloadCSVClicked, this);
+      this.modifyTableEntities = bind(this.modifyTableEntities, this);
       this.render = bind(this.render, this);
       return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
     }
@@ -115,6 +116,17 @@
             }
           ]
         });
+        this.displayName = this.model.get('data').displayName;
+        console.log("displayName is " + this.displayName);
+        if (this.displayName != null) {
+          $.get("/api/sarRender/title/" + this.displayName, (function(_this) {
+            return function(json) {
+              return _this.$('th.referenceCode').html(json.title);
+            };
+          })(this));
+        }
+        this.modifyTableEntities();
+        this.$('.bv_resultTable').on("draw", this.modifyTableEntities);
       } else {
         this.$('.bv_resultTable').hide();
         this.$('.bv_noResultsFound').show();
@@ -122,6 +134,26 @@
         this.$('.bv_addData').hide();
       }
       return this;
+    };
+
+    GeneIDQueryResultController.prototype.modifyTableEntities = function() {
+      return this.$('td.referenceCode').each(function() {
+        return $.ajax({
+          type: 'POST',
+          url: "api/sarRender/render",
+          dataType: 'json',
+          data: {
+            displayName: this.displayName,
+            referenceCode: $(this).html()
+          },
+          success: (function(_this) {
+            return function(json) {
+              $(_this).html(json.html);
+              return $(_this).removeClass("referenceCode");
+            };
+          })(this)
+        });
+      });
     };
 
     GeneIDQueryResultController.prototype.setupHeaders = function() {
@@ -260,6 +292,7 @@
       var displayNames, jsonSearch;
       displayNames = _.uniq(_.pluck(this.searchResults, "displayName"));
       if (displayNames.length <= 1) {
+        this.displayName = displayNames[0];
         this.lastSearch = _.pluck(this.searchResults, "referenceCode").join(" ");
         console.log("all search terms from same type/kind, going to get experiments");
         return this.getAllExperimentNames();
@@ -278,6 +311,7 @@
     };
 
     GeneIDQuerySearchController.prototype.refCodesToSearchStr = function(displayName) {
+      this.displayName = displayName;
       console.log("chosen entityType is " + displayName);
       this.lastSearch = _.pluck(_.where(this.searchResults, {
         displayName: displayName
@@ -350,6 +384,7 @@
     GeneIDQuerySearchController.prototype.handleSearchReturn = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
       this.resultsJson = json.results;
+      this.resultsJson.data.displayName = this.displayName;
       if (!this.dataAdded) {
         this.resultController = new GeneIDQueryResultController({
           model: new Backbone.Model(json.results),
@@ -1128,6 +1163,7 @@
       var displayNames, jsonSearch;
       displayNames = _.uniq(_.pluck(this.searchResults, "displayName"));
       if (displayNames.length <= 1) {
+        this.displayName = displayNames[0];
         this.searchCodes = _.pluck(this.searchResults, "referenceCode").join(" ");
         console.log("all search terms from same type/kind, going to get experiments");
         return this.fromCodesToExptTree();
@@ -1145,6 +1181,7 @@
     };
 
     AdvancedExperimentResultsQueryController.prototype.refCodesToSearchStr = function(displayName) {
+      this.displayName = displayName;
       console.log("chosen entityType is " + displayName);
       this.searchCodes = _.pluck(_.where(this.searchResults, {
         displayName: displayName
@@ -1296,6 +1333,7 @@
     AdvancedExperimentResultsQueryController.prototype.handleSearchReturn = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
       this.resultsJson = json.results;
+      this.resultsJson.data.displayName = this.displayName;
       if (!this.dataAdded) {
         this.resultController = new GeneIDQueryResultController({
           model: new Backbone.Model(json.results),

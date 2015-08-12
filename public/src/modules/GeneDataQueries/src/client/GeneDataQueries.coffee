@@ -65,8 +65,17 @@ class window.GeneIDQueryResultController extends Backbone.View
 						nTd.setAttribute('id',val)
 					, aTargets: ["_all"]}
 					]
-	# uncomment the following line to disable sorting in the dataTable
-	# 			bSort: false
+				# uncomment the following line to disable sorting in the dataTable
+				# bSort: false
+			@displayName = @model.get('data').displayName
+			console.log "displayName is "+ @displayName
+			if @displayName?
+				$.get "/api/sarRender/title/" + @displayName, (json) =>
+					@$('th.referenceCode').html(json.title)
+			@modifyTableEntities()
+			@$('.bv_resultTable').on "draw", @modifyTableEntities
+
+
 		else
 			@$('.bv_resultTable').hide()
 			@$('.bv_noResultsFound').show()
@@ -74,6 +83,20 @@ class window.GeneIDQueryResultController extends Backbone.View
 			@$('.bv_addData').hide()
 
 		@
+
+	modifyTableEntities: =>
+		#load sar rendering data
+		@$('td.referenceCode').each ->
+			$.ajax
+				type: 'POST'
+				url: "api/sarRender/render"
+				dataType: 'json'
+				data:
+					displayName: @displayName
+					referenceCode: $(@).html()
+				success: (json) =>
+					$(@).html(json.html)
+					$(@).removeClass("referenceCode") #only need to modify once
 
 	setupHeaders: ->
 		_.each @model.get('data').groupHeaders, (header) =>
@@ -154,6 +177,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
 		if displayNames.length <= 1
+			@displayName = displayNames[0]
 			@lastSearch = _.pluck(@searchResults,"referenceCode").join(" ")
 			console.log "all search terms from same type/kind, going to get experiments"
 			@getAllExperimentNames()
@@ -170,6 +194,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			# @fromCodesToExptTree()
 
 	refCodesToSearchStr: (displayName) =>
+		@displayName = displayName
 		console.log "chosen entityType is "+ displayName
 		@lastSearch = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode").join(" ")
 		@getAllExperimentNames()
@@ -237,6 +262,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	handleSearchReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultsJson = json.results
+		@resultsJson.data.displayName = @displayName
 		if !@dataAdded
 			@resultController = new GeneIDQueryResultController
 				model: new Backbone.Model json.results
@@ -777,6 +803,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
 		if displayNames.length <= 1
+			@displayName = displayNames[0]
 			@searchCodes = _.pluck(@searchResults,"referenceCode").join(" ")
 			console.log "all search terms from same type/kind, going to get experiments"
 			@fromCodesToExptTree()
@@ -790,6 +817,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@entityController.on 'entitySelected' , @refCodesToSearchStr
 
 	refCodesToSearchStr: (displayName) =>
+		@displayName = displayName
 		console.log "chosen entityType is "+ displayName
 		@searchCodes = _.pluck(_.where(@searchResults, {displayName: displayName}), "referenceCode").join(" ")
 		@fromCodesToExptTree()
@@ -897,6 +925,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	handleSearchReturn: (json) =>
 		@$('.bv_searchStatusDropDown').modal "hide"
 		@resultsJson = json.results
+		@resultsJson.data.displayName = @displayName
 		if !@dataAdded
 			@resultController = new GeneIDQueryResultController
 				model: new Backbone.Model json.results

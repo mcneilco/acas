@@ -316,7 +316,7 @@
 		text-align: center;
 }
 
-.GeneIDQueryAppController .StructureImage{
+.GeneIDQueryAppController .referenceCode{
     min-width: 180px !important;
 }
 
