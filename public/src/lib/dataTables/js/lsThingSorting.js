@@ -28,13 +28,28 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         if (b == "na"){
             return -1;
         }
+        if (typeof(a) === "string" && typeof(b) == "string"){
+            if (typeof(parseFloat(a.slice(1))||"") == "string" && typeof(parseFloat(b.slice(1))||"") == "string"){
+                return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+            }
+        }
+        if (typeof(a) === "string"){
+            if (typeof(parseFloat(a.slice(1))||"") == "string"){
+                return 1;
+            }
+        }
+        if (typeof(b) === "string"){
+            if (typeof(parseFloat(b.slice(1))||"") == "string"){
+                return -1;
+            }
+        }
         if (a[0] == "<"){
             if (b[0] == "<"){
-                return ((a.split(1) < b.split(1)) ? -1 : ((a.split(1) > b.split(1)) ? 1 : 0));
+                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? -1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? 1 : 0));
             }else{return -1;}
         }if (a[0] == ">"){
             if (b[0] == ">"){
-                return ((a.split(1) < b.split(1)) ? -1 : ((a.split(1) > b.split(1)) ? 1 : 0));
+                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? -1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? 1 : 0));
             }else{return 1;}
         }else {
             if (b[0] == "<") {
@@ -54,13 +69,28 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         if (b == "na"){
             return -1;
         }
+        if (typeof(a) === "string" && typeof(b) == "string"){
+            if (typeof(parseFloat(a.slice(1))||"") == "string" && typeof(parseFloat(b.slice(1))||"") == "string"){
+                return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+            }
+        }
+        if (typeof(a) === "string"){
+            if (typeof(parseFloat(a.slice(1))||"") == "string"){
+                return 1;
+            }
+        }
+        if (typeof(b) === "string"){
+            if (typeof(parseFloat(b.slice(1))||"") == "string"){
+                return -1;
+            }
+        }
         if (a[0] == "<"){
             if (b[0] == "<"){
-                return ((a.split(1) < b.split(1)) ? 1 : ((a.split(1) > b.split(1)) ? -1 : 0));
+                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? 1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? -1 : 0));
             }else{return 1;}
         }if (a[0] == ">"){
             if (b[0] == ">"){
-                return ((a.split(1) < b.split(1)) ? 1 : ((a.split(1) > b.split(1)) ? -1 : 0));
+                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? 1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? -1 : 0));
             }else{return -1;}
         }else {
             if (b[0] == "<") {
@@ -87,24 +117,43 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
             return parseFloat(a.slice(1));
         }
         return (parseFloat( a ) || a.toLowerCase());
+
     },
 
     "ignoreOperators-asc": function ( a, b ) {
         if (a == "na"){
-            return 1
+            return 1;
         }
         if (b == "na"){
-            return -1
+            return -1;
+        }
+        if (typeof(a) == "string" && typeof(b) == "string"){
+            return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+        }
+        if (typeof(a) === "string"){
+            return 1;
+        }
+        if (typeof(b) === "string"){
+            return -1;
         }
         return ((a < b) ? -1 : ((a > b) ? 1 : 0));
     },
 
     "ignoreOperators-desc": function ( a, b ) {
         if (a == "na"){
-            return 1
+            return 1;
         }
         if (b == "na"){
-            return -1
+            return -1;
+        }
+        if (typeof(a) == "string" && typeof(b) == "string"){
+            return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+        }
+        if (typeof(a) === "string"){
+            return 1;
+        }
+        if (typeof(b) === "string"){
+            return -1;
         }
         return ((a < b) ? 1 : ((a > b) ? -1 : 0));
     }
