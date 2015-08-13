@@ -46,8 +46,8 @@
           if (!hasProp.call(ref, name)) continue;
           et = ref[name];
           results.push({
-            code: et.type + " " + et.kind,
-            displayName: name,
+            code: name,
+            name: name,
             ignored: false
           });
         }
@@ -96,6 +96,7 @@
     var csUtilities, entityType, preferredThingService, reqHashes, reqList;
     console.log("stubs mode is: " + global.specRunnerTestmode);
     console.log("csv is " + csv);
+    console.log("requestData.displayName is " + requestData.displayName);
     exports.getSpecificEntityType(requestData.displayName, function(json) {
       requestData.type = json.type;
       requestData.kind = json.kind;
@@ -124,6 +125,7 @@
       });
     } else {
       entityType = configuredEntityTypes.entityTypes[requestData.displayName];
+      console.log(entityType);
       if (entityType.codeOrigin === "ACAS LSThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
@@ -282,7 +284,7 @@
       entity = ref[i];
       console.log("searching for entity: " + entity.displayName);
       entitySearchData = {
-        displayName: entity.displayName,
+        displayName: entity.name,
         requests: [
           {
             requestName: requestData.requestText
