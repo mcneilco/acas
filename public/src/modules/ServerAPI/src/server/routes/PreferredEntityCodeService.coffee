@@ -32,8 +32,8 @@ exports.getConfiguredEntityTypes = (asCodes, callback) ->
 	console.log "asCodes: "+asCodes
 	if asCodes
 		codes = for own name, et of configuredEntityTypes.entityTypes
-			code: et.type+" "+et.kind #Should we store this explicitly in the config?
-			displayName: name
+			code: name
+			name: name
 			ignored: false
 		callback codes
 	else
@@ -160,7 +160,7 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 			if csv
 				callback
 					displayName: requestData.displayName
-					resultCSV: formatReqArrayAsCSV(prefResp)
+					resultCSV: formatBestLabelsAsCSV(prefResp)
 			else
 				callback
 					displayName: requestData.displayName
@@ -270,6 +270,14 @@ formatCSVRequestAsReqArray = (csvReq) ->
 	return requests
 
 formatReqArrayAsCSV = (prefResp) ->
+	preferreds = prefResp
+	outStr =  "Requested Name,Reference Code\n"
+	for pref in preferreds
+		outStr += pref.requestName + ',' + pref.preferredName + '\n'
+
+	return outStr
+
+formatBestLabelsAsCSV = (prefResp) ->
 	preferreds = prefResp
 	outStr =  "Requested Name,Reference Code\n"
 	for pref in preferreds
