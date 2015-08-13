@@ -496,7 +496,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   }
 
   # Give warning and error messages for changed or missing id's
-  if (mainCode == "Gene ID"){
+  if (inputFormat == "Gene ID Data") {
       for (row in 1:nrow(newBatchIds)) {
         if (is.null(newBatchIds$referenceName[row]) || is.na(newBatchIds$referenceName[row]) || newBatchIds$referenceName[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
@@ -509,8 +509,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
           }
         }
       }
-    }else{
-
+    } else {
       for (row in 1:nrow(newBatchIds)) {
         if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
@@ -527,7 +526,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
 
     # Put the batch id's into a useful format
     prefDT <- as.data.table(newBatchIds)
-    if (mainCode == "Gene ID"){
+    if (inputFormat == "Gene ID Data") {
       setnames(prefDT, c("Requested.Name", "referenceName"), c("requestName", "preferredName"))
     }else{
       setnames(prefDT, c("Requested.Name", "Reference.Code"), c("requestName", "preferredName"))
