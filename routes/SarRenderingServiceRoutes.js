@@ -49,9 +49,11 @@
     csv = false;
     return codeService.pickBestLabels(requestData, csv, (function(_this) {
       return function(response) {
-        console.log(response.results.bestLabel);
+        var bestLabel;
+        bestLabel = response.results[0].bestLabel;
+        console.log(bestLabel);
         return callback({
-          html: '<p align="center">' + response.results[0].bestLabel + '</p>'
+          html: '<a href="http://www.ncbi.nlm.nih.gov/gene/' + bestLabel + '"  target="_blank" align="center">' + bestLabel + '</a>'
         });
       };
     })(this));

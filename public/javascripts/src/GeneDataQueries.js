@@ -102,9 +102,6 @@
           bProcessing: true,
           aoColumnDefs: [
             {
-              bSortable: false,
-              aTargets: [1]
-            }, {
               sType: sortingType,
               aTargets: ["_all"]
             }, {

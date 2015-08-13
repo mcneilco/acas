@@ -37,8 +37,9 @@ exports.getGeneRender = (referenceCode, callback) ->
 		]
 	csv = false
 	codeService.pickBestLabels requestData, csv, (response) =>
-		console.log response.results.bestLabel
-		callback html:'<p align="center">'+response.results[0].bestLabel+'</p>'
+		bestLabel = response.results[0].bestLabel
+		console.log bestLabel
+		callback html:'<a href="http://www.ncbi.nlm.nih.gov/gene/'+bestLabel+'"  target="_blank" align="center">'+bestLabel+'</a>'
 
 
 ##############################################

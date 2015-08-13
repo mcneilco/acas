@@ -59,7 +59,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 				bDeferRender: true
 				bProcessing: true
 				aoColumnDefs:[
-					{bSortable: false, aTargets: [1]},
 					{sType: sortingType, aTargets: ["_all"]},
 					# add ids as an html tag to each cell
 					{fnCreatedCell: (nTd, sData, oData, iRow, iCol)=>

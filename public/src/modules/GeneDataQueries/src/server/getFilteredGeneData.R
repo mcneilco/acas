@@ -311,6 +311,9 @@ fun.aggregate <- function(dataVector,type){
 
 pivotResults <- function(geneId, lsKind, result, aggType="other"){
 
+  # dcast.data.table cannot find this if not pushed to global...........
+  aggType <<- aggType
+
   exptSubset <- data.table(geneId, lsKind, result)
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
@@ -378,7 +381,7 @@ modifyFileValues <- function(outputDT, fileValues){
     for (i in fileValues){  #for each image column
       ids <- vapply(outputDT[[i]],function(x) as.character(x[2]),"")  #get ids
       split <-  strsplit(vapply(outputDT[[i]],function(x) if(is.null(x)) as.character(NA) else as.character(x[1]),""),"<br>")  #get urls and split on <br> which was used to aggregate in aggregateData()
-      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:200px"></a>'), simplify=FALSE)
+      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x,'" style="height:240px"></a>'), simplify=FALSE)
 
       if (length(urlSplit[[1]]) > 1){  # There are multiple images in one cell, recombine
         urlCombined <- vapply(urlSplit,function(x) paste(x,collapse = "<br>"),"")
@@ -390,7 +393,7 @@ modifyFileValues <- function(outputDT, fileValues){
   }else{ #aggregate is false
     # Replace each inlineFileValue with a link to the file
     for (i in fileValues){
-      outputDT[[i]] <- sapply(outputDT[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else list(c(paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" style="height:200px"></a>'),x[2])))
+      outputDT[[i]] <- sapply(outputDT[[i]],function(x) if (length(x) == 0 || is.na(x)) NA else list(c(paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" target="_blank"><img src="',configList$server.nodeapi.path,'/dataFiles/',x[1],'" style="height:240px"></a>'),x[2])))
     }
   }
   return(outputDT)
@@ -671,9 +674,49 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
 }
 
 if (exportCSV){
-  names = names(outputDT)[c(-1,-2)] # names of all the data columns
+  names = names(outputDT)[c(-1)] # names of all the data columns
   outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
-  setnames(outputDT, "geneId", "Reference Code");
+  for (j in names) set(outputDT, j=j, value=as.character(outputDT[[j]]))
+
+  # Note, this assumes there is only one entityType
+  if (configList$server.sar.csvLabel == "bestLabel"){
+
+    save(outputDT,file="outputDT.Rda")
+
+    searchObject = list()
+    searchObject$requestText <- outputDT$geneId[1]
+    searchReturn <- getURL(
+      paste0(configList$server.nodeapi.path, "/api/entitymeta/searchForEntities"),
+      customrequest='POST',
+      httpheader=c('Content-Type'='application/json'),
+      postfields=toJSON(searchObject))
+
+    displayName <- fromJSON(searchReturn)$results[[1]]$displayName
+
+    requestObject <- list()
+    requestObject$displayName <- displayName
+    requestObject$referenceCodes <- paste(outputDT$geneId, collapse = "\n")
+
+    bestLabels <- getURL(
+        paste0(configList$server.nodeapi.path, "/api/entitymeta/pickBestLabels/csv"),
+        customrequest='POST',
+        httpheader=c('Content-Type'='application/json'),
+        postfields=toJSON(requestObject))
+
+    csv <- as.data.table(read.csv(text=fromJSON(bestLabels)$resultCSV))
+
+
+    csv[,Best.Label := as.character(Best.Label)]
+    csv[is.na(Best.Label), Best.Label := Requested.Name]
+    csv[Best.Label == "", Best.Label := Requested.Name]
+    outputDT[,geneId := (csv[Requested.Name==geneId]$Best.Label)]
+
+    setnames(outputDT, "geneId", displayName);
+    # outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
+    save(bestLabels,csv,outputDT, file="bestLabels.Rda")
+  }else{
+    setnames(outputDT, "geneId", "Reference Code");
+  }
 
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/text")

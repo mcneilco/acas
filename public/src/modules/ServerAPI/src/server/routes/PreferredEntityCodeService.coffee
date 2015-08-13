@@ -160,7 +160,7 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 			if csv
 				callback
 					displayName: requestData.displayName
-					resultCSV: formatReqArrayAsCSV(prefResp)
+					resultCSV: formatBestLabelsAsCSV(prefResp)
 			else
 				callback
 					displayName: requestData.displayName
@@ -272,6 +272,14 @@ formatCSVRequestAsReqArray = (csvReq) ->
 formatReqArrayAsCSV = (prefResp) ->
 	preferreds = prefResp
 	outStr =  "Requested Name,Reference Code\n"
+	for pref in preferreds
+		outStr += pref.requestName + ',' + pref.preferredName + '\n'
+
+	return outStr
+
+formatBestLabelsAsCSV = (prefResp) ->
+	preferreds = prefResp
+	outStr =  "Requested Name,Best Label\n"
 	for pref in preferreds
 		outStr += pref.requestName + ',' + pref.preferredName + '\n'
 
