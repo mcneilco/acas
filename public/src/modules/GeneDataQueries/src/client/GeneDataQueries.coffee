@@ -193,14 +193,16 @@ class window.GeneIDQuerySearchController extends Backbone.View
 				data:
 					displayName: @displayName
 					requests: requests
-				success: (json) =>
-					refCodes = ""
-					for result in json.results
-						refCodes += " "+ result.referenceCode
-					@lastSearch = refCodes
-					@getAllExperimentNames()
+				success: @knownDisplayNameReturn
 				error: (err) =>
 					@serviceReturn = null
+
+	knownDisplayNameReturn: (json) =>
+		refCodes = ""
+		for result in json.results when result.referenceCode != ""
+			refCodes += " "+ result.referenceCode
+		@lastSearch = refCodes
+		@getAllExperimentNames()
 
 	handleEntitySearchReturn: (json) =>
 		@counter = @counter + 1
@@ -214,6 +216,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			console.log "All searches returned, going to filter"
 			@filterOnDisplayName()
 			@getAllExperimentNames()
+
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
 		if displayNames.length <= 1
@@ -241,6 +244,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 
 	getAllExperimentNames: ->
+		if @lastSearch == ""
+			@lastSearch = "NO RESULTS"
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -807,14 +812,13 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	# 	@$('.bv_noExperimentsFound').hide()
 
 
-
-
-
 	fromSearchtoCodes: ->
 		@displayName = @model.get('displayName')
 		searchString = @model.get('searchStr')
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
 		searchTerms = _.filter(searchTerms, (x) -> x != "")
+		if searchTerms.length == 0
+			@fromCodesToExptTree()
 		if @displayName == "unassigned"
 			@counter = 0
 			@numTerms = searchTerms.length
@@ -844,14 +848,20 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			  data:
 			    displayName: @displayName
 			    requests: requests
-			  success: (json) =>
-			    refCodes = ""
-			    for result in json.results
-			      refCodes += " "+ result.referenceCode
-			    @searchCodes = refCodes
-			    @fromCodesToExptTree()
+			  success: @knownDisplayNameReturn
 			  error: (err) =>
 			    @serviceReturn = null
+
+	knownDisplayNameReturn: (json) =>
+		refCodes = ""
+		for result in json.results when result.referenceCode != ""
+			refCodes += " "+ result.referenceCode
+		@searchCodes = refCodes
+		if @searchCodes == "" then @searchCodes = "NO RESULTS"
+		console.log "search Codes is: "+ @searchCodes
+		@fromCodesToExptTree()
+
+
 
 	handleEntitySearchReturn: (json) =>
 		@counter = @counter + 1

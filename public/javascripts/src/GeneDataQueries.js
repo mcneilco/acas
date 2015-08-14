@@ -224,6 +224,7 @@
       this.handleGetExperimentsReturn = bind(this.handleGetExperimentsReturn, this);
       this.refCodesToSearchStr = bind(this.refCodesToSearchStr, this);
       this.handleEntitySearchReturn = bind(this.handleEntitySearchReturn, this);
+      this.knownDisplayNameReturn = bind(this.knownDisplayNameReturn, this);
       this.handleSearchRequested = bind(this.handleSearchRequested, this);
       this.requestFilterExperiments = bind(this.requestFilterExperiments, this);
       return GeneIDQuerySearchController.__super__.constructor.apply(this, arguments);
@@ -306,19 +307,7 @@
             displayName: this.displayName,
             requests: requests
           },
-          success: (function(_this) {
-            return function(json) {
-              var len2, m, ref, refCodes, result;
-              refCodes = "";
-              ref = json.results;
-              for (m = 0, len2 = ref.length; m < len2; m++) {
-                result = ref[m];
-                refCodes += " " + result.referenceCode;
-              }
-              _this.lastSearch = refCodes;
-              return _this.getAllExperimentNames();
-            };
-          })(this),
+          success: this.knownDisplayNameReturn,
           error: (function(_this) {
             return function(err) {
               return _this.serviceReturn = null;
@@ -326,6 +315,20 @@
           })(this)
         });
       }
+    };
+
+    GeneIDQuerySearchController.prototype.knownDisplayNameReturn = function(json) {
+      var j, len, ref, refCodes, result;
+      refCodes = "";
+      ref = json.results;
+      for (j = 0, len = ref.length; j < len; j++) {
+        result = ref[j];
+        if (result.referenceCode !== "") {
+          refCodes += " " + result.referenceCode;
+        }
+      }
+      this.lastSearch = refCodes;
+      return this.getAllExperimentNames();
     };
 
     GeneIDQuerySearchController.prototype.handleEntitySearchReturn = function(json) {
@@ -381,6 +384,9 @@
     };
 
     GeneIDQuerySearchController.prototype.getAllExperimentNames = function() {
+      if (this.lastSearch === "") {
+        this.lastSearch = "NO RESULTS";
+      }
       return $.ajax({
         type: 'POST',
         url: "api/getGeneExperiments",
@@ -1140,6 +1146,7 @@
       this.handleGetGeneExperimentsReturn = bind(this.handleGetGeneExperimentsReturn, this);
       this.refCodesToSearchStr = bind(this.refCodesToSearchStr, this);
       this.handleEntitySearchReturn = bind(this.handleEntitySearchReturn, this);
+      this.knownDisplayNameReturn = bind(this.knownDisplayNameReturn, this);
       this.handleNextClicked = bind(this.handleNextClicked, this);
       return AdvancedExperimentResultsQueryController.__super__.constructor.apply(this, arguments);
     }
@@ -1176,6 +1183,9 @@
       searchTerms = _.filter(searchTerms, function(x) {
         return x !== "";
       });
+      if (searchTerms.length === 0) {
+        this.fromCodesToExptTree();
+      }
       if (this.displayName === "unassigned") {
         this.counter = 0;
         this.numTerms = searchTerms.length;
@@ -1219,19 +1229,7 @@
             displayName: this.displayName,
             requests: requests
           },
-          success: (function(_this) {
-            return function(json) {
-              var len2, m, ref, refCodes, result;
-              refCodes = "";
-              ref = json.results;
-              for (m = 0, len2 = ref.length; m < len2; m++) {
-                result = ref[m];
-                refCodes += " " + result.referenceCode;
-              }
-              _this.searchCodes = refCodes;
-              return _this.fromCodesToExptTree();
-            };
-          })(this),
+          success: this.knownDisplayNameReturn,
           error: (function(_this) {
             return function(err) {
               return _this.serviceReturn = null;
@@ -1239,6 +1237,24 @@
           })(this)
         });
       }
+    };
+
+    AdvancedExperimentResultsQueryController.prototype.knownDisplayNameReturn = function(json) {
+      var j, len, ref, refCodes, result;
+      refCodes = "";
+      ref = json.results;
+      for (j = 0, len = ref.length; j < len; j++) {
+        result = ref[j];
+        if (result.referenceCode !== "") {
+          refCodes += " " + result.referenceCode;
+        }
+      }
+      this.searchCodes = refCodes;
+      if (this.searchCodes === "") {
+        this.searchCodes = "NO RESULTS";
+      }
+      console.log("search Codes is: " + this.searchCodes);
+      return this.fromCodesToExptTree();
     };
 
     AdvancedExperimentResultsQueryController.prototype.handleEntitySearchReturn = function(json) {
