@@ -819,13 +819,13 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		searchTerms = _.filter(searchTerms, (x) -> x != "")
 		if searchTerms.length == 0
 			@fromCodesToExptTree()
+			@$('.bv_searchStatusDropDown').modal
+				backdrop: "static"
+			@$('.bv_searchStatusDropDown').modal "show"
 		if @displayName == "unassigned"
 			@counter = 0
 			@numTerms = searchTerms.length
 			@searchResults = []
-			@$('.bv_searchStatusDropDown').modal
-				backdrop: "static"
-			@$('.bv_searchStatusDropDown').modal "show"
 			for term in searchTerms
 				$.ajax
 					type: 'POST'

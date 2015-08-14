@@ -1185,15 +1185,15 @@
       });
       if (searchTerms.length === 0) {
         this.fromCodesToExptTree();
+        this.$('.bv_searchStatusDropDown').modal({
+          backdrop: "static"
+        });
+        this.$('.bv_searchStatusDropDown').modal("show");
       }
       if (this.displayName === "unassigned") {
         this.counter = 0;
         this.numTerms = searchTerms.length;
         this.searchResults = [];
-        this.$('.bv_searchStatusDropDown').modal({
-          backdrop: "static"
-        });
-        this.$('.bv_searchStatusDropDown').modal("show");
         results1 = [];
         for (j = 0, len = searchTerms.length; j < len; j++) {
           term = searchTerms[j];
