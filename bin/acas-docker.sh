@@ -1,8 +1,8 @@
 #!/bin/sh
+for f in /mnt/environments/*/*.env; do source $f;export $(cut -d= -f1 $f); done
 cd conf
-#cp config-docker.properties config.properties
 node PrepareConfigFiles.js docker
-until $(curl --output /dev/null --silent --head --fail "http://$ROO_PORT_8080_TCP_ADDR:$ROO_PORT_8080_TCP_PORT"); do
+until $(curl --output /dev/null --silent --head --fail "http://tomcat:8080"); do
     printf '.'
     sleep 1
 done
