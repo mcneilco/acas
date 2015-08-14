@@ -279,7 +279,7 @@ formatReqArrayAsCSV = (prefResp) ->
 
 formatBestLabelsAsCSV = (prefResp) ->
 	preferreds = prefResp
-	outStr =  "Requested Name,Reference Code\n"
+	outStr =  "Requested Name,Best Label\n"
 	for pref in preferreds
 		outStr += pref.requestName + ',' + pref.preferredName + '\n'
 
