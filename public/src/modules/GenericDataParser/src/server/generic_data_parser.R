@@ -1893,6 +1893,25 @@ unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimen
   return(imageLocation)
 
 }
+getMainCodeTypeAndKind <- function (mainCode) {
+  mainCodeTypeAndKind <- fromJSON(getURLcheckStatus(
+    paste0(racas::applicationSettings$server.nodeapi.path,
+           "/api/entitymeta/configuredEntityTypes/displayName/", URLencode(mainCode, reserved = T)), requireJSON=T))
+}
+changeMainCodeTypeAndKind <- function(entityData, mainCode) {
+  #entityData is a data.frame
+  mainCodeTypeAndKind <- getMainCodeTypeAndKind(mainCode)
+  if (is.null(entityData$codeType)) {
+    entityData[, c("codeType", "codeKind", "codeOrigin")] <- NA
+  }
+  entityData[entityData$valueKind == "batch code", ]$codeType <- mainCodeTypeAndKind$type
+  entityData[entityData$valueKind == "batch code", ]$codeKind <- mainCodeTypeAndKind$kind
+  entityData[entityData$valueKind == "batch code", ]$codeOrigin <- mainCodeTypeAndKind$codeOrigin
+  if (mainCodeTypeAndKind$parent) {
+    entityData[entityData$valueKind == "batch code", ]$valueKind <- "parent code"
+  }
+  return(entityData)
+}
 
 uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, fileStartLocation,
                               configList, stateGroups, reportFilePath, hideAllData, reportFileSummary, curveNames,
@@ -2064,6 +2083,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
   if (is.null(subjectData$stateVersion)) subjectData$stateVersion <- 0
   subjectDataWithBatchCodeRows <- rbind.fill(subjectData, meltBatchCodes(subjectData, batchCodeStateIndices, replaceFakeCorpBatchId))
   subjectDataWithBatchCodeRows <- combineDose(subjectDataWithBatchCodeRows)
+  # add codeType, codeKind, codeOrigin
+  subjectDataWithBatchCodeRows <- changeMainCodeTypeAndKind(subjectDataWithBatchCodeRows, mainCode)
   savedSubjectValues <- saveValuesFromLongFormat(subjectDataWithBatchCodeRows, "subject", stateGroups, lsTransaction, recordedBy)
   #
   #####
@@ -2106,9 +2127,12 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
       treatmentGroupDataWithBatchCodeRows <- rbind.fill(treatmentGroupData, meltBatchCodes(treatmentGroupData, batchCodeStateIndices))
       treatmentGroupDataWithBatchCodeRows <- combineDose(treatmentGroupDataWithBatchCodeRows)
       # TODO: don't save fake batch codes as batch codes
-      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows,
-                                                            entityKind = "treatmentgroup",
-                                                            stateGroups = stateGroups,
+
+      # add codeType, codeKind, codeOrigin
+      treatmentGroupDataWithBatchCodeRows <- changeMainCodeTypeAndKind(treatmentGroupDataWithBatchCodeRows, mainCode)
+      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
+                                                            entityKind = "treatmentgroup", 
+                                                            stateGroups = stateGroups, 
                                                             stateGroupIndices = treatmentGroupIndices,
                                                             lsTransaction = lsTransaction,
                                                             recordedBy = recordedBy)
@@ -2151,8 +2175,10 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
         analysisGroupData <- combineDose(analysisGroupData)
         analysisGroupData$analysisGroupStateID <- analysisGroupData$stateID
         #### Analysis Group Values =====================================================================
-        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData,
-                                                             entityKind = "analysisgroup",
+        # add codeType, codeKind, codeOrigin
+        analysisGroupData <- changeMainCodeTypeAndKind(analysisGroupData, mainCode)
+        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
+                                                             entityKind = "analysisgroup", 
                                                              stateGroups = stateGroups,
                                                              stateGroupIndices = analysisGroupIndices,
                                                              lsTransaction = lsTransaction,
@@ -2304,6 +2330,9 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
     analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
   }
+  
+  # add codeType, codeKind, codeOrigin
+  analysisGroupData <- changeMainCodeTypeAndKind(analysisGroupData, mainCode)
 
   #Note: use unitKind, not valueUnit
   # use operatorKind, not valueOperator
@@ -2335,6 +2364,8 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$stateID <- NULL
     treatmentGroupData$lsType <- "default"
     treatmentGroupData$lsKind <- "default"
+    
+    treatmentGroupData <- changeMainCodeTypeAndKind(treatmentGroupData, mainCode)
   }
 
   ### subject Data
@@ -2358,6 +2389,8 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
 
     subjectData$lsType <- "default"
     subjectData$lsKind <- "default"
+    
+    subjectData <- changeMainCodeTypeAndKind(subjectData, mainCode)
   }
 
   if(developmentMode) {
