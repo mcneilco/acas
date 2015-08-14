@@ -347,8 +347,7 @@
       }
       if (this.counter >= this.numTerms) {
         console.log("All searches returned, going to filter");
-        this.filterOnDisplayName();
-        return this.getAllExperimentNames();
+        return this.filterOnDisplayName();
       }
     };
 

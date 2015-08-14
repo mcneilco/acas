@@ -215,7 +215,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		if @counter >= @numTerms
 			console.log "All searches returned, going to filter"
 			@filterOnDisplayName()
-			@getAllExperimentNames()
+
 
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
