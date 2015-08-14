@@ -636,7 +636,8 @@
       }
       expts = this.model.get("experimentCodeList");
       this.exptLength = expts.length;
-      return this.$(".bv_addDataTree").jstree('select_node', expts);
+      this.$(".bv_addDataTree").jstree('select_node', expts);
+      return this.selected = this.getSelectedExperiments();
     };
 
     ShowHideExpts.prototype.handleAggregationChanged = function() {

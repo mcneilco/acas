@@ -445,6 +445,7 @@ class window.ShowHideExpts extends Backbone.View
 		expts = @model.get("experimentCodeList")
 		@exptLength = expts.length
 		@$(".bv_addDataTree").jstree('select_node',expts)
+		@selected = @getSelectedExperiments()
 
 
 	handleAggregationChanged: =>
