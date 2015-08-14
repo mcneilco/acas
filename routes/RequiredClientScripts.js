@@ -43,7 +43,6 @@ exports.applicationScripts = [
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
 	"/javascripts/src/PrimaryScreenExperiment.js",
-	"/javascripts/src/AdminPanel.js",
 	"/javascripts/src/AppController.js",
 	"/javascripts/src/AttachFile.js",
 	"/javascripts/src/BatchListValidator.js",
@@ -70,9 +69,7 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/TagList.js",
-	"/javascripts/src/TestModule.js",
 	"/javascripts/src/ThingInteraction.js",
-	"/javascripts/src/node.js"
 ];
 
 exports.jasmineScripts = [
