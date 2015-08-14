@@ -184,6 +184,9 @@
 				kindName: "batch code"
 				typeName: "codeValue"
 			,
+				kindName: "parent code"
+				typeName: "codeValue"
+			,
 				kindName: "tested concentration"
 				typeName: "numericValue"
 			,

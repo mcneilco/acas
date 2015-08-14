@@ -1,5 +1,5 @@
 (function() {
-  var _, configuredEntityTypes, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV, runSingleSearch,
+  var _, configuredEntityTypes, formatBestLabelsAsCSV, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV, runSingleSearch,
     hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
@@ -46,8 +46,8 @@
           if (!hasProp.call(ref, name)) continue;
           et = ref[name];
           results.push({
-            code: et.type + " " + et.kind,
-            displayName: name,
+            code: name,
+            name: name,
             ignored: false
           });
         }
@@ -68,7 +68,11 @@
   };
 
   exports.getSpecificEntityType = function(displayName, callback) {
-    return callback(configuredEntityTypes.entityTypes[displayName]);
+    if (configuredEntityTypes.entityTypes[displayName] != null) {
+      return callback(configuredEntityTypes.entityTypes[displayName]);
+    } else {
+      return callback({});
+    }
   };
 
   exports.referenceCodesRoute = function(req, resp) {
@@ -195,7 +199,7 @@
         if (csv) {
           return callback({
             displayName: requestData.displayName,
-            resultCSV: formatReqArrayAsCSV(prefResp)
+            resultCSV: formatBestLabelsAsCSV(prefResp)
           });
         } else {
           return callback({
@@ -257,6 +261,11 @@
 
   exports.searchForEntities = function(requestData, callback) {
     var asCodes, counter, csv, entity, entitySearchData, i, len, matchList, numTypes, ref, results;
+    if (requestData.requestText === '') {
+      callback({
+        results: []
+      });
+    }
     asCodes = true;
     exports.getConfiguredEntityTypes(asCodes, function(json) {
       return requestData.entityTypes = json;
@@ -343,6 +352,17 @@
   };
 
   formatReqArrayAsCSV = function(prefResp) {
+    var i, len, outStr, pref, preferreds;
+    preferreds = prefResp;
+    outStr = "Requested Name,Reference Code\n";
+    for (i = 0, len = preferreds.length; i < len; i++) {
+      pref = preferreds[i];
+      outStr += pref.requestName + ',' + pref.preferredName + '\n';
+    }
+    return outStr;
+  };
+
+  formatBestLabelsAsCSV = function(prefResp) {
     var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
     outStr = "Requested Name,Reference Code\n";
