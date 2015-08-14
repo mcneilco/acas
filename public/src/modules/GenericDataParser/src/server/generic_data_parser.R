@@ -501,10 +501,10 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         if (is.null(newBatchIds$referenceName[row]) || is.na(newBatchIds$referenceName[row]) || newBatchIds$referenceName[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
                           "' has not been registered in the system. Contact your system administrator for help."))
-        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$referenceName[row])) {
+        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
           if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
             warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row],
-                            "', was replaced by preferred ", mainCode, " '", newBatchIds$referenceName[row],
+                            "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row],
                             "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
           }
         }
@@ -2130,9 +2130,9 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
 
       # add codeType, codeKind, codeOrigin
       treatmentGroupDataWithBatchCodeRows <- changeMainCodeTypeAndKind(treatmentGroupDataWithBatchCodeRows, mainCode)
-      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows, 
-                                                            entityKind = "treatmentgroup", 
-                                                            stateGroups = stateGroups, 
+      savedTreatmentGroupValues <- saveValuesFromLongFormat(entityData = treatmentGroupDataWithBatchCodeRows,
+                                                            entityKind = "treatmentgroup",
+                                                            stateGroups = stateGroups,
                                                             stateGroupIndices = treatmentGroupIndices,
                                                             lsTransaction = lsTransaction,
                                                             recordedBy = recordedBy)
@@ -2177,8 +2177,8 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
         #### Analysis Group Values =====================================================================
         # add codeType, codeKind, codeOrigin
         analysisGroupData <- changeMainCodeTypeAndKind(analysisGroupData, mainCode)
-        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData, 
-                                                             entityKind = "analysisgroup", 
+        savedAnalysisGroupValues <- saveValuesFromLongFormat(entityData = analysisGroupData,
+                                                             entityKind = "analysisgroup",
                                                              stateGroups = stateGroups,
                                                              stateGroupIndices = analysisGroupIndices,
                                                              lsTransaction = lsTransaction,
@@ -2330,7 +2330,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   if(length(analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit) != 0) {
     analysisGroupData[analysisGroupData$valueKind != "batch code", ]$concUnit <- NA
   }
-  
+
   # add codeType, codeKind, codeOrigin
   analysisGroupData <- changeMainCodeTypeAndKind(analysisGroupData, mainCode)
 
@@ -2364,7 +2364,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     treatmentGroupData$stateID <- NULL
     treatmentGroupData$lsType <- "default"
     treatmentGroupData$lsKind <- "default"
-    
+
     treatmentGroupData <- changeMainCodeTypeAndKind(treatmentGroupData, mainCode)
   }
 
@@ -2389,7 +2389,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
 
     subjectData$lsType <- "default"
     subjectData$lsKind <- "default"
-    
+
     subjectData <- changeMainCodeTypeAndKind(subjectData, mainCode)
   }
 
