@@ -501,10 +501,10 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         if (is.null(newBatchIds$referenceName[row]) || is.na(newBatchIds$referenceName[row]) || newBatchIds$referenceName[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
                           "' has not been registered in the system. Contact your system administrator for help."))
-        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$referenceName[row])) {
+        } else if (as.character(newBatchIds$Requested.Name[row]) != as.character(newBatchIds$Preferred.Code[row])) {
           if (mainCode == "Corporate Batch ID" || inputFormat == "Gene ID Data") {
             warnUser(paste0("A ", mainCode, " that you entered, '", newBatchIds$Requested.Name[row],
-                            "', was replaced by preferred ", mainCode, " '", newBatchIds$referenceName[row],
+                            "', was replaced by preferred ", mainCode, " '", newBatchIds$Preferred.Code[row],
                             "'. If this is not what you intended, replace the ", mainCode, " with the correct ID."))
           }
         }
