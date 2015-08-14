@@ -32,6 +32,7 @@
     "shelljs": "*",
     "temporary": ">= 0.0.0",
     "underscore": ">= 0.0.0",
+    "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
     "winston-mongodb": "*",
     "mocha": "*"
