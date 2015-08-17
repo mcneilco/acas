@@ -121,6 +121,8 @@ exports.saveTemplate = (req, resp) ->
 exports.registerCmpds = (req, resp) ->
 	createSummaryZip = (fileName, json) ->
 		#remove .sdf from fileName
+		console.log "fileName"
+		console.log fileName
 		fileName = fileName.substring(0, fileName.length-4)
 		zipFileName = fileName+".zip"
 		fs = require 'fs'

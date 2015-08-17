@@ -301,7 +301,6 @@
     };
 
     DetectSdfPropertiesController.prototype.handlePropertiesDetected = function(response) {
-      console.log("handle properties detected");
       if (response === "Error") {
         return this.handleReadError(response);
       } else {
@@ -326,7 +325,6 @@
 
     DetectSdfPropertiesController.prototype.updatePropertiesRead = function(sdfPropsList, numRecordsRead) {
       var newLine, props;
-      console.log("updatePropertiesRead");
       this.$('.bv_detectedSdfPropertiesList').removeClass('readError');
       if (this.numRecords === -1 || (this.numRecords > numRecordsRead)) {
         this.numRecords = numRecordsRead;
@@ -356,10 +354,7 @@
     };
 
     DetectSdfPropertiesController.prototype.readMoreRecords = function() {
-      console.log("read more records");
-      console.log(this.numRecords);
       this.numRecords += 100;
-      console.log(this.numRecords);
       return this.getProperties();
     };
 
@@ -754,9 +749,7 @@
 
     AssignSdfPropertiesController.prototype.handleSaveTemplateCheckboxChanged = function() {
       var currentTempName, saveTemplateChecked;
-      console.log("handle Save Template Checkbox changed");
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
-      console.log(saveTemplateChecked);
       if (saveTemplateChecked) {
         this.$('.bv_templateName').removeAttr('disabled');
         currentTempName = this.templateListController.getSelectedCode();
@@ -843,7 +836,6 @@
       validCheck = true;
       validAp = this.validateAssignedProperties();
       if (!validAp) {
-        console.log("invalid ap");
         validCheck = false;
       }
       otherErrors = [];
@@ -857,13 +849,9 @@
       otherErrors.push.apply(otherErrors, this.getTemplateErrors());
       this.showValidationErrors(otherErrors);
       if (this.$('.bv_unassignedProperties').html() !== "") {
-        console.log("unassigned prop");
-        console.log(this.$('.bv_unassignedProperties').html());
         validCheck = false;
       }
       if (otherErrors.length > 0) {
-        console.log("other errors");
-        console.log(otherErrors);
         validCheck = false;
       }
       if (validCheck) {
@@ -1018,7 +1006,6 @@
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
         userName: window.AppLaunchParams.loginUser.username
       };
-      console.log(this.fileName);
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/registerCmpds",

@@ -149,6 +149,8 @@
     var createSummaryZip, moveSdfFile, registerCmpds;
     createSummaryZip = function(fileName, json) {
       var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, splitNames, zip, zipFileName, zipFilePath;
+      console.log("fileName");
+      console.log(fileName);
       fileName = fileName.substring(0, fileName.length - 4);
       zipFileName = fileName + ".zip";
       fs = require('fs');
