@@ -14,7 +14,7 @@ source('getExperimentColOrder.R')
 
 # Load the configs
 configList <- racas::applicationSettings
-save(configList, file="config.Rda")
+#save(configList, file="config.Rda")
 
 #.libPaths('/opt/acas_homes/acas/acas/r_libs')
 
@@ -213,7 +213,7 @@ if (postData.list$queryParams$searchFilters$booleanFilter == 'advanced'){
 myLogger$debug("here is the final searchParams")
 myLogger$debug(toJSON(searchParams))
 myLogger$debug(searchParams)
-save(searchParams, file="searchParams.Rda")
+#save(searchParams, file="searchParams.Rda")
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
 dataCsv <- getURL(
@@ -226,7 +226,7 @@ errorFlag <- FALSE
 tryCatch({
   dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
   error = function(ex) {
-  errorFlag <<- TRUE
+  errorFlag <- TRUE
 })
 
 if (errorFlag){
@@ -346,7 +346,11 @@ aggAndPivot <- function(dataDT, expt){
     outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
 
   }else{ # Aggregate is false
-    outputDT <- dataDT[experimentId == expt , pivotResults(testedLot, lsKind, result)]
+    outputDTCurve <- dataDT[experimentId == expt & (lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result, "curve")]
+    outputDTNonCurve <- dataDT[experimentId == expt & !(lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result)]
+
+    # merge all subsets back into one outputDT
+    outputDT <- Reduce(myMerge, list(outputDTCurve, outputDTNonCurve))
 
   }
 }
@@ -414,7 +418,7 @@ modifyCurveValues <- function(curveIdCol){
 
 ### PROCESS DATA RETURNED FROM SERVER #####
 
-save(dataDT, file='dataDT.Rda')
+#save(dataDT, file='dataDT.Rda')
 if (nrow(dataDT) > 0){  # If data was returned from the server
   firstPass <- TRUE
 
@@ -681,7 +685,7 @@ if (exportCSV){
   # Note, this assumes there is only one entityType
   if (configList$server.sar.csvLabel == "bestLabel"){
 
-    save(outputDT,file="outputDT.Rda")
+    #save(outputDT,file="outputDT.Rda")
 
     searchObject = list()
     searchObject$requestText <- outputDT$geneId[1]
@@ -713,7 +717,7 @@ if (exportCSV){
 
     setnames(outputDT, "geneId", displayName);
     # outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
-    save(bestLabels,csv,outputDT, file="bestLabels.Rda")
+    #save(bestLabels,csv,outputDT, file="bestLabels.Rda")
   }else{
     setnames(outputDT, "geneId", "Reference Code");
   }
