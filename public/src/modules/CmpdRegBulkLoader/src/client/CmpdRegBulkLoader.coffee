@@ -158,7 +158,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
-		console.log "handle properties detected"
 		if response is "Error"
 			@handleReadError(response)
 		else
@@ -178,7 +177,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@trigger 'fileChanged', @fileName
 
 	updatePropertiesRead: (sdfPropsList, numRecordsRead) ->
-		console.log "updatePropertiesRead"
 		@$('.bv_detectedSdfPropertiesList').removeClass 'readError'
 
 		if @numRecords == -1 or (@numRecords > numRecordsRead)
@@ -203,10 +201,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@$('.bv_readAll').attr 'disabled', 'disabled'
 
 	readMoreRecords: ->
-		console.log "read more records"
-		console.log @numRecords
 		@numRecords += 100
-		console.log @numRecords
 		@getProperties()
 
 	readAllRecords: ->
@@ -458,9 +453,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
-		console.log "handle Save Template Checkbox changed"
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
-		console.log saveTemplateChecked
 		if saveTemplateChecked
 			@$('.bv_templateName').removeAttr('disabled')
 			currentTempName = @templateListController.getSelectedCode()
@@ -513,7 +506,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		validCheck = true
 		validAp = @validateAssignedProperties()
 		unless validAp
-			console.log "invalid ap"
 			validCheck = false
 		otherErrors = []
 		if window.conf.cmpdReg.showProjectSelect
@@ -524,12 +516,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		otherErrors.push @getTemplateErrors()...
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
-			console.log "unassigned prop"
-			console.log @$('.bv_unassignedProperties').html()
 			validCheck = false
 		if otherErrors.length > 0
-			console.log "other errors"
-			console.log otherErrors
 			validCheck = false
 
 		if validCheck
@@ -637,11 +625,11 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
-		console.log @fileName
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
 			data: dataToPost
+			timeout: 6000000
 			success: (response) =>
 				@$('.bv_registering').hide()
 				if response is "Error"
