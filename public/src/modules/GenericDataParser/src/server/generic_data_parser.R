@@ -2124,17 +2124,20 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
           meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = c("analysisGroupID", "treatmentGroupID"))
         )
         if (!is.null(curveNames)) {
+          # This only works if there is only one analysis group
           curveRows <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                   valueKind = curveNames, 
                                   publicData = TRUE, 
                                   valueType = "stringValue", 
-                                  stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
+                                  stringValue = paste0(1:length(curveNames), "_", savedAnalysisGroups[[1]]$codeName),
+                                  analysisGroupID = savedAnalysisGroups[[1]]$id,
                                   stringsAsFactors=FALSE)
           renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices, 
                                          valueKind = "Rendering Hint", 
                                          publicData = FALSE, 
                                          valueType = "stringValue", 
                                          stringValue = "PK IV PO Single Dose",
+                                         analysisGroupID = savedAnalysisGroups[[1]]$id,
                                          stringsAsFactors=FALSE)
           analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
         }
