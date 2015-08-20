@@ -80,7 +80,7 @@
         return callback(thing);
       } else {
         config = require('../conf/compiled/conf.js');
-        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code;
+        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code + "?with=nestedfull";
         request = require('request');
         return request({
           method: 'PUT',
@@ -157,6 +157,8 @@
         baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
         if (isBatch) {
           baseurl += "/?parentIdOrCodeName=" + req.params.parentCode;
+        } else {
+          baseurl += "?with=nestedfull";
         }
         request = require('request');
         return request({
@@ -262,16 +264,11 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/validate";
-      if (req.params.componentOrAssembly === "component") {
-        baseurl += "?uniqueName=true";
-      } else {
-        baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true";
-      }
       request = require('request');
       return request({
         method: 'POST',
         url: baseurl,
-        body: req.body.modelToSave,
+        body: req.body.data,
         json: true
       }, (function(_this) {
         return function(error, response, json) {
