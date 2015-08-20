@@ -16,7 +16,7 @@
 }
 
 .GeneIDQueryAppController .bv_gidACASBadge {
-	margin-bottom: 5px;
+	margin-bottom: 10px;
 }
 
 .GeneIDQueryAppController .bv_searchForm {
@@ -338,4 +338,8 @@ body .GeneIDQueryAppController .bv_addDataModal{
 		width: 60% !important;
     margin-left: -30% !important;
 		max-height: 80% !important;
+}
+
+.GeneIDQueryAppController .bv_displayNameSelect{
+    margin-top: 10px;
 }

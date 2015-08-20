@@ -48,6 +48,10 @@ class window.ModuleMenusController extends Backbone.View
 			@$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage)
 		if window.conf.moduleMenus.copyrightMessage?
 			@$('.bv_copyrightMessage').html(window.conf.moduleMenus.copyrightMessage)
+		if window.conf.moduleMenus.modules?.external?
+			for module in $.parseJSON window.conf.moduleMenus.modules.external
+				modLink = '<li><a href="'+module.href+'"target="_blank">'+module.displayName+'</a></li>'
+				@$('.bv_externalACASModules').append modLink
 
 	render: =>
 		if window.AppLaunchParams.deployMode?
@@ -56,7 +60,7 @@ class window.ModuleMenusController extends Backbone.View
 
 		@
 
-	events:
+	events: ->
 			'click .bv_headerName': "handleHome"
 
 	handleHome: =>

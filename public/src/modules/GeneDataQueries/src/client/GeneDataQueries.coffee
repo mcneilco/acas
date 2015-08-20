@@ -8,16 +8,34 @@ class window.GeneIDQueryInputController extends Backbone.View
 		"keydown .bv_gidListString": "handleKeyInInputField"
 		"click .bv_aggregation_true": "handleAggregationChanged"
 		"click .bv_aggregation_false": "handleAggregationChanged"
+		"change .bv_displayNameSelect": "handleDisplayNameChanged"
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template()
+		@setupDisplayNameSelect()
 		@$('.bv_search').attr('disabled','disabled')
 		@$('.bv_gidACASBadgeTop').hide()
 		@$('.bv_searchNavbar').hide()
 		@handleAggregationChanged()
 
 		@
+
+	setupDisplayNameSelect: ->
+		@displayNameList = new PickListList()
+		@displayNameList.url = "/api/entitymeta/configuredEntityTypes/asCodes"
+		@displayNameListController = new PickListSelectController
+			el: @$(".bv_displayNameSelect")
+			collection: @displayNameList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Entity Type (optional)"
+			selectedCode: "unassigned"
+		@displayName = "unassigned"
+
+
+	handleDisplayNameChanged: ->
+		@displayName = @displayNameListController.getSelectedCode()
 
 	handleInputFieldChanged: =>
 		if $.trim(@$('.bv_gidListString').val()).length > 1
@@ -33,10 +51,10 @@ class window.GeneIDQueryInputController extends Backbone.View
 			@handleSearchClicked()
 
 	handleSearchClicked: =>
-		@trigger 'search-requested', $.trim(@$('.bv_gidListString').val())
+		@trigger 'search-requested', $.trim(@$('.bv_gidListString').val()), @displayName
 
 	handleAdvanceModeRequested: =>
-		@trigger 'requestAdvancedMode', $.trim(@$('.bv_gidListString').val()), @aggregate
+		@trigger 'requestAdvancedMode', $.trim(@$('.bv_gidListString').val()), @aggregate, @displayName
 
 
 class window.GeneIDQueryResultController extends Backbone.View
@@ -52,7 +70,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 			@$('.bv_noResultsFound').hide()
 			@setupHeaders()
 			sortingType = String(window.conf.sar.sorting)
-			console.log sortingType
 			@$('.bv_resultTable').dataTable
 				aaData: @model.get('data').aaData
 				aoColumns: @model.get('data').aoColumns
@@ -69,7 +86,6 @@ class window.GeneIDQueryResultController extends Backbone.View
 				# uncomment the following line to disable sorting in the dataTable
 				# bSort: false
 			@displayName = @model.get('data').displayName
-			console.log "displayName is "+ @displayName
 			if @displayName?
 				$.get "/api/sarRender/title/" + @displayName, (json) =>
 					@$('th.referenceCode').html(json.title)
@@ -136,10 +152,11 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@setQueryOnlyMode()
 		@dataAdded = false
 
-	requestFilterExperiments: (searchStr, aggregate) =>
-		@trigger 'requestAdvancedMode', searchStr, aggregate
+	requestFilterExperiments: (searchStr, aggregate, displayName) =>
+		@trigger 'requestAdvancedMode', searchStr, aggregate, displayName
 
-	handleSearchRequested: (searchStr) =>
+	handleSearchRequested: (searchStr, displayName) =>
+		@displayName = displayName
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
 			backdrop: "static"
@@ -147,21 +164,45 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@fromSearchtoCodes()
 
 	fromSearchtoCodes: ->
-		@counter = 0
 		searchString = @lastSearch
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
-		@numTerms = searchTerms.length
-		@searchResults = []
-		for term in searchTerms
+		searchTerms = _.filter(searchTerms, (x) -> x != "")
+		if @displayName == "unassigned"
+			@counter = 0
+			@numTerms = searchTerms.length
+			@searchResults = []
+			for term in searchTerms
+				$.ajax
+					type: 'POST'
+					url: "api/entitymeta/searchForEntities"
+					dataType: 'json'
+					data:
+						requestText: term
+					success: @handleEntitySearchReturn
+					error: (err) =>
+						@serviceReturn = null
+		else
+			requests = []
+			for term in searchTerms
+				requests.push
+					requestName: term
 			$.ajax
 				type: 'POST'
-				url: "api/entitymeta/searchForEntities"
-				dataType: 'json'
+				url: "api/entitymeta/referenceCodes"
+				dataType: "json"
 				data:
-					requestText: term
-				success: @handleEntitySearchReturn
+					displayName: @displayName
+					requests: requests
+				success: @knownDisplayNameReturn
 				error: (err) =>
 					@serviceReturn = null
+
+	knownDisplayNameReturn: (json) =>
+		refCodes = ""
+		for result in json.results when result.referenceCode != ""
+			refCodes += " "+ result.referenceCode
+		@lastSearch = refCodes
+		@getAllExperimentNames()
 
 	handleEntitySearchReturn: (json) =>
 		@counter = @counter + 1
@@ -174,6 +215,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		if @counter >= @numTerms
 			console.log "All searches returned, going to filter"
 			@filterOnDisplayName()
+
 
 	filterOnDisplayName: ->
 		displayNames = _.uniq(_.pluck(@searchResults, "displayName"))
@@ -202,6 +244,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 
 
 	getAllExperimentNames: ->
+		if @lastSearch == ""
+			@lastSearch = "NO RESULTS"
 		$.ajax
 			type: 'POST'
 			url: "api/getGeneExperiments"
@@ -401,6 +445,7 @@ class window.ShowHideExpts extends Backbone.View
 		expts = @model.get("experimentCodeList")
 		@exptLength = expts.length
 		@$(".bv_addDataTree").jstree('select_node',expts)
+		@selected = @getSelectedExperiments()
 
 
 	handleAggregationChanged: =>
@@ -767,25 +812,56 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	# 	@$('.bv_cancel').html 'Cancel'
 	# 	@$('.bv_noExperimentsFound').hide()
 
+
 	fromSearchtoCodes: ->
-		@counter = 0
+		@displayName = @model.get('displayName')
 		searchString = @model.get('searchStr')
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
-		@numTerms = searchTerms.length
-		@searchResults = []
-		@$('.bv_searchStatusDropDown').modal
-			backdrop: "static"
-		@$('.bv_searchStatusDropDown').modal "show"
-		for term in searchTerms
+		searchTerms = _.filter(searchTerms, (x) -> x != "")
+		if searchTerms.length == 0
+			@fromCodesToExptTree()
+			@$('.bv_searchStatusDropDown').modal
+				backdrop: "static"
+			@$('.bv_searchStatusDropDown').modal "show"
+		if @displayName == "unassigned"
+			@counter = 0
+			@numTerms = searchTerms.length
+			@searchResults = []
+			for term in searchTerms
+				$.ajax
+					type: 'POST'
+					url: "api/entitymeta/searchForEntities"
+					dataType: 'json'
+					data:
+						requestText: term
+					success: @handleEntitySearchReturn
+					error: (err) =>
+						@serviceReturn = null
+		else
+			requests = []
+			for term in searchTerms
+			  requests.push
+			    requestName: term
 			$.ajax
-				type: 'POST'
-				url: "api/entitymeta/searchForEntities"
-				dataType: 'json'
-				data:
-					requestText: term
-				success: @handleEntitySearchReturn
-				error: (err) =>
-					@serviceReturn = null
+			  type: 'POST'
+			  url: "api/entitymeta/referenceCodes"
+			  dataType: "json"
+			  data:
+			    displayName: @displayName
+			    requests: requests
+			  success: @knownDisplayNameReturn
+			  error: (err) =>
+			    @serviceReturn = null
+
+	knownDisplayNameReturn: (json) =>
+		refCodes = ""
+		for result in json.results when result.referenceCode != ""
+			refCodes += " "+ result.referenceCode
+		@searchCodes = refCodes
+		if @searchCodes == "" then @searchCodes = "NO RESULTS"
+		console.log "search Codes is: "+ @searchCodes
+		@fromCodesToExptTree()
+
 
 
 	handleEntitySearchReturn: (json) =>
@@ -825,7 +901,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 
 	fromCodesToExptTree: ->
-		console.log "search Codes is:" + @searchCodes
 		if not @searchCodes?
 			@searchCodes = @model.get('searchStr')
 		$.ajax
@@ -978,7 +1053,6 @@ class window.ChooseEntityTypeController extends Backbone.View
 		$(@el).empty()
 		$(@el).append @template()
 		entityTypes = _.uniq(_.pluck(@model.get('results'),'displayName'))
-		console.log "entities are "+ entityTypes
 		for type in entityTypes
 			button = @$('.entityTypeRadio').clone().removeClass('entityTypeRadio')
 			button.contents().attr("value",type).html(type)
@@ -1145,11 +1219,12 @@ class window.GeneIDQueryAppController extends Backbone.View
 		@$('.bv_basicQueryView').show()
 		@aerqc.on 'requestAdvancedMode', @startAdvancedQueryWizard
 
-	startAdvancedQueryWizard: (searchStr, aggregate) =>
-		console.log("The search text is: " + searchStr + "\n Aggregate is: " + aggregate)
+	startAdvancedQueryWizard: (searchStr, aggregate, displayName) =>
+		console.log("The search text is: " + searchStr + "\n Aggregate is: " + aggregate + "\n displayName is: "+ displayName)
 		searchParams =
 			searchStr: searchStr
 			aggregate: aggregate
+			displayName: displayName
 		@$('.bv_next').html "Next"
 		@$('.bv_next').removeAttr 'disabled'
 		@$('.bv_addData').hide()

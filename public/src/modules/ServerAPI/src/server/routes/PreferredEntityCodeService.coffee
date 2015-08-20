@@ -32,8 +32,8 @@ exports.getConfiguredEntityTypes = (asCodes, callback) ->
 	console.log "asCodes: "+asCodes
 	if asCodes
 		codes = for own name, et of configuredEntityTypes.entityTypes
-			code: et.type+" "+et.kind #Should we store this explicitly in the config?
-			displayName: name
+			code: name
+			name: name
 			ignored: false
 		callback codes
 	else
@@ -73,6 +73,7 @@ exports.referenceCodesRoute = (req, resp) ->
 exports.referenceCodes = (requestData, csv, callback) ->
 	console.log "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
 	console.log("csv is " + csv)
+	console.log "requestData.displayName is " + requestData.displayName
 
 	# convert displayName to type and kind
 	exports.getSpecificEntityType requestData.displayName, (json) ->
@@ -101,6 +102,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 
 	else  # internal source
 		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
+		console.log entityType
 		if entityType.codeOrigin is "ACAS LSThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
@@ -222,7 +224,7 @@ exports.searchForEntities = (requestData, callback) ->
 	for entity in requestData.entityTypes
 		console.log "searching for entity: "+entity.displayName
 		entitySearchData =
-			displayName: entity.displayName
+			displayName: entity.name
 			requests:
 				[requestName: requestData.requestText]
 
