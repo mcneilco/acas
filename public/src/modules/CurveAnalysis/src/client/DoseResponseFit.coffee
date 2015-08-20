@@ -44,11 +44,11 @@ class window.DoseResponseFitController extends Backbone.View
 
 	setupParameterController: (modelFitType) =>
 		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
-		curveFitClasses =  curvefitClassesCollection.findWhere({codeValue: modelFitType})
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: modelFitType})
 		if curveFitClasses?
 			parametersClass =  curveFitClasses.get 'parametersClass'
 			drapType = window[parametersClass]
-			controllerClass =  curveFitClasses.get 'controllerClass'
+			controllerClass =  curveFitClasses.get 'parametersController'
 			drapcType = window[controllerClass]
 		else
 			drapType = 'unassigned'
@@ -62,7 +62,6 @@ class window.DoseResponseFitController extends Backbone.View
 				drap = new drapType @options.initialAnalysisParameters
 			else
 				drap = new drapType()
-
 			@parameterController = new drapcType
 				el: @$('.bv_analysisParameterForm')
 				model: drap
@@ -176,4 +175,3 @@ class window.DoseResponseFitWorkflowController extends Backbone.View
 		@$('.bv_doseResponseAnalysis').append "<div class='bv_uploadDataToFit span10'>Data must be uploaded first before fitting.</div>"
 		@$('.bv_completeControlContainer').hide()
 		@$('.bv_uploadDataTabLink').click()
-

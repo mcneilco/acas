@@ -219,7 +219,7 @@
     };
 
     BasicFileValidateAndSaveController.prototype.handleValidationReturnSuccess = function(json) {
-      var ref, summaryStr;
+      var ref, ref1, summaryStr;
       summaryStr = "Validation Results: ";
       if (!json.hasError) {
         this.filePassedValidation = true;
@@ -241,7 +241,7 @@
         this.$('.bv_htmlSummary').html(json.results.htmlSummary);
       }
       this.$('.bv_validateStatusDropDown').modal("hide");
-      if (json.results.csvDataPreview != null) {
+      if (((ref1 = json.results) != null ? ref1.csvDataPreview : void 0) != null) {
         return this.showCSVPreview(json.results.csvDataPreview);
       }
     };

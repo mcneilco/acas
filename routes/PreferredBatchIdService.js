@@ -12,7 +12,15 @@
   };
 
   exports.preferredBatchId = function(req, resp) {
-    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, request, requests, serverUtilityFunctions, serviceType;
+    var requests;
+    requests = req.body.requests;
+    return exports.getPreferredCompoundBatchIDs(requests, function(results) {
+      return resp.end(results);
+    });
+  };
+
+  exports.getPreferredCompoundBatchIDs = function(requests, callback) {
+    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, request, serverUtilityFunctions, serviceType;
     _ = require("underscore");
     each = require("each");
     request = require('request');
@@ -21,35 +29,33 @@
     serviceType = config.all.client.service.external.preferred.batchid.type;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
     possibleServiceTypes = ['NewLineSepBulkPost', 'SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString'];
-    requests = req.body.requests;
     if (indexOf.call(possibleServiceTypes, serviceType) < 0) {
       errorMessage = "client.service.external.preferred.batchid.type '" + serviceType + "' is not in possible service types " + possibleServiceTypes;
       console.log(errorMessage);
-      resp.end(errorMessage);
+      callback(errorMessage);
     }
     if (serviceType === "NewLineSepBulkPost" && !global.specRunnerTestmode) {
-      req.body.user = "";
       return csUtilities.getPreferredBatchIds(requests, function(preferredResp) {
-        return resp.json({
+        return callback(JSON.stringify({
           error: false,
           errorMessages: [],
           results: preferredResp
-        });
+        }));
       });
     } else if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
-        return resp.end(rReturn);
+        return callback(rReturn);
       });
     } else if (serviceType === "AcasCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R", "acasCmpdRegBatchCheck", function(rReturn) {
-        return resp.end(rReturn);
+        return callback(rReturn);
       });
     } else if (serviceType === "GeneCodeCheckByR" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/AcasGeneBatchCheck.R", "acasGeneCodeCheck", function(rReturn) {
-        return resp.end(rReturn);
+        return callback(rReturn);
       });
     } else {
       return each(requests).parallel(1).on("item", function(batchName, next) {
@@ -116,7 +122,7 @@
           results: requests
         };
         console.log(JSON.stringify(answer));
-        return resp.json(answer);
+        return callback(JSON.stringify(answer));
       });
     }
   };

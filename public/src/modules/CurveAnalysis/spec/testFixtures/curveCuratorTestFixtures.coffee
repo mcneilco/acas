@@ -38,7 +38,7 @@
 					userFlagStatus: ""
 					category: "sigmoid"
 					curveAttributes:
-						EC50: "0.513604908525085"
+						EC50: 0.513604908525085
 						SST: 30821.4349266697
 						SSE: 1640.43028445399
 						rsquare: 0.946776316924994
@@ -363,7 +363,13 @@
 					reported_ec50: 0.513604908525085
 					slope: -1.2441272623465
 					type: "4 parameter D-R"
-
+					curveAttributes:
+						EC50: 0.513604908525085
+						Operator: null
+						SSE: 1640.43028445399
+						SST: 30821.4349266697
+						compoundCode: "CMPD-0000001-01A"
+						rSquared: 0.946776316924994
 				plotWindow: [
 					-1.90823440637806
 					108.17261

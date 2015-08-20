@@ -73,6 +73,7 @@ class window.LSFileChooserController extends Backbone.View
 
 	events:
 		#'click .bv_deleteFile': 'handleDeleteFileUIChanges'
+		'click .bv_deleteFile': 'handleFileValueChanged'
 		'click .bv_cancelFile': 'handleDeleteFileUIChanges'
 	
 	canAcceptAnotherFile: ->
@@ -89,6 +90,8 @@ class window.LSFileChooserController extends Backbone.View
 				@$('.' + @.options.dropZoneClassId).hide()
 				@$('.bv_manualFileSelect').show()
 
+	handleFileValueChanged: ->
+		@trigger 'fileDeleted'
 
 	handleDeleteFileUIChanges: ->
 		@$('.bv_manualFileSelect').show("slide")

@@ -249,7 +249,9 @@ class window.ExperimentBaseController extends BaseEntityController
 			"click .bv_completionDateIcon": "handleCompletionDateIconClicked"
 			"click .bv_keepOldParams": "handleKeepOldParams"
 			"click .bv_useNewParams": "handleUseNewParams"
-
+			"click .bv_closeDeleteExperimentModal": "handleCloseExperimentModal"
+			"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
+			"click .bv_cancelDelete": "handleCancelDeleteClicked"
 		)
 
 	initialize: ->
@@ -440,6 +442,46 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_useProtocolParameters').attr("disabled", "disabled")
 		else
 			@$('.bv_useProtocolParameters').removeAttr("disabled")
+
+	handleDeleteStatusChosen: =>
+		@$(".bv_deleteButtons").removeClass "hide"
+		@$(".bv_okayButton").addClass "hide"
+		@$(".bv_errorDeletingExperimentMessage").addClass "hide"
+		@$(".bv_deleteWarningMessage").removeClass "hide"
+		@$(".bv_deletingStatusIndicator").addClass "hide"
+		@$(".bv_experimentDeletedSuccessfullyMessage").addClass "hide"
+		@$(".bv_confirmDeleteExperimentModal").removeClass "hide"
+
+		@$('.bv_confirmDeleteExperimentModal').modal
+			backdrop: 'static'
+
+	handleCloseExperimentModal: =>
+		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
+
+	handleConfirmDeleteExperimentClicked: =>
+		@$(".bv_deleteWarningMessage").addClass "hide"
+		@$(".bv_deletingStatusIndicator").removeClass "hide"
+		@$(".bv_deleteButtons").addClass "hide"
+		@$(".bv_experimentCodeName").html @model.get('codeName')
+		$.ajax(
+			url: "/api/experiments/#{@model.get("id")}",
+			type: 'DELETE',
+			success: (result) =>
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_experimentDeletedSuccessfullyMessage").removeClass "hide"
+				@handleValueChanged "Status", "deleted"
+				@updateEditable()
+				@trigger 'amClean'
+			error: (result) =>
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_errorDeletingExperimentMessage").removeClass "hide"
+		)
+
+	handleCancelDeleteClicked: =>
+		@$(".bv_confirmDeleteExperimentModal").modal('hide')
+		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
 
 	getFullProtocol: ->
 		if @model.get('protocol') != null

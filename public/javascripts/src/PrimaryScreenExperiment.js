@@ -563,7 +563,6 @@
     extend(PrimaryAnalysisReadController, superClass);
 
     function PrimaryAnalysisReadController() {
-      this.clear = bind(this.clear, this);
       this.handleActivityChanged = bind(this.handleActivityChanged, this);
       this.handleReadNameChanged = bind(this.handleReadNameChanged, this);
       this.updateModel = bind(this.updateModel, this);
@@ -659,12 +658,6 @@
       });
       this.attributeChanged();
       return this.trigger('updateAllActivities');
-    };
-
-    PrimaryAnalysisReadController.prototype.clear = function() {
-      this.model.trigger('amDirty');
-      this.model.destroy();
-      return this.attributeChanged();
     };
 
     return PrimaryAnalysisReadController;

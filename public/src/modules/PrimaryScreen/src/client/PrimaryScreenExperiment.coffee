@@ -185,7 +185,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'negativeControlBatch'
 				message: "A registered batch number must be provided."
 		negativeControlConc = @get('negativeControl').get('concentration')
-		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
+		if _.isNaN(negativeControlConc) or negativeControlConc is undefined or negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc must be set"
@@ -411,10 +411,6 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-	clear: =>
-		@model.trigger 'amDirty'
-		@model.destroy()
-		@attributeChanged()
 
 
 class window.TransformationRuleController extends AbstractFormController

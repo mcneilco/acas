@@ -384,6 +384,10 @@
       this.handleKeepOldParams = bind(this.handleKeepOldParams, this);
       this.handleProtocolCodeChanged = bind(this.handleProtocolCodeChanged, this);
       this.handleExptNameChkbxClicked = bind(this.handleExptNameChkbxClicked, this);
+      this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
+      this.handleConfirmDeleteExperimentClicked = bind(this.handleConfirmDeleteExperimentClicked, this);
+      this.handleCloseExperimentModal = bind(this.handleCloseExperimentModal, this);
+      this.handleDeleteStatusChosen = bind(this.handleDeleteStatusChosen, this);
       this.modelSyncCallback = bind(this.modelSyncCallback, this);
       this.render = bind(this.render, this);
       return ExperimentBaseController.__super__.constructor.apply(this, arguments);
@@ -403,7 +407,10 @@
         "change .bv_completionDate": "handleDateChanged",
         "click .bv_completionDateIcon": "handleCompletionDateIconClicked",
         "click .bv_keepOldParams": "handleKeepOldParams",
-        "click .bv_useNewParams": "handleUseNewParams"
+        "click .bv_useNewParams": "handleUseNewParams",
+        "click .bv_closeDeleteExperimentModal": "handleCloseExperimentModal",
+        "click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked",
+        "click .bv_cancelDelete": "handleCancelDeleteClicked"
       });
     };
 
@@ -652,6 +659,56 @@
       } else {
         return this.$('.bv_useProtocolParameters').removeAttr("disabled");
       }
+    };
+
+    ExperimentBaseController.prototype.handleDeleteStatusChosen = function() {
+      this.$(".bv_deleteButtons").removeClass("hide");
+      this.$(".bv_okayButton").addClass("hide");
+      this.$(".bv_errorDeletingExperimentMessage").addClass("hide");
+      this.$(".bv_deleteWarningMessage").removeClass("hide");
+      this.$(".bv_deletingStatusIndicator").addClass("hide");
+      this.$(".bv_experimentDeletedSuccessfullyMessage").addClass("hide");
+      this.$(".bv_confirmDeleteExperimentModal").removeClass("hide");
+      return this.$('.bv_confirmDeleteExperimentModal').modal({
+        backdrop: 'static'
+      });
+    };
+
+    ExperimentBaseController.prototype.handleCloseExperimentModal = function() {
+      return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
+    };
+
+    ExperimentBaseController.prototype.handleConfirmDeleteExperimentClicked = function() {
+      this.$(".bv_deleteWarningMessage").addClass("hide");
+      this.$(".bv_deletingStatusIndicator").removeClass("hide");
+      this.$(".bv_deleteButtons").addClass("hide");
+      this.$(".bv_experimentCodeName").html(this.model.get('codeName'));
+      return $.ajax({
+        url: "/api/experiments/" + (this.model.get("id")),
+        type: 'DELETE',
+        success: (function(_this) {
+          return function(result) {
+            _this.$(".bv_okayButton").removeClass("hide");
+            _this.$(".bv_deletingStatusIndicator").addClass("hide");
+            _this.$(".bv_experimentDeletedSuccessfullyMessage").removeClass("hide");
+            _this.handleValueChanged("Status", "deleted");
+            _this.updateEditable();
+            return _this.trigger('amClean');
+          };
+        })(this),
+        error: (function(_this) {
+          return function(result) {
+            _this.$(".bv_okayButton").removeClass("hide");
+            _this.$(".bv_deletingStatusIndicator").addClass("hide");
+            return _this.$(".bv_errorDeletingExperimentMessage").removeClass("hide");
+          };
+        })(this)
+      });
+    };
+
+    ExperimentBaseController.prototype.handleCancelDeleteClicked = function() {
+      this.$(".bv_confirmDeleteExperimentModal").modal('hide');
+      return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
     };
 
     ExperimentBaseController.prototype.getFullProtocol = function() {
