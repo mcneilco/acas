@@ -119,6 +119,7 @@ exports.saveTemplate = (req, resp) ->
 		)
 
 exports.registerCmpds = (req, resp) ->
+	req.connection.setTimeout 6000000
 	createSummaryZip = (fileName, json) ->
 		#remove .sdf from fileName
 		console.log "fileName"
