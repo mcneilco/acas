@@ -69,7 +69,7 @@
       $(".bv_protocolTableController").addClass("hide");
       $(".bv_errorOccurredPerformingSearch").addClass("hide");
       protocolSearchTerm = $.trim(this.$(".bv_protocolSearchTerm").val());
-      $(".bv_searchTerm").val("");
+      $(".bv_protSearchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
@@ -78,7 +78,7 @@
           return $(".bv_moreSpecificProtocolSearchNeeded").removeClass("hide");
         } else {
           $(".bv_searchingProtocolsMessage").removeClass("hide");
-          $(".bv_searchTerm").html(protocolSearchTerm);
+          $(".bv_protSearchTerm").html(protocolSearchTerm);
           $(".bv_moreSpecificProtocolSearchNeeded").addClass("hide");
           return this.doSearch(protocolSearchTerm);
         }

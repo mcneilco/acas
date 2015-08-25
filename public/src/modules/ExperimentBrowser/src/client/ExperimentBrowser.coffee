@@ -164,7 +164,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 		$(".bv_experimentTableController").addClass "hide"
 		$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
-		$(".bv_searchTerm").val ""
+		$(".bv_exptSearchTerm").val ""
 		if experimentSearchTerm isnt ""
 			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
 			$(".bv_experimentBrowserSearchInstructions").addClass "hide"
@@ -173,7 +173,7 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingExperimentsMessage").removeClass "hide"
-				$(".bv_searchTerm").html experimentSearchTerm
+				$(".bv_exptSearchTerm").html experimentSearchTerm
 				$(".bv_moreSpecificExperimentSearchNeeded").addClass "hide"
 				@doSearch experimentSearchTerm
 
