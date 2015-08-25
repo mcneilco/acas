@@ -629,6 +629,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
 			data: dataToPost
+			timeout: 6000000
 			success: (response) =>
 				@$('.bv_registering').hide()
 				if response is "Error"

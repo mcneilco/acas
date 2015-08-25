@@ -1,7 +1,7 @@
 csUtilities = require "../public/src/conf/CustomerSpecificServerFunctions.js"
 properties = require "properties"
 _ = require "underscore"
-underscoreDeepExtend = require "underscoreDeepExtend"
+underscoreDeepExtend = require "underscore-deep-extend"
 _.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
 flat = require 'flat'

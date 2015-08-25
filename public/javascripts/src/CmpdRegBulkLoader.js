@@ -1010,6 +1010,7 @@
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/registerCmpds",
         data: dataToPost,
+        timeout: 6000000,
         success: (function(_this) {
           return function(response) {
             _this.$('.bv_registering').hide();

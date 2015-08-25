@@ -365,7 +365,7 @@
   formatBestLabelsAsCSV = function(prefResp) {
     var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
-    outStr = "Requested Name,Reference Code\n";
+    outStr = "Requested Name,Best Label\n";
     for (i = 0, len = preferreds.length; i < len; i++) {
       pref = preferreds[i];
       outStr += pref.requestName + ',' + pref.preferredName + '\n';
