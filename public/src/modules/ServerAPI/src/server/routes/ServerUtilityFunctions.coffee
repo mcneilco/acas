@@ -251,13 +251,32 @@ exports.makeAbsolutePath = (relativePath) ->
 
 exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
-	for state in thing.lsStates
+	exports.getFileValuesFromCollection thing, ignoreSaved, (fileVals) ->
+		fvs.push fileVals...
+	if thing.firstLsThings?
+		for firstThingItx in thing.firstLsThings
+			exports.getFileValuesFromCollection firstThingItx, ignoreSaved, (fileVals) ->
+				fvs.push fileVals...
+	if thing.secondLsThings?
+		for secondThingItx in thing.secondLsThings
+			exports.getFileValuesFromCollection secondThingItx, ignoreSaved, (fileVals) ->
+				fvs.push fileVals...
+	fvs
+
+exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
+	fvs = []
+	unless collection.lsStates?
+		collection = JSON.parse collection
+	for state in collection.lsStates
 		vals = state.lsValues
 		for v in vals
 			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
 				unless (ignoreSaved and v.id?)
 					fvs.push v
-	fvs
+	if fvs.length > 0
+		return fvs
+	else
+		return null
 
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->

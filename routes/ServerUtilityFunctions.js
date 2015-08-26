@@ -291,9 +291,39 @@
   };
 
   exports.getFileValuesFromEntity = function(thing, ignoreSaved) {
+    var firstThingItx, fvs, i, j, len, len1, ref, ref1, secondThingItx;
+    fvs = [];
+    exports.getFileValuesFromCollection(thing, ignoreSaved, function(fileVals) {
+      return fvs.push.apply(fvs, fileVals);
+    });
+    if (thing.firstLsThings != null) {
+      ref = thing.firstLsThings;
+      for (i = 0, len = ref.length; i < len; i++) {
+        firstThingItx = ref[i];
+        exports.getFileValuesFromCollection(firstThingItx, ignoreSaved, function(fileVals) {
+          return fvs.push.apply(fvs, fileVals);
+        });
+      }
+    }
+    if (thing.secondLsThings != null) {
+      ref1 = thing.secondLsThings;
+      for (j = 0, len1 = ref1.length; j < len1; j++) {
+        secondThingItx = ref1[j];
+        exports.getFileValuesFromCollection(secondThingItx, ignoreSaved, function(fileVals) {
+          return fvs.push.apply(fvs, fileVals);
+        });
+      }
+    }
+    return fvs;
+  };
+
+  exports.getFileValuesFromCollection = function(collection, ignoreSaved) {
     var fvs, i, j, len, len1, ref, state, v, vals;
     fvs = [];
-    ref = thing.lsStates;
+    if (collection.lsStates == null) {
+      collection = JSON.parse(collection);
+    }
+    ref = collection.lsStates;
     for (i = 0, len = ref.length; i < len; i++) {
       state = ref[i];
       vals = state.lsValues;
@@ -306,7 +336,11 @@
         }
       }
     }
-    return fvs;
+    if (fvs.length > 0) {
+      return fvs;
+    } else {
+      return null;
+    }
   };
 
   controllerRedirect = require('../conf/ControllerRedirectConf.js');

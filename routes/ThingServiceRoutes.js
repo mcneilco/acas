@@ -80,7 +80,7 @@
         return callback(thing);
       } else {
         config = require('../conf/compiled/conf.js');
-        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code + "?with=nestedfull";
+        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.codeName + "?with=nestedfull";
         request = require('request');
         return request({
           method: 'PUT',
