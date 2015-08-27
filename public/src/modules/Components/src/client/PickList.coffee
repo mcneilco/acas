@@ -33,20 +33,34 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+		if @options.displayCodeName?
+			@displayCodeName = @options.displayCodeName
+		else
+			@displayCodeName = false
 
 	render: =>
-		preferredNames = _.filter @model.get('lsLabels'), (lab) ->
-			lab.preferred && (lab.lsType == "name") && !lab.ignored
-		bestName = _.max preferredNames, (lab) ->
-			rd = lab.recordedDate
-			(if (rd is "") then Infinity else rd)
-		if bestName?
-			displayValue = bestName.labelText
-		else if @model.get('codeName')?
-			displayValue = @model.get('codeName')
+		if @displayCodeName is true
+			console.log @model
+			if @model.get('codeName')?
+				displayValue = @model.get("codeName")
+			else
+				displayValue = @insertFirstOption.get('name')
+			$(@el).attr("value", @model.get("id")).text displayValue
+
 		else
-			displayValue = @insertFirstOption.get('name')
-		$(@el).attr("value", @model.get("id")).text displayValue
+			preferredNames = _.filter @model.get('lsLabels'), (lab) ->
+				lab.preferred && (lab.lsType == "name") && !lab.ignored
+			bestName = _.max preferredNames, (lab) ->
+				rd = lab.recordedDate
+				(if (rd is "") then Infinity else rd)
+			if bestName?
+				displayValue = bestName.labelText
+			else if @model.get('codeName')?
+				displayValue = @model.get('codeName')
+			else
+				displayValue = @insertFirstOption.get('name')
+			$(@el).attr("value", @model.get("id")).text displayValue
+
 		@
 
 
@@ -141,6 +155,13 @@ class window.PickListSelectController extends Backbone.View
 
 class window.PickListForLsThingsSelectController extends PickListSelectController
 
+	initialize: ->
+		super()
+		if @options.displayCodeName?
+			@displayCodeName = @options.displayCodeName
+		else
+			@displayCodeName = false
+
 	handleListReset: =>
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
@@ -164,7 +185,7 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 			shouldRender = true
 
 		if shouldRender
-			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption).render().el
+			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption, displayCodeName: @displayCodeName).render().el
 
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())

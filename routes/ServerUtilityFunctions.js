@@ -291,27 +291,19 @@
   };
 
   exports.getFileValuesFromEntity = function(thing, ignoreSaved) {
-    var firstThingItx, fvs, i, j, len, len1, ref, ref1, secondThingItx;
+    var fvs, i, j, len, len1, ref, state, v, vals;
     fvs = [];
-    exports.getFileValuesFromCollection(thing, ignoreSaved, function(fileVals) {
-      return fvs.push.apply(fvs, fileVals);
-    });
-    if (thing.firstLsThings != null) {
-      ref = thing.firstLsThings;
-      for (i = 0, len = ref.length; i < len; i++) {
-        firstThingItx = ref[i];
-        exports.getFileValuesFromCollection(firstThingItx, ignoreSaved, function(fileVals) {
-          return fvs.push.apply(fvs, fileVals);
-        });
-      }
-    }
-    if (thing.secondLsThings != null) {
-      ref1 = thing.secondLsThings;
-      for (j = 0, len1 = ref1.length; j < len1; j++) {
-        secondThingItx = ref1[j];
-        exports.getFileValuesFromCollection(secondThingItx, ignoreSaved, function(fileVals) {
-          return fvs.push.apply(fvs, fileVals);
-        });
+    ref = thing.lsStates;
+    for (i = 0, len = ref.length; i < len; i++) {
+      state = ref[i];
+      vals = state.lsValues;
+      for (j = 0, len1 = vals.length; j < len1; j++) {
+        v = vals[j];
+        if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+          if (!(ignoreSaved && (v.id != null))) {
+            fvs.push(v);
+          }
+        }
       }
     }
     return fvs;

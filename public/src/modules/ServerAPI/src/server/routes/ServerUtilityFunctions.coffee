@@ -251,16 +251,12 @@ exports.makeAbsolutePath = (relativePath) ->
 
 exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
-	exports.getFileValuesFromCollection thing, ignoreSaved, (fileVals) ->
-		fvs.push fileVals...
-	if thing.firstLsThings?
-		for firstThingItx in thing.firstLsThings
-			exports.getFileValuesFromCollection firstThingItx, ignoreSaved, (fileVals) ->
-				fvs.push fileVals...
-	if thing.secondLsThings?
-		for secondThingItx in thing.secondLsThings
-			exports.getFileValuesFromCollection secondThingItx, ignoreSaved, (fileVals) ->
-				fvs.push fileVals...
+	for state in thing.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
 	fvs
 
 exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
