@@ -259,6 +259,7 @@
     };
 
     ProtocolBaseController.prototype.completeInitialization = function() {
+      var ref;
       if (this.model == null) {
         this.model = new Protocol();
       }
@@ -271,10 +272,10 @@
       }
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
-      if (window.conf.protocol.hideAssayTreeRule) {
-        this.$('.bv_group_assayTreeRule').hide();
-      } else {
+      if ((((ref = window.conf.protocol) != null ? ref.showAssayTreeRule : void 0) != null) && window.conf.protocol.showAssayTreeRule === true) {
         this.$('.bv_group_assayTreeRule').show();
+      } else {
+        this.$('.bv_group_assayTreeRule').hide();
       }
       this.model.on('notUniqueName', (function(_this) {
         return function() {
