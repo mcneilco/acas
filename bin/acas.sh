@@ -106,6 +106,15 @@ start_server() {
     return $?
 }
 
+run_server() {
+    runCommand="node app.js"
+    if [ $(whoami) != "$ACAS_USER" ]; then
+        startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
+    fi
+    eval "($runCommand)"
+    return $?
+}
+
 stop_server() {
     stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != "$ACAS_USER" ]; then
@@ -129,6 +138,15 @@ start_apache() {
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
     eval $startCommand
+    return $?
+}
+
+run_apache() {
+    startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start -DFOREGROUND"
+    if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
+        startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
+    fi
+    eval "($startCommand) &"
     return $?
 }
 
@@ -249,6 +267,23 @@ do_start() {
     return $RETVAL
 }
 
+# Runs the server.
+do_run() {
+    if [ $name == "rservices" ] || [ $name == "all" ]; then
+        action "Running apache" run_apache 1
+        RETVAL=$?
+    fi
+
+    if [ $name == "acas" ] || [ $name == "all" ]; then
+        dirname=`basename $ACAS_HOME`
+        LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
+        action "Running app.js" run_server
+        RETVAL=$?
+    fi
+    return $RETVAL
+
+}
+
 # Stops the server.
 do_stop() {
     dirname=`basename $ACAS_HOME`
@@ -288,6 +323,10 @@ get_status() {
     else
         log "apache not running"
     fi
+}
+
+usage() {
+    echo "Usage: ${0} {start|stop|status|restart|reload|run (options-rservices,acas,all:default-all)}"
 }
 
 ################################################################################
@@ -332,6 +371,15 @@ else
 fi
 
 case "$1" in
+    run)
+        name=$2
+        name=${name:-all}
+        if [[ "$name" =~ ^(acas|rservices|all)$ ]]; then
+            do_run $name
+        else
+            usage
+        fi
+    ;;
     start)
         do_start
         RETVAL=$?
@@ -373,7 +421,7 @@ case "$1" in
         fi
     ;;
     *)
-        echo "Usage: ${0} {start|stop|status|restart|reload}"
+        usage
         RETVAL=1
     ;;
 esac
