@@ -74,6 +74,17 @@ class window.LsThingItxList extends Backbone.Collection
 			@trigger('change')
 		return itx
 
+	getItxByItxThingTypeAndKind: (itxType, itxKind, itxThing, itxThingType, itxThingKind) ->
+#function for getting first/second lsThing by it's type and kind
+#example itxThing: firstLsThing, secondLsThing
+		itxArray = @getItxByTypeAndKind(itxType, itxKind)
+		itxByItxThing = _.filter itxArray, (itx) ->
+			if itx.get(itxThing) instanceof Backbone.Model
+				(itx.get(itxThing).get('lsType') == itxThingType) and (itx.get(itxThing).get('lsKind') == itxThingKind)
+			else
+				(itx.get(itxThing).lsType == itxThingType) and (itx.get(itxThing).lsKind == itxThingKind)
+		return itxByItxThing
+
 	getOrderedItxList: (type, kind) ->
 		itxs = @getItxByTypeAndKind(type, kind)
 		orderedItx = []

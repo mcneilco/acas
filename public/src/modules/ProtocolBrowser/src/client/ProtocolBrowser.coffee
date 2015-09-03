@@ -33,7 +33,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		$(".bv_protocolTableController").addClass "hide"
 		$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		protocolSearchTerm = $.trim(@$(".bv_protocolSearchTerm").val())
-		$(".bv_searchTerm").val ""
+		$(".bv_protSearchTerm").val ""
 		if protocolSearchTerm isnt ""
 			$(".bv_noMatchesFoundMessage").addClass "hide"
 			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
@@ -42,7 +42,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingProtocolsMessage").removeClass "hide"
-				$(".bv_searchTerm").html protocolSearchTerm
+				$(".bv_protSearchTerm").html protocolSearchTerm
 				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
 				@doSearch protocolSearchTerm
 

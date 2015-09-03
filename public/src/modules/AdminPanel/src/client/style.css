@@ -1,0 +1,49 @@
+.connectionStatus {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.bv_statusConnected {
+  font-size: 14px;
+  font-weight: normal;
+  color: #ffffff;
+  background-color: #5CB85C;
+  border-radius: 3px;
+  text-shadow: none;
+}
+
+.bv_statusDisconnected {
+  font-size: 14px;
+  font-weight: normal;
+  color: #ffffff;
+  background-color: #D9534F;
+  border-radius: 3px;
+  text-shadow: none;
+}
+
+.bv_checkConnection {
+  font-size: 12px;
+  color: gray;
+}
+
+.configProperties {
+  width: 700px;
+}
+
+.bv_configProperties {
+  width: 700px;
+}
+
+/*.bv_restartAllServers {
+  margin-left: 5px;
+}
+
+.helpText {
+  margin-top: 5px;
+  font-size: 12px;
+  color: gray;
+}
+
+.helpText2 {
+  margin-left: 10px;
+}*/
