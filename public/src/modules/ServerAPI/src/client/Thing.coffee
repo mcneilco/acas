@@ -39,6 +39,17 @@ class window.Thing extends Backbone.Model
 						resp.lsStates = new StateList(resp.lsStates)
 					resp.lsStates.on 'change', =>
 						@trigger 'change'
+
+				if resp.firstLsThings?
+					if resp.firstLsThings not instanceof FirstLsThingItxList
+						resp.firstLsThings = new FirstLsThingItxList(resp.firstLsThings)
+					resp.firstLsThings.on 'change', =>
+						@trigger 'change'
+				if resp.secondLsThings?
+					if resp.secondLsThings not instanceof SecondLsThingItxList
+						resp.secondLsThings = new SecondLsThingItxList(resp.secondLsThings)
+					resp.secondLsThings.on 'change', =>
+						@trigger 'change'
 				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
