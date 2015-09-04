@@ -33,20 +33,34 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 			@insertFirstOption = @options.insertFirstOption
 		else
 			@insertFirstOption = null
+		if @options.displayCodeName?
+			@displayCodeName = @options.displayCodeName
+		else
+			@displayCodeName = false
 
 	render: =>
-		preferredNames = _.filter @model.get('lsLabels'), (lab) ->
-			lab.preferred && (lab.lsType == "name") && !lab.ignored
-		bestName = _.max preferredNames, (lab) ->
-			rd = lab.recordedDate
-			(if (rd is "") then Infinity else rd)
-		if bestName?
-			displayValue = bestName.labelText
-		else if @model.get('codeName')?
-			displayValue = @model.get('codeName')
+		if @displayCodeName is true
+			console.log @model
+			if @model.get('codeName')?
+				displayValue = @model.get("codeName")
+			else
+				displayValue = @insertFirstOption.get('name')
+			$(@el).attr("value", @model.get("id")).text displayValue
+
 		else
-			displayValue = @insertFirstOption.get('name')
-		$(@el).attr("value", @model.get("id")).text displayValue
+			preferredNames = _.filter @model.get('lsLabels'), (lab) ->
+				lab.preferred && (lab.lsType == "name") && !lab.ignored
+			bestName = _.max preferredNames, (lab) ->
+				rd = lab.recordedDate
+				(if (rd is "") then Infinity else rd)
+			if bestName?
+				displayValue = bestName.labelText
+			else if @model.get('codeName')?
+				displayValue = @model.get('codeName')
+			else
+				displayValue = @insertFirstOption.get('name')
+			$(@el).attr("value", @model.get("id")).text displayValue
+
 		@
 
 
@@ -141,6 +155,13 @@ class window.PickListSelectController extends Backbone.View
 
 class window.PickListForLsThingsSelectController extends PickListSelectController
 
+	initialize: ->
+		super()
+		if @options.displayCodeName?
+			@displayCodeName = @options.displayCodeName
+		else
+			@displayCodeName = false
+
 	handleListReset: =>
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
@@ -164,7 +185,7 @@ class window.PickListForLsThingsSelectController extends PickListSelectControlle
 			shouldRender = true
 
 		if shouldRender
-			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption).render().el
+			$(@el).append new PickListOptionControllerForLsThing(model: enm, insertFirstOption: @insertFirstOption, displayCodeName: @displayCodeName).render().el
 
 	getSelectedModel: ->
 		@collection.getModelWithId parseInt(@getSelectedCode())
@@ -283,17 +304,26 @@ class window.EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+		console.log @options.roles
+		if @options.roles?
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+				console.log "is in user list"
+				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+			else
+				console.log "first else"
+				@$('.bv_addOptionBtn').removeAttr('data-toggle')
+				@$('.bv_addOptionBtn').removeAttr('data-target')
+				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
+				@$('.bv_addOptionBtn').css({'color':"#cccccc"})
+				@$('.bv_tooltipWrapper').tooltip()
+				@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 		else
-			@$('.bv_addOptionBtn').removeAttr('data-toggle')
-			@$('.bv_addOptionBtn').removeAttr('data-target')
-			@$('.bv_addOptionBtn').removeAttr('data-backdrop')
-			@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-			@$('.bv_tooltipWrapper').tooltip()
-			@$("body").tooltip selector: '.bv_tooltipWrapper'
+			console.log "second else"
+			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -302,7 +332,14 @@ class window.EditablePickListSelectController extends Backbone.View
 		@pickListController.setSelectedCode(code)
 
 	handleShowAddPanel: =>
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+		console.log "handle show add panel"
+		showPanel = false
+		if @options.roles?
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+				showPanel = true
+		else
+			showPanel = true
+		if showPanel
 			unless @addPanelController?
 				@addPanelController = new AddParameterOptionPanelController
 					model: new AddParameterOptionPanel
@@ -354,6 +391,11 @@ class window.EditablePickListSelectController extends Backbone.View
 			if selectedModel.get('id')?
 				callback.call()
 			else
+				unless selectedModel.get('codeType')?
+					selectedModel.set 'codeType', @options.codeType
+				unless selectedModel.get('codeKind')?
+					selectedModel.set 'codeKind', @options.codeKind
+				console.log selectedModel
 				$.ajax
 					type: 'POST'
 					url: "/api/codetables"
