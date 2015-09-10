@@ -509,20 +509,29 @@
     };
 
     EditablePickListSelectController.prototype.setupEditingPrivileges = function() {
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+      console.log(this.options.roles);
+      if (this.options.roles != null) {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+          console.log("is in user list");
+          this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
+          return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
+        } else {
+          console.log("first else");
+          this.$('.bv_addOptionBtn').removeAttr('data-toggle');
+          this.$('.bv_addOptionBtn').removeAttr('data-target');
+          this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
+          this.$('.bv_addOptionBtn').css({
+            'color': "#cccccc"
+          });
+          this.$('.bv_tooltipWrapper').tooltip();
+          return this.$("body").tooltip({
+            selector: '.bv_tooltipWrapper'
+          });
+        }
+      } else {
+        console.log("second else");
         this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
         return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
-      } else {
-        this.$('.bv_addOptionBtn').removeAttr('data-toggle');
-        this.$('.bv_addOptionBtn').removeAttr('data-target');
-        this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
-        this.$('.bv_addOptionBtn').css({
-          'color': "#cccccc"
-        });
-        this.$('.bv_tooltipWrapper').tooltip();
-        return this.$("body").tooltip({
-          selector: '.bv_tooltipWrapper'
-        });
       }
     };
 
@@ -535,7 +544,17 @@
     };
 
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+      var showPanel;
+      console.log("handle show add panel");
+      showPanel = false;
+      if (this.options.roles != null) {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+          showPanel = true;
+        }
+      } else {
+        showPanel = true;
+      }
+      if (showPanel) {
         if (this.addPanelController == null) {
           this.addPanelController = new AddParameterOptionPanelController({
             model: new AddParameterOptionPanel({
@@ -602,6 +621,13 @@
         if (selectedModel.get('id') != null) {
           return callback.call();
         } else {
+          if (selectedModel.get('codeType') == null) {
+            selectedModel.set('codeType', this.options.codeType);
+          }
+          if (selectedModel.get('codeKind') == null) {
+            selectedModel.set('codeKind', this.options.codeKind);
+          }
+          console.log(selectedModel);
           return $.ajax({
             type: 'POST',
             url: "/api/codetables",

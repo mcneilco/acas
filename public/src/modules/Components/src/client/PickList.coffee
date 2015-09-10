@@ -304,17 +304,26 @@ class window.EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
-			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+		console.log @options.roles
+		if @options.roles?
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+				console.log "is in user list"
+				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
+
+			else
+				console.log "first else"
+				@$('.bv_addOptionBtn').removeAttr('data-toggle')
+				@$('.bv_addOptionBtn').removeAttr('data-target')
+				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
+				@$('.bv_addOptionBtn').css({'color':"#cccccc"})
+				@$('.bv_tooltipWrapper').tooltip()
+				@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 		else
-			@$('.bv_addOptionBtn').removeAttr('data-toggle')
-			@$('.bv_addOptionBtn').removeAttr('data-target')
-			@$('.bv_addOptionBtn').removeAttr('data-backdrop')
-			@$('.bv_addOptionBtn').css({'color':"#cccccc"})
-			@$('.bv_tooltipWrapper').tooltip()
-			@$("body").tooltip selector: '.bv_tooltipWrapper'
+			console.log "second else"
+			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
+			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 
 	getSelectedCode: ->
 		@pickListController.getSelectedCode()
@@ -323,7 +332,14 @@ class window.EditablePickListSelectController extends Backbone.View
 		@pickListController.setSelectedCode(code)
 
 	handleShowAddPanel: =>
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+		console.log "handle show add panel"
+		showPanel = false
+		if @options.roles?
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
+				showPanel = true
+		else
+			showPanel = true
+		if showPanel
 			unless @addPanelController?
 				@addPanelController = new AddParameterOptionPanelController
 					model: new AddParameterOptionPanel
@@ -375,6 +391,11 @@ class window.EditablePickListSelectController extends Backbone.View
 			if selectedModel.get('id')?
 				callback.call()
 			else
+				unless selectedModel.get('codeType')?
+					selectedModel.set 'codeType', @options.codeType
+				unless selectedModel.get('codeKind')?
+					selectedModel.set 'codeKind', @options.codeKind
+				console.log selectedModel
 				$.ajax
 					type: 'POST'
 					url: "/api/codetables"
