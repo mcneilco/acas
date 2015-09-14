@@ -195,7 +195,7 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   
   outNames <- names(experimentNames)
   experimentNames <- copy(experimentNames)
-  experimentNames[ , originalOrder := row.names(experimentNames)]
+  experimentNames[ , originalOrder := as.integer(row.names(experimentNames))]
   #setting the key causes the column to sort independently without the rest of the dt
   setkeyv(experimentNames, c("Assay.Protocol", by))
   exptNames <- unique(experimentNames)
