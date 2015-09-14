@@ -139,10 +139,14 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		else
 			mappings = @mappings
 
+		if @tempName is "none"
+			templateName = null
+		else
+			templateName = @tempName
 		sdfInfo =
 			fileName: @fileName
 			numRecords: @numRecords
-			templateName: @tempName
+			templateName: templateName
 			mappings: mappings
 			userName: window.AppLaunchParams.loginUser.username
 		$.ajax
@@ -158,7 +162,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 			dataType: 'json'
 
 	handlePropertiesDetected: (response) ->
-		console.log "handle properties detected"
 		if response is "Error"
 			@handleReadError(response)
 		else
@@ -178,7 +181,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@trigger 'fileChanged', @fileName
 
 	updatePropertiesRead: (sdfPropsList, numRecordsRead) ->
-		console.log "updatePropertiesRead"
 		@$('.bv_detectedSdfPropertiesList').removeClass 'readError'
 
 		if @numRecords == -1 or (@numRecords > numRecordsRead)
@@ -203,10 +205,7 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@$('.bv_readAll').attr 'disabled', 'disabled'
 
 	readMoreRecords: ->
-		console.log "read more records"
-		console.log @numRecords
 		@numRecords += 100
-		console.log @numRecords
 		@getProperties()
 
 	readAllRecords: ->
@@ -458,9 +457,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@trigger 'templateChanged', templateName, mappings
 
 	handleSaveTemplateCheckboxChanged: ->
-		console.log "handle Save Template Checkbox changed"
 		saveTemplateChecked = @$('.bv_saveTemplate').is(":checked")
-		console.log saveTemplateChecked
 		if saveTemplateChecked
 			@$('.bv_templateName').removeAttr('disabled')
 			currentTempName = @templateListController.getSelectedCode()
@@ -513,7 +510,6 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		validCheck = true
 		validAp = @validateAssignedProperties()
 		unless validAp
-			console.log "invalid ap"
 			validCheck = false
 		otherErrors = []
 		if window.conf.cmpdReg.showProjectSelect
@@ -524,12 +520,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		otherErrors.push @getTemplateErrors()...
 		@showValidationErrors(otherErrors)
 		unless @$('.bv_unassignedProperties').html() == ""
-			console.log "unassigned prop"
-			console.log @$('.bv_unassignedProperties').html()
 			validCheck = false
 		if otherErrors.length > 0
-			console.log "other errors"
-			console.log otherErrors
 			validCheck = false
 
 		if validCheck
@@ -637,11 +629,11 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
-		console.log @fileName
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
 			data: dataToPost
+			timeout: 6000000
 			success: (response) =>
 				@$('.bv_registering').hide()
 				if response is "Error"
@@ -693,6 +685,12 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@trigger 'saveComplete', saveSummary
 
 	handleSdfPropertiesDetected: (properties) =>
+		@$('.bv_templateWarning').hide()
+		@$('.bv_templateWarning').html ""
+		for err in properties.errors
+			if err["level"] is "warning"
+				@$('.bv_templateWarning').append '<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">'+err["message"]+'</div>'
+				@$('.bv_templateWarning').show()
 		@assignSdfPropertiesController.createPropertyCollections(properties)
 		@detectSdfPropertiesController.mappings = @assignSdfPropertiesController.assignedPropertiesList
 		@detectSdfPropertiesController.updatePropertiesRead(@assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead)

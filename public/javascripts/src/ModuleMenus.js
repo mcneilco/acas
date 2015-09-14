@@ -23,7 +23,7 @@
     };
 
     ModuleMenusController.prototype.initialize = function() {
-      var i, len, modLink, module, ref, ref1, results;
+      var i, j, len, len1, modLink, module, ref, ref1, ref2, ref3, results;
       $(this.el).html(this.template());
       this.moduleLauncherList = new ModuleLauncherList(this.options.menuListJSON);
       this.moduleLauncherMenuListController = new ModuleLauncherMenuListController({
@@ -66,9 +66,17 @@
       }
       if (((ref = window.conf.moduleMenus.modules) != null ? ref.external : void 0) != null) {
         ref1 = $.parseJSON(window.conf.moduleMenus.modules.external);
-        results = [];
         for (i = 0, len = ref1.length; i < len; i++) {
           module = ref1[i];
+          modLink = '<li><a href="' + module.href + '"target="_blank">' + module.displayName + '</a></li>';
+          this.$('.bv_externalACASModules').append(modLink);
+        }
+      }
+      if (((ref2 = window.conf.moduleMenus.modules) != null ? ref2.external : void 0) != null) {
+        ref3 = $.parseJSON(window.conf.moduleMenus.modules.external);
+        results = [];
+        for (j = 0, len1 = ref3.length; j < len1; j++) {
+          module = ref3[j];
           modLink = '<li><a href="' + module.href + '"target="_blank">' + module.displayName + '</a></li>';
           results.push(this.$('.bv_externalACASModules').append(modLink));
         }

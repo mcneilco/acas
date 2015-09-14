@@ -147,8 +147,11 @@
 
   exports.registerCmpds = function(req, resp) {
     var createSummaryZip, moveSdfFile, registerCmpds;
+    req.connection.setTimeout(6000000);
     createSummaryZip = function(fileName, json) {
       var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, splitNames, zip, zipFileName, zipFilePath;
+      console.log("fileName");
+      console.log(fileName);
       fileName = fileName.substring(0, fileName.length - 4);
       zipFileName = fileName + ".zip";
       fs = require('fs');

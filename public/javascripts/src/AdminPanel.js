@@ -57,7 +57,6 @@
     };
 
     AdminPanelController.prototype.handleConnectionSuccess = function(data, status) {
-      console.log("connection success");
       this.$('.bv_connectionStatus').addClass('bv_statusConnected');
       this.$('.bv_connectionStatus').removeClass('bv_statusDisconnected');
       this.$('.bv_connectionStatus').html("connected");
@@ -65,7 +64,6 @@
     };
 
     AdminPanelController.prototype.handleConnectionFailure = function() {
-      console.log("connection failure");
       this.$('.bv_connectionStatus').addClass('bv_statusDisconnected');
       this.$('.bv_connectionStatus').removeClass('bv_statusConnected');
       this.$('.bv_connectionStatus').html("disconnected");
@@ -83,7 +81,7 @@
       if (isObject(dict[key])) {
         recursivelyIterateAndDisplayValues(dict[key]);
       } else {
-        console.log(key + ": " + dict[key]);
+
       }
       if (typeof dict[key] !== "object") {
         return this.$('.bv_configProperties').append("<b>" + key + ":</b> " + dict[key] + "<br />");

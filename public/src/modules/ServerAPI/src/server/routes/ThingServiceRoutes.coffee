@@ -68,7 +68,7 @@ updateThing = (thing, testMode, callback) ->
 			callback thing
 		else
 			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code+ "?with=nestedfull"
+			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
 			request = require 'request'
 			request(
 				method: 'PUT'
@@ -225,7 +225,7 @@ exports.validateName = (req, resp) ->
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error
-				console.log jsonthing
+				console.log json
 				console.log response
 		)
 

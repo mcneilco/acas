@@ -130,8 +130,8 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultSecondLsThingItx?
 			for itx in @lsProperties.defaultSecondLsThingItx
-					thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-					@set itx.key, thingItx
+				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+				@set itx.key, thingItx
 
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files

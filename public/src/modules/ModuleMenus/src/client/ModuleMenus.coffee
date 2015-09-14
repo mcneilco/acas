@@ -53,6 +53,11 @@ class window.ModuleMenusController extends Backbone.View
 				modLink = '<li><a href="'+module.href+'"target="_blank">'+module.displayName+'</a></li>'
 				@$('.bv_externalACASModules').append modLink
 
+		if window.conf.moduleMenus.modules?.external?
+			for module in $.parseJSON window.conf.moduleMenus.modules.external
+				modLink = '<li><a href="'+module.href+'"target="_blank">'+module.displayName+'</a></li>'
+				@$('.bv_externalACASModules').append modLink
+
 	render: =>
 		if window.AppLaunchParams.deployMode?
 			unless window.AppLaunchParams.deployMode.toUpperCase() =="PROD"
@@ -61,7 +66,7 @@ class window.ModuleMenusController extends Backbone.View
 		@
 
 	events: ->
-			'click .bv_headerName': "handleHome"
+		'click .bv_headerName': "handleHome"
 
 	handleHome: =>
 		$('.bv_mainModuleWrapper').hide()

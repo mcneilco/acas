@@ -1,25 +1,15 @@
-FROM mcneilco/racas:development
-
-USER	root
-
-RUN		npm install -g grunt grunt-cli forever
-
-# COPY SOURCE CODE
-COPY	. /home/runner
-
-RUN	chown -R runner:runner /home/runner
-
-USER	runner
-
+FROM 	mcneilco/racas:development
+USER 	root
+RUN 	npm install -g grunt grunt-cli forever
+COPY 	package.json /home/runner/package.json
 WORKDIR /home/runner
-
-RUN npm install && \
-    mkdir log
-
-# Expose ports
+RUN 	npm install
+COPY 	. /home/runner
+RUN 	mkdir log
+RUN 	chown -R runner:runner /home/runner
+USER    runner
 EXPOSE	1080
 EXPOSE	3000
 EXPOSE	3001
+CMD 	["/bin/sh", "bin/acas-docker.sh"]
 
-# Define default command
-CMD ["/bin/sh", "bin/acas-docker.sh"]

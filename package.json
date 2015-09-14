@@ -25,6 +25,7 @@
     "jszip": "*",
     "mongojs": "*",
     "ncp": "*",
+    "open-graph": "*",
     "passport": ">= 0.0.0",
     "passport-local": ">= 0.0.0",
     "properties": "*",
@@ -32,6 +33,7 @@
     "shelljs": "*",
     "temporary": ">= 0.0.0",
     "underscore": ">= 0.0.0",
+    "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
     "winston-mongodb": "*",
     "mocha": "*"

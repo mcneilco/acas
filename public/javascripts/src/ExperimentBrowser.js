@@ -250,7 +250,7 @@
       $(".bv_experimentTableController").addClass("hide");
       $(".bv_errorOccurredPerformingSearch").addClass("hide");
       experimentSearchTerm = $.trim(this.$(".bv_experimentSearchTerm").val());
-      $(".bv_searchTerm").val("");
+      $(".bv_exptSearchTerm").val("");
       if (experimentSearchTerm !== "") {
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
         $(".bv_experimentBrowserSearchInstructions").addClass("hide");
@@ -259,7 +259,7 @@
           return $(".bv_moreSpecificExperimentSearchNeeded").removeClass("hide");
         } else {
           $(".bv_searchingExperimentsMessage").removeClass("hide");
-          $(".bv_searchTerm").html(experimentSearchTerm);
+          $(".bv_exptSearchTerm").html(experimentSearchTerm);
           $(".bv_moreSpecificExperimentSearchNeeded").addClass("hide");
           return this.doSearch(experimentSearchTerm);
         }

@@ -7,7 +7,7 @@
 
   _ = require("underscore");
 
-  underscoreDeepExtend = require("underscoreDeepExtend");
+  underscoreDeepExtend = require("underscore-deep-extend");
 
   _.mixin({
     deepExtend: underscoreDeepExtend(_)

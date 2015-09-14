@@ -116,6 +116,12 @@
 				kindName: "Fitted Slope",
 				typeName: "numericValue"
 			,
+				kindName: "Fitted Kd",
+				typeName: "numericValue"
+			,
+				kindName: "Fitted Ligand Conc",
+				typeName: "numericValue"
+			,
 				kindName: "Kd",
 				typeName: "numericValue"
 			,

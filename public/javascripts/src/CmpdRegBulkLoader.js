@@ -264,7 +264,7 @@
     };
 
     DetectSdfPropertiesController.prototype.getProperties = function() {
-      var mappings, sdfInfo;
+      var mappings, sdfInfo, templateName;
       this.$('.bv_detectedSdfPropertiesList').html("Loading...");
       this.disableInputs();
       this.$('.bv_deleteFile').attr('disabled', 'disabled');
@@ -273,10 +273,15 @@
       } else {
         mappings = this.mappings;
       }
+      if (this.tempName === "none") {
+        templateName = null;
+      } else {
+        templateName = this.tempName;
+      }
       sdfInfo = {
         fileName: this.fileName,
         numRecords: this.numRecords,
-        templateName: this.tempName,
+        templateName: templateName,
         mappings: mappings,
         userName: window.AppLaunchParams.loginUser.username
       };
@@ -301,7 +306,6 @@
     };
 
     DetectSdfPropertiesController.prototype.handlePropertiesDetected = function(response) {
-      console.log("handle properties detected");
       if (response === "Error") {
         return this.handleReadError(response);
       } else {
@@ -326,7 +330,6 @@
 
     DetectSdfPropertiesController.prototype.updatePropertiesRead = function(sdfPropsList, numRecordsRead) {
       var newLine, props;
-      console.log("updatePropertiesRead");
       this.$('.bv_detectedSdfPropertiesList').removeClass('readError');
       if (this.numRecords === -1 || (this.numRecords > numRecordsRead)) {
         this.numRecords = numRecordsRead;
@@ -356,10 +359,7 @@
     };
 
     DetectSdfPropertiesController.prototype.readMoreRecords = function() {
-      console.log("read more records");
-      console.log(this.numRecords);
       this.numRecords += 100;
-      console.log(this.numRecords);
       return this.getProperties();
     };
 
@@ -754,9 +754,7 @@
 
     AssignSdfPropertiesController.prototype.handleSaveTemplateCheckboxChanged = function() {
       var currentTempName, saveTemplateChecked;
-      console.log("handle Save Template Checkbox changed");
       saveTemplateChecked = this.$('.bv_saveTemplate').is(":checked");
-      console.log(saveTemplateChecked);
       if (saveTemplateChecked) {
         this.$('.bv_templateName').removeAttr('disabled');
         currentTempName = this.templateListController.getSelectedCode();
@@ -843,7 +841,6 @@
       validCheck = true;
       validAp = this.validateAssignedProperties();
       if (!validAp) {
-        console.log("invalid ap");
         validCheck = false;
       }
       otherErrors = [];
@@ -857,13 +854,9 @@
       otherErrors.push.apply(otherErrors, this.getTemplateErrors());
       this.showValidationErrors(otherErrors);
       if (this.$('.bv_unassignedProperties').html() !== "") {
-        console.log("unassigned prop");
-        console.log(this.$('.bv_unassignedProperties').html());
         validCheck = false;
       }
       if (otherErrors.length > 0) {
-        console.log("other errors");
-        console.log(otherErrors);
         validCheck = false;
       }
       if (validCheck) {
@@ -1018,11 +1011,11 @@
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
         userName: window.AppLaunchParams.loginUser.username
       };
-      console.log(this.fileName);
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/registerCmpds",
         data: dataToPost,
+        timeout: 6000000,
         success: (function(_this) {
           return function(response) {
             _this.$('.bv_registering').hide();
@@ -1120,6 +1113,17 @@
     };
 
     BulkRegCmpdsController.prototype.handleSdfPropertiesDetected = function(properties) {
+      var err, i, len, ref;
+      this.$('.bv_templateWarning').hide();
+      this.$('.bv_templateWarning').html("");
+      ref = properties.errors;
+      for (i = 0, len = ref.length; i < len; i++) {
+        err = ref[i];
+        if (err["level"] === "warning") {
+          this.$('.bv_templateWarning').append('<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">' + err["message"] + '</div>');
+          this.$('.bv_templateWarning').show();
+        }
+      }
       this.assignSdfPropertiesController.createPropertyCollections(properties);
       this.detectSdfPropertiesController.mappings = this.assignSdfPropertiesController.assignedPropertiesList;
       this.detectSdfPropertiesController.updatePropertiesRead(this.assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead);

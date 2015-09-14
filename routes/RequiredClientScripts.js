@@ -38,6 +38,7 @@ exports.applicationScripts = [
 	'/javascripts/src/PickList.js',
 	'/javascripts/src/Label.js',
     '/javascripts/src/Thing.js',
+    '/javascripts/src/ThingInteraction.js',
     '/javascripts/src/BaseEntity.js',
     '/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
@@ -69,8 +70,7 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
-	"/javascripts/src/TagList.js",
-	"/javascripts/src/ThingInteraction.js"
+	"/javascripts/src/TagList.js"
 ];
 
 exports.jasmineScripts = [
@@ -113,8 +113,6 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/ProtocolCodeTableTestJSON.js",
 	"/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/RunRFunctionServiceTestJSON.js",
-	"/javascripts/spec/testFixtures/TestModuleCodeTableTestJSON.js",
-	"/javascripts/spec/testFixtures/TestModuleTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingInteractionTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/ThingTestJSON.js",
@@ -122,8 +120,6 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/codeTablePutTestJSON.js",
 	"/javascripts/spec/testFixtures/codeTableServiceTestJSON.js",
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
-	"/javascripts/spec/testFixtures/nodeCodeTableTestJSON.js",
-	"/javascripts/spec/testFixtures/nodeTestJSON.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
 	"/javascripts/spec/AdminPanelSpec.js",
@@ -168,11 +164,7 @@ exports.specScripts = [
 	"/javascripts/spec/SarRenderingServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
-	"/javascripts/spec/TestModuleServicesSpec.js",
-	"/javascripts/spec/TestModuleSpec.js",
 	"/javascripts/spec/ThingInteractionSpec.js",
 	"/javascripts/spec/ThingSpec.js",
-	"/javascripts/spec/UtilityFunctionsSpec.js",
-	"/javascripts/spec/nodeServicesSpec.js",
-	"/javascripts/spec/nodeSpec.js"
+	"/javascripts/spec/UtilityFunctionsSpec.js"
 ]

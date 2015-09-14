@@ -497,6 +497,10 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
 
 # Give warning and error messages for changed or missing id's
   if (mainCode == "Gene ID"){
+#=======
+#  # Give warning and error messages for changed or missing id's
+#  if (inputFormat == "Gene ID Data") {
+#>>>>>>> development
       for (row in 1:nrow(newBatchIds)) {
         if (is.null(newBatchIds$referenceName[row]) || is.na(newBatchIds$referenceName[row]) || newBatchIds$referenceName[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
@@ -509,8 +513,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
           }
         }
       }
-    }else{
-
+    } else {
       for (row in 1:nrow(newBatchIds)) {
         if (is.null(newBatchIds$Reference.Code[row]) || is.na(newBatchIds$Reference.Code[row]) || newBatchIds$Reference.Code[row] == "") {
           addError(paste0(mainCode, " '", newBatchIds$Requested.Name[row],
@@ -527,12 +530,11 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
 
     # Put the batch id's into a useful format
     prefDT <- as.data.table(newBatchIds)
-    if (mainCode == "Gene ID"){
+    if (inputFormat == "Gene ID Data") {
       setnames(prefDT, c("Requested.Name", "referenceName"), c("requestName", "preferredName"))
     }else{
       setnames(prefDT, c("Requested.Name", "Reference.Code"), c("requestName", "preferredName"))
     }
-
 
   # Use the data frame to replace Corp Batch Ids with the preferred batch IDs
   if (!is.null(prefDT$referenceName)) {
@@ -2141,26 +2143,35 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
       analysisGroupIndices <- which(sapply(stateGroups, function(x) {x$entityKind})=="analysis group")
       if (length(analysisGroupIndices > 0)) {
         analysisGroupData <- treatmentGroupData
-        analysisGroupData <- rbind.fill(
-          analysisGroupData,
-          meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = c("analysisGroupID", "treatmentGroupID"))
-        )
         if (!is.null(curveNames)) {
+          # This only works if there is only one analysis group
+          analysisGroupData <- rbind.fill(
+            analysisGroupData,
+            meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = c("analysisGroupID"))
+          )
           curveRows <- data.frame(stateGroupIndex = analysisGroupIndices,
                                   valueKind = curveNames,
                                   publicData = TRUE,
                                   valueType = "stringValue",
-                                  stringValue = paste0(1:length(curveNames), "_", analysisGroup$codeName),
+                                  stringValue = paste0(1:length(curveNames), "_", savedAnalysisGroups[[1]]$codeName),
+                                  analysisGroupID = savedAnalysisGroups[[1]]$id,
                                   stringsAsFactors=FALSE)
           renderingHintRow <- data.frame(stateGroupIndex = analysisGroupIndices,
                                          valueKind = "Rendering Hint",
                                          publicData = FALSE,
                                          valueType = "stringValue",
                                          stringValue = "PK IV PO Single Dose",
+                                         analysisGroupID = savedAnalysisGroups[[1]]$id,
                                          stringsAsFactors=FALSE)
           analysisGroupData <- rbind.fill(analysisGroupData, curveRows, renderingHintRow)
+          analysisGroupData$stateID <- 1
+        } else {
+          analysisGroupData <- rbind.fill(
+            analysisGroupData, 
+            meltBatchCodes(analysisGroupData, batchCodeStateIndices, optionalColumns = c("analysisGroupID", "treatmentGroupID"))
+          )
+          analysisGroupData$stateID <- plyr::id(analysisGroupData[,c("analysisGroupID", "stateGroupIndex", "treatmentGroupID")])
         }
-        analysisGroupData$stateID <- plyr::id(analysisGroupData[,c("analysisGroupID", "stateGroupIndex", "treatmentGroupID")])
         stateAndVersion <- saveStatesFromLongFormat(entityData = analysisGroupData,
                                                     entityKind = "analysisgroup",
                                                     stateGroups = stateGroups,
