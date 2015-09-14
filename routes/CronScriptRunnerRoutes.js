@@ -1,5 +1,5 @@
 (function() {
-  var launchRScript, scriptComplete, setupNewCron;
+  var addJobsOnStartup, launchRScript, scriptComplete, setupNewCron, validateSpec;
 
   exports.setupAPIRoutes = function(app) {
     app.post('/api/cronScriptRunner', exports.postCronScriptRunner);
@@ -7,15 +7,46 @@
     app.put('/api/cronScriptRunner/:code', exports.putCronScriptRunner);
     console.log("about to declare global in setup");
     global.cronCodeBaseNum = 1;
-    return console.log("just declared global in setup");
+    global.cronJobs = {};
+    console.log("just declared global in setup");
+    return addJobsOnStartup();
   };
 
   exports.setupRoutes = function(app, loginRoutes) {};
 
-  global.cronJobs = {};
+  addJobsOnStartup = function() {
+    var codeInt, cronConfig, i, len, newCode, newCron, ref, results, spec;
+    cronConfig = require('../public/javascripts/conf/StartupCronJobsConfJSON.js');
+    codeInt = 1;
+    ref = cronConfig.jobsToStart;
+    results = [];
+    for (i = 0, len = ref.length; i < len; i++) {
+      spec = ref[i];
+      newCode = "CONF_CRON" + codeInt++;
+      newCron = {
+        spec: spec
+      };
+      newCron.spec.cronCode = newCode;
+      newCron.spec.numberOfExcutions = 0;
+      newCron.spec.ignored = false;
+      global.cronJobs[newCode] = newCron;
+      if (newCron.spec.active) {
+        results.push(setupNewCron(newCron));
+      } else {
+        results.push(void 0);
+      }
+    }
+    return results;
+  };
 
   exports.postCronScriptRunner = function(req, resp) {
-    var cronScriptRunnerTestJSON, newCode, newCron;
+    var cronScriptRunnerTestJSON, newCode, newCron, validation;
+    validation = validateSpec(JSON.parse(JSON.stringify(req.body)));
+    if (!validation.valid) {
+      console.log(validation);
+      resp.send(JSON.stringify(validation.messages), 500);
+      return;
+    }
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       cronScriptRunnerTestJSON = require('../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js');
       return resp.json(cronScriptRunnerTestJSON.savedCronEntry);
@@ -25,6 +56,8 @@
         spec: JSON.parse(JSON.stringify(req.body))
       };
       newCron.spec.cronCode = newCode;
+      newCron.spec.numberOfExcutions = 0;
+      newCron.spec.ignored = false;
       global.cronJobs[newCode] = newCron;
       if (newCron.spec.active) {
         setupNewCron(newCron);
@@ -34,11 +67,12 @@
   };
 
   exports.putCronScriptRunner = function(req, resp) {
-    var code, cronJob, cronScriptRunnerTestJSON, respCron;
+    var code, cronJob, cronScriptRunnerTestJSON, key, ref, respCron, value;
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       cronScriptRunnerTestJSON = require('../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js');
       if (req.params.code.indexOf('error') > -1) {
         resp.send("cronCode " + code + " not found", 404);
+        return;
       }
       respCron = JSON.parse(JSON.stringify(cronScriptRunnerTestJSON.savedCronEntry));
       respCron.cronCode = req.params.code;
@@ -48,32 +82,29 @@
       if (req.body.ignored != null) {
         respCron.ignored = req.body.ignored;
       }
-      return resp.json(respCron);
+      resp.json(respCron);
     } else {
       code = req.params.code;
       cronJob = global.cronJobs[code];
       if (cronJob == null) {
         resp.send("cronCode " + code + " not found", 404);
+        return;
       }
-      if (req.body.active != null) {
-        if (!req.body.active && cronJob.spec.active) {
-          cronJob.job.stop();
-        } else if (req.body.active && !cronJob.spec.active) {
-          if (cronJob.job != null) {
-            cronJob.job.start();
-          } else {
+      ref = req.body;
+      for (key in ref) {
+        value = ref[key];
+        console.log(key + ": " + value);
+        cronJob.spec[key] = value;
+      }
+      if (cronJob.job != null) {
+        cronJob.job.stop();
+        delete cronJob.job;
+      }
+      if (!cronJob.spec.ignored) {
+        if (cronJob.spec.active != null) {
+          if (cronJob.spec.active) {
             setupNewCron(cronJob);
           }
-        }
-        cronJob.spec.active = req.body.active;
-      }
-      if (req.body.ignored != null) {
-        cronJob.spec.ignored = req.body.ignored;
-        if (req.body.ignored) {
-          if (cronJob.job != null) {
-            cronJob.job.stop();
-          }
-          delete global.cronJobs[code];
         }
       }
       return resp.json(cronJob.spec);
@@ -89,7 +120,7 @@
       respCron.lastDuration = 42;
       respCron.lastResultJSON = '{"someKey": "someValue", "hasError": false}';
       respCron.numberOfExcutions = 1;
-      return resp.json(respCron);
+      resp.json(respCron);
     } else {
       code = req.params.code;
       cronJob = global.cronJobs[code];
@@ -122,6 +153,7 @@
 
   scriptComplete = function(cronCode, startTime, duration, resultJSON) {
     var cronJob;
+    console.log("cronCode: " + cronCode);
     cronJob = global.cronJobs[cronCode];
     cronJob.spec.lastStartTime = startTime;
     cronJob.spec.lastDuration = duration;
@@ -131,6 +163,74 @@
     } else {
       return cronJob.spec.numberOfExcutions = 1;
     }
+  };
+
+  validateSpec = function(spec) {
+    var messages, valid;
+    valid = true;
+    messages = [];
+    if (spec.schedule == null) {
+      valid = false;
+      messages.push({
+        attribute: "schedule",
+        level: "error",
+        message: "schedule must be supplied"
+      });
+    }
+    if (spec.scriptType == null) {
+      valid = false;
+      messages.push({
+        attribute: "scriptType",
+        level: "error",
+        message: "scriptType must be supplied"
+      });
+    }
+    if (spec.scriptType != null) {
+      if (spec.scriptType !== "R") {
+        valid = false;
+        messages.push({
+          attribute: "scriptType",
+          level: "error",
+          message: "Only scriptType supported is R"
+        });
+      }
+    }
+    if (spec.scriptFile == null) {
+      valid = false;
+      messages.push({
+        attribute: "scriptFile",
+        level: "error",
+        message: "scriptFile must be supplied"
+      });
+    }
+    if (spec.functionName == null) {
+      valid = false;
+      messages.push({
+        attribute: "functionName",
+        level: "error",
+        message: "functionName must be supplied"
+      });
+    }
+    if (spec.scriptJSONData == null) {
+      valid = false;
+      messages.push({
+        attribute: "scriptJSONData",
+        level: "error",
+        message: "scriptJSONData must be supplied"
+      });
+    }
+    if (spec.active == null) {
+      valid = false;
+      messages.push({
+        attribute: "active",
+        level: "error",
+        message: "active must be supplied"
+      });
+    }
+    return {
+      valid: valid,
+      messages: messages
+    };
   };
 
 }).call(this);

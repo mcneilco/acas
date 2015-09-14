@@ -10,14 +10,15 @@ Basic requirements:
 - Programmatically add and remove periodic jobs
 - Call R script (other languages in the future)
 - Queue has to survive system ACAS and server reboots, so should be stored permanently in the database or a file
-- API should be usable from within node or from outside processes like R scripts, so need REST API and access to functions
+- API should be usable from within node or from outside processes like R scripts, so need REST API
+- Must call through services. Direct function calls won't work because we have to keep global cron hash
 - When called, there will be no context, so function names and arguments need to be strings or numbers, not live functions.
 - R script call should be formatted like every other wrapped R script in ACAS,
   the caller supplies the script, the function name, and the arguments as a JSON formatted string
  */
 
 (function() {
-  var assert, baseURL, config, copyJSON, cronScriptRunnerTestJSON, parseResponse, request;
+  var assert, baseURL, config, copyJSON, cronFunctions, cronScriptRunnerTestJSON, parseResponse, request;
 
   assert = require('assert');
 
@@ -26,6 +27,8 @@ Basic requirements:
   config = require('../../../../conf/compiled/conf.js');
 
   cronScriptRunnerTestJSON = require('../testFixtures/CronScriptRunnerTestJSON.js');
+
+  cronFunctions = require('../../../../routes/CronScriptRunnerRoutes.js');
 
   baseURL = "http://" + config.all.client.host + ":" + config.all.server.nodeapi.port;
 
@@ -138,7 +141,7 @@ Basic requirements:
         });
       });
     });
-    return describe("create and run cron and get run status", function() {
+    describe("create and run cron and get run status", function() {
       var unsavedReq;
       unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
       delete unsavedReq.cronCode;
@@ -156,7 +159,6 @@ Basic requirements:
                 json: true
               }, function(error, response, body) {
                 _this.responseJSON = body;
-                console.log(body);
                 _this.serverResponse = response;
                 return request.put({
                   url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
@@ -169,7 +171,7 @@ Basic requirements:
                   return done();
                 });
               });
-            }, 15000);
+            }, 3000);
           };
         })(this));
       });
@@ -187,6 +189,388 @@ Basic requirements:
       });
       return it("should increment the run count", function() {
         return assert.equal(this.responseJSON.numberOfExcutions > 0, true);
+      });
+    });
+    describe("create and run cron then stop", function() {
+      var unsavedReq;
+      unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+      delete unsavedReq.cronCode;
+      before(function(done) {
+        this.timeout(25000);
+        return request.post({
+          url: baseURL + "/api/cronScriptRunner",
+          json: true,
+          body: unsavedReq
+        }, (function(_this) {
+          return function(error, response, body) {
+            return setTimeout(function() {
+              return request.get({
+                url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                json: true
+              }, function(error, response, body1) {
+                _this.numRuns1 = body1.numberOfExcutions;
+                return request.put({
+                  url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                  json: true,
+                  body: {
+                    active: false,
+                    ignored: false
+                  }
+                }, function(error, response, body) {
+                  return setTimeout(function() {
+                    return request.get({
+                      url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                      json: true
+                    }, function(error, response, body2) {
+                      _this.numRuns2 = body2.numberOfExcutions;
+                      return done();
+                    });
+                  }, 2500);
+                });
+              });
+            }, 2500);
+          };
+        })(this));
+      });
+      return it("should run once", function() {
+        return assert.equal(this.numRuns1, this.numRuns2);
+      });
+    });
+    describe("create active job then change it", function() {
+      var unsavedReq;
+      unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+      delete unsavedReq.cronCode;
+      before(function(done) {
+        this.timeout(25000);
+        return request.post({
+          url: baseURL + "/api/cronScriptRunner",
+          json: true,
+          body: unsavedReq
+        }, (function(_this) {
+          return function(error, response, body) {
+            return setTimeout(function() {
+              return request.get({
+                url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                json: true
+              }, function(error, response, body1) {
+                _this.numRuns1 = body1.numberOfExcutions;
+                return request.put({
+                  url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                  json: true,
+                  body: {
+                    active: true,
+                    ignored: false,
+                    scriptJSONData: '{"fileToParse": "public/src/modules/BulkLoadSampleTransfers/spec/specFiles/KilroyWasHere_good.csv", "dryRun": "true", "user": "jmcneil" }'
+                  }
+                }, function(error, response, body) {
+                  return setTimeout(function() {
+                    return request.get({
+                      url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                      json: true
+                    }, function(error, response, body2) {
+                      _this.numRuns2 = body2.numberOfExcutions;
+                      _this.lastResultJSON = body2.lastResultJSON;
+                      return request.put({
+                        url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                        json: true,
+                        body: {
+                          active: false,
+                          ignored: false
+                        }
+                      }, function(error, response, body) {
+                        return done();
+                      });
+                    });
+                  }, 4500);
+                });
+              });
+            }, 2500);
+          };
+        })(this));
+      });
+      it("should run at first", function() {
+        return assert.equal(this.numRuns1 > 0, true);
+      });
+      it("should run later", function() {
+        return assert.equal(this.numRuns2 > this.numRuns1, true);
+      });
+      return it("should return an error the second run", function() {
+        return assert.equal(this.lastResultJSON.indexOf("KilroyWasHere") > -1, true);
+      });
+    });
+    describe("create inactive job then set active", function() {
+      var unsavedReq;
+      unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+      delete unsavedReq.cronCode;
+      unsavedReq.active = false;
+      before(function(done) {
+        this.timeout(25000);
+        return request.post({
+          url: baseURL + "/api/cronScriptRunner",
+          json: true,
+          body: unsavedReq
+        }, (function(_this) {
+          return function(error, response, body) {
+            return setTimeout(function() {
+              return request.get({
+                url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                json: true
+              }, function(error, response, body1) {
+                _this.numRuns1 = body1.numberOfExcutions;
+                return request.put({
+                  url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                  json: true,
+                  body: {
+                    active: true,
+                    ignored: false
+                  }
+                }, function(error, response, body) {
+                  return setTimeout(function() {
+                    return request.get({
+                      url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                      json: true
+                    }, function(error, response, body2) {
+                      _this.numRuns2 = body2.numberOfExcutions;
+                      return request.put({
+                        url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                        json: true,
+                        body: {
+                          active: false,
+                          ignored: false
+                        }
+                      }, function(error, response, body) {
+                        return done();
+                      });
+                    });
+                  }, 2500);
+                });
+              });
+            }, 2500);
+          };
+        })(this));
+      });
+      it("should not run at first", function() {
+        return assert.equal(this.numRuns1, 0);
+      });
+      return it("should run later", function() {
+        return assert.equal(this.numRuns2 > 0, true);
+      });
+    });
+    describe("create active job then set inactive, then active", function() {
+      var unsavedReq;
+      unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+      delete unsavedReq.cronCode;
+      before(function(done) {
+        this.timeout(25000);
+        return request.post({
+          url: baseURL + "/api/cronScriptRunner",
+          json: true,
+          body: unsavedReq
+        }, (function(_this) {
+          return function(error, response, body) {
+            return setTimeout(function() {
+              return request.get({
+                url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                json: true
+              }, function(error, response, body1) {
+                _this.numRuns1 = body1.numberOfExcutions;
+                return request.put({
+                  url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                  json: true,
+                  body: {
+                    active: false,
+                    ignored: false
+                  }
+                }, function(error, response, body) {
+                  return setTimeout(function() {
+                    return request.get({
+                      url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                      json: true
+                    }, function(error, response, body2) {
+                      _this.numRuns2 = body2.numberOfExcutions;
+                      return request.put({
+                        url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                        json: true,
+                        body: {
+                          active: true,
+                          ignored: false
+                        }
+                      }, function(error, response, body3) {
+                        return setTimeout(function() {
+                          return request.get({
+                            url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                            json: true
+                          }, function(error, response, body3) {
+                            _this.numRuns3 = body3.numberOfExcutions;
+                            return request.put({
+                              url: baseURL + "/api/cronScriptRunner/" + body.cronCode,
+                              json: true,
+                              body: {
+                                active: false,
+                                ignored: false
+                              }
+                            }, function(error, response, body) {
+                              return done();
+                            });
+                          });
+                        }, 2500);
+                      });
+                    });
+                  }, 2500);
+                });
+              });
+            }, 2500);
+          };
+        })(this));
+      });
+      it("should  run at first", function() {
+        return assert.equal(this.numRuns1 > 0, true);
+      });
+      it("should stop later", function() {
+        return assert.equal(this.numRuns1, this.numRuns2);
+      });
+      return it("should start after that", function() {
+        return assert.equal(this.numRuns3 > this.numRuns2, true);
+      });
+    });
+    return describe("Post bogus or missing cron spec", function() {
+      describe("missing schedule", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.schedule;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
+      });
+      describe("missing scriptType", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.scriptType;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
+      });
+      describe("missing scriptFile", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.scriptFile;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
+      });
+      describe("missing functionName", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.functionName;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
+      });
+      describe("missing scriptJSONData", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.scriptJSONData;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
+      });
+      return describe("missing active", function() {
+        var unsavedReq;
+        unsavedReq = copyJSON(cronScriptRunnerTestJSON.savedCronEntry);
+        delete unsavedReq.cronCode;
+        delete unsavedReq.active;
+        before(function(done) {
+          return request.post({
+            url: baseURL + "/api/cronScriptRunner",
+            json: true,
+            body: unsavedReq
+          }, (function(_this) {
+            return function(error, response, body) {
+              _this.serverError = error;
+              _this.responseJSON = body;
+              _this.serverResponse = response;
+              return done();
+            };
+          })(this));
+        });
+        return it("should return a success status code of 500", function() {
+          return assert.equal(this.serverResponse.statusCode, 500);
+        });
       });
     });
   });

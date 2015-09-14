@@ -61,13 +61,13 @@
   process.chdir(REL_PATH_TO_MODULES);
 
   ncp(TEMPLATE_SOURCE_Dir, moduleName, function(err) {
-    var files, fname, newName, _i, _len;
+    var files, fname, i, len, newName;
     if (err) {
       return console.error(err);
     }
     files = glob.sync(moduleName + "/**");
-    for (_i = 0, _len = files.length; _i < _len; _i++) {
-      fname = files[_i];
+    for (i = 0, len = files.length; i < len; i++) {
+      fname = files[i];
       if (!(fname.indexOf(TEMPLATE_REPLACE_STRING) < 0)) {
         newName = fname.replace(TEMPLATE_REPLACE_STRING, moduleName);
         fs.renameSync(fname, newName);

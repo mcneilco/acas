@@ -1,7 +1,7 @@
 (function() {
   (function(exports) {
     return exports.savedCronEntry = {
-      schedule: "0-59/10 * * * * *",
+      schedule: "0-59/2 * * * * *",
       scriptType: "R",
       scriptFile: "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R",
       functionName: "runRFunctionTest",

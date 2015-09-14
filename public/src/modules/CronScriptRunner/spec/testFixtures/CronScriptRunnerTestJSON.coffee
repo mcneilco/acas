@@ -2,9 +2,9 @@
 	#This is an example of a saved cron job spev that has not executed yet
 	exports.savedCronEntry =
 #The requestor must provide these attributes
-		schedule: "0-59/10 * * * * *"
+		schedule: "0-59/2 * * * * *"
 			#cron format string
-			#This example runs evey 10 seconds
+			#This example runs evey 2 seconds
 			#mocha tests depend on this timing example
 		scriptType: "R"
 			#only choice for now, later python, knime, etc

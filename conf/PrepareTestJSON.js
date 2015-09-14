@@ -1,5 +1,5 @@
 (function() {
-  var allCodeTableFiles, allCodeTableTypesAndKinds, allCodeTables, allCodeTablesFileName, allFiles, codeTable, codeTableFile, currentTypeAndKind, data, fileName, fs, glob, jsonallcodetablesstring, jsonfilestring, kind, newFileName, type, _, _i, _j, _k, _len, _len1, _len2, _ref;
+  var _, allCodeTableFiles, allCodeTableTypesAndKinds, allCodeTables, allCodeTablesFileName, allFiles, codeTable, codeTableFile, currentTypeAndKind, data, fileName, fs, glob, i, j, jsonallcodetablesstring, jsonfilestring, k, kind, len, len1, len2, newFileName, ref, type;
 
   fs = require('fs');
 
@@ -9,8 +9,8 @@
 
   allFiles = glob.sync("../public/javascripts/spec/testFixtures/*.js");
 
-  for (_i = 0, _len = allFiles.length; _i < _len; _i++) {
-    fileName = allFiles[_i];
+  for (i = 0, len = allFiles.length; i < len; i++) {
+    fileName = allFiles[i];
     data = require(fileName);
     jsonfilestring = JSON.stringify(data);
     newFileName = fileName.replace("testFixtures", "TestJSON");
@@ -26,12 +26,12 @@
 
   currentTypeAndKind = {};
 
-  for (_j = 0, _len1 = allCodeTableFiles.length; _j < _len1; _j++) {
-    fileName = allCodeTableFiles[_j];
+  for (j = 0, len1 = allCodeTableFiles.length; j < len1; j++) {
+    fileName = allCodeTableFiles[j];
     codeTableFile = require(fileName);
-    _ref = codeTableFile['codetableValues'];
-    for (_k = 0, _len2 = _ref.length; _k < _len2; _k++) {
-      codeTable = _ref[_k];
+    ref = codeTableFile['codetableValues'];
+    for (k = 0, len2 = ref.length; k < len2; k++) {
+      codeTable = ref[k];
       type = codeTable['type'];
       kind = codeTable['kind'];
       currentTypeAndKind['type'] = type;
