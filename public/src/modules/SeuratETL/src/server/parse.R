@@ -332,8 +332,13 @@ getHeaderLines <- function(seuratExperiment, format) {
   if (length(eDate) > 1) "problem with experiment results, more than one experiment date"
   assayDate <- as.character(eDate)[[1]]
   hl[[8]] <- paste("Assay Date", assayDate, sep=",")
-  hl[[9]] <- ","
-  hl[[10]] <- "Calculated Results,"
+  project <- unique(seuratExperiment$Project)
+  if (length(project) > 1) "problem with experiment results, more than one project"
+  if (!is.null(project)) {
+    hl <- c(hl, paste("Project", project, sep=","))
+  }
+  hl <- c(hl, ",")
+  hl <- c(hl, "Calculated Results,")
   return(hl)
 }
 
