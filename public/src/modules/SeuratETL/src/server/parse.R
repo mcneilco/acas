@@ -206,7 +206,7 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   setkeyv(exptNames, c(by, "Assay.Protocol.Old"))
   setkeyv(experimentNames, c(by, "Assay.Protocol"))
   outData <- exptNames[experimentNames]
-  setkey(outData,originalOrder)
+  setkey(outData,i.originalOrder)
   outData[ , outNames, with = FALSE]
 }
 
