@@ -10,7 +10,10 @@ class window.ModuleLauncher extends Backbone.Model
 		autoLaunchName: null
 
 	requestActivation: ->
+		console.log "request activation"
 		if @get('menuName') is "Gene ID Query"
+			console.log @
+			console.log window.AppLaunchParams.moduleLaunchParams
 			window.open("/GeneIDQuery",'_blank');
 		else
 			@trigger 'activationRequested', @
@@ -113,6 +116,7 @@ class window.ModuleLauncherMenuListController extends Backbone.View
 		@trigger 'clearSelected', who
 
 	launchModule: (moduleName) ->
+		console.log "launchModule"
 		#Note that if the names don't match, this fails silently
 		selector = '.bv_launch_'+moduleName
 		@$(selector).click()

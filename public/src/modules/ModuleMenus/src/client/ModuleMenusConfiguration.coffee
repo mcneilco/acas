@@ -32,6 +32,11 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "PrimaryScreenExperimentController"
 		autoLaunchName:"primary_screen_experiment"
 	,
+		isHeader: false
+		menuName: "Gene ID Query"
+#		mainControllerClassName: "PrimaryScreenExperimentController"
+		autoLaunchName:"geneidquery"
+	,
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"cationic_block"

@@ -34,6 +34,10 @@
       autoLaunchName: "primary_screen_experiment"
     }, {
       isHeader: false,
+      menuName: "Gene ID Query",
+      autoLaunchName: "geneidquery"
+    }, {
+      isHeader: false,
       menuName: "Example Thing",
       mainControllerClassName: "ExampleThingController",
       autoLaunchName: "cationic_block"

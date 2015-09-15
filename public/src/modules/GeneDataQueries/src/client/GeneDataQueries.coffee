@@ -149,6 +149,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@queryInputController.on 'search-requested', @handleSearchRequested
 		@queryInputController.on 'requestAdvancedMode', @requestFilterExperiments
 		@queryInputController.render()
+#		@$('.bv_inputView').hide()
+#		@handleSearchRequested('CMPD-0000001-01A','unassigned')
 		@setQueryOnlyMode()
 		@dataAdded = false
 
@@ -156,6 +158,8 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@trigger 'requestAdvancedMode', searchStr, aggregate, displayName
 
 	handleSearchRequested: (searchStr, displayName) =>
+		console.log searchStr
+		console.log displayName
 		@displayName = displayName
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
@@ -164,6 +168,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@fromSearchtoCodes()
 
 	fromSearchtoCodes: ->
+		console.log "from search to codes, 167"
 		searchString = @lastSearch
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
 		searchTerms = _.filter(searchTerms, (x) -> x != "")
@@ -814,6 +819,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 
 	fromSearchtoCodes: ->
+		console.log "from search to codes, 818"
 		@displayName = @model.get('displayName')
 		searchString = @model.get('searchStr')
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
@@ -981,6 +987,10 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			experimentCodeList: @experimentList
 			searchFilters: searchFilters
 			aggregate: @model.get('aggregate')
+
+		console.log queryParams
+
+		queryParams
 
 	fromFiltersToResults: ->
 		@$('.bv_searchStatusDropDown').modal
@@ -1198,6 +1208,8 @@ class window.AddDataToReport extends Backbone.View
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
+	moduleLaunchName: 'geneidquery'
+
 	events:
 		"click .bv_next": "handleNextClicked"
 		"click .bv_toResults": "handleResultsClicked"
@@ -1209,6 +1221,10 @@ class window.GeneIDQueryAppController extends Backbone.View
 		$(@el).html @template()
 		$(@el).addClass 'GeneIDQueryAppController'
 		@startBasicQueryWizard()
+		console.log "initialized gene id query app controller"
+		console.log window.AppLaunchParams
+#		@aerqc.$('.bv_inputView').hide()
+#		@aerqc.handleSearchRequested('CMPD-0000001-01A','unassigned')
 
 	startBasicQueryWizard: =>
 		@aerqc = new GeneIDQuerySearchController

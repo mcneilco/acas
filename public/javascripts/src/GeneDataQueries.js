@@ -252,6 +252,8 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr, displayName) {
+      console.log(searchStr);
+      console.log(displayName);
       this.displayName = displayName;
       this.lastSearch = searchStr;
       this.$('.bv_searchStatusDropDown').modal({
@@ -263,6 +265,7 @@
 
     GeneIDQuerySearchController.prototype.fromSearchtoCodes = function() {
       var j, l, len, len1, requests, results1, searchString, searchTerms, term;
+      console.log("from search to codes, 167");
       searchString = this.lastSearch;
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
       searchTerms = _.filter(searchTerms, function(x) {
@@ -1177,6 +1180,7 @@
 
     AdvancedExperimentResultsQueryController.prototype.fromSearchtoCodes = function() {
       var j, l, len, len1, requests, results1, searchString, searchTerms, term;
+      console.log("from search to codes, 818");
       this.displayName = this.model.get('displayName');
       searchString = this.model.get('searchStr');
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
@@ -1416,12 +1420,14 @@
         advancedFilter: ""
       };
       searchFilters = this.erfc != null ? this.erfc.getSearchFilters() : noFilters;
-      return queryParams = {
+      queryParams = {
         batchCodes: this.searchCodes,
         experimentCodeList: this.experimentList,
         searchFilters: searchFilters,
         aggregate: this.model.get('aggregate')
       };
+      console.log(queryParams);
+      return queryParams;
     };
 
     AdvancedExperimentResultsQueryController.prototype.fromFiltersToResults = function() {
@@ -1752,6 +1758,8 @@
 
     GeneIDQueryAppController.prototype.template = _.template($("#GeneIDQueryAppView").html());
 
+    GeneIDQueryAppController.prototype.moduleLaunchName = 'geneidquery';
+
     GeneIDQueryAppController.prototype.events = {
       "click .bv_next": "handleNextClicked",
       "click .bv_toResults": "handleResultsClicked",
@@ -1763,7 +1771,9 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       $(this.el).addClass('GeneIDQueryAppController');
-      return this.startBasicQueryWizard();
+      this.startBasicQueryWizard();
+      console.log("initialized gene id query app controller");
+      return console.log(window.AppLaunchParams);
     };
 
     GeneIDQueryAppController.prototype.startBasicQueryWizard = function() {
