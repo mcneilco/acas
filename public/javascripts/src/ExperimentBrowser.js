@@ -250,7 +250,7 @@
       $(".bv_experimentTableController").addClass("hide");
       $(".bv_errorOccurredPerformingSearch").addClass("hide");
       experimentSearchTerm = $.trim(this.$(".bv_experimentSearchTerm").val());
-      $(".bv_searchTerm").val("");
+      $(".bv_exptSearchTerm").val("");
       if (experimentSearchTerm !== "") {
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
         $(".bv_experimentBrowserSearchInstructions").addClass("hide");
@@ -259,7 +259,7 @@
           return $(".bv_moreSpecificExperimentSearchNeeded").removeClass("hide");
         } else {
           $(".bv_searchingExperimentsMessage").removeClass("hide");
-          $(".bv_searchTerm").html(experimentSearchTerm);
+          $(".bv_exptSearchTerm").html(experimentSearchTerm);
           $(".bv_moreSpecificExperimentSearchNeeded").addClass("hide");
           return this.doSearch(experimentSearchTerm);
         }
@@ -330,7 +330,7 @@
     };
 
     ExperimentRowSummaryController.prototype.render = function() {
-      var date, experimentBestName, toDisplay;
+      var date, experimentBestName, protocolBestName, toDisplay;
       date = this.model.getCompletionDate();
       if (date.isNew()) {
         date = "not recorded";
@@ -341,10 +341,15 @@
       if (experimentBestName) {
         experimentBestName = this.model.get('lsLabels').pickBestName().get('labelText');
       }
+      protocolBestName = this.model.get('protocol').get('lsLabels').pickBestName();
+      if (protocolBestName) {
+        protocolBestName = this.model.get('protocol').get('lsLabels').pickBestName().get('labelText');
+      }
       toDisplay = {
         experimentName: experimentBestName,
         experimentCode: this.model.get('codeName'),
-        protocolName: this.model.get('protocol').get("codeName"),
+        protocolCode: this.model.get('protocol').get("codeName"),
+        protocolName: protocolBestName,
         scientist: this.model.getScientist().get('codeValue'),
         status: this.model.getStatus().get("codeValue"),
         analysisStatus: this.model.getAnalysisStatus().get("codeValue"),
@@ -382,12 +387,18 @@
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(exp) {
-            var ersc;
-            ersc = new ExperimentRowSummaryController({
-              model: exp
-            });
-            ersc.on("gotClick", _this.selectedRowChanged);
-            return _this.$("tbody").append(ersc.render().el);
+            var ersc, hideStatusesList, ref;
+            hideStatusesList = null;
+            if (((ref = window.conf.entity) != null ? ref.hideStatuses : void 0) != null) {
+              hideStatusesList = window.conf.entity.hideStatuses;
+            }
+            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(exp.getStatus().get('codeValue')) > -1 && !(UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])))) {
+              ersc = new ExperimentRowSummaryController({
+                model: exp
+              });
+              ersc.on("gotClick", _this.selectedRowChanged);
+              return _this.$("tbody").append(ersc.render().el);
+            }
           };
         })(this));
         this.$("table").dataTable({

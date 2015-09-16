@@ -185,7 +185,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				attribute: 'negativeControlBatch'
 				message: "A registered batch number must be provided."
 		negativeControlConc = @get('negativeControl').get('concentration')
-		if _.isNaN(negativeControlConc) || negativeControlConc is undefined || negativeControlConc is null or negativeControlConc is ""
+		if _.isNaN(negativeControlConc) or negativeControlConc is undefined or negativeControlConc is null or negativeControlConc is ""
 			errors.push
 				attribute: 'negativeControlConc'
 				message: "Negative control conc must be set"
@@ -411,10 +411,6 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-	clear: =>
-		@model.trigger 'amDirty'
-		@model.destroy()
-		@attributeChanged()
 
 
 class window.TransformationRuleController extends AbstractFormController
@@ -806,7 +802,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@attributeChanged()
 		volumeType = @$("input[name='bv_volumeType']:checked").val()
 		if volumeType == "dilution"
-			@handleDilutionFactorChanged()
+			@handleDilutionFactorChanged(true)
 		else
 			@handleTransferVolumeChanged()
 
@@ -816,12 +812,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		dilutionFactor = @model.autocalculateVolumes()
 		@$('.bv_dilutionFactor').val(dilutionFactor)
 
-	handleDilutionFactorChanged: =>
+	handleDilutionFactorChanged: (indirectChange) =>
+		#indirectChange = true if the dilution factor input is being changed because transfer or assay volume is changed
 		@attributeChanged()
 		transferVolume = @model.autocalculateVolumes()
 		@$('.bv_transferVolume').val(transferVolume)
-		if transferVolume=="" or transferVolume == null
-			@$('.bv_dilutionFactor').val(@model.get('dilutionFactor'))
+		if indirectChange is true
+			if transferVolume=="" or transferVolume == null
+				@$('.bv_dilutionFactor').val(@model.get('dilutionFactor'))
 
 
 	handleThresholdTypeChanged: =>
@@ -845,7 +843,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		unless skipUpdate is true
 			@attributeChanged()
 
-	handleVolumeTypeChanged: =>
+	handleVolumeTypeChanged: (skipUpdate) =>
 		volumeType = @$("input[name='bv_volumeType']:checked").val()
 		@model.set volumeType: volumeType
 		if volumeType=="transfer"
@@ -855,8 +853,9 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_transferVolume').attr('disabled','disabled')
 			@$('.bv_dilutionFactor').removeAttr('disabled')
 		if @model.get('transferVolume') == "" or @model.get('assayVolume')== ""
-			@handleDilutionFactorChanged()
-		@attributeChanged()
+			@handleDilutionFactorChanged(true)
+		unless skipUpdate is true
+			@attributeChanged()
 
 	handleMatchReadNameChanged: (skipUpdate) =>
 		matchReadName = @$('.bv_matchReadName').is(":checked")
@@ -870,6 +869,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @$('.bv_matchReadName').is(":checked")
 			@$('.bv_readPosition').attr 'disabled','disabled'
 		@$('.bv_loadAnother').prop('disabled', false)
+		if @model.get('volumeType') is "transfer"
+			@$('.bv_dilutionFactor').attr 'disabled', 'disabled'
+		else
+			@$('.bv_transferVolume').attr 'disabled', 'disabled'
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
@@ -1263,7 +1266,7 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@model.set protocol: new PrimaryScreenProtocol
 			codeName: code
 		@setupExperimentBaseController()
-		@experimentBaseController.getAndSetProtocol(code)
+		@experimentBaseController.getAndSetProtocol(code, true)
 
 	completeInitialization: =>
 		unless @model?

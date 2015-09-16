@@ -20,6 +20,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   if(nrow(inputColumnTable[calculatedRead==TRUE])>0) {
     for (calculation in inputColumnTable[calculatedRead==TRUE]$userReadName) {
       if(calculation == "Calc: (R1/R2)*100") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        
         if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
                                               get(inputColumnTable[userReadOrder==2]$newActivityColName)) 
@@ -29,6 +31,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
       } else if(calculation == "Calc: (R2/R1)*100") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
                                               get(inputColumnTable[userReadOrder==1]$newActivityColName)) 
@@ -38,6 +42,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
       } else if(calculation == "Calc: R1/R2") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        
         if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==1]$newActivityColName) /
                                               get(inputColumnTable[userReadOrder==2]$newActivityColName))]
@@ -46,6 +52,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
       } else if(calculation == "Calc: R2/R1") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        
         if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
           inputDataTable[ , calculatedRead := (get(inputColumnTable[userReadOrder==2]$newActivityColName) /
                                               get(inputColumnTable[userReadOrder==1]$newActivityColName))]
@@ -54,6 +62,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
       } else if(calculation == "Calc: R1/Heavy Atom Count") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 1)
+        
         if(!inputColumnTable[userReadOrder==1]$calculatedRead) {
           # Adds a new "read" so that this will one of the columns that are kept
           hacReadOrder <- nrow(inputColumnTable)+1

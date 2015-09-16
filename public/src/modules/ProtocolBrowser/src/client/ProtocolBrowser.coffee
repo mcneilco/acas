@@ -33,7 +33,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 		$(".bv_protocolTableController").addClass "hide"
 		$(".bv_errorOccurredPerformingSearch").addClass "hide"
 		protocolSearchTerm = $.trim(@$(".bv_protocolSearchTerm").val())
-		$(".bv_searchTerm").val ""
+		$(".bv_protSearchTerm").val ""
 		if protocolSearchTerm isnt ""
 			$(".bv_noMatchesFoundMessage").addClass "hide"
 			$(".bv_protocolBrowserSearchInstructions").addClass "hide"
@@ -42,7 +42,7 @@ class window.ProtocolSimpleSearchController extends AbstractFormController
 				$(".bv_moreSpecificProtocolSearchNeeded").removeClass "hide"
 			else
 				$(".bv_searchingProtocolsMessage").removeClass "hide"
-				$(".bv_searchTerm").html protocolSearchTerm
+				$(".bv_protSearchTerm").html protocolSearchTerm
 				$(".bv_moreSpecificProtocolSearchNeeded").addClass "hide"
 				@doSearch protocolSearchTerm
 
@@ -119,11 +119,16 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				prsc = new ProtocolRowSummaryController
-					model: prot
-				prsc.on "gotClick", @selectedRowChanged
+				hideStatusesList
+				if window.conf.entity?.hideStatuses?
+					hideStatusesList = window.conf.entity.hideStatuses
+				#non-admin users can't see protocols with statuses in hideStatusesList
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+					prsc = new ProtocolRowSummaryController
+						model: prot
+					prsc.on "gotClick", @selectedRowChanged
 
-				@$("tbody").append prsc.render().el
+					@$("tbody").append prsc.render().el
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
 		@

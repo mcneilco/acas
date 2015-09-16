@@ -1,14 +1,14 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    __hasProp = {}.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
-  window.Protocol = (function(_super) {
-    __extends(Protocol, _super);
+  window.Protocol = (function(superClass) {
+    extend(Protocol, superClass);
 
     function Protocol() {
-      this.duplicateEntity = __bind(this.duplicateEntity, this);
-      this.parse = __bind(this.parse, this);
+      this.duplicateEntity = bind(this.duplicateEntity, this);
+      this.parse = bind(this.parse, this);
       return Protocol.__super__.constructor.apply(this, arguments);
     }
 
@@ -161,8 +161,8 @@
 
   })(BaseEntity);
 
-  window.ProtocolList = (function(_super) {
-    __extends(ProtocolList, _super);
+  window.ProtocolList = (function(superClass) {
+    extend(ProtocolList, superClass);
 
     function ProtocolList() {
       return ProtocolList.__super__.constructor.apply(this, arguments);
@@ -174,19 +174,23 @@
 
   })(Backbone.Collection);
 
-  window.ProtocolBaseController = (function(_super) {
-    __extends(ProtocolBaseController, _super);
+  window.ProtocolBaseController = (function(superClass) {
+    extend(ProtocolBaseController, superClass);
 
     function ProtocolBaseController() {
-      this.handleAssayTreeRuleChanged = __bind(this.handleAssayTreeRuleChanged, this);
-      this.handleAssayPrincipleChanged = __bind(this.handleAssayPrincipleChanged, this);
-      this.handleAssayStageChanged = __bind(this.handleAssayStageChanged, this);
-      this.handleCreationDateIconClicked = __bind(this.handleCreationDateIconClicked, this);
-      this.handleCreationDateChanged = __bind(this.handleCreationDateChanged, this);
-      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
-      this.render = __bind(this.render, this);
-      this.completeInitialization = __bind(this.completeInitialization, this);
-      this.initialize = __bind(this.initialize, this);
+      this.handleAssayTreeRuleChanged = bind(this.handleAssayTreeRuleChanged, this);
+      this.handleAssayPrincipleChanged = bind(this.handleAssayPrincipleChanged, this);
+      this.handleAssayStageChanged = bind(this.handleAssayStageChanged, this);
+      this.handleCreationDateIconClicked = bind(this.handleCreationDateIconClicked, this);
+      this.handleCreationDateChanged = bind(this.handleCreationDateChanged, this);
+      this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
+      this.handleConfirmDeleteProtocolClicked = bind(this.handleConfirmDeleteProtocolClicked, this);
+      this.handleCloseProtocolModal = bind(this.handleCloseProtocolModal, this);
+      this.handleDeleteStatusChosen = bind(this.handleDeleteStatusChosen, this);
+      this.modelSyncCallback = bind(this.modelSyncCallback, this);
+      this.render = bind(this.render, this);
+      this.completeInitialization = bind(this.completeInitialization, this);
+      this.initialize = bind(this.initialize, this);
       return ProtocolBaseController.__super__.constructor.apply(this, arguments);
     }
 
@@ -201,7 +205,10 @@
         "change .bv_assayStage": "handleAssayStageChanged",
         "keyup .bv_assayPrinciple": "handleAssayPrincipleChanged",
         "change .bv_creationDate": "handleCreationDateChanged",
-        "click .bv_creationDateIcon": "handleCreationDateIconClicked"
+        "click .bv_creationDateIcon": "handleCreationDateIconClicked",
+        "click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal",
+        "click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked",
+        "click .bv_cancelDelete": "handleCancelDeleteClicked"
       });
     };
 
@@ -343,6 +350,56 @@
         }),
         selectedCode: this.model.getAssayStage().get('codeValue')
       });
+    };
+
+    ProtocolBaseController.prototype.handleDeleteStatusChosen = function() {
+      this.$(".bv_deleteButtons").removeClass("hide");
+      this.$(".bv_okayButton").addClass("hide");
+      this.$(".bv_errorDeletingProtocolMessage").addClass("hide");
+      this.$(".bv_deleteWarningMessage").removeClass("hide");
+      this.$(".bv_deletingStatusIndicator").addClass("hide");
+      this.$(".bv_experimentDeletedSuccessfullyMessage").addClass("hide");
+      this.$(".bv_confirmDeleteProtocolModal").removeClass("hide");
+      return this.$('.bv_confirmDeleteProtocolModal').modal({
+        backdrop: 'static'
+      });
+    };
+
+    ProtocolBaseController.prototype.handleCloseProtocolModal = function() {
+      return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
+    };
+
+    ProtocolBaseController.prototype.handleConfirmDeleteProtocolClicked = function() {
+      this.$(".bv_deleteWarningMessage").addClass("hide");
+      this.$(".bv_deletingStatusIndicator").removeClass("hide");
+      this.$(".bv_deleteButtons").addClass("hide");
+      this.$(".bv_protocolCodeName").html(this.model.get('codeName'));
+      return $.ajax({
+        url: "/api/protocols/browser/" + (this.model.get("id")),
+        type: 'DELETE',
+        success: (function(_this) {
+          return function(result) {
+            _this.$(".bv_okayButton").removeClass("hide");
+            _this.$(".bv_deletingStatusIndicator").addClass("hide");
+            _this.$(".bv_protocolDeletedSuccessfullyMessage").removeClass("hide");
+            _this.handleValueChanged("Status", "deleted");
+            _this.updateEditable();
+            return _this.trigger('amClean');
+          };
+        })(this),
+        error: (function(_this) {
+          return function(result) {
+            _this.$(".bv_okayButton").removeClass("hide");
+            _this.$(".bv_deletingStatusIndicator").addClass("hide");
+            return _this.$(".bv_errorDeletingProtocolMessage").removeClass("hide");
+          };
+        })(this)
+      });
+    };
+
+    ProtocolBaseController.prototype.handleCancelDeleteClicked = function() {
+      this.$(".bv_confirmDeleteProtocolModal").modal('hide');
+      return this.statusListController.setSelectedCode(this.model.getStatus().get('codeValue'));
     };
 
     ProtocolBaseController.prototype.handleCreationDateChanged = function() {

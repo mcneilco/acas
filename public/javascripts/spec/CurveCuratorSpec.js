@@ -641,6 +641,28 @@
             });
           });
         });
+        describe("approve uncurated", function() {
+          beforeEach(function() {
+            runs(function() {
+              this.uncuratedCurvesAtStart = this.ccc.curveListController.toRender.filter(function(cs) {
+                return cs.get("userFlagStatus") === "";
+              });
+              return this.ccc.$('.bv_approve_uncurated').click();
+            });
+            return waitsFor((function(_this) {
+              return function() {
+                _this.uncuratedCurvesAfterButtonClick = _this.ccc.curveListController.csControllers.filter(function(cs) {
+                  return cs.model.get("userFlagStatus") === "";
+                });
+                return _this.uncuratedCurvesAfterButtonClick.length === 0;
+              };
+            })(this));
+          });
+          return it("should approve all curves that have not been curated", function() {
+            expect(this.uncuratedCurvesAtStart.length) > 0;
+            return expect(this.uncuratedCurvesAfterButtonClick.length) === 0;
+          });
+        });
         describe("filter option select display", function() {
           it("filterOption select should populate with options", function() {
             return runs(function() {

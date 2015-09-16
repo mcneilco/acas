@@ -45,13 +45,13 @@
 	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	if (routeSet_3.setupAPIRoutes) {
 		routeSet_3.setupAPIRoutes(app); }
-	routeSet_4 = require("./routes/CodeTableServiceRoutes.js");
+	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
 	if (routeSet_4.setupAPIRoutes) {
 		routeSet_4.setupAPIRoutes(app); }
-	routeSet_5 = require("./routes/ControllerRedirectRoutes.js");
+	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
 	if (routeSet_5.setupAPIRoutes) {
 		routeSet_5.setupAPIRoutes(app); }
-	routeSet_6 = require("./routes/CronScriptRunnerRoutes.js");
+	routeSet_6 = require("./routes/ControllerRedirectRoutes.js");
 	if (routeSet_6.setupAPIRoutes) {
 		routeSet_6.setupAPIRoutes(app); }
 	routeSet_7 = require("./routes/CurveCuratorRoutes.js");
@@ -90,36 +90,39 @@
 	routeSet_18 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_18.setupAPIRoutes) {
 		routeSet_18.setupAPIRoutes(app); }
-	routeSet_19 = require("./routes/PrimaryScreenProtocolRoutes.js");
+	routeSet_19 = require("./routes/PreferredEntityCodeService.js");
 	if (routeSet_19.setupAPIRoutes) {
 		routeSet_19.setupAPIRoutes(app); }
-	routeSet_20 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_20 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	if (routeSet_20.setupAPIRoutes) {
 		routeSet_20.setupAPIRoutes(app); }
-	routeSet_21 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_21 = require("./routes/PrimaryScreenRoutes.js");
 	if (routeSet_21.setupAPIRoutes) {
 		routeSet_21.setupAPIRoutes(app); }
-	routeSet_22 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_22 = require("./routes/ProjectServiceRoutes.js");
 	if (routeSet_22.setupAPIRoutes) {
 		routeSet_22.setupAPIRoutes(app); }
-	routeSet_23 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_23 = require("./routes/ProtocolServiceRoutes.js");
 	if (routeSet_23.setupAPIRoutes) {
 		routeSet_23.setupAPIRoutes(app); }
-	routeSet_24 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_24 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	if (routeSet_24.setupAPIRoutes) {
 		routeSet_24.setupAPIRoutes(app); }
-	routeSet_25 = require("./routes/SetupRoutes.js");
+	routeSet_25 = require("./routes/ServerUtilityFunctions.js");
 	if (routeSet_25.setupAPIRoutes) {
 		routeSet_25.setupAPIRoutes(app); }
-	routeSet_26 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_26 = require("./routes/SetupRoutes.js");
 	if (routeSet_26.setupAPIRoutes) {
 		routeSet_26.setupAPIRoutes(app); }
-	routeSet_27 = require("./routes/ThingServiceRoutes.js");
+	routeSet_27 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
 	if (routeSet_27.setupAPIRoutes) {
 		routeSet_27.setupAPIRoutes(app); }
-	routeSet_28 = require("./routes/ValidateCloneNameService.js");
+	routeSet_28 = require("./routes/ThingServiceRoutes.js");
 	if (routeSet_28.setupAPIRoutes) {
 		routeSet_28.setupAPIRoutes(app); }
+	routeSet_29 = require("./routes/ValidateCloneNameService.js");
+	if (routeSet_29.setupAPIRoutes) {
+		routeSet_29.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));

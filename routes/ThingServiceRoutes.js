@@ -120,7 +120,7 @@
         }
       }
       checkFilesAndUpdate = function(thing) {
-        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, _i, _len, _results;
+        var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results1;
         fileVals = serverUtilityFunctions.getFileValuesFromEntity(thing, false);
         filesToSave = fileVals.length;
         completeThingUpdate = function(thingToUpdate) {
@@ -139,13 +139,13 @@
         };
         if (filesToSave > 0) {
           prefix = serverUtilityFunctions.getPrefixFromEntityCode(thing.codeName);
-          _results = [];
-          for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-            fv = fileVals[_i];
+          results1 = [];
+          for (i = 0, len = fileVals.length; i < len; i++) {
+            fv = fileVals[i];
             console.log("updating file");
-            _results.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
+            results1.push(csUtilities.relocateEntityFile(fv, prefix, thing.codeName, fileSaveCompleted));
           }
-          return _results;
+          return results1;
         } else {
           return resp.json(thing);
         }
@@ -189,7 +189,7 @@
   };
 
   exports.putThing = function(req, resp) {
-    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, prefix, thingToSave, _i, _len, _results;
+    var completeThingUpdate, fileSaveCompleted, fileVals, filesToSave, fv, i, len, prefix, results1, thingToSave;
     thingToSave = req.body;
     fileVals = serverUtilityFunctions.getFileValuesFromEntity(thingToSave, true);
     filesToSave = fileVals.length;
@@ -209,16 +209,16 @@
     };
     if (filesToSave > 0) {
       prefix = serverUtilityFunctions.getPrefixFromEntityCode(req.body.codeName);
-      _results = [];
-      for (_i = 0, _len = fileVals.length; _i < _len; _i++) {
-        fv = fileVals[_i];
+      results1 = [];
+      for (i = 0, len = fileVals.length; i < len; i++) {
+        fv = fileVals[i];
         if (fv.id == null) {
-          _results.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
+          results1.push(csUtilities.relocateEntityFile(fv, prefix, req.body.codeName, fileSaveCompleted));
         } else {
-          _results.push(void 0);
+          results1.push(void 0);
         }
       }
-      return _results;
+      return results1;
     } else {
       return completeThingUpdate();
     }
@@ -299,6 +299,75 @@
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/getcomposites/" + req.params.componentCode;
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+    }
+  };
+
+  exports.getThingCodesFromNamesOrCodes = function(codeRequest, callback) {
+    var baseurl, config, i, len, postBody, ref, req, request, res, response, results, url;
+    console.log("got to getThingCodesFormNamesOrCodes");
+    if (global.specRunnerTestmode) {
+      results = [];
+      ref = codeRequest.requests;
+      for (i = 0, len = ref.length; i < len; i++) {
+        req = ref[i];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("ambiguous") > -1) {
+          res.referenceName = "";
+          res.preferredName = "";
+        } else if (req.requestName.indexOf("name") > -1) {
+          res.referenceName = "GENE1111";
+          res.preferredName = "1111";
+        } else if (req.requestName.indexOf("1111") > -1) {
+          res.referenceName = "GENE1111";
+          res.preferredName = "1111";
+        } else {
+          res.referenceName = req.requestName;
+          res.preferredName = req.requestName;
+        }
+        results.push(res);
+      }
+      response = {
+        thingType: codeRequest.thingType,
+        thingKind: codeRequest.thingKind,
+        results: results
+      };
+      return callback(response);
+    } else {
+      config = require('../conf/compiled/conf.js');
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/getCodeNameFromNameRequest?";
+      url = baseurl + ("thingType=" + codeRequest.thingType + "&thingKind=" + codeRequest.thingKind);
+      postBody = {
+        requests: codeRequest.requests
+      };
+      console.log(postBody);
+      console.log(url);
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: url,
+        body: postBody,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          console.log(response.statusCode);
+          console.log(json);
+          if (!error && !json.error) {
+            return callback({
+              thingType: codeRequest.thingType,
+              thingKind: codeRequest.thingKind,
+              results: json.results
+            });
+          } else {
+            console.log('got ajax error trying to lookup lsThing name');
+            console.log(error);
+            console.log(jsonthing);
+            console.log(response);
+            return callback(json);
+          }
+        };
+      })(this));
     }
   };
 

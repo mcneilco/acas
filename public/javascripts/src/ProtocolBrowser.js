@@ -69,7 +69,7 @@
       $(".bv_protocolTableController").addClass("hide");
       $(".bv_errorOccurredPerformingSearch").addClass("hide");
       protocolSearchTerm = $.trim(this.$(".bv_protocolSearchTerm").val());
-      $(".bv_searchTerm").val("");
+      $(".bv_protSearchTerm").val("");
       if (protocolSearchTerm !== "") {
         $(".bv_noMatchesFoundMessage").addClass("hide");
         $(".bv_protocolBrowserSearchInstructions").addClass("hide");
@@ -78,7 +78,7 @@
           return $(".bv_moreSpecificProtocolSearchNeeded").removeClass("hide");
         } else {
           $(".bv_searchingProtocolsMessage").removeClass("hide");
-          $(".bv_searchTerm").html(protocolSearchTerm);
+          $(".bv_protSearchTerm").html(protocolSearchTerm);
           $(".bv_moreSpecificProtocolSearchNeeded").addClass("hide");
           return this.doSearch(protocolSearchTerm);
         }
@@ -198,12 +198,18 @@
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(prot) {
-            var prsc;
-            prsc = new ProtocolRowSummaryController({
-              model: prot
-            });
-            prsc.on("gotClick", _this.selectedRowChanged);
-            return _this.$("tbody").append(prsc.render().el);
+            hideStatusesList;
+            var hideStatusesList, prsc, ref;
+            if (((ref = window.conf.entity) != null ? ref.hideStatuses : void 0) != null) {
+              hideStatusesList = window.conf.entity.hideStatuses;
+            }
+            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(prot.getStatus().get('codeValue')) > -1 && !UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
+              prsc = new ProtocolRowSummaryController({
+                model: prot
+              });
+              prsc.on("gotClick", _this.selectedRowChanged);
+              return _this.$("tbody").append(prsc.render().el);
+            }
           };
         })(this));
         this.$("table").dataTable({

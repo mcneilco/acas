@@ -341,12 +341,12 @@
       var controllerClass, curveFitClasses, curvefitClassesCollection, drap, drapType, drapcType, mfp, parametersClass;
       curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
       curveFitClasses = curvefitClassesCollection.findWhere({
-        codeValue: modelFitType
+        code: modelFitType
       });
       if (curveFitClasses != null) {
         parametersClass = curveFitClasses.get('parametersClass');
         drapType = window[parametersClass];
-        controllerClass = curveFitClasses.get('controllerClass');
+        controllerClass = curveFitClasses.get('parametersController');
         drapcType = window[controllerClass];
       } else {
         drapType = 'unassigned';

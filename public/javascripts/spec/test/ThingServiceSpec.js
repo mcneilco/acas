@@ -25,7 +25,7 @@
   };
 
   describe("Thing Service testing", function() {
-    return describe("Thing CRUD testing", function() {
+    describe("Thing CRUD testing", function() {
       describe("when fetching Thing by codename", function() {
         before(function(done) {
           return request("http://localhost:" + config.all.server.nodeapi.port + "/api/things/parent/thing/PT00001", (function(_this) {
@@ -270,6 +270,45 @@
         return it("should return a thing", function() {
           return assert.equal(this.responseJSON, true);
         });
+      });
+    });
+    return describe("Function to lookup codeNames by names or codeNames", function() {
+      before(function(done) {
+        var preferredThingService, requestData;
+        global.specRunnerTestmode = true;
+        preferredThingService = require("../../../../routes/ThingServiceRoutes.js");
+        requestData = {
+          thingType: "parent",
+          thingKind: "gene",
+          requests: [
+            {
+              requestName: "GENE1234"
+            }, {
+              requestName: "some Gene name"
+            }, {
+              requestName: "ambiguousName"
+            }
+          ]
+        };
+        return preferredThingService.getThingCodesFormNamesOrCodes(requestData, (function(_this) {
+          return function(codeResponse) {
+            _this.codeResponse = codeResponse;
+            console.log(_this.codeResponse);
+            return done();
+          };
+        })(this));
+      });
+      it("should return three responses", function() {
+        return assert.equal(this.codeResponse.results.length, 3);
+      });
+      it("should return the matching result in the first response", function() {
+        return assert.equal(this.codeResponse.results[0].preferredName, "GENE1234");
+      });
+      it("should return the code matching the name in the second response", function() {
+        return assert.equal(this.codeResponse.results[1].preferredName, "GENE1111");
+      });
+      return it("should return the no result in the third response", function() {
+        return assert.equal(this.codeResponse.results[2].preferredName, "");
       });
     });
   });

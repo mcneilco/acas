@@ -1,7 +1,11 @@
 #!/bin/sh
+for f in /mnt/environments/*/*.env; do source $f;export $(cut -d= -f1 $f); done
 cd conf
-#cp config-docker.properties config.properties
 node PrepareConfigFiles.js docker
+until $(curl --output /dev/null --silent --head --fail "http://tomcat:8080"); do
+    printf '.'
+    sleep 1
+done
 node PrepareModuleConfJSON.js
 cd ..
 sh bin/acas.sh start

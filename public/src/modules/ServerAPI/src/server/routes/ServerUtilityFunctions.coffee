@@ -1,6 +1,5 @@
 _ = require 'underscore'
 
-
 basicRScriptPreValidation = (payload) ->
 	result =
 		hasError: false
@@ -19,9 +18,6 @@ basicRScriptPreValidation = (payload) ->
 	return result
 
 exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
-	exports.runRFunctionOutsideRequest request.body.user, request.body, rScript, rFunction, returnFunction, preValidationFunction 
-	
-exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	rScriptCommand = config.all.server.rscript
@@ -31,11 +27,11 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		rScriptCommand = "Rscript"
 
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(argumentsJSON), username
+	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
-		preValErrors = preValidationFunction.call @, argumentsJSON
+		preValErrors = preValidationFunction.call @, request.body
 	else
-		preValErrors = basicRScriptPreValidation argumentsJSON
+		preValErrors = basicRScriptPreValidation request.body
 
 	if preValErrors.hasError
 		console.log preValErrors
@@ -49,7 +45,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 	rCommandFile = new Tempfile
 	requestJSONFile = new Tempfile
 	stdoutFile =  new Tempfile
-	requestJSONFile.writeFile JSON.stringify(argumentsJSON), =>
+	requestJSONFile.writeFile JSON.stringify(request.body), =>
 
 		rCommand = 'tryCatch({ '
 		rCommand += '	out <- capture.output(.libPaths("r_libs")); '
@@ -80,21 +76,107 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 							experimentId: null
 							results: null
 						returnFunction.call JSON.stringify(result)
-						csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), username
+						csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), request.body.user
 					else
 						returnFunction.call @, stdoutFileText
 						try
 							if stdoutFileText.indexOf '"hasError":true' > -1
-								csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdoutFileText, username
+								csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, stdoutFileText, request.body.user
 							else
-								csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
+								csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", request.body.user
 						catch error
 							console.log error
 
+exports.runRApacheFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(req.body), req.body.user
+	if preValidationFunction?
+		preValErrors = preValidationFunction.call @, req.body
+	else
+		preValErrors = basicRScriptPreValidation req.body
+
+	if preValErrors.hasError
+		console.log preValErrors
+		returnFunction.call @, JSON.stringify(preValErrors)
+
+		return
+
+	requestBody =
+		rScript:rScript
+		rFunction:rFunction
+		request: JSON.stringify(req.body)
+
+	if req.query.testMode or global.specRunnerTestmode
+		runRFunctionServiceTestJSON = require '../public/javascripts/spec/testFixtures/runRFunctionServiceTestJSON.js'
+		console.log 'test'
+		console.log JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError)
+		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
+	else
+		request.post
+			timeout: 6000000
+			url: config.all.client.service.rapache.fullpath + "runfunction"
+			json: true
+			body: JSON.stringify(requestBody)
+		, (error, response, body) =>
+			@serverError = error
+			@responseJSON = body
+			if (@responseJSON? && @responseJSON["RExecutionError"]?) or @serverError?
+				if (@responseJSON? && @responseJSON["RExecutionError"]?)
+					messageText = @responseJSON["RExecutionError"]
+				else
+					messageText = @serverError
+				message =
+					errorLevel: "error"
+					message: messageText
+				result =
+					hasError: true
+					hasWarning: false
+					errorMessages: [message]
+					transactionId: null
+					experimentId: null
+				returnFunction.call @, JSON.stringify(result)
+				csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), req.body.user
+			else
+				returnFunction.call @, JSON.stringify(@responseJSON)
+				try
+					if @responseJSON.hasError
+						csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, JSON.stringify(@responseJSON), req.body.user
+					else
+						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", req.body.user
+				catch error
+					console.log error
 
 
+exports.runRScript = (rScript) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	rScriptCommand = config.all.server.rscript
+	if config.all.server.rscript?
+		rScriptCommand = config.all.server.rscript
+	else
+		rScriptCommand = "Rscript"
+
+	exec = require('child_process').exec
+	command = "export R_LIBS=r_libs && "+ rScriptCommand + " " + rScript + " 2> /dev/null"
+	console.log "About to call R script using command: "+command
+	child = exec command,  (error, stdout, stderr) ->
+		console.log "stderr: " + stderr
+		console.log "stdout: " + stdout
+
+
+### To allow following test routes to work, install this Module
+	# ServerUtility function testing routes
+	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
+	serverUtilityFunctions.setupRoutes(app)
+
+###
 exports.setupRoutes = (app) ->
 	app.post '/api/runRFunctionTest', exports.runRFunctionTest
+	app.post '/api/runRApacheFunctionTest', exports.runRApacheFunctionTest
 
 exports.runRFunctionTest = (request, response)  ->
 
@@ -105,6 +187,19 @@ exports.runRFunctionTest = (request, response)  ->
 		"public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R",
 		"runRFunctionTest",
 		(rReturn) ->
+			response.end rReturn
+	)
+
+exports.runRApacheFunctionTest = (request, response)  ->
+
+	response.writeHead(200, {'Content-Type': 'application/json'});
+
+	exports.runRApacheFunction(
+		request,
+		"public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R",
+		"runRFunctionTest",
+		(rReturn) ->
+			console.log rReturn
 			response.end rReturn
 	)
 
