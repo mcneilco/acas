@@ -53,7 +53,7 @@ elif [ -f /etc/lsb-release ]; then
       echo -ne "\r"
       return 0
     }
-    
+
     echo_failure() {
       [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
       echo -n "["
@@ -132,7 +132,7 @@ apache_running() {
 }
 
 start_apache() {
-    
+
     startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
@@ -142,11 +142,13 @@ start_apache() {
 }
 
 run_apache() {
-    startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start -DFOREGROUND"
+    cp $ACAS_HOME/conf/compiled/apache.conf /tmp/apache.conf
+    sed -i 's/^ErrorLog.*/ErrorLog "|cat"/' /tmp/apache.conf
+    startCommand=" $apacheCMD -f /tmp/apache.conf -k start -DFOREGROUND"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
-    eval "($startCommand) &"
+    eval "($startCommand) $1"
     return $?
 }
 
@@ -269,8 +271,20 @@ do_start() {
 
 # Runs the server.
 do_run() {
+
     if [ $name == "rservices" ] || [ $name == "all" ]; then
-        action "Running apache" run_apache 1
+        counter=0
+        wait=5
+        until [ -f $ACAS_HOME/conf/compiled/apache.conf  ] || [ $counter == $wait ]; do
+            printf "."
+            sleep 1
+            counter=$((counter+1))
+        done
+        if [ $name == "all" ]; then
+            action "Running apache in background" run_apache &
+        else
+            action "Running apache" run_apache
+        fi
         RETVAL=$?
     fi
 
@@ -334,7 +348,7 @@ usage() {
 ##                                                                            ##
 #                           APPLICATION section                                #
 ##             Edit the variables below for your installation                 ##
-################################################################################
+#####################################################r###########################
 ################################################################################
 # SETUP ACAS_HOME path
 scriptPath=$(readlink -f ${BASH_SOURCE[0]})
@@ -346,6 +360,13 @@ cd $ACAS_HOME
 [ -f $ACAS_HOME/bin/setenv.sh ] && . $ACAS_HOME/bin/setenv.sh  || echo "$ACAS_HOME/bin/setenv.sh not found"
 
 #Get ACAS config variables
+counter=0
+wait=5
+until [ -f $ACAS_HOME/conf/compiled/conf.properties  ] || [ $counter == $wait ]; do
+    printf "."
+    sleep 1
+    counter=$((counter+1))
+done
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
 # Export these variables so that the apache config can pick them up
