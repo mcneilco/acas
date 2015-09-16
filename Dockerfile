@@ -9,6 +9,8 @@ RUN 	mkdir log
 RUN 	chown -R runner:runner /home/runner
 USER    runner
 RUN     chmod u+x bin/*.sh
+ENV     PREPARE_MODULE_CONF_JSON=true
+ENV     PREPARE_CONFIG_FILES=true
 EXPOSE	1080
 EXPOSE	3000
 EXPOSE	3001

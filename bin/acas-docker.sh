@@ -9,11 +9,15 @@ fi
 for f in $envPath/*/*.env; do echo Using $f;source $f;export $(cut -d= -f1 $f); done
 
 # Run Prepare config files as the compiled directory should be empty
-cd conf
-node PrepareConfigFiles.js docker
+if [ $PREPARE_CONFIG_FILES == "true" ]; then
+    cd conf
+    node PrepareConfigFiles.js docker
+    cd ..
+fi
 
 #Once tomcat is availble then try and run prepare module conf json if in demo mode
-if $DEMO; then
+if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
+    cd conf
     echo 'ping -c 1 tomcat > /dev/null
     if [ $? -eq 0 ];then
         counter=0
@@ -31,10 +35,10 @@ if $DEMO; then
     else
         echo "tomcat not available, not waiting for roo to start and not running prepare module conf json"
     fi' | sh 2>&1 &
+    cd ..
 fi
 
-cd ..
 sh bin/acas.sh "$@"
-if [ $1=="start" ]
-    tail -f /home/runner/log/*.log
+if [ $1 == "start" ]; then
+    tail -F /home/runner/log/*.log
 fi
