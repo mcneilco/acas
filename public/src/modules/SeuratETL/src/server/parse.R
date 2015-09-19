@@ -195,7 +195,7 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   
   outNames <- names(experimentNames)
   experimentNames <- copy(experimentNames)
-  experimentNames[ , originalOrder := row.names(experimentNames)]
+  experimentNames[ , originalOrder := as.integer(row.names(experimentNames))]
   #setting the key causes the column to sort independently without the rest of the dt
   setkeyv(experimentNames, c("Assay.Protocol", by))
   exptNames <- unique(experimentNames)
@@ -206,7 +206,7 @@ makeExperimentNamesUnique <- function(experimentNames, by) {
   setkeyv(exptNames, c(by, "Assay.Protocol.Old"))
   setkeyv(experimentNames, c(by, "Assay.Protocol"))
   outData <- exptNames[experimentNames]
-  setkey(outData,originalOrder)
+  setkey(outData,i.originalOrder)
   outData[ , outNames, with = FALSE]
 }
 
@@ -332,8 +332,13 @@ getHeaderLines <- function(seuratExperiment, format) {
   if (length(eDate) > 1) "problem with experiment results, more than one experiment date"
   assayDate <- as.character(eDate)[[1]]
   hl[[8]] <- paste("Assay Date", assayDate, sep=",")
-  hl[[9]] <- ","
-  hl[[10]] <- "Calculated Results,"
+  project <- unique(seuratExperiment$Project)
+  if (length(project) > 1) "problem with experiment results, more than one project"
+  if (!is.null(project)) {
+    hl <- c(hl, paste("Project", project, sep=","))
+  }
+  hl <- c(hl, ",")
+  hl <- c(hl, "Calculated Results,")
   return(hl)
 }
 
