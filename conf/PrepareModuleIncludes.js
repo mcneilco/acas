@@ -1,11 +1,18 @@
 (function() {
-  var _, appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepRouteIncludes, prepSpecScripts, routeLines, scriptPaths, specScriptLines;
+  var _, appScriptLines, fs, getFileNameFromPath, glob, includeLines, insertToLayoutTemplate, makeFileNameHash, makeScriptLines, prepAppScripts, prepIncludes, prepRouteIncludes, prepSpecScripts, routeLines, scriptPaths, specScriptLines, workingDir;
 
   fs = require('fs');
 
   glob = require('glob');
 
   _ = require('underscore');
+
+  workingDir = process.argv[2];
+
+  if (typeof workingDir !== "undefined") {
+    process.chdir("..");
+    process.chdir(workingDir + "/conf");
+  }
 
   prepIncludes = function() {
     var i, includeLines, includeStr, j, len, len1, path, styleFiles, templateFiles;

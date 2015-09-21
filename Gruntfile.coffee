@@ -5,10 +5,12 @@ module.exports = (grunt) ->
 	global['clean'] = grunt.option('clean')
 	grunt.registerTask 'build', 'build task', () ->
 		compiledPath =  grunt.option('compilePath') || '../compiled'
+		console.log "compiling to #{compiledPath}"
 		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
 		grunt.config.set('acas_base', "#{compiledPath}")
 		grunt.task.run 'sync'
 		grunt.task.run 'copy'
+		grunt.task.run 'execute:prepare_module_includes'
 		return
 
 	#
@@ -271,7 +273,8 @@ module.exports = (grunt) ->
 			prepare_module_includes:
 				options:
 					cwd: 'conf'
-				src: 'conf/PrepareModuleIncludes.js'
+					args: "<%= acas_base %>"
+				src: "conf/PrepareModuleIncludes.js"
 			prepare_config_files:
 				options:
 					cwd: 'conf'
