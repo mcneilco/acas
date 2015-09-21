@@ -217,7 +217,7 @@ describe "Base ACAS Customer Specific Function Tests", ->
 
 
 	describe "get preferred batchids", ->
-		global.specRunnerTestmode = true #set to true to excercise stub
+		#global.specRunnerTestmode = true #set to true to excercise stub
 		describe "when valid, alias, and invalid batches sent", ->
 			requestData =
 				requests: [
@@ -259,13 +259,17 @@ describe "Base ACAS Customer Specific Function Tests", ->
 		describe "when valid, alias, and invalid batches sent", ->
 			requestData =
 				requests: [
-					{requestName: "DNS000000001"} #normal
-					{requestName: "DNS000673874"} #alias
-					{requestName: "DNS999999999"} #none
+#					{requestName: "DNS000000001"} #normal
+#					{requestName: "DNS000673874"} #alias
+#					{requestName: "DNS999999999"} #none
+					{requestName: "CMPD-0000001"} #normal
+					{requestName: "CMPD-0000002"} #no aliases yet in our creg
+					{requestName: "CMPD-999999999"} #none
 				]
 			before (done) ->
 				@.timeout(20000)
-				global.specRunnerTestmode = true
+				#comment the next line to test in live mode
+				#global.specRunnerTestmode = true
 				csUtilities.getPreferredParentIds requestData.requests, (response) =>
 					@response = response
 					console.log response
@@ -275,6 +279,6 @@ describe "Base ACAS Customer Specific Function Tests", ->
 			it "should have the batch if not an alias", ->
 				assert.equal @response[0].requestName, @response[0].preferredName
 			it "should have the batch an alias", ->
-				assert.equal @response[1].preferredName, "DNS000001234"
+				assert.equal @response[1].preferredName, "CMPD-0000002"
 			it "should not return an alias if the batch is not valid", ->
 				assert.equal @response[2].preferredName, ""

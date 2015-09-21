@@ -245,6 +245,13 @@
           name: "Rejected",
           ignored: false
         }, {
+          codeType: "protocol",
+          codeKind: "status",
+          codeOrigin: "ACAS DDICT",
+          code: "deleted",
+          name: "Deleted",
+          ignored: false
+        }, {
           codeType: "assay",
           codeKind: "stage",
           codeOrigin: "ACAS DDICT",

@@ -45,22 +45,22 @@
 	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	if (routeSet_3.setupAPIRoutes) {
 		routeSet_3.setupAPIRoutes(app); }
-	routeSet_4 = require("./routes/CodeTableServiceRoutes.js");
+	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
 	if (routeSet_4.setupAPIRoutes) {
 		routeSet_4.setupAPIRoutes(app); }
-	routeSet_5 = require("./routes/ControllerRedirectRoutes.js");
+	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
 	if (routeSet_5.setupAPIRoutes) {
 		routeSet_5.setupAPIRoutes(app); }
-	routeSet_6 = require("./routes/CurveCuratorRoutes.js");
+	routeSet_6 = require("./routes/ControllerRedirectRoutes.js");
 	if (routeSet_6.setupAPIRoutes) {
 		routeSet_6.setupAPIRoutes(app); }
-	routeSet_7 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_7 = require("./routes/CurveCuratorRoutes.js");
 	if (routeSet_7.setupAPIRoutes) {
 		routeSet_7.setupAPIRoutes(app); }
-	routeSet_8 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_8 = require("./routes/DocForBatchesRoutes.js");
 	if (routeSet_8.setupAPIRoutes) {
 		routeSet_8.setupAPIRoutes(app); }
-	routeSet_9 = require("./routes/ExcelCompundInfoAppRoutes.js");
+	routeSet_9 = require("./routes/DoseResponseFitRoutes.js");
 	if (routeSet_9.setupAPIRoutes) {
 		routeSet_9.setupAPIRoutes(app); }
 	routeSet_10 = require("./routes/ExperimentBrowserRoutes.js");

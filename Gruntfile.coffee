@@ -1,6 +1,13 @@
 module.exports = (grunt) ->
 	"use strict"
 
+	# configure build tasks
+	global['clean'] = grunt.option('clean')
+	grunt.registerTask 'build', 'build task', () =>
+		grunt.task.run 'sync'
+		grunt.task.run 'execute:grunt_copy_compiled'
+		return
+
 	#
 	# Grunt configuration:
 	#
@@ -179,7 +186,32 @@ module.exports = (grunt) ->
 					dest: "acas_custom/routes/"
 					ext: '.js'
 				]
-
+		sync:
+			custom:
+				files: [
+					expand: true
+					cwd: "acas_custom"
+					src: ["**"]
+					dest: "../compiled/acas_custom"
+				]
+				compareUsing: "md5"
+				verbose: true
+				updateAndDelete: global['clean']
+			base:
+				files: [
+					expand: true
+					cwd: "."
+					src: ["**"
+					  "!**/*.coffee"
+						"!acas_custom/**"
+						"!tmp/**"
+					].concat require('gitignore-to-glob')()
+					dest: "../compiled"
+				]
+				ignoreInDest: "acas_custom/**"
+				compareUsing: "md5"
+				verbose: true
+				updateAndDelete: global['clean']
 		copy:
 			custom_routes:
 				files: [
@@ -249,7 +281,13 @@ module.exports = (grunt) ->
 					shell = require('shelljs')
 					result = shell.exec('bin/acas-darwin.sh reload', {silent:true})
 					return result.output
-
+			grunt_copy_compiled:
+				options:
+					cwd: '../compiled'
+				call: (grunt, options) ->
+					shell = require('shelljs')
+					result = shell.exec('grunt copy', {silent:true})
+					return result.output
 		replace:
 			clientHost:
 				src: ["conf/config.properties"]
@@ -393,12 +431,10 @@ module.exports = (grunt) ->
 				]
 				tasks: "execute:reload_rapache"
 
-
-
-
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
+	grunt.loadNpmTasks "grunt-sync"
 	grunt.loadNpmTasks "grunt-text-replace"
 	grunt.loadNpmTasks "grunt-execute"
 
