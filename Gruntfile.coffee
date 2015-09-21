@@ -3,9 +3,12 @@ module.exports = (grunt) ->
 
 	# configure build tasks
 	global['clean'] = grunt.option('clean')
-	grunt.registerTask 'build', 'build task', () =>
+	grunt.registerTask 'build', 'build task', () ->
+		compiledPath =  grunt.option('compilePath') || '../compiled'
+		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
+		grunt.config.set('acas_base', "#{compiledPath}")
 		grunt.task.run 'sync'
-		grunt.task.run 'execute:grunt_copy_compiled'
+		grunt.task.run 'copy'
 		return
 
 	#
@@ -14,25 +17,26 @@ module.exports = (grunt) ->
 	# https://github.com/cowboy/grunt/blob/master/docs/getting_started.md
 	#
 	grunt.initConfig
-
 	# Project configuration
 	# ---------------------
+		acas_custom: 'acas_custom'
+		acas_base: '.'
 		coffee:
 			app:
 				files: [
-						expand: true
-						flatten: true
-						src: ["public/src/modules/**/src/client/*.coffee"]
-						dest: "public/javascripts/src/"
-						ext: '.js'
-					]
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/src/client/*.coffee"]
+					dest: "public/javascripts/src/"
+					ext: '.js'
+				]
 			serverOnlyModules:
 				files: [
-						expand: true
-						flatten: false
-						src: ["serverOnlyModules/**/*.coffee"]
-						ext: '.js'
-					]
+					expand: true
+					flatten: false
+					src: ["serverOnlyModules/**/*.coffee"]
+					ext: '.js'
+				]
 			spec:
 				files: [
 					expand: true
@@ -105,15 +109,15 @@ module.exports = (grunt) ->
 					dest: "routes/"
 					ext: '.js'
 				]
-			#these compilers are for the custom coffee scripts before they get copied
+		#these compilers are for the custom coffee scripts before they get copied
 			custom_app:
 				files: [
-						expand: true
-						flatten: true
-						src: ["acas_custom/modules/**/src/client/**/*.coffee"]
-						dest: "acas_custom/javascripts/src/"
-						ext: '.js'
-					]
+					expand: true
+					flatten: true
+					src: ["acas_custom/modules/**/src/client/**/*.coffee"]
+					dest: "acas_custom/javascripts/src/"
+					ext: '.js'
+				]
 			custom_spec:
 				files: [
 					expand: true
@@ -192,7 +196,7 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "acas_custom"
 					src: ["**"]
-					dest: "../compiled/acas_custom"
+					dest: '<%= acas_custom %>'
 				]
 				compareUsing: "md5"
 				verbose: true
@@ -202,11 +206,11 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "."
 					src: ["**"
-					  "!**/*.coffee"
-						"!acas_custom/**"
-						"!tmp/**"
+					      "!**/*.coffee"
+					      "!acas_custom/**"
+					      "!tmp/**"
 					].concat require('gitignore-to-glob')()
-					dest: "../compiled"
+					dest: '<%= acas_base %>'
 				]
 				ignoreInDest: "acas_custom/**"
 				compareUsing: "md5"
@@ -216,52 +220,52 @@ module.exports = (grunt) ->
 			custom_routes:
 				files: [
 					expand: true
-					cwd: "acas_custom/routes/"
+					cwd: "<%= acas_custom %>/routes/"
 					src: ["**"]
-					dest: "./routes"
+					dest: "<%= acas_base %>/routes"
 				]
 			custom_conf:
 				files: [
 					expand: true
-					cwd: "acas_custom/conf/"
+					cwd: "<%= acas_custom %>/conf/"
 					src: ["**"]
-					dest: "./conf"
+					dest: "<%= acas_base %>/conf"
 				]
 			custom_public_conf:
 				files: [
 					expand: true
-					cwd: "acas_custom/public_conf/"
+					cwd: "<%= acas_custom %>/public_conf/"
 					src: ["**"]
-					dest: "./public/src/conf"
+					dest: "<%= acas_base %>/public/src/conf"
 				]
 			custom_javascripts:
 				files: [
 					expand: true
-					cwd: "acas_custom/javascripts/"
+					cwd: "<%= acas_custom %>/javascripts/"
 					src: ["**"]
-					dest: "./public/javascripts"
+					dest: "<%= acas_base %>/public/javascripts"
 				]
 			custom_views:
 				files: [
 					expand: true
-					cwd: "acas_custom/views/"
+					cwd: "<%= acas_custom %>/views/"
 					src: ["**"]
-					dest: "./views"
+					dest: "<%= acas_base %>/views"
 				]
 			custom_modules:
 				files: [
 					expand: true
-					cwd: "acas_custom/modules/"
+					cwd: "<%= acas_custom %>/modules/"
 					src: ["**"]
-					dest: "./public/src/modules"
+					dest: "<%= acas_base %>/public/src/modules"
 				]
 			public_jade:
 				files: [
-						expand: true
-						flatten: true
-						cwd: "public/src/"
-						src: ["modules/**/src/client/**/*.jade"]
-						dest: "./views"
+					expand: true
+					flatten: true
+					cwd: "public/src/"
+					src: ["modules/**/src/client/**/*.jade"]
+					dest: "./views"
 				]
 		execute:
 			prepare_module_includes:
@@ -293,13 +297,13 @@ module.exports = (grunt) ->
 				src: ["conf/config.properties"]
 				overwrite: true
 				replacements: [
-						from: /\nclient.host=.*/i
-						to: ->
-							hostname = require('os').hostname()
-							newString = 'client.host=' + hostname
-							console.log 'setting ' + newString
-							return '\n' + newString
-					]
+					from: /\nclient.host=.*/i
+					to: ->
+						hostname = require('os').hostname()
+						newString = 'client.host=' + hostname
+						console.log 'setting ' + newString
+						return '\n' + newString
+				]
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
@@ -337,7 +341,7 @@ module.exports = (grunt) ->
 			moduleRoutes:
 				files: "public/src/modules/**/src/server/routes/*.coffee"
 				tasks: "coffee:moduleRoutes"
-			#watchers on the custom folder
+		#watchers on the custom folder
 			custom_coffee:
 				files: 'acas_custom/modules/**/src/client/*.coffee'
 				tasks: 'coffee:custom_app'
@@ -394,24 +398,24 @@ module.exports = (grunt) ->
 				tasks: "copy:public_jade"
 			prepare_module_includes:
 				files:[
-						"conf/PrepareModuleIncludes.js"
-						#styleFiles
-						'public/src/modules/*/src/client/*.css'
-						#templateFiles
-						'/public/src/modules/*/src/client/*.html'
-						#appScriptsInModules
-						'public/src/modules/*/src/client/*.js'
-						#appScriptsInJavascripts
-						'public/javascripts/src/*.js'
-						#testJSONInModules
-						'public/src/modules/*/spec/testFixtures/*.js'
-						#testJSONInJavascripts
-						'public/javascripts/spec/testFixtures/*.js'
-						#specScriptsInModules
-						'public/src/modules/*/spec/*.js'
-						#specScriptsInJavascripts
-						'public/javascripts/spec/*.js'
-					]
+					"conf/PrepareModuleIncludes.js"
+					#styleFiles
+					'public/src/modules/*/src/client/*.css'
+					#templateFiles
+					'/public/src/modules/*/src/client/*.html'
+					#appScriptsInModules
+					'public/src/modules/*/src/client/*.js'
+					#appScriptsInJavascripts
+					'public/javascripts/src/*.js'
+					#testJSONInModules
+					'public/src/modules/*/spec/testFixtures/*.js'
+					#testJSONInJavascripts
+					'public/javascripts/spec/testFixtures/*.js'
+					#specScriptsInModules
+					'public/src/modules/*/spec/*.js'
+					#specScriptsInJavascripts
+					'public/javascripts/spec/*.js'
+				]
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
 				files: [
