@@ -9,7 +9,7 @@ window.Office.initialize = (reason) ->
 			el: $('.bv_excelInsertCompoundPropertiesView')
 		insertCompoundPropertiesController.render()
 
-# The following is used for debugging the app in chrome
+#The following is used for debugging the app in chrome
 #window.onload = ->
 #	window.logger = new ExcelAppLogger
 #		el: $('.bv_log')
@@ -96,12 +96,12 @@ class window.PropertyDescriptorListController extends Backbone.View
 			@$('.bv_propertyDescriptorList').append pdc.render().el
 		@
 
-	getSelectedProperties: ->
+	getSelectedProperties: (callback)->
 		selectedProperties = @collection.where({isChecked: true})
 		selectedPropertyNames = []
 		selectedProperties.forEach (selectedProperty) ->
 			selectedPropertyNames.push(selectedProperty.get('valueDescriptor').name)
-		return(selectedPropertyNames)
+		callback(selectedPropertyNames)
 
 	addPropertyDescriptor: (propertyDescriptor) ->
 		pdc = new PropertyDescriptorController
@@ -159,7 +159,6 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	  @.$('.bv_propertyLookUpStatus').html status
 
 	setErrorStatus: (status) =>
-		@setPropertyLookUpStatus ''
 		@.$('.bv_errorStatus').html status
 		if status == ""
 			@.$('.bv_errorStatus').addClass('hide')
@@ -169,16 +168,16 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	parseInputArray: (inputArray) =>
 		error = false
 		if inputArray?
-			request = requests: []
+			request = []
 			for req in inputArray
 				if req.length > 1
 					error = true
 					@setErrorStatus 'Select a single column'
 					break
 				else
-					request.requests.push requestName: req[0]
+					request.push req[0]
 		if not error
-			@fetchPreferred request
+			@getPreferredIDAndProperties request
 
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
@@ -188,35 +187,73 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			if result.status != 'succeeded'
 				logger.log result.error.name + ':' + result.error.message
 
-	fetchPreferred: (request) ->
-		@setPropertyLookUpStatus "Fetching preferred ids..."
-		logger.log "starting addPreferred"
-		$.ajax
-			type: 'POST'
-			url: "/api/preferredBatchId"
-			data: request
-			dataType: 'json'
-			success: (json) =>
-				logger.log "got preferred id response"
-				@fetchPreferredReturn json
-			error: (err) =>
-				@setErrorStatus "Error fetching preferred ids"
-				logger.log 'got ajax error fetching preferred ids'
+	getPreferredIDAndProperties: (request) ->
+		@setPropertyLookUpStatus "Fetching preferred batch ids..."
+		entityIdStringLines = request.join("\n")
+		@getSelectedProperties(entityIdStringLines)
+		logger.log selectedProperties
+		req =
+			entityIdStringLines: entityIdStringLines,
+			selectedProperties: selectedProperties
+
+#		$.ajax
+#			type: 'POST'
+#			url: "/excelApps/getPreferredIDAndProperties"
+#			data: req
+#			success: (json) =>
+#				@setPropertyLookUpStatus "Fetching preferred ids..."
+#				logger.log "starting addPreferred"
+#				logger.log JSON.stringify(json)
+#				request.type = "compound"
+#				request.kind = "parent name"
+#				request.entityIdStringLines = request.requests
+#				$.ajax
+#					type: 'POST'
+#					url: "/api/entitymeta/preferredCodes"
+#					data: request
+#					success: (json) =>
+#						logger.log "got preferred id response"
+#						logger.log JSON.stringify(json)
+#						@fetchPreferredReturn json
+#					error: (err) =>
+#						@setErrorStatus "Error fetching preferred ids"
+#						logger.log 'got ajax error fetching preferred ids'
+#			error: (err) =>
+#				@setErrorStatus "Error fetching preferred ids"
+#				logger.log 'got ajax error fetching preferred ids'
 
 	fetchPreferredReturn: (json) ->
-#		@outputArray = [["Input ID", "Preferred ID"]]
 		@preferredIds = []
 		for res in json.results
 			prefName = if res.preferredName == "" then "not found" else res.preferredName
-#			@outputArray.push [res.requestName, prefName]
 			@preferredIds.push prefName
 		@fetchCompoundProperties()
 
-	getSelectedProperties: ->
-		selectedParentProperties = []
-		selectedParentProperties.parent = @parentPropertyDescriptorListController.getSelectedProperties()
-		selectedParentProperties.batch = @batchPropertyDescriptorListController.getSelectedProperties()
-		return selectedParentProperties
+	getSelectedProperties: (entityIdStringLines)->
+		selectedProperties = []
+		@parentPropertyDescriptorListController.getSelectedProperties (parentProperties) =>
+			@batchPropertyDescriptorListController.getSelectedProperties (batchProperties) =>
+				selectedProperties =
+					parent: parentProperties
+					batch: batchProperties
+				req =
+					entityIdStringLines: entityIdStringLines
+					selectedProperties: selectedProperties
+				$.ajax
+					type: 'POST'
+					url: "/excelApps/getPreferredIDAndProperties"
+					data: req
+					success: (json) =>
+						@setPropertyLookUpStatus "Returned from preferred id and property services..."
+						logger.log "starting addPreferred"
+						logger.log JSON.stringify(json)
+						request.type = "compound"
+						request.kind = "parent name"
+						request.entityIdStringLines = request.requests
+
+
+		selectedProperties.batch = @batchPropertyDescriptorListController.getSelectedProperties()
+		return selectedProperties
 
 	fetchCompoundProperties: ->
 		@setPropertyLookUpStatus "Fetching properties..."
