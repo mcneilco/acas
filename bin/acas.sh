@@ -53,7 +53,7 @@ elif [ -f /etc/lsb-release ]; then
       echo -ne "\r"
       return 0
     }
-    
+
     echo_failure() {
       [ "$BOOTUP" = "color" ] && $MOVE_TO_COL
       echo -n "["
@@ -106,6 +106,15 @@ start_server() {
     return $?
 }
 
+run_server() {
+    runCommand="node app.js"
+    if [ $(whoami) != "$ACAS_USER" ]; then
+        startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
+    fi
+    eval "($runCommand)"
+    return $?
+}
+
 stop_server() {
     stopCommand="export FOREVER_ROOT=$ACAS_HOME/bin && forever stop $ACAS_HOME/app.js 2>&1 >/dev/null"
     if [ $(whoami) != "$ACAS_USER" ]; then
@@ -123,12 +132,23 @@ apache_running() {
 }
 
 start_apache() {
-    
+
     startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
     fi
     eval $startCommand
+    return $?
+}
+
+run_apache() {
+    cp $ACAS_HOME/conf/compiled/apache.conf /tmp/apache.conf
+    sed -i 's/^ErrorLog.*/ErrorLog "|cat"/' /tmp/apache.conf
+    startCommand=" $apacheCMD -f /tmp/apache.conf -k start -DFOREGROUND"
+    if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
+        startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
+    fi
+    eval "($startCommand) $1"
     return $?
 }
 
@@ -249,6 +269,35 @@ do_start() {
     return $RETVAL
 }
 
+# Runs the server.
+do_run() {
+
+    if [ $name == "rservices" ] || [ $name == "all" ]; then
+        counter=0
+        wait=5
+        until [ -f $ACAS_HOME/conf/compiled/apache.conf  ] || [ $counter == $wait ]; do
+            printf "."
+            sleep 1
+            counter=$((counter+1))
+        done
+        if [ $name == "all" ]; then
+            action "Running apache in background" run_apache &
+        else
+            action "Running apache" run_apache
+        fi
+        RETVAL=$?
+    fi
+
+    if [ $name == "acas" ] || [ $name == "all" ]; then
+        dirname=`basename $ACAS_HOME`
+        LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
+        action "Running app.js" run_server
+        RETVAL=$?
+    fi
+    return $RETVAL
+
+}
+
 # Stops the server.
 do_stop() {
     dirname=`basename $ACAS_HOME`
@@ -290,12 +339,16 @@ get_status() {
     fi
 }
 
+usage() {
+    echo "Usage: ${0} {start|stop|status|restart|reload|run (options-rservices,acas,all:default-all)}"
+}
+
 ################################################################################
 ################################################################################
 ##                                                                            ##
 #                           APPLICATION section                                #
 ##             Edit the variables below for your installation                 ##
-################################################################################
+#####################################################r###########################
 ################################################################################
 # SETUP ACAS_HOME path
 scriptPath=$(readlink -f ${BASH_SOURCE[0]})
@@ -307,6 +360,13 @@ cd $ACAS_HOME
 [ -f $ACAS_HOME/bin/setenv.sh ] && . $ACAS_HOME/bin/setenv.sh  || echo "$ACAS_HOME/bin/setenv.sh not found"
 
 #Get ACAS config variables
+counter=0
+wait=5
+until [ -f $ACAS_HOME/conf/compiled/conf.properties  ] || [ $counter == $wait ]; do
+    printf "."
+    sleep 1
+    counter=$((counter+1))
+done
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
 
 # Export these variables so that the apache config can pick them up
@@ -332,6 +392,15 @@ else
 fi
 
 case "$1" in
+    run)
+        name=$2
+        name=${name:-all}
+        if [[ "$name" =~ ^(acas|rservices|all)$ ]]; then
+            do_run $name
+        else
+            usage
+        fi
+    ;;
     start)
         do_start
         RETVAL=$?
@@ -373,7 +442,7 @@ case "$1" in
         fi
     ;;
     *)
-        echo "Usage: ${0} {start|stop|status|restart|reload}"
+        usage
         RETVAL=1
     ;;
 esac
