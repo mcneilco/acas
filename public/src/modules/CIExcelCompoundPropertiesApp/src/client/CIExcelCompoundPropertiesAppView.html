@@ -23,15 +23,21 @@
 
 <script type="text/template" id="ExcelInsertCompoundPropertiesView">
     <div class="well" style="width:510px;">
-        <a tabindex="0" class="pull-right bv_popover" data-placement="left" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
-        <div class="bv_attributes">Attributes</div>
-        <div class="bv_batchProperties">Batch Properties</div>
-        <div class="bv_parentProperties">Parent Properties</div>
-        <button class="btn btn-primary bv_getProperties">Get Properties</button>
-        <div class="bv_propertyLookUpStatus"></div>
+        <div style="padding-bottom:5px;" >
+            <a tabindex="0" class="pull-right bv_popover" data-placement="left" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
+            <div class="bv_attributes">Attributes</div>
+            <div class="bv_batchProperties">Batch Properties</div>
+            <div class="bv_parentProperties">Parent Properties</div>
+        </div>
+        <div style="padding-bottom:20px;">
+            <button class="btn btn-primary bv_getProperties" style="float:left;">Get Properties</button>
+            <div class="bv_propertyLookUpStatus"></div>
+        </div>
     </div>
-    <button class="btn btn-primary bv_insertProperties">Insert Properties</button>
-    <div class="alert alert-danger bv_errorStatus hide">Error</div>
+    <div style="width:510px;">
+        <button class="btn btn-primary bv_insertProperties" style="float:right;">Insert Properties</button>
+        <div class="alert alert-danger bv_errorStatus hide" style="height:35px;width:370px;">Error</div>
+    </div>
 </script>
 
 <script type="text/template" id="ExcelAppLoggerView">
