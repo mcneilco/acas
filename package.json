@@ -17,6 +17,8 @@
     "glob": "*",
     "grunt": "*",
     "grunt-contrib-coffee": "*",
+    "grunt-sync": "*",
+    "gitignore-to-glob": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-watch": "*",
     "grunt-execute": "*",
