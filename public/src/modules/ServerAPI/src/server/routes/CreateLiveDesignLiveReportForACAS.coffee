@@ -1,0 +1,37 @@
+exports.setupRoutes = (app, loginRoutes) ->
+	app.get '/api/redirectToNewLiveDesignLiveReportForExperiment/:experimentCode', loginRoutes.ensureAuthenticated, exports.redirectToNewLiveDesignLiveReportForExperiment
+
+
+exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
+	exec = require('child_process').exec
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+
+	expCode = req.params.experimentCode
+
+	request.get
+		url: config.all.client.service.rapache.fullpath+"ServerAPI/getCmpdAndResultType?experiment="+expCode
+		json: true
+	, (error, response, body) =>
+		serverError = error
+		exptInfo = body
+		console.log @responseJSON
+
+
+		command = "./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
+		command += "'https://mcneilco-ld-73.onschrodinger.com/livedesign' -u 'regressiontester' -p 'allthedataallthethings' -i '"
+#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+#		command += (JSON.stringify data)+"'"
+		command += (JSON.stringify exptInfo)+"'"
+		console.log "About to call python using command: "+command
+
+		child = exec command,  (error, stdout, stderr) ->
+			reportURLPos = stdout.indexOf "https://"
+			reportURL = stdout.substr reportURLPos
+			console.log "stderr: " + stderr
+			console.log "stdout: " + stdout
+
+			resp.redirect reportURL
+
+
+
