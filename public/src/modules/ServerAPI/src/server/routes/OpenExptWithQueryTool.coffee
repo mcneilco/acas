@@ -19,24 +19,7 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 		getLdUrl.getUrlForNewLiveDesignLiveReportForExperiment req.query.experiment, (url) ->
 			resp.redirect url
 	else if tool is 'Seurat'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+req.query.experiment
-		request.get
-			url: baseurl
-			json: true
-		, (error, response, body) =>
-			if error or response.statusCode >= 300
-				resp.status(500).send('error getting experiment')
-			else
-				console.log body
-				#TODO: this does not work yet
-				Experiment = require('')
-				expt = new Experiment body
-				prefExptName = expt.pickBestName()
-				prot = new Protocol expt.protocol
-				prefProtName = prot.pickBestName()
-				resp.redirect config.all.client.service.result.viewer.seurat.protocolPrefix + prefExptName +
-						config.all.client.service.result.viewer.seurat.experimentPrefix + prefProtName
+		resp.redirect '/api/experiments/resultViewerURL/' + req.query.experiment
 	else
     # Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')
