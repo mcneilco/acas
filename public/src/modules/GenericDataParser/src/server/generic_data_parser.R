@@ -2748,10 +2748,13 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
     if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experimentName)
     }
-    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
+    viewerLink <- paste0("http://", racas::applicationSettings$client.host, ":", 
+                         racas::applicationSettings$client.port, 
+                         "/openExptInQueryTool?experiment=", URLencode(experiment$codeName, reserved=TRUE))
+#     viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+#                          URLencode(protocolName, reserved=TRUE), 
+#                          racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+#                          URLencode(experimentName, reserved=TRUE))
   } else {
     viewerLink <- NULL
   }
