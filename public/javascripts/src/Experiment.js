@@ -373,6 +373,7 @@
     extend(ExperimentBaseController, superClass);
 
     function ExperimentBaseController() {
+      this.displayInReadOnlyMode = bind(this.displayInReadOnlyMode, this);
       this.getNextLabelSequence = bind(this.getNextLabelSequence, this);
       this.handleSaveClicked = bind(this.handleSaveClicked, this);
       this.updateEditable = bind(this.updateEditable, this);
@@ -532,8 +533,11 @@
       ExperimentBaseController.__super__.render.call(this);
       if (this.model.isNew()) {
         this.$('.bv_experimentName').attr('disabled', 'disabled');
+        this.$('.bv_openInLiveDesignWrapper').hide();
       } else {
         this.setupExptNameChkbx();
+        this.$('.bv_openInLiveDesignWrapper').show();
+        this.$('.bv_openInLiveDesignLink').attr('href', "/openExptInQueryTool?experiment=" + this.model.get('codeName'));
       }
       return this;
     };
@@ -899,6 +903,11 @@
         }));
       }
       return this.saveEntity();
+    };
+
+    ExperimentBaseController.prototype.displayInReadOnlyMode = function() {
+      ExperimentBaseController.__super__.displayInReadOnlyMode.call(this);
+      return this.$('.bv_openInLiveDesignWrapper').hide();
     };
 
     return ExperimentBaseController;
