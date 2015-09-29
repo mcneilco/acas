@@ -7,6 +7,8 @@ myMessenger <- Messenger$new()
 myMessenger$logger <- createLogger(logName = "com.acas.ServerAPI.getCmpdAndResultType", logToConsole = FALSE)
 myMessenger$logger$debug("getting compounds and result types")
 
+library(plyr)
+
 tryCatch({
   qu <- paste0("SELECT DISTINCT aagr.tested_lot FROM 
             api_analysis_group_results aagr
@@ -21,8 +23,11 @@ tryCatch({
             WHERE e.code_name = '", GET$experiment, "'")
   lsKindDF <- query(qu)
   names(lsKindDF) <- tolower(names(lsKindDF))
-  output <- list(compounds = testedLotDF$tested_lot, 
-                 assays = list(list(protocolName=unique(lsKindDF$label_text), 
-                                    resultType=unique(lsKindDF$ls_kind))))
+  headerList <- dlply(lsKindDF, .variables = c("label_text", "ls_kind"), .fun = function(x) {list(protocolName=x$label_text, resultType=x$ls_kind)})
+  names(headerList) <- NULL
+  output <- list(compounds = gsub("([^-]+-[^-]+).*", "\\1", x = testedLotDF$tested_lot), 
+                 assays = headerList)
   cat(toJSON(output))
-  }, error = function(ex) {cat(toJSON(list(error=TRUE, message=ex$message)))})
+  }, error = function(ex) {
+    cat(toJSON(list(error=TRUE, message=ex$message)))
+  })
