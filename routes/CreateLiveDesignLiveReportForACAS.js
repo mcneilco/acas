@@ -4,13 +4,20 @@
   };
 
   exports.redirectToNewLiveDesignLiveReportForExperiment = function(req, resp) {
-    var config, exec, expCode, request;
+    var exptCode;
+    exptCode = req.params.experimentCode;
+    return exports.getUrlForNewLiveDesignLiveReportForExperiment(exptCode, function(url) {
+      return resp.redirect(url);
+    });
+  };
+
+  exports.getUrlForNewLiveDesignLiveReportForExperiment = function(exptCode, callback) {
+    var config, exec, request;
     exec = require('child_process').exec;
     config = require('../conf/compiled/conf.js');
     request = require('request');
-    expCode = req.params.experimentCode;
     return request.get({
-      url: config.all.client.service.rapache.fullpath + "ServerAPI/getCmpdAndResultType?experiment=" + expCode,
+      url: config.all.client.service.rapache.fullpath + "ServerAPI/getCmpdAndResultType?experiment=" + exptCode,
       json: true
     }, (function(_this) {
       return function(error, response, body) {
@@ -28,7 +35,7 @@
           reportURL = stdout.substr(reportURLPos);
           console.log("stderr: " + stderr);
           console.log("stdout: " + stdout);
-          return resp.redirect(reportURL);
+          return callback(reportURL);
         });
       };
     })(this));
