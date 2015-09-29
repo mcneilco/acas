@@ -15,7 +15,6 @@
       }
     }
     if (tool === 'LiveDesign') {
-      console.log('/api/redirectToNewLiveDesignLiveReportForExperiment/' + req.query.experiment);
       getLdUrl = require('./CreateLiveDesignLiveReportForACAS.js');
       return getLdUrl.getUrlForNewLiveDesignLiveReportForExperiment(req.query.experiment, function(url) {
         return resp.redirect(url);
