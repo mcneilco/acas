@@ -562,8 +562,7 @@
     };
 
     ExperimentBrowserController.prototype.handleOpenInLiveDesignClicked = function() {
-      console.log("handle open in live design clicked");
-      return window.open("/openExptInQueryTool?experiment/" + (this.experimentController.model.get("codeName")), '_blank');
+      return window.open("/openExptInQueryTool?experiment=" + (this.experimentController.model.get("codeName")), '_blank');
     };
 
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {

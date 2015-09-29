@@ -390,8 +390,7 @@ class window.ExperimentBrowserController extends Backbone.View
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
 	handleOpenInLiveDesignClicked: =>
-		console.log "handle open in live design clicked"
-		window.open("/openExptInQueryTool?experiment/#{@experimentController.model.get("codeName")}",'_blank')
+		window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?
