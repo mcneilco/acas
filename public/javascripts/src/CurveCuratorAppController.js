@@ -62,27 +62,13 @@
     };
 
     CurveCuratorAppController.prototype.loadCurvesForExptCode = function(exptCode, curveID) {
+      var resultViewerURL;
       UtilityFunctions.prototype.showProgressModal(this.$('.bv_loadCurvesModal'));
       this.ccc.setupCurator(exptCode, curveID);
-      return $.ajax({
-        type: 'GET',
-        url: "/api/experiments/resultViewerURL/" + exptCode,
-        success: (function(_this) {
-          return function(json) {
-            var resultViewerURL;
-            _this.resultViewerURL = json;
-            resultViewerURL = _this.resultViewerURL.resultViewerURL;
-            _this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
-            return _this.$('.bv_resultViewerBtn').show();
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            return _this.serviceReturn = null;
-          };
-        })(this),
-        dataType: 'json'
-      });
+      resultViewerURL = "/openExptInQueryTool?experiment=" + exptCode;
+      this.$('.bv_resultViewerBtn').attr('href', resultViewerURL);
+      this.$('.bv_resultViewerBtn').html('Open in ' + window.conf.service.result.viewer.displayName);
+      return this.$('.bv_resultViewerBtn').show();
     };
 
     CurveCuratorAppController.prototype.hideLoadCurvesModal = function() {
