@@ -46,7 +46,7 @@
         });
         return it("insert column headers and include requested ids should be checked by default", function() {
           expect(this.attributesController.$('.bv_insertColumnHeaders').attr("checked")).toEqual("checked");
-          return expect(this.attributesController.$('.bv_includeRequestedID').attr("checked")).toEqual("checked");
+          return expect(this.attributesController.$('.bv_includeRequestedID').attr("checked")).toBeUndefined();
         });
       });
     });
@@ -117,12 +117,25 @@
     return describe("Excel Compound Info App controller", function() {
       beforeEach(function(done) {
         setTimeout((function() {
+          var numberReady;
           window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController({
             el: $("#fixture")
           });
           window.insertCompoundPropertiesController.render();
+          numberReady = 0;
           window.insertCompoundPropertiesController.batchPropertyDescriptorListController.on('ready', function() {
-            return done();
+            if (numberReady === 1) {
+              return done();
+            } else {
+              return numberReady = 1;
+            }
+          });
+          window.insertCompoundPropertiesController.parentPropertyDescriptorListController.on('ready', function() {
+            if (numberReady === 1) {
+              return done();
+            } else {
+              return numberReady = 1;
+            }
           });
         }), 100);
       });
@@ -136,27 +149,28 @@
       });
       describe("getSelectedProperties", function() {
         return it("should return an array of properties with a batch and parent key", function() {
-          var selectedProperties;
+          console.log(window.insertCompoundPropertiesController.$('.bv_parentProperties'));
           window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click();
           window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[1].click();
           window.insertCompoundPropertiesController.$('.bv_parentProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click();
-          selectedProperties = window.insertCompoundPropertiesController.getSelectedProperties();
-          expect(selectedProperties.parent.length).toEqual(1);
-          return expect(selectedProperties.batch.length).toEqual(2);
+          return window.insertCompoundPropertiesController.getSelectedProperties(function(selectedProperties) {
+            expect(selectedProperties.parentNames.length).toEqual(1);
+            return expect(selectedProperties.batchNames.length).toEqual(2);
+          });
         });
       });
       return describe("handleGetPropertiesClicked", function() {
         it("should call fetchPrepared if result.status is 'succeeded'", function() {
           window.resultMockObject = window.successfulResultMockObject;
-          spyOn(insertCompoundPropertiesController, "fetchPreferred");
+          spyOn(insertCompoundPropertiesController, "getPropertiesAndRequestData");
           insertCompoundPropertiesController.handleGetPropertiesClicked();
-          return expect(insertCompoundPropertiesController.fetchPreferred).toHaveBeenCalled();
+          return expect(insertCompoundPropertiesController.getPropertiesAndRequestData).toHaveBeenCalled();
         });
         return it("should not call fetchPrepared if result.status is not 'succeeded'", function() {
           window.resultMockObject = window.unsuccessfulResultMockObject;
-          spyOn(insertCompoundPropertiesController, "fetchPreferred");
+          spyOn(insertCompoundPropertiesController, "getPropertiesAndRequestData");
           insertCompoundPropertiesController.handleGetPropertiesClicked();
-          return expect(insertCompoundPropertiesController.fetchPreferred).not.toHaveBeenCalled();
+          return expect(insertCompoundPropertiesController.getPropertiesAndRequestData).not.toHaveBeenCalled();
         });
       });
     });

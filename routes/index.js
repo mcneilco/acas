@@ -19,7 +19,7 @@
     if (config.all.server.enableSpecRunner) {
       app.get('/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner);
       app.get('/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner);
-      return app.get('/ExcelCompoundInfoAppSpecRunner', loginRoutes.ensureAuthenticated, exports.excelCompoundInfoAppSpecRunner);
+      return app.get('/CIExcelCompoundPropertiesAppSpecRunner', loginRoutes.ensureAuthenticated, exports.ciExcelCompoundPropertiesAppSpecRunner);
     }
   };
 
@@ -113,10 +113,10 @@
     });
   };
 
-  exports.excelCompoundInfoAppSpecRunner = function(req, res) {
+  exports.ciExcelCompoundPropertiesAppSpecRunner = function(req, res) {
     "use strict";
     global.specRunnerTestmode = true;
-    return res.render('ExcelCompoundInfoAppSpecRunner', {
+    return res.render('CIExcelCompoundPropertiesAppSpecRunner', {
       title: 'SeuratAddOns SpecRunner'
     });
   };

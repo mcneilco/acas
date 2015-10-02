@@ -3,8 +3,21 @@
     hasProp = {}.hasOwnProperty,
     bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.Office.initialize = function(reason) {
-    return $(document).ready(function() {
+  if (true) {
+    window.Office.initialize = function(reason) {
+      return $(document).ready(function() {
+        window.logger = new ExcelAppLogger({
+          el: $('.bv_log')
+        });
+        logger.render();
+        window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController({
+          el: $('.bv_excelInsertCompoundPropertiesView')
+        });
+        return insertCompoundPropertiesController.render();
+      });
+    };
+  } else {
+    window.onload = function() {
       window.logger = new ExcelAppLogger({
         el: $('.bv_log')
       });
@@ -13,8 +26,8 @@
         el: $('.bv_excelInsertCompoundPropertiesView')
       });
       return insertCompoundPropertiesController.render();
-    });
-  };
+    };
+  }
 
   window.Attributes = (function(superClass) {
     extend(Attributes, superClass);
@@ -119,7 +132,14 @@
     };
 
     PropertyDescriptorController.prototype.handleDescriptorCheckboxChanged = function() {
-      return this.model.set('isChecked', this.$('.bv_propertyDescriptorCheckbox').is(":checked"));
+      var checked;
+      checked = this.$('.bv_propertyDescriptorCheckbox').is(":checked");
+      this.model.set('isChecked', checked);
+      if (checked) {
+        return this.trigger('checked');
+      } else {
+        return this.trigger('unchecked');
+      }
     };
 
     return PropertyDescriptorController;
@@ -145,6 +165,12 @@
     function PropertyDescriptorListController() {
       return PropertyDescriptorListController.__super__.constructor.apply(this, arguments);
     }
+
+    PropertyDescriptorListController.prototype.events = {
+      'click .bv_checkAll': 'handleCheckAllClicked',
+      'click .bv_invert': 'handleInvertSelectionClicked',
+      'click .bv_uncheckAll': 'handleUncheckAllClicked'
+    };
 
     PropertyDescriptorListController.prototype.initialize = function() {
       this.title = this.options.title;
@@ -181,16 +207,42 @@
       return this;
     };
 
-    PropertyDescriptorListController.prototype.getSelectedProperties = function() {
-      var selectedProperties, selectedPropertyNames;
+    PropertyDescriptorListController.prototype.handleCheckAllClicked = function() {
+      return this.propertyControllersList.forEach(function(pdc) {
+        if (!pdc.model.get('isChecked')) {
+          return pdc.$('.bv_propertyDescriptorCheckbox').click();
+        }
+      });
+    };
+
+    PropertyDescriptorListController.prototype.handleInvertSelectionClicked = function() {
+      return this.propertyControllersList.forEach(function(pdc) {
+        return pdc.$('.bv_propertyDescriptorCheckbox').click();
+      });
+    };
+
+    PropertyDescriptorListController.prototype.handleUncheckAllClicked = function() {
+      return this.propertyControllersList.forEach(function(pdc) {
+        if (pdc.model.get('isChecked')) {
+          return pdc.$('.bv_propertyDescriptorCheckbox').click();
+        }
+      });
+    };
+
+    PropertyDescriptorListController.prototype.getSelectedProperties = function(callback) {
+      var selectedProperties, selectedProps;
       selectedProperties = this.collection.where({
         isChecked: true
       });
-      selectedPropertyNames = [];
+      selectedProps = {
+        names: [],
+        prettyNames: []
+      };
       selectedProperties.forEach(function(selectedProperty) {
-        return selectedPropertyNames.push(selectedProperty.get('valueDescriptor').name);
+        selectedProps.names.push(selectedProperty.get('valueDescriptor').name);
+        return selectedProps.prettyNames.push(selectedProperty.get('valueDescriptor').prettyName);
       });
-      return selectedPropertyNames;
+      return callback(selectedProps);
     };
 
     PropertyDescriptorListController.prototype.addPropertyDescriptor = function(propertyDescriptor) {
@@ -198,6 +250,16 @@
       pdc = new PropertyDescriptorController({
         model: propertyDescriptor
       });
+      pdc.on('checked', (function(_this) {
+        return function() {
+          return _this.trigger('checked');
+        };
+      })(this));
+      pdc.on('unchecked', (function(_this) {
+        return function() {
+          return _this.trigger('unchecked');
+        };
+      })(this));
       return this.propertyControllersList.push(pdc);
     };
 
@@ -214,6 +276,7 @@
       this.parseInputArray = bind(this.parseInputArray, this);
       this.setErrorStatus = bind(this.setErrorStatus, this);
       this.setPropertyLookUpStatus = bind(this.setPropertyLookUpStatus, this);
+      this.validate = bind(this.validate, this);
       this.handleGetPropertiesClicked = bind(this.handleGetPropertiesClicked, this);
       this.render = bind(this.render, this);
       return ExcelInsertCompoundPropertiesController.__super__.constructor.apply(this, arguments);
@@ -240,31 +303,53 @@
         title: 'Batch Properties',
         url: '/api/compound/batch/property/descriptors'
       });
+      this.numberOfDescriptorsChecked = 0;
       this.batchPropertyDescriptorListController.on('ready', this.batchPropertyDescriptorListController.render);
+      this.batchPropertyDescriptorListController.on('checked', (function(_this) {
+        return function() {
+          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked + 1;
+          return _this.validate();
+        };
+      })(this));
+      this.batchPropertyDescriptorListController.on('unchecked', (function(_this) {
+        return function() {
+          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked - 1;
+          return _this.validate();
+        };
+      })(this));
       this.parentPropertyDescriptorListController = new PropertyDescriptorListController({
         el: $('.bv_parentProperties'),
         title: 'Parent Properties',
         url: '/api/compound/parent/property/descriptors'
       });
       this.parentPropertyDescriptorListController.on('ready', this.parentPropertyDescriptorListController.render);
+      this.parentPropertyDescriptorListController.on('checked', (function(_this) {
+        return function() {
+          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked + 1;
+          return _this.validate();
+        };
+      })(this));
+      this.parentPropertyDescriptorListController.on('unchecked', (function(_this) {
+        return function() {
+          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked - 1;
+          return _this.validate();
+        };
+      })(this));
       this.$("[data-toggle=popover]").popover({
         html: true,
         content: '1. Choose Properties to look up.<br /> 2. Select input IDs in workbook.<br /> 3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br /> 4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br /> 5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
       });
       return Office.context.document.addHandlerAsync(Office.EventType.DocumentSelectionChanged, (function(_this) {
         return function() {
-          return _this.setErrorStatus("");
+          return _this.validate();
         };
       })(this));
     };
 
     ExcelInsertCompoundPropertiesController.prototype.handleGetPropertiesClicked = function() {
-      logger.log("Get Properties Clicked");
-      this.setPropertyLookUpStatus("Loading...");
       return Office.context.document.getSelectedDataAsync('matrix', (function(_this) {
         return function(result) {
           if (result.status === 'succeeded') {
-            logger.log("Fetched data");
             return _this.parseInputArray(result.value);
           } else {
             return logger.log(result.error.name + ': ' + result.error.name);
@@ -273,14 +358,54 @@
       })(this));
     };
 
+    ExcelInsertCompoundPropertiesController.prototype.validate = function() {
+      if (this.numberOfDescriptorsChecked === 0) {
+        this.$('.bv_getProperties').attr('disabled', 'disabled');
+        return this.setErrorStatus('Please check atleast one property');
+      } else {
+        return Office.context.document.getSelectedDataAsync('matrix', (function(_this) {
+          return function(result) {
+            var error, errorMessage, i, inputArray, len, req, request;
+            if (result.status === 'succeeded') {
+              inputArray = result.value;
+              error = false;
+              if (inputArray != null) {
+                request = [];
+                for (i = 0, len = inputArray.length; i < len; i++) {
+                  req = inputArray[i];
+                  if (req.length > 1) {
+                    error = true;
+                    errorMessage = 'Select a single column';
+                    break;
+                  } else {
+                    request.push(req[0]);
+                  }
+                }
+                if (!error && request.join("") === "") {
+                  error = true;
+                  errorMessage = 'Please select non-empty cells';
+                }
+              }
+              if (error) {
+                _this.$('.bv_getProperties').attr('disabled', 'disabled');
+                return _this.setErrorStatus(errorMessage);
+              } else {
+                _this.$('.bv_getProperties').removeAttr('disabled');
+                return _this.setErrorStatus('');
+              }
+            }
+          };
+        })(this));
+      }
+    };
+
     ExcelInsertCompoundPropertiesController.prototype.setPropertyLookUpStatus = function(status) {
       return this.$('.bv_propertyLookUpStatus').html(status);
     };
 
     ExcelInsertCompoundPropertiesController.prototype.setErrorStatus = function(status) {
-      this.setPropertyLookUpStatus('');
       this.$('.bv_errorStatus').html(status);
-      if (status === "") {
+      if (status === "" | this.$('.bv_propertyLookUpStatus').html() === "Data ready to insert" | this.$('.bv_propertyLookUpStatus').html() === "Fetching data...") {
         return this.$('.bv_errorStatus').addClass('hide');
       } else {
         return this.$('.bv_errorStatus').removeClass('hide');
@@ -291,9 +416,7 @@
       var error, i, len, req, request;
       error = false;
       if (inputArray != null) {
-        request = {
-          requests: []
-        };
+        request = [];
         for (i = 0, len = inputArray.length; i < len; i++) {
           req = inputArray[i];
           if (req.length > 1) {
@@ -301,14 +424,12 @@
             this.setErrorStatus('Select a single column');
             break;
           } else {
-            request.requests.push({
-              requestName: req[0]
-            });
+            request.push(req[0]);
           }
         }
       }
       if (!error) {
-        return this.fetchPreferred(request);
+        return this.getPropertiesAndRequestData(request);
       }
     };
 
@@ -328,27 +449,17 @@
       })(this));
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.fetchPreferred = function(request) {
-      this.setPropertyLookUpStatus("Fetching preferred ids...");
-      logger.log("starting addPreferred");
-      return $.ajax({
-        type: 'POST',
-        url: "/api/preferredBatchId",
-        data: request,
-        dataType: 'json',
-        success: (function(_this) {
-          return function(json) {
-            logger.log("got preferred id response");
-            return _this.fetchPreferredReturn(json);
-          };
-        })(this),
-        error: (function(_this) {
-          return function(err) {
-            _this.setErrorStatus("Error fetching preferred ids");
-            return logger.log('got ajax error fetching preferred ids');
-          };
-        })(this)
-      });
+    ExcelInsertCompoundPropertiesController.prototype.getPropertiesAndRequestData = function(request) {
+      var entityIdStringLines;
+      this.$('.bv_insertProperties').attr('disabled', 'disabled');
+      this.$('.bv_getProperties').attr('disabled', 'disabled');
+      this.setPropertyLookUpStatus("Fetching data...");
+      entityIdStringLines = request.join("\n");
+      return this.getSelectedProperties((function(_this) {
+        return function(selectedProperties) {
+          return _this.getPreferredIDAndProperties(entityIdStringLines, selectedProperties);
+        };
+      })(this));
     };
 
     ExcelInsertCompoundPropertiesController.prototype.fetchPreferredReturn = function(json) {
@@ -363,80 +474,68 @@
       return this.fetchCompoundProperties();
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.getSelectedProperties = function() {
-      var selectedParentProperties;
-      selectedParentProperties = [];
-      selectedParentProperties.parent = this.parentPropertyDescriptorListController.getSelectedProperties();
-      selectedParentProperties.batch = this.batchPropertyDescriptorListController.getSelectedProperties();
-      return selectedParentProperties;
+    ExcelInsertCompoundPropertiesController.prototype.getSelectedProperties = function(callback) {
+      return this.parentPropertyDescriptorListController.getSelectedProperties((function(_this) {
+        return function(parentProperties) {
+          return _this.batchPropertyDescriptorListController.getSelectedProperties(function(batchProperties) {
+            var selectedProperties;
+            selectedProperties = [];
+            selectedProperties = {
+              parentNames: parentProperties.names,
+              parentPrettyNames: parentProperties.prettyNames,
+              batchNames: batchProperties.names,
+              batchPrettyNames: batchProperties.prettyNames
+            };
+            return callback(selectedProperties);
+          });
+        };
+      })(this));
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.fetchCompoundProperties = function() {
-      var request, selectedProperties;
-      this.setPropertyLookUpStatus("Fetching properties...");
-      selectedProperties = this.getSelectedProperties();
-      request = {
-        properties: selectedProperties.parent,
-        entityIdStringLines: this.preferredIds.join('\n')
+    ExcelInsertCompoundPropertiesController.prototype.getPreferredIDAndProperties = function(entityIdStringLines, selectedProperties) {
+      var req;
+      req = {
+        entityIdStringLines: entityIdStringLines,
+        selectedProperties: selectedProperties,
+        includeRequestedName: this.attributesController.getIncludeRequestedID(),
+        insertColumnHeaders: this.attributesController.getInsertColumnHeaders()
       };
       return $.ajax({
         type: 'POST',
-        url: "/api/testedEntities/properties",
-        data: request,
-        dataType: 'json',
+        url: "/excelApps/getPreferredIDAndProperties",
+        timeout: 180000,
+        data: req,
         success: (function(_this) {
-          return function(json) {
-            logger.log("got compound property response");
-            return _this.fetchCompoundPropertiesReturn(json);
+          return function(csv) {
+            return _this.fetchCompoundPropertiesReturn(csv);
           };
         })(this),
         error: (function(_this) {
-          return function(err) {
-            _this.setErrorStatus("Error fetching properties");
-            return logger.log('got ajax error fetching properties');
+          return function(jqXHR, textStatus) {
+            _this.setPropertyLookUpStatus("Error fetching data");
+            logger.log(textStatus);
+            logger.log(JSON.stringify(jqXHR));
+            _this.$('.bv_insertProperties').removeAttr('disabled');
+            return _this.$('.bv_getProperties').removeAttr('disabled');
           };
         })(this)
       });
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.fetchCompoundPropertiesReturn = function(json) {
-      var csv;
-      csv = json.resultCSV;
-      logger.log(this.attributesController.getIncludeRequestedID());
-      if (!this.attributesController.getIncludeRequestedID() | !this.attributesController.getInsertColumnHeaders()) {
-        csv = this.removeCSVAttributes(csv, !this.attributesController.getIncludeRequestedID(), !this.attributesController.getInsertColumnHeaders());
-        logger.log(csv);
-      }
+    ExcelInsertCompoundPropertiesController.prototype.fetchCompoundPropertiesReturn = function(csv) {
       this.outputArray = this.convertCSVToMatrix(csv);
-      return this.setPropertyLookUpStatus("Data ready to insert...");
-    };
-
-    ExcelInsertCompoundPropertiesController.prototype.removeCSVAttributes = function(csv, removeFirstColumn, removeHeader) {
-      var newCsv, split;
-      split = csv.split('\n');
-      if (removeHeader) {
-        split = split.slice(1);
-      }
-      if (removeFirstColumn) {
-        split = split.map(function(line) {
-          var columns;
-          columns = line.split(',');
-          columns.splice(0, 1);
-          return columns;
-        });
-      }
-      newCsv = split.join('\n');
-      return newCsv;
+      this.setPropertyLookUpStatus("Data ready to insert");
+      this.$('.bv_insertProperties').removeAttr('disabled');
+      return this.$('.bv_getProperties').removeAttr('disabled');
     };
 
     ExcelInsertCompoundPropertiesController.prototype.convertCSVToMatrix = function(csv) {
       var i, len, lines, outMatrix, row;
       outMatrix = [];
       lines = csv.split('\n').slice(0, -1);
-      logger.log(lines.length);
       for (i = 0, len = lines.length; i < len; i++) {
         row = lines[i];
-        outMatrix.push(row.split(','));
+        outMatrix.push(row.split('\t'));
       }
       return outMatrix;
     };

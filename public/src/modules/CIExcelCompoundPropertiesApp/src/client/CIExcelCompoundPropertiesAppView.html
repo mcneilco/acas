@@ -17,31 +17,40 @@
 </script>
 
 <script type="text/template" id="PropertyDescriptorListControllerView">
-    <h4 class="propertyDescriptorListControllerTitle">Descriptors</h4>
+    <div class="col-xs-9" style="padding-left:0px;">
+        <h4 class="col-xs-5 propertyDescriptorListControllerTitle" style="padding-left:0px;margin-right:10px;padding-right:0px;width:150px;">Descriptors</h4>
+        <div style="margin-top:9px;">
+            <button type="button" class="btn-link bv_checkAll glyphicon glyphicon-check"></button>
+            <button type="button" class="btn-link bv_invert glyphicon glyphicon-transfer"></button>
+            <button type="button" class="btn-link bv_uncheckAll glyphicon glyphicon-unchecked"></button>
+        </div>
+    </div>
     <div class="row show-grid bv_propertyDescriptorList"/>
 </script>
 
 <script type="text/template" id="ExcelInsertCompoundPropertiesView">
-    <div class="well" style="width:510px;">
+    <div class="well" style="width:510px;padding-bottom:40px;">
         <div style="padding-bottom:5px;" >
             <a tabindex="0" class="pull-right bv_popover" data-placement="left" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
             <div class="bv_attributes">Attributes</div>
             <div class="bv_batchProperties">Batch Properties</div>
             <div class="bv_parentProperties">Parent Properties</div>
         </div>
-        <div style="padding-bottom:20px;">
-            <button class="btn btn-primary bv_getProperties" style="float:left;">Get Properties</button>
-            <div class="bv_propertyLookUpStatus"></div>
+        <div>
+            <button class="btn btn-primary bv_getProperties" disabled="disabled" style="margin-bottom:3px;float:left;">Get Properties</button>
+            <div class="bv_propertyLookUpStatus pull-right" style="margin-top:9px;"></div>
         </div>
     </div>
     <div style="width:510px;">
-        <button class="btn btn-primary bv_insertProperties" style="float:right;">Insert Properties</button>
-        <div class="alert alert-danger bv_errorStatus hide" style="height:35px;width:370px;">Error</div>
+        <button class="btn btn-primary bv_insertProperties" disabled="disabled" style="margin-bottom:20px;float:right;">Insert Properties</button>
     </div>
+    <div class="alert alert-danger bv_errorStatus hide" style="padding-top:6px;padding-bottom:6px;width:370px;">Error</div>
 </script>
 
 <script type="text/template" id="ExcelAppLoggerView">
-    Log: <button class="btn btn-default bv_clearLog">Clear</button>
-    <div class="bv_logEntries"></div>
+    <div class="col-xs-4" style="width:510px;">
+        Log: <button class="btn btn-default bv_clearLog">Clear</button>
+        <div class="bv_logEntries"></div>
+    </div>
 </script>
 

@@ -35,7 +35,7 @@ describe "Excel Compound Info App module testing", ->
 				expect(@attributesController).toBeDefined()
 			it "insert column headers and include requested ids should be checked by default", ->
 				expect(@attributesController.$('.bv_insertColumnHeaders').attr("checked")).toEqual "checked"
-				expect(@attributesController.$('.bv_includeRequestedID').attr("checked")).toEqual "checked"
+				expect(@attributesController.$('.bv_includeRequestedID').attr("checked")).toBeUndefined()
 	describe "Property Descriptor Controller", ->
 		beforeEach ->
 				@pdc = new  PropertyDescriptorController
@@ -88,8 +88,17 @@ describe "Excel Compound Info App module testing", ->
 				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
 					el: $("#fixture")
 				window.insertCompoundPropertiesController.render()
+				numberReady = 0
 				window.insertCompoundPropertiesController.batchPropertyDescriptorListController.on 'ready', ->
-					done()
+					if numberReady == 1
+						done()
+					else
+						numberReady = 1
+				window.insertCompoundPropertiesController.parentPropertyDescriptorListController.on 'ready', ->
+					if numberReady == 1
+						done()
+					else
+						numberReady = 1
 				return
 			), 100
 			return
@@ -106,22 +115,21 @@ describe "Excel Compound Info App module testing", ->
 				expect(insertCompoundPropertiesController.batchPropertyDescriptorListController).toBeDefined()
 		describe "getSelectedProperties", ->
 			it "should return an array of properties with a batch and parent key", ->
+				console.log window.insertCompoundPropertiesController.$('.bv_parentProperties')
 				window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click()
 				window.insertCompoundPropertiesController.$('.bv_batchProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[1].click()
 				window.insertCompoundPropertiesController.$('.bv_parentProperties .bv_propertyDescriptorList .bv_propertyDescriptorCheckbox')[0].click()
-				selectedProperties =  window.insertCompoundPropertiesController.getSelectedProperties()
-				expect(selectedProperties.parent.length).toEqual(1)
-				expect(selectedProperties.batch.length).toEqual(2)
-
+				window.insertCompoundPropertiesController.getSelectedProperties (selectedProperties) ->
+					expect(selectedProperties.parentNames.length).toEqual(1)
+					expect(selectedProperties.batchNames.length).toEqual(2)
 		describe "handleGetPropertiesClicked", ->
 			it "should call fetchPrepared if result.status is 'succeeded'", ->
 				window.resultMockObject = window.successfulResultMockObject
-				spyOn insertCompoundPropertiesController, "fetchPreferred"
+				spyOn insertCompoundPropertiesController, "getPropertiesAndRequestData"
 				insertCompoundPropertiesController.handleGetPropertiesClicked()
-				expect(insertCompoundPropertiesController.fetchPreferred).toHaveBeenCalled()
-
+				expect(insertCompoundPropertiesController.getPropertiesAndRequestData).toHaveBeenCalled()
 			it "should not call fetchPrepared if result.status is not 'succeeded'", ->
 				window.resultMockObject = window.unsuccessfulResultMockObject
-				spyOn insertCompoundPropertiesController, "fetchPreferred"
+				spyOn insertCompoundPropertiesController, "getPropertiesAndRequestData"
 				insertCompoundPropertiesController.handleGetPropertiesClicked()
-				expect(insertCompoundPropertiesController.fetchPreferred).not.toHaveBeenCalled()
+				expect(insertCompoundPropertiesController.getPropertiesAndRequestData).not.toHaveBeenCalled()

@@ -2,6 +2,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/testedEntities/properties', exports.testedEntityPropertiesRoute
 	app.get '/api/:entityType/:entityKind/property/descriptors', exports.entityPropertyDescriptors
 	app.post '/api/:entityType/:entityKind/properties/:format?', exports.entityPropertiesRoute
+	app.post '/api/entityMeta/properties/:format?', exports.entityPropertiesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
@@ -9,13 +10,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/:entityType/:entityKind/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute
 
 exports.entityPropertiesRoute = (req, resp) ->
-	exports.entityProperties req.params.entityType, req.params.entityKind, req.body.entityCodeList, req.body.propertyNameList, req.params.format, (json) ->
+	exports.entityProperties req.body.displayName, req.body.entityCodeList, req.body.propertyNameList, req.params.format, (json) ->
 		if json.indexOf('problem with property request') > -1
 			resp.statusCode = 500
 		else
 			resp.json json
 
-exports.entityProperties = (entityType, entityKind, entityCodeList, propertyNameList, format, callback) ->
+exports.entityProperties = (displayName, entityCodeList, propertyNameList, format, callback) ->
 	#Default format if not provided is json
 	if !format?
 		format = "json"
@@ -41,9 +42,9 @@ exports.entityProperties = (entityType, entityKind, entityCodeList, propertyName
 		callback response
 
 	else
-		csUtilities.getEntityProperties entityType, entityKind, entityCodeList, propertyNameList, format, callback, (json) ->
-			if properties?
-				callback properties
+		csUtilities.getExternalEntityProperties displayName, entityCodeList, propertyNameList, format, (response) =>
+			if response?
+				callback response
 			else
 				callback "problem with property request, check log"
 

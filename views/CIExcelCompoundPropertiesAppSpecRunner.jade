@@ -22,17 +22,18 @@ html
       script(type='text/javascript', src="/javascripts/src/CIExcelCompoundPropertiesApp.js")
       script(type='text/javascript', src="/javascripts/spec/CIExcelCompoundPropertiesAppSpec.js")
       script(type='text/javascript', src="/javascripts/spec/testFixtures/ParentPropertyDescriptorServiceTestJSON.js")
+
 block content
    link(rel='stylesheet', href='src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine.css')
    div#fixture
 
    script
-      window.AppLaunchParams = !{JSON.stringify(appParams)};
+      //window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
       var jasmineEnv = jasmine.getEnv();
       jasmineEnv.updateInterval = 1000;
 
-      var trivialReporter = new jasmine.TrivialReporter();
-
+      var trivialReporter = new jasmine.HtmlReporter();
+      trivialReporter.initialize();
       jasmineEnv.addReporter(trivialReporter);
 
       jasmineEnv.specFilter = function(spec) {

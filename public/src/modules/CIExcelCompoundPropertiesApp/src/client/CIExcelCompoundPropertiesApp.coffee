@@ -1,23 +1,24 @@
 
 # The following is needed when running specs and live
-window.Office.initialize = (reason) ->
-	$(document).ready ->
+#if navigator.appVersion.indexOf("Microsoft") != -1 && window.Office?
+if true
+	window.Office.initialize = (reason) ->
+		$(document).ready ->
+			window.logger = new ExcelAppLogger
+				el: $('.bv_log')
+			logger.render()
+			window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+				el: $('.bv_excelInsertCompoundPropertiesView')
+			insertCompoundPropertiesController.render()
+else
+	#The following is used for debugging the app in chrome
+	window.onload = ->
 		window.logger = new ExcelAppLogger
 			el: $('.bv_log')
 		logger.render()
 		window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
 			el: $('.bv_excelInsertCompoundPropertiesView')
 		insertCompoundPropertiesController.render()
-
-#The following is used for debugging the app in chrome
-#window.onload = ->
-#	window.logger = new ExcelAppLogger
-#		el: $('.bv_log')
-#	logger.render()
-#	window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
-#		el: $('.bv_excelInsertCompoundPropertiesView')
-#	insertCompoundPropertiesController.render()
-
 
 class window.Attributes extends Backbone.Model
 	defaults:
@@ -68,12 +69,22 @@ class window.PropertyDescriptorController extends Backbone.View
 		@
 
 	handleDescriptorCheckboxChanged: ->
-		@model.set 'isChecked', @$('.bv_propertyDescriptorCheckbox').is(":checked")
+		checked = @$('.bv_propertyDescriptorCheckbox').is(":checked")
+		@model.set 'isChecked', checked
+		if checked
+			@trigger 'checked'
+		else
+			@trigger 'unchecked'
 
 class window.PropertyDescriptorList extends Backbone.Collection
 	model: PropertyDescriptor
 
 class window.PropertyDescriptorListController extends Backbone.View
+	events:
+		'click .bv_checkAll': 'handleCheckAllClicked'
+		'click .bv_invert': 'handleInvertSelectionClicked'
+		'click .bv_uncheckAll': 'handleUncheckAllClicked'
+
 	initialize: ->
 		@title = @options.title
 		@template = _.template($("#PropertyDescriptorListControllerView").html())
@@ -96,16 +107,38 @@ class window.PropertyDescriptorListController extends Backbone.View
 			@$('.bv_propertyDescriptorList').append pdc.render().el
 		@
 
+	handleCheckAllClicked: ->
+		@propertyControllersList.forEach (pdc) ->
+			if !pdc.model.get ('isChecked')
+				pdc.$('.bv_propertyDescriptorCheckbox').click()
+
+	handleInvertSelectionClicked: ->
+		@propertyControllersList.forEach (pdc) ->
+			pdc.$('.bv_propertyDescriptorCheckbox').click()
+
+	handleUncheckAllClicked: ->
+		@propertyControllersList.forEach (pdc) ->
+			if pdc.model. get ('isChecked')
+					pdc.$('.bv_propertyDescriptorCheckbox').click()
+
 	getSelectedProperties: (callback)->
 		selectedProperties = @collection.where({isChecked: true})
-		selectedPropertyNames = []
+		selectedProps =
+			names: []
+			prettyNames: []
 		selectedProperties.forEach (selectedProperty) ->
-			selectedPropertyNames.push(selectedProperty.get('valueDescriptor').name)
-		callback(selectedPropertyNames)
+			selectedProps.names.push(selectedProperty.get('valueDescriptor').name)
+			selectedProps.prettyNames.push(selectedProperty.get('valueDescriptor').prettyName)
+		callback selectedProps
 
 	addPropertyDescriptor: (propertyDescriptor) ->
 		pdc = new PropertyDescriptorController
 			model: propertyDescriptor
+		pdc.on 'checked', =>
+			@trigger 'checked'
+		pdc.on 'unchecked', =>
+			@trigger 'unchecked'
+
 		@propertyControllersList.push pdc
 
 
@@ -128,12 +161,25 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			el: $('.bv_batchProperties')
 			title: 'Batch Properties'
 			url: '/api/compound/batch/property/descriptors'
+		@numberOfDescriptorsChecked = 0
 		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
+		@batchPropertyDescriptorListController.on 'checked', =>
+			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked + 1
+			@validate()
+		@batchPropertyDescriptorListController.on 'unchecked', =>
+			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked - 1
+			@validate()
 		@parentPropertyDescriptorListController = new PropertyDescriptorListController
 			el: $('.bv_parentProperties')
 			title: 'Parent Properties'
 			url: '/api/compound/parent/property/descriptors'
 		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
+		@parentPropertyDescriptorListController.on 'checked', =>
+			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked + 1
+			@validate()
+		@parentPropertyDescriptorListController.on 'unchecked', =>
+			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked - 1
+			@validate()
 		@$("[data-toggle=popover]").popover
 			html: true
 			content: '1. Choose Properties to look up.<br />
@@ -142,25 +188,52 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 								4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br />
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
-				@setErrorStatus ""
+			@validate()
 
 	handleGetPropertiesClicked: =>
-		#TODO make sure input is a single column or error
-		logger.log "Get Properties Clicked"
-		@setPropertyLookUpStatus "Loading..."
 		Office.context.document.getSelectedDataAsync 'matrix', (result) =>
 			if result.status == 'succeeded'
-				logger.log "Fetched data"
 				@parseInputArray result.value
 			else
 				logger.log result.error.name + ': ' + result.error.name
+
+	validate: =>
+		if @numberOfDescriptorsChecked == 0
+			@$('.bv_getProperties').attr 'disabled', 'disabled'
+			@setErrorStatus 'Please check atleast one property'
+		else
+			Office.context.document.getSelectedDataAsync 'matrix', (result) =>
+				if result.status == 'succeeded'
+					inputArray = result.value
+					error = false
+					if inputArray?
+						request = []
+						for req in inputArray
+							if req.length > 1
+								error = true
+								errorMessage =  'Select a single column'
+								break
+							else
+								request.push req[0]
+						if !error && request.join("") == ""
+							error = true
+							errorMessage =  'Please select non-empty cells'
+#						if !error && window.conf.ciExcelCompoundPropertiesApp? && window.conf.ciExcelCompoundPropertiesApp.maxUserRequests? && request.length >= window.conf.ciExcelCompoundPropertiesApp.maxUserRequests
+#								error = true
+#								errorMessage =  request.length + " selected, please select no more than " + window.conf.ciExcelCompoundPropertiesApp.maxUserRequests
+					if error
+						@$('.bv_getProperties').attr 'disabled', 'disabled'
+						@setErrorStatus errorMessage
+					else
+						@$('.bv_getProperties').removeAttr 'disabled'
+						@setErrorStatus ''
 
 	setPropertyLookUpStatus: (status) =>
 	  @.$('.bv_propertyLookUpStatus').html status
 
 	setErrorStatus: (status) =>
 		@.$('.bv_errorStatus').html status
-		if status == ""
+		if status == "" | @.$('.bv_propertyLookUpStatus').html() == "Data ready to insert" | @.$('.bv_propertyLookUpStatus').html() == "Fetching data..."
 			@.$('.bv_errorStatus').addClass('hide')
 		else
 			@.$('.bv_errorStatus').removeClass('hide')
@@ -177,7 +250,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 				else
 					request.push req[0]
 		if not error
-			@getPreferredIDAndProperties request
+			@getPropertiesAndRequestData request
 
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
@@ -187,40 +260,17 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			if result.status != 'succeeded'
 				logger.log result.error.name + ':' + result.error.message
 
-	getPreferredIDAndProperties: (request) ->
-		@setPropertyLookUpStatus "Fetching preferred batch ids..."
-		entityIdStringLines = request.join("\n")
-		@getSelectedProperties(entityIdStringLines)
-		logger.log selectedProperties
-		req =
-			entityIdStringLines: entityIdStringLines,
-			selectedProperties: selectedProperties
+	getPropertiesAndRequestData: (request) ->
+		@$('.bv_insertProperties').attr 'disabled', 'disabled'
+		@$('.bv_getProperties').attr 'disabled', 'disabled'
 
-#		$.ajax
-#			type: 'POST'
-#			url: "/excelApps/getPreferredIDAndProperties"
-#			data: req
-#			success: (json) =>
-#				@setPropertyLookUpStatus "Fetching preferred ids..."
-#				logger.log "starting addPreferred"
-#				logger.log JSON.stringify(json)
-#				request.type = "compound"
-#				request.kind = "parent name"
-#				request.entityIdStringLines = request.requests
-#				$.ajax
-#					type: 'POST'
-#					url: "/api/entitymeta/preferredCodes"
-#					data: request
-#					success: (json) =>
-#						logger.log "got preferred id response"
-#						logger.log JSON.stringify(json)
-#						@fetchPreferredReturn json
-#					error: (err) =>
-#						@setErrorStatus "Error fetching preferred ids"
-#						logger.log 'got ajax error fetching preferred ids'
-#			error: (err) =>
-#				@setErrorStatus "Error fetching preferred ids"
-#				logger.log 'got ajax error fetching preferred ids'
+		@setPropertyLookUpStatus "Fetching data..."
+
+		entityIdStringLines = request.join("\n")
+
+		@getSelectedProperties (selectedProperties) =>
+			@getPreferredIDAndProperties entityIdStringLines, selectedProperties
+
 
 	fetchPreferredReturn: (json) ->
 		@preferredIds = []
@@ -229,81 +279,48 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			@preferredIds.push prefName
 		@fetchCompoundProperties()
 
-	getSelectedProperties: (entityIdStringLines)->
-		selectedProperties = []
+	getSelectedProperties: (callback)->
 		@parentPropertyDescriptorListController.getSelectedProperties (parentProperties) =>
 			@batchPropertyDescriptorListController.getSelectedProperties (batchProperties) =>
+				selectedProperties = []
 				selectedProperties =
-					parent: parentProperties
-					batch: batchProperties
-				req =
-					entityIdStringLines: entityIdStringLines
-					selectedProperties: selectedProperties
-				$.ajax
-					type: 'POST'
-					url: "/excelApps/getPreferredIDAndProperties"
-					data: req
-					success: (json) =>
-						@setPropertyLookUpStatus "Returned from preferred id and property services..."
-						logger.log "starting addPreferred"
-						logger.log JSON.stringify(json)
-						request.type = "compound"
-						request.kind = "parent name"
-						request.entityIdStringLines = request.requests
+					parentNames: parentProperties.names
+					parentPrettyNames: parentProperties.prettyNames
+					batchNames: batchProperties.names
+					batchPrettyNames: batchProperties.prettyNames
+				callback selectedProperties
 
-
-		selectedProperties.batch = @batchPropertyDescriptorListController.getSelectedProperties()
-		return selectedProperties
-
-	fetchCompoundProperties: ->
-		@setPropertyLookUpStatus "Fetching properties..."
-		selectedProperties = @getSelectedProperties()
-		request =
-			properties: selectedProperties.parent
-			entityIdStringLines: @preferredIds.join '\n'
+	getPreferredIDAndProperties: (entityIdStringLines, selectedProperties) ->
+		req =
+			entityIdStringLines: entityIdStringLines
+			selectedProperties: selectedProperties
+			includeRequestedName: @attributesController.getIncludeRequestedID()
+			insertColumnHeaders: @attributesController.getInsertColumnHeaders()
 		$.ajax
 			type: 'POST'
-			url: "/api/testedEntities/properties"
-			data: request
-			dataType: 'json'
-			success: (json) =>
-				logger.log "got compound property response"
-				@fetchCompoundPropertiesReturn json
-			error: (err) =>
-				@setErrorStatus "Error fetching properties"
-				logger.log 'got ajax error fetching properties'
+			url: "/excelApps/getPreferredIDAndProperties"
+			timeout: 180000
+			data: req
+			success: (csv) =>
+				@fetchCompoundPropertiesReturn csv
+			error: (jqXHR, textStatus)=>
+				@setPropertyLookUpStatus "Error fetching data"
+				logger.log textStatus
+				logger.log JSON.stringify(jqXHR)
+				@$('.bv_insertProperties').removeAttr 'disabled'
+				@$('.bv_getProperties').removeAttr 'disabled'
 
-	fetchCompoundPropertiesReturn: (json) =>
-		csv = json.resultCSV
-		logger.log @attributesController.getIncludeRequestedID()
-		if !@attributesController.getIncludeRequestedID() | !@attributesController.getInsertColumnHeaders()
-			csv = @removeCSVAttributes csv, !@attributesController.getIncludeRequestedID(), !@attributesController.getInsertColumnHeaders()
-			logger.log csv
-
+	fetchCompoundPropertiesReturn: (csv) =>
 		@outputArray = @convertCSVToMatrix csv
-		@setPropertyLookUpStatus "Data ready to insert..."
-
-	removeCSVAttributes: (csv, removeFirstColumn, removeHeader)->
-		split = csv.split('\n')
-		if removeHeader
-			split = split.slice(1)
-
-		if removeFirstColumn
-			split = split.map((line) ->
-				columns = line.split ','
-				columns.splice 0, 1
-				columns
-			)
-		newCsv = split.join('\n')
-		return newCsv
-
+		@setPropertyLookUpStatus "Data ready to insert"
+		@$('.bv_insertProperties').removeAttr 'disabled'
+		@$('.bv_getProperties').removeAttr 'disabled'
 
 	convertCSVToMatrix: (csv) ->
 		outMatrix = []
 		lines = csv.split('\n')[0..-2] #trim trailing blank line
-		logger.log lines.length
 		for row in lines
-			outMatrix.push row.split(',')
+			outMatrix.push row.split('\t')
 		return outMatrix
 
 class window.ExcelAppLogger extends Backbone.View
@@ -324,11 +341,5 @@ class window.ExcelAppLogger extends Backbone.View
 		@$('.bv_logEntries').empty()
 
 #TODO maybe add cell coloring for preferred id results
-#TODO Preferred ID service seems to break of the last request is empty
 #TODO better error trapping and display. alert() doesn't work
 #TODO move logger to its own file
-#TODO is there a service with the list of available calc properties?
-#http://imapp01-d.dart.corp:8080/compserv-rest/api/Compounds/CalculatedProperties/v2/Descriptors
-#TODO add properties from http://imapp01-d:8080/DNS/ligands/v1/Batches/BatchProperties
-#TODO disable insert button until fetch is returned
-#TODO don't send bad ids to compound properties (it fails), but do leave blank lines in results

@@ -78,6 +78,7 @@
 	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	routeSet_3.setupRoutes(app, loginRoutes);
 	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
+	routeSet_4 = require("./routes/CIExcelCompoundPropertiesApp.js");
 	routeSet_4.setupRoutes(app, loginRoutes);
 	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
 	routeSet_5.setupRoutes(app, loginRoutes);
