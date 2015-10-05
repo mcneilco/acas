@@ -86,6 +86,8 @@ class window.PropertyDescriptorListController extends Backbone.View
 		'click .bv_uncheckAll': 'handleUncheckAllClicked'
 
 	initialize: ->
+		@numberChecked=0
+		@valid = false
 		@title = @options.title
 		@template = _.template($("#PropertyDescriptorListControllerView").html())
 		@collection = new PropertyDescriptorList()
@@ -108,8 +110,10 @@ class window.PropertyDescriptorListController extends Backbone.View
 		@
 
 	handleCheckAllClicked: ->
+		anyClicked = false
 		@propertyControllersList.forEach (pdc) ->
 			if !pdc.model.get ('isChecked')
+				anyClicked = true
 				pdc.$('.bv_propertyDescriptorCheckbox').click()
 
 	handleInvertSelectionClicked: ->
@@ -135,11 +139,23 @@ class window.PropertyDescriptorListController extends Backbone.View
 		pdc = new PropertyDescriptorController
 			model: propertyDescriptor
 		pdc.on 'checked', =>
-			@trigger 'checked'
+			@numberChecked = @numberChecked + 1
+			@validate()
 		pdc.on 'unchecked', =>
-			@trigger 'unchecked'
-
+			@numberChecked = @numberChecked - 1
+			@validate()
 		@propertyControllersList.push pdc
+
+	validate: ->
+		if @numberChecked == 0
+			if @valid == true
+				@valid = false
+				@trigger 'invalid'
+		else
+			if @valid == false
+				@valid = true
+				@trigger 'valid'
+
 
 
 
@@ -161,24 +177,25 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			el: $('.bv_batchProperties')
 			title: 'Batch Properties'
 			url: '/api/compound/batch/property/descriptors'
-		@numberOfDescriptorsChecked = 0
+		@batchPropertyDescriptorValid = false
 		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
-		@batchPropertyDescriptorListController.on 'checked', =>
-			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked + 1
+		@batchPropertyDescriptorListController.on 'valid', =>
+			@batchPropertyDescriptorValid = true
 			@validate()
-		@batchPropertyDescriptorListController.on 'unchecked', =>
-			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked - 1
+		@parentPropertyDescriptorValid = false
+		@batchPropertyDescriptorListController.on 'invalid', =>
+			@batchPropertyDescriptorValid = false
 			@validate()
 		@parentPropertyDescriptorListController = new PropertyDescriptorListController
 			el: $('.bv_parentProperties')
 			title: 'Parent Properties'
 			url: '/api/compound/parent/property/descriptors'
 		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
-		@parentPropertyDescriptorListController.on 'checked', =>
-			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked + 1
+		@parentPropertyDescriptorListController.on 'valid', =>
+			@parentPropertyDescriptorValid = true
 			@validate()
-		@parentPropertyDescriptorListController.on 'unchecked', =>
-			@numberOfDescriptorsChecked = @numberOfDescriptorsChecked - 1
+		@parentPropertyDescriptorListController.on 'invalid', =>
+			@parentPropertyDescriptorValid = false
 			@validate()
 		@$("[data-toggle=popover]").popover
 			html: true
@@ -198,7 +215,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 				logger.log result.error.name + ': ' + result.error.name
 
 	validate: =>
-		if @numberOfDescriptorsChecked == 0
+		if @parentPropertyDescriptorValid == false && @batchPropertyDescriptorValid == false
 			@$('.bv_getProperties').attr 'disabled', 'disabled'
 			@setErrorStatus 'Please check atleast one property'
 		else

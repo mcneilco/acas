@@ -173,6 +173,8 @@
     };
 
     PropertyDescriptorListController.prototype.initialize = function() {
+      this.numberChecked = 0;
+      this.valid = false;
       this.title = this.options.title;
       this.template = _.template($("#PropertyDescriptorListControllerView").html());
       this.collection = new PropertyDescriptorList();
@@ -208,8 +210,11 @@
     };
 
     PropertyDescriptorListController.prototype.handleCheckAllClicked = function() {
+      var anyClicked;
+      anyClicked = false;
       return this.propertyControllersList.forEach(function(pdc) {
         if (!pdc.model.get('isChecked')) {
+          anyClicked = true;
           return pdc.$('.bv_propertyDescriptorCheckbox').click();
         }
       });
@@ -252,15 +257,31 @@
       });
       pdc.on('checked', (function(_this) {
         return function() {
-          return _this.trigger('checked');
+          _this.numberChecked = _this.numberChecked + 1;
+          return _this.validate();
         };
       })(this));
       pdc.on('unchecked', (function(_this) {
         return function() {
-          return _this.trigger('unchecked');
+          _this.numberChecked = _this.numberChecked - 1;
+          return _this.validate();
         };
       })(this));
       return this.propertyControllersList.push(pdc);
+    };
+
+    PropertyDescriptorListController.prototype.validate = function() {
+      if (this.numberChecked === 0) {
+        if (this.valid === true) {
+          this.valid = false;
+          return this.trigger('invalid');
+        }
+      } else {
+        if (this.valid === false) {
+          this.valid = true;
+          return this.trigger('valid');
+        }
+      }
     };
 
     return PropertyDescriptorListController;
@@ -303,17 +324,18 @@
         title: 'Batch Properties',
         url: '/api/compound/batch/property/descriptors'
       });
-      this.numberOfDescriptorsChecked = 0;
+      this.batchPropertyDescriptorValid = false;
       this.batchPropertyDescriptorListController.on('ready', this.batchPropertyDescriptorListController.render);
-      this.batchPropertyDescriptorListController.on('checked', (function(_this) {
+      this.batchPropertyDescriptorListController.on('valid', (function(_this) {
         return function() {
-          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked + 1;
+          _this.batchPropertyDescriptorValid = true;
           return _this.validate();
         };
       })(this));
-      this.batchPropertyDescriptorListController.on('unchecked', (function(_this) {
+      this.parentPropertyDescriptorValid = false;
+      this.batchPropertyDescriptorListController.on('invalid', (function(_this) {
         return function() {
-          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked - 1;
+          _this.batchPropertyDescriptorValid = false;
           return _this.validate();
         };
       })(this));
@@ -323,15 +345,15 @@
         url: '/api/compound/parent/property/descriptors'
       });
       this.parentPropertyDescriptorListController.on('ready', this.parentPropertyDescriptorListController.render);
-      this.parentPropertyDescriptorListController.on('checked', (function(_this) {
+      this.parentPropertyDescriptorListController.on('valid', (function(_this) {
         return function() {
-          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked + 1;
+          _this.parentPropertyDescriptorValid = true;
           return _this.validate();
         };
       })(this));
-      this.parentPropertyDescriptorListController.on('unchecked', (function(_this) {
+      this.parentPropertyDescriptorListController.on('invalid', (function(_this) {
         return function() {
-          _this.numberOfDescriptorsChecked = _this.numberOfDescriptorsChecked - 1;
+          _this.parentPropertyDescriptorValid = false;
           return _this.validate();
         };
       })(this));
@@ -359,7 +381,7 @@
     };
 
     ExcelInsertCompoundPropertiesController.prototype.validate = function() {
-      if (this.numberOfDescriptorsChecked === 0) {
+      if (this.parentPropertyDescriptorValid === false && this.batchPropertyDescriptorValid === false) {
         this.$('.bv_getProperties').attr('disabled', 'disabled');
         return this.setErrorStatus('Please check atleast one property');
       } else {

@@ -17,7 +17,7 @@
     </Capabilities>
 
     <DefaultSettings>
-        <SourceLocation DefaultValue="http://localhost:48203/excelApps/compoundInfo"/>
+        <SourceLocation DefaultValue="http://localhost:48216/excelApps/compoundInfo"/>
     </DefaultSettings>
     <Permissions>ReadWriteDocument</Permissions>
 </OfficeApp>
