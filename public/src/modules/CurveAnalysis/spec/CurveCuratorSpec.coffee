@@ -262,7 +262,7 @@ describe "Curve Curator Module testing", ->
 			it "should setup a cause pick list list", ->
 				expect(@kpc.knockoutReasonList).toBeDefined
 			it "should have a set of pick list models", ->
-				expect(@kpc.knockoutReasonList.models.length) > 1
+				expect(@kpc.knockoutObservationList.models.length) > 1
 		describe "should trigger event when ok button is clicked and return an observation", ->
 			beforeEach ->
 				runs ->

@@ -420,7 +420,7 @@
     var baseurl, config, experimentServiceTestJSON;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind));
+      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind[req.params.stateType][req.params.stateKind][req.params.valueType][req.params.valueKind]));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "/experiments/" + req.params.idOrCode + "/exptvalues/bystate/" + req.params.stateType + "/" + req.params.stateKind + "/byvalue/" + req.params.valueType + "/" + req.params.valueKind + "/json";
