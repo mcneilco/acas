@@ -54,7 +54,7 @@ exports.getBatchRenderRoute = (req, resp) ->
 
 exports.getBatchRender = (referenceCode, callback) ->
 	htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '">'
-	htmlReturn += ' <p align="center">' + referenceCode + '</p>'
+	htmlReturn += '<a href="'+config.all.client.service.external.lotDetails.url+referenceCode+'" target="_blank" align="center">'+referenceCode+'</a>'
 	callback html: htmlReturn
 
 
