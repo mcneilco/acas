@@ -23,7 +23,7 @@
     return result;
   };
 
-  exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
+  exports.runRFunction_HIDDEN = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, config, csUtilities, exec, preValErrors, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions, stdoutFile;
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -110,7 +110,7 @@
     })(this));
   };
 
-  exports.runRApacheFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
+  exports.runRFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
     var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON, serverUtilityFunctions;
     request = require('request');
     config = require('../conf/compiled/conf.js');
