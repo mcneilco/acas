@@ -1,10 +1,10 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty,
-    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.LSNotificationMessageModel = (function(superClass) {
-    extend(LSNotificationMessageModel, superClass);
+  window.LSNotificationMessageModel = (function(_super) {
+    __extends(LSNotificationMessageModel, _super);
 
     function LSNotificationMessageModel() {
       return LSNotificationMessageModel.__super__.constructor.apply(this, arguments);
@@ -21,8 +21,8 @@
 
   })(Backbone.Model);
 
-  window.LSNotificatioMessageCollection = (function(superClass) {
-    extend(LSNotificatioMessageCollection, superClass);
+  window.LSNotificatioMessageCollection = (function(_super) {
+    __extends(LSNotificatioMessageCollection, _super);
 
     function LSNotificatioMessageCollection() {
       return LSNotificatioMessageCollection.__super__.constructor.apply(this, arguments);
@@ -34,8 +34,8 @@
 
   })(Backbone.Collection);
 
-  window.LSAbstractNotificationCounterController = (function(superClass) {
-    extend(LSAbstractNotificationCounterController, superClass);
+  window.LSAbstractNotificationCounterController = (function(_super) {
+    __extends(LSAbstractNotificationCounterController, _super);
 
     function LSAbstractNotificationCounterController() {
       return LSAbstractNotificationCounterController.__super__.constructor.apply(this, arguments);
@@ -64,7 +64,7 @@
         count: this.notificationsList.length
       });
       $(this.el).html(template);
-      counterPopoverText = this.notificationsList.length + " " + this.messageString;
+      counterPopoverText = "" + this.notificationsList.length + " " + this.messageString;
       if (this.notificationsList.length !== 1) {
         counterPopoverText += "s";
       }
@@ -78,8 +78,8 @@
 
   })(Backbone.View);
 
-  window.LSErrorNotificationCounterController = (function(superClass) {
-    extend(LSErrorNotificationCounterController, superClass);
+  window.LSErrorNotificationCounterController = (function(_super) {
+    __extends(LSErrorNotificationCounterController, _super);
 
     function LSErrorNotificationCounterController() {
       return LSErrorNotificationCounterController.__super__.constructor.apply(this, arguments);
@@ -93,8 +93,8 @@
 
   })(window.LSAbstractNotificationCounterController);
 
-  window.LSWarningNotificationCounterController = (function(superClass) {
-    extend(LSWarningNotificationCounterController, superClass);
+  window.LSWarningNotificationCounterController = (function(_super) {
+    __extends(LSWarningNotificationCounterController, _super);
 
     function LSWarningNotificationCounterController() {
       return LSWarningNotificationCounterController.__super__.constructor.apply(this, arguments);
@@ -108,8 +108,8 @@
 
   })(window.LSAbstractNotificationCounterController);
 
-  window.LSInfoNotificationCounterController = (function(superClass) {
-    extend(LSInfoNotificationCounterController, superClass);
+  window.LSInfoNotificationCounterController = (function(_super) {
+    __extends(LSInfoNotificationCounterController, _super);
 
     function LSInfoNotificationCounterController() {
       return LSInfoNotificationCounterController.__super__.constructor.apply(this, arguments);
@@ -123,8 +123,8 @@
 
   })(window.LSAbstractNotificationCounterController);
 
-  window.LSMessageController = (function(superClass) {
-    extend(LSMessageController, superClass);
+  window.LSMessageController = (function(_super) {
+    __extends(LSMessageController, _super);
 
     function LSMessageController() {
       return LSMessageController.__super__.constructor.apply(this, arguments);
@@ -155,8 +155,8 @@
 
   })(Backbone.View);
 
-  window.LSErrorController = (function(superClass) {
-    extend(LSErrorController, superClass);
+  window.LSErrorController = (function(_super) {
+    __extends(LSErrorController, _super);
 
     function LSErrorController() {
       return LSErrorController.__super__.constructor.apply(this, arguments);
@@ -197,8 +197,8 @@
 
   })(Backbone.View);
 
-  window.LSWarningController = (function(superClass) {
-    extend(LSWarningController, superClass);
+  window.LSWarningController = (function(_super) {
+    __extends(LSWarningController, _super);
 
     function LSWarningController() {
       return LSWarningController.__super__.constructor.apply(this, arguments);
@@ -239,8 +239,8 @@
 
   })(Backbone.View);
 
-  window.LSInfoController = (function(superClass) {
-    extend(LSInfoController, superClass);
+  window.LSInfoController = (function(_super) {
+    __extends(LSInfoController, _super);
 
     function LSInfoController() {
       return LSInfoController.__super__.constructor.apply(this, arguments);
@@ -281,12 +281,12 @@
 
   })(Backbone.View);
 
-  window.LSNotificationController = (function(superClass) {
-    extend(LSNotificationController, superClass);
+  window.LSNotificationController = (function(_super) {
+    __extends(LSNotificationController, _super);
 
     function LSNotificationController() {
-      this.clearAllNotificiations = bind(this.clearAllNotificiations, this);
-      this.toggleShowNotificationMessages = bind(this.toggleShowNotificationMessages, this);
+      this.clearAllNotificiations = __bind(this.clearAllNotificiations, this);
+      this.toggleShowNotificationMessages = __bind(this.toggleShowNotificationMessages, this);
       return LSNotificationController.__super__.constructor.apply(this, arguments);
     }
 

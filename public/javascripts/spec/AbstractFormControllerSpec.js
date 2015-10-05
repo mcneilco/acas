@@ -1,6 +1,6 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
   describe('AbstractFormController Behavior Testing', function() {
     beforeEach(function() {
@@ -12,8 +12,8 @@
     });
     return describe('when instantiated', function() {
       beforeEach(function() {
-        this.TestAbstractFormController = (function(superClass) {
-          extend(TestAbstractFormController, superClass);
+        this.TestAbstractFormController = (function(_super) {
+          __extends(TestAbstractFormController, _super);
 
           function TestAbstractFormController() {
             return TestAbstractFormController.__super__.constructor.apply(this, arguments);

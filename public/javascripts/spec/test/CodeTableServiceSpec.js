@@ -1,5 +1,5 @@
 (function() {
-  var _, assert, codeTablePostTestJSON, codeTablePutTestJSON, config, fs, parseResponse, request;
+  var assert, codeTablePostTestJSON, codeTablePutTestJSON, config, fs, parseResponse, request, _;
 
   assert = require('assert');
 

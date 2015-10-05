@@ -1,5 +1,5 @@
 (function() {
-  var _, config, request;
+  var config, request, _;
 
   _ = require('underscore');
 

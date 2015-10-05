@@ -1,17 +1,17 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.BaseEntity = (function(superClass) {
-    extend(BaseEntity, superClass);
+  window.BaseEntity = (function(_super) {
+    __extends(BaseEntity, _super);
 
     function BaseEntity() {
-      this.duplicateEntity = bind(this.duplicateEntity, this);
-      this.getModelFitParameters = bind(this.getModelFitParameters, this);
-      this.getAnalysisParameters = bind(this.getAnalysisParameters, this);
-      this.getAttachedFiles = bind(this.getAttachedFiles, this);
-      this.parse = bind(this.parse, this);
+      this.duplicateEntity = __bind(this.duplicateEntity, this);
+      this.getModelFitParameters = __bind(this.getModelFitParameters, this);
+      this.getAnalysisParameters = __bind(this.getAnalysisParameters, this);
+      this.getAttachedFiles = __bind(this.getAttachedFiles, this);
+      this.parse = __bind(this.parse, this);
       return BaseEntity.__super__.constructor.apply(this, arguments);
     }
 
@@ -147,15 +147,15 @@
     };
 
     BaseEntity.prototype.getAttachedFiles = function(fileTypes) {
-      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, i, j, len, len1, type;
+      var afm, analyticalFileState, analyticalFileValues, attachFileList, file, type, _i, _j, _len, _len1;
       attachFileList = new AttachFileList();
-      for (i = 0, len = fileTypes.length; i < len; i++) {
-        type = fileTypes[i];
+      for (_i = 0, _len = fileTypes.length; _i < _len; _i++) {
+        type = fileTypes[_i];
         analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('subclass') + " metadata");
         analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
         if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
-          for (j = 0, len1 = analyticalFileValues.length; j < len1; j++) {
-            file = analyticalFileValues[j];
+          for (_j = 0, _len1 = analyticalFileValues.length; _j < _len1; _j++) {
+            file = analyticalFileValues[_j];
             if (file.get('ignored') === false) {
               afm = new AttachFile({
                 fileType: type.code,
@@ -363,8 +363,8 @@
 
   })(Backbone.Model);
 
-  window.BaseEntityList = (function(superClass) {
-    extend(BaseEntityList, superClass);
+  window.BaseEntityList = (function(_super) {
+    __extends(BaseEntityList, _super);
 
     function BaseEntityList() {
       return BaseEntityList.__super__.constructor.apply(this, arguments);
@@ -376,37 +376,37 @@
 
   })(Backbone.Collection);
 
-  window.BaseEntityController = (function(superClass) {
-    extend(BaseEntityController, superClass);
+  window.BaseEntityController = (function(_super) {
+    __extends(BaseEntityController, _super);
 
     function BaseEntityController() {
-      this.isValid = bind(this.isValid, this);
-      this.displayInReadOnlyMode = bind(this.displayInReadOnlyMode, this);
-      this.checkDisplayMode = bind(this.checkDisplayMode, this);
-      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
-      this.validationError = bind(this.validationError, this);
-      this.handleCancelComplete = bind(this.handleCancelComplete, this);
-      this.handleCancelClicked = bind(this.handleCancelClicked, this);
-      this.handleConfirmClearClicked = bind(this.handleConfirmClearClicked, this);
-      this.handleCancelClearClicked = bind(this.handleCancelClearClicked, this);
-      this.handleNewEntityClicked = bind(this.handleNewEntityClicked, this);
-      this.prepareToSaveAttachedFiles = bind(this.prepareToSaveAttachedFiles, this);
-      this.saveEntity = bind(this.saveEntity, this);
-      this.handleSaveClicked = bind(this.handleSaveClicked, this);
-      this.beginSave = bind(this.beginSave, this);
-      this.updateEditable = bind(this.updateEditable, this);
-      this.handleValueChanged = bind(this.handleValueChanged, this);
-      this.handleStatusChanged = bind(this.handleStatusChanged, this);
-      this.handleNotebookChanged = bind(this.handleNotebookChanged, this);
-      this.handleNameChanged = bind(this.handleNameChanged, this);
-      this.handleCommentsChanged = bind(this.handleCommentsChanged, this);
-      this.handleDetailsChanged = bind(this.handleDetailsChanged, this);
-      this.handleShortDescriptionChanged = bind(this.handleShortDescriptionChanged, this);
-      this.handleScientistChanged = bind(this.handleScientistChanged, this);
-      this.setupAttachFileListController = bind(this.setupAttachFileListController, this);
-      this.modelChangeCallback = bind(this.modelChangeCallback, this);
-      this.modelSyncCallback = bind(this.modelSyncCallback, this);
-      this.render = bind(this.render, this);
+      this.isValid = __bind(this.isValid, this);
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
+      this.checkDisplayMode = __bind(this.checkDisplayMode, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
+      this.handleCancelComplete = __bind(this.handleCancelComplete, this);
+      this.handleCancelClicked = __bind(this.handleCancelClicked, this);
+      this.handleConfirmClearClicked = __bind(this.handleConfirmClearClicked, this);
+      this.handleCancelClearClicked = __bind(this.handleCancelClearClicked, this);
+      this.handleNewEntityClicked = __bind(this.handleNewEntityClicked, this);
+      this.prepareToSaveAttachedFiles = __bind(this.prepareToSaveAttachedFiles, this);
+      this.saveEntity = __bind(this.saveEntity, this);
+      this.handleSaveClicked = __bind(this.handleSaveClicked, this);
+      this.beginSave = __bind(this.beginSave, this);
+      this.updateEditable = __bind(this.updateEditable, this);
+      this.handleValueChanged = __bind(this.handleValueChanged, this);
+      this.handleStatusChanged = __bind(this.handleStatusChanged, this);
+      this.handleNotebookChanged = __bind(this.handleNotebookChanged, this);
+      this.handleNameChanged = __bind(this.handleNameChanged, this);
+      this.handleCommentsChanged = __bind(this.handleCommentsChanged, this);
+      this.handleDetailsChanged = __bind(this.handleDetailsChanged, this);
+      this.handleShortDescriptionChanged = __bind(this.handleShortDescriptionChanged, this);
+      this.handleScientistChanged = __bind(this.handleScientistChanged, this);
+      this.setupAttachFileListController = __bind(this.setupAttachFileListController, this);
+      this.modelChangeCallback = __bind(this.modelChangeCallback, this);
+      this.modelSyncCallback = __bind(this.modelSyncCallback, this);
+      this.render = __bind(this.render, this);
       return BaseEntityController.__super__.constructor.apply(this, arguments);
     }
 

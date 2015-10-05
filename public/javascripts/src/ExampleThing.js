@@ -1,13 +1,13 @@
 (function() {
-  var bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-  window.ExampleThing = (function(superClass) {
-    extend(ExampleThing, superClass);
+  window.ExampleThing = (function(_super) {
+    __extends(ExampleThing, _super);
 
     function ExampleThing() {
-      this.duplicate = bind(this.duplicate, this);
+      this.duplicate = __bind(this.duplicate, this);
       return ExampleThing.__super__.constructor.apply(this, arguments);
     }
 
@@ -187,28 +187,28 @@
 
   })(Thing);
 
-  window.ExampleThingController = (function(superClass) {
-    extend(ExampleThingController, superClass);
+  window.ExampleThingController = (function(_super) {
+    __extends(ExampleThingController, _super);
 
     function ExampleThingController() {
-      this.updateBatchNumber = bind(this.updateBatchNumber, this);
-      this.displayInReadOnlyMode = bind(this.displayInReadOnlyMode, this);
-      this.handleUpdateThing = bind(this.handleUpdateThing, this);
-      this.handleValidateReturn = bind(this.handleValidateReturn, this);
-      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
-      this.validationError = bind(this.validationError, this);
-      this.updateModel = bind(this.updateModel, this);
-      this.handleDeleteSavedStructuralFile = bind(this.handleDeleteSavedStructuralFile, this);
-      this.handleFileRemoved = bind(this.handleFileRemoved, this);
-      this.handleFileUpload = bind(this.handleFileUpload, this);
-      this.createNewFileChooser = bind(this.createNewFileChooser, this);
-      this.handleCompletionDateIconClicked = bind(this.handleCompletionDateIconClicked, this);
-      this.setupStructuralFileController = bind(this.setupStructuralFileController, this);
-      this.modelChangeCallback = bind(this.modelChangeCallback, this);
-      this.modelSaveCallback = bind(this.modelSaveCallback, this);
-      this.render = bind(this.render, this);
-      this.completeInitialization = bind(this.completeInitialization, this);
-      this.initialize = bind(this.initialize, this);
+      this.updateBatchNumber = __bind(this.updateBatchNumber, this);
+      this.displayInReadOnlyMode = __bind(this.displayInReadOnlyMode, this);
+      this.handleUpdateThing = __bind(this.handleUpdateThing, this);
+      this.handleValidateReturn = __bind(this.handleValidateReturn, this);
+      this.clearValidationErrorStyles = __bind(this.clearValidationErrorStyles, this);
+      this.validationError = __bind(this.validationError, this);
+      this.updateModel = __bind(this.updateModel, this);
+      this.handleDeleteSavedStructuralFile = __bind(this.handleDeleteSavedStructuralFile, this);
+      this.handleFileRemoved = __bind(this.handleFileRemoved, this);
+      this.handleFileUpload = __bind(this.handleFileUpload, this);
+      this.createNewFileChooser = __bind(this.createNewFileChooser, this);
+      this.handleCompletionDateIconClicked = __bind(this.handleCompletionDateIconClicked, this);
+      this.setupStructuralFileController = __bind(this.setupStructuralFileController, this);
+      this.modelChangeCallback = __bind(this.modelChangeCallback, this);
+      this.modelSaveCallback = __bind(this.modelSaveCallback, this);
+      this.render = __bind(this.render, this);
+      this.completeInitialization = __bind(this.completeInitialization, this);
+      this.initialize = __bind(this.initialize, this);
       return ExampleThingController.__super__.constructor.apply(this, arguments);
     }
 

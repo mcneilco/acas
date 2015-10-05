@@ -1,10 +1,10 @@
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty,
-    bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __hasProp = {}.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
-  window.BatchName = (function(superClass) {
-    extend(BatchName, superClass);
+  window.BatchName = (function(_super) {
+    __extends(BatchName, _super);
 
     function BatchName() {
       return BatchName.__super__.constructor.apply(this, arguments);
@@ -74,11 +74,11 @@
 
   })(Backbone.Model);
 
-  window.BatchNameList = (function(superClass) {
-    extend(BatchNameList, superClass);
+  window.BatchNameList = (function(_super) {
+    __extends(BatchNameList, _super);
 
     function BatchNameList() {
-      this.isValid = bind(this.isValid, this);
+      this.isValid = __bind(this.isValid, this);
       return BatchNameList.__super__.constructor.apply(this, arguments);
     }
 
@@ -121,11 +121,11 @@
 
   })(Backbone.Collection);
 
-  window.BatchNameController = (function(superClass) {
-    extend(BatchNameController, superClass);
+  window.BatchNameController = (function(_super) {
+    __extends(BatchNameController, _super);
 
     function BatchNameController() {
-      this.render = bind(this.render, this);
+      this.render = __bind(this.render, this);
       return BatchNameController.__super__.constructor.apply(this, arguments);
     }
 
@@ -177,11 +177,11 @@
 
   })(Backbone.View);
 
-  window.BatchNameListController = (function(superClass) {
-    extend(BatchNameListController, superClass);
+  window.BatchNameListController = (function(_super) {
+    __extends(BatchNameListController, _super);
 
     function BatchNameListController() {
-      this.add = bind(this.add, this);
+      this.add = __bind(this.add, this);
       return BatchNameListController.__super__.constructor.apply(this, arguments);
     }
 
@@ -209,14 +209,14 @@
 
   })(Backbone.View);
 
-  window.BatchListValidatorController = (function(superClass) {
-    extend(BatchListValidatorController, superClass);
+  window.BatchListValidatorController = (function(_super) {
+    __extends(BatchListValidatorController, _super);
 
     function BatchListValidatorController() {
-      this.isValid = bind(this.isValid, this);
-      this.updateValidCount = bind(this.updateValidCount, this);
-      this.itemRemoved = bind(this.itemRemoved, this);
-      this.itemChanged = bind(this.itemChanged, this);
+      this.isValid = __bind(this.isValid, this);
+      this.updateValidCount = __bind(this.updateValidCount, this);
+      this.itemRemoved = __bind(this.itemRemoved, this);
+      this.itemChanged = __bind(this.itemChanged, this);
       return BatchListValidatorController.__super__.constructor.apply(this, arguments);
     }
 

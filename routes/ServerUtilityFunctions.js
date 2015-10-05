@@ -24,6 +24,10 @@
   };
 
   exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
+    return exports.runRFunctionOutsideRequest(request.body.user, request.body, rScript, rFunction, returnFunction, preValidationFunction);
+  };
+
+  exports.runRFunctionOutsideRequest = function(username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, config, csUtilities, exec, preValErrors, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions, stdoutFile;
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -34,11 +38,11 @@
       rScriptCommand = "Rscript";
     }
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-    csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(request.body), request.body.user);
+    csUtilities.logUsage("About to call R function: " + rFunction, JSON.stringify(argumentsJSON), username);
     if (preValidationFunction != null) {
-      preValErrors = preValidationFunction.call(this, request.body);
+      preValErrors = preValidationFunction.call(this, argumentsJSON);
     } else {
-      preValErrors = basicRScriptPreValidation(request.body);
+      preValErrors = basicRScriptPreValidation(argumentsJSON);
     }
     if (preValErrors.hasError) {
       console.log(preValErrors);
@@ -50,7 +54,7 @@
     rCommandFile = new Tempfile;
     requestJSONFile = new Tempfile;
     stdoutFile = new Tempfile;
-    return requestJSONFile.writeFile(JSON.stringify(request.body), (function(_this) {
+    return requestJSONFile.writeFile(JSON.stringify(argumentsJSON), (function(_this) {
       return function() {
         var rCommand;
         rCommand = 'tryCatch({ ';
@@ -88,14 +92,14 @@
                     results: null
                   };
                   returnFunction.call(JSON.stringify(result));
-                  return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), request.body.user);
+                  return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), username);
                 } else {
                   returnFunction.call(_this, stdoutFileText);
                   try {
                     if (stdoutFileText.indexOf('"hasError":true' > -1)) {
-                      return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, stdoutFileText, request.body.user);
+                      return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, stdoutFileText, username);
                     } else {
-                      return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", request.body.user);
+                      return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", username);
                     }
                   } catch (_error) {
                     error = _error;
@@ -203,13 +207,6 @@
       return console.log("stdout: " + stdout);
     });
   };
-
-
-  /* To allow following test routes to work, install this Module
-  	 * ServerUtility function testing routes
-  	serverUtilityFunctions = require './public/src/modules/02_serverAPI/src/server/routes/ServerUtilityFunctions.js'
-  	serverUtilityFunctions.setupRoutes(app)
-   */
 
   exports.setupRoutes = function(app) {
     app.post('/api/runRFunctionTest', exports.runRFunctionTest);
