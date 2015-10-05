@@ -247,12 +247,14 @@ makeValueString <- function(exptRow, resultType) {
 #'
 #' @examples
 getSELFormat <- function(seuratExperiment){
-  
+  format <- "Generic"
   rawResultColumns <- unlist(getRawResultsColumns(seuratExperiment))
-  if (length(rawResultColumns)<1){
-    format <- "Generic"
-  } else {
-    format <- "Dose Response"
+  hasRawResultColumns <- length(rawResultColumns) > 0
+  if(hasRawResultColumns) {
+    hasRawResults <- any(rowSums(seuratExperiment[,rawResultColumns,with=FALSE],na.rm = TRUE) != 0)
+    if(hasRawResults) {
+      format <- "Dose Response"
+    }
   }
   return(format)
 }
@@ -268,7 +270,6 @@ getSELFormat <- function(seuratExperiment){
 #'
 #' @examples
 convertSeuratTableToSELContent <- function(seuratExperiment) {
-  
   ops <- options()
   on.exit(options(ops))
   options(scipen=99)
@@ -348,7 +349,6 @@ getHeaderLines <- function(seuratExperiment, format) {
 #'
 #' @examples
 pivotExperimentRawResults <- function(seuratExperiment) {
-  
   rawResultColumns <- getRawResultsColumns(seuratExperiment)
   concData <- reshape(seuratExperiment[ seuratExperiment$Expt.Result.Type == "curve id",], idvar = "Expt.Result.Desc", varying = c(rawResultColumns$concColumnIndexes), v.names = c("MP.Conc."), direction = "long")
   resultData <- reshape(seuratExperiment[ seuratExperiment$Expt.Result.Type == "curve id",], idvar = "Expt.Result.Desc", varying = c(rawResultColumns$resultColumnIndexes), v.names = c("MP.Result."), direction = "long")
