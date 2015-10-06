@@ -26,19 +26,20 @@ module.exports = (grunt) ->
 		coffee:
 			app:
 				files: [
-					expand: true
-					flatten: true
-					src: ["public/src/modules/**/src/client/*.coffee"]
-					dest: "public/javascripts/src/"
-					ext: '.js'
-				]
-			serverOnlyModules:
+						expand: true
+						flatten: true
+						src: ["public/src/modules/**/src/client/*.coffee"]
+						dest: "public/javascripts/src/"
+						ext: '.js'
+					]
+			serverSideCode:
 				files: [
-					expand: true
-					flatten: false
-					src: ["serverOnlyModules/**/*.coffee"]
-					ext: '.js'
-				]
+						expand: true
+						flatten: true
+						src: ["public/src/modules/**/src/server/*.coffee"]
+						dest: "src"
+						ext: '.js'
+					]
 			spec:
 				files: [
 					expand: true

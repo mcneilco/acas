@@ -3,6 +3,8 @@
 
   global.logger = require("./routes/Logger");
 
+  require('./src/ConsoleLogWinstonOverride');
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
@@ -96,7 +98,8 @@
     child = new forever.Monitor("app_api.js", {
       max: 3,
       silent: false,
-      options: options
+      options: options,
+      args: ['--color']
     });
     child.on("exit", function() {
       return console.log("app_api.js has exited after 3 restarts");
