@@ -3,6 +3,8 @@
 
   global.logger = require("./routes/Logger");
 
+  require('./logging');
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {

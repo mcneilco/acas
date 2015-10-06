@@ -1,4 +1,5 @@
 global.logger = require "./routes/Logger"
+require "./logging"
 csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
 
 startApp = ->
@@ -108,6 +109,7 @@ startApp = ->
 		max: 3
 		silent: false
 		options: options
+		args: ['--color']
 	)
 
 	child.on "exit", ->
