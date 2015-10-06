@@ -3,7 +3,7 @@
 
   global.logger = require("./routes/Logger");
 
-  require('./logging');
+  require('./src/ConsoleLogWinstonOverride');
 
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 

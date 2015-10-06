@@ -19,11 +19,12 @@ module.exports = (grunt) ->
 						dest: "public/javascripts/src/"
 						ext: '.js'
 					]
-			serverOnlyModules:
+			serverSideCode:
 				files: [
 						expand: true
-						flatten: false
-						src: ["serverOnlyModules/**/*.coffee"]
+						flatten: true
+						src: ["public/src/modules/**/src/server/*.coffee"]
+						dest: "src"
 						ext: '.js'
 					]
 			spec:
