@@ -102,10 +102,10 @@ writePropertiesFormat = (conf) ->
 			configOut += attr+"="+value+"\n"
 		else
 			configOut += attr+"=\n"
-	fs.writeFileSync "../../conf/compiled/conf.properties", configOut
+	fs.writeFileSync "../conf/compiled/conf.properties", configOut
 
 getRFilesWithRoute = ->
-	rFiles = glob.sync('../r/*.R', {cwd: path.resolve(__dirname,'..')})
+	rFiles = glob.sync('src/r/*.R', {cwd: path.resolve(__dirname,'..')})
 	routes = []
 	for rFile in rFiles
 		rFilePath = path.resolve('..',rFile)
@@ -251,7 +251,7 @@ apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 
 writeApacheConfFile = ->
 	config = require '../../conf/compiled/conf.js'
-	acasHome = path.resolve(__dirname,'../..')
+	acasHome = path.resolve(__dirname,'../')
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
 		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
@@ -260,5 +260,5 @@ writeApacheConfFile = ->
 	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-	fs.writeFileSync "../../conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
-	fs.writeFileSync "../../conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "../conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "../conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
