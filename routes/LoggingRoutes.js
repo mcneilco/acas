@@ -12,7 +12,7 @@
     return app.get('/api/logFile', exports.getLogFlatFile);
   };
 
-  config = require('../conf/compiled/conf.js');
+  config = require('./compiled/conf.js');
 
   exports.getAllLogStatements = function(req, res) {
     global.logger.writeToLog("info", "Logging", "load data", "return all data from logging service", "", null);

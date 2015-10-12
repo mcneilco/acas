@@ -7,6 +7,6 @@ exports.getAuthors = (req, resp) ->
 		baseEntityServiceTestJSON = require '../public/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
 		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
 	else
-		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 		csUtilities.getAuthors resp
 

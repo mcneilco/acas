@@ -5,7 +5,7 @@
     app.post('/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes);
     app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
     app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
   };
 
@@ -16,7 +16,7 @@
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     if (req.query.format != null) {
       if (req.query.format === "csv") {
         if (global.specRunnerTestmode) {
@@ -39,7 +39,7 @@
             });
           });
         } else {
-          config = require('../conf/compiled/conf.js');
+          config = require('./compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getGeneData?format=CSV";
           request = require('request');
           return request({
@@ -178,7 +178,7 @@
       }
       return resp.end(JSON.stringify(responseObj));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "getGeneExperiments/";
       request = require('request');
       return request({
@@ -237,7 +237,7 @@
       }
       return resp.end(JSON.stringify(responseObj));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "getExperimentFilters/";
       request = require('request');
       return request({
@@ -264,7 +264,7 @@
   exports.geneIDQueryIndex = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     global.specRunnerTestmode = global.stubsMode ? true : false;
     scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
     if (config.all.client.require.login) {
@@ -300,7 +300,7 @@
     request = require('request');
     fs = require('fs');
     crypto = require('crypto');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     if (config.all.client.use.ssl) {
       urlPref = "https://";
     } else {
@@ -322,7 +322,7 @@
             });
           });
         } else {
-          config = require('../conf/compiled/conf.js');
+          config = require('./compiled/conf.js');
           baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData?format=CSV";
           request = require('request');
           return request({
@@ -404,7 +404,7 @@
         }
         return resp.end(JSON.stringify(responseObj));
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.rapache.fullpath + "getFilteredGeneData";
         return request({
           method: 'POST',

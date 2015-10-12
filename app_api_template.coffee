@@ -1,6 +1,6 @@
 global.logger = require "./routes/Logger"
 require './src/ConsoleLogWinstonOverride'
-csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
+csUtilities = require "./src/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup

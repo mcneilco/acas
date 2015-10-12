@@ -19,7 +19,7 @@
     }
   };
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   describe("Preferred Entity code service tests: available entity type list", function() {
     describe("when requested as fully detailed list", function() {

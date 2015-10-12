@@ -24,92 +24,92 @@ module.exports = (grunt) ->
 		acas_custom: 'acas_custom'
 		acas_base: '.'
 		coffee:
-			app:
+			module_client:
 				files: [
-						expand: true
-						flatten: true
-						src: ["public/src/modules/**/src/client/*.coffee"]
-						dest: "public/javascripts/src/"
-						ext: '.js'
-					]
-			serverSideCode:
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/src/client/*.coffee"]
+					dest: "build/public/javascripts/src/"
+					ext: '.js'
+				]
+			module_server:
 				files: [
-						expand: true
-						flatten: true
-						src: ["public/src/modules/**/src/server/*.coffee"]
-						dest: "src"
-						ext: '.js'
-					]
-			spec:
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/src/server/*.coffee"]
+					dest: "build/src"
+					ext: '.js'
+				]
+			module_spec:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/*.coffee"]
-					dest: "public/javascripts/spec/"
+					dest: "build/public/javascripts/spec/"
 					ext: '.js'
 				]
-			compileTestFixtures:
+			module_testFixtures:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/testFixtures/*.coffee"]
-					dest: "public/javascripts/spec/testFixtures/"
+					dest: "build/public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
-			compileServiceTests:
+			module_serviceTests:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/serviceTests/*.coffee","public/src/conf/serviceTests/*.coffee"]
-					dest: "public/javascripts/spec/test/"
+					dest: "build/public/javascripts/spec/test/"
 					ext: '.js'
 				]
-			compileApp:
+			app:
 				files: [
 					expand: true
 					flatten: true
 					src: ["./*.coffee"]
-					dest: "./"
+					dest: "build/"
 					ext: '.js'
 				]
-			compileConf:
+			conf:
 				files: [
 					expand: true
 					flatten: true
 					src: ["conf/*.coffee"]
-					dest: "conf/"
+					dest: "build/conf/"
 					ext: '.js'
 				]
-			compileModuleConf:
+			module_conf:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/conf/*.coffee"]
-					dest: "public/javascripts/conf/"
+					dest: "build/public/javascripts/conf/"
 					ext: '.js'
 				]
-			compilePublicConf:
+			public_conf:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/conf/*.coffee"]
-					dest: "public/src/conf/"
+					dest: "build/src"
 					ext: '.js'
 				]
-			compileRoutes:
+			routes:
 				files: [
 					expand: true
 					flatten: true
 					src: ["routes/*.coffee"]
-					dest: "routes/"
+					dest: "build/routes/"
 					ext: '.js'
 				]
-			moduleRoutes:
+			module_routes:
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/**/src/server/routes/*.coffee"]
-					dest: "routes/"
+					src: ["public/src/modules/*/src/server/routes/*.coffee"]
+					dest: "build/routes/"
 					ext: '.js'
 				]
 		#these compilers are for the custom coffee scripts before they get copied
@@ -118,7 +118,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/src/client/**/*.coffee"]
-					dest: "acas_custom/javascripts/src/"
+					dest: "build/public/javascripts/src/"
 					ext: '.js'
 				]
 			custom_spec:
@@ -126,7 +126,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/spec/*.coffee"]
-					dest: "acas_custom/javascripts/spec/"
+					dest: "build/public/javascripts/spec/"
 					ext: '.js'
 				]
 			custom_compileTestFixtures:
@@ -134,7 +134,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/spec/testFixtures/*.coffee"]
-					dest: "acas_custom/javascripts/spec/testFixtures/"
+					dest: "build/public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
 			custom_compileServiceTests:
@@ -142,7 +142,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/spec/serviceTests/*.coffee","acas_custom/public_conf/serviceTests/*.coffee"]
-					dest: "acas_custom/javascripts/spec/test/"
+					dest: "build/public/javascripts/spec/test/"
 					ext: '.js'
 				]
 			custom_compileApp:
@@ -150,7 +150,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/*.coffee"]
-					dest: "acas_custom/"
+					dest: "build/src"
 					ext: '.js'
 				]
 			custom_compileConf:
@@ -158,7 +158,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/conf/*.coffee"]
-					dest: "acas_custom/conf/"
+					dest: "build/conf/"
 					ext: '.js'
 				]
 			custom_compileModuleConf:
@@ -166,7 +166,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/src/conf/*.coffee"]
-					dest: "acas_custom/javascripts/conf/"
+					dest: "build/public/javascripts/conf/"
 					ext: '.js'
 				]
 			custom_compilePublicConf:
@@ -174,7 +174,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/public_conf/*.coffee"]
-					dest: "acas_custom/public_conf/"
+					dest: "build/src"
 					ext: '.js'
 				]
 			custom_compileRoutes:
@@ -182,7 +182,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/routes/*.coffee"]
-					dest: "acas_custom/routes/"
+					dest: "build/routes/"
 					ext: '.js'
 				]
 			custom_moduleRoutes:
@@ -190,7 +190,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["acas_custom/modules/**/src/server/routes/*.coffee"]
-					dest: "acas_custom/routes/"
+					dest: "build/routes/"
 					ext: '.js'
 				]
 		sync:
@@ -220,47 +220,61 @@ module.exports = (grunt) ->
 				verbose: true
 				updateAndDelete: global['clean']
 		copy:
-			custom_routes:
+			bin:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/routes/"
+					cwd: "bin"
 					src: ["**"]
-					dest: "<%= acas_base %>/routes"
+					dest: "build/bin"
 				]
-			custom_conf:
+			conf:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/conf/"
-					src: ["**"]
-					dest: "<%= acas_base %>/conf"
+					cwd: "conf"
+					src: ["*.properties"]
+					dest: "build/conf"
 				]
-			custom_public_conf:
+			package_json:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/public_conf/"
-					src: ["**"]
-					dest: "<%= acas_base %>/public/src/conf"
+					cwd: "./"
+					src: ["package.json"]
+					dest: "build"
 				]
-			custom_javascripts:
+			jade:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/javascripts/"
-					src: ["**"]
-					dest: "<%= acas_base %>/public/javascripts"
+					cwd: "views"
+					src: ["*.jade", "*.jade_template", "!CIExcel*"]
+					dest: "build/views"
 				]
-			custom_views:
+			node_modules_customized:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/views/"
+					cwd: "node_modules_customized"
 					src: ["**"]
-					dest: "<%= acas_base %>/views"
+					dest: "build/node_modules_customized"
 				]
-			custom_modules:
+			public_stylesheets:
 				files: [
 					expand: true
-					cwd: "<%= acas_custom %>/modules/"
+					cwd: "public/stylesheets"
 					src: ["**"]
-					dest: "<%= acas_base %>/public/src/modules"
+					dest: "build/public/stylesheets"
+				]
+			public_html:
+				files: [
+					expand: true
+					cwd: "public/src/"
+					src: ["modules/**/src/client/*.html", "!modules/**/src/client/CI*.html"]
+					dest: "build/public/html"
+				]
+			public_css:
+				files: [
+					expand: true
+					cwd: "public/src/"
+					src: ["modules/**/src/client/*.css", "!modules/**/src/client/CIExcel*"]
+					dest: "build/public/stylesheets"
 				]
 			public_jade:
 				files: [
@@ -270,16 +284,45 @@ module.exports = (grunt) ->
 					src: ["modules/**/src/client/**/*.jade"]
 					dest: "./views"
 				]
+			public_lib:
+				files: [
+					expand: true
+					cwd: "public/src/lib"
+					src: ["**"]
+					dest: "build/public/lib"
+				]
+			public_img:
+				files: [
+					expand: true
+					cwd: "public/img"
+					src: ["**"]
+					dest: "build/public/img"
+				]
+			module_r:
+				files: [
+					expand: true
+					flatten: true
+					cwd: "public/src/modules"
+					src: ["**/src/server/*.R", "**/src/server/*.r"]
+					dest: "build/src/r"
+				]
+			module_routes_js:
+				files: [
+					expand: true
+					flatten: true
+					cwd: "public/src/modules"
+					src: ["**/src/server/routes/*.js"]
+					dest: "build/routes"
+				]
 		execute:
 			prepare_module_includes:
 				options:
-					cwd: 'conf'
-					args: "<%= acas_base %>"
-				src: "conf/PrepareModuleIncludes.js"
+					cwd: 'build/src'
+				src: "build/src/PrepareModuleIncludes.js"
 			prepare_config_files:
 				options:
-					cwd: 'conf'
-				src: 'conf/PrepareConfigFiles.js'
+					cwd: 'build/conf'
+				src: 'build/src/PrepareConfigFiles.js'
 			prepare_test_JSON:
 				options:
 					cwd: 'conf'
@@ -296,55 +339,43 @@ module.exports = (grunt) ->
 					shell = require('shelljs')
 					result = shell.exec('grunt copy', {silent:true})
 					return result.output
-		replace:
-			clientHost:
-				src: ["conf/config.properties"]
-				overwrite: true
-				replacements: [
-					from: /\nclient.host=.*/i
-					to: ->
-						hostname = require('os').hostname()
-						newString = 'client.host=' + hostname
-						console.log 'setting ' + newString
-						return '\n' + newString
-				]
 		watch:
-			coffee:
+			module_client_coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
-				tasks: 'coffee:app'
-			compileServerOnlyModules:
-				files: 'serverOnlyModules/**/*.coffee'
-				tasks: 'coffee:serverOnlyModules'
-			compileSpec:
+				tasks: 'coffee:module_client'
+			module_server_coffee:
+				files: 'public/src/modules/**/src/server/*.coffee'
+				tasks: 'coffee:module_server'
+			module_spec:
 				files: "public/src/modules/**/spec/*.coffee"
-				tasks: "coffee:spec"
-			compileTestFixtures:
+				tasks: "coffee:module_spec"
+			module_textFixtures_coffee:
 				files: "public/src/modules/**/spec/testFixtures/*.coffee"
-				tasks: "coffee:compileTestFixtures"
-			compileServiceTests:
-				files: "public/src/modules/**/spec/serviceTests/*.coffee"
-				tasks: "coffee:compileServiceTests"
-			compileServiceTests2:
-				files: "public/src/conf/serviceTests/*.coffee"
-				tasks: "coffee:compileServiceTests"
-			compileApp:
+				tasks: "coffee:module_testFixtures"
+			module_serviceTests_coffee:
+				files: ["public/src/modules/**/spec/serviceTests/*.coffee", "public/src/conf/serviceTests/*.coffee"]
+				tasks: "coffee:module_serviceTests"
+			app_coffee:
 				files: "./*.coffee"
-				tasks: "coffee:compileApp"
-			compileConf:
+				tasks: "coffee:app"
+			conf_coffee:
 				files: "conf/*.coffee"
-				tasks: "coffee:compileConf"
-			compileModuleConf:
+				tasks: "coffee:conf"
+			module_conf_coffee:
 				files: "public/src/modules/**/conf/*.coffee"
-				tasks: "coffee:compileModuleConf"
-			compilePublicConf:
+				tasks: "coffee:module_conf"
+			public_conf_coffee:
 				files: "public/src/conf/*.coffee"
-				tasks: "coffee:compilePublicConf"
-			compileRoutes:
+				tasks: "coffee:public_conf"
+			routes_coffee:
 				files: "routes/*.coffee"
-				tasks: "coffee:compileRoutes"
-			moduleRoutes:
+				tasks: "coffee:routes"
+			module_routes_coffee:
 				files: "public/src/modules/**/src/server/routes/*.coffee"
-				tasks: "coffee:moduleRoutes"
+				tasks: "coffee:module_routes"
+			module_routes_js:
+				files: "public/src/modules/**/src/server/routes/*.js"
+				tasks: "copy:module_routes_js"
 		#watchers on the custom folder
 			custom_coffee:
 				files: 'acas_custom/modules/**/src/client/*.coffee'
@@ -402,23 +433,21 @@ module.exports = (grunt) ->
 				tasks: "copy:public_jade"
 			prepare_module_includes:
 				files:[
-					"conf/PrepareModuleIncludes.js"
+					"build/src/PrepareModuleIncludes.js"
+					#app_template
+					"build/app_template.js"
+					#app_api_template
+					"build/app_api.js"
 					#styleFiles
-					'public/src/modules/*/src/client/*.css'
+					'build/public/stylesheets/*.css'
 					#templateFiles
-					'/public/src/modules/*/src/client/*.html'
-					#appScriptsInModules
-					'public/src/modules/*/src/client/*.js'
+					'build/public/html/*.html'
 					#appScriptsInJavascripts
-					'public/javascripts/src/*.js'
-					#testJSONInModules
-					'public/src/modules/*/spec/testFixtures/*.js'
+					'build/public/javascripts/src/*.js'
 					#testJSONInJavascripts
-					'public/javascripts/spec/testFixtures/*.js'
-					#specScriptsInModules
-					'public/src/modules/*/spec/*.js'
+					'build/public/javascripts/spec/testFixtures/*.js'
 					#specScriptsInJavascripts
-					'public/javascripts/spec/*.js'
+					'build/public/javascripts/spec/*.js'
 				]
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
@@ -443,7 +472,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
 	grunt.loadNpmTasks "grunt-sync"
-	grunt.loadNpmTasks "grunt-text-replace"
 	grunt.loadNpmTasks "grunt-execute"
 
 	# set the default task to the "watch" task

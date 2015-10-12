@@ -9,7 +9,7 @@
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("set up type or kind"));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "setup/" + req.params.typeOrKind;
       request = require('request');
       return request({

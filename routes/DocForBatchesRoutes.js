@@ -14,7 +14,7 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
     return app.post('/api/docForBatches', loginRoutes.ensureAuthenticated, exports.saveDocForBatches);
   };
 
-  fixturesData = require('../public/src/modules/DocForBatches/spec/testFixtures/testJSON.js');
+  fixturesData = require('../public/src/modules/DocForBatches/spec/testFixtures/testJSON.coffee');
 
   exports.getDocForBatches = function(request, response) {
     if (request.params.id === "1") {

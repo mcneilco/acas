@@ -70,8 +70,8 @@ fs.writeFileSync compiledModuleConfsFileName, jsonfilestring
 
 async = require 'async'
 request = require 'request'
-data = require '../public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json'
-config = require '../conf/compiled/conf.js'
+data = require '../../../../../javascripts/conf/confJSON/CompiledModuleConfJSONs.json'
+config = require 'compiled/conf.js'
 
 async.forEachSeries typeKinds, ((typeOrKind, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind

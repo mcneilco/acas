@@ -1,7 +1,7 @@
 (function() {
   var config, db, winston, winstonLoggingOptions;
 
-  config = require('../conf/compiled/conf.js');
+  config = require('./compiled/conf.js');
 
   winston = require('winston');
 

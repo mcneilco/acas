@@ -11,7 +11,7 @@
 
   fs = require('fs');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   parseResponse = function(jsonStr) {
     var error;

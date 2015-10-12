@@ -21,7 +21,7 @@ exports.entityProperties = (displayName, entityCodeList, propertyNameList, forma
 	if !format?
 		format = "json"
 
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
 		if JSON.stringify(propertyNameList).indexOf('ERROR') > -1
 			callback "problem with property request, check log"
@@ -74,7 +74,7 @@ exports.testedEntityPropertiesRoute = (req, resp) ->
 			resp.json json
 
 exports.getEntityProperties = (properties, entityIdStringLines, callback) ->
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
 		if properties.indexOf('ERROR') > -1
 			callback "problem with property request, check log"
@@ -104,7 +104,7 @@ exports.getEntityProperties = (properties, entityIdStringLines, callback) ->
 
 
 exports.entityPropertyDescriptors = (req, resp) ->
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require './CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
 		entityDescriptorServiceTestJSON = require "../public/javascripts/spec/testFixtures/EntityPropertyDescriptorsServiceTestJSON.js"
 		resp.json entityDescriptorServiceTestJSON.propertyDescriptors[req.params.entityType][req.params.entityKind]

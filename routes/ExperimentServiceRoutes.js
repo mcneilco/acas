@@ -45,7 +45,7 @@
       }
       return resp.json(expt);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + req.params.code;
       fullObjectFlag = "with=fullobject";
@@ -65,7 +65,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer]));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments?findByName&name=" + req.params.name;
       console.log(baseurl);
@@ -81,7 +81,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return response.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/protocolCodename/" + request.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, response);
@@ -95,7 +95,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -110,7 +110,7 @@
       if (testMode || global.specRunnerTestmode) {
         return callback(expt);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "experiments/" + expt.id;
         request = require('request');
         return request({
@@ -187,7 +187,7 @@
       if (req.query.testMode || global.specRunnerTestmode) {
         return checkFilesAndUpdate(exptToSave);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "experiments";
         request = require('request');
         return request({
@@ -264,7 +264,7 @@
         return res.end(JSON.stringify([experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]));
       }
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experiments/search?q=" + req.params.searchTerm;
       console.log("baseurl");
       console.log(baseurl);
@@ -295,7 +295,7 @@
       deletedExperiment = JSON.parse(JSON.stringify(experimentServiceTestJSON.fullDeletedExperiment));
       return res.end(JSON.stringify(deletedExperiment));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       experimentId = req.params.id;
       baseurl = config.all.client.service.persistence.fullpath + "experiments/browser/" + experimentId;
       console.log(baseurl);
@@ -328,7 +328,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.resultViewerURLByExperimentCodeName));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       if (config.all.client.service.result && config.all.client.service.result.viewer && (config.all.client.service.result.viewer.experimentPrefix != null) && (config.all.client.service.result.viewer.protocolPrefix != null) && (config.all.client.service.result.viewer.experimentNameColumn != null)) {
         resultViewerURL = [
           {
@@ -409,7 +409,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.fullExperimentFromServer.lsStates[1]));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "experimentvalues/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -422,7 +422,7 @@
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind[req.params.stateType][req.params.stateKind][req.params.valueType][req.params.valueKind]));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "/experiments/" + req.params.idOrCode + "/exptvalues/bystate/" + req.params.stateType + "/" + req.params.stateKind + "/byvalue/" + req.params.valueType + "/" + req.params.valueKind + "/json";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);

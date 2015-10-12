@@ -5,7 +5,7 @@
 
   setupRoutes = function(app, loginRoutes, requireLogin) {
     var config, dataFilesPath, tempFilesPath, upload;
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     upload = require('../node_modules_customized/jquery-file-upload-middleware');
     dataFilesPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
     tempFilesPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.tempfiles.relative_path);

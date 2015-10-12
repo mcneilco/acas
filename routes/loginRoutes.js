@@ -24,7 +24,7 @@
 
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
-  config = require('../conf/compiled/conf.js');
+  config = require('./compiled/conf.js');
 
   exports.loginPage = function(req, res) {
     var error, errorMsg, resetPasswordOption, user;

@@ -22,7 +22,6 @@
     "grunt-contrib-copy": "*",
     "grunt-contrib-watch": "*",
     "grunt-execute": "*",
-    "grunt-text-replace": "*",
     "jade": "0.35.0",
     "jszip": "*",
     "mongojs": "*",

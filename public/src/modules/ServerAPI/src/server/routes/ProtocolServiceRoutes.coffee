@@ -21,7 +21,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/protocols/browser/:id', loginRoutes.ensureAuthenticated, exports.deleteProtocol
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 
 exports.protocolByCodename = (req, resp) ->
 

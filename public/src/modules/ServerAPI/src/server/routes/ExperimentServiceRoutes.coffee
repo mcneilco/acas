@@ -24,7 +24,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code

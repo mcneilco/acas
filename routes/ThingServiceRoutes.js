@@ -31,7 +31,7 @@
       thingServiceTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.end(JSON.stringify(thingServiceTestJSON.batchList));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
       stubFlag = "with=stub";
@@ -52,7 +52,7 @@
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingTestJSON.thingParent);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/" + req.params.code;
       if (req.query.nestedstub) {
         nestedstub = "with=nestedstub";
@@ -79,7 +79,7 @@
       if (testMode || global.specRunnerTestmode) {
         return callback(thing);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code;
         request = require('request');
         return request({
@@ -153,7 +153,7 @@
       if (req.query.testMode || global.specRunnerTestmode) {
         return checkFilesAndUpdate(thingToSave);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
         if (isBatch) {
           baseurl += "/?parentIdOrCodeName=" + req.params.parentCode;
@@ -234,7 +234,7 @@
       if (req.params.parentCode === "undefined") {
         return resp.json([]);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "lsthings/batch/" + req.params.lsKind + "/getbatches/" + req.params.parentCode;
         if (req.query.nestedstub) {
           nestedstub = "with=nestedstub";
@@ -260,7 +260,7 @@
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(true);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/validate";
       if (req.params.componentOrAssembly === "component") {
         baseurl += "?uniqueName=true";
@@ -295,7 +295,7 @@
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.json([]);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind + "/getcomposites/" + req.params.componentCode;
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -335,7 +335,7 @@
       };
       return callback(response);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/getCodeNameFromNameRequest?";
       url = baseurl + ("thingType=" + codeRequest.thingType + "&thingKind=" + codeRequest.thingKind);
       postBody = {

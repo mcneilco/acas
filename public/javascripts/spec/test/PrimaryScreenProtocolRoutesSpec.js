@@ -5,7 +5,7 @@
 
   request = require('request');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   parseResponse = function(jsonStr) {
     var error;

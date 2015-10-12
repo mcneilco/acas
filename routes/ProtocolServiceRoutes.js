@@ -40,7 +40,7 @@
       }
       return resp.end(JSON.stringify(stubSavedProtocol));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codename/" + req.params.code;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -53,7 +53,7 @@
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.fullSavedProtocol));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/" + req.params.id;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -68,7 +68,7 @@
       if (testMode || global.specRunnerTestmode) {
         return callback(prot);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "protocols/" + prot.id;
         request = require('request');
         return request({
@@ -145,7 +145,7 @@
         }
         return checkFilesAndUpdate(protToSave);
       } else {
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         baseurl = config.all.client.service.persistence.fullpath + "protocols";
         request = require('request');
         return request({
@@ -220,7 +220,7 @@
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.end(JSON.stringify(protocolServiceTestJSON.lsLabels));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocollabels";
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -270,7 +270,7 @@
       labels = protocolServiceTestJSON.lsLabels;
       return resp.json(translateToCodes(labels));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/codetable";
       if (shouldFilterByName) {
         baseurl += "/?protocolName=" + filterString;
@@ -316,7 +316,7 @@
       protocolServiceTestJSON = require('../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js');
       return resp.json(translateToCodes(protocolServiceTestJSON.protocolKinds));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocolkinds";
       request = require('request');
       return request({
@@ -349,7 +349,7 @@
         return res.end(JSON.stringify([protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]));
       }
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "protocols/search?q=" + req.params.searchTerm;
       console.log("baseurl");
       console.log(baseurl);
@@ -365,7 +365,7 @@
       deletedProtocol = JSON.parse(JSON.stringify(protocolServiceTestJSON.fullDeletedProtocol));
       return res.end(JSON.stringify(deletedProtocol));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       protocolID = req.params.id;
       baseurl = config.all.client.service.persistence.fullpath + "protocols/browser/" + protocolID;
       console.log("baseurl");

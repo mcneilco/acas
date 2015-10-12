@@ -24,7 +24,7 @@
     _ = require("underscore");
     each = require("each");
     request = require('request');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     serviceType = config.all.client.service.external.preferred.batchid.type;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');

@@ -7,7 +7,7 @@
 
   fs = require('fs');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   describe("Data File and Temp File Services", function() {
     return describe("File download test", function() {

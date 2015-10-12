@@ -9,8 +9,8 @@ if typeof workingDir != "undefined"
 	process.chdir "#{workingDir}/conf"
 
 prepIncludes = ->
-	styleFiles = glob.sync '../public/src/modules/*/src/client/**/*.css'
-	templateFiles = glob.sync '../public/src/modules/*/src/client/**/*.html'
+	styleFiles = glob.sync '../public/stylesheets/modules/**/*.css'
+	templateFiles = glob.sync '../public/html/**/*.html'
 
 	includeLines = ""
 	for path in styleFiles
@@ -36,7 +36,7 @@ insertToLayoutTemplate = (replaceRegex, includeLines, templateFileName, outputFi
 
 
 includeLines = prepIncludes()
-insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "../views/layout.jade_template", "../views/layout.jade"
+insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "../views/layout.jade_template", "../../views/layout.jade"
 
 
 ##### prep scripts to load ##
@@ -56,18 +56,16 @@ makeScriptLines = (scripts) ->
 	scriptLines = ""
 	for fname, path of scripts
 		script = '\t"'
-		script += path.replace "../public", ""
+		script += path.replace "../public/", ""
 		script += '",\n'
 		scriptLines += script
 	scriptLines.replace /,([^,]*)$/, "" #kill last comma and newline
 
 prepAppScripts = ->
-	appScriptsInModules = makeFileNameHash glob.sync('../public/src/modules/*/src/client/*.js')
 	appScriptsInJavascripts = makeFileNameHash glob.sync('../public/javascripts/src/*.js')
-	appScriptsInJavascripts = _.omit appScriptsInJavascripts, _.keys(appScriptsInModules)
 	templateAppScripts = makeFileNameHash scriptPaths.applicationScripts
 	appScriptsInJavascripts = _.omit appScriptsInJavascripts, _.keys(templateAppScripts)
-	allScripts = _.extend appScriptsInModules, appScriptsInJavascripts
+	allScripts = appScriptsInJavascripts
 	makeScriptLines allScripts
 
 prepSpecScripts = ->

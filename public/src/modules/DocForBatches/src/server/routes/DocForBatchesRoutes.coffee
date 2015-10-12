@@ -10,7 +10,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/docForBatches', loginRoutes.ensureAuthenticated, exports.saveDocForBatches
 
 
-fixturesData = require '../public/src/modules/DocForBatches/spec/testFixtures/testJSON.js'
+fixturesData = require '../public/javascripts/spec/testFixtures/testJSON.js'
 
 #exports.docForBatchesIndex = (request, response) ->
 #	scriptsToLoad = requiredScripts.concat applicationScripts

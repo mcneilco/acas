@@ -7,7 +7,7 @@
 
   fs = require('fs');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   describe.skip("Controller Redirect service testing", function() {
     describe("protocol redirect", function() {

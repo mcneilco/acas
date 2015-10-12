@@ -17,7 +17,7 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 	possibleServiceTypes = ['NewLineSepBulkPost','SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
 
 	if serviceType not in possibleServiceTypes

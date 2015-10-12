@@ -12,7 +12,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 
-configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
+configuredEntityTypes = require '../src/ConfiguredEntityTypes.js'
 _ = require 'underscore'
 
 
@@ -87,7 +87,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 
 	if requestData.sourceExternal
 		console.log("looking up external entity")
-		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 		csUtilities.getExternalReferenceCodes requestData.displayName, reqList, (prefResp) ->
 			if csv
 				callback
@@ -155,7 +155,7 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 
 	if requestData.sourceExternal
 		console.log("looking up external entity")
-		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 		csUtilities.getExternalBestLabel requestData.displayName, reqList, (prefResp) ->
 			if csv
 				callback

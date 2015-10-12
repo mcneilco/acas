@@ -26,7 +26,7 @@ exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preV
 	else
 		rScriptCommand = "Rscript"
 
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call R function: "+rFunction, JSON.stringify(request.body), request.body.user
 	if preValidationFunction?
 		preValErrors = preValidationFunction.call @, request.body
@@ -92,7 +92,7 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(req.body), req.body.user
 	if preValidationFunction?
 		preValErrors = preValidationFunction.call @, req.body
@@ -259,7 +259,7 @@ exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 					fvs.push v
 	fvs
 
-controllerRedirect= require '../conf/ControllerRedirectConf.js'
+controllerRedirect= require '../src/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->
 	if controllerRedirect.controllerRedirectConf[prefix]?
 		entityDef = controllerRedirect.controllerRedirectConf[prefix]

@@ -15,7 +15,7 @@
 
   exec = require('child_process').exec;
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   parseResponse = function(jsonStr) {
     var error;

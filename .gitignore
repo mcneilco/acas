@@ -19,3 +19,4 @@ public/src/conf/conf.js
 bin/*.pid
 bin/mpm-accept.*
 bin/rewrite-map.*
+build

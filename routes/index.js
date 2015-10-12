@@ -5,7 +5,7 @@
 
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     if (config.all.client.require.login) {
       app.get('/', loginRoutes.ensureAuthenticated, exports.index);
       app.get('/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode);
@@ -58,7 +58,7 @@
 
   exports.index = function(req, res, moduleLaunchParams) {
     var config, loginUser, loginUserName, scriptsToLoad;
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     global.specRunnerTestmode = global.stubsMode ? true : false;
     scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
     if (config.all.client.require.login) {

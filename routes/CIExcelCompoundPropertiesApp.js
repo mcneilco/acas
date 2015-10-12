@@ -9,7 +9,7 @@
   exports.compoundInfoIndex = function(req, resp) {
     var config, loginUser, loginUserName;
     global.specRunnerTestmode = global.stubsMode ? true : false;
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     if (config.all.client.require.login) {
       loginUserName = req.user.username;
       loginUser = req.user;
@@ -39,7 +39,7 @@
     _ = require('underscore');
     codeService = require('../routes/PreferredEntityCodeService.js');
     propertiesService = require('../routes/TestedEntityPropertiesServicesRoutes.js');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     entities = req.body.entityIdStringLines.split('\n');
     outObject = [];
     createOutObject = (function(_this) {

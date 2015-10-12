@@ -18,7 +18,7 @@
         return resp.end(JSON.stringify(curveCuratorTestData.curveCuratorThumbs));
       }
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/experimentcode/curveids/?experimentcode=";
       request = require('request');
       return request({
@@ -54,7 +54,7 @@
         return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
       }
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/detail/?id=";
       request = require('request');
       return request({
@@ -86,7 +86,7 @@
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/flag/user";
       request = require('request');
       console.log(JSON.stringify(req.body));
@@ -120,7 +120,7 @@
       curveCuratorTestData = require('../public/javascripts/spec/testFixtures/curveCuratorTestFixtures.js');
       return resp.end(JSON.stringify(curveCuratorTestData.curveDetail));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/detail/";
       request = require('request');
       console.log(JSON.stringify(req.body));
@@ -154,7 +154,7 @@
       req.body.curveAttributes.flagUser = req.body.flagUser;
       return resp.end(JSON.stringify(req.body));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.rapache.fullpath + "/curve/stub/";
       request = require('request');
       console.log(JSON.stringify(req.body));
@@ -185,7 +185,7 @@
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     global.specRunnerTestmode = global.stubsMode ? true : false;
     scriptPaths = require('./RequiredClientScripts.js');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
     if (config.all.client.require.login) {
       loginUserName = req.user.username;
@@ -216,7 +216,7 @@
   exports.renderCurve = function(req, resp) {
     var config, rapacheCall, redirectQuery, request;
     request = require('request');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     redirectQuery = req._parsedUrl.query;
     rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery;
     return req.pipe(request(rapacheCall)).pipe(resp);

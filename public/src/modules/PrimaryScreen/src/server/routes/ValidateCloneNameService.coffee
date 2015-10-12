@@ -4,7 +4,7 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/cloneValidation/:name', loginRoutes.ensureAuthenticated, exports.cloneValidation
 
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 
 exports.cloneValidation = (req, resp) ->
 	console.log "clone validation"

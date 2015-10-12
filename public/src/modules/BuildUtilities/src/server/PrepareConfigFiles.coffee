@@ -1,4 +1,4 @@
-csUtilities = require "../public/src/conf/CustomerSpecificServerFunctions.js"
+csUtilities = require "./CustomerSpecificServerFunctions.js"
 properties = require "properties"
 _ = require "underscore"
 underscoreDeepExtend = require "underscore-deep-extend"
@@ -28,15 +28,15 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 		include: true
 		vars: substitutions
 
-	configDir = "./"
+	configDir = "../conf/"
 
 	configSuffix=process.argv[2]
 	if typeof configSuffix == "undefined"
-		configFile = "config.properties"
-		configFileAdvanced = "config_advanced.properties"
+		configFile = "#{configDir}config.properties"
+		configFileAdvanced = "#{configDir}config_advanced.properties"
 	else
-		configFile = "config-"+configSuffix+".properties"
-		configFileAdvanced = "config_advanced-"+configSuffix+".properties"
+		configFile = "#{configDir}config-"+configSuffix+".properties"
+		configFileAdvanced = "#{configDir}config_advanced-"+configSuffix+".properties"
 
 	console.log "Using "+configFile
 	console.log "Using "+configFileAdvanced
@@ -76,11 +76,21 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 					writePropertiesFormat allConf
 					writeApacheConfFile()
 
+mkdirSync = (path) ->
+	try
+		fs.mkdirSync path
+	catch e
+		if e.code != 'EEXIST'
+			throw e
+	return
+
 writeJSONFormat = (conf) ->
-	fs.writeFileSync "./compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"
+	mkdirSync "../conf/compiled"
+	fs.writeFileSync "../conf/compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"
 
 writeClientJSONFormat = (conf) ->
-	fs.writeFileSync "../public/src/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
+	mkdirSync "../public/conf"
+	fs.writeFileSync "../public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
 
 writePropertiesFormat = (conf) ->
 	fs = require('fs')
@@ -92,10 +102,10 @@ writePropertiesFormat = (conf) ->
 			configOut += attr+"="+value+"\n"
 		else
 			configOut += attr+"=\n"
-	fs.writeFileSync "./compiled/conf.properties", configOut
+	fs.writeFileSync "../../conf/compiled/conf.properties", configOut
 
 getRFilesWithRoute = ->
-	rFiles = glob.sync('public/src/modules/*/src/server/*.R', {cwd: path.resolve(__dirname,'..')})
+	rFiles = glob.sync('../r/*.R', {cwd: path.resolve(__dirname,'..')})
 	routes = []
 	for rFile in rFiles
 		rFilePath = path.resolve('..',rFile)
@@ -240,8 +250,8 @@ apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'RewriteEngine', value: 'On'}]
 
 writeApacheConfFile = ->
-	config = require './compiled/conf.js'
-	acasHome = path.resolve(__dirname,'..')
+	config = require '../../conf/compiled/conf.js'
+	acasHome = path.resolve(__dirname,'../..')
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
 		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
@@ -250,5 +260,5 @@ writeApacheConfFile = ->
 	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-	fs.writeFileSync "./compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
-	fs.writeFileSync "./compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "../../conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "../../conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')

@@ -1,4 +1,4 @@
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/customerMolecularTargetCodeTable', exports.getCustomerMolecularTargetCodes

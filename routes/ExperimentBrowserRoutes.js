@@ -12,7 +12,7 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
   exports.experimentsForProtocol = function(req, resp) {
     var baseurl, config, fixturesData, request;
     fixturesData = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     baseurl = config.all.client.service.persistence.fullpath + ("experiments/protocol/" + req.params.protocolCode);
     console.log("baseurl");
     console.log(baseurl);

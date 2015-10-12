@@ -9,7 +9,7 @@
 
   fs = require('fs');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   servUtilities = require('../../../../routes/ServerUtilityFunctions.js');
 

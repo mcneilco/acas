@@ -18,7 +18,7 @@
     return app.post('/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated, exports.searchForEntitiesRoute);
   };
 
-  configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
+  configuredEntityTypes = require('./ConfiguredEntityTypes.js');
 
   _ = require('underscore');
 

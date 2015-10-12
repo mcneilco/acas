@@ -20,7 +20,7 @@ exports.setupRoutes = (app, passport) ->
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
 
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 config = require '../conf/compiled/conf.js'
 
 exports.loginPage = (req, res) ->

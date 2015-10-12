@@ -13,7 +13,7 @@
       labelServiceTestJSON = require('../public/javascripts/spec/testFixtures/LabelServiceTestJSON.js');
       return resp.json(labelServiceTestJSON.nextLabelSequenceResponse);
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "labelsequences/getLabels";
       request = require('request');
       return request({

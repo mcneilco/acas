@@ -35,7 +35,7 @@ exports.thingsByTypeKind = (req, resp) ->
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
-csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+csUtilities = require '../src/CustomerSpecificServerFunctions.js'
 
 
 exports.thingByCodeName = (req, resp) ->

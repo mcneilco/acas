@@ -5,7 +5,7 @@
 
   request = require('request');
 
-  config = require('../../../../conf/compiled/conf.js');
+  config = require('../.././compiled/conf.js');
 
   describe("Entity Properties Services", function() {
     describe("get parent property descriptors", function() {

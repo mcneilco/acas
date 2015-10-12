@@ -14,11 +14,11 @@
     return app.get('/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences);
   };
 
-  config = require('../conf/compiled/conf.js');
+  config = require('./compiled/conf.js');
 
   exports.redirectToEditor = function(req, resp) {
     var controllerRedirectConf, controllerRedirectConfFile, prefix, prefixKeyIndex, queryPrefix;
-    controllerRedirectConfFile = require('../conf/ControllerRedirectConf.js');
+    controllerRedirectConfFile = require('./ControllerRedirectConf.js');
     controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf;
     queryPrefix = null;
     prefixKeyIndex = 0;

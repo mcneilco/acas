@@ -18,7 +18,7 @@
   exports.cmpdRegBulkLoaderIndex = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
-    config = require('../conf/compiled/conf.js');
+    config = require('./compiled/conf.js');
     global.specRunnerTestmode = global.stubsMode ? true : false;
     scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
     if (config.all.client.require.login) {
@@ -53,7 +53,7 @@
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
       return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.templates));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/templates?userName=" + req.params.user;
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -66,7 +66,7 @@
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
       return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.filesToPurge));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/files";
       return serverUtilityFunctions.getFromACASServer(baseurl, resp);
@@ -88,7 +88,7 @@
       }
     } else {
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
       filePath = uploadsPath + req.body.fileName;
       req.body.fileName = filePath;
@@ -121,7 +121,7 @@
       cmpdRegBulkLoaderTestJSON = require('../public/javascripts/spec/testFixtures/CmpdRegBulkLoaderServiceTestJSON.js');
       return resp.end(JSON.stringify(cmpdRegBulkLoaderTestJSON.savedTemplateReturn));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/templates/saveTemplate";
       request = require('request');
       return request({
@@ -161,7 +161,7 @@
       for (i = 0, len = ref.length; i < len; i++) {
         rFile = ref[i];
         serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-        config = require('../conf/compiled/conf.js');
+        config = require('./compiled/conf.js');
         splitNames = rFile.split("/cmpdreg_bulkload/");
         rFileName = splitNames[1];
         zip.file(rFileName, fs.readFileSync(rFile));
@@ -191,7 +191,7 @@
         } else {
           fileName = req.body.fileName;
           delete req.body.fileName;
-          config = require('../conf/compiled/conf.js');
+          config = require('./compiled/conf.js');
           baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/registerSdf";
           request = require('request');
           return request({
@@ -219,7 +219,7 @@
       var bulkLoadFolder, config, fileName, fs, newPath, oldPath, serverUtilityFunctions, uploadsPath;
       fileName = req.body.fileName;
       serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       fs = require('fs');
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
       oldPath = uploadsPath + fileName;
@@ -256,7 +256,7 @@
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("File has 10 parents and 10 lots"));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/checkDependencies";
       request = require('request');
       return request({
@@ -285,7 +285,7 @@
     if (req.query.testMode || global.specRunnerTestmode) {
       return resp.end(JSON.stringify("Successful purge in stubsMode."));
     } else {
-      config = require('../conf/compiled/conf.js');
+      config = require('./compiled/conf.js');
       baseurl = config.all.client.service.cmpdReg.persistence.fullpath + "bulkload/purge";
       request = require('request');
       return request({
