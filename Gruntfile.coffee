@@ -4,13 +4,17 @@ module.exports = (grunt) ->
 	# configure build tasks
 	global['clean'] = grunt.option('clean')
 	grunt.registerTask 'build', 'build task', () ->
-		compiledPath =  grunt.option('compilePath') || '../compiled'
-		console.log "compiling to #{compiledPath}"
-		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
-		grunt.config.set('acas_base', "#{compiledPath}")
-		grunt.task.run 'sync'
+#		compiledPath =  grunt.option('compilePath') || '../compiled'
+#		console.log "compiling to #{compiledPath}"
+#		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
+#		grunt.config.set('acas_base', "#{compiledPath}")
+		if global['clean']
+			grunt.task.run 'clean'
+		grunt.task.run 'coffee'
 		grunt.task.run 'copy'
+		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'execute:prepare_module_includes'
+		grunt.task.run 'execute:prepare_config_files'
 		return
 
 	#
@@ -23,6 +27,8 @@ module.exports = (grunt) ->
 	# ---------------------
 		acas_custom: 'acas_custom'
 		acas_base: '.'
+		clean:
+			build: ["build/*"]
 		coffee:
 			module_client:
 				files: [
@@ -327,6 +333,11 @@ module.exports = (grunt) ->
 				options:
 					cwd: 'conf'
 				src: 'conf/PrepareTestJSON.js'
+			npm_install:
+				call: (grunt, options) ->
+					shell = require('shelljs')
+					result = shell.exec('cd build && npm install', {silent:true})
+					return result.output
 			reload_rapache:
 				call: (grunt, options) ->
 					shell = require('shelljs')
@@ -456,7 +467,7 @@ module.exports = (grunt) ->
 					"conf/conf*.properties"
 					"public/src/modules/*/src/server/*.R"
 				]
-				tasks: "execute:prepare_config_files"
+				tasks: ["copy:conf", "execute:prepare_config_files"]
 			prepare_test_JSON:
 				files: [
 					"public/javascripts/spec/testFixtures/*.js"
@@ -471,6 +482,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
+	grunt.loadNpmTasks "grunt-contrib-clean"
 	grunt.loadNpmTasks "grunt-sync"
 	grunt.loadNpmTasks "grunt-execute"
 
