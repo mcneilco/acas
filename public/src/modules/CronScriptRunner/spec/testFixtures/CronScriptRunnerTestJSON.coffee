@@ -1,10 +1,10 @@
 ((exports) ->
-	#This is an example of a saved cron job spev that has not executed yet
+	#This is an example of a saved cron job spec that has not executed yet
 	exports.savedCronEntry =
 #The requestor must provide these attributes
 		schedule: "0-59/2 * * * * *"
 			#cron format string
-			#This example runs evey 2 seconds
+			#This example runs every 2 seconds
 			#mocha tests depend on this timing example
 		scriptType: "R"
 			#only choice for now, later python, knime, etc
@@ -21,10 +21,10 @@
 			#true if should run, false otherwise, essentially pause
 		ignored: false
 			#true is logical delete state. Job will be dequeued
-		user: 'jmcneil'
+		runUser: 'jmcneil'
 			#required login user of person whose actions caused this cron to be created
 #Attributes below this are filled in by the service and not required from the requestor
-		cronCode: "CRON123456789"
+		codeName: "CRON123456789"
 			#identifier we will also use as a key to lookup the handle to the cron job in memory
 			#generated sequentially by the persistence
 		lastStartTime: null
@@ -36,7 +36,7 @@
 		lastResultJSON: null
 			#JSON format string of last run results
 			#null if not run
-		numberOfExcutions: null
+		numberOfExecutions: null
 			#number of times script has been executed for this job
 			#null if not run
 
