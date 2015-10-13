@@ -29,7 +29,7 @@ module.exports = (grunt) ->
 		acas_custom: 'acas_custom'
 		acas_base: '.'
 		clean:
-			build: ["build/*"]
+			build: ["build/*", "!build/r_libs", "!build/node_modules"]
 		coffee:
 			module_client:
 				files: [
@@ -332,8 +332,8 @@ module.exports = (grunt) ->
 				src: 'build/src/PrepareConfigFiles.js'
 			prepare_test_JSON:
 				options:
-					cwd: 'conf'
-				src: 'conf/PrepareTestJSON.js'
+					cwd: 'build/conf'
+				src: 'build/conf/PrepareTestJSON.js'
 			npm_install:
 				call: (grunt, options) ->
 					shell = require('shelljs')
@@ -343,18 +343,6 @@ module.exports = (grunt) ->
 				call: (grunt, options) ->
 					shell = require('shelljs')
 					result = shell.exec('cd build/src/r && Rscript install.R', {silent:true})
-					return result.output
-			reload_rapache:
-				call: (grunt, options) ->
-					shell = require('shelljs')
-					result = shell.exec('bin/acas-darwin.sh reload', {silent:true})
-					return result.output
-			grunt_copy_compiled:
-				options:
-					cwd: '../compiled'
-				call: (grunt, options) ->
-					shell = require('shelljs')
-					result = shell.exec('grunt copy', {silent:true})
 					return result.output
 		watch:
 			module_client_coffee:
@@ -469,21 +457,16 @@ module.exports = (grunt) ->
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
 				files: [
-					"conf/PrepareConfigFiles.js"
-					"conf/conf*.properties"
-					"public/src/modules/*/src/server/*.R"
+					"build/src/PrepareConfigFiles.js"
+					"build/conf/conf*.properties"
+					"build/src/r/*"
 				]
 				tasks: ["copy:conf", "execute:prepare_config_files"]
 			prepare_test_JSON:
 				files: [
-					"public/javascripts/spec/testFixtures/*.js"
+					"build/public/javascripts/spec/testFixtures/*.js"
 				]
 				tasks: "execute:prepare_test_JSON"
-			reload_rapache:
-				files: [
-					"r_libs/racas/*"
-				]
-				tasks: "execute:reload_rapache"
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
