@@ -143,9 +143,9 @@ describe "Cron Script Runner Services Spec", ->
 		it "should return success of the R script run", ->
 			assert.equal parseResponse(@responseJSON.lastResultJSON).hasError, false
 		it "should increment the run count", ->
-			assert.equal @responseJSON.numberOfExcutions > 0 , true
+			assert.equal @responseJSON.numberOfExecutions > 0 , true
 
-	describe.only "create and run cron then stop", ->
+	describe "create and run cron then stop", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
 		delete unsavedReq.codeName
@@ -158,13 +158,13 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						#cleanup
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: false
@@ -172,10 +172,10 @@ describe "Cron Script Runner Services Spec", ->
 						, (error, response, body) =>
 							setTimeout =>
 								request.get
-									url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									done()
 							, 2500
 				, 2500
@@ -199,7 +199,7 @@ describe "Cron Script Runner Services Spec", ->
 						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
 							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
@@ -213,7 +213,7 @@ describe "Cron Script Runner Services Spec", ->
 									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									@lastResultJSON = body2.lastResultJSON
 									#cleanup
 									request.put
@@ -252,7 +252,7 @@ describe "Cron Script Runner Services Spec", ->
 						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
 							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
@@ -265,7 +265,7 @@ describe "Cron Script Runner Services Spec", ->
 									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									#cleanup
 									request.put
 										url: baseURL+"/api/cronScriptRunner/"+body.codeName
@@ -299,7 +299,7 @@ describe "Cron Script Runner Services Spec", ->
 						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
 							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
@@ -312,7 +312,7 @@ describe "Cron Script Runner Services Spec", ->
 									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									request.put
 										url: baseURL+"/api/cronScriptRunner/"+body.codeName
 										json: true
@@ -325,7 +325,7 @@ describe "Cron Script Runner Services Spec", ->
 												url: baseURL+"/api/cronScriptRunner/"+body.codeName
 												json: true
 											, (error, response, body3) =>
-												@numRuns3 = body3.numberOfExcutions
+												@numRuns3 = body3.numberOfExecutions
 												#cleanup
 												request.put
 													url: baseURL+"/api/cronScriptRunner/"+body.codeName

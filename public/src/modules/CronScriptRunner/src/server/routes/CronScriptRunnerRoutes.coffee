@@ -48,6 +48,8 @@ exports.postCronScriptRunner = (req, resp) ->
 	else
 		unsavedReq = req.body
 		persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
+		if not unsavedReq.numberOfExecutions
+			unsavedReq.numberOfExecutions = 0
 		request.post
 			url: persistenceURL
 			json: true
@@ -88,7 +90,6 @@ exports.putCronScriptRunner = (req, resp) ->
 		unless cronJob?
 			resp.send "cronCode #{code} not found", 404
 			return
-		console.log 'cronJob: ' + JSON.stringify cronJob
 
 		updateCronScriptRunner code, req.body, (err, response) ->
 			if err
@@ -121,23 +122,20 @@ updateCronScriptRunner = (code, newSpec, callback) ->
 
 	#Update supplied attributes
 	for key, value of newSpec
-		console.log key + ": "+value
+#		console.log key + ": "+value
 		cronJob.spec[key] = value
 	#no matter what, stop job. Who knows what changes we got?
 	if cronJob.job?
 		cronJob.job.stop()
 		delete cronJob.job
 	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs/"
-	delete cronJob.spec.version # server needs version to be empty
-	console.log 'updated cronJob spec: ' + JSON.stringify cronJob.spec
-	console.log 'code: ' + code
 	request.put
 		url: persistenceURL + code
 		json: true
 		body: cronJob.spec
 	, (error, response, body) =>
 		if not error and response.statusCode < 400 and body.codeName?
-			cronJob = spec: body
+			cronJob.spec = body
 			if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
 				setupNewCron cronJob
 			callback null, cronJob.spec
@@ -171,13 +169,9 @@ scriptComplete = (codeName, startTime, duration, resultJSON) ->
 			cronJob.spec.numberOfExecutions++
 		else
 			cronJob.spec.numberOfExecutions = 1
-		updatedCron = spec: cronJob.spec
-		console.log 'put to /api/cronScriptRunner/' + codeName
 		updateCronScriptRunner codeName, cronJob.spec, (err, res) ->
 			if err
-				console.log 'unable to put scriptComplete: ' + err
-			else
-				console.log 'update success'
+				console.log 'unable to update job in database in scriptComplete: ' + err
 
 
 validateSpec = (spec) ->
