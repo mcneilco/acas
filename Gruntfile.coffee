@@ -13,6 +13,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'copy'
 		grunt.task.run 'execute:npm_install'
+#		grunt.task.run 'execute:install_racas'
 		grunt.task.run 'execute:prepare_module_includes'
 		grunt.task.run 'execute:prepare_config_files'
 		return
@@ -251,7 +252,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "views"
-					src: ["*.jade", "*.jade_template", "!CIExcel*"]
+					src: ["*.jade", "*.jade_template"]
 					dest: "build/views"
 				]
 			node_modules_customized:
@@ -272,14 +273,14 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "public/src/"
-					src: ["modules/**/src/client/*.html", "!modules/**/src/client/CI*.html"]
+					src: ["modules/**/src/client/*.html"]
 					dest: "build/public/html"
 				]
 			public_css:
 				files: [
 					expand: true
 					cwd: "public/src/"
-					src: ["modules/**/src/client/*.css", "!modules/**/src/client/CIExcel*"]
+					src: ["modules/**/src/client/*.css"]
 					dest: "build/public/stylesheets"
 				]
 			public_jade:
@@ -288,7 +289,7 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "public/src/"
 					src: ["modules/**/src/client/**/*.jade"]
-					dest: "./views"
+					dest: "build/views"
 				]
 			public_lib:
 				files: [
@@ -337,6 +338,11 @@ module.exports = (grunt) ->
 				call: (grunt, options) ->
 					shell = require('shelljs')
 					result = shell.exec('cd build && npm install', {silent:true})
+					return result.output
+			install_racas:
+				call: (grunt, options) ->
+					shell = require('shelljs')
+					result = shell.exec('cd build/src/r && Rscript install.R', {silent:true})
 					return result.output
 			reload_rapache:
 				call: (grunt, options) ->
