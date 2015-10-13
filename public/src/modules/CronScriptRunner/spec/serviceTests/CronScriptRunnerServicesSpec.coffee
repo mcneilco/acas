@@ -445,11 +445,6 @@ describe "Cron Script Runner Services Spec", ->
 			it "should return a success status code of 500", ->
 				assert.equal @serverResponse.statusCode, 500
 
-#TODO Persist in Roo
-#TODO see todos in implementation
-#TODO Read all active jobs in Roo persistance and add to live queue during startup
-
-
 
 
 

@@ -14,14 +14,16 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 config = require '../conf/compiled/conf.js'
 request = require 'request'
+CRON_CONFIG_PREFIX = "CONF_CRON"
 
 addJobsOnStartup = ->
 	cronConfig = require '../public/javascripts/conf/StartupCronJobsConfJSON.js'
+	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
 
 	#We don't want to save these to the database, so make our own special cronCodes and launch
 	codeInt = 1
 	for spec in cronConfig.jobsToStart
-		newCode = "CONF_CRON" + codeInt++
+		newCode = CRON_CONFIG_PREFIX + codeInt++
 
 		newCron =
 			spec: spec
@@ -33,6 +35,21 @@ addJobsOnStartup = ->
 
 		if newCron.spec.active
 			setupNewCron newCron
+
+	# Get existing jobs
+	request.get
+		url: persistenceURL
+		json: true
+	, (error, response, body) =>
+		if not error and response.statusCode < 400
+			for spec in body
+				newCron = spec: spec
+				global.cronJobs[newCode] = newCron
+				if not newCron.spec.ignored and newCron.spec.active
+					setupNewCron newCron
+		else
+			console.log 'Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body
+
 
 
 exports.postCronScriptRunner = (req, resp) ->
@@ -129,18 +146,24 @@ updateCronScriptRunner = (code, newSpec, callback) ->
 		cronJob.job.stop()
 		delete cronJob.job
 	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs/"
-	request.put
-		url: persistenceURL + code
-		json: true
-		body: cronJob.spec
-	, (error, response, body) =>
-		if not error and response.statusCode < 400 and body.codeName?
-			cronJob.spec = body
-			if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
-				setupNewCron cronJob
-			callback null, cronJob.spec
-		else
-			callback "Failed put request to server: " + body
+	#Skip if cron defined in config
+	if code.indexOf CRON_CONFIG_PREFIX < 0
+		request.put
+			url: persistenceURL + code
+			json: true
+			body: cronJob.spec
+		, (error, response, body) =>
+			if not error and response.statusCode < 400 and body.codeName?
+				cronJob.spec = body
+				if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
+					setupNewCron cronJob
+				callback null, cronJob.spec
+			else
+				callback "Failed put request to server: " + body
+	else
+		if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
+			setupNewCron cronJob
+		callback null, cronJob.spec
 
 setupNewCron = (cron) ->
 	CronJob = require('cron').CronJob
