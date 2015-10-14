@@ -306,7 +306,7 @@ exports.getPreferredBatchIds = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require './compiled/conf.js'
+		config = require '../conf/compiled/conf.js'
 		request = require 'request'
 		request
 			method: 'POST'
@@ -373,7 +373,7 @@ exports.getBatchBestLabels = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require './compiled/conf.js'
+		config = require '../conf/compiled/conf.js'
 		request = require 'request'
 		request
 			method: 'POST'
@@ -407,7 +407,7 @@ exports.getParentBestLabels = (requests, callback) ->
 
 		callback response
 	else
-		config = require './compiled/conf.js'
+		config = require '../conf/compiled/conf.js'
 		request = require 'request'
 		request
 			method: 'POST'

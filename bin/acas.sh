@@ -367,7 +367,7 @@ until [ -f $ACAS_HOME/conf/compiled/conf.properties  ] || [ $counter == $wait ];
     sleep 1
     counter=$((counter+1))
 done
-source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/conf/readproperties.awk)"
+source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/bin/readproperties.awk)"
 
 # Export these variables so that the apache config can pick them up
 export ACAS_USER=${server_run_user}

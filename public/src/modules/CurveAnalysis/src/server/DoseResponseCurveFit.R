@@ -9,7 +9,7 @@ fitDoseResponse <- function(request){
   myMessenger$logger <- logger(logName = "com.acas.doseresponse.fit.experiment", logToConsole = FALSE)
   myMessenger$logger$debug("dose response fit experiment initiated")
   request <- as.list(request)
-  myMessenger$logger$debug(toJSON(request))
+  myMessenger$logger$debug(paste0("request <- ",paste0(capture.output(dput(request)), collapse = "\n")))
 
   simpleFitSettings <- fromJSON(request$inputParameters)
   experimentCode <- request$experimentCode

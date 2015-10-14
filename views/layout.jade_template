@@ -3,17 +3,17 @@ html
     head
 
         title= title
-        link(rel='stylesheet', href='stylesheets/bootstrap.css')
-        link(rel='stylesheet', href='stylesheets/bootstrap-responsive.min.css')
-        link(rel='stylesheet', href='stylesheets/bootstrap-image-gallery.min.css')
-        link(rel='stylesheet', href='lib/jqueryFileUpload/css/jquery.fileupload-ui.css')
-        link(rel='stylesheet', href='stylesheets/base.css')
-        link(rel='stylesheet', href='lib/jquery-ui-1.10.2.custom/css/smoothness/jquery-ui-1.10.2.custom.min.css')
-        link(rel='stylesheet', href='lib/bootstrap-tagsinput/bootstrap-tagsinput.css')
-        link(rel='stylesheet', href='lib/dataTables/css/jquery.dataTables.css')
-        link(rel='stylesheet', href='lib/bootstrap-combobox/css/bootstrap-combobox.css')
-        link(rel='stylesheet', href='lib/jsxgraph/jsxgraph.css')
-        link(rel='stylesheet', href='lib/jstree/themes/default/style.min.css')
+        link(rel='stylesheet', href='/stylesheets/bootstrap.css')
+        link(rel='stylesheet', href='/stylesheets/bootstrap-responsive.min.css')
+        link(rel='stylesheet', href='/stylesheets/bootstrap-image-gallery.min.css')
+        link(rel='stylesheet', href='/lib/jqueryFileUpload/css/jquery.fileupload-ui.css')
+        link(rel='stylesheet', href='/stylesheets/base.css')
+        link(rel='stylesheet', href='/lib/jquery-ui-1.10.2.custom/css/smoothness/jquery-ui-1.10.2.custom.min.css')
+        link(rel='stylesheet', href='/lib/bootstrap-tagsinput/bootstrap-tagsinput.css')
+        link(rel='stylesheet', href='/lib/dataTables/css/jquery.dataTables.css')
+        link(rel='stylesheet', href='/lib/bootstrap-combobox/css/bootstrap-combobox.css')
+        link(rel='stylesheet', href='/lib/jsxgraph/jsxgraph.css')
+        link(rel='stylesheet', href='/lib/jstree/themes/default/style.min.css')
         // inserted by PrepareModuleIncludes
 TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
         // end inserted by PrepareModuleIncludes

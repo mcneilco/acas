@@ -47,8 +47,8 @@
 #########################################################################
 
 library(racas)
-source("public/src/conf/customFunctions.R")
-source("public/src/conf/genericDataParserConfiguration.R")
+source("src/r/customFunctions.R")
+source("src/r/genericDataParserConfiguration.R")
 
 #####
 # Define Functions

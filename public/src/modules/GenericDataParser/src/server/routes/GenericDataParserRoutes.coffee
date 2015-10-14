@@ -21,7 +21,7 @@ exports.parseGenericData = (request, response)  ->
 		console.log "test mode: "+global.specRunnerTestmode
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/GenericDataParser/src/server/GenericDataParserStub.R",
+			"src/r/GenericDataParserStub.R",
 			"parseGenericData",
 			(rReturn) ->
 				response.end rReturn
@@ -29,7 +29,7 @@ exports.parseGenericData = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/GenericDataParser/src/server/generic_data_parser.R",
+			"src/r/generic_data_parser.R",
 			"parseGenericData",
 			(rReturn) ->
 				response.end rReturn

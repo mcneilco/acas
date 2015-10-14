@@ -9,7 +9,7 @@ Gruntfile.js
 .idea/*
 conf/compiled/*
 r_libs/*
-acas_custom/*
 acas.log
 racas.log
 node_modules
+build

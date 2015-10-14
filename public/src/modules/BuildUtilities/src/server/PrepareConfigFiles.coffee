@@ -250,7 +250,7 @@ apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'RewriteEngine', value: 'On'}]
 
 writeApacheConfFile = ->
-	config = require '../../conf/compiled/conf.js'
+	config = require '../conf/compiled/conf.js'
 	acasHome = path.resolve(__dirname,'../')
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'

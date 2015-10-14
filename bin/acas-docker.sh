@@ -1,4 +1,11 @@
 #!/bin/sh
+
+if [ -d "../acas_custom" ];then
+    cd ..
+    grunt build
+    cd build
+fi
+
 # Check if mounted environments exists, if not then use default environments to export variables before prepare config files runs
 if [ -d "/mnt/environments" ];then
     envPath="/mnt/environments"
@@ -10,14 +17,14 @@ for f in $envPath/*/*.env; do echo Using $f;source $f;export $(cut -d= -f1 $f); 
 
 # Run Prepare config files as the compiled directory should be empty
 if [ $PREPARE_CONFIG_FILES == "true" ]; then
-    cd conf
-    node PrepareConfigFiles.js docker
+    cd src
+    node PrepareConfigFiles.js
     cd ..
 fi
 
 #Once tomcat is availble then try and run prepare module conf json if in demo mode
 if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
-    cd conf
+    cd src
     echo 'ping -c 1 tomcat > /dev/null
     if [ $? -eq 0 ];then
         counter=0

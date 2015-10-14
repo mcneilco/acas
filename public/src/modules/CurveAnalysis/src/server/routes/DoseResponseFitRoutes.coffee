@@ -11,7 +11,7 @@ exports.fitDoseResponse = (request, response)  ->
 		console.log "test mode: "+global.specRunnerTestmode
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/CurveAnalysis/src/server/DoseResponseCurveFitStub.R",
+			"src/r/DoseResponseCurveFitStub.R",
 			"fitDoseResponse",
 		(rReturn) ->
 			response.end rReturn
@@ -19,7 +19,7 @@ exports.fitDoseResponse = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/CurveAnalysis/src/server/DoseResponseCurveFit.R",
+			"src/r/DoseResponseCurveFit.R",
 			"fitDoseResponse",
 		(rReturn) ->
 			response.end rReturn

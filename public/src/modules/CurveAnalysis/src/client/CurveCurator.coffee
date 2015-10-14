@@ -600,7 +600,7 @@ class window.CurveSummaryController extends Backbone.View
 		@$el.empty()
 		@model.url = '/api/curve/stub/' + @model.get 'curveid'
 		if window.AppLaunchParams.testMode
-			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
+			curveUrl = "/javascripts/spec/testFixtures/modules/CurveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
 			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="

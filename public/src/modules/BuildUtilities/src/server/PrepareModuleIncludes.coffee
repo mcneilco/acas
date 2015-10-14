@@ -15,7 +15,7 @@ prepIncludes = ->
 	includeLines = ""
 	for path in styleFiles
 		includeStr = '        link(rel="stylesheet", href="'
-		includeStr += path.replace "../public", ""
+		includeStr += path.replace "../public/", "/"
 		includeStr += '")\n'
 		includeLines += includeStr
 	for path in templateFiles
@@ -36,7 +36,7 @@ insertToLayoutTemplate = (replaceRegex, includeLines, templateFileName, outputFi
 
 
 includeLines = prepIncludes()
-insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "../views/layout.jade_template", "../../views/layout.jade"
+insertToLayoutTemplate /TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES/, includeLines, "../views/layout.jade_template", "../views/layout.jade"
 
 
 ##### prep scripts to load ##
@@ -56,7 +56,7 @@ makeScriptLines = (scripts) ->
 	scriptLines = ""
 	for fname, path of scripts
 		script = '\t"'
-		script += path.replace "../public/", ""
+		script += path.replace "../public/", "/"
 		script += '",\n'
 		scriptLines += script
 	scriptLines.replace /,([^,]*)$/, "" #kill last comma and newline

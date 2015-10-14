@@ -262,7 +262,7 @@ exports.deleteExperiment = (req, res) ->
 
 exports.resultViewerURLByExperimentCodename = (request, resp) ->
 	console.log __dirname
-	_ = require '../public/src/lib/underscore.js'
+	_ = require '../public/lib/underscore.js'
 	if (request.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.resultViewerURLByExperimentCodeName

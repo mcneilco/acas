@@ -39,6 +39,10 @@ startApp = ->
 	loginRoutes = require './routes/loginRoutes'
 	loginRoutes.setupAPIRoutes(app)
 
+	process.on 'uncaughtException', (err) ->
+		console.log 'Caught exception: ' + err
+		return
+
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 

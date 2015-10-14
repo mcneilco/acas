@@ -3,6 +3,14 @@ glob = require 'glob'
 _ = require "underscore"
 
 
+mkdirSync = (path) ->
+	try
+		fs.mkdirSync path
+	catch e
+		if e.code != 'EEXIST'
+			throw e
+	return
+mkdirSync "../public/javascripts/spec/TestJSON"
 allFiles = glob.sync "../public/javascripts/spec/testFixtures/*.js"
 for fileName in allFiles
 	data = require fileName

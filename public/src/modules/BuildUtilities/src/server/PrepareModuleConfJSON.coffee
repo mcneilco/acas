@@ -2,11 +2,21 @@ fs = require 'fs'
 glob = require 'glob'
 _ = require "underscore"
 
+mkdirSync = (path) ->
+	try
+		fs.mkdirSync path
+	catch e
+		if e.code != 'EEXIST'
+			throw e
+	return
+
 allModuleConfJSFiles = glob.sync "../public/javascripts/conf/*.js"
 for fileName in allModuleConfJSFiles
 	data = require fileName
 	jsonfilestring = JSON.stringify data
 	newFileName = fileName.replace "conf", "conf/confJSON/moduleJSON"
+	mkdirSync "../public/javascripts/conf/confJSON"
+	mkdirSync "../public/javascripts/conf/confJSON/moduleJSON"
 	newFileName = newFileName.replace ".js", ".json"
 	fs.writeFileSync newFileName, jsonfilestring
 
@@ -70,8 +80,8 @@ fs.writeFileSync compiledModuleConfsFileName, jsonfilestring
 
 async = require 'async'
 request = require 'request'
-data = require '../../../../../javascripts/conf/confJSON/CompiledModuleConfJSONs.json'
-config = require 'compiled/conf.js'
+data = require '../public/javascripts/conf/confJSON/CompiledModuleConfJSONs.json'
+config = require '../conf/compiled/conf.js'
 
 async.forEachSeries typeKinds, ((typeOrKind, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
