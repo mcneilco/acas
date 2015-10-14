@@ -37,6 +37,7 @@
     "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
     "winston-mongodb": "*",
-    "mocha": "*"
+    "mocha": "*",
+    "properties-parser": "*"
   }
 }

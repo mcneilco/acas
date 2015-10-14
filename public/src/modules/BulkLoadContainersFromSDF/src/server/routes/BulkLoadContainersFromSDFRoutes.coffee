@@ -17,7 +17,7 @@ exports.bulkLoadContainersFromSDF = (request, response)  ->
 	if global.specRunnerTestmode
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/BulkLoadContainersFromSDF/src/server/BulkLoadContainersFromSDFStub.R",
+			"src/r/BulkLoadContainersFromSDFStub.R",
 			"bulkLoadContainersFromSDF",
 			(rReturn) ->
 				response.end rReturn
@@ -25,7 +25,7 @@ exports.bulkLoadContainersFromSDF = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/BulkLoadContainersFromSDF/src/server/BulkLoadContainersFromSDF.R",
+			"src/r//BulkLoadContainersFromSDF.R",
 			"bulkLoadContainersFromSDF",
 		(rReturn) ->
 			response.end rReturn

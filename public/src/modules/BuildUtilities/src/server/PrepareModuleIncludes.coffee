@@ -2,14 +2,13 @@ fs = require 'fs'
 glob = require 'glob'
 _ = require 'underscore'
 
-
 workingDir=process.argv[2]
 if typeof workingDir != "undefined"
 	process.chdir ".."
 	process.chdir "#{workingDir}/conf"
 
 prepIncludes = ->
-	styleFiles = glob.sync '../public/stylesheets/modules/**/*.css'
+	styleFiles = glob.sync '../public/stylesheets/**/*.css'
 	templateFiles = glob.sync '../public/html/**/*.html'
 
 	includeLines = ""

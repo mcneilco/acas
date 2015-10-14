@@ -2,17 +2,13 @@ module.exports = (grunt) ->
 	"use strict"
 
 	# configure build tasks
-	global['clean'] = grunt.option('clean')
 	grunt.registerTask 'build', 'build task', () ->
-#		compiledPath =  grunt.option('compilePath') || '../compiled'
-#		console.log "compiling to #{compiledPath}"
-#		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
-#		grunt.config.set('acas_base', "#{compiledPath}")
-		if global['clean']
-			grunt.task.run 'clean'
+		build =  grunt.option('buildPath') || 'build'
+		console.log "building to '#{build}'"
+		grunt.config.set('build', "#{build}")
 		grunt.task.run 'coffee'
 		grunt.task.run 'copy'
-#		grunt.task.run 'execute:npm_install'
+		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'execute:prepare_module_includes'
 		grunt.task.run 'execute:prepare_config_files'
 		grunt.task.run 'execute:prepare_test_JSON'
@@ -28,15 +24,16 @@ module.exports = (grunt) ->
 	# ---------------------
 		acas_custom: 'acas_custom'
 		acas_base: '.'
+		build: 'build'
 		clean:
-			build: ["build/*", "!build/r_libs", "!build/node_modules"]
+			build: ["<%= build %>/*", "!<%= build %>/r_libs", "!<%= build %>/node_modules", "!<%= build %>/privateUploads","!<%= build %>/privateTempFiles"]
 		coffee:
 			module_client:
 				files: [
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/src/client/*.coffee"]
-					dest: "build/public/javascripts/src/"
+					dest: "<%= build %>/public/javascripts/src/"
 					ext: '.js'
 				]
 			module_server:
@@ -44,7 +41,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/src/server/*.coffee"]
-					dest: "build/src"
+					dest: "<%= build %>/src"
 					ext: '.js'
 				]
 			module_spec:
@@ -52,7 +49,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/*.coffee"]
-					dest: "build/public/javascripts/spec/"
+					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
 			module_testFixtures:
@@ -60,7 +57,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/testFixtures/*.coffee"]
-					dest: "build/public/javascripts/spec/testFixtures/"
+					dest: "<%= build %>/public/javascripts/spec/testFixtures/"
 					ext: '.js'
 				]
 			module_serviceTests:
@@ -68,7 +65,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/spec/serviceTests/*.coffee","public/src/conf/serviceTests/*.coffee"]
-					dest: "build/public/javascripts/spec/test/"
+					dest: "<%= build %>/public/javascripts/spec/test/"
 					ext: '.js'
 				]
 			app:
@@ -76,7 +73,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["./*.coffee"]
-					dest: "build/"
+					dest: "<%= build %>/"
 					ext: '.js'
 				]
 			conf:
@@ -84,7 +81,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["conf/*.coffee"]
-					dest: "build/conf/"
+					dest: "<%= build %>/conf/"
 					ext: '.js'
 				]
 			module_conf:
@@ -92,7 +89,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/**/conf/*.coffee"]
-					dest: "build/public/javascripts/conf/"
+					dest: "<%= build %>/public/javascripts/conf/"
 					ext: '.js'
 				]
 			public_conf:
@@ -100,7 +97,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/conf/*.coffee"]
-					dest: "build/src"
+					dest: "<%= build %>/src"
 					ext: '.js'
 				]
 			routes:
@@ -108,7 +105,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["routes/*.coffee"]
-					dest: "build/routes/"
+					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
 			module_routes:
@@ -116,7 +113,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["public/src/modules/*/src/server/routes/*.coffee"]
-					dest: "build/routes/"
+					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
 		#these compilers are for the custom coffee scripts before they get copied
@@ -125,7 +122,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/src/client/*.coffee"]
-					dest: "build/public/javascripts/src/"
+					dest: "<%= build %>/public/javascripts/src/"
 					ext: '.js'
 				]
 			custom_spec:
@@ -133,7 +130,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/spec/*.coffee"]
-					dest: "build/public/javascripts/spec/"
+					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
 			custom_compileTestFixtures:
@@ -141,7 +138,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/spec/testFixtures/*.coffee"]
-					dest: "build/public/javascripts/spec/"
+					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
 			custom_compileServiceTests:
@@ -149,7 +146,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/spec/serviceTests/*.coffee","<%= acas_custom %>/public_conf/serviceTests/*.coffee"]
-					dest: "build/public/javascripts/spec/test/"
+					dest: "<%= build %>/public/javascripts/spec/test/"
 					ext: '.js'
 				]
 			custom_compileApp:
@@ -157,7 +154,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/*.coffee"]
-					dest: "build/src"
+					dest: "<%= build %>/src"
 					ext: '.js'
 				]
 			custom_compileConf:
@@ -165,7 +162,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/conf/*.coffee"]
-					dest: "build/conf/"
+					dest: "<%= build %>/conf/"
 					ext: '.js'
 				]
 			custom_compileModuleConf:
@@ -173,7 +170,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/src/conf/*.coffee"]
-					dest: "build/public/javascripts/conf/"
+					dest: "<%= build %>/public/javascripts/conf/"
 					ext: '.js'
 				]
 			custom_compilePublicConf:
@@ -181,7 +178,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/public_conf/*.coffee"]
-					dest: "build/src"
+					dest: "<%= build %>/src"
 					ext: '.js'
 				]
 			custom_compileRoutes:
@@ -189,7 +186,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/routes/*.coffee"]
-					dest: "build/routes/"
+					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
 			custom_moduleRoutes:
@@ -197,7 +194,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/modules/**/src/server/routes/*.coffee"]
-					dest: "build/routes/"
+					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
 		sync:
@@ -232,49 +229,50 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "bin"
 					src: ["**"]
-					dest: "build/bin"
+					dest: "<%= build %>/bin"
 				]
 			conf:
 				files: [
 					expand: true
 					cwd: "conf"
-					src: ["*.properties"]
-					dest: "build/conf"
+					src: ["*.properties", "*.properties.example"]
+					dest: "<%= build %>/conf"
 				]
 			package_json:
 				files: [
 					expand: true
 					cwd: "./"
 					src: ["package.json"]
-					dest: "build"
+					dest: "<%= build %>"
 				]
 			jade:
 				files: [
 					expand: true
 					cwd: "views"
 					src: ["*.jade", "*.jade_template"]
-					dest: "build/views"
+					dest: "<%= build %>/views"
 				]
 			node_modules_customized:
 				files: [
 					expand: true
 					cwd: "node_modules_customized"
 					src: ["**"]
-					dest: "build/node_modules_customized"
+					dest: "<%= build %>/node_modules_customized"
 				]
 			public_stylesheets:
 				files: [
 					expand: true
 					cwd: "public/stylesheets"
 					src: ["**"]
-					dest: "build/public/stylesheets"
+					dest: "<%= build %>/public/stylesheets"
 				]
 			public_html:
 				files: [
 					expand: true
+					flatten: true
 					cwd: "public/src/"
 					src: ["modules/**/src/client/*.html"]
-					dest: "build/public/html"
+					dest: "<%= build %>/public/html"
 				]
 			public_testFixtures:
 				files: [
@@ -282,14 +280,15 @@ module.exports = (grunt) ->
 					flatten: false
 					cwd: "public/src/"
 					src: ["modules/**/spec/testFixtures/**", "!modules/**/spec/testFixtures/*.coffee"]
-					dest: "build/public/javascripts/spec/testFixtures"
+					dest: "<%= build %>/public/javascripts/spec/testFixtures"
 				]
 			public_css:
 				files: [
 					expand: true
+					flatten: true
 					cwd: "public/src/"
 					src: ["modules/**/src/client/*.css"]
-					dest: "build/public/stylesheets"
+					dest: "<%= build %>/public/stylesheets"
 				]
 			public_jade:
 				files: [
@@ -297,28 +296,28 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "public/src/"
 					src: ["modules/**/src/client/**/*.jade"]
-					dest: "build/views"
+					dest: "<%= build %>/views"
 				]
 			public_lib:
 				files: [
 					expand: true
 					cwd: "public/src/lib"
 					src: ["**"]
-					dest: "build/public/lib"
+					dest: "<%= build %>/public/lib"
 				]
 			public_img:
 				files: [
 					expand: true
 					cwd: "public/img"
 					src: ["**"]
-					dest: "build/public/img"
+					dest: "<%= build %>/public/img"
 				]
 			public_conf_r:
 				files: [
 					expand: true
 					cwd: "public/src/conf"
 					src: ["*.R"]
-					dest: "build/src/r"
+					dest: "<%= build %>/src/r"
 				]
 			module_r:
 				files: [
@@ -326,7 +325,7 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "public/src/modules"
 					src: ["**/src/server/*.R", "**/src/server/*.r"]
-					dest: "build/src/r"
+					dest: "<%= build %>/src/r"
 				]
 			module_routes_js:
 				files: [
@@ -334,63 +333,63 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "public/src/modules"
 					src: ["**/src/server/routes/*.js"]
-					dest: "build/routes"
+					dest: "<%= build %>/routes"
 				]
 			custom_bin:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/bin"
 					src: ["**"]
-					dest: "build/bin"
+					dest: "<%= build %>/bin"
 				]
 			custom_conf:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/conf"
 					src: ["*.properties"]
-					dest: "build/conf"
+					dest: "<%= build %>/conf"
 				]
 			custom_package_json:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/"
 					src: ["package.json"]
-					dest: "build"
+					dest: "<%= build %>"
 				]
 			custom_jade:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/views"
 					src: ["*.jade", "*.jade_template"]
-					dest: "build/views"
+					dest: "<%= build %>/views"
 				]
 			custom_node_modules_customized:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/node_modules_customized"
 					src: ["**"]
-					dest: "build/node_modules_customized"
+					dest: "<%= build %>/node_modules_customized"
 				]
 			custom_public_stylesheets:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/public/stylesheets"
 					src: ["**"]
-					dest: "build/public/stylesheets"
+					dest: "<%= build %>/public/stylesheets"
 				]
 			custom_public_html:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/public/src/"
 					src: ["modules/**/src/client/*.html"]
-					dest: "build/public/html"
+					dest: "<%= build %>/public/html"
 				]
 			custom_public_css:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/public/src/"
 					src: ["modules/**/src/client/*.css"]
-					dest: "build/public/stylesheets"
+					dest: "<%= build %>/public/stylesheets"
 				]
 			custom_public_jade:
 				files: [
@@ -398,21 +397,21 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "<%= acas_custom %>/public/src/"
 					src: ["modules/**/src/client/**/*.jade"]
-					dest: "build/views"
+					dest: "<%= build %>/views"
 				]
 			custom_public_lib:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/public/src/lib"
 					src: ["**"]
-					dest: "build/public/lib"
+					dest: "<%= build %>/public/lib"
 				]
 			custom_public_img:
 				files: [
 					expand: true
 					cwd: "<%= acas_custom %>/public/img"
 					src: ["**"]
-					dest: "build/public/img"
+					dest: "<%= build %>/public/img"
 				]
 			custom_module_r:
 				files: [
@@ -420,7 +419,7 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "<%= acas_custom %>/public/src/modules"
 					src: ["**/src/server/*.R", "**/src/server/*.r"]
-					dest: "build/src/r"
+					dest: "<%= build %>/src/r"
 				]
 			custom_module_routes_js:
 				files: [
@@ -428,30 +427,34 @@ module.exports = (grunt) ->
 					flatten: true
 					cwd: "<%= acas_custom %>/public/src/modules"
 					src: ["**/src/server/routes/*.js"]
-					dest: "build/routes"
+					dest: "<%= build %>/routes"
 				]
 		execute:
 			prepare_module_includes:
 				options:
-					cwd: 'build/src'
-				src: "build/src/PrepareModuleIncludes.js"
+					cwd: '<%= build %>/src'
+				src: "<%= build %>/src/PrepareModuleIncludes.js"
 			prepare_config_files:
 				options:
-					cwd: 'build/src'
-				src: 'build/src/PrepareConfigFiles.js'
+					cwd: '<%= build %>/src'
+				src: '<%= build %>/src/PrepareConfigFiles.js'
 			prepare_test_JSON:
 				options:
-					cwd: 'build/src'
-				src: 'build/src/PrepareTestJSON.js'
+					cwd: '<%= build %>/src'
+				src: '<%= build %>/src/PrepareTestJSON.js'
 			npm_install:
+				options:
+					build: "<%= build %>"
 				call: (grunt, options) ->
 					shell = require('shelljs')
-					result = shell.exec('cd build && npm install', {silent:true})
+					result = shell.exec("cd #{options.build} && npm install", {silent:true})
 					return result.output
 			install_racas:
+				options:
+					build: "<%= build %>"
 				call: (grunt, options) ->
 					shell = require('shelljs')
-					result = shell.exec('cd build/src/r && Rscript install.R', {silent:true})
+					result = shell.exec("cd #{options.build} %>/src/r && Rscript install.R", {silent:true})
 					return result.output
 		watch:
 			module_client_coffee:
@@ -547,33 +550,33 @@ module.exports = (grunt) ->
 				tasks: "copy:public_jade"
 			prepare_module_includes:
 				files:[
-					"build/src/PrepareModuleIncludes.js"
+					"<%= build %>/src/PrepareModuleIncludes.js"
 					#app_template
-					"build/app_template.js"
+					"<%= build %>/app_template.js"
 					#app_api_template
-					"build/app_api.js"
+					"<%= build %>/app_api.js"
 					#styleFiles
-					'build/public/stylesheets/*.css'
+					'<%= build %>/public/stylesheets/*.css'
 					#templateFiles
-					'build/public/html/*.html'
+					'<%= build %>/public/html/*.html'
 					#appScriptsInJavascripts
-					'build/public/javascripts/src/*.js'
+					'<%= build %>/public/javascripts/src/*.js'
 					#testJSONInJavascripts
-					'build/public/javascripts/spec/testFixtures/*.js'
+					'<%= build %>/public/javascripts/spec/testFixtures/*.js'
 					#specScriptsInJavascripts
-					'build/public/javascripts/spec/*.js'
+					'<%= build %>/public/javascripts/spec/*.js'
 				]
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
 				files: [
-					"build/src/PrepareConfigFiles.js"
-					"build/conf/conf*.properties"
-					"build/src/r/*"
+					"<%= build %>/src/PrepareConfigFiles.js"
+					"<%= build %>/conf/conf*.properties"
+					"<%= build %>/src/r/*"
 				]
 				tasks: ["copy:conf", "execute:prepare_config_files"]
 			prepare_test_JSON:
 				files: [
-					"build/public/javascripts/spec/testFixtures/*.js"
+					"<%= build %>/public/javascripts/spec/testFixtures/*.js"
 				]
 				tasks: "execute:prepare_test_JSON"
 

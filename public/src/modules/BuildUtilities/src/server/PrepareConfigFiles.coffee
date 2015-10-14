@@ -9,6 +9,7 @@ glob = require 'glob'
 shell = require 'shelljs'
 path = require 'path'
 os = require 'os'
+propertiesParser = require "properties-parser"
 
 global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
 
@@ -16,66 +17,75 @@ sysEnv = process.env
 
 csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
-	substitutions =
-		env: sysEnv
-		conf: confVars
-
-	options =
-		path: true
-		namespaces: true
-		sections: true
-		variables: true
-		include: true
-		vars: substitutions
-
 	configDir = "../conf/"
+	mkdirSync = (path) ->
+		try
+			fs.mkdirSync path
+		catch e
+			if e.code != 'EEXIST'
+				throw e
+		return
 
-	configSuffix=process.argv[2]
-	if typeof configSuffix == "undefined"
-		configFile = "#{configDir}config.properties"
-		configFileAdvanced = "#{configDir}config_advanced.properties"
-	else
-		configFile = "#{configDir}config-"+configSuffix+".properties"
-		configFileAdvanced = "#{configDir}config_advanced-"+configSuffix+".properties"
+	mkdirSync(configDir)
 
-	console.log "Using "+configFile
-	console.log "Using "+configFileAdvanced
-	properties.parse configDir+configFile, options, (error, conf) ->
-		if error?
-			console.log "Problem parsing config.properties: "+error
-		else
-			properties.parse configDir+configFileAdvanced, options, (error, confAdv) ->
-				if errors?
-					console.log "Problem parsing config_advanced.properties: "+error
+	getProperties = (configDir)->
+		configFiles = glob.sync("#{configDir}/*.properties")
+		configFiles.push "#{configDir}/config.properties.example"
+		if configFiles.length == 0
+			console.warn "no config files found"
+			return
+
+		substitutions =
+			env: sysEnv
+			conf: confVars
+		options =
+			path: true
+			namespaces: true
+			sections: true
+			variables: true
+			include: true
+			vars: substitutions
+
+		allConf = Object()
+		numParsed = 0
+		for configFile, i in configFiles
+			properties.parse configFile, options, (error, conf) ->
+				numParsed = numParsed + 1
+				if error?
+					console.log "Problem parsing #{configFile}: "+error
 				else
-					allConf = _.deepExtend confAdv, conf
-					if allConf.client.deployMode == "Prod"
-						allConf.server.enableSpecRunner = false
-					else
-						allConf.server.enableSpecRunner = true
-					allConf.server.run = user: do =>
-						if !allConf.server.run?
-							console.log "server.run.user is not set"
-							if sysEnv.USER
-								console.log "using process.env.USER #{sysEnv.USER}"
-								return sysEnv.USER
-							else
-								console.log "process.env.USER is not set"
-								if process.getuid()
-									user = shell.exec('whoami',{silent:true}).output.replace('\n','')
-									console.log "using whoami result #{user}"
-									return user
+					allConf = _.deepExtend conf, allConf
+					if numParsed == configFiles.length
+						if allConf.client.deployMode == "Prod"
+							allConf.server.enableSpecRunner = false
+						else
+							allConf.server.enableSpecRunner = true
+						allConf.server.run = user: do =>
+							if !allConf.server.run?
+								console.log "server.run.user is not set"
+								if sysEnv.USER
+									console.log "using process.env.USER #{sysEnv.USER}"
+									return sysEnv.USER
 								else
-									console.log "could not get run user exiting"
-									process.exit 1
+									console.log "process.env.USER is not set"
+									if process.getuid()
+										user = shell.exec('whoami',{silent:true}).output.replace('\n','')
+										console.log "using whoami result #{user}"
+										return user
+									else
+										console.log "could not get run user exiting"
+										process.exit 1
 
-						return allConf.server.run.user
+							return allConf.server.run.user
 
-					writeJSONFormat allConf
-					writeClientJSONFormat allConf
-					writePropertiesFormat allConf
-					writeApacheConfFile()
+						writeJSONFormat allConf
+						writeClientJSONFormat allConf
+						writePropertiesFormat allConf
+						writeApacheConfFile allConf
 
+	getProperties(configDir)
+
+#
 mkdirSync = (path) ->
 	try
 		fs.mkdirSync path
@@ -120,10 +130,10 @@ getRFilesWithRoute = ->
 	routes
 
 getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
-	rapacheHandlerText = '<Location /'+config.all.client.service.rapache.path+'* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *>\n\tSetHandler r-handler\n\tRFileHandler '+acasHome+'/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>'
+	rapacheHandlerText = '<Location /'+config.client.service.rapache.path+'* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *>\n\tSetHandler r-handler\n\tRFileHandler '+acasHome+'/* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *\n</Location>'
 	routes = []
-	routes.push('<Location /'+config.all.client.service.rapache.path+'/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>')
-	routes.push('<Location /'+config.all.client.service.rapache.path+'/RApacheInfo>\n\tSetHandler r-info\n</Location>')
+	routes.push('<Location /'+config.client.service.rapache.path+'/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>')
+	routes.push('<Location /'+config.client.service.rapache.path+'/RApacheInfo>\n\tSetHandler r-info\n</Location>')
 	for rFile in rFilesWithRoute
 		route = rapacheHandlerText.replace('* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *',rFile.route)
 		route = route.replace('* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *', rFile.filePath)
@@ -169,32 +179,32 @@ getApacheCompileOptions = ->
 
 getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
 	confs = []
-	runUser = config.all.server.run.user
+	runUser = config.server.run.user
 	confs.push('User ' + runUser)
 	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
-	confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port)
+	confs.push('Listen ' + config.server.rapache.listen + ':' + config.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
 	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
 	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
-	confs.push('ServerName ' + config.all.client.host)
+	confs.push('ServerName ' + config.client.host)
 	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
 	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
 	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
-	confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log')
-	confs.push('LogLevel ' + config.all.server.log.level.toLowerCase())
-	if Boolean(config.all.client.use.ssl)
+	confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
+	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
+	if Boolean(config.client.use.ssl)
 		urlPrefix = 'https'
 		confs.push('SSLEngine On')
-		confs.push('SSLCertificateFile ' + config.all.server.ssl.cert.file.path)
-		confs.push('SSLCertificateKeyFile ' + config.all.server.ssl.key.file.path)
-		confs.push('SSLCACertificateFile ' + config.all.server.ssl.cert.authority.file.path)
+		confs.push('SSLCertificateFile ' + config.server.ssl.cert.file.path)
+		confs.push('SSLCertificateKeyFile ' + config.server.ssl.key.file.path)
+		confs.push('SSLCACertificateFile ' + config.server.ssl.cert.authority.file.path)
 		confs.push('SSLPassPhraseDialog ' + '\'|' + path.resolve(acasHome,'conf','executeNodeScript.sh') + ' ' + path.resolve(acasHome,'conf','getSSLPassphrase.js' + '\''))
 	else
 		urlPrefix = 'http'
 	confs.push('DirectoryIndex index.html\n<Directory />\n\tOptions FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('RewriteEngine On')
-	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.all.client.host}:#{config.all.client.port}/$1 [L,R,NE]")
+	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.client.host}:#{config.client.port}/$1 [L,R,NE]")
 	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	return confs.join('\n')
 
@@ -233,7 +243,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 		apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
 		apacheSpecificConfs.push('LoadModule authz_core_module ' + modulesDir + "mod_authz_core.so")
 	apacheSpecificConfs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
-	if Boolean(config.all.client.use.ssl)
+	if Boolean(config.client.use.ssl)
 		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 	else
 	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
@@ -249,8 +259,7 @@ apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'LogFormat', value: '"%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined'},
 	{directive: 'RewriteEngine', value: 'On'}]
 
-writeApacheConfFile = ->
-	config = require '../conf/compiled/conf.js'
+writeApacheConfFile = (config)->
 	acasHome = path.resolve(__dirname,'../')
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'

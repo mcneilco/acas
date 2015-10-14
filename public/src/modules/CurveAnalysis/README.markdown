@@ -41,8 +41,8 @@ The second tab "Model Fit", only is rendered after a successful validate and sav
 When the "Model Fit Type" selection is changed, the controller uses a configuration file setting to create a new "parametersController" (e.g. DoseResponseAnalysisParametersController) along with it's "parametersClass" model (e.g. DoseResponseAnalysisParameters):
 
 ```properties
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
+client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/ll4.R"}, \
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/ki.R"}]
 ```
 
 When the Fit Data button is clicked,  the `parametersClass` (e.g. DoseResponseAnalysisParameters) is turned into JSON along with the user, experimentCode, testMode and modelFitType code.

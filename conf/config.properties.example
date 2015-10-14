@@ -312,11 +312,11 @@ client.cmpdReg.projectName=Apollo
 # Curve fit model configuration
 #
 #
-# Example: client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
-#                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
+# Example: client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/ll4.R"}, \
+#                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/ki.R"}]
 #
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
+client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/ll4.R"}, \
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/ki.R"}]
 
 # Lock when approved filter
 #
