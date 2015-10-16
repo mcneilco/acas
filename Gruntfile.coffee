@@ -31,48 +31,63 @@ module.exports = (grunt) ->
 			module_client:
 				files: [
 					expand: true
-					flatten: true
-					src: ["public/src/modules/**/src/client/*.coffee"]
+					flatten: false
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/src/client/*.coffee"
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/javascripts/src/"
 					ext: '.js'
 				]
 			module_server:
 				files: [
 					expand: true
-					flatten: true
-					src: ["public/src/modules/**/src/server/*.coffee"]
-					dest: "<%= build %>/src"
+					flatten: false
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/src/server/*.coffee"
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
+					dest: "<%= build %>/src/javascripts"
 					ext: '.js'
 				]
 			module_spec:
 				files: [
 					expand: true
-					flatten: true
-					src: ["public/src/modules/**/spec/*.coffee"]
+					flatten: false
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/spec/*.coffee"
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
 					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
 			module_testFixtures:
 				files: [
 					expand: true
-					flatten: true
-					src: ["public/src/modules/**/spec/testFixtures/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/testFixtures/"
+					flatten: false
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/spec/testFixtures/*.coffee"
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
 			module_serviceTests:
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/**/spec/serviceTests/*.coffee","public/src/conf/serviceTests/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/test/"
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee","#{i}/public/conf/serviceTests/*.coffee"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+					dest: "<%= build %>/src/spec/"
 					ext: '.js'
 				]
 			app:
 				files: [
 					expand: true
 					flatten: true
-					src: ["./*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/*.coffee", "!#{i}/Gruntfile.coffee"]
 					dest: "<%= build %>/"
 					ext: '.js'
 				]
@@ -80,7 +95,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["conf/*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.coffee"]
 					dest: "<%= build %>/conf/"
 					ext: '.js'
 				]
@@ -88,23 +103,15 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/**/conf/*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
 					dest: "<%= build %>/public/javascripts/conf/"
-					ext: '.js'
-				]
-			public_conf:
-				files: [
-					expand: true
-					flatten: true
-					src: ["public/src/conf/*.coffee"]
-					dest: "<%= build %>/src"
 					ext: '.js'
 				]
 			routes:
 				files: [
 					expand: true
 					flatten: true
-					src: ["routes/*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/routes/*.coffee"]
 					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
@@ -112,67 +119,11 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["public/src/modules/*/src/server/routes/*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/*/src/server/routes/*.coffee"]
 					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
 		#these compilers are for the custom coffee scripts before they get copied
-			custom_app:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/src/client/*.coffee"]
-					dest: "<%= build %>/public/javascripts/src/"
-					ext: '.js'
-				]
-			custom_spec:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/spec/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/"
-					ext: '.js'
-				]
-			custom_compileTestFixtures:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/spec/testFixtures/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/"
-					ext: '.js'
-				]
-			custom_compileServiceTests:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/spec/serviceTests/*.coffee","<%= acas_custom %>/public_conf/serviceTests/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/test/"
-					ext: '.js'
-				]
-			custom_compileApp:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/*.coffee"]
-					dest: "<%= build %>/src"
-					ext: '.js'
-				]
-			custom_compileConf:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/conf/*.coffee"]
-					dest: "<%= build %>/conf/"
-					ext: '.js'
-				]
-			custom_compileModuleConf:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/src/conf/*.coffee"]
-					dest: "<%= build %>/public/javascripts/conf/"
-					ext: '.js'
-				]
 			custom_compilePublicConf:
 				files: [
 					expand: true
@@ -181,267 +132,166 @@ module.exports = (grunt) ->
 					dest: "<%= build %>/src"
 					ext: '.js'
 				]
-			custom_compileRoutes:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/routes/*.coffee"]
-					dest: "<%= build %>/routes/"
-					ext: '.js'
-				]
-			custom_moduleRoutes:
-				files: [
-					expand: true
-					flatten: true
-					src: ["<%= acas_custom %>/modules/**/src/server/routes/*.coffee"]
-					dest: "<%= build %>/routes/"
-					ext: '.js'
-				]
-		sync:
-			custom:
-				files: [
-					expand: true
-					cwd: "acas_custom"
-					src: ["**"]
-					dest: '<%= acas_custom %>'
-				]
-				compareUsing: "md5"
-				verbose: true
-				updateAndDelete: global['clean']
-			base:
-				files: [
-					expand: true
-					cwd: "."
-					src: ["**"
-					      "!**/*.coffee"
-					      "!<%= acas_custom %>/**"
-					      "!tmp/**"
-					].concat require('gitignore-to-glob')()
-					dest: '<%= acas_base %>'
-				]
-				ignoreInDest: "<%= acas_custom %>/**"
-				compareUsing: "md5"
-				verbose: true
-				updateAndDelete: global['clean']
 		copy:
 			bin:
 				files: [
 					expand: true
-					cwd: "bin"
-					src: ["**"]
-					dest: "<%= build %>/bin"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/bin/**"]
+					# to preserve the folder structures on copy we use the rename option to replace the output destination
+					# this is because the cwd option only allows a single string so paths in the destination would include the base and custom directory names if we didn't sub them out
+					# this is only needed if flatten: false or missing (because default is false)
+					rename: (dest, matchedSrcPath, options) ->
+#						console.log "dest:          #{dest}"
+#						console.log "matchedSrcPath #{matchedSrcPath}"
+#						console.log "destre:        #{dest.replace(/\/$/, "")}"
+#						console.log "outre:         #{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+#						console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			conf:
 				files: [
 					expand: true
-					cwd: "conf"
-					src: ["*.properties", "*.properties.example"]
-					dest: "<%= build %>/conf"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			package_json:
 				files: [
 					expand: true
-					cwd: "./"
-					src: ["package.json"]
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/package.json"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
 					dest: "<%= build %>"
 				]
 			jade:
 				files: [
 					expand: true
-					cwd: "views"
-					src: ["*.jade", "*.jade_template"]
-					dest: "<%= build %>/views"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/views/*.jade", "#{i}/views/*.jade_template"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			node_modules_customized:
 				files: [
 					expand: true
-					cwd: "node_modules_customized"
-					src: ["**"]
-					dest: "<%= build %>/node_modules_customized"
+					cwd: ""
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/node_modules_customized/**"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			public_stylesheets:
 				files: [
 					expand: true
-					cwd: "public/stylesheets"
-					src: ["**"]
-					dest: "<%= build %>/public/stylesheets"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/stylesheets/**"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			public_html:
 				files: [
 					expand: true
-					flatten: true
-					cwd: "public/src/"
-					src: ["modules/**/src/client/*.html"]
+					flatten: false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.html"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/html"
 				]
-			public_testFixtures:
+			module_spec_miscellaneous:
 				files: [
 					expand: true
 					flatten: false
-					cwd: "public/src/"
-					src: ["modules/**/spec/testFixtures/**", "!modules/**/spec/testFixtures/*.coffee"]
-					dest: "<%= build %>/public/javascripts/spec/testFixtures"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/**", "!#{i}/modules/**/spec/**/*.coffee", "!#{i}/modules/**/spec/testFixtures/*.coffee"]
+					rename: (dest, matchedSrcPath, options) ->
+#						console.log "dest:          #{dest}"
+#						console.log "matchedSrcPath #{matchedSrcPath}"
+#						console.log "moduleName:    #{matchedSrcPath.split("/")[2]+"/spec"}"
+						module = matchedSrcPath.split("/")[2]
+#						console.log "outre:         #{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+#						console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+					dest: "<%= build %>/src/spec/"
 				]
-			public_css:
+			module_css:
 				files: [
 					expand: true
-					flatten: true
-					cwd: "public/src/"
-					src: ["modules/**/src/client/*.css"]
+					flatten:false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.css"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/stylesheets"
 				]
-			public_jade:
+			module_jade:
 				files: [
 					expand: true
 					flatten: true
-					cwd: "public/src/"
-					src: ["modules/**/src/client/**/*.jade"]
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 					dest: "<%= build %>/views"
 				]
 			public_lib:
 				files: [
 					expand: true
-					cwd: "public/src/lib"
-					src: ["**"]
-					dest: "<%= build %>/public/lib"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/lib/**"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			public_img:
 				files: [
 					expand: true
-					cwd: "public/img"
-					src: ["**"]
-					dest: "<%= build %>/public/img"
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/img/**"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					dest: "<%= build %>"
 				]
 			public_conf_r:
 				files: [
 					expand: true
-					cwd: "public/src/conf"
-					src: ["*.R"]
+					flatten: true
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.R"]
 					dest: "<%= build %>/src/r"
 				]
 			module_r:
 				files: [
 					expand: true
-					flatten: true
-					cwd: "public/src/modules"
-					src: ["**/src/server/*.R", "**/src/server/*.r"]
+					flatten: false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.R", "#{i}/modules/**/src/server/*.r"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
 					dest: "<%= build %>/src/r"
 				]
 			module_routes_js:
 				files: [
 					expand: true
 					flatten: true
-					cwd: "public/src/modules"
-					src: ["**/src/server/routes/*.js"]
-					dest: "<%= build %>/routes"
-				]
-			custom_bin:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/bin"
-					src: ["**"]
-					dest: "<%= build %>/bin"
-				]
-			custom_conf:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/conf"
-					src: ["*.properties"]
-					dest: "<%= build %>/conf"
-				]
-			custom_package_json:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/"
-					src: ["package.json"]
-					dest: "<%= build %>"
-				]
-			custom_jade:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/views"
-					src: ["*.jade", "*.jade_template"]
-					dest: "<%= build %>/views"
-				]
-			custom_node_modules_customized:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/node_modules_customized"
-					src: ["**"]
-					dest: "<%= build %>/node_modules_customized"
-				]
-			custom_public_stylesheets:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/public/stylesheets"
-					src: ["**"]
-					dest: "<%= build %>/public/stylesheets"
-				]
-			custom_public_html:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/public/src/"
-					src: ["modules/**/src/client/*.html"]
-					dest: "<%= build %>/public/html"
-				]
-			custom_public_css:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/public/src/"
-					src: ["modules/**/src/client/*.css"]
-					dest: "<%= build %>/public/stylesheets"
-				]
-			custom_public_jade:
-				files: [
-					expand: true
-					flatten: true
-					cwd: "<%= acas_custom %>/public/src/"
-					src: ["modules/**/src/client/**/*.jade"]
-					dest: "<%= build %>/views"
-				]
-			custom_public_lib:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/public/src/lib"
-					src: ["**"]
-					dest: "<%= build %>/public/lib"
-				]
-			custom_public_img:
-				files: [
-					expand: true
-					cwd: "<%= acas_custom %>/public/img"
-					src: ["**"]
-					dest: "<%= build %>/public/img"
-				]
-			custom_module_r:
-				files: [
-					expand: true
-					flatten: true
-					cwd: "<%= acas_custom %>/public/src/modules"
-					src: ["**/src/server/*.R", "**/src/server/*.r"]
-					dest: "<%= build %>/src/r"
-				]
-			custom_module_routes_js:
-				files: [
-					expand: true
-					flatten: true
-					cwd: "<%= acas_custom %>/public/src/modules"
-					src: ["**/src/server/routes/*.js"]
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
 					dest: "<%= build %>/routes"
 				]
 		execute:
 			prepare_module_includes:
 				options:
-					cwd: '<%= build %>/src'
-				src: "<%= build %>/src/PrepareModuleIncludes.js"
+					cwd: '<%= build %>/src/javascripts/BuildUtilities/'
+				src: "<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
 			prepare_config_files:
 				options:
-					cwd: '<%= build %>/src'
-				src: '<%= build %>/src/PrepareConfigFiles.js'
+					cwd: '<%= build %>/src/javascripts/BuildUtilities/'
+				src: '<%= build %>/src/javascripts/BuildUtilities/PrepareConfigFiles.js'
 			prepare_test_JSON:
 				options:
-					cwd: '<%= build %>/src'
-				src: '<%= build %>/src/PrepareTestJSON.js'
+					cwd: '<%= build %>/src/javascripts/BuildUtilities/'
+				src: '<%= build %>/src/javascripts/BuildUtilities/PrepareTestJSON.js'
 			npm_install:
 				options:
 					build: "<%= build %>"
@@ -458,118 +308,68 @@ module.exports = (grunt) ->
 					return result.output
 		watch:
 			module_client_coffee:
-				files: 'public/src/modules/**/src/client/*.coffee'
-				tasks: 'coffee:module_client'
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
+				tasks: 'newer:coffee:module_client'
 			module_server_coffee:
-				files: 'public/src/modules/**/src/server/*.coffee'
-				tasks: 'coffee:module_server'
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
+				tasks: 'newer:coffee:module_server'
 			module_spec:
-				files: "public/src/modules/**/spec/*.coffee"
-				tasks: "coffee:module_spec"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/*.coffee"]
+				tasks: "newer:coffee:module_spec"
 			module_textFixtures_coffee:
-				files: "public/src/modules/**/spec/testFixtures/*.coffee"
-				tasks: "coffee:module_testFixtures"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/testFixtures/*.coffee"]
+				tasks: "newer:coffee:module_testFixtures"
 			module_serviceTests_coffee:
-				files: ["public/src/modules/**/spec/serviceTests/*.coffee", "public/src/conf/serviceTests/*.coffee"]
-				tasks: "coffee:module_serviceTests"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee", "#{i}/public/conf/serviceTests/*.coffee"]
+				tasks: "newer:coffee:module_serviceTests"
 			app_coffee:
-				files: "./*.coffee"
-				tasks: "coffee:app"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/*.coffee"]
+				tasks: "newer:coffee:app"
 			conf_coffee:
-				files: "conf/*.coffee"
-				tasks: "coffee:conf"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.coffee"]
+				tasks: "newer:coffee:conf"
 			module_conf_coffee:
-				files: "public/src/modules/**/conf/*.coffee"
-				tasks: "coffee:module_conf"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
+				tasks: "newer:coffee:module_conf"
 			public_conf_coffee:
-				files: "public/src/conf/*.coffee"
-				tasks: "coffee:public_conf"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.coffee"]
+				tasks: "newer:coffee:public_conf"
 			routes_coffee:
-				files: "routes/*.coffee"
-				tasks: "coffee:routes"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/routes/*.coffee"]
+				tasks: "newer:coffee:routes"
 			module_routes_coffee:
-				files: "public/src/modules/**/src/server/routes/*.coffee"
-				tasks: "coffee:module_routes"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.coffee"]
+				tasks: "newer:coffee:module_routes"
 			module_routes_js:
-				files: "public/src/modules/**/src/server/routes/*.js"
-				tasks: "copy:module_routes_js"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
+				tasks: "newer:copy:module_routes_js"
 		#watchers on the custom folder
-			custom_coffee:
-				files: '<%= acas_custom %>/modules/**/src/client/*.coffee'
-				tasks: 'coffee:custom_app'
-			custom_compileSpec:
-				files: "<%= acas_custom %>/modules/**/spec/*.coffee"
-				tasks: "coffee:custom_spec"
-			custom_compileTestFixtures:
-				files: "<%= acas_custom %>/modules/**/spec/testFixtures/*.coffee"
-				tasks: "coffee:custom_compileTestFixtures"
-			custom_compileServiceTests:
-				files: "<%= acas_custom %>/modules/**/spec/serviceTests/*.coffee"
-				tasks: "coffee:custom_compileServiceTests"
-			custom_compileServiceTests2:
-				files: "<%= acas_custom %>/public_conf/serviceTests/*.coffee"
-				tasks: "coffee:custom_compileServiceTests"
-			custom_compileApp:
-				files: "<%= acas_custom %>/*.coffee"
-				tasks: "coffee:custom_compileApp"
-			custom_compileConf:
-				files: "<%= acas_custom %>/conf/*.coffee"
-				tasks: "coffee:custom_compileConf"
-			custom_compileModuleConf:
-				files: "<%= acas_custom %>/public_conf/*.coffee"
-				tasks: "coffee:custom_compileModuleConf"
 			custom_compilePublicConf:
 				files: "<%= acas_custom %>/public_conf/*.coffee"
-				tasks: "coffee:custom_compilePublicConf"
-			custom_compileRoutes:
-				files: "<%= acas_custom %>/routes/*.coffee"
-				tasks: "coffee:custom_compileRoutes"
-			custom_moduleRoutes:
-				files: "<%= acas_custom %>/modules/**/src/server/routes/*.coffee"
-				tasks: "coffee:custom_moduleRoutes"
-			copy_custom_routes:
-				files: "<%= acas_custom %>/routes/**"
-				tasks: "copy:custom_routes"
-			copy_custom_conf:
-				files: "<%= acas_custom %>/conf/**"
-				tasks: "copy:custom_conf"
+				tasks: "newer:coffee:custom_compilePublicConf"
 			copy_custom_public_conf:
 				files: "<%= acas_custom %>/public_conf/**"
-				tasks: "copy:custom_public_conf"
-			copy_custom_javascripts:
-				files: "<%= acas_custom %>/javascripts/**"
-				tasks: "copy:custom_javascripts"
-			copy_custom_views:
-				files: "<%= acas_custom %>/views/**"
-				tasks: "copy:custom_views"
-			copy_custom_modules:
-				files: "<%= acas_custom %>/modules/**"
-				tasks: "copy:custom_modules"
-			copy_public_jade:
-				files: "<%= acas_custom %>/modules/**/src/client/*.jade"
-				tasks: "copy:public_jade"
+				tasks: "newer:copy:custom_public_conf"
 			prepare_module_includes:
 				files:[
-					"<%= build %>/src/PrepareModuleIncludes.js"
+					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
 					#app_template
 					"<%= build %>/app_template.js"
-					#app_api_template
-					"<%= build %>/app_api.js"
 					#styleFiles
-					'<%= build %>/public/stylesheets/*.css'
+					'<%= build %>/public/stylesheets/**.css'
 					#templateFiles
-					'<%= build %>/public/html/*.html'
+					'<%= build %>/public/html/**.html'
 					#appScriptsInJavascripts
-					'<%= build %>/public/javascripts/src/*.js'
+					'<%= build %>/public/javascripts/**.js'
 					#testJSONInJavascripts
-					'<%= build %>/public/javascripts/spec/testFixtures/*.js'
+					'<%= build %>/public/javascripts/spec/testFixtures/**.js'
 					#specScriptsInJavascripts
-					'<%= build %>/public/javascripts/spec/*.js'
+					'<%= build %>/public/javascripts/spec/**.js'
 				]
 				tasks: "execute:prepare_module_includes"
 			prepare_config_files:
 				files: [
-					"<%= build %>/src/PrepareConfigFiles.js"
+					"<%= build %>/src/javascripts/BuildUtilities/PrepareConfigFiles.js"
 					"<%= build %>/conf/conf*.properties"
 					"<%= build %>/src/r/*"
 				]
@@ -584,8 +384,8 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
 	grunt.loadNpmTasks "grunt-contrib-clean"
-	grunt.loadNpmTasks "grunt-sync"
 	grunt.loadNpmTasks "grunt-execute"
+	grunt.loadNpmTasks "grunt-newer"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]

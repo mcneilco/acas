@@ -17,14 +17,14 @@ for f in $envPath/*/*.env; do echo Using $f;source $f;export $(cut -d= -f1 $f); 
 
 # Run Prepare config files as the compiled directory should be empty
 if [ $PREPARE_CONFIG_FILES == "true" ]; then
-    cd src
+    cd src/javascripts/BuildUtilities
     node PrepareConfigFiles.js
-    cd ..
+    cd ../../..
 fi
 
 #Once tomcat is availble then try and run prepare module conf json if in demo mode
 if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
-    cd src
+    cd src/javascripts/BuildUtilities
     echo 'ping -c 1 tomcat > /dev/null
     if [ $? -eq 0 ];then
         counter=0
@@ -42,7 +42,7 @@ if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
     else
         echo "tomcat not available, not waiting for roo to start and not running prepare module conf json"
     fi' | sh 2>&1 &
-    cd ..
+    cd ../../..
 fi
 
 sh bin/acas.sh "$@"
