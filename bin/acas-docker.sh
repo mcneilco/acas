@@ -1,11 +1,5 @@
 #!/bin/sh
 
-if [ -d "../acas_custom" ];then
-    cd ..
-    grunt build
-    cd build
-fi
-
 # Check if mounted environments exists, if not then use default environments to export variables before prepare config files runs
 if [ -d "/mnt/environments" ];then
     envPath="/mnt/environments"
