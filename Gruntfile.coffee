@@ -7,9 +7,9 @@ module.exports = (grunt) ->
 		console.log "building to '#{build}'"
 		grunt.config.set('build', "#{build}")
 		#Definitely a better way to do this but it works to set the custom or base directory to nonsense if we don't want to build them
-		if grunt.option('custom') || false
+		if grunt.option('customonly') || false
 			grunt.config.set('acas_base',"$$$$$$$$$$$$")
-		if grunt.option('base') ||  false
+		if grunt.option('baseonly') ||  false
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
 		grunt.task.run 'coffee'
 		grunt.task.run 'copy'
