@@ -118,7 +118,7 @@ startApp = ->
 	child.start()
 
 	child.on 'exit:code', (code) ->
-		console.error 'stopping child process with code '
+		console.log 'stopping child process with code '
 		process.exit 0
 		return
 	process.once 'SIGTERM', ->
@@ -131,11 +131,9 @@ startApp = ->
 		console.log 'clean exit of app'
 		return
 	process.on 'uncaughtException', (err) ->
-		console.log 'Caught exception: ' + err
+		console.error 'Caught exception: ' + err.stack
 		return
 
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
-
-

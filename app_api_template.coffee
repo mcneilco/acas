@@ -40,7 +40,7 @@ startApp = ->
 	loginRoutes.setupAPIRoutes(app)
 
 	process.on 'uncaughtException', (err) ->
-		console.log 'Caught exception: ' + err
+		console.error 'Caught api exception: ' + err.stack
 		return
 
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
