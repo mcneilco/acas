@@ -6,7 +6,8 @@
     app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
     app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
-    return app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
+    app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
+    return app.get('/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSearch);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
@@ -188,14 +189,13 @@
         json: true
       }, (function(_this) {
         return function(error, response, json) {
-          console.log(response.statusCode);
           if (!error) {
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
             console.log('got ajax error trying to query gene data');
-            console.log(error);
-            return console.log(resp);
+            console.log(error.stack);
+            return console.log(response);
           }
         };
       })(this));
@@ -259,6 +259,39 @@
         };
       })(this));
     }
+  };
+
+  exports.autoLaunchGeneIDSearch = function(req, res) {
+    var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
+    scriptPaths = require('./RequiredClientScripts.js');
+    config = require('../conf/compiled/conf.js');
+    global.specRunnerTestmode = global.stubsMode ? true : false;
+    scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
+    if (config.all.client.require.login) {
+      loginUserName = req.user.username;
+      loginUser = req.user;
+    } else {
+      loginUserName = "nouser";
+      loginUser = {
+        id: 0,
+        username: "nouser",
+        email: "nouser@nowhere.com",
+        firstName: "no",
+        lastName: "user"
+      };
+    }
+    return res.render('GeneIDQuery', {
+      title: "Gene ID Query",
+      scripts: scriptsToLoad,
+      AppLaunchParams: {
+        loginUserName: loginUserName,
+        loginUser: loginUser,
+        testMode: false,
+        moduleLaunchParams: typeof moduleLaunchParams !== "undefined" && moduleLaunchParams !== null ? moduleLaunchParams : null,
+        searchOptions: req.params.searchOptions != null ? req.params.searchOptions : null,
+        deployMode: global.deployMode
+      }
+    });
   };
 
   exports.geneIDQueryIndex = function(req, res) {

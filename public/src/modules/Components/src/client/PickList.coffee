@@ -40,7 +40,6 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 
 	render: =>
 		if @displayCodeName is true
-			console.log @model
 			if @model.get('codeName')?
 				displayValue = @model.get("codeName")
 			else
@@ -304,15 +303,12 @@ class window.EditablePickListSelectController extends Backbone.View
 			selectedCode: @options.selectedCode
 
 	setupEditingPrivileges: =>
-		console.log @options.roles
 		if @options.roles?
 			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
-				console.log "is in user list"
 				@$('.bv_tooltipWrapper').removeAttr('data-toggle')
 				@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 
 			else
-				console.log "first else"
 				@$('.bv_addOptionBtn').removeAttr('data-toggle')
 				@$('.bv_addOptionBtn').removeAttr('data-target')
 				@$('.bv_addOptionBtn').removeAttr('data-backdrop')
@@ -321,7 +317,6 @@ class window.EditablePickListSelectController extends Backbone.View
 				@$("body").tooltip selector: '.bv_tooltipWrapper'
 
 		else
-			console.log "second else"
 			@$('.bv_tooltipWrapper').removeAttr('data-toggle')
 			@$('.bv_tooltipWrapper').removeAttr('data-original-title')
 
@@ -332,7 +327,6 @@ class window.EditablePickListSelectController extends Backbone.View
 		@pickListController.setSelectedCode(code)
 
 	handleShowAddPanel: =>
-		console.log "handle show add panel"
 		showPanel = false
 		if @options.roles?
 			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @options.roles
@@ -395,7 +389,6 @@ class window.EditablePickListSelectController extends Backbone.View
 					selectedModel.set 'codeType', @options.codeType
 				unless selectedModel.get('codeKind')?
 					selectedModel.set 'codeKind', @options.codeKind
-				console.log selectedModel
 				$.ajax
 					type: 'POST'
 					url: "/api/codetables"

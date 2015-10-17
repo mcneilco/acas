@@ -106,7 +106,7 @@ class window.GeneIDQueryResultController extends Backbone.View
 		@$('td.referenceCode').each ->
 			$.ajax
 				type: 'POST'
-				url: "api/sarRender/render"
+				url: "/api/sarRender/render"
 				dataType: 'json'
 				data:
 					displayName: @displayName
@@ -179,7 +179,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			for term in searchTerms
 				$.ajax
 					type: 'POST'
-					url: "api/entitymeta/searchForEntities"
+					url: "/api/entitymeta/searchForEntities"
 					dataType: 'json'
 					data:
 						requestText: term
@@ -193,7 +193,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 					requestName: term
 			$.ajax
 				type: 'POST'
-				url: "api/entitymeta/referenceCodes"
+				url: "/api/entitymeta/referenceCodes"
 				dataType: "json"
 				data:
 					displayName: @displayName
@@ -253,7 +253,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 			@lastSearch = "NO RESULTS"
 		$.ajax
 			type: 'POST'
-			url: "api/getGeneExperiments"
+			url: "/api/getGeneExperiments"
 			dataType: 'json'
 			data:
 				geneIDs: @lastSearch
@@ -281,7 +281,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	runRequestedSearch: ->
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced"
+			url: "/api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -347,7 +347,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	handleDownLoadCSVRequested: =>
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced?format=csv"
+			url: "/api/geneDataQueryAdvanced?format=csv"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -401,7 +401,7 @@ class window.ShowHideExpts extends Backbone.View
 	gotoShowTree: ->
 		$.ajax
 			type: 'POST'
-			url: "api/getGeneExperiments"
+			url: "/api/getGeneExperiments"
 			dataType: 'json'
 			data:
 				geneIDs: @allBatchCodes
@@ -485,7 +485,7 @@ class window.ShowHideExpts extends Backbone.View
 
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced"
+			url: "/api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -819,7 +819,6 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 
 
 	fromSearchtoCodes: ->
-		console.log "from search to codes, 818"
 		@displayName = @model.get('displayName')
 		searchString = @model.get('searchStr')
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
@@ -836,7 +835,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			for term in searchTerms
 				$.ajax
 					type: 'POST'
-					url: "api/entitymeta/searchForEntities"
+					url: "/api/entitymeta/searchForEntities"
 					dataType: 'json'
 					data:
 						requestText: term
@@ -850,7 +849,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			    requestName: term
 			$.ajax
 			  type: 'POST'
-			  url: "api/entitymeta/referenceCodes"
+			  url: "/api/entitymeta/referenceCodes"
 			  dataType: "json"
 			  data:
 			    displayName: @displayName
@@ -911,7 +910,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 			@searchCodes = @model.get('searchStr')
 		$.ajax
 			type: 'POST'
-			url: "api/getGeneExperiments"
+			url: "/api/getGeneExperiments"
 			dataType: 'json'
 			data:
 				geneIDs: @searchCodes
@@ -953,7 +952,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
-			url: "api/getExperimentSearchAttributes"
+			url: "/api/getExperimentSearchAttributes"
 			dataType: 'json'
 			data:
 				experimentCodes: @experimentList
@@ -998,7 +997,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced"
+			url: "/api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1031,7 +1030,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	handleDownLoadCSVRequested: =>
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced?format=csv"
+			url: "/api/geneDataQueryAdvanced?format=csv"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1112,7 +1111,7 @@ class window.AddDataToReport extends Backbone.View
 	gotoShowTree: ->
 		$.ajax
 			type: 'POST'
-			url: "api/getGeneExperiments"
+			url: "/api/getGeneExperiments"
 			dataType: 'json'
 			data:
 				geneIDs: @allBatchCodes
@@ -1192,7 +1191,7 @@ class window.AddDataToReport extends Backbone.View
 
 		$.ajax
 			type: 'POST'
-			url: "api/geneDataQueryAdvanced"
+			url: "/api/geneDataQueryAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1221,10 +1220,30 @@ class window.GeneIDQueryAppController extends Backbone.View
 		$(@el).html @template()
 		$(@el).addClass 'GeneIDQueryAppController'
 		@startBasicQueryWizard()
-		console.log "initialized gene id query app controller"
-		console.log window.AppLaunchParams
-#		@aerqc.$('.bv_inputView').hide()
-#		@aerqc.handleSearchRequested('CMPD-0000001-01A','unassigned')
+		if window.AppLaunchParams.searchOptions?
+			searchOptionsList = window.AppLaunchParams.searchOptions.split(',')
+			searchStr = ""
+			if $.trim searchOptionsList[0]?
+				searchStr = $.trim searchOptionsList[0]
+			if searchStr is ""
+				alert "You must specify a search string such a batch code, name, or id."
+			else
+				displayName = "unassigned"
+				if searchOptionsList[1]? and $.trim(searchOptionsList[1])!= ""
+					displayName = $.trim searchOptionsList[1]
+				aggregate = false
+				oppAggregate = true
+				if searchOptionsList[2]? and $.trim(searchOptionsList[2]) != ""
+					aggregate = $.trim(searchOptionsList[2]) is "true"
+					oppAggregate = !aggregate
+				@aerqc.queryInputController.$('.bv_gidListString').val(searchStr)
+				@aerqc.queryInputController.displayNameListController.setSelectedCode(displayName)
+				@aerqc.queryInputController.$('.bv_displayNameSelect').change()
+				@aerqc.queryInputController.displayName = displayName
+				@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).attr('checked', 'checked')
+				@aerqc.queryInputController.$('.bv_aggregation_'+oppAggregate).removeAttr('checked')
+				@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).click()
+				@aerqc.handleSearchRequested(searchStr, displayName)
 
 	startBasicQueryWizard: =>
 		@aerqc = new GeneIDQuerySearchController

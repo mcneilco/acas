@@ -222,9 +222,10 @@ dataCsv <- getURL(
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
 
-errorFlag <- FALSE
-tryCatch({
-  dataDF <- read.csv(text = dataCsv, colClasses=c("character"))},
+errorFlag <- tryCatch({
+  dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
+  errorFlag <- FALSE
+  },
   error = function(ex) {
   errorFlag <- TRUE
 })

@@ -159,7 +159,7 @@
       return this.$('td.referenceCode').each(function() {
         return $.ajax({
           type: 'POST',
-          url: "api/sarRender/render",
+          url: "/api/sarRender/render",
           dataType: 'json',
           data: {
             displayName: this.displayName,
@@ -280,7 +280,7 @@
           term = searchTerms[j];
           results1.push($.ajax({
             type: 'POST',
-            url: "api/entitymeta/searchForEntities",
+            url: "/api/entitymeta/searchForEntities",
             dataType: 'json',
             data: {
               requestText: term
@@ -304,7 +304,7 @@
         }
         return $.ajax({
           type: 'POST',
-          url: "api/entitymeta/referenceCodes",
+          url: "/api/entitymeta/referenceCodes",
           dataType: "json",
           data: {
             displayName: this.displayName,
@@ -391,7 +391,7 @@
       }
       return $.ajax({
         type: 'POST',
-        url: "api/getGeneExperiments",
+        url: "/api/getGeneExperiments",
         dataType: 'json',
         data: {
           geneIDs: this.lastSearch
@@ -434,7 +434,7 @@
     GeneIDQuerySearchController.prototype.runRequestedSearch = function() {
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced",
+        url: "/api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -491,7 +491,7 @@
     GeneIDQuerySearchController.prototype.handleDownLoadCSVRequested = function() {
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced?format=csv",
+        url: "/api/geneDataQueryAdvanced?format=csv",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -574,7 +574,7 @@
     ShowHideExpts.prototype.gotoShowTree = function() {
       return $.ajax({
         type: 'POST',
-        url: "api/getGeneExperiments",
+        url: "/api/getGeneExperiments",
         dataType: 'json',
         data: {
           geneIDs: this.allBatchCodes
@@ -684,7 +684,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced",
+        url: "/api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1180,7 +1180,6 @@
 
     AdvancedExperimentResultsQueryController.prototype.fromSearchtoCodes = function() {
       var j, l, len, len1, requests, results1, searchString, searchTerms, term;
-      console.log("from search to codes, 818");
       this.displayName = this.model.get('displayName');
       searchString = this.model.get('searchStr');
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
@@ -1203,7 +1202,7 @@
           term = searchTerms[j];
           results1.push($.ajax({
             type: 'POST',
-            url: "api/entitymeta/searchForEntities",
+            url: "/api/entitymeta/searchForEntities",
             dataType: 'json',
             data: {
               requestText: term
@@ -1227,7 +1226,7 @@
         }
         return $.ajax({
           type: 'POST',
-          url: "api/entitymeta/referenceCodes",
+          url: "/api/entitymeta/referenceCodes",
           dataType: "json",
           data: {
             displayName: this.displayName,
@@ -1317,7 +1316,7 @@
       }
       return $.ajax({
         type: 'POST',
-        url: "api/getGeneExperiments",
+        url: "/api/getGeneExperiments",
         dataType: 'json',
         data: {
           geneIDs: this.searchCodes
@@ -1376,7 +1375,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "api/getExperimentSearchAttributes",
+        url: "/api/getExperimentSearchAttributes",
         dataType: 'json',
         data: {
           experimentCodes: this.experimentList
@@ -1437,7 +1436,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced",
+        url: "/api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1479,7 +1478,7 @@
     AdvancedExperimentResultsQueryController.prototype.handleDownLoadCSVRequested = function() {
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced?format=csv",
+        url: "/api/geneDataQueryAdvanced?format=csv",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1609,7 +1608,7 @@
     AddDataToReport.prototype.gotoShowTree = function() {
       return $.ajax({
         type: 'POST',
-        url: "api/getGeneExperiments",
+        url: "/api/getGeneExperiments",
         dataType: 'json',
         data: {
           geneIDs: this.allBatchCodes
@@ -1719,7 +1718,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "api/geneDataQueryAdvanced",
+        url: "/api/geneDataQueryAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1768,12 +1767,40 @@
     };
 
     GeneIDQueryAppController.prototype.initialize = function() {
+      var aggregate, displayName, oppAggregate, searchOptionsList, searchStr;
       $(this.el).empty();
       $(this.el).html(this.template());
       $(this.el).addClass('GeneIDQueryAppController');
       this.startBasicQueryWizard();
-      console.log("initialized gene id query app controller");
-      return console.log(window.AppLaunchParams);
+      if (window.AppLaunchParams.searchOptions != null) {
+        searchOptionsList = window.AppLaunchParams.searchOptions.split(',');
+        searchStr = "";
+        if ($.trim(searchOptionsList[0] != null)) {
+          searchStr = $.trim(searchOptionsList[0]);
+        }
+        if (searchStr === "") {
+          return alert("You must specify a search string such a batch code, name, or id.");
+        } else {
+          displayName = "unassigned";
+          if ((searchOptionsList[1] != null) && $.trim(searchOptionsList[1]) !== "") {
+            displayName = $.trim(searchOptionsList[1]);
+          }
+          aggregate = false;
+          oppAggregate = true;
+          if ((searchOptionsList[2] != null) && $.trim(searchOptionsList[2]) !== "") {
+            aggregate = $.trim(searchOptionsList[2]) === "true";
+            oppAggregate = !aggregate;
+          }
+          this.aerqc.queryInputController.$('.bv_gidListString').val(searchStr);
+          this.aerqc.queryInputController.displayNameListController.setSelectedCode(displayName);
+          this.aerqc.queryInputController.$('.bv_displayNameSelect').change();
+          this.aerqc.queryInputController.displayName = displayName;
+          this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).attr('checked', 'checked');
+          this.aerqc.queryInputController.$('.bv_aggregation_' + oppAggregate).removeAttr('checked');
+          this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).click();
+          return this.aerqc.handleSearchRequested(searchStr, displayName);
+        }
+      }
     };
 
     GeneIDQueryAppController.prototype.startBasicQueryWizard = function() {

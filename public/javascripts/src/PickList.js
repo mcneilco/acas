@@ -96,7 +96,6 @@
     PickListOptionControllerForLsThing.prototype.render = function() {
       var bestName, displayValue, preferredNames;
       if (this.displayCodeName === true) {
-        console.log(this.model);
         if (this.model.get('codeName') != null) {
           displayValue = this.model.get("codeName");
         } else {
@@ -509,14 +508,11 @@
     };
 
     EditablePickListSelectController.prototype.setupEditingPrivileges = function() {
-      console.log(this.options.roles);
       if (this.options.roles != null) {
         if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
-          console.log("is in user list");
           this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
           return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
         } else {
-          console.log("first else");
           this.$('.bv_addOptionBtn').removeAttr('data-toggle');
           this.$('.bv_addOptionBtn').removeAttr('data-target');
           this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
@@ -529,7 +525,6 @@
           });
         }
       } else {
-        console.log("second else");
         this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
         return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
       }
@@ -545,7 +540,6 @@
 
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
       var showPanel;
-      console.log("handle show add panel");
       showPanel = false;
       if (this.options.roles != null) {
         if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
@@ -627,7 +621,6 @@
           if (selectedModel.get('codeKind') == null) {
             selectedModel.set('codeKind', this.options.codeKind);
           }
-          console.log(selectedModel);
           return $.ajax({
             type: 'POST',
             url: "/api/codetables",
