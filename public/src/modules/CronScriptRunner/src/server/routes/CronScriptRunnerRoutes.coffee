@@ -2,9 +2,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/cronScriptRunner', exports.postCronScriptRunner
 	app.get '/api/cronScriptRunner/:code', exports.getCronScriptRunner
 	app.put '/api/cronScriptRunner/:code', exports.putCronScriptRunner
-	#TODO awful hack to increment, remove and replace with code from Roo persistance
 	console.log "about to declare global in setup"
-	global.cronCodeBaseNum = 1
 	global.cronJobs = {}
 	console.log "just declared global in setup"
 	addJobsOnStartup()
@@ -14,13 +12,18 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 # Must call through services. Direct function calls won't work because we have to keep global cron hash
 
+config = require '../conf/compiled/conf.js'
+request = require 'request'
+CRON_CONFIG_PREFIX = "CONF_CRON"
+
 addJobsOnStartup = ->
 	cronConfig = require '../public/javascripts/conf/StartupCronJobsConfJSON.js'
+	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
 
 	#We don't want to save these to the database, so make our own special cronCodes and launch
 	codeInt = 1
 	for spec in cronConfig.jobsToStart
-		newCode = "CONF_CRON" + codeInt++
+		newCode = CRON_CONFIG_PREFIX + codeInt++
 
 		newCron =
 			spec: spec
@@ -32,6 +35,21 @@ addJobsOnStartup = ->
 
 		if newCron.spec.active
 			setupNewCron newCron
+
+	# Get existing jobs
+	request.get
+		url: persistenceURL
+		json: true
+	, (error, response, body) =>
+		if not error and response.statusCode < 400
+			for spec in body
+				newCron = spec: spec
+				global.cronJobs[newCode] = newCron
+				if not newCron.spec.ignored and newCron.spec.active
+					setupNewCron newCron
+		else
+			console.log 'Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body
+
 
 
 exports.postCronScriptRunner = (req, resp) ->
@@ -45,21 +63,31 @@ exports.postCronScriptRunner = (req, resp) ->
 		cronScriptRunnerTestJSON = require '../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js'
 		resp.json cronScriptRunnerTestJSON.savedCronEntry
 	else
-		#TODO real server save here this is a stub, make a copy
-		newCode = "CRON" + global.cronCodeBaseNum++
+		unsavedReq = req.body
+		persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
+		if not unsavedReq.numberOfExecutions
+			unsavedReq.numberOfExecutions = 0
+		request.post
+			url: persistenceURL
+			json: true
+			body: unsavedReq
+		, (error, response, body) =>
+			@serverError = error
+			@responseJSON = body
+			@serverResponse = response
+			if not error and response.statusCode < 400 and body.codeName?
+				newCron = spec: body
+				newCode = body.codeName
 
-		newCron =
-			spec: JSON.parse(JSON.stringify(req.body))
-		newCron.spec.cronCode = newCode
-		newCron.spec.numberOfExcutions = 0
-		newCron.spec.ignored = false
+				global.cronJobs[newCode] = newCron
 
-		global.cronJobs[newCode] = newCron
+				if newCron.spec.active
+					setupNewCron newCron
 
-		if newCron.spec.active
-			setupNewCron newCron
-
-		resp.json newCron.spec
+				resp.json newCron.spec
+			else
+				resp.statusCode = 500
+				resp.end response.body
 
 exports.putCronScriptRunner = (req, resp) ->
 	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
@@ -74,27 +102,19 @@ exports.putCronScriptRunner = (req, resp) ->
 		resp.json respCron
 		return
 	else
-		#TODO put changes to persistence
 		code = req.params.code
 		cronJob = global.cronJobs[code]
 		unless cronJob?
 			resp.send "cronCode #{code} not found", 404
 			return
 
-		#Update supplied attributes
-		for key, value of req.body
-			console.log key + ": "+value
-			cronJob.spec[key] = value
-		#no matter what, stop job. Who knows what changes we got?
-		if cronJob.job?
-			cronJob.job.stop()
-			delete cronJob.job
-		if not cronJob.spec.ignored
-			if cronJob.spec.active?
-				if cronJob.spec.active
-					setupNewCron cronJob
+		updateCronScriptRunner code, req.body, (err, response) ->
+			if err
+				resp.send 500, err
+			else
+				resp.json response
 
-		resp.json cronJob.spec
+
 
 exports.getCronScriptRunner = (req, resp) ->
 	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
@@ -111,10 +131,42 @@ exports.getCronScriptRunner = (req, resp) ->
 		cronJob = global.cronJobs[code]
 		resp.json cronJob.spec
 
+updateCronScriptRunner = (code, newSpec, callback) ->
+	cronJob = global.cronJobs[code]
+	unless cronJob?
+		callback "cronCode #{code} not found"
+		return
+
+	#Update supplied attributes
+	for key, value of newSpec
+#		console.log key + ": "+value
+		cronJob.spec[key] = value
+	#no matter what, stop job. Who knows what changes we got?
+	if cronJob.job?
+		cronJob.job.stop()
+		delete cronJob.job
+	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs/"
+	#Skip if cron defined in config
+	if code.indexOf CRON_CONFIG_PREFIX < 0
+		request.put
+			url: persistenceURL + code
+			json: true
+			body: cronJob.spec
+		, (error, response, body) =>
+			if not error and response.statusCode < 400 and body.codeName?
+				cronJob.spec = body
+				if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
+					setupNewCron cronJob
+				callback null, cronJob.spec
+			else
+				callback "Failed put request to server: " + body
+	else
+		if not cronJob.spec.ignored and cronJob.spec.active? and cronJob.spec.active
+			setupNewCron cronJob
+		callback null, cronJob.spec
 
 setupNewCron = (cron) ->
 	CronJob = require('cron').CronJob
-
 	cron.job = new CronJob
 		cronTime: cron.spec.schedule
 		start: true
@@ -124,21 +176,25 @@ setupNewCron = (cron) ->
 launchRScript = (spec) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	jobStart = new Date()
+	console.log 'started r script'
 	serverUtilityFunctions.runRFunctionOutsideRequest spec.user, JSON.parse(spec.scriptJSONData), spec.scriptFile, spec.functionName, (rReturn) ->
+		console.log 'finished r script'
 		duration = new Date() - jobStart
-		scriptComplete spec.cronCode, jobStart.getTime(), duration, rReturn
+		scriptComplete spec.codeName, jobStart.getTime(), duration, rReturn
 
-scriptComplete = (cronCode, startTime, duration, resultJSON) ->
-	console.log "cronCode: "+cronCode
-	cronJob = global.cronJobs[cronCode]
-	cronJob.spec.lastStartTime = startTime
-	cronJob.spec.lastDuration = duration
-	cronJob.spec.lastResultJSON = resultJSON
-	if cronJob.spec.numberOfExcutions?
-		cronJob.spec.numberOfExcutions++
-	else
-		cronJob.spec.numberOfExcutions = 1
-#TODO put these changes to Roo
+scriptComplete = (codeName, startTime, duration, resultJSON) ->
+	cronJob = global.cronJobs[codeName]
+	if cronJob? and cronJob.spec?
+		cronJob.spec.lastStartTime = startTime
+		cronJob.spec.lastDuration = duration
+		cronJob.spec.lastResultJSON = resultJSON
+		if cronJob.spec.numberOfExecutions?
+			cronJob.spec.numberOfExecutions++
+		else
+			cronJob.spec.numberOfExecutions = 1
+		updateCronScriptRunner codeName, cronJob.spec, (err, res) ->
+			if err
+				console.log 'unable to update job in database in scriptComplete: ' + err
 
 
 validateSpec = (spec) ->

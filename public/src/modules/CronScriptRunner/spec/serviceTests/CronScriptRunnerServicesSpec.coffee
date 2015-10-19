@@ -38,7 +38,7 @@ copyJSON = (json) ->
 describe "Cron Script Runner Services Spec", ->
 	describe "Create new cron script runner, saves to databases and schedules the job, unless active = false", ->
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		before (done) ->
 			request.post
 				url: baseURL+"/api/cronScriptRunner"
@@ -50,7 +50,7 @@ describe "Cron Script Runner Services Spec", ->
 				@serverResponse = response
 				#cleanup
 				request.put
-					url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+					url: baseURL+"/api/cronScriptRunner/"+body.codeName
 					json: true
 					body:
 						active: false
@@ -60,13 +60,13 @@ describe "Cron Script Runner Services Spec", ->
 		it "should return a success status code of 200", ->
 			assert.equal @serverResponse.statusCode, 200
 		it "should supply a new code", ->
-			assert.equal @responseJSON.cronCode?, true
+			assert.equal @responseJSON.codeName?, true
 
 	describe "updating jobs", ->
 		describe "disable current cron and delete", ->
 			#save a job to stop
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			before (done) ->
 				request.post
 					url: baseURL+"/api/cronScriptRunner"
@@ -74,7 +74,7 @@ describe "Cron Script Runner Services Spec", ->
 					body: unsavedReq
 				, (error, response, body) =>
 					request.put
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 						body:
 							active: false
@@ -97,7 +97,7 @@ describe "Cron Script Runner Services Spec", ->
 					json: true
 					body:
 						active: false
-						ignored: true # if you just want to disable, then leave this falsea
+						ignored: true # if you just want to disable, then leave this false
 				, (error, response, body) =>
 					@responseJSON = body
 					@serverResponse = response
@@ -109,7 +109,7 @@ describe "Cron Script Runner Services Spec", ->
 	describe "create and run cron and get run status", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		before (done) ->
 			@.timeout(25000)
 			request.post
@@ -119,14 +119,14 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body) =>
 						@responseJSON = body
 						@serverResponse = response
 						#cleanup
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: false
@@ -143,12 +143,12 @@ describe "Cron Script Runner Services Spec", ->
 		it "should return success of the R script run", ->
 			assert.equal parseResponse(@responseJSON.lastResultJSON).hasError, false
 		it "should increment the run count", ->
-			assert.equal @responseJSON.numberOfExcutions > 0 , true
+			assert.equal @responseJSON.numberOfExecutions > 0 , true
 
 	describe "create and run cron then stop", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		before (done) ->
 			@.timeout(25000)
 			request.post
@@ -158,13 +158,13 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						#cleanup
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: false
@@ -172,10 +172,10 @@ describe "Cron Script Runner Services Spec", ->
 						, (error, response, body) =>
 							setTimeout =>
 								request.get
-									url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									done()
 							, 2500
 				, 2500
@@ -186,7 +186,7 @@ describe "Cron Script Runner Services Spec", ->
 	describe "create active job then change it", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		before (done) ->
 			@.timeout(25000)
 			request.post
@@ -196,12 +196,12 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: true
@@ -210,14 +210,14 @@ describe "Cron Script Runner Services Spec", ->
 						, (error, response, body) =>
 							setTimeout =>
 								request.get
-									url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									@lastResultJSON = body2.lastResultJSON
 									#cleanup
 									request.put
-										url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+										url: baseURL+"/api/cronScriptRunner/"+body.codeName
 										json: true
 										body:
 											active: false
@@ -238,7 +238,7 @@ describe "Cron Script Runner Services Spec", ->
 	describe "create inactive job then set active", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		unsavedReq.active = false
 		before (done) ->
 			@.timeout(25000)
@@ -249,12 +249,12 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: true
@@ -262,13 +262,13 @@ describe "Cron Script Runner Services Spec", ->
 						, (error, response, body) =>
 							setTimeout =>
 								request.get
-									url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									#cleanup
 									request.put
-										url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+										url: baseURL+"/api/cronScriptRunner/"+body.codeName
 										json: true
 										body:
 											active: false
@@ -286,7 +286,7 @@ describe "Cron Script Runner Services Spec", ->
 	describe "create active job then set inactive, then active", ->
 		#save a job to run
 		unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-		delete unsavedReq.cronCode
+		delete unsavedReq.codeName
 		before (done) ->
 			@.timeout(25000)
 			request.post
@@ -296,12 +296,12 @@ describe "Cron Script Runner Services Spec", ->
 			, (error, response, body) =>
 				setTimeout =>
 					request.get
-						url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+						url: baseURL+"/api/cronScriptRunner/"+body.codeName
 						json: true
 					, (error, response, body1) =>
-						@numRuns1 = body1.numberOfExcutions
+						@numRuns1 = body1.numberOfExecutions
 						request.put
-							url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+							url: baseURL+"/api/cronScriptRunner/"+body.codeName
 							json: true
 							body:
 								active: false
@@ -309,12 +309,12 @@ describe "Cron Script Runner Services Spec", ->
 						, (error, response, body) =>
 							setTimeout =>
 								request.get
-									url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+									url: baseURL+"/api/cronScriptRunner/"+body.codeName
 									json: true
 								, (error, response, body2) =>
-									@numRuns2 = body2.numberOfExcutions
+									@numRuns2 = body2.numberOfExecutions
 									request.put
-										url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+										url: baseURL+"/api/cronScriptRunner/"+body.codeName
 										json: true
 										body:
 											active: true
@@ -322,13 +322,13 @@ describe "Cron Script Runner Services Spec", ->
 									, (error, response, body3) =>
 										setTimeout =>
 											request.get
-												url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+												url: baseURL+"/api/cronScriptRunner/"+body.codeName
 												json: true
 											, (error, response, body3) =>
-												@numRuns3 = body3.numberOfExcutions
+												@numRuns3 = body3.numberOfExecutions
 												#cleanup
 												request.put
-													url: baseURL+"/api/cronScriptRunner/"+body.cronCode
+													url: baseURL+"/api/cronScriptRunner/"+body.codeName
 													json: true
 													body:
 														active: false
@@ -350,7 +350,7 @@ describe "Cron Script Runner Services Spec", ->
 	describe "Post bogus or missing cron spec", ->
 		describe "missing schedule", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.schedule
 			before (done) ->
 				request.post
@@ -366,7 +366,7 @@ describe "Cron Script Runner Services Spec", ->
 				assert.equal @serverResponse.statusCode, 500
 		describe "missing scriptType", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.scriptType
 			before (done) ->
 				request.post
@@ -382,7 +382,7 @@ describe "Cron Script Runner Services Spec", ->
 				assert.equal @serverResponse.statusCode, 500
 		describe "missing scriptFile", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.scriptFile
 			before (done) ->
 				request.post
@@ -398,7 +398,7 @@ describe "Cron Script Runner Services Spec", ->
 				assert.equal @serverResponse.statusCode, 500
 		describe "missing functionName", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.functionName
 			before (done) ->
 				request.post
@@ -414,7 +414,7 @@ describe "Cron Script Runner Services Spec", ->
 				assert.equal @serverResponse.statusCode, 500
 		describe "missing scriptJSONData", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.scriptJSONData
 			before (done) ->
 				request.post
@@ -430,7 +430,7 @@ describe "Cron Script Runner Services Spec", ->
 				assert.equal @serverResponse.statusCode, 500
 		describe "missing active", ->
 			unsavedReq = copyJSON cronScriptRunnerTestJSON.savedCronEntry
-			delete unsavedReq.cronCode
+			delete unsavedReq.codeName
 			delete unsavedReq.active
 			before (done) ->
 				request.post
@@ -444,11 +444,6 @@ describe "Cron Script Runner Services Spec", ->
 					done()
 			it "should return a success status code of 500", ->
 				assert.equal @serverResponse.statusCode, 500
-
-#TODO Persist in Roo
-#TODO see todos in implementation
-#TODO Read all active jobs in Roo persistance and add to live queue during startup
-
 
 
 
