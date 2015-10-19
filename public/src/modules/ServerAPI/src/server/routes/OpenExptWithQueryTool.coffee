@@ -4,7 +4,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.redirectToQueryToolForExperiment = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
-	request = require 'request'
 
 # params: {"tool": "Seurat", "experiment": "EXPT-00001", "protocol": "PROT-00001"}
 	tool = req.query.tool
@@ -19,7 +18,12 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 		getLdUrl.getUrlForNewLiveDesignLiveReportForExperiment req.query.experiment, (url) ->
 			resp.redirect url
 	else if tool is 'Seurat'
-		resp.redirect '/api/experiments/resultViewerURL/' + req.query.experiment
+		expRoutes = require './ExperimentServiceRoutes.js'
+		expRoutes.resultViewerURLFromExperimentCodeName req.query.experiment, (err, res) ->
+			if err? or not res.resultViewerURL?
+				resp.status(404).send "Could not get Seurat link"
+			else
+				resp.redirect res.resultViewerURL
 	else
     # Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')
