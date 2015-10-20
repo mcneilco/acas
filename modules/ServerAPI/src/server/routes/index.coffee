@@ -1,7 +1,7 @@
 scriptPaths = require './RequiredClientScripts.js'
 
 exports.setupRoutes = (app, loginRoutes) ->
-	config = require '../conf/compiled/conf.js'
+	config = require '../../../../../conf/compiled/conf.js'
 	if config.all.client.require.login
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
@@ -42,7 +42,7 @@ exports.autoLaunchCreateFromOtherEntity = (req, res) ->
 
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"
-	config = require '../conf/compiled/conf.js'
+	config = require '../../../../../conf/compiled/conf.js'
 	global.specRunnerTestmode = if global.stubsMode then true else false
 
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)

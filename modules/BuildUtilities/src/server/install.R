@@ -37,7 +37,7 @@ if(!interactive()) {
 }
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
-acasHome <- normalizePath("../..")
+acasHome <- normalizePath("../../..")
 rLibs <- file.path(acasHome,"r_libs")
 dir.create(rLibs, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(ACAS_HOME=acasHome)
