@@ -1,12 +1,11 @@
 (function() {
-  var addJobsOnStartup, launchRScript, scriptComplete, setupNewCron, validateSpec;
+  var CRON_CONFIG_PREFIX, addJobsOnStartup, config, launchRScript, request, scriptComplete, setupNewCron, updateCronScriptRunner, validateSpec;
 
   exports.setupAPIRoutes = function(app) {
     app.post('/api/cronScriptRunner', exports.postCronScriptRunner);
     app.get('/api/cronScriptRunner/:code', exports.getCronScriptRunner);
     app.put('/api/cronScriptRunner/:code', exports.putCronScriptRunner);
     console.log("about to declare global in setup");
-    global.cronCodeBaseNum = 1;
     global.cronJobs = {};
     console.log("just declared global in setup");
     return addJobsOnStartup();
@@ -14,15 +13,21 @@
 
   exports.setupRoutes = function(app, loginRoutes) {};
 
+  config = require('../conf/compiled/conf.js');
+
+  request = require('request');
+
+  CRON_CONFIG_PREFIX = "CONF_CRON";
+
   addJobsOnStartup = function() {
-    var codeInt, cronConfig, i, len, newCode, newCron, ref, results, spec;
+    var codeInt, cronConfig, i, len, newCode, newCron, persistenceURL, ref, spec;
     cronConfig = require('../public/javascripts/conf/StartupCronJobsConfJSON.js');
+    persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs";
     codeInt = 1;
     ref = cronConfig.jobsToStart;
-    results = [];
     for (i = 0, len = ref.length; i < len; i++) {
       spec = ref[i];
-      newCode = "CONF_CRON" + codeInt++;
+      newCode = CRON_CONFIG_PREFIX + codeInt++;
       newCron = {
         spec: spec
       };
@@ -31,16 +36,39 @@
       newCron.spec.ignored = false;
       global.cronJobs[newCode] = newCron;
       if (newCron.spec.active) {
-        results.push(setupNewCron(newCron));
-      } else {
-        results.push(void 0);
+        setupNewCron(newCron);
       }
     }
-    return results;
+    return request.get({
+      url: persistenceURL,
+      json: true
+    }, (function(_this) {
+      return function(error, response, body) {
+        var j, len1, results;
+        if (!error && response.statusCode < 400) {
+          results = [];
+          for (j = 0, len1 = body.length; j < len1; j++) {
+            spec = body[j];
+            newCron = {
+              spec: spec
+            };
+            global.cronJobs[newCode] = newCron;
+            if (!newCron.spec.ignored && newCron.spec.active) {
+              results.push(setupNewCron(newCron));
+            } else {
+              results.push(void 0);
+            }
+          }
+          return results;
+        } else {
+          return console.log('Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body);
+        }
+      };
+    })(this));
   };
 
   exports.postCronScriptRunner = function(req, resp) {
-    var cronScriptRunnerTestJSON, newCode, newCron, validation;
+    var cronScriptRunnerTestJSON, persistenceURL, unsavedReq, validation;
     validation = validateSpec(JSON.parse(JSON.stringify(req.body)));
     if (!validation.valid) {
       console.log(validation);
@@ -51,23 +79,42 @@
       cronScriptRunnerTestJSON = require('../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js');
       return resp.json(cronScriptRunnerTestJSON.savedCronEntry);
     } else {
-      newCode = "CRON" + global.cronCodeBaseNum++;
-      newCron = {
-        spec: JSON.parse(JSON.stringify(req.body))
-      };
-      newCron.spec.cronCode = newCode;
-      newCron.spec.numberOfExcutions = 0;
-      newCron.spec.ignored = false;
-      global.cronJobs[newCode] = newCron;
-      if (newCron.spec.active) {
-        setupNewCron(newCron);
+      unsavedReq = req.body;
+      persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs";
+      if (!unsavedReq.numberOfExecutions) {
+        unsavedReq.numberOfExecutions = 0;
       }
-      return resp.json(newCron.spec);
+      return request.post({
+        url: persistenceURL,
+        json: true,
+        body: unsavedReq
+      }, (function(_this) {
+        return function(error, response, body) {
+          var newCode, newCron;
+          _this.serverError = error;
+          _this.responseJSON = body;
+          _this.serverResponse = response;
+          if (!error && response.statusCode < 400 && (body.codeName != null)) {
+            newCron = {
+              spec: body
+            };
+            newCode = body.codeName;
+            global.cronJobs[newCode] = newCron;
+            if (newCron.spec.active) {
+              setupNewCron(newCron);
+            }
+            return resp.json(newCron.spec);
+          } else {
+            resp.statusCode = 500;
+            return resp.end(response.body);
+          }
+        };
+      })(this));
     }
   };
 
   exports.putCronScriptRunner = function(req, resp) {
-    var code, cronJob, cronScriptRunnerTestJSON, key, ref, respCron, value;
+    var code, cronJob, cronScriptRunnerTestJSON, respCron;
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       cronScriptRunnerTestJSON = require('../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js');
       if (req.params.code.indexOf('error') > -1) {
@@ -90,24 +137,13 @@
         resp.send("cronCode " + code + " not found", 404);
         return;
       }
-      ref = req.body;
-      for (key in ref) {
-        value = ref[key];
-        console.log(key + ": " + value);
-        cronJob.spec[key] = value;
-      }
-      if (cronJob.job != null) {
-        cronJob.job.stop();
-        delete cronJob.job;
-      }
-      if (!cronJob.spec.ignored) {
-        if (cronJob.spec.active != null) {
-          if (cronJob.spec.active) {
-            setupNewCron(cronJob);
-          }
+      return updateCronScriptRunner(code, req.body, function(err, response) {
+        if (err) {
+          return resp.send(500, err);
+        } else {
+          return resp.json(response);
         }
-      }
-      return resp.json(cronJob.spec);
+      });
     }
   };
 
@@ -128,6 +164,48 @@
     }
   };
 
+  updateCronScriptRunner = function(code, newSpec, callback) {
+    var cronJob, key, persistenceURL, value;
+    cronJob = global.cronJobs[code];
+    if (cronJob == null) {
+      callback("cronCode " + code + " not found");
+      return;
+    }
+    for (key in newSpec) {
+      value = newSpec[key];
+      cronJob.spec[key] = value;
+    }
+    if (cronJob.job != null) {
+      cronJob.job.stop();
+      delete cronJob.job;
+    }
+    persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs/";
+    if (code.indexOf(CRON_CONFIG_PREFIX < 0)) {
+      return request.put({
+        url: persistenceURL + code,
+        json: true,
+        body: cronJob.spec
+      }, (function(_this) {
+        return function(error, response, body) {
+          if (!error && response.statusCode < 400 && (body.codeName != null)) {
+            cronJob.spec = body;
+            if (!cronJob.spec.ignored && (cronJob.spec.active != null) && cronJob.spec.active) {
+              setupNewCron(cronJob);
+            }
+            return callback(null, cronJob.spec);
+          } else {
+            return callback("Failed put request to server: " + body);
+          }
+        };
+      })(this));
+    } else {
+      if (!cronJob.spec.ignored && (cronJob.spec.active != null) && cronJob.spec.active) {
+        setupNewCron(cronJob);
+      }
+      return callback(null, cronJob.spec);
+    }
+  };
+
   setupNewCron = function(cron) {
     var CronJob;
     CronJob = require('cron').CronJob;
@@ -144,24 +222,32 @@
     var jobStart, serverUtilityFunctions;
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     jobStart = new Date();
+    console.log('started r script');
     return serverUtilityFunctions.runRFunctionOutsideRequest(spec.user, JSON.parse(spec.scriptJSONData), spec.scriptFile, spec.functionName, function(rReturn) {
       var duration;
+      console.log('finished r script');
       duration = new Date() - jobStart;
-      return scriptComplete(spec.cronCode, jobStart.getTime(), duration, rReturn);
+      return scriptComplete(spec.codeName, jobStart.getTime(), duration, rReturn);
     });
   };
 
-  scriptComplete = function(cronCode, startTime, duration, resultJSON) {
+  scriptComplete = function(codeName, startTime, duration, resultJSON) {
     var cronJob;
-    console.log("cronCode: " + cronCode);
-    cronJob = global.cronJobs[cronCode];
-    cronJob.spec.lastStartTime = startTime;
-    cronJob.spec.lastDuration = duration;
-    cronJob.spec.lastResultJSON = resultJSON;
-    if (cronJob.spec.numberOfExcutions != null) {
-      return cronJob.spec.numberOfExcutions++;
-    } else {
-      return cronJob.spec.numberOfExcutions = 1;
+    cronJob = global.cronJobs[codeName];
+    if ((cronJob != null) && (cronJob.spec != null)) {
+      cronJob.spec.lastStartTime = startTime;
+      cronJob.spec.lastDuration = duration;
+      cronJob.spec.lastResultJSON = resultJSON;
+      if (cronJob.spec.numberOfExecutions != null) {
+        cronJob.spec.numberOfExecutions++;
+      } else {
+        cronJob.spec.numberOfExecutions = 1;
+      }
+      return updateCronScriptRunner(codeName, cronJob.spec, function(err, res) {
+        if (err) {
+          return console.log('unable to update job in database in scriptComplete: ' + err);
+        }
+      });
     }
   };
 
