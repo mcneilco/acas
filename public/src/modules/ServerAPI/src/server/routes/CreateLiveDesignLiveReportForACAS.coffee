@@ -25,7 +25,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (exptCode, callback) ->
 
 
     command = "./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
-    command += "'https://mcneilco-ld-73.onschrodinger.com/livedesign' -u 'regressiontester' -p 'allthedataallthethings' -i '"
+    command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -i '"
     #		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
     #		command += (JSON.stringify data)+"'"
     command += (JSON.stringify exptInfo)+"'"
