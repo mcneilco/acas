@@ -338,7 +338,8 @@ class LiveReport(object):
                           assay_view=assay_view,
                           id=data['id'],
                           alias=alias,
-                          project_id=data.get('project_id'))
+                          project_id=data.get('project_id'),
+                          scaffolds=data.get('scaffolds'))
 
     @classmethod
     def from_list(cls, arr):

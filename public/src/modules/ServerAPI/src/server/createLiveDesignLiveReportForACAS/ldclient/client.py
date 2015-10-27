@@ -8,6 +8,7 @@ import requests
 import time
 
 from requests.auth import HTTPBasicAuth
+from requests.exceptions import RequestException
 
 from .models import (Assay, Database, LiveReport, Folder, Protocol, Model, ModelVersion,
                      Project, ColumnDescriptor, ensure_string_list)
@@ -15,6 +16,7 @@ from .models import (Assay, Database, LiveReport, Folder, Protocol, Model, Model
 SUPPORTED_LD_VERSION = '7.3'
 
 ASSAYS_PATH = '/assays'
+MAPPED_DATABASE = '/mapped_database'
 DATABASES_PATH = '/databases'
 PROJECTS_PATH = '/projects'
 LIVE_REPORTS_PATH = '/live_reports'
@@ -32,6 +34,7 @@ XTALS_PATH = '/xtals/export'
 ATTACHMENT_PATH = '/attachment'
 POSE_PATH = '/pose'
 CONFIG_PATH = '/config'
+NIGHTLY_TASK = '/nightly_task'
 
 FINISHED_STATUS_TYPES = ['finished', 'killed', 'failed', 'malformed_output']
 
@@ -58,6 +61,16 @@ class LDClient(object):
 
     def __init__(self, host, username=None, password=None):
         self.client = ApiClient(host, username, password)
+
+
+    def reload_db_constants(self):
+        """
+        Reload the database db constants cache
+        """
+        data = {}
+        response = self.client.post(service_path=MAPPED_DATABASE,
+                                    path='/refresh_db_constants',
+                                    data=data)
 
     def assays(self, database_name=None, project_ids=None, assay_name=None):
         """
@@ -482,21 +495,49 @@ class LDClient(object):
         response = self.update_live_report(live_report_id, live_report)
         return [column for column in response.column_descriptor_mapping.iteritems()]
 
-    def add_rows(self, live_report_id, additional_rows):
+    def add_rows(self, live_report_id, rows):
         """
-        Add compounds to a LiveReport
+        Adds compounds to a LiveReport
 
         :type live_report_id: int
         :param live_report_id: ID of the Live Report to add the compounds to
 
-        :type additional_rows: List
-        :param additional_rows: Corporate IDs of compounds to be added to the Live Report
+        :type rows: List
+        :param rows: Corporate IDs of compounds to be added to the Live Report
 
         :return: List of compounds (additional_rows) in the Live Report
         """
-        live_report = self.live_report(live_report_id=int(live_report_id))
-        live_report.additional_rows.extend(additional_rows)
-        return self.update_live_report(live_report_id, live_report).additional_rows
+        data = [{
+            'op': 'add',
+            'path': 'additional_rows',
+            'value': rows
+        }]
+        response = self.client.patch(service_path=LIVE_REPORTS_PATH,
+                                     path='/{0}'.format(live_report_id),
+                                     data=json.dumps(data))
+        return response['additional_rows']
+
+    def remove_rows(self, live_report_id, rows):
+        """
+        Removes compounds from a LiveReport
+
+        :type live_report_id: int
+        :param live_report_id: ID of the Live Report to add the compounds to
+
+        :type rows: List
+        :param rows: Corporate IDs of compounds to be added to the Live Report
+
+        :return: List of compounds (additional_rows) in the Live Report
+        """
+        data = [{
+            'op': 'remove',
+            'path': 'additional_rows',
+            'value': rows
+        }]
+        response = self.client.patch(service_path=LIVE_REPORTS_PATH,
+                                     path='/{0}'.format(live_report_id),
+                                     data=json.dumps(data))
+        return response['additional_rows']
 
     def list_folders(self, project_ids=None):
         """
@@ -1475,6 +1516,26 @@ class LDClient(object):
                             path='/columns/batch', 
                             data=json.dumps([column.as_dict() for column in columns]))
 
+    def refresh_live_reports(self,
+                             live_report_ids=list(),
+                             is_all=False):
+        """
+        Force Livedesign to asyncronously calculate Livereports
+        without updating their updated_at times.
+
+        :param live_report_ids: list of live_report_ids to recalculate
+        :param  is_all: boolean true if calculate ALL active LiveReports
+        :return empty String
+        """
+        type = "ALL" if is_all else "IDS"
+        data = {
+            "type": type,
+            "live_report_ids": [str(x) for x in live_report_ids]
+        }
+        return self.client.post(service_path=NIGHTLY_TASK,
+                               path='/live_report_refresh',
+                               data=json.dumps(data))
+
 class ApiClient(object):
     """ Class to handle HTTP verbs """
     _verified_version = False
@@ -1495,10 +1556,16 @@ class ApiClient(object):
 
     def put(self, service_path, path, **kwargs):
         return self.invoke_request(service_path, path, http_method=requests.put, **kwargs)
-
+    
+    def patch(self, service_path, path, **kwargs):
+        return self.invoke_request(service_path, path, http_method=requests.patch, **kwargs)
+    
     def _verify_version(self):
         self._verified_version = True
         response = self.get(ABOUT_PATH, '')
+        if not isinstance(response, dict) or 'seurat_version_number' not in response:
+            raise RequestException('Live Design server returned an inappropriate response '
+                                   'to a version request: {!r}'.format(response))
         ld_version = response['seurat_version_number']
         if SUPPORTED_LD_VERSION not in ld_version:
             msg = 'Unsupported Live Design server version: {server}, expected version: {client}'
