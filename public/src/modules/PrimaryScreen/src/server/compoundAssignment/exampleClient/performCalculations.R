@@ -132,7 +132,7 @@ normalizeData <- function(resultTable, parameters) {
                 by= section]
   } else {
     warnUser("No normalization applied.")
-    resultTable$normalizedActivity <- resultTable$activity
+    resultTable[, normalizedActivity := resultTable$activity]
   }
   
   return(resultTable)
@@ -217,7 +217,7 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
       stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
     }
     
-  } else if (transformation == "null" || transformation == "") {
+  } else if (transformation == "null" || transformation == "" || transformation =="none") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)
   } else {

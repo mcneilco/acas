@@ -69,6 +69,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   # wellType is the test/PC/NC column
   # dataRow is the value column
   # xColumn is the x side
+  
   graphDataFrame <- data.frame(xColumn=xColumn, wellType=wellType, dataRow=dataRow, stringsAsFactors = F)
   if (!is.null(hits)) {
     graphDataFrame$isHit=hits

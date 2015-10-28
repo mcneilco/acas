@@ -39,9 +39,12 @@
 # Stopped for transport
 
 runMain <- function(fileName,dryRun=TRUE,recordedBy) {
-  library('rcdk')
+  library('racas')
+  
   library('plyr')
   library('iterators')
+
+  library('rcdk')
   
   fileName <- getUploadedFilePath(fileName)
   
