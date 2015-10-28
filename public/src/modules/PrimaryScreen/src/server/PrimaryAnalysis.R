@@ -1680,7 +1680,7 @@ autoFlagWells <- function(resultTable, parameters) {
   } else if(parameters$thresholdType == "efficacy") {
     hitThreshold <- parameters$hitEfficacyThreshold
     thresholdType <- "percent efficacy"
-    resultTable <<- resultTable
+    
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
     resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
@@ -1840,7 +1840,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-  exampleClient <- FALSE
   # TODO: Test structure
   clientName <- "exampleClient"
   # END: Test structure
@@ -1921,8 +1920,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
     # TODO: add config server.service.genericSpecificPreProcessor
-    # exampleClient is set at the head of runMain function
-    if (exampleClient) {
+    if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
       instrumentData <- specificDataPreProcessor(parameters=parameters, 
                                                  folderToParse=fullPathToParse, 
                                                  errorEnv=errorEnv, 
@@ -1941,13 +1939,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     
-    # save(instrumentData, file="instrumentData.Rda")
     # RED (client-specific)
     # getCompoundAssignments
     
     # TODO: add config server.service.genericSpecificPreProcessor
     # exampleClient is set at the head of runMain function
-    if (exampleClient) {
+    if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
       resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, 
                                             testMode, parameters, 
                                             tempFilePath=specDataPrepFileLocation)
@@ -1988,7 +1985,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # but those aren't created until later in the code
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
-  if (racas::applicationSettings$server.calcFromSeq) {
+  if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
     resultTable <- performCalculations(resultTable, parameters)
   } else {
     resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, instrumentData)
@@ -2939,10 +2936,9 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   library('racas')
   
   globalMessenger <- messenger()$reset()
-  globalMessenger$devMode <- TRUE
-  developmentMode <- TRUE
+  globalMessenger$devMode <- FALSE
   options("scipen"=15)
-  save(request, file="request.Rda")
+  #save(request, file="request.Rda")
   
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId

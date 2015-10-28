@@ -26,15 +26,6 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                        "Flag Comment", "Auto Flag Type", "Auto Flag Observation",
                        "Auto Flag Reason")
   
-#   requiredColumns <- c("Plate Type", "Assay Barcode", "Compound Barcode", "Source Type",
-#                         "Row", "Column", "Plate Order", "Well Type", "Corporate Name",
-#                        "Batch Number", "Corporate Batch Name", "Compound Concentration",
-#                        activityColNames,
-#                        "Efficacy", "SD Score", "Z' By Plate", "Raw Z' By Plate", getActivityFullName(parameters), 
-#                        "Normalized Activity", "Flag Type", "Flag Observation", "Flag Reason",
-#                        "Flag Comment", "Auto Flag Type", "Auto Flag Observation",
-#                        "Auto Flag Reason")
-  
   # get the columns in the current inputTable that correspond to the spotfire spec
   keepColumns <- intersect(newColNames, requiredColumns)
   
