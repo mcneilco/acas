@@ -3,6 +3,8 @@
 
   global.logger = require("./routes/Logger");
 
+  require('./src/ConsoleLogWinstonOverride');
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
@@ -78,6 +80,7 @@
 	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	routeSet_3.setupRoutes(app, loginRoutes);
 	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
+	routeSet_4 = require("./routes/CIExcelCompoundPropertiesApp.js");
 	routeSet_4.setupRoutes(app, loginRoutes);
 	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
 	routeSet_5.setupRoutes(app, loginRoutes);
@@ -154,7 +157,8 @@
     child = new forever.Monitor("app_api.js", {
       max: 3,
       silent: false,
-      options: options
+      options: options,
+      args: ['--color']
     });
     child.on("exit", function() {
       return console.log("app_api.js has exited after 3 restarts");

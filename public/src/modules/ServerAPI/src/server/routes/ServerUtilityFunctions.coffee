@@ -17,7 +17,7 @@ basicRScriptPreValidation = (payload) ->
 
 	return result
 
-exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	rScriptCommand = config.all.server.rscript
@@ -87,7 +87,7 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 						catch error
 							console.log error
 
-exports.runRApacheFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'

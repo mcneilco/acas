@@ -5800,8 +5800,104 @@
         }
       ]
     };
-    return exports.resultViewerURLByExperimentCodeName = {
+    exports.resultViewerURLByExperimentCodeName = {
       resultViewerURL: "host4.labsynch.com:9080/seurat/runseurat?cmd=newjob&AssayName=FLIPR%20target%20A%20biochemical&AssayProtocol=test%3a%3a"
+    };
+    return exports.experimentValueByStateTypeKindAndValueTypeKind = {
+      metadata: {
+        "experiment metadata": {
+          "codeValue": {
+            "experiment status": [
+              {
+                'clobValue': null,
+                'codeKind': 'status',
+                'codeOrigin': 'ACAS DDICT',
+                'codeType': 'experiment',
+                'codeTypeAndKind': 'experiment_status',
+                'codeValue': 'approved',
+                'comments': null,
+                'concUnit': null,
+                'concentration': null,
+                'dateValue': null,
+                'deleted': false,
+                'fileValue': null,
+                'id': 6,
+                'ignored': false,
+                'lsKind': 'experiment status',
+                'lsState': {
+                  'comments': null,
+                  'deleted': false,
+                  'experiment': {
+                    'codeName': 'EXPT-00000001',
+                    'deleted': true,
+                    'id': 2,
+                    'ignored': true,
+                    'lsKind': 'default',
+                    'lsTransaction': 1,
+                    'lsType': 'default',
+                    'lsTypeAndKind': 'default_default',
+                    'modifiedBy': 'bob',
+                    'modifiedDate': 1440549900000,
+                    'protocol': {
+                      'codeName': 'PROT-00000001',
+                      'deleted': false,
+                      'id': 1,
+                      'ignored': false,
+                      'lsKind': 'default',
+                      'lsTransaction': 1,
+                      'lsType': 'default',
+                      'lsTypeAndKind': 'default_default',
+                      'modifiedBy': null,
+                      'modifiedDate': null,
+                      'recordedBy': 'bob',
+                      'recordedDate': 1440549899000,
+                      'shortDescription': 'protocol created by generic data parser',
+                      'version': 1
+                    },
+                    'recordedBy': 'bob',
+                    'recordedDate': 1440549900000,
+                    'shortDescription': 'experiment created by generic data parser',
+                    'version': 2
+                  },
+                  'id': 1,
+                  'ignored': false,
+                  'lsKind': 'experiment metadata',
+                  'lsTransaction': 1,
+                  'lsType': 'metadata',
+                  'lsTypeAndKind': 'metadata_experiment metadata',
+                  'modifiedBy': null,
+                  'modifiedDate': null,
+                  'recordedBy': 'bob',
+                  'recordedDate': 1440549900000,
+                  'version': 1
+                },
+                'lsTransaction': 1,
+                'lsType': 'codeValue',
+                'lsTypeAndKind': 'codeValue_experiment status',
+                'modifiedBy': null,
+                'modifiedDate': null,
+                'numberOfReplicates': null,
+                'numericValue': null,
+                'operatorKind': null,
+                'operatorType': null,
+                'operatorTypeAndKind': 'null_null',
+                'publicData': true,
+                'recordedBy': 'bob',
+                'recordedDate': 1440549900000,
+                'sigFigs': null,
+                'stringValue': null,
+                'uncertainty': null,
+                'uncertaintyType': null,
+                'unitKind': null,
+                'unitType': null,
+                'unitTypeAndKind': 'null_null',
+                'urlValue': null,
+                'version': 0
+              }
+            ]
+          }
+        }
+      }
     };
   })((typeof process === "undefined" || !process.versions ? window.experimentServiceTestJSON = window.experimentServiceTestJSON || {} : exports));
 
