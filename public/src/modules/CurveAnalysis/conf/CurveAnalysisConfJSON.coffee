@@ -116,6 +116,12 @@
 				kindName: "Fitted Slope",
 				typeName: "numericValue"
 			,
+				kindName: "Fitted Kd",
+				typeName: "numericValue"
+			,
+				kindName: "Fitted Ligand Conc",
+				typeName: "numericValue"
+			,
 				kindName: "Kd",
 				typeName: "numericValue"
 			,
@@ -302,6 +308,20 @@
 				codeOrigin: "ACAS DDICT"
 				code: "curvefit ko"
 				name: "Exclude from CurveFits"
+				ignored: false
+			,
+				codeType: "user well flags"
+				codeKind: "flag observation"
+				codeOrigin: "ACAS DDICT"
+				code: "tox"
+				name: "Compound Toxic"
+				ignored: false
+			,
+				codeType: "user well flags"
+				codeKind: "flag observation"
+				codeOrigin: "ACAS DDICT"
+				code: "pass trend"
+				name: "Pass Trend"
 				ignored: false
 			]
 

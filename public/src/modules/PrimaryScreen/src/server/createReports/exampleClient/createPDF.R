@@ -29,7 +29,11 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   textplot(textToShow, halign="left",valign="top")
   title("Primary Screen")
   
-  createDensityPlot(resultTable$normalizedActivity, resultTable$wellType, threshold = threshold, margins = c(25,4,4,8), activityName)
+  if(nrow(resultTable[wellType == "NC", ]) != 1 & nrow(resultTable[wellType == "PC", ]) != 1) {
+    # density plot needs at least 2 points to select a bandwidth automatically
+    # this function already handles 0 points but does not handle 1 point. This is a workaround.
+    createDensityPlot(resultTable$normalizedActivity, resultTable$wellType, threshold = threshold, margins = c(25,4,4,8), activityName)
+  }
   
   print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$plateOrder,
                            wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate Order", yLabel=activityName,
@@ -48,7 +52,9 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   }
 
   
-  createZPrimeByPlatePlot(resultTable)
+  if(!any(is.na(resultTable$zPrimeByPlate))) {
+    createZPrimeByPlatePlot(resultTable)
+  }
   
   plateDataTable <- data.table(normalizedActivity = resultTable$normalizedActivity, 
                                wellReference = resultTable$well)

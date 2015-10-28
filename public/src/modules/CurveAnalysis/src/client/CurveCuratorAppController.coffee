@@ -36,7 +36,7 @@ class window.CurveCuratorAppController extends Backbone.View
 
 	loadCurvesForExptCode: (exptCode, curveID) =>
 		UtilityFunctions::showProgressModal @$('.bv_loadCurvesModal')
-		@ccc.getCurvesFromExperimentCode(exptCode, curveID)
+		@ccc.setupCurator(exptCode, curveID)
 		$.ajax
 				type: 'GET'
 				url: "/api/experiments/resultViewerURL/"+exptCode

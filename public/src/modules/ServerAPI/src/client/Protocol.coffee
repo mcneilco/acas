@@ -106,6 +106,9 @@ class window.ProtocolBaseController extends BaseEntityController
 			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
+			"click .bv_closeDeleteProtocolModal": "handleCloseProtocolModal"
+			"click .bv_confirmDeleteProtocolButton": "handleConfirmDeleteProtocolClicked"
+			"click .bv_cancelDelete": "handleCancelDeleteClicked"
 
 		)
 
@@ -215,6 +218,46 @@ class window.ProtocolBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
+
+	handleDeleteStatusChosen: =>
+		@$(".bv_deleteButtons").removeClass "hide"
+		@$(".bv_okayButton").addClass "hide"
+		@$(".bv_errorDeletingProtocolMessage").addClass "hide"
+		@$(".bv_deleteWarningMessage").removeClass "hide"
+		@$(".bv_deletingStatusIndicator").addClass "hide"
+		@$(".bv_experimentDeletedSuccessfullyMessage").addClass "hide"
+		@$(".bv_confirmDeleteProtocolModal").removeClass "hide"
+
+		@$('.bv_confirmDeleteProtocolModal').modal
+			backdrop: 'static'
+
+	handleCloseProtocolModal: =>
+		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
+
+	handleConfirmDeleteProtocolClicked: =>
+		@$(".bv_deleteWarningMessage").addClass "hide"
+		@$(".bv_deletingStatusIndicator").removeClass "hide"
+		@$(".bv_deleteButtons").addClass "hide"
+		@$(".bv_protocolCodeName").html @model.get('codeName')
+		$.ajax(
+			url: "/api/protocols/browser/#{@model.get("id")}",
+			type: 'DELETE',
+			success: (result) =>
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_protocolDeletedSuccessfullyMessage").removeClass "hide"
+				@handleValueChanged "Status", "deleted"
+				@updateEditable()
+				@trigger 'amClean'
+			error: (result) =>
+				@$(".bv_okayButton").removeClass "hide"
+				@$(".bv_deletingStatusIndicator").addClass "hide"
+				@$(".bv_errorDeletingProtocolMessage").removeClass "hide"
+		)
+
+	handleCancelDeleteClicked: =>
+		@$(".bv_confirmDeleteProtocolModal").modal('hide')
+		@statusListController.setSelectedCode @model.getStatus().get('codeValue')
 
 	handleCreationDateChanged: =>
 		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))

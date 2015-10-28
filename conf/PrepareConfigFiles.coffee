@@ -1,7 +1,7 @@
 csUtilities = require "../public/src/conf/CustomerSpecificServerFunctions.js"
 properties = require "properties"
 _ = require "underscore"
-underscoreDeepExtend = require "underscoreDeepExtend"
+underscoreDeepExtend = require "underscore-deep-extend"
 _.mixin({deepExtend: underscoreDeepExtend(_)})
 fs = require 'fs'
 flat = require 'flat'
@@ -219,8 +219,10 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 		apacheSpecificConfs.push('Mutex default:' + acasHome + '/bin')
 		apacheSpecificConfs.push("LoadModule unixd_module " + modulesDir + "mod_unixd.so")
 		apacheSpecificConfs.push("LoadModule authz_core_module " + modulesDir + "mod_authz_core.so")
+	if apacheVersion == 'Ubuntu'
+		apacheSpecificConfs.push('LoadModule mpm_prefork_module ' + modulesDir + "mod_mpm_prefork.so")
+		apacheSpecificConfs.push('LoadModule authz_core_module ' + modulesDir + "mod_authz_core.so")
 	apacheSpecificConfs.push('LoadModule dir_module ' + modulesDir + "mod_dir.so")
-
 	if Boolean(config.all.client.use.ssl)
 		apacheSpecificConfs.push('LoadModule ssl_module ' + modulesDir + "mod_ssl.so")
 	else

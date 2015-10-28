@@ -1639,7 +1639,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   addList <- list()
   for(column in requiredColNames) {
     if(!grepl("^R[0-9]+ \\{Calc: *", column) && !grepl("^Activity*", column)) { # check to see if the column name is not a calculated read
-      if(!grepl(gsub("\\{","",column), gsub("\\{","",paste(colnames(inputDataTable),collapse=",")))) {
+      if(!any(column == colnames(inputDataTable))) {
         inputDataTable[[column]] <- as.numeric(NA)
         addList[[length(addList) + 1]] <- column
       }
@@ -1792,6 +1792,41 @@ validateBatchCodes <- function(batchCodes, testMode = FALSE) {
   
   # Return the validated results
   return(preferredIdFrame$preferredName[match(batchCodes, preferredIdFrame$requestName)])
+}
+
+verifyCalculationInputs <- function(inputDataTable, inputColumnTable, numberOfColumnsToCheck) {
+  # Purpose of this is to check input columns that are used for the GUI calculation
+  # throws error if the column is of class character
+  # throws error if all of the numbers are the same
+  #
+  # inputDataTable: Created through PrimaryAnalysis - must have column names listed in inputColumnTable
+  # inputColumnTable: Created through PrimaryAnalysis, based on user GUI input
+  # numberOfColumnsToCheck: This is determined by the number of reads used in the GUI calculation
+  
+  if(is.null(numberOfColumnsToCheck) || numberOfColumnsToCheck == 0) {
+    stopUser("Please see your system administrator with this message: 'Calculation verification function called with no columns to check.'")
+  }
+  if(numberOfColumnsToCheck >= 1) {
+    columnToCheck <- inputColumnTable[userReadOrder == 1, newActivityColName]
+    if(class(inputDataTable[ , get(columnToCheck)]) == "character") {
+      stopUser("Please check your read position numbers. If you think you have received this message in error, please see your system administrator with this message: 'Read 1 is of class character'")
+    }
+    if(length(unique(inputDataTable[ , get(columnToCheck)])) == 1) {
+      stopUser(paste0("All of the values for '", columnToCheck, "' are the same. Please check your read position numbers or your input files."))
+    }
+  }
+  if(numberOfColumnsToCheck >= 2) {
+    columnToCheck <- inputColumnTable[userReadOrder == 2, newActivityColName]
+    if(class(inputDataTable[ , get(columnToCheck)]) == "character") {
+      stopUser("Please check your read position numbers. If you think you have received this message in error, please see your system administrator with this message: 'Read 2 is of class character'")
+    }
+    if(length(unique(inputDataTable[ , get(columnToCheck)])) == 1) {
+      stopUser(paste0("All of the values for '", columnToCheck, "' are the same. Please check your read position numbers or your input files."))
+    }
+  }
+  if(numberOfColumnsToCheck >= 3) {
+    stopUser("Please see your system administrator with this message: 'Number of calculation inputs exceed verification function.'")
+  }
 }
 
 ####### Main function
@@ -1948,17 +1983,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
   
-  
-  # TODO: add config server.service.genericSpecificPreProcessor
-  # exampleClient is set at the head of runMain function
-  if(exampleClient){
+  # knock out the controls with NA values
+  # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
+  # but those aren't created until later in the code
+  resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
+              c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
+  if (racas::applicationSettings$server.calcFromSeq) {
     resultTable <- performCalculations(resultTable, parameters)
   } else {
     resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, instrumentData)
   }
-  
-
-  
   
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")

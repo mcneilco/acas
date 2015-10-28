@@ -12,7 +12,6 @@ conf/compiled/*
 r_libs/*
 acas_custom/*
 node_modules/*
-!node_modules/underscoreDeepExtend*
 acas.log
 racas.log
 public/src/conf/conf.js

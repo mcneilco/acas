@@ -563,7 +563,6 @@
     extend(PrimaryAnalysisReadController, superClass);
 
     function PrimaryAnalysisReadController() {
-      this.clear = bind(this.clear, this);
       this.handleActivityChanged = bind(this.handleActivityChanged, this);
       this.handleReadNameChanged = bind(this.handleReadNameChanged, this);
       this.updateModel = bind(this.updateModel, this);
@@ -659,12 +658,6 @@
       });
       this.attributeChanged();
       return this.trigger('updateAllActivities');
-    };
-
-    PrimaryAnalysisReadController.prototype.clear = function() {
-      this.model.trigger('amDirty');
-      this.model.destroy();
-      return this.attributeChanged();
     };
 
     return PrimaryAnalysisReadController;
@@ -1277,7 +1270,7 @@
       this.attributeChanged();
       volumeType = this.$("input[name='bv_volumeType']:checked").val();
       if (volumeType === "dilution") {
-        return this.handleDilutionFactorChanged();
+        return this.handleDilutionFactorChanged(true);
       } else {
         return this.handleTransferVolumeChanged();
       }
@@ -1290,13 +1283,15 @@
       return this.$('.bv_dilutionFactor').val(dilutionFactor);
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleDilutionFactorChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleDilutionFactorChanged = function(indirectChange) {
       var transferVolume;
       this.attributeChanged();
       transferVolume = this.model.autocalculateVolumes();
       this.$('.bv_transferVolume').val(transferVolume);
-      if (transferVolume === "" || transferVolume === null) {
-        return this.$('.bv_dilutionFactor').val(this.model.get('dilutionFactor'));
+      if (indirectChange === true) {
+        if (transferVolume === "" || transferVolume === null) {
+          return this.$('.bv_dilutionFactor').val(this.model.get('dilutionFactor'));
+        }
       }
     };
 
@@ -1332,7 +1327,7 @@
       }
     };
 
-    PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function() {
+    PrimaryScreenAnalysisParametersController.prototype.handleVolumeTypeChanged = function(skipUpdate) {
       var volumeType;
       volumeType = this.$("input[name='bv_volumeType']:checked").val();
       this.model.set({
@@ -1346,9 +1341,11 @@
         this.$('.bv_dilutionFactor').removeAttr('disabled');
       }
       if (this.model.get('transferVolume') === "" || this.model.get('assayVolume') === "") {
-        this.handleDilutionFactorChanged();
+        this.handleDilutionFactorChanged(true);
       }
-      return this.attributeChanged();
+      if (skipUpdate !== true) {
+        return this.attributeChanged();
+      }
     };
 
     PrimaryScreenAnalysisParametersController.prototype.handleMatchReadNameChanged = function(skipUpdate) {
@@ -1368,7 +1365,12 @@
       if (this.$('.bv_matchReadName').is(":checked")) {
         this.$('.bv_readPosition').attr('disabled', 'disabled');
       }
-      return this.$('.bv_loadAnother').prop('disabled', false);
+      this.$('.bv_loadAnother').prop('disabled', false);
+      if (this.model.get('volumeType') === "transfer") {
+        return this.$('.bv_dilutionFactor').attr('disabled', 'disabled');
+      } else {
+        return this.$('.bv_transferVolume').attr('disabled', 'disabled');
+      }
     };
 
     return PrimaryScreenAnalysisParametersController;
@@ -1925,7 +1927,7 @@
         })
       });
       this.setupExperimentBaseController();
-      return this.experimentBaseController.getAndSetProtocol(code);
+      return this.experimentBaseController.getAndSetProtocol(code, true);
     };
 
     AbstractPrimaryScreenExperimentController.prototype.completeInitialization = function() {
