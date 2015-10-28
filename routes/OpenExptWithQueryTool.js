@@ -4,9 +4,8 @@
   };
 
   exports.redirectToQueryToolForExperiment = function(req, resp) {
-    var baseurl, config, getLdUrl, request, serverUtilityFunctions, tool;
+    var config, expRoutes, getLdUrl, tool;
     config = require('../conf/compiled/conf.js');
-    request = require('request');
     tool = req.query.tool;
     if (tool == null) {
       tool = config.all.client.service.result.viewer.defaultViewer;
@@ -20,27 +19,14 @@
         return resp.redirect(url);
       });
     } else if (tool === 'Seurat') {
-      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-      baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + req.query.experiment;
-      return request.get({
-        url: baseurl,
-        json: true
-      }, (function(_this) {
-        return function(error, response, body) {
-          var Experiment, expt, prefExptName, prefProtName, prot;
-          if (error || response.statusCode >= 300) {
-            return resp.status(500).send('error getting experiment');
-          } else {
-            console.log(body);
-            Experiment = require('');
-            expt = new Experiment(body);
-            prefExptName = expt.pickBestName();
-            prot = new Protocol(expt.protocol);
-            prefProtName = prot.pickBestName();
-            return resp.redirect(config.all.client.service.result.viewer.seurat.protocolPrefix + prefExptName + config.all.client.service.result.viewer.seurat.experimentPrefix + prefProtName);
-          }
-        };
-      })(this));
+      expRoutes = require('./ExperimentServiceRoutes.js');
+      return expRoutes.resultViewerURLFromExperimentCodeName(req.query.experiment, function(err, res) {
+        if ((err != null) || (res.resultViewerURL == null)) {
+          return resp.status(404).send("Could not get Seurat link");
+        } else {
+          return resp.redirect(res.resultViewerURL);
+        }
+      });
     } else {
       return resp.status(500).send('Invalid viewer tool');
     }

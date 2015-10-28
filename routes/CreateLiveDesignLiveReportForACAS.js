@@ -26,7 +26,7 @@
         exptInfo = body;
         console.log(_this.responseJSON);
         command = "./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e ";
-        command += "'https://mcneilco-ld-73.onschrodinger.com/livedesign' -u 'regressiontester' -p 'allthedataallthethings' -i '";
+        command += "'" + config.all.client.service.result.viewer.liveDesign.baseUrl + "' -u '" + config.all.client.service.result.viewer.liveDesign.username + "' -p '" + config.all.client.service.result.viewer.liveDesign.password + "' -i '";
         command += (JSON.stringify(exptInfo)) + "'";
         console.log("About to call python using command: " + command);
         return child = exec(command, function(error, stdout, stderr) {
