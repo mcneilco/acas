@@ -58,7 +58,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
 
   if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
     stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
-                    paste(wellTable$tableAndWell[duplicated(wellTable$tableAndWell)], collapse = "', '"),
+                    paste(wellTable$plateAndWell[duplicated(wellTable$plateAndWell)], collapse = "', '"),
                     "'. Please contact your system administrator."))
   }
   
@@ -76,19 +76,32 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
 }
 
 getAgonist <- function(agonist, wellTable) {
+  # Adds columns agonistBatchCode and agonistConc to the wellTable
+  
   # TODO: does not deal with multiple compounds in one well
   if((length(agonist) > 0) && !(agonist$batchCode %in% wellTable$BATCH_CODE)) {
     stopUser("The agonist was not found in the plates. Have all transfers been loaded?")
   }
   
-  agonistRows <- wellTable$BATCH_CODE == agonist$batchCode & 
-    wellTable$CONCENTRATION <= agonist$concentration 
-  #& wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
-  save(agonistRows, file = "agonistRows.Rda")
-  agonistTable <- wellTable[agonistRows, c("BARCODE", "WELL_NAME")]
-  agonistLocations <- paste(agonistTable$BARCODE, agonistTable$WELL_NAME, sep=":")
-  wellTable$tableAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
-  wellTable$hasAgonist <- wellTable$tableAndWell %in% agonistLocations
+  wellTable$plateAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
+  
+  # For Dose Response agonist, we will have a variety of concentrations. Then the agonist concentration should be null
+  if (is.null(agonist$concentration) || agonist$concentration == "") {
+    agonistRows <- which(wellTable$BATCH_CODE == agonist$batchCode & 
+      wellTable$CONCENTRATION == agonist$concentration &
+      wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits)
+  } else {
+    agonistRows <- which(wellTable$BATCH_CODE == agonist$batchCode)
+  }
+  
+  agonistMatch <- wellTable[, c("plateAndWell", "concentration")]
+  names(agonistMatch) <- c("plateAndWell", "agonistConc")
+  
+  #agonistTable <- wellTable[agonistRows, c("BARCODE", "WELL_NAME")]
+  #agonistLocations <- paste(agonistTable$BARCODE, agonistTable$WELL_NAME, sep=":")
+  #wellTable$hasAgonist <- wellTable$plateAndWell %in% agonistLocations
+  wellTable <- merge(wellTable, agonistMatch, all.x=TRUE)
+  wellTable$agonistBatchCode <- agonist$batchCode
   
   wellTable <- wellTable[!agonistRows, ]
   
