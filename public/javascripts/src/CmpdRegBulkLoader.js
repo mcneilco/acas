@@ -264,7 +264,7 @@
     };
 
     DetectSdfPropertiesController.prototype.getProperties = function() {
-      var mappings, sdfInfo;
+      var mappings, sdfInfo, templateName;
       this.$('.bv_detectedSdfPropertiesList').html("Loading...");
       this.disableInputs();
       this.$('.bv_deleteFile').attr('disabled', 'disabled');
@@ -273,10 +273,15 @@
       } else {
         mappings = this.mappings;
       }
+      if (this.tempName === "none") {
+        templateName = null;
+      } else {
+        templateName = this.tempName;
+      }
       sdfInfo = {
         fileName: this.fileName,
         numRecords: this.numRecords,
-        templateName: this.tempName,
+        templateName: templateName,
         mappings: mappings,
         userName: window.AppLaunchParams.loginUser.username
       };
@@ -1108,6 +1113,17 @@
     };
 
     BulkRegCmpdsController.prototype.handleSdfPropertiesDetected = function(properties) {
+      var err, i, len, ref;
+      this.$('.bv_templateWarning').hide();
+      this.$('.bv_templateWarning').html("");
+      ref = properties.errors;
+      for (i = 0, len = ref.length; i < len; i++) {
+        err = ref[i];
+        if (err["level"] === "warning") {
+          this.$('.bv_templateWarning').append('<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">' + err["message"] + '</div>');
+          this.$('.bv_templateWarning').show();
+        }
+      }
       this.assignSdfPropertiesController.createPropertyCollections(properties);
       this.detectSdfPropertiesController.mappings = this.assignSdfPropertiesController.assignedPropertiesList;
       this.detectSdfPropertiesController.updatePropertiesRead(this.assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead);
