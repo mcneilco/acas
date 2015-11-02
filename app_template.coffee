@@ -132,7 +132,7 @@ startApp = ->
 		console.log 'clean exit of app'
 		return
 	process.on 'uncaughtException', (err) ->
-		console.log 'Caught exception: ' + err
+		console.error 'Caught exception: ' + err.stack
 		return
 
 	csUtilities.logUsage("ACAS Node server started", "started", "")

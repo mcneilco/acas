@@ -26,20 +26,20 @@ module.exports = (grunt) ->
 		coffee:
 			app:
 				files: [
-						expand: true
-						flatten: true
-						src: ["public/src/modules/**/src/client/*.coffee"]
-						dest: "public/javascripts/src/"
-						ext: '.js'
-					]
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/src/client/*.coffee"]
+					dest: "public/javascripts/src/"
+					ext: '.js'
+				]
 			serverSideCode:
 				files: [
-						expand: true
-						flatten: true
-						src: ["public/src/modules/**/src/server/*.coffee"]
-						dest: "src"
-						ext: '.js'
-					]
+					expand: true
+					flatten: true
+					src: ["public/src/modules/**/src/server/*.coffee"]
+					dest: "src"
+					ext: '.js'
+				]
 			spec:
 				files: [
 					expand: true
@@ -308,6 +308,11 @@ module.exports = (grunt) ->
 						console.log 'setting ' + newString
 						return '\n' + newString
 				]
+		browserify:
+			standalone:
+				src: [ 'public/javascripts/src/ExcelApp.js' ]
+				dest: 'public/javascripts/src/ExcelApp.js'
+				ext: '*.js'
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
@@ -438,6 +443,12 @@ module.exports = (grunt) ->
 					"r_libs/racas/*"
 				]
 				tasks: "execute:reload_rapache"
+#			browserify:
+#				files: [
+#					"public/javascripts/src/ExcelApp.js"
+#				]
+#				tasks: "browserify"
+
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
@@ -445,6 +456,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-sync"
 	grunt.loadNpmTasks "grunt-text-replace"
 	grunt.loadNpmTasks "grunt-execute"
+	grunt.loadNpmTasks "grunt-browserify"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]

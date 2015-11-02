@@ -21,6 +21,7 @@
     "gitignore-to-glob": "*",
     "grunt-contrib-copy": "*",
     "grunt-contrib-watch": "*",
+    "grunt-browserify": "*",
     "grunt-execute": "*",
     "grunt-text-replace": "*",
     "jade": "0.35.0",
