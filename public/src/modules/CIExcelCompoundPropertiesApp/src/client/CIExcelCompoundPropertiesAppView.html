@@ -1,0 +1,56 @@
+
+<script type="text/template" id="AttributesControllerView">
+    <h4>Attributes</h4>
+    <div>
+        <input type="checkbox" name="bv_insertColumnHeaders" class="bv_insertColumnHeaders" style="margin-right:10px;" <% if (insertColumnHeaders) { %> checked="checked"<% }%> />Insert Column Headers
+    </div>
+    <div>
+        <input type="checkbox" name="bv_includeRequestedID" class="bv_includeRequestedID" style="margin-right:10px;" <% if (includeRequestedID) { %> checked="checked"<% }%> />Include Requested ID
+    </div>
+</script>
+
+<script type="text/template" id="PropertyDescriptorControllerView">
+    <div class="col-xs-3" style="width:250px;">
+        <input type="checkbox" class="bv_propertyDescriptorCheckbox" style="margin-right:10px;" <% if (isChecked) { %> checked="checked"<% }%> />
+        <label class="bv_descriptorLabel" style="margin-bottom:5px;font-weight: normal !important;" data-toggle="tooltip" data-placement="right" title="Some descriptor tooltip">Some Descriptors</label>
+    </div>
+</script>
+
+<script type="text/template" id="PropertyDescriptorListControllerView">
+    <div class="col-xs-9" style="padding-left:0px;">
+        <h4 class="col-xs-5 propertyDescriptorListControllerTitle" style="padding-left:0px;margin-right:10px;padding-right:0px;width:150px;">Descriptors</h4>
+        <div style="margin-top:9px;">
+            <button type="button" class="btn-link bv_checkAll glyphicon glyphicon-check" data-toggle="tooltip" data-placement="top" title="Check all"></button>
+            <button type="button" class="btn-link bv_invert glyphicon glyphicon-transfer" data-toggle="tooltip" data-placement="top" title="Invert selection"></button>
+            <button type="button" class="btn-link bv_uncheckAll glyphicon glyphicon-unchecked" data-toggle="tooltip" data-placement="top" title="Uncheck all"></button>
+        </div>
+    </div>
+    <div class="row show-grid bv_propertyDescriptorList"/>
+</script>
+
+<script type="text/template" id="ExcelInsertCompoundPropertiesView">
+    <div class="well" style="width:510px;padding-bottom:40px;">
+        <div style="padding-bottom:5px;" >
+            <a tabindex="0" class="pull-right bv_popover" data-placement="left" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
+            <div class="bv_attributes">Attributes</div>
+            <div class="bv_batchProperties">Batch Properties</div>
+            <div class="bv_parentProperties">Parent Properties</div>
+        </div>
+        <div>
+            <button class="btn btn-primary bv_getProperties" disabled="disabled" style="margin-bottom:3px;float:left;">Get Properties</button>
+            <div class="bv_propertyLookUpStatus pull-right" style="margin-top:9px;"></div>
+        </div>
+    </div>
+    <div style="width:510px;">
+        <button class="btn btn-primary bv_insertProperties" disabled="disabled" style="margin-bottom:20px;float:right;">Insert Properties</button>
+    </div>
+    <div class="alert alert-danger bv_errorStatus hide" style="padding-top:6px;padding-bottom:6px;width:370px;">Error</div>
+</script>
+
+<script type="text/template" id="ExcelAppLoggerView">
+    <div class="col-xs-4" style="width:510px;">
+        Log: <button class="btn btn-default bv_clearLog">Clear</button>
+        <div class="bv_logEntries"></div>
+    </div>
+</script>
+

@@ -149,7 +149,7 @@ runSeuratExportToSELFiles <- function() {
 }
 
 
-bulkLoadSelFolder <- function(foldersLocation, dryRunMode) {
+bulkLoadSelFolder <- function(foldersLocation, dryRunMode, user = "unassigned") {
   library(racas)
   myLogger <- logger(racas = FALSE, logToConsole=TRUE, logFileName = "seuratETL.log", logName = "com.mcneilco.acas.etl.seurat")
   myLogger$info("bulk load sel folder initialized")
@@ -165,7 +165,7 @@ bulkLoadSelFolder <- function(foldersLocation, dryRunMode) {
     myLogger$info(paste0("attempting ",ifelse(as.logical(dryRunMode), "dry run ", "real run "), "of sel on ", fileFullPath))
     newFileName <- file.path("privateUploads",basename(fileFullPath))
     file.copy(fileFullPath, newFileName, overwrite = TRUE)
-    parseGenericData(c(fileToParse=basename(fileFullPath), dryRunMode = dryRunMode, user="bfielder"))
+    parseGenericData(c(fileToParse=basename(fileFullPath), dryRunMode = tolower(as.character(dryRunMode)), user= user))
   }
   system.time(responseList <- lapply(fileList, parseGenericDataWrapper))
   

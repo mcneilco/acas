@@ -1,0 +1,56 @@
+doctype html
+html
+   head
+      meta(charset="UTF-8")
+      meta(http-equiv="X-UA-Compatible", content="IE=Edge")
+      link(rel='stylesheet', type="text/css", href='/src/lib/bootstrap-3.3.5-dist/css/bootstrap.css')
+      link(rel='stylesheet', type="text/css", href="/src/modules/CIExcelCompoundPropertiesApp/src/client/CIExcelCompoundPropertiesApp.css")
+      link(rel='stylesheet', type="text/css", href="/src/lib/jasmine-standalone-2.3.4/lib/jasmine-2.3.4/jasmine.css")
+      link(rel='shortcut icon', type="image/png", href="/src/lib/jasmine-standalone-2.3.4/lib/jasmine-2.3.4/jasmine_favicon.png")
+      include ../public/src/modules/CIExcelCompoundPropertiesApp/src/client/CIExcelCompoundPropertiesAppView.html
+      script(type='text/javascript', src="https://appsforoffice.microsoft.com/lib/1.0/hosted/office.js")
+      //script(type='text/javascript', src="/src/lib/jquery.min.js")
+      script(type='text/javascript', src="/src/lib/jquery-ui-1.10.2.custom/js/jquery-1.9.1.js")
+      script(type='text/javascript', src="/src/lib/underscore.js")
+      script(type='text/javascript', src="/src/lib/bootstrap-3.3.5-dist/js/bootstrap.min.js")
+      script(type='text/javascript', src="/src/lib/backbone-min.js")
+      script(type='text/javascript', src="/javascripts/src/CIExcelCompoundPropertiesApp.js")
+      script(type='text/javascript', src="/src/lib/json2.js")
+      script(type='text/javascript', src="/src/lib/jasmine-standalone-2.3.4/lib/jasmine-2.3.4/jasmine.js")
+      script(type='text/javascript', src="/src/lib/jasmine-standalone-2.3.4/lib/jasmine-2.3.4/jasmine-html.js")
+      script(type='text/javascript', src="/src/lib/jasmine-standalone-2.3.4/lib/jasmine-2.3.4/boot.js")
+      script(type='text/javascript', src="/javascripts/src/CIExcelCompoundPropertiesApp.js")
+      script(type='text/javascript', src="/javascripts/spec/CIExcelCompoundPropertiesAppSpec.js")
+      script(type='text/javascript', src="/javascripts/spec/testFixtures/ParentPropertyDescriptorServiceTestJSON.js")
+
+block content
+   link(rel='stylesheet', href='src/lib/testLibraries/jasmine-jstd-adapter/jasmine/lib/jasmine-core/jasmine.css')
+   div#fixture
+
+   script
+      //window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
+      var jasmineEnv = jasmine.getEnv();
+      jasmineEnv.updateInterval = 1000;
+
+      var trivialReporter = new jasmine.HtmlReporter();
+      trivialReporter.initialize();
+      jasmineEnv.addReporter(trivialReporter);
+
+      jasmineEnv.specFilter = function(spec) {
+         return trivialReporter.specFilter(spec);
+      };
+
+      var currentWindowOnload = window.onload;
+      window.servicesHostPrefix = "";
+      //window.testMode = true;
+
+      window.onload = function() {
+         if (currentWindowOnload) {
+            currentWindowOnload();
+      }
+         execJasmine();
+      };
+
+      function execJasmine() {
+         jasmineEnv.execute();
+      }
