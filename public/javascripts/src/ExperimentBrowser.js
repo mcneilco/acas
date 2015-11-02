@@ -420,6 +420,7 @@
     function ExperimentBrowserController() {
       this.render = bind(this.render, this);
       this.destroyExperimentSummaryTable = bind(this.destroyExperimentSummaryTable, this);
+      this.handleOpenInLiveDesignClicked = bind(this.handleOpenInLiveDesignClicked, this);
       this.handleDuplicateExperimentClicked = bind(this.handleDuplicateExperimentClicked, this);
       this.handleEditExperimentClicked = bind(this.handleEditExperimentClicked, this);
       this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
@@ -437,7 +438,8 @@
       "click .bv_editExperiment": "handleEditExperimentClicked",
       "click .bv_duplicateExperiment": "handleDuplicateExperimentClicked",
       "click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked",
-      "click .bv_cancelDelete": "handleCancelDeleteClicked"
+      "click .bv_cancelDelete": "handleCancelDeleteClicked",
+      "click .bv_openInLiveDesign": "handleOpenInLiveDesignClicked"
     };
 
     ExperimentBrowserController.prototype.initialize = function() {
@@ -557,6 +559,10 @@
       } else {
         return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');
       }
+    };
+
+    ExperimentBrowserController.prototype.handleOpenInLiveDesignClicked = function() {
+      return window.open("/openExptInQueryTool?experiment=" + (this.experimentController.model.get("codeName")), '_blank');
     };
 
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {

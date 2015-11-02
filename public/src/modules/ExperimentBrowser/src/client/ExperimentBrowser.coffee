@@ -281,6 +281,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		"click .bv_openInLiveDesign": "handleOpenInLiveDesignClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -387,6 +388,9 @@ class window.ExperimentBrowserController extends Backbone.View
 			window.open("/entity/copy/primary_screen_experiment/#{@experimentController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
+
+	handleOpenInLiveDesignClicked: =>
+		window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?

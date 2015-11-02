@@ -346,9 +346,11 @@ class window.ExperimentBaseController extends BaseEntityController
 		super()
 		if @model.isNew()
 			@$('.bv_experimentName').attr('disabled','disabled')
+			@$('.bv_openInLiveDesignWrapper').hide()
 		else
 			@setupExptNameChkbx()
-
+			@$('.bv_openInLiveDesignWrapper').show()
+			@$('.bv_openInLiveDesignLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 		@
 
 	modelSyncCallback: =>
@@ -619,6 +621,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		@saveEntity()
 
 
-#	displayInReadOnlyMode: =>
-#		@$(".bv_save").addClass "hide"
-#		@disableAllInputs()
+	displayInReadOnlyMode: =>
+		super()
+		@$('.bv_openInLiveDesignWrapper').hide()
