@@ -170,6 +170,22 @@ class window.State extends Backbone.Model
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)
 
+	getOrCreateValueByTypeAndKind: (vType, vKind) ->
+		descVals = @getValuesByTypeAndKind vType, vKind
+		descVal = descVals[0] #TODO should do something smart if there are more than one
+		unless descVal?
+			descVal = @createValueByTypeAndKind(vType, vKind)
+		return descVal
+
+	createValueByTypeAndKind: (vType, vKind) ->
+		descVal = new Value
+			lsType: vType
+			lsKind: vKind
+		@get('lsValues').add descVal
+		descVal.on 'change', =>
+			@trigger('change')
+		descVal
+
 class window.StateList extends Backbone.Collection
 	model: State
 

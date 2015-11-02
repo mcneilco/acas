@@ -110,6 +110,9 @@
 			,
 				typeName: "codeValue"
 				kindName: "model fit type"
+			,
+				typeName: "clobValue"
+				kindName: "GUI descriptor"
 			]
 
 		labeltypes:
