@@ -419,6 +419,7 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
+          console.log(window.AppLaunchParams);
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
               this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);

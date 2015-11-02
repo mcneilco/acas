@@ -395,6 +395,7 @@
     } else {
       config = require('../../../conf/compiled/conf.js');
       request = require('request');
+      console.log("search term: " + requests[0]);
       return request({
         method: 'POST',
         url: config.all.server.service.external.preferred.batchid.url,

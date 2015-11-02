@@ -34,6 +34,10 @@
       autoLaunchName: "primary_screen_experiment"
     }, {
       isHeader: false,
+      menuName: "Gene ID Query",
+      autoLaunchName: "geneidquery"
+    }, {
+      isHeader: false,
       menuName: "Example Thing",
       mainControllerClassName: "ExampleThingController",
       autoLaunchName: "cationic_block"
@@ -62,6 +66,11 @@
     }, {
       isHeader: true,
       menuName: "Admin"
+    }, {
+      isHeader: false,
+      menuName: "Admin Panel",
+      mainControllerClassName: "AdminPanelController",
+      autoLaunchName: "admin_panel"
     }, {
       isHeader: false,
       menuName: "Logging",

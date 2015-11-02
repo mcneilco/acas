@@ -259,6 +259,21 @@ exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 					fvs.push v
 	fvs
 
+exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
+	fvs = []
+	unless collection.lsStates?
+		collection = JSON.parse collection
+	for state in collection.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
+	if fvs.length > 0
+		return fvs
+	else
+		return null
+
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->
 	if controllerRedirect.controllerRedirectConf[prefix]?

@@ -16,9 +16,10 @@ exports.requiredScripts = [
 	'/src/lib/bootstrap/bootstrap-tooltip.js',
 	'/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/src/lib/dataTables/js/jquery.dataTables.js',
-    '/src/lib/bootstrap/bootstrap-datatable.js',
-    '/src/lib/bootstrap-combobox/js/bootstrap-combobox.js',
-    '/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/dataTables/js/lsThingSorting.js',
+  '/src/lib/bootstrap/bootstrap-datatable.js',
+  '/src/lib/bootstrap-combobox/js/bootstrap-combobox.js',
+  '/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
 	'/src/lib/moment.min.js',
 	'/src/lib/spin/js/spin.js',
@@ -37,11 +38,13 @@ exports.applicationScripts = [
 	'/javascripts/src/PickList.js',
 	'/javascripts/src/Label.js',
     '/javascripts/src/Thing.js',
+    '/javascripts/src/ThingInteraction.js',
     '/javascripts/src/BaseEntity.js',
     '/javascripts/src/AnalysisGroup.js',
 	'/javascripts/src/Experiment.js',
 	'/javascripts/src/Protocol.js',
 	"/javascripts/src/PrimaryScreenExperiment.js",
+	"/javascripts/src/AdminPanel.js",
 	"/javascripts/src/AppController.js",
 	"/javascripts/src/AttachFile.js",
 	"/javascripts/src/BatchListValidator.js",
@@ -68,8 +71,7 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/ProtocolBrowser.js",
-	"/javascripts/src/TagList.js",
-	"/javascripts/src/ThingInteraction.js"
+	"/javascripts/src/TagList.js"
 ];
 
 exports.jasmineScripts = [
@@ -124,6 +126,7 @@ exports.specScripts = [
 	"/javascripts/spec/testFixtures/curveCuratorTestFixtures.js",
 	"/src/modules/DocForBatches/spec/DocForBatchesSpec.js",
 	"/javascripts/spec/AbstractFormControllerSpec.js",
+	"/javascripts/spec/AdminPanelSpec.js",
 	"/javascripts/spec/AnalysisGroupSpec.js",
 	"/javascripts/spec/AttachFileSpec.js",
 	"/javascripts/spec/AuthenticationServiceSpec.js",
@@ -164,6 +167,7 @@ exports.specScripts = [
 	"/javascripts/spec/ProtocolBrowserSpec.js",
 	"/javascripts/spec/ProtocolSpec.js",
 	"/javascripts/spec/RunPrimaryScreenAnalysisServiceSpec.js",
+	"/javascripts/spec/SarRenderingServiceSpec.js",
 	"/javascripts/spec/ServerUtilityFunctionsSpec.js",
 	"/javascripts/spec/TagListSpec.js",
 	"/javascripts/spec/ThingInteractionSpec.js",

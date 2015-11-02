@@ -17,6 +17,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 		app.get '/CIExcelCompoundPropertiesAppSpecRunner', loginRoutes.ensureAuthenticated, exports.ciExcelCompoundPropertiesAppSpecRunner
 
 exports.autoLaunchWithCode = (req, res) ->
+	console.log "autoLaunchWithCode"
+	console.log req.params
 	moduleLaunchParams =
 		moduleName: req.params.moduleName
 		code: req.params.code

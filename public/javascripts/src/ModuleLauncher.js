@@ -21,7 +21,10 @@
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
+      console.log("request activation");
       if (this.get('menuName') === "Gene ID Query") {
+        console.log(this);
+        console.log(window.AppLaunchParams.moduleLaunchParams);
         return window.open("/GeneIDQuery", '_blank');
       } else {
         this.trigger('activationRequested', this);
@@ -194,6 +197,7 @@
 
     ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
       var selector;
+      console.log("launchModule");
       selector = '.bv_launch_' + moduleName;
       return this.$(selector).click();
     };

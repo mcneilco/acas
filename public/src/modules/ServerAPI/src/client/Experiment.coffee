@@ -259,6 +259,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
+				console.log window.AppLaunchParams
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
 						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)

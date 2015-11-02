@@ -7,6 +7,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	config = require '../conf/compiled/conf.js'
 	#	if config.all.client.require.login
 	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
+	app.get '/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSearch
 
 
 exports.getExperimentDataForGenes = (req, resp)  ->
@@ -145,14 +146,13 @@ exports.getExperimentListForGenes = (req, resp)  ->
 			body: req.body
 			json: true
 		, (error, response, json) =>
-			console.log response.statusCode
 			if !error
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
 				console.log 'got ajax error trying to query gene data'
-				console.log error
-				console.log resp
+				console.log error.stack
+				console.log response
 		)
 
 exports.getExperimentSearchAttributes = (req, resp)  ->
@@ -196,6 +196,35 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 				console.log error
 				console.log resp
 		)
+
+exports.autoLaunchGeneIDSearch = (req, res) ->
+	scriptPaths = require './RequiredClientScripts.js'
+	config = require '../conf/compiled/conf.js'
+
+	global.specRunnerTestmode = if global.stubsMode then true else false
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
+	return res.render 'GeneIDQuery',
+		title: "Gene ID Query"
+		scripts: scriptsToLoad
+		AppLaunchParams:
+			loginUserName: loginUserName
+			loginUser: loginUser
+			testMode: false
+			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
+			searchOptions: if req.params.searchOptions? then req.params.searchOptions else null
+			deployMode: global.deployMode
 
 exports.geneIDQueryIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -329,4 +358,3 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 					console.log error
 					console.log resp
 			)
-

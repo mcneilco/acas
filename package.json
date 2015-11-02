@@ -27,6 +27,7 @@
     "jszip": "*",
     "mongojs": "*",
     "ncp": "*",
+    "open-graph": "*",
     "passport": ">= 0.0.0",
     "passport-local": ">= 0.0.0",
     "properties": "*",

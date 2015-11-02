@@ -31,7 +31,7 @@ getExperimentColOrderValues <- function(experimentCode){
 	}
 
 	return(colOrderDT)
-	
+
 }
 
 
@@ -61,7 +61,7 @@ getExperimentColNames <- function(experimentCodeName, showAllColumns=TRUE){
 
 		efs <- fromJSON(experimentFilters)
 		exptDataColumns <- c()
-		for (i in 1:length(efs[[1]]$valueKinds)){
+		for (i in seq_along(efs[[1]]$valueKinds)){
 			exptDataColumns <- c(exptDataColumns, efs[[1]]$valueKinds[[i]]$lsKind)
 		}
 
@@ -69,4 +69,3 @@ getExperimentColNames <- function(experimentCodeName, showAllColumns=TRUE){
 
 	return(exptDataColumns)
 }
-

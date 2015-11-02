@@ -309,6 +309,32 @@
     return fvs;
   };
 
+  exports.getFileValuesFromCollection = function(collection, ignoreSaved) {
+    var fvs, i, j, len, len1, ref, state, v, vals;
+    fvs = [];
+    if (collection.lsStates == null) {
+      collection = JSON.parse(collection);
+    }
+    ref = collection.lsStates;
+    for (i = 0, len = ref.length; i < len; i++) {
+      state = ref[i];
+      vals = state.lsValues;
+      for (j = 0, len1 = vals.length; j < len1; j++) {
+        v = vals[j];
+        if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+          if (!(ignoreSaved && (v.id != null))) {
+            fvs.push(v);
+          }
+        }
+      }
+    }
+    if (fvs.length > 0) {
+      return fvs;
+    } else {
+      return null;
+    }
+  };
+
   controllerRedirect = require('../conf/ControllerRedirectConf.js');
 
   exports.getRelativeFolderPathForPrefix = function(prefix) {
