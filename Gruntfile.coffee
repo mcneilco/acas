@@ -13,6 +13,11 @@ module.exports = (grunt) ->
 		grunt.task.run 'execute:prepare_module_includes'
 		return
 
+	grunt.registerTask 'coffeeBrowserifyApp', 'coffee then browserify task', () ->
+		grunt.task.run 'coffee:app'
+		grunt.task.run 'browserify:app'
+		return
+
 	#
 	# Grunt configuration:
 	#
@@ -309,14 +314,15 @@ module.exports = (grunt) ->
 						return '\n' + newString
 				]
 		browserify:
-			standalone:
-				src: [ 'public/javascripts/src/ExcelApp.js' ]
-				dest: 'public/javascripts/src/ExcelApp.js'
-				ext: '*.js'
+			app:
+				standalone:
+					src: [ 'public/javascripts/src/*.js' ]
+					dest: 'public/javascripts/src/*.js'
+					ext: '*.js'
 		watch:
-			coffee:
+			coffeeBrowserifyApp:
 				files: 'public/src/modules/**/src/client/*.coffee'
-				tasks: 'coffee:app'
+				tasks: 'coffeeBrowserifyApp'
 			compileServerOnlyModules:
 				files: 'serverOnlyModules/**/*.coffee'
 				tasks: 'coffee:serverOnlyModules'
@@ -443,11 +449,6 @@ module.exports = (grunt) ->
 					"r_libs/racas/*"
 				]
 				tasks: "execute:reload_rapache"
-#			browserify:
-#				files: [
-#					"public/javascripts/src/ExcelApp.js"
-#				]
-#				tasks: "browserify"
 
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
