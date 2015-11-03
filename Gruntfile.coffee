@@ -13,9 +13,11 @@ module.exports = (grunt) ->
 		grunt.task.run 'execute:prepare_module_includes'
 		return
 
-	grunt.registerTask 'coffeeBrowserifyApp', 'coffee then browserify task', () ->
-		grunt.task.run 'coffee:app'
-		grunt.task.run 'browserify:app'
+	grunt.registerTask 'build', 'build task', () ->
+		grunt.task.run 'copy'
+		grunt.task.run 'coffee'
+		grunt.task.run 'browserify'
+		grunt.task.run 'execute:prepare_module_includes'
 		return
 
 	#
@@ -314,15 +316,12 @@ module.exports = (grunt) ->
 						return '\n' + newString
 				]
 		browserify:
-			app:
-				standalone:
-					src: [ 'public/javascripts/src/*.js' ]
-					dest: 'public/javascripts/src/*.js'
-					ext: '*.js'
+				app:
+					'public/javascripts/src/ExcellApp.js': 'public/javascripts/src/ExcellApp.js'
 		watch:
-			coffeeBrowserifyApp:
+			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
-				tasks: 'coffeeBrowserifyApp'
+				tasks: ['coffee:app', 'browserify:app']
 			compileServerOnlyModules:
 				files: 'serverOnlyModules/**/*.coffee'
 				tasks: 'coffee:serverOnlyModules'
