@@ -11,8 +11,9 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_base',"$$$$$$$$$$$$")
 		if grunt.option('baseonly') ||  false
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
-		grunt.task.run 'coffee'
 		grunt.task.run 'copy'
+		grunt.task.run 'coffee'
+		grunt.task.run 'browserify'
 		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'execute:prepare_module_includes'
 		grunt.task.run 'execute:prepare_config_files'
@@ -310,10 +311,14 @@ module.exports = (grunt) ->
 					shell = require('shelljs')
 					result = shell.exec("cd #{options.build} %>/src/r && Rscript install.R", {silent:true})
 					return result.output
+		browserify:
+				module_client:
+					src: 'public/javascripts/src/ExcelApp.js'
+					dest: 'public/javascripts/src/ExcelApp.js'
 		watch:
 			module_client_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
-				tasks: 'newer:coffee:module_client'
+				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
 			module_server_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
 				tasks: 'newer:coffee:module_server'
@@ -384,12 +389,14 @@ module.exports = (grunt) ->
 				]
 				tasks: "execute:prepare_test_JSON"
 
+
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"
 	grunt.loadNpmTasks "grunt-contrib-copy"
 	grunt.loadNpmTasks "grunt-contrib-clean"
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
+	grunt.loadNpmTasks "grunt-browserify"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
