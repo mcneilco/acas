@@ -1,5 +1,5 @@
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/excelApp', loginRoutes.ensureAuthenticated, exports.excelAppIndex
+	app.get '/excelApps', loginRoutes.ensureAuthenticated, exports.excelAppIndex
 
 exports.excelAppIndex = (req, resp) ->
 	global.specRunnerTestmode = if global.stubsMode then true else false

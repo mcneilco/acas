@@ -1,6 +1,6 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
-    return app.get('/excelApp', loginRoutes.ensureAuthenticated, exports.excelAppIndex);
+    return app.get('/excelApps', loginRoutes.ensureAuthenticated, exports.excelAppIndex);
   };
 
   exports.excelAppIndex = function(req, resp) {

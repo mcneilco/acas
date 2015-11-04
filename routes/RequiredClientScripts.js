@@ -58,6 +58,7 @@ exports.applicationScripts = [
 	"/javascripts/src/DoseResponseFit.js",
 	"/javascripts/src/DoseResponseKiAnalysis.js",
 	"/javascripts/src/ExampleThing.js",
+	"/javascripts/src/ExcelApp.js",
 	"/javascripts/src/ExperimentBrowser.js",
 	"/javascripts/src/GeneDataQueries.js",
 	"/javascripts/src/GenericDataParser.js",

@@ -197,13 +197,16 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@parentPropertyDescriptorListController.on 'invalid', =>
 			@parentPropertyDescriptorValid = false
 			@validate()
-		@$("[data-toggle=popover]").popover
+		@$("[data-toggle=instructions]").popover
 			html: true
 			content: '1. Choose Properties to look up.<br />
 								2. Select input IDs in workbook.<br />
 								3. Click <button class="btn btn-xs btn-primary">Get Properties</button><br />
 								4. Select a cell at the upper-left corner where you want the Properties to be inserted.<br />
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
+		@$("[data-toggle=options]").popover
+			html: true
+			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a>'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
 			@validate()
 

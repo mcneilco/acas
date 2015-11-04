@@ -6,7 +6,7 @@ exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
 	app.post '/login',
 		passport.authenticate('local', { failureRedirect: '/login', failureFlash: true }), exports.loginPost
-	app.get '/logout', exports.logout
+	app.get '/logout*', exports.logout
 	app.post '/api/userAuthentication', exports.authenticationService
 	app.get '/api/users/:username', exports.ensureAuthenticated, exports.getUsers
 	app.get '/passwordReset', exports.resetpage
@@ -63,7 +63,12 @@ exports.changePost = (req, res) ->
 
 exports.logout = (req, res) ->
 	req.logout()
-	res.redirect '/'
+	redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i)
+	if redirectMatch?
+		redirectMatch = redirectMatch[1]
+	else
+		redirectMatch = "/"
+	res.redirect redirectMatch
 
 exports.ensureAuthenticated = (req, res, next) ->
 	console.log "checking for login for path: "+req.url

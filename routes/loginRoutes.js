@@ -11,7 +11,7 @@
       failureRedirect: '/login',
       failureFlash: true
     }), exports.loginPost);
-    app.get('/logout', exports.logout);
+    app.get('/logout*', exports.logout);
     app.post('/api/userAuthentication', exports.authenticationService);
     app.get('/api/users/:username', exports.ensureAuthenticated, exports.getUsers);
     app.get('/passwordReset', exports.resetpage);
@@ -71,8 +71,15 @@
   };
 
   exports.logout = function(req, res) {
+    var redirectMatch;
     req.logout();
-    return res.redirect('/');
+    redirectMatch = req.originalUrl.match(/^\/logout\/(.*)\/?$/i);
+    if (redirectMatch != null) {
+      redirectMatch = redirectMatch[1];
+    } else {
+      redirectMatch = "/";
+    }
+    return res.redirect(redirectMatch);
   };
 
   exports.ensureAuthenticated = function(req, res, next) {

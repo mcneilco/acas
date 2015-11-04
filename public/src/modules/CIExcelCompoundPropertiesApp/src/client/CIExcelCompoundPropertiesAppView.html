@@ -1,6 +1,5 @@
 
 <script type="text/template" id="AttributesControllerView">
-    <h4>Attributes</h4>
     <div>
         <input type="checkbox" name="bv_insertColumnHeaders" class="bv_insertColumnHeaders" style="margin-right:10px;" <% if (insertColumnHeaders) { %> checked="checked"<% }%> />Insert Column Headers
     </div>
@@ -31,7 +30,9 @@
 <script type="text/template" id="ExcelInsertCompoundPropertiesView">
     <div class="well" style="width:510px;padding-bottom:40px;">
         <div style="padding-bottom:5px;" >
-            <a tabindex="0" class="pull-right bv_popover" data-placement="left" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
+            <a tabindex="0" class="pull-right bv_instructions" data-placement="left" style="padding:0px;" type="button" data-toggle="instructions" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
+            <a tabindex="1" class="pull-right bv_options" data-placement="left" style="padding:0px;" type="button" data-toggle="options" data-trigger="focus" title="Options"><i class="glyphicon glyphicon-cog"style="margin-top:2px;margin-right:10px"></i></a>
+            <a href="/excelApps" >< Back</a>
             <div class="bv_attributes">Attributes</div>
             <div class="bv_batchProperties">Batch Properties</div>
             <div class="bv_parentProperties">Parent Properties</div>
