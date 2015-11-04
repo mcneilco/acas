@@ -317,7 +317,8 @@ module.exports = (grunt) ->
 				]
 		browserify:
 				app:
-					'public/javascripts/src/ExcellApp.js': 'public/javascripts/src/ExcellApp.js'
+					src: 'public/javascripts/src/ExcelApp.js'
+					dest: 'public/javascripts/src/ExcelApp.js'
 		watch:
 			coffee:
 				files: 'public/src/modules/**/src/client/*.coffee'
