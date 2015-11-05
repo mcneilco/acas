@@ -59,6 +59,7 @@ class window.PropertyDescriptorController extends Backbone.View
 
 	events: ->
 		'change .bv_propertyDescriptorCheckbox': 'handleDescriptorCheckboxChanged'
+		'click .bv_propertyDescriptorCheckboxClickZone': 'handleDescriptorCheckboxZoneClicked'
 
 	render: ->
 		@$el.empty()
@@ -67,6 +68,9 @@ class window.PropertyDescriptorController extends Backbone.View
 		@$('.bv_descriptorLabel').text(@model.get('valueDescriptor').prettyName)
 		@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
 		@
+
+	handleDescriptorCheckboxZoneClicked: ->
+		@$('.bv_propertyDescriptorCheckbox').click()
 
 	handleDescriptorCheckboxChanged: ->
 		checked = @$('.bv_propertyDescriptorCheckbox').is(":checked")
@@ -84,6 +88,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 		'click .bv_checkAll': 'handleCheckAllClicked'
 		'click .bv_invert': 'handleInvertSelectionClicked'
 		'click .bv_uncheckAll': 'handleUncheckAllClicked'
+		'click .bv_propertyDescriptorListControllerCollapser': 'togglePropertyDescriptorListCollapse'
 
 	initialize: ->
 		@numberChecked=0
@@ -107,6 +112,14 @@ class window.PropertyDescriptorListController extends Backbone.View
 		@$('.propertyDescriptorListControllerTitle').html @title
 		@propertyControllersList.forEach (pdc) =>
 			@$('.bv_propertyDescriptorList').append pdc.render().el
+		@$('.bv_propertyDescriptorList').collapse
+			toggle: true
+		@$('.bv_propertyDescriptorList').on 'shown.bs.collapse', =>
+			@$('.bv_collapseExpand').addClass('hide')
+			@$('.bv_collapseDown').removeClass('hide')
+		@$('.bv_propertyDescriptorList').on 'hidden.bs.collapse', =>
+			@$('.bv_collapseExpand').removeClass('hide')
+			@$('.bv_collapseDown').addClass('hide')
 		@
 
 	handleCheckAllClicked: ->
@@ -156,8 +169,8 @@ class window.PropertyDescriptorListController extends Backbone.View
 				@valid = true
 				@trigger 'valid'
 
-
-
+	togglePropertyDescriptorListCollapse: ->
+		@$('.bv_propertyDescriptorList').collapse('toggle')
 
 class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	events:

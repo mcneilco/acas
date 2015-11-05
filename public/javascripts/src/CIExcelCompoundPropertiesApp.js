@@ -118,7 +118,8 @@
 
     PropertyDescriptorController.prototype.events = function() {
       return {
-        'change .bv_propertyDescriptorCheckbox': 'handleDescriptorCheckboxChanged'
+        'change .bv_propertyDescriptorCheckbox': 'handleDescriptorCheckboxChanged',
+        'click .bv_propertyDescriptorCheckboxClickZone': 'handleDescriptorCheckboxZoneClicked'
       };
     };
 
@@ -129,6 +130,10 @@
       this.$('.bv_descriptorLabel').text(this.model.get('valueDescriptor').prettyName);
       this.$('.bv_descriptorLabel').attr('title', this.model.get('valueDescriptor').description);
       return this;
+    };
+
+    PropertyDescriptorController.prototype.handleDescriptorCheckboxZoneClicked = function() {
+      return this.$('.bv_propertyDescriptorCheckbox').click();
     };
 
     PropertyDescriptorController.prototype.handleDescriptorCheckboxChanged = function() {
@@ -169,7 +174,8 @@
     PropertyDescriptorListController.prototype.events = {
       'click .bv_checkAll': 'handleCheckAllClicked',
       'click .bv_invert': 'handleInvertSelectionClicked',
-      'click .bv_uncheckAll': 'handleUncheckAllClicked'
+      'click .bv_uncheckAll': 'handleUncheckAllClicked',
+      'click .bv_propertyDescriptorListControllerCollapser': 'togglePropertyDescriptorListCollapse'
     };
 
     PropertyDescriptorListController.prototype.initialize = function() {
@@ -204,6 +210,21 @@
       this.propertyControllersList.forEach((function(_this) {
         return function(pdc) {
           return _this.$('.bv_propertyDescriptorList').append(pdc.render().el);
+        };
+      })(this));
+      this.$('.bv_propertyDescriptorList').collapse({
+        toggle: true
+      });
+      this.$('.bv_propertyDescriptorList').on('shown.bs.collapse', (function(_this) {
+        return function() {
+          _this.$('.bv_collapseExpand').addClass('hide');
+          return _this.$('.bv_collapseDown').removeClass('hide');
+        };
+      })(this));
+      this.$('.bv_propertyDescriptorList').on('hidden.bs.collapse', (function(_this) {
+        return function() {
+          _this.$('.bv_collapseExpand').removeClass('hide');
+          return _this.$('.bv_collapseDown').addClass('hide');
         };
       })(this));
       return this;
@@ -282,6 +303,10 @@
           return this.trigger('valid');
         }
       }
+    };
+
+    PropertyDescriptorListController.prototype.togglePropertyDescriptorListCollapse = function() {
+      return this.$('.bv_propertyDescriptorList').collapse('toggle');
     };
 
     return PropertyDescriptorListController;
