@@ -27,7 +27,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 					urlPref = "http://"
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				file = fs.createWriteStream './privateTempFiles/'+filename
-				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/DataViewer/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
@@ -303,7 +303,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 			if global.specRunnerTestmode
 				filename = 'gene'+crypto.randomBytes(4).readUInt32LE(0)+'query.csv';
 				file = fs.createWriteStream './privateTempFiles/'+filename
-				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/GeneDataQueries/spec/testFiles/geneQueryResult.csv'
+				rem = request urlPref+'localhost:'+config.all.client.port+'/src/modules/DataViewer/spec/testFiles/geneQueryResult.csv'
 				rem.on 'data', (chunk) ->
 					file.write(chunk);
 				rem.on 'end', ->
