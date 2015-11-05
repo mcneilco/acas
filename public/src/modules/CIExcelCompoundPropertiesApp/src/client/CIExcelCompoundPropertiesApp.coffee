@@ -264,9 +264,9 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	setPropertyLookUpStatus: (status) =>
 	  @.$('.bv_propertyLookUpStatus').html status
 
-	setErrorStatus: (status) =>
+	setErrorStatus: (status, force = false) =>
 		@.$('.bv_errorStatus').html status
-		if status == "" | @.$('.bv_propertyLookUpStatus').html() == "Data ready to insert" | @.$('.bv_propertyLookUpStatus').html() == "Fetching data..."
+		if status == "" | (force == false && (@.$('.bv_propertyLookUpStatus').html() == "Data ready to insert" | @.$('.bv_propertyLookUpStatus').html() == "Fetching data..."))
 			@.$('.bv_errorStatus').addClass('hide')
 		else
 			@.$('.bv_errorStatus').removeClass('hide')
@@ -288,10 +288,14 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
 
-	insertTable: (dataArray) ->
+	insertTable: (dataArray) =>
 		Office.context.document.setSelectedDataAsync dataArray, coercionType: 'matrix', (result) =>
 			if result.status != 'succeeded'
-				logger.log result.error.name + ':' + result.error.message
+				if result.error.message == 'The set operation failed because the supplied data object will overwrite or shift data.'
+					@setErrorStatus 'Data overwrite error: cannot overwrite data', true
+				else
+					logger.log result.error.name + ':' + result.error.message
+					@setErrorStatus 'Unknown insert error: see log below', true
 
 	getPropertiesAndRequestData: (request) ->
 		@$('.bv_insertProperties').attr 'disabled', 'disabled'

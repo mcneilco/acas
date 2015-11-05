@@ -318,6 +318,7 @@
 
     function ExcelInsertCompoundPropertiesController() {
       this.fetchCompoundPropertiesReturn = bind(this.fetchCompoundPropertiesReturn, this);
+      this.insertTable = bind(this.insertTable, this);
       this.handleInsertPropertiesClicked = bind(this.handleInsertPropertiesClicked, this);
       this.parseInputArray = bind(this.parseInputArray, this);
       this.setErrorStatus = bind(this.setErrorStatus, this);
@@ -454,9 +455,12 @@
       return this.$('.bv_propertyLookUpStatus').html(status);
     };
 
-    ExcelInsertCompoundPropertiesController.prototype.setErrorStatus = function(status) {
+    ExcelInsertCompoundPropertiesController.prototype.setErrorStatus = function(status, force) {
+      if (force == null) {
+        force = false;
+      }
       this.$('.bv_errorStatus').html(status);
-      if (status === "" | this.$('.bv_propertyLookUpStatus').html() === "Data ready to insert" | this.$('.bv_propertyLookUpStatus').html() === "Fetching data...") {
+      if (status === "" | (force === false && (this.$('.bv_propertyLookUpStatus').html() === "Data ready to insert" | this.$('.bv_propertyLookUpStatus').html() === "Fetching data..."))) {
         return this.$('.bv_errorStatus').addClass('hide');
       } else {
         return this.$('.bv_errorStatus').removeClass('hide');
@@ -494,7 +498,12 @@
       }, (function(_this) {
         return function(result) {
           if (result.status !== 'succeeded') {
-            return logger.log(result.error.name + ':' + result.error.message);
+            if (result.error.message === 'The set operation failed because the supplied data object will overwrite or shift data.') {
+              return _this.setErrorStatus('Data overwrite error: cannot overwrite data', true);
+            } else {
+              logger.log(result.error.name + ':' + result.error.message);
+              return _this.setErrorStatus('Unknown insert error: see log below', true);
+            }
           }
         };
       })(this));
