@@ -22,10 +22,10 @@
 
     ModuleLauncher.prototype.requestActivation = function() {
       console.log("request activation");
-      if (this.get('menuName') === "Gene ID Query") {
+      if (this.get('autoLaunchName') === "dataViewer") {
         console.log(this);
         console.log(window.AppLaunchParams.moduleLaunchParams);
-        return window.open("/GeneIDQuery", '_blank');
+        return window.open("/dataViewer", '_blank');
       } else {
         this.trigger('activationRequested', this);
         return this.set({

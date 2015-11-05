@@ -34,8 +34,8 @@
       autoLaunchName: "primary_screen_experiment"
     }, {
       isHeader: false,
-      menuName: "Gene ID Query",
-      autoLaunchName: "geneidquery"
+      menuName: "Data Viewer",
+      autoLaunchName: "dataViewer"
     }, {
       isHeader: false,
       menuName: "Example Thing",

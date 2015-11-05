@@ -11,10 +11,10 @@ class window.ModuleLauncher extends Backbone.Model
 
 	requestActivation: ->
 		console.log "request activation"
-		if @get('menuName') is "Gene ID Query"
+		if @get('autoLaunchName') is "dataViewer"
 			console.log @
 			console.log window.AppLaunchParams.moduleLaunchParams
-			window.open("/GeneIDQuery",'_blank');
+			window.open("/dataViewer",'_blank');
 		else
 			@trigger 'activationRequested', @
 			@set isActive: true

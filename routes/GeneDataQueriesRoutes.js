@@ -6,9 +6,9 @@
     app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
     app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
-    app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
-    app.get('/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch);
-    return app.get('/geneidquery/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch);
+    app.get('/dataViewer', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
+    app.get('/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch);
+    return app.get('/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {

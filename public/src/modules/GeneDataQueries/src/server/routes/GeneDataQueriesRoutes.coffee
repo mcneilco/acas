@@ -6,9 +6,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
 	config = require '../conf/compiled/conf.js'
 	#	if config.all.client.require.login
-	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
-	app.get '/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch
-	app.get '/geneidquery/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch
+	app.get '/dataViewer', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
+	app.get '/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch
+	app.get '/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch
 
 
 exports.getExperimentDataForGenes = (req, resp)  ->

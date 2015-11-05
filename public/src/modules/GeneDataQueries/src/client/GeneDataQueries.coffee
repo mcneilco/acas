@@ -1204,7 +1204,7 @@ class window.AddDataToReport extends Backbone.View
 
 class window.GeneIDQueryAppController extends Backbone.View
 	template: _.template($("#GeneIDQueryAppView").html())
-	moduleLaunchName: 'geneidquery'
+	moduleLaunchName: 'dataViewer'
 
 	events:
 		"click .bv_next": "handleNextClicked"

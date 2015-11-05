@@ -33,9 +33,9 @@ window.ModuleMenusConfiguration =
 		autoLaunchName:"primary_screen_experiment"
 	,
 		isHeader: false
-		menuName: "Gene ID Query"
+		menuName: "Data Viewer"
 #		mainControllerClassName: "PrimaryScreenExperimentController"
-		autoLaunchName:"geneidquery"
+		autoLaunchName:"dataViewer"
 	,
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"

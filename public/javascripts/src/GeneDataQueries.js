@@ -1754,7 +1754,7 @@
 
     GeneIDQueryAppController.prototype.template = _.template($("#GeneIDQueryAppView").html());
 
-    GeneIDQueryAppController.prototype.moduleLaunchName = 'geneidquery';
+    GeneIDQueryAppController.prototype.moduleLaunchName = 'dataViewer';
 
     GeneIDQueryAppController.prototype.events = {
       "click .bv_next": "handleNextClicked",
