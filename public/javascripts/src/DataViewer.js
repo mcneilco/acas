@@ -3,22 +3,22 @@
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
-  window.GeneIDQueryInputController = (function(superClass) {
-    extend(GeneIDQueryInputController, superClass);
+  window.DataViewerInputController = (function(superClass) {
+    extend(DataViewerInputController, superClass);
 
-    function GeneIDQueryInputController() {
+    function DataViewerInputController() {
       this.handleAdvanceModeRequested = bind(this.handleAdvanceModeRequested, this);
       this.handleSearchClicked = bind(this.handleSearchClicked, this);
       this.handleKeyInInputField = bind(this.handleKeyInInputField, this);
       this.handleAggregationChanged = bind(this.handleAggregationChanged, this);
       this.handleInputFieldChanged = bind(this.handleInputFieldChanged, this);
       this.render = bind(this.render, this);
-      return GeneIDQueryInputController.__super__.constructor.apply(this, arguments);
+      return DataViewerInputController.__super__.constructor.apply(this, arguments);
     }
 
-    GeneIDQueryInputController.prototype.template = _.template($("#GeneIDQueryInputView").html());
+    DataViewerInputController.prototype.template = _.template($("#DataViewerInputView").html());
 
-    GeneIDQueryInputController.prototype.events = {
+    DataViewerInputController.prototype.events = {
       "click .bv_search": "handleSearchClicked",
       "click .bv_gidNavAdvancedSearchButton": "handleAdvanceModeRequested",
       "keyup .bv_gidListString": "handleInputFieldChanged",
@@ -28,7 +28,7 @@
       "change .bv_displayNameSelect": "handleDisplayNameChanged"
     };
 
-    GeneIDQueryInputController.prototype.render = function() {
+    DataViewerInputController.prototype.render = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
       this.setupDisplayNameSelect();
@@ -39,7 +39,7 @@
       return this;
     };
 
-    GeneIDQueryInputController.prototype.setupDisplayNameSelect = function() {
+    DataViewerInputController.prototype.setupDisplayNameSelect = function() {
       this.displayNameList = new PickListList();
       this.displayNameList.url = "/api/entitymeta/configuredEntityTypes/asCodes";
       this.displayNameListController = new PickListSelectController({
@@ -54,11 +54,11 @@
       return this.displayName = "unassigned";
     };
 
-    GeneIDQueryInputController.prototype.handleDisplayNameChanged = function() {
+    DataViewerInputController.prototype.handleDisplayNameChanged = function() {
       return this.displayName = this.displayNameListController.getSelectedCode();
     };
 
-    GeneIDQueryInputController.prototype.handleInputFieldChanged = function() {
+    DataViewerInputController.prototype.handleInputFieldChanged = function() {
       if ($.trim(this.$('.bv_gidListString').val()).length > 1) {
         return this.$('.bv_search').removeAttr('disabled');
       } else {
@@ -66,48 +66,48 @@
       }
     };
 
-    GeneIDQueryInputController.prototype.handleAggregationChanged = function() {
+    DataViewerInputController.prototype.handleAggregationChanged = function() {
       return this.aggregate = this.$("input[name='bv_aggregation']:checked").val();
     };
 
-    GeneIDQueryInputController.prototype.handleKeyInInputField = function(e) {
+    DataViewerInputController.prototype.handleKeyInInputField = function(e) {
       if (e.keyCode === 13) {
         return this.handleSearchClicked();
       }
     };
 
-    GeneIDQueryInputController.prototype.handleSearchClicked = function() {
+    DataViewerInputController.prototype.handleSearchClicked = function() {
       return this.trigger('search-requested', $.trim(this.$('.bv_gidListString').val()), this.displayName);
     };
 
-    GeneIDQueryInputController.prototype.handleAdvanceModeRequested = function() {
+    DataViewerInputController.prototype.handleAdvanceModeRequested = function() {
       return this.trigger('requestAdvancedMode', $.trim(this.$('.bv_gidListString').val()), this.aggregate, this.displayName);
     };
 
-    return GeneIDQueryInputController;
+    return DataViewerInputController;
 
   })(Backbone.View);
 
-  window.GeneIDQueryResultController = (function(superClass) {
-    extend(GeneIDQueryResultController, superClass);
+  window.DataViewerResultController = (function(superClass) {
+    extend(DataViewerResultController, superClass);
 
-    function GeneIDQueryResultController() {
+    function DataViewerResultController() {
       this.handleAddDataClicked = bind(this.handleAddDataClicked, this);
       this.showCSVFileLink = bind(this.showCSVFileLink, this);
       this.handleDownloadCSVClicked = bind(this.handleDownloadCSVClicked, this);
       this.modifyTableEntities = bind(this.modifyTableEntities, this);
       this.render = bind(this.render, this);
-      return GeneIDQueryResultController.__super__.constructor.apply(this, arguments);
+      return DataViewerResultController.__super__.constructor.apply(this, arguments);
     }
 
-    GeneIDQueryResultController.prototype.template = _.template($("#GeneIDQueryResultView").html());
+    DataViewerResultController.prototype.template = _.template($("#DataViewerResultView").html());
 
-    GeneIDQueryResultController.prototype.events = {
+    DataViewerResultController.prototype.events = {
       "click .bv_downloadCSV": "handleDownloadCSVClicked",
       "click .bv_addData": "handleAddDataClicked"
     };
 
-    GeneIDQueryResultController.prototype.render = function() {
+    DataViewerResultController.prototype.render = function() {
       var sortingType;
       $(this.el).empty();
       $(this.el).html(this.template());
@@ -155,7 +155,7 @@
       return this;
     };
 
-    GeneIDQueryResultController.prototype.modifyTableEntities = function() {
+    DataViewerResultController.prototype.modifyTableEntities = function() {
       return this.$('td.referenceCode').each(function() {
         return $.ajax({
           type: 'POST',
@@ -175,7 +175,7 @@
       });
     };
 
-    GeneIDQueryResultController.prototype.setupHeaders = function() {
+    DataViewerResultController.prototype.setupHeaders = function() {
       _.each(this.model.get('data').groupHeaders, (function(_this) {
         return function(header) {
           return _this.$('.bv_experimentNamesHeader').append('<th class="bv_headerCell" colspan="' + header.numberOfColumns + '">' + header.titleText + '</th>');
@@ -188,7 +188,7 @@
       })(this));
     };
 
-    GeneIDQueryResultController.prototype.handleDownloadCSVClicked = function() {
+    DataViewerResultController.prototype.handleDownloadCSVClicked = function() {
       this.$('.bv_searchStatusDropDown').modal({
         backdrop: "static"
       });
@@ -196,7 +196,7 @@
       return this.trigger('downLoadCSVRequested');
     };
 
-    GeneIDQueryResultController.prototype.showCSVFileLink = function(json) {
+    DataViewerResultController.prototype.showCSVFileLink = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
       this.$('.bv_resultFileLink').attr('href', json.fileURL);
       return this.$('.bv_csvFileLinkModal').modal({
@@ -204,18 +204,18 @@
       });
     };
 
-    GeneIDQueryResultController.prototype.handleAddDataClicked = function() {
+    DataViewerResultController.prototype.handleAddDataClicked = function() {
       return this.trigger('addDataRequested');
     };
 
-    return GeneIDQueryResultController;
+    return DataViewerResultController;
 
   })(Backbone.View);
 
-  window.GeneIDQuerySearchController = (function(superClass) {
-    extend(GeneIDQuerySearchController, superClass);
+  window.DataViewerSearchController = (function(superClass) {
+    extend(DataViewerSearchController, superClass);
 
-    function GeneIDQuerySearchController() {
+    function DataViewerSearchController() {
       this.handleShowHideExperiments = bind(this.handleShowHideExperiments, this);
       this.handleDownLoadCSVRequested = bind(this.handleDownLoadCSVRequested, this);
       this.setShowResultsMode = bind(this.setShowResultsMode, this);
@@ -227,17 +227,17 @@
       this.knownDisplayNameReturn = bind(this.knownDisplayNameReturn, this);
       this.handleSearchRequested = bind(this.handleSearchRequested, this);
       this.requestFilterExperiments = bind(this.requestFilterExperiments, this);
-      return GeneIDQuerySearchController.__super__.constructor.apply(this, arguments);
+      return DataViewerSearchController.__super__.constructor.apply(this, arguments);
     }
 
-    GeneIDQuerySearchController.prototype.template = _.template($("#GeneIDQuerySearchView").html());
+    DataViewerSearchController.prototype.template = _.template($("#DataViewerSearchView").html());
 
-    GeneIDQuerySearchController.prototype.lastSearch = "";
+    DataViewerSearchController.prototype.lastSearch = "";
 
-    GeneIDQuerySearchController.prototype.initialize = function() {
+    DataViewerSearchController.prototype.initialize = function() {
       $(this.el).empty();
       $(this.el).html(this.template());
-      this.queryInputController = new GeneIDQueryInputController({
+      this.queryInputController = new DataViewerInputController({
         el: this.$('.bv_inputView')
       });
       this.queryInputController.on('search-requested', this.handleSearchRequested);
@@ -247,11 +247,11 @@
       return this.dataAdded = false;
     };
 
-    GeneIDQuerySearchController.prototype.requestFilterExperiments = function(searchStr, aggregate, displayName) {
+    DataViewerSearchController.prototype.requestFilterExperiments = function(searchStr, aggregate, displayName) {
       return this.trigger('requestAdvancedMode', searchStr, aggregate, displayName);
     };
 
-    GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr, displayName) {
+    DataViewerSearchController.prototype.handleSearchRequested = function(searchStr, displayName) {
       this.displayName = displayName;
       this.lastSearch = searchStr;
       this.$('.bv_searchStatusDropDown').modal({
@@ -261,7 +261,7 @@
       return this.fromSearchtoCodes();
     };
 
-    GeneIDQuerySearchController.prototype.fromSearchtoCodes = function() {
+    DataViewerSearchController.prototype.fromSearchtoCodes = function() {
       var j, l, len, len1, requests, results1, searchString, searchTerms, term;
       searchString = this.lastSearch;
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
@@ -317,7 +317,7 @@
       }
     };
 
-    GeneIDQuerySearchController.prototype.knownDisplayNameReturn = function(json) {
+    DataViewerSearchController.prototype.knownDisplayNameReturn = function(json) {
       var j, len, ref, refCodes, result;
       refCodes = "";
       ref = json.results;
@@ -331,7 +331,7 @@
       return this.getAllExperimentNames();
     };
 
-    GeneIDQuerySearchController.prototype.handleEntitySearchReturn = function(json) {
+    DataViewerSearchController.prototype.handleEntitySearchReturn = function(json) {
       var j, len, ref, result;
       this.counter = this.counter + 1;
       if (json.results.length > 0) {
@@ -351,7 +351,7 @@
       }
     };
 
-    GeneIDQuerySearchController.prototype.filterOnDisplayName = function() {
+    DataViewerSearchController.prototype.filterOnDisplayName = function() {
       var displayNames, jsonSearch;
       displayNames = _.uniq(_.pluck(this.searchResults, "displayName"));
       if (displayNames.length <= 1) {
@@ -373,7 +373,7 @@
       }
     };
 
-    GeneIDQuerySearchController.prototype.refCodesToSearchStr = function(displayName) {
+    DataViewerSearchController.prototype.refCodesToSearchStr = function(displayName) {
       this.displayName = displayName;
       console.log("chosen entityType is " + displayName);
       this.lastSearch = _.pluck(_.where(this.searchResults, {
@@ -382,7 +382,7 @@
       return this.getAllExperimentNames();
     };
 
-    GeneIDQuerySearchController.prototype.getAllExperimentNames = function() {
+    DataViewerSearchController.prototype.getAllExperimentNames = function() {
       if (this.lastSearch === "") {
         this.lastSearch = "NO RESULTS";
       }
@@ -402,7 +402,7 @@
       });
     };
 
-    GeneIDQuerySearchController.prototype.handleGetExperimentsReturn = function(json) {
+    DataViewerSearchController.prototype.handleGetExperimentsReturn = function(json) {
       var data, experimentCodeList, expt, j, len;
       data = json.results.experimentData;
       experimentCodeList = [];
@@ -414,7 +414,7 @@
       return this.runRequestedSearch();
     };
 
-    GeneIDQuerySearchController.prototype.getQueryParams = function() {
+    DataViewerSearchController.prototype.getQueryParams = function() {
       var queryParams, searchFilter;
       searchFilter = {
         booleanFilter: "and",
@@ -428,10 +428,10 @@
       };
     };
 
-    GeneIDQuerySearchController.prototype.runRequestedSearch = function() {
+    DataViewerSearchController.prototype.runRequestedSearch = function() {
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced",
+        url: "/api/dataViewerAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -447,12 +447,12 @@
       });
     };
 
-    GeneIDQuerySearchController.prototype.handleSearchReturn = function(json) {
+    DataViewerSearchController.prototype.handleSearchReturn = function(json) {
       this.$('.bv_searchStatusDropDown').modal("hide");
       this.resultsJson = json.results;
       this.resultsJson.data.displayName = this.displayName;
       if (!this.dataAdded) {
-        this.resultController = new GeneIDQueryResultController({
+        this.resultController = new DataViewerResultController({
           model: new Backbone.Model(json.results),
           el: $('.bv_resultsView')
         });
@@ -477,18 +477,18 @@
       return this.setShowResultsMode();
     };
 
-    GeneIDQuerySearchController.prototype.setQueryOnlyMode = function() {
+    DataViewerSearchController.prototype.setQueryOnlyMode = function() {
       return this.$('.bv_resultsView').hide();
     };
 
-    GeneIDQuerySearchController.prototype.setShowResultsMode = function() {
+    DataViewerSearchController.prototype.setShowResultsMode = function() {
       return this.$('.bv_resultsView').show();
     };
 
-    GeneIDQuerySearchController.prototype.handleDownLoadCSVRequested = function() {
+    DataViewerSearchController.prototype.handleDownLoadCSVRequested = function() {
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced?format=csv",
+        url: "/api/dataViewerAdvanced?format=csv",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -504,7 +504,7 @@
       });
     };
 
-    GeneIDQuerySearchController.prototype.handleShowHideExperiments = function() {
+    DataViewerSearchController.prototype.handleShowHideExperiments = function() {
       if (!this.dataAdded) {
         this.dataAdded = true;
         this.addData = new ShowHideExpts({
@@ -518,7 +518,7 @@
       }
     };
 
-    return GeneIDQuerySearchController;
+    return DataViewerSearchController;
 
   })(Backbone.View);
 
@@ -681,7 +681,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced",
+        url: "/api/dataViewerAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1433,7 +1433,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced",
+        url: "/api/dataViewerAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1454,7 +1454,7 @@
       this.resultsJson = json.results;
       this.resultsJson.data.displayName = this.displayName;
       if (!this.dataAdded) {
-        this.resultController = new GeneIDQueryResultController({
+        this.resultController = new DataViewerResultController({
           model: new Backbone.Model(json.results),
           el: $('.bv_advResultsView')
         });
@@ -1475,7 +1475,7 @@
     AdvancedExperimentResultsQueryController.prototype.handleDownLoadCSVRequested = function() {
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced?format=csv",
+        url: "/api/dataViewerAdvanced?format=csv",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1715,7 +1715,7 @@
       this.$('.bv_searchStatusDropDown').modal("show");
       return $.ajax({
         type: 'POST',
-        url: "/api/geneDataQueryAdvanced",
+        url: "/api/dataViewerAdvanced",
         dataType: 'json',
         data: {
           queryParams: this.getQueryParams(),
@@ -1739,35 +1739,35 @@
 
   })(Backbone.View);
 
-  window.GeneIDQueryAppController = (function(superClass) {
-    extend(GeneIDQueryAppController, superClass);
+  window.DataViewerAppController = (function(superClass) {
+    extend(DataViewerAppController, superClass);
 
-    function GeneIDQueryAppController() {
+    function DataViewerAppController() {
       this.handleHelpClicked = bind(this.handleHelpClicked, this);
       this.handleCancelClicked = bind(this.handleCancelClicked, this);
       this.handleResultsClicked = bind(this.handleResultsClicked, this);
       this.handleNextClicked = bind(this.handleNextClicked, this);
       this.startAdvancedQueryWizard = bind(this.startAdvancedQueryWizard, this);
       this.startBasicQueryWizard = bind(this.startBasicQueryWizard, this);
-      return GeneIDQueryAppController.__super__.constructor.apply(this, arguments);
+      return DataViewerAppController.__super__.constructor.apply(this, arguments);
     }
 
-    GeneIDQueryAppController.prototype.template = _.template($("#GeneIDQueryAppView").html());
+    DataViewerAppController.prototype.template = _.template($("#DataViewerAppView").html());
 
-    GeneIDQueryAppController.prototype.moduleLaunchName = 'dataViewer';
+    DataViewerAppController.prototype.moduleLaunchName = 'dataViewer';
 
-    GeneIDQueryAppController.prototype.events = {
+    DataViewerAppController.prototype.events = {
       "click .bv_next": "handleNextClicked",
       "click .bv_toResults": "handleResultsClicked",
       "click .bv_cancel": "handleCancelClicked",
       "click .bv_gidNavHelpButton": "handleHelpClicked"
     };
 
-    GeneIDQueryAppController.prototype.initialize = function() {
+    DataViewerAppController.prototype.initialize = function() {
       var aggregate, code, codesList, displayName, j, len, oppAggregate, searchMode, searchOptionsList, searchStr, trimmedCodesList;
       $(this.el).empty();
       $(this.el).html(this.template());
-      $(this.el).addClass('GeneIDQueryAppController');
+      $(this.el).addClass('DataViewerAppController');
       this.startBasicQueryWizard();
       searchMode = window.AppLaunchParams.searchMode;
       if (searchMode != null) {
@@ -1817,8 +1817,8 @@
       }
     };
 
-    GeneIDQueryAppController.prototype.startBasicQueryWizard = function() {
-      this.aerqc = new GeneIDQuerySearchController({
+    DataViewerAppController.prototype.startBasicQueryWizard = function() {
+      this.aerqc = new DataViewerSearchController({
         el: this.$('.bv_basicQueryView')
       });
       this.aerqc.render();
@@ -1828,7 +1828,7 @@
       return this.aerqc.on('requestAdvancedMode', this.startAdvancedQueryWizard);
     };
 
-    GeneIDQueryAppController.prototype.startAdvancedQueryWizard = function(searchStr, aggregate, displayName) {
+    DataViewerAppController.prototype.startAdvancedQueryWizard = function(searchStr, aggregate, displayName) {
       var searchParams;
       console.log("The search text is: " + searchStr + "\n Aggregate is: " + aggregate + "\n displayName is: " + displayName);
       searchParams = {
@@ -1903,33 +1903,33 @@
       return this.$('.bv_advancedQueryNavbar').show();
     };
 
-    GeneIDQueryAppController.prototype.handleNextClicked = function() {
+    DataViewerAppController.prototype.handleNextClicked = function() {
       if (this.aerqc != null) {
         return this.aerqc.handleNextClicked();
       }
     };
 
-    GeneIDQueryAppController.prototype.handleResultsClicked = function() {
+    DataViewerAppController.prototype.handleResultsClicked = function() {
       if (this.aerqc != null) {
         return this.aerqc.handleResultsClicked();
       }
     };
 
-    GeneIDQueryAppController.prototype.handleCancelClicked = function() {
+    DataViewerAppController.prototype.handleCancelClicked = function() {
       this.$('.bv_toResults').show();
       this.$('.gidAdvancedSearchButtonsResultsView').removeClass('gidAdvancedSearchButtonsStepThree');
       this.$('.gidAdvancedSearchButtonsResultsView').addClass('gidAdvancedSearchButtonsNewQuery');
       return this.startBasicQueryWizard();
     };
 
-    GeneIDQueryAppController.prototype.handleHelpClicked = function() {
+    DataViewerAppController.prototype.handleHelpClicked = function() {
       this.$('.bv_helpModal').modal({
         backdrop: "static"
       });
       return this.$('.bv_helpModal').modal("show");
     };
 
-    return GeneIDQueryAppController;
+    return DataViewerAppController;
 
   })(Backbone.View);
 

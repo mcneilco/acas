@@ -1,18 +1,18 @@
 (function() {
   exports.setupRoutes = function(app, loginRoutes) {
     var config;
-    app.post('/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes);
+    app.post('/api/dataViewer', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes);
     app.post('/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes);
     app.post('/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes);
-    app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
+    app.post('/api/dataViewerAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
-    app.get('/dataViewer', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
-    app.get('/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch);
-    return app.get('/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch);
+    app.get('/dataViewer', loginRoutes.ensureAuthenticated, exports.dataViewerIndex);
+    app.get('/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchDataViewerSimpleSearch);
+    return app.get('/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchDataViewerFilterByExptSearch);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
+    var baseurl, config, crypto, dataViewerTestJSON, file, filename, fs, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
@@ -97,12 +97,12 @@
       });
       if (global.specRunnerTestmode) {
         console.log("test mode: " + global.specRunnerTestmode);
-        geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+        dataViewerTestJSON = require('../public/javascripts/spec/testFixtures/DataViewerTestJson.js');
         requestError = req.body.maxRowsToReturn < 0 ? true : false;
         if (req.body.geneIDs === "fiona") {
-          results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
+          results = dataViewerTestJSON.dataViewerResultsNoneFound;
         } else {
-          results = geneDataQueriesTestJSON.geneIDQueryResults;
+          results = dataViewerTestJSON.dataViewerResults;
         }
         responseObj = {
           results: results,
@@ -146,7 +146,7 @@
   };
 
   exports.getExperimentListForGenes = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, dataViewerTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -154,12 +154,12 @@
     });
     if (global.specRunnerTestmode) {
       console.log("test mode: " + global.specRunnerTestmode);
-      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+      dataViewerTestJSON = require('../public/javascripts/spec/testFixtures/DataViewerTestJson.js');
       requestError = req.body.maxRowsToReturn < 0 ? true : false;
       if (req.body.geneIDs === "fiona") {
-        results = geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn;
+        results = dataViewerTestJSON.getGeneExperimentsNoResultsReturn;
       } else {
-        results = geneDataQueriesTestJSON.getGeneExperimentsReturn;
+        results = dataViewerTestJSON.getGeneExperimentsReturn;
       }
       responseObj = {
         results: results,
@@ -204,7 +204,7 @@
   };
 
   exports.getExperimentSearchAttributes = function(req, resp) {
-    var baseurl, config, geneDataQueriesTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
+    var baseurl, config, dataViewerTestJSON, request, requestError, responseObj, results, serverUtilityFunctions;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     resp.writeHead(200, {
@@ -212,12 +212,12 @@
     });
     if (global.specRunnerTestmode) {
       console.log("test mode: " + global.specRunnerTestmode);
-      geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+      dataViewerTestJSON = require('../public/javascripts/spec/testFixtures/DataViewerTestJson.js');
       requestError = req.body.experimentCodes[0] === "error" ? true : false;
       if (req.body.experimentCodes[0] === "fiona") {
-        results = geneDataQueriesTestJSON.experimentSearchOptionsNoMatches;
+        results = dataViewerTestJSON.experimentSearchOptionsNoMatches;
       } else {
-        results = geneDataQueriesTestJSON.experimentSearchOptions;
+        results = dataViewerTestJSON.experimentSearchOptions;
       }
       responseObj = {
         results: results,
@@ -262,7 +262,7 @@
     }
   };
 
-  exports.autoLaunchGeneIDSimpleSearch = function(req, res) {
+  exports.autoLaunchDataViewerSimpleSearch = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
     config = require('../conf/compiled/conf.js');
@@ -281,7 +281,7 @@
         lastName: "user"
       };
     }
-    return res.render('GeneIDQuery', {
+    return res.render('DataViewer', {
       title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
@@ -296,7 +296,7 @@
     });
   };
 
-  exports.autoLaunchGeneIDFilterByExptSearch = function(req, res) {
+  exports.autoLaunchDataViewerFilterByExptSearch = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
     config = require('../conf/compiled/conf.js');
@@ -315,7 +315,7 @@
         lastName: "user"
       };
     }
-    return res.render('GeneIDQuery', {
+    return res.render('DataViewer', {
       title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
@@ -330,7 +330,7 @@
     });
   };
 
-  exports.geneIDQueryIndex = function(req, res) {
+  exports.dataViewerIndex = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
     config = require('../conf/compiled/conf.js');
@@ -349,7 +349,7 @@
         lastName: "user"
       };
     }
-    return res.render('GeneIDQuery', {
+    return res.render('DataViewer', {
       title: "Gene ID Query",
       scripts: scriptsToLoad,
       AppLaunchParams: {
@@ -363,7 +363,7 @@
   };
 
   exports.getExperimentDataForGenesAdvanced = function(req, resp) {
-    var baseurl, config, crypto, file, filename, fs, geneDataQueriesTestJSON, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
+    var baseurl, config, crypto, dataViewerTestJSON, file, filename, fs, rem, request, requestError, responseObj, results, serverUtilityFunctions, urlPref;
     req.connection.setTimeout(600000);
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     request = require('request');
@@ -447,12 +447,12 @@
       });
       if (global.specRunnerTestmode) {
         console.log("test mode: " + global.specRunnerTestmode);
-        geneDataQueriesTestJSON = require('../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js');
+        dataViewerTestJSON = require('../public/javascripts/spec/testFixtures/DataViewerTestJson.js');
         requestError = req.body.maxRowsToReturn < 0 ? true : false;
         if (req.body.queryParams.batchCodes === "fiona") {
-          results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound;
+          results = dataViewerTestJSON.dataViewerResultsNoneFound;
         } else {
-          results = geneDataQueriesTestJSON.geneIDQueryResults;
+          results = dataViewerTestJSON.dataViewerResults;
         }
         responseObj = {
           results: results,

@@ -7,8 +7,8 @@ require('data.table')
 require('racas')
 require('reshape2')
 
-#setwd('/opt/acas_home/app_1.4/acas/public/src/modules/GeneDataQueries/src/server')
-#setwd('/opt/acas_homes/acas/acas/public/src/modules/GeneDataQueries/src/server')
+#setwd('/opt/acas_home/app_1.4/acas/public/src/modules/DataViewer/src/server')
+#setwd('/opt/acas_homes/acas/acas/public/src/modules/DataViewer/src/server')
 source('getSELColOrder.R')
 source('getExperimentColOrder.R')
 

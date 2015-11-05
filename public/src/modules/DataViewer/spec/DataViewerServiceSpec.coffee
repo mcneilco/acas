@@ -49,7 +49,7 @@ goodAdvancedRequest =
 
 #The expected return format basic query mode:
 basicReturnExampleSuccess =
-	results: window.geneDataQueriesTestJSON.geneIDQueryResults
+	results: window.dataViewerTestJSON.dataViewerResults
 	hasError: false
 	hasWarning: true
 	errorMessages: []
@@ -60,28 +60,28 @@ goodDataRequest =
 
 #The expected return format advanced query mode:
 advnacedReturnExampleSuccess =
-	results: window.geneDataQueriesTestJSON.getGeneExperimentsReturn
+	results: window.dataViewerTestJSON.getGeneExperimentsReturn
 	hasError: false
 	hasWarning: false
 	errorMessages: []
 
 #The expected return format advanced query mode with no results:
 advnacedReturnExampleSuccess =
-	results: window.geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn
+	results: window.dataViewerTestJSON.getGeneExperimentsNoResultsReturn
 	hasError: false
 	hasWarning: false
 	errorMessages: []
 
 #The expected return format advanced query get experiment attributes for experiment codes:
 advancedReturnExampleSuccess =
-	results: window.geneDataQueriesTestJSON.experimentSearchOptions
+	results: window.dataViewerTestJSON.experimentSearchOptions
 	hasError: false
 	hasWarning: false
 	errorMessages: []
 
 #The expected return format advanced query mode with no results:
 advnacedReturnExampleSuccess =
-	results: window.geneDataQueriesTestJSON.experimentSearchOptionsNoMatches
+	results: window.dataViewerTestJSON.experimentSearchOptionsNoMatches
 	hasError: false
 	hasWarning: false
 	errorMessages: []
@@ -110,7 +110,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQuery"
+						url: "api/dataViewer"
 						data: goodDataRequest
 						success: (json) =>
 							@serviceReturn = json
@@ -131,7 +131,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQuery"
+						url: "api/dataViewer"
 						data:
 							geneIDs: "fiona"
 						success: (json) =>
@@ -153,7 +153,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQuery"
+						url: "api/dataViewer"
 						data: badDataRequest
 						success: (json) =>
 							@serviceReturn = json
@@ -173,7 +173,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQuery?format=csv"
+						url: "api/dataViewer?format=csv"
 						data:
 							geneIDs: "fiona"
 						success: (res) =>
@@ -323,7 +323,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQueryAdvanced"
+						url: "api/dataViewerAdvanced"
 						data: goodAdvancedRequest
 						success: (json) =>
 							@serviceReturn = json
@@ -345,7 +345,7 @@ describe 'Gene Data Queries Service testing', ->
 					goodAdvancedRequest.queryParams.batchCodes = "fiona"
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQueryAdvanced"
+						url: "api/dataViewerAdvanced"
 						data: goodAdvancedRequest
 						success: (json) =>
 							@serviceReturn = json
@@ -367,7 +367,7 @@ describe 'Gene Data Queries Service testing', ->
 					goodAdvancedRequest.maxRowsToReturn = -1
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQueryAdvanced"
+						url: "api/dataViewerAdvanced"
 						data: goodAdvancedRequest
 						success: (json) =>
 							@serviceReturn = json
@@ -387,7 +387,7 @@ describe 'Gene Data Queries Service testing', ->
 				runs ->
 					$.ajax
 						type: 'POST'
-						url: "api/geneDataQueryAdvanced?format=csv"
+						url: "api/dataViewerAdvanced?format=csv"
 						data: goodAdvancedRequest
 						success: (res) =>
 							console.log res

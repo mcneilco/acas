@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    exports.geneIDQueryResults = {
+    exports.dataViewerResults = {
       htmlSummary: "HTML from service",
       data: {
         "iTotalRecords": 1000,
@@ -60,7 +60,7 @@
         ]
       }
     };
-    exports.geneIDQueryResultsNoneFound = {
+    exports.dataViewerResultsNoneFound = {
       htmlSummary: "HTML from service",
       data: {
         "iTotalRecords": 0,
@@ -194,6 +194,6 @@
       experiments: [],
       htmlSummary: "No results found"
     };
-  })((typeof process === "undefined" || !process.versions ? window.geneDataQueriesTestJSON = window.geneDataQueriesTestJSON || {} : exports));
+  })((typeof process === "undefined" || !process.versions ? window.dataViewerTestJSON = window.dataViewerTestJSON || {} : exports));
 
 }).call(this);

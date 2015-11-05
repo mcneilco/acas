@@ -71,25 +71,25 @@
 	routeSet_11 = require("./routes/CurveCuratorRoutes.js");
 	if (routeSet_11.setupAPIRoutes) {
 		routeSet_11.setupAPIRoutes(app); }
-	routeSet_12 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_12 = require("./routes/DataViewerRoutes.js");
 	if (routeSet_12.setupAPIRoutes) {
 		routeSet_12.setupAPIRoutes(app); }
-	routeSet_13 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_13 = require("./routes/DocForBatchesRoutes.js");
 	if (routeSet_13.setupAPIRoutes) {
 		routeSet_13.setupAPIRoutes(app); }
-	routeSet_14 = require("./routes/ExcelCompundInfoAppRoutes.js");
+	routeSet_14 = require("./routes/DoseResponseFitRoutes.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
-	routeSet_15 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_15 = require("./routes/ExcelCompundInfoAppRoutes.js");
 	if (routeSet_15.setupAPIRoutes) {
 		routeSet_15.setupAPIRoutes(app); }
-	routeSet_16 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_16 = require("./routes/ExperimentBrowserRoutes.js");
 	if (routeSet_16.setupAPIRoutes) {
 		routeSet_16.setupAPIRoutes(app); }
-	routeSet_17 = require("./routes/FileServices.js");
+	routeSet_17 = require("./routes/ExperimentServiceRoutes.js");
 	if (routeSet_17.setupAPIRoutes) {
 		routeSet_17.setupAPIRoutes(app); }
-	routeSet_18 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_18 = require("./routes/FileServices.js");
 	if (routeSet_18.setupAPIRoutes) {
 		routeSet_18.setupAPIRoutes(app); }
 	routeSet_19 = require("./routes/GenericDataParserRoutes.js");

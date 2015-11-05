@@ -25,7 +25,7 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 			else
 				resp.redirect res.resultViewerURL
 	else if tool is 'DataViewer'
-		resp.redirect '/geneidquery/filterByExpt/'+req.query.experiment
+		resp.redirect '/dataViewer/filterByExpt/'+req.query.experiment
 	else
     # Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')

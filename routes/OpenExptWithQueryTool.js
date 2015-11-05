@@ -28,7 +28,7 @@
         }
       });
     } else if (tool === 'DataViewer') {
-      return resp.redirect('/geneidquery/filterByExpt/' + req.query.experiment);
+      return resp.redirect('/dataViewer/filterByExpt/' + req.query.experiment);
     } else {
       return resp.status(500).send('Invalid viewer tool');
     }

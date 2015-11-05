@@ -49,7 +49,7 @@ This service takes a list of geneids and returns related experimental data,
   };
 
   basicReturnExampleSuccess = {
-    results: window.geneDataQueriesTestJSON.geneIDQueryResults,
+    results: window.dataViewerTestJSON.dataViewerResults,
     hasError: false,
     hasWarning: true,
     errorMessages: []
@@ -60,28 +60,28 @@ This service takes a list of geneids and returns related experimental data,
   };
 
   advnacedReturnExampleSuccess = {
-    results: window.geneDataQueriesTestJSON.getGeneExperimentsReturn,
+    results: window.dataViewerTestJSON.getGeneExperimentsReturn,
     hasError: false,
     hasWarning: false,
     errorMessages: []
   };
 
   advnacedReturnExampleSuccess = {
-    results: window.geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn,
+    results: window.dataViewerTestJSON.getGeneExperimentsNoResultsReturn,
     hasError: false,
     hasWarning: false,
     errorMessages: []
   };
 
   advancedReturnExampleSuccess = {
-    results: window.geneDataQueriesTestJSON.experimentSearchOptions,
+    results: window.dataViewerTestJSON.experimentSearchOptions,
     hasError: false,
     hasWarning: false,
     errorMessages: []
   };
 
   advnacedReturnExampleSuccess = {
-    results: window.geneDataQueriesTestJSON.experimentSearchOptionsNoMatches,
+    results: window.dataViewerTestJSON.experimentSearchOptionsNoMatches,
     hasError: false,
     hasWarning: false,
     errorMessages: []
@@ -117,7 +117,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQuery",
+              url: "api/dataViewer",
               data: goodDataRequest,
               success: (function(_this) {
                 return function(json) {
@@ -149,7 +149,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQuery",
+              url: "api/dataViewer",
               data: {
                 geneIDs: "fiona"
               },
@@ -183,7 +183,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQuery",
+              url: "api/dataViewer",
               data: badDataRequest,
               success: (function(_this) {
                 return function(json) {
@@ -215,7 +215,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQuery?format=csv",
+              url: "api/dataViewer?format=csv",
               data: {
                 geneIDs: "fiona"
               },
@@ -446,7 +446,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQueryAdvanced",
+              url: "api/dataViewerAdvanced",
               data: goodAdvancedRequest,
               success: (function(_this) {
                 return function(json) {
@@ -479,7 +479,7 @@ This service takes a list of geneids and returns related experimental data,
             goodAdvancedRequest.queryParams.batchCodes = "fiona";
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQueryAdvanced",
+              url: "api/dataViewerAdvanced",
               data: goodAdvancedRequest,
               success: (function(_this) {
                 return function(json) {
@@ -512,7 +512,7 @@ This service takes a list of geneids and returns related experimental data,
             goodAdvancedRequest.maxRowsToReturn = -1;
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQueryAdvanced",
+              url: "api/dataViewerAdvanced",
               data: goodAdvancedRequest,
               success: (function(_this) {
                 return function(json) {
@@ -544,7 +544,7 @@ This service takes a list of geneids and returns related experimental data,
           return runs(function() {
             return $.ajax({
               type: 'POST',
-              url: "api/geneDataQueryAdvanced?format=csv",
+              url: "api/dataViewerAdvanced?format=csv",
               data: goodAdvancedRequest,
               success: (function(_this) {
                 return function(res) {

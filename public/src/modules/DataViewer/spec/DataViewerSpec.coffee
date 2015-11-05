@@ -10,7 +10,7 @@ describe "Gene Data Queries Module Testing", ->
 	describe "Gene ID Query Input Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@gidqic = new GeneIDQueryInputController
+				@gidqic = new DataViewerInputController
 					el: $('#fixture')
 				@gidqic.render()
 			describe "basic existance tests", ->
@@ -60,8 +60,8 @@ describe "Gene Data Queries Module Testing", ->
 	describe "Gene ID Query Result Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@gidqrc = new GeneIDQueryResultController
-					model: new Backbone.Model window.geneDataQueriesTestJSON.geneIDQueryResults
+				@gidqrc = new DataViewerResultController
+					model: new Backbone.Model window.dataViewerTestJSON.dataViewerResults
 					el: $('#fixture')
 				@gidqrc.render()
 			describe "basic existance tests", ->
@@ -90,8 +90,8 @@ describe "Gene Data Queries Module Testing", ->
 						expect(@downLoadCSVRequested).toBeTruthy()
 		describe 'when instantiated with empty result set', ->
 			beforeEach ->
-				@gidqrc = new GeneIDQueryResultController
-					model: new Backbone.Model window.geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
+				@gidqrc = new DataViewerResultController
+					model: new Backbone.Model window.dataViewerTestJSON.dataViewerResultsNoneFound
 					el: $('#fixture')
 				@gidqrc.render()
 			describe "data display", ->
@@ -105,7 +105,7 @@ describe "Gene Data Queries Module Testing", ->
 	describe "Gene ID Query Search Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@gidqsc = new GeneIDQuerySearchController
+				@gidqsc = new DataViewerSearchController
 					el: $('#fixture')
 				@gidqsc.render()
 			describe "basic existance tests", ->
@@ -137,7 +137,7 @@ describe "Gene Data Queries Module Testing", ->
 			describe "search return handling", ->
 				beforeEach ->
 					@gidqsc.handleSearchReturn
-						results: window.geneDataQueriesTestJSON.geneIDQueryResults
+						results: window.dataViewerTestJSON.dataViewerResults
 				it "should have a function to call when search returns", ->
 					expect(@gidqsc.handleSearchReturn).toBeDefined()
 				it "should show result view", ->
@@ -166,7 +166,7 @@ describe "Gene Data Queries Module Testing", ->
 				beforeEach ->
 					@etc = new ExperimentTreeController
 						el: $('#fixture')
-						model: new Backbone.Model window.geneDataQueriesTestJSON.getGeneExperimentsReturn
+						model: new Backbone.Model window.dataViewerTestJSON.getGeneExperimentsReturn
 					@etc.render()
 				describe "basic existance tests", ->
 					it 'should exist', ->
@@ -256,7 +256,7 @@ describe "Gene Data Queries Module Testing", ->
 						@erftc = new ExperimentResultFilterTermController
 							el: $('#fixture')
 							model: new ExperimentResultFilterTerm()
-							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+							filterOptions: new Backbone.Collection window.dataViewerTestJSON.experimentSearchOptions.experiments
 							termName: "Q1"
 						@erftc.render()
 					describe "basic existance tests", ->
@@ -357,7 +357,7 @@ describe "Gene Data Queries Module Testing", ->
 						@erftlc = new ExperimentResultFilterTermListController
 							el: $('#fixture')
 							collection: new ExperimentResultFilterTermList()
-							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+							filterOptions: new Backbone.Collection window.dataViewerTestJSON.experimentSearchOptions.experiments
 						@erftlc.render()
 					describe "basic existance tests", ->
 						it 'should exist', ->
@@ -416,7 +416,7 @@ describe "Gene Data Queries Module Testing", ->
 					beforeEach ->
 						@erfc = new ExperimentResultFilterController
 							el: $('#fixture')
-							filterOptions: new Backbone.Collection window.geneDataQueriesTestJSON.experimentSearchOptions.experiments
+							filterOptions: new Backbone.Collection window.dataViewerTestJSON.experimentSearchOptions.experiments
 						@erfc.render()
 					describe "basic existance tests", ->
 						it 'should exist', ->
@@ -558,7 +558,7 @@ describe "Gene Data Queries Module Testing", ->
 	describe "Gene ID Query App Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
-				@gidqac = new GeneIDQueryAppController
+				@gidqac = new DataViewerAppController
 					el: $('#fixture')
 				@gidqac.render()
 			describe "basic existance tests", ->

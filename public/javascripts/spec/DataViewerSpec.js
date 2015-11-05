@@ -13,7 +13,7 @@
     describe("Gene ID Query Input Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
-          this.gidqic = new GeneIDQueryInputController({
+          this.gidqic = new DataViewerInputController({
             el: $('#fixture')
           });
           return this.gidqic.render();
@@ -94,8 +94,8 @@
     describe("Gene ID Query Result Controller", function() {
       describe('when instantiated', function() {
         beforeEach(function() {
-          this.gidqrc = new GeneIDQueryResultController({
-            model: new Backbone.Model(window.geneDataQueriesTestJSON.geneIDQueryResults),
+          this.gidqrc = new DataViewerResultController({
+            model: new Backbone.Model(window.dataViewerTestJSON.dataViewerResults),
             el: $('#fixture')
           });
           return this.gidqrc.render();
@@ -145,8 +145,8 @@
       });
       return describe('when instantiated with empty result set', function() {
         beforeEach(function() {
-          this.gidqrc = new GeneIDQueryResultController({
-            model: new Backbone.Model(window.geneDataQueriesTestJSON.geneIDQueryResultsNoneFound),
+          this.gidqrc = new DataViewerResultController({
+            model: new Backbone.Model(window.dataViewerTestJSON.dataViewerResultsNoneFound),
             el: $('#fixture')
           });
           return this.gidqrc.render();
@@ -167,7 +167,7 @@
     describe("Gene ID Query Search Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
-          this.gidqsc = new GeneIDQuerySearchController({
+          this.gidqsc = new DataViewerSearchController({
             el: $('#fixture')
           });
           return this.gidqsc.render();
@@ -212,7 +212,7 @@
         return describe("search return handling", function() {
           beforeEach(function() {
             return this.gidqsc.handleSearchReturn({
-              results: window.geneDataQueriesTestJSON.geneIDQueryResults
+              results: window.dataViewerTestJSON.dataViewerResults
             });
           });
           it("should have a function to call when search returns", function() {
@@ -251,7 +251,7 @@
           beforeEach(function() {
             this.etc = new ExperimentTreeController({
               el: $('#fixture'),
-              model: new Backbone.Model(window.geneDataQueriesTestJSON.getGeneExperimentsReturn)
+              model: new Backbone.Model(window.dataViewerTestJSON.getGeneExperimentsReturn)
             });
             return this.etc.render();
           });
@@ -387,7 +387,7 @@
               this.erftc = new ExperimentResultFilterTermController({
                 el: $('#fixture'),
                 model: new ExperimentResultFilterTerm(),
-                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments),
+                filterOptions: new Backbone.Collection(window.dataViewerTestJSON.experimentSearchOptions.experiments),
                 termName: "Q1"
               });
               return this.erftc.render();
@@ -516,7 +516,7 @@
               this.erftlc = new ExperimentResultFilterTermListController({
                 el: $('#fixture'),
                 collection: new ExperimentResultFilterTermList(),
-                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+                filterOptions: new Backbone.Collection(window.dataViewerTestJSON.experimentSearchOptions.experiments)
               });
               return this.erftlc.render();
             });
@@ -593,7 +593,7 @@
             beforeEach(function() {
               this.erfc = new ExperimentResultFilterController({
                 el: $('#fixture'),
-                filterOptions: new Backbone.Collection(window.geneDataQueriesTestJSON.experimentSearchOptions.experiments)
+                filterOptions: new Backbone.Collection(window.dataViewerTestJSON.experimentSearchOptions.experiments)
               });
               return this.erfc.render();
             });
@@ -799,7 +799,7 @@
     return describe("Gene ID Query App Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
-          this.gidqac = new GeneIDQueryAppController({
+          this.gidqac = new DataViewerAppController({
             el: $('#fixture')
           });
           return this.gidqac.render();

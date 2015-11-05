@@ -33,7 +33,7 @@ config = require '../../../conf/compiled/conf.js'
 ####################################################################
 #   Gene ID
 #
-# To be consistent with geneIDQuery, this simply returns the gene ID
+# To be consistent with dataViewer, this simply returns the gene ID
 # (bestLabel) centered in a paragraph tag.
 ####################################################################
 describe "SAR rendering service for Gene ID's", ->

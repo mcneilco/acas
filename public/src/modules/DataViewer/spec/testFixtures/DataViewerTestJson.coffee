@@ -1,5 +1,5 @@
 ((exports) ->
-	exports.geneIDQueryResults =
+	exports.dataViewerResults =
 		htmlSummary: "HTML from service"
 		data:
 			"iTotalRecords": 1000
@@ -26,7 +26,7 @@
 				{numberOfColumns: 2, titleText: 'Experiment 103'},
 				{numberOfColumns: 2, titleText: 'Experiment 104'}
 			]
-	exports.geneIDQueryResultsNoneFound =
+	exports.dataViewerResultsNoneFound =
 		htmlSummary: "HTML from service"
 		data:
 			"iTotalRecords": 0
@@ -153,4 +153,4 @@
 		experiments: []
 		htmlSummary: "No results found"
 
-) (if (typeof process is "undefined" or not process.versions) then window.geneDataQueriesTestJSON = window.geneDataQueriesTestJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.dataViewerTestJSON = window.dataViewerTestJSON or {} else exports)

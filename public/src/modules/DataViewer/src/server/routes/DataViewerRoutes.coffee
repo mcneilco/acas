@@ -1,14 +1,14 @@
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.post '/api/geneDataQuery', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes
+	app.post '/api/dataViewer', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenes
 	app.post '/api/getGeneExperiments', loginRoutes.ensureAuthenticated, exports.getExperimentListForGenes
 	app.post '/api/getExperimentSearchAttributes', loginRoutes.ensureAuthenticated, exports.getExperimentSearchAttributes
-	app.post '/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
+	app.post '/api/dataViewerAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced
 	config = require '../conf/compiled/conf.js'
 	#	if config.all.client.require.login
-	app.get '/dataViewer', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
-	app.get '/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch
-	app.get '/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch
+	app.get '/dataViewer', loginRoutes.ensureAuthenticated, exports.dataViewerIndex
+	app.get '/dataViewer/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchDataViewerSimpleSearch
+	app.get '/dataViewer/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchDataViewerFilterByExptSearch
 
 
 exports.getExperimentDataForGenes = (req, resp)  ->
@@ -83,12 +83,12 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 		resp.writeHead(200, {'Content-Type': 'application/json'});
 		if global.specRunnerTestmode
 			console.log "test mode: "+global.specRunnerTestmode
-			geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+			dataViewerTestJSON = require '../public/javascripts/spec/testFixtures/DataViewerTestJson.js'
 			requestError = if req.body.maxRowsToReturn < 0 then true else false
 			if req.body.geneIDs == "fiona"
-				results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
+				results = dataViewerTestJSON.dataViewerResultsNoneFound
 			else
-				results = geneDataQueriesTestJSON.geneIDQueryResults
+				results = dataViewerTestJSON.dataViewerResults
 			responseObj =
 				results: results
 				hasError: requestError
@@ -122,12 +122,12 @@ exports.getExperimentListForGenes = (req, resp)  ->
 	resp.writeHead(200, {'Content-Type': 'application/json'});
 	if global.specRunnerTestmode
 		console.log "test mode: "+global.specRunnerTestmode
-		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+		dataViewerTestJSON = require '../public/javascripts/spec/testFixtures/DataViewerTestJson.js'
 		requestError = if req.body.maxRowsToReturn < 0 then true else false
 		if req.body.geneIDs == "fiona"
-			results = geneDataQueriesTestJSON.getGeneExperimentsNoResultsReturn
+			results = dataViewerTestJSON.getGeneExperimentsNoResultsReturn
 		else
-			results = geneDataQueriesTestJSON.getGeneExperimentsReturn
+			results = dataViewerTestJSON.getGeneExperimentsReturn
 		responseObj =
 			results: results
 			hasError: requestError
@@ -163,12 +163,12 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 	resp.writeHead(200, {'Content-Type': 'application/json'});
 	if global.specRunnerTestmode
 		console.log "test mode: "+global.specRunnerTestmode
-		geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+		dataViewerTestJSON = require '../public/javascripts/spec/testFixtures/DataViewerTestJson.js'
 		requestError = if req.body.experimentCodes[0] == "error" then true else false
 		if req.body.experimentCodes[0] == "fiona"
-			results = geneDataQueriesTestJSON.experimentSearchOptionsNoMatches
+			results = dataViewerTestJSON.experimentSearchOptionsNoMatches
 		else
-			results = geneDataQueriesTestJSON.experimentSearchOptions
+			results = dataViewerTestJSON.experimentSearchOptions
 		responseObj =
 			results: results
 			hasError: requestError
@@ -198,7 +198,7 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 				console.log resp
 		)
 
-exports.autoLaunchGeneIDSimpleSearch = (req, res) ->
+exports.autoLaunchDataViewerSimpleSearch = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 
@@ -216,7 +216,7 @@ exports.autoLaunchGeneIDSimpleSearch = (req, res) ->
 			firstName: "no",
 			lastName: "user"
 
-	return res.render 'GeneIDQuery',
+	return res.render 'DataViewer',
 		title: "Gene ID Query"
 		scripts: scriptsToLoad
 		AppLaunchParams:
@@ -228,7 +228,7 @@ exports.autoLaunchGeneIDSimpleSearch = (req, res) ->
 			searchOptions: if req.params.searchOptions? then req.params.searchOptions else null
 			deployMode: global.deployMode
 
-exports.autoLaunchGeneIDFilterByExptSearch = (req, res) ->
+exports.autoLaunchDataViewerFilterByExptSearch = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 
@@ -246,7 +246,7 @@ exports.autoLaunchGeneIDFilterByExptSearch = (req, res) ->
 			firstName: "no",
 			lastName: "user"
 
-	return res.render 'GeneIDQuery',
+	return res.render 'DataViewer',
 		title: "Gene ID Query"
 		scripts: scriptsToLoad
 		AppLaunchParams:
@@ -258,7 +258,7 @@ exports.autoLaunchGeneIDFilterByExptSearch = (req, res) ->
 			searchOptions: if req.params.searchOptions? then req.params.searchOptions else null
 			deployMode: global.deployMode
 
-exports.geneIDQueryIndex = (req, res) ->
+exports.dataViewerIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 
@@ -276,7 +276,7 @@ exports.geneIDQueryIndex = (req, res) ->
 			firstName: "no",
 			lastName: "user"
 
-	return res.render 'GeneIDQuery',
+	return res.render 'DataViewer',
 		title: "Gene ID Query"
 		scripts: scriptsToLoad
 		AppLaunchParams:
@@ -357,12 +357,12 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 		resp.writeHead(200, {'Content-Type': 'application/json'});
 		if global.specRunnerTestmode
 			console.log "test mode: "+global.specRunnerTestmode
-			geneDataQueriesTestJSON = require '../public/javascripts/spec/testFixtures/GeneDataQueriesTestJson.js'
+			dataViewerTestJSON = require '../public/javascripts/spec/testFixtures/DataViewerTestJson.js'
 			requestError = if req.body.maxRowsToReturn < 0 then true else false
 			if req.body.queryParams.batchCodes == "fiona"
-				results = geneDataQueriesTestJSON.geneIDQueryResultsNoneFound
+				results = dataViewerTestJSON.dataViewerResultsNoneFound
 			else
-				results = geneDataQueriesTestJSON.geneIDQueryResults
+				results = dataViewerTestJSON.dataViewerResults
 			responseObj =
 				results: results
 				hasError: requestError

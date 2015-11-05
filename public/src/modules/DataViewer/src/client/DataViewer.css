@@ -1,40 +1,40 @@
-.GeneIDQueryAppController .bv_gidMainNavbar {
+.DataViewerAppController .bv_gidMainNavbar {
 	margin-top: 0px !important;
 }
 
-.GeneIDQueryAppController .chandaACAS {
+.DataViewerAppController .chandaACAS {
     margin-left: 1px;
     padding-left: 9px;
 }
 
-.GeneIDQueryAppController .logoutButton {
+.DataViewerAppController .logoutButton {
     margin-top: 0px !important;
 }
 
-.GeneIDQueryAppController .navbar-inverse .brand:hover {
+.DataViewerAppController .navbar-inverse .brand:hover {
     color: #999999;
 }
 
-.GeneIDQueryAppController .bv_gidACASBadge {
+.DataViewerAppController .bv_gidACASBadge {
 	margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .bv_searchForm {
+.DataViewerAppController .bv_searchForm {
 	margin-bottom: 0px !important;
 }
 
-.GeneIDQueryAppController .bv_search {
+.DataViewerAppController .bv_search {
 	margin-top: 0px !important;
 }
 
-.GeneIDQueryAppController .bv_toolbar {
+.DataViewerAppController .bv_toolbar {
 	margin-bottom: 0px !important;
 	-webkit-border-radius: 0 !important;
 	-moz-border-radius: 0 !important;
 	border-radius: 0 !important;
 }
 
-.GeneIDQueryAppController .gidNavWellTop {
+.DataViewerAppController .gidNavWellTop {
 	margin-top: 40px !important;
 	margin-bottom: 0px !important;
 	-webkit-border-radius: 0 !important;
@@ -42,74 +42,74 @@
 	border-radius: 0 !important;
 }
 
-.GeneIDQueryAppController .gidAdvancedNavSearchButtonStart {
+.DataViewerAppController .gidAdvancedNavSearchButtonStart {
     margin-top: 5px;
     margin-left: 15px;
 }
 
-.GeneIDQueryAppController .gidAdvancedNavSearchButtonTop {
+.DataViewerAppController .gidAdvancedNavSearchButtonTop {
     margin-top: 0 !important;
 		margin-left: 15px;
 }
 
-.GeneIDQueryAppController .bv_gidACASBadgeTop {
+.DataViewerAppController .bv_gidACASBadgeTop {
     padding-top: 0;
 	padding-right: 10px;
 }
 
-.GeneIDQueryAppController .bv_gidNavHelpButton {
+.DataViewerAppController .bv_gidNavHelpButton {
 	margin-top: 0px !important;
 }
 
-.GeneIDQueryAppController .bv_gidNavSettingsButton {
+.DataViewerAppController .bv_gidNavSettingsButton {
 	margin-top: 0px !important;
 }
 
-.GeneIDQueryAppController .noResultsWell {
+.DataViewerAppController .noResultsWell {
 	padding-left: 20px;
 	margin-top: 100px;
 }
 
-.GeneIDQueryAppController .resultsWell {
+.DataViewerAppController .resultsWell {
 	margin-top: 100px !important;
 }
 
-.GeneIDQueryAppController .bv_resultsView {
+.DataViewerAppController .bv_resultsView {
 	margin: 15px !important;
 }
 
 
-.GeneIDQueryAppController .bv_gidDownloadCSV {
+.DataViewerAppController .bv_gidDownloadCSV {
     margin-bottom: 10px;
     margin-left: 1017px;
 }
 
-.GeneIDQueryAppController .bv_downloadCSV {
+.DataViewerAppController .bv_downloadCSV {
     margin-left: 5px;
 }
 
-.GeneIDQueryAppController .bv_addDataRequest{
+.DataViewerAppController .bv_addDataRequest{
     margin-bottom: 10px;
     margin-left: 1017px;
 }
 
-.GeneIDQueryAppController .bv_gidDownloadCSVSimple {
+.DataViewerAppController .bv_gidDownloadCSVSimple {
     margin-bottom: 10px;
     margin-left: 987px;
 }
 
-.GeneIDQueryAppController .bv_addDataRequestSimple{
+.DataViewerAppController .bv_addDataRequestSimple{
     margin-bottom: 10px;
     margin-left: 1007px;
 }
 
-.GeneIDQueryAppController .gidNamesHeader {
+.DataViewerAppController .gidNamesHeader {
 	border-top: solid;
 	border-top-width: 1px;
 	border-top-color: #000000;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchNavWellTop {
+.DataViewerAppController .gidAdvancedSearchNavWellTop {
     margin-top: 40px !important;
     margin-bottom: 0px !important;
     height: 30px;
@@ -118,136 +118,136 @@
     border-radius: 0 !important;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchNavbarTitle {
+.DataViewerAppController .gidAdvancedSearchNavbarTitle {
     margin-top: 6px;
     margin-left: 0;
 }
 
-.GeneIDQueryAppController .gidAdvancedQueryContainerPadding {
+.DataViewerAppController .gidAdvancedQueryContainerPadding {
     padding-top: 100px;
     padding-left: 75px;
 }
 
-.GeneIDQueryAppController .gidAdvancedQueryWizardTitle {
+.DataViewerAppController .gidAdvancedQueryWizardTitle {
     font-size: 18px;
     margin-left:0;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchSteps {
+.DataViewerAppController .gidAdvancedSearchSteps {
     font-size: 18px;
     width: 90px;
     margin-left: 580px;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchWell {
+.DataViewerAppController .gidAdvancedSearchWell {
     width: 920px;
     margin-top: 0;
     margin-left: 0;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchStepTitles {
+.DataViewerAppController .gidAdvancedSearchStepTitles {
     margin-top: 0;
 }
 
-.GeneIDQueryAppController .bv_noExperimentsFound {
+.DataViewerAppController .bv_noExperimentsFound {
     margin-left: 0;
 }
 
-.GeneIDQueryAppController .fiona {
+.DataViewerAppController .fiona {
     margin-left: 0;
     margin-bottom: 10px;
     width: 890px;
 }
 
-.GeneIDQueryAppController .bv_codesField {
+.DataViewerAppController .bv_codesField {
     width: 905px;
     resize: none;
 }
 
-.GeneIDQueryAppController .gidFilterExperimentsInput {
+.DataViewerAppController .gidFilterExperimentsInput {
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .bv_searchVal {
+.DataViewerAppController .bv_searchVal {
     width: 838px;
 }
 
-.GeneIDQueryAppController .bv_tree {
+.DataViewerAppController .bv_tree {
     margin-left: 0;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchTerms {
+.DataViewerAppController .gidAdvancedSearchTerms {
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .bv_termName {
+.DataViewerAppController .bv_termName {
     margin-left: 10px;
     margin-right: 5px;
 }
 
-.GeneIDQueryAppController .bv_experiment {
+.DataViewerAppController .bv_experiment {
     margin-right: 5px;
 }
 
-.GeneIDQueryAppController .bv_kind {
+.DataViewerAppController .bv_kind {
     margin-right: 5px;
 }
 
-.GeneIDQueryAppController .bv_operator_number {
+.DataViewerAppController .bv_operator_number {
     margin-right: 5px;
     width:90px;
 }
 
-.GeneIDQueryAppController .bv_operator_bool {
+.DataViewerAppController .bv_operator_bool {
     margin-right: 100px;
     width:90px;
 }
 
-.GeneIDQueryAppController .bv_operator_string {
+.DataViewerAppController .bv_operator_string {
     margin-right: 5px;
     width:90px;
 }
 
-.GeneIDQueryAppController .bv_delete {
+.DataViewerAppController .bv_delete {
     margin-top: 3px;
     margin-right: 8px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchTermsWell {
+.DataViewerAppController .gidAdvancedSearchTermsWell {
     background-color: #FFFFFF;
     width: 900px;
     margin-left: 0;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchBooleanFilter {
+.DataViewerAppController .gidAdvancedSearchBooleanFilter {
     margin-left: 0;
     margin-bottom: 10px;
 }
 
-.GeneIDQueryAppController .radioAnd {
+.DataViewerAppController .radioAnd {
     padding-left: 10px !important;
 }
 
-.GeneIDQueryAppController .radioOr {
+.DataViewerAppController .radioOr {
     padding-left: 25px !important;
 
 }
 
-.GeneIDQueryAppController .radioTrue {
+.DataViewerAppController .radioTrue {
     padding-left: 15px !important;
 		padding-top: 8px ;
 }
-.GeneIDQueryAppController .radioFalse {
+.DataViewerAppController .radioFalse {
 		padding-top: 8px ;
 		padding-left: 1px;
 }
 
-.GeneIDQueryAppController .aggregationRadios {
+.DataViewerAppController .aggregationRadios {
 		margin-top: 3px !important;
 		margin-right: 5px !important;
 }
@@ -256,90 +256,90 @@
     padding-left: 25px !important;
 }
 
-.GeneIDQueryAppController .booleanRadios {
+.DataViewerAppController .booleanRadios {
     margin-right: 5px !important;
     margin-top: 3px!important;
 }
 
-.GeneIDQueryAppController .bv_advancedBoolContainer {
+.DataViewerAppController .bv_advancedBoolContainer {
     margin-left: 0;
     margin-bottom: 5px;
 }
 
-.GeneIDQueryAppController .bv_advancedBooleanFilter {
+.DataViewerAppController .bv_advancedBooleanFilter {
     width: 905px !important;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchButtons {
+.DataViewerAppController .gidAdvancedSearchButtons {
     padding-left: 587px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchButtonsNewQuery {
+.DataViewerAppController .gidAdvancedSearchButtonsNewQuery {
     padding-left: 730px;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchButtonsStepThree {
+.DataViewerAppController .gidAdvancedSearchButtonsStepThree {
     padding-left: 717px;
 }
 
-.GeneIDQueryAppController .bv_hidden{
+.DataViewerAppController .bv_hidden{
 		display: none !important;
 }
 
-.GeneIDQueryAppController .gidAdvancedSearchButtonsResultsView {
+.DataViewerAppController .gidAdvancedSearchButtonsResultsView {
     padding-top: 30px;
     padding-bottom: 50px;
     padding-left: 958px;
 }
 
-.GeneIDQueryAppController .aboutACAS {
+.DataViewerAppController .aboutACAS {
     margin-top: 0;
 }
 
-.GeneIDQueryAppController .helpLinks {
+.DataViewerAppController .helpLinks {
     margin-top: 10px;
     margin-left: 185px;
 }
 
-.GeneIDQueryAppController .container {
+.DataViewerAppController .container {
     margin-left: 0px !important;
     margin-right:0px !important;
 }
 
-.GeneIDQueryAppController .bv_advancedQueryContainer{
+.DataViewerAppController .bv_advancedQueryContainer{
     padding-right: 30px !important;
 }
 
 /*Properties so that curves display at a readable size*/
-.GeneIDQueryAppController .curveId{
+.DataViewerAppController .curveId{
     min-width: 380px !important;
 		text-align: center;
 }
 
-.GeneIDQueryAppController .referenceCode{
+.DataViewerAppController .referenceCode{
     min-width: 180px !important;
 }
 
-.GeneIDQueryAppController .fileValue{
+.DataViewerAppController .fileValue{
     min-width: 200px !important;
 		text-align: center;
 }
 
-.GeneIDQueryAppController .center{
+.DataViewerAppController .center{
     min-width: 50px;
 }
 
-.GeneIDQueryAppController .bv_headerCell{
+.DataViewerAppController .bv_headerCell{
     border-left: 1px solid black;
     border-right: 1px solid black;
 }
 
-body .GeneIDQueryAppController .bv_addDataModal{
+body .DataViewerAppController .bv_addDataModal{
 		width: 60% !important;
     margin-left: -30% !important;
 		max-height: 80% !important;
 }
 
-.GeneIDQueryAppController .bv_displayNameSelect{
+.DataViewerAppController .bv_displayNameSelect{
     margin-top: 10px;
 }

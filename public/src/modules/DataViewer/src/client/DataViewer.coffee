@@ -1,5 +1,5 @@
-class window.GeneIDQueryInputController extends Backbone.View
-	template: _.template($("#GeneIDQueryInputView").html())
+class window.DataViewerInputController extends Backbone.View
+	template: _.template($("#DataViewerInputView").html())
 
 	events:
 		"click .bv_search": "handleSearchClicked"
@@ -57,8 +57,8 @@ class window.GeneIDQueryInputController extends Backbone.View
 		@trigger 'requestAdvancedMode', $.trim(@$('.bv_gidListString').val()), @aggregate, @displayName
 
 
-class window.GeneIDQueryResultController extends Backbone.View
-	template: _.template($("#GeneIDQueryResultView").html())
+class window.DataViewerResultController extends Backbone.View
+	template: _.template($("#DataViewerResultView").html())
 	events:
 		"click .bv_downloadCSV": "handleDownloadCSVClicked"
 		"click .bv_addData": "handleAddDataClicked"
@@ -137,14 +137,14 @@ class window.GeneIDQueryResultController extends Backbone.View
 		@trigger 'addDataRequested'
 
 
-class window.GeneIDQuerySearchController extends Backbone.View
-	template: _.template($("#GeneIDQuerySearchView").html())
+class window.DataViewerSearchController extends Backbone.View
+	template: _.template($("#DataViewerSearchView").html())
 	lastSearch: ""
 
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		@queryInputController = new GeneIDQueryInputController
+		@queryInputController = new DataViewerInputController
 			el: @$('.bv_inputView')
 		@queryInputController.on 'search-requested', @handleSearchRequested
 		@queryInputController.on 'requestAdvancedMode', @requestFilterExperiments
@@ -278,7 +278,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	runRequestedSearch: ->
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced"
+			url: "/api/dataViewerAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -296,7 +296,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	# 	@$('.bv_searchStatusDropDown').modal "show"
 	# 	$.ajax
 	# 		type: 'POST'
-	# 		url: "api/geneDataQuery"
+	# 		url: "api/dataViewer"
 	# 		data:
 	# 			geneIDs: searchStr
 	# 			maxRowsToReturn: 10000
@@ -311,7 +311,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@resultsJson = json.results
 		@resultsJson.data.displayName = @displayName
 		if !@dataAdded
-			@resultController = new GeneIDQueryResultController
+			@resultController = new DataViewerResultController
 				model: new Backbone.Model json.results
 				el: $('.bv_resultsView')
 			@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
@@ -344,7 +344,7 @@ class window.GeneIDQuerySearchController extends Backbone.View
 	handleDownLoadCSVRequested: =>
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced?format=csv"
+			url: "/api/dataViewerAdvanced?format=csv"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -482,7 +482,7 @@ class window.ShowHideExpts extends Backbone.View
 
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced"
+			url: "/api/dataViewerAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -994,7 +994,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@$('.bv_searchStatusDropDown').modal "show"
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced"
+			url: "/api/dataViewerAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1009,7 +1009,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 		@resultsJson = json.results
 		@resultsJson.data.displayName = @displayName
 		if !@dataAdded
-			@resultController = new GeneIDQueryResultController
+			@resultController = new DataViewerResultController
 				model: new Backbone.Model json.results
 				el: $('.bv_advResultsView')
 			@resultController.on 'downLoadCSVRequested', @handleDownLoadCSVRequested
@@ -1027,7 +1027,7 @@ class window.AdvancedExperimentResultsQueryController extends Backbone.View
 	handleDownLoadCSVRequested: =>
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced?format=csv"
+			url: "/api/dataViewerAdvanced?format=csv"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1188,7 +1188,7 @@ class window.AddDataToReport extends Backbone.View
 
 		$.ajax
 			type: 'POST'
-			url: "/api/geneDataQueryAdvanced"
+			url: "/api/dataViewerAdvanced"
 			dataType: 'json'
 			data:
 				queryParams: @getQueryParams()
@@ -1202,8 +1202,8 @@ class window.AddDataToReport extends Backbone.View
 		@trigger 'requestResults', json
 
 
-class window.GeneIDQueryAppController extends Backbone.View
-	template: _.template($("#GeneIDQueryAppView").html())
+class window.DataViewerAppController extends Backbone.View
+	template: _.template($("#DataViewerAppView").html())
 	moduleLaunchName: 'dataViewer'
 
 	events:
@@ -1215,7 +1215,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 	initialize: ->
 		$(@el).empty()
 		$(@el).html @template()
-		$(@el).addClass 'GeneIDQueryAppController'
+		$(@el).addClass 'DataViewerAppController'
 		@startBasicQueryWizard()
 		searchMode = window.AppLaunchParams.searchMode
 		if searchMode?
@@ -1256,7 +1256,7 @@ class window.GeneIDQueryAppController extends Backbone.View
 				@aerqc.runRequestedSearch()
 
 	startBasicQueryWizard: =>
-		@aerqc = new GeneIDQuerySearchController
+		@aerqc = new DataViewerSearchController
 			el: @$('.bv_basicQueryView')
 		@aerqc.render()
 		@$('.bv_advancedQueryContainer').hide()
