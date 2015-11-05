@@ -10,7 +10,7 @@
     if (tool == null) {
       tool = config.all.client.service.result.viewer.defaultViewer;
       if (tool == null) {
-        tool = 'Seurat';
+        tool = 'DataViewer';
       }
     }
     if (tool === 'LiveDesign') {
@@ -27,6 +27,8 @@
           return resp.redirect(res.resultViewerURL);
         }
       });
+    } else if (tool === 'DataViewer') {
+      return resp.redirect('/geneidquery/filterByExpt/' + req.query.experiment);
     } else {
       return resp.status(500).send('Invalid viewer tool');
     }

@@ -7,7 +7,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	config = require '../conf/compiled/conf.js'
 	#	if config.all.client.require.login
 	app.get '/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex
-	app.get '/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSearch
+	app.get '/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch
+	app.get '/geneidquery/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch
 
 
 exports.getExperimentDataForGenes = (req, resp)  ->
@@ -197,7 +198,7 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 				console.log resp
 		)
 
-exports.autoLaunchGeneIDSearch = (req, res) ->
+exports.autoLaunchGeneIDSimpleSearch = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
 
@@ -222,6 +223,37 @@ exports.autoLaunchGeneIDSearch = (req, res) ->
 			loginUserName: loginUserName
 			loginUser: loginUser
 			testMode: false
+			searchMode: "simpleSearch"
+			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
+			searchOptions: if req.params.searchOptions? then req.params.searchOptions else null
+			deployMode: global.deployMode
+
+exports.autoLaunchGeneIDFilterByExptSearch = (req, res) ->
+	scriptPaths = require './RequiredClientScripts.js'
+	config = require '../conf/compiled/conf.js'
+
+	global.specRunnerTestmode = if global.stubsMode then true else false
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
+	if config.all.client.require.login
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
+	return res.render 'GeneIDQuery',
+		title: "Gene ID Query"
+		scripts: scriptsToLoad
+		AppLaunchParams:
+			loginUserName: loginUserName
+			loginUser: loginUser
+			testMode: false
+			searchMode: "filterByExpt"
 			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
 			searchOptions: if req.params.searchOptions? then req.params.searchOptions else null
 			deployMode: global.deployMode

@@ -7,7 +7,8 @@
     app.post('/api/geneDataQueryAdvanced', loginRoutes.ensureAuthenticated, exports.getExperimentDataForGenesAdvanced);
     config = require('../conf/compiled/conf.js');
     app.get('/geneIDQuery', loginRoutes.ensureAuthenticated, exports.geneIDQueryIndex);
-    return app.get('/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSearch);
+    app.get('/geneidquery/simpleSearch/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDSimpleSearch);
+    return app.get('/geneidquery/filterByExpt/:searchOptions', loginRoutes.ensureAuthenticated, exports.autoLaunchGeneIDFilterByExptSearch);
   };
 
   exports.getExperimentDataForGenes = function(req, resp) {
@@ -261,7 +262,7 @@
     }
   };
 
-  exports.autoLaunchGeneIDSearch = function(req, res) {
+  exports.autoLaunchGeneIDSimpleSearch = function(req, res) {
     var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
     scriptPaths = require('./RequiredClientScripts.js');
     config = require('../conf/compiled/conf.js');
@@ -287,6 +288,41 @@
         loginUserName: loginUserName,
         loginUser: loginUser,
         testMode: false,
+        searchMode: "simpleSearch",
+        moduleLaunchParams: typeof moduleLaunchParams !== "undefined" && moduleLaunchParams !== null ? moduleLaunchParams : null,
+        searchOptions: req.params.searchOptions != null ? req.params.searchOptions : null,
+        deployMode: global.deployMode
+      }
+    });
+  };
+
+  exports.autoLaunchGeneIDFilterByExptSearch = function(req, res) {
+    var config, loginUser, loginUserName, scriptPaths, scriptsToLoad;
+    scriptPaths = require('./RequiredClientScripts.js');
+    config = require('../conf/compiled/conf.js');
+    global.specRunnerTestmode = global.stubsMode ? true : false;
+    scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts);
+    if (config.all.client.require.login) {
+      loginUserName = req.user.username;
+      loginUser = req.user;
+    } else {
+      loginUserName = "nouser";
+      loginUser = {
+        id: 0,
+        username: "nouser",
+        email: "nouser@nowhere.com",
+        firstName: "no",
+        lastName: "user"
+      };
+    }
+    return res.render('GeneIDQuery', {
+      title: "Gene ID Query",
+      scripts: scriptsToLoad,
+      AppLaunchParams: {
+        loginUserName: loginUserName,
+        loginUser: loginUser,
+        testMode: false,
+        searchMode: "filterByExpt",
         moduleLaunchParams: typeof moduleLaunchParams !== "undefined" && moduleLaunchParams !== null ? moduleLaunchParams : null,
         searchOptions: req.params.searchOptions != null ? req.params.searchOptions : null,
         deployMode: global.deployMode

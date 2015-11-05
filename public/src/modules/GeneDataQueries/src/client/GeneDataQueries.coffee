@@ -158,8 +158,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@trigger 'requestAdvancedMode', searchStr, aggregate, displayName
 
 	handleSearchRequested: (searchStr, displayName) =>
-		console.log searchStr
-		console.log displayName
 		@displayName = displayName
 		@lastSearch = searchStr
 		@$('.bv_searchStatusDropDown').modal
@@ -168,7 +166,6 @@ class window.GeneIDQuerySearchController extends Backbone.View
 		@fromSearchtoCodes()
 
 	fromSearchtoCodes: ->
-		console.log "from search to codes, 167"
 		searchString = @lastSearch
 		searchTerms = searchString.split(/[^A-Za-z0-9_-]/) #split on whitespace except "-"
 		searchTerms = _.filter(searchTerms, (x) -> x != "")
@@ -1220,30 +1217,43 @@ class window.GeneIDQueryAppController extends Backbone.View
 		$(@el).html @template()
 		$(@el).addClass 'GeneIDQueryAppController'
 		@startBasicQueryWizard()
-		if window.AppLaunchParams.searchOptions?
-			searchOptionsList = window.AppLaunchParams.searchOptions.split(',')
-			searchStr = ""
-			if $.trim searchOptionsList[0]?
-				searchStr = $.trim searchOptionsList[0]
-			if searchStr is ""
-				alert "You must specify a search string such a batch code, name, or id."
-			else
-				displayName = "unassigned"
-				if searchOptionsList[1]? and $.trim(searchOptionsList[1])!= ""
-					displayName = $.trim searchOptionsList[1]
-				aggregate = false
-				oppAggregate = true
-				if searchOptionsList[2]? and $.trim(searchOptionsList[2]) != ""
-					aggregate = $.trim(searchOptionsList[2]) is "true"
-					oppAggregate = !aggregate
-				@aerqc.queryInputController.$('.bv_gidListString').val(searchStr)
-				@aerqc.queryInputController.displayNameListController.setSelectedCode(displayName)
-				@aerqc.queryInputController.$('.bv_displayNameSelect').change()
-				@aerqc.queryInputController.displayName = displayName
-				@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).attr('checked', 'checked')
-				@aerqc.queryInputController.$('.bv_aggregation_'+oppAggregate).removeAttr('checked')
-				@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).click()
-				@aerqc.handleSearchRequested(searchStr, displayName)
+		searchMode = window.AppLaunchParams.searchMode
+		if searchMode?
+			if searchMode is "simpleSearch"
+				searchOptionsList = window.AppLaunchParams.searchOptions.split(';')
+				searchStr = ""
+				if $.trim searchOptionsList[0]?
+					searchStr = $.trim searchOptionsList[0]
+				if searchStr is ""
+					alert "You must specify a search string such a batch code, name, or id."
+				else
+					displayName = "unassigned"
+					if searchOptionsList[1]? and $.trim(searchOptionsList[1])!= ""
+						displayName = $.trim searchOptionsList[1]
+					aggregate = false
+					oppAggregate = true
+					if searchOptionsList[2]? and $.trim(searchOptionsList[2]) != ""
+						aggregate = $.trim(searchOptionsList[2]) is "true"
+						oppAggregate = !aggregate
+					@aerqc.queryInputController.$('.bv_gidListString').val(searchStr)
+					@aerqc.queryInputController.displayNameListController.setSelectedCode(displayName)
+					@aerqc.queryInputController.$('.bv_displayNameSelect').change()
+					@aerqc.queryInputController.displayName = displayName
+					@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).attr('checked', 'checked')
+					@aerqc.queryInputController.$('.bv_aggregation_'+oppAggregate).removeAttr('checked')
+					@aerqc.queryInputController.$('.bv_aggregation_'+aggregate).click()
+					@aerqc.handleSearchRequested(searchStr, displayName)
+			else if searchMode is "filterByExpt"
+				@aerqc.$('.bv_searchStatusDropDown').modal
+					backdrop: "static"
+				@aerqc.$('.bv_searchStatusDropDown').modal "show"
+				codesList = window.AppLaunchParams.searchOptions.split(',')
+				trimmedCodesList = []
+				for code in codesList
+					code = $.trim(code)
+					trimmedCodesList.push code
+				@aerqc.codesList = trimmedCodesList
+				@aerqc.runRequestedSearch()
 
 	startBasicQueryWizard: =>
 		@aerqc = new GeneIDQuerySearchController

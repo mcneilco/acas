@@ -11,7 +11,7 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 	if not tool?
 		tool = config.all.client.service.result.viewer.defaultViewer
 		if not tool? #default may later change to Simple SAR
-			tool = 'Seurat'
+			tool = 'DataViewer'
 	if tool is 'LiveDesign'
 		#resp.redirect '/api/redirectToNewLiveDesignLiveReportForExperiment/' + req.query.experiment
 		getLdUrl = require './CreateLiveDesignLiveReportForACAS.js'
@@ -24,6 +24,8 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 				resp.status(404).send "Could not get Seurat link"
 			else
 				resp.redirect res.resultViewerURL
+	else if tool is 'DataViewer'
+		resp.redirect '/geneidquery/filterByExpt/'+req.query.experiment
 	else
     # Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')

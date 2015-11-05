@@ -252,8 +252,6 @@
     };
 
     GeneIDQuerySearchController.prototype.handleSearchRequested = function(searchStr, displayName) {
-      console.log(searchStr);
-      console.log(displayName);
       this.displayName = displayName;
       this.lastSearch = searchStr;
       this.$('.bv_searchStatusDropDown').modal({
@@ -265,7 +263,6 @@
 
     GeneIDQuerySearchController.prototype.fromSearchtoCodes = function() {
       var j, l, len, len1, requests, results1, searchString, searchTerms, term;
-      console.log("from search to codes, 167");
       searchString = this.lastSearch;
       searchTerms = searchString.split(/[^A-Za-z0-9_-]/);
       searchTerms = _.filter(searchTerms, function(x) {
@@ -1767,38 +1764,55 @@
     };
 
     GeneIDQueryAppController.prototype.initialize = function() {
-      var aggregate, displayName, oppAggregate, searchOptionsList, searchStr;
+      var aggregate, code, codesList, displayName, j, len, oppAggregate, searchMode, searchOptionsList, searchStr, trimmedCodesList;
       $(this.el).empty();
       $(this.el).html(this.template());
       $(this.el).addClass('GeneIDQueryAppController');
       this.startBasicQueryWizard();
-      if (window.AppLaunchParams.searchOptions != null) {
-        searchOptionsList = window.AppLaunchParams.searchOptions.split(',');
-        searchStr = "";
-        if ($.trim(searchOptionsList[0] != null)) {
-          searchStr = $.trim(searchOptionsList[0]);
-        }
-        if (searchStr === "") {
-          return alert("You must specify a search string such a batch code, name, or id.");
-        } else {
-          displayName = "unassigned";
-          if ((searchOptionsList[1] != null) && $.trim(searchOptionsList[1]) !== "") {
-            displayName = $.trim(searchOptionsList[1]);
+      searchMode = window.AppLaunchParams.searchMode;
+      if (searchMode != null) {
+        if (searchMode === "simpleSearch") {
+          searchOptionsList = window.AppLaunchParams.searchOptions.split(';');
+          searchStr = "";
+          if ($.trim(searchOptionsList[0] != null)) {
+            searchStr = $.trim(searchOptionsList[0]);
           }
-          aggregate = false;
-          oppAggregate = true;
-          if ((searchOptionsList[2] != null) && $.trim(searchOptionsList[2]) !== "") {
-            aggregate = $.trim(searchOptionsList[2]) === "true";
-            oppAggregate = !aggregate;
+          if (searchStr === "") {
+            return alert("You must specify a search string such a batch code, name, or id.");
+          } else {
+            displayName = "unassigned";
+            if ((searchOptionsList[1] != null) && $.trim(searchOptionsList[1]) !== "") {
+              displayName = $.trim(searchOptionsList[1]);
+            }
+            aggregate = false;
+            oppAggregate = true;
+            if ((searchOptionsList[2] != null) && $.trim(searchOptionsList[2]) !== "") {
+              aggregate = $.trim(searchOptionsList[2]) === "true";
+              oppAggregate = !aggregate;
+            }
+            this.aerqc.queryInputController.$('.bv_gidListString').val(searchStr);
+            this.aerqc.queryInputController.displayNameListController.setSelectedCode(displayName);
+            this.aerqc.queryInputController.$('.bv_displayNameSelect').change();
+            this.aerqc.queryInputController.displayName = displayName;
+            this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).attr('checked', 'checked');
+            this.aerqc.queryInputController.$('.bv_aggregation_' + oppAggregate).removeAttr('checked');
+            this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).click();
+            return this.aerqc.handleSearchRequested(searchStr, displayName);
           }
-          this.aerqc.queryInputController.$('.bv_gidListString').val(searchStr);
-          this.aerqc.queryInputController.displayNameListController.setSelectedCode(displayName);
-          this.aerqc.queryInputController.$('.bv_displayNameSelect').change();
-          this.aerqc.queryInputController.displayName = displayName;
-          this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).attr('checked', 'checked');
-          this.aerqc.queryInputController.$('.bv_aggregation_' + oppAggregate).removeAttr('checked');
-          this.aerqc.queryInputController.$('.bv_aggregation_' + aggregate).click();
-          return this.aerqc.handleSearchRequested(searchStr, displayName);
+        } else if (searchMode === "filterByExpt") {
+          this.aerqc.$('.bv_searchStatusDropDown').modal({
+            backdrop: "static"
+          });
+          this.aerqc.$('.bv_searchStatusDropDown').modal("show");
+          codesList = window.AppLaunchParams.searchOptions.split(',');
+          trimmedCodesList = [];
+          for (j = 0, len = codesList.length; j < len; j++) {
+            code = codesList[j];
+            code = $.trim(code);
+            trimmedCodesList.push(code);
+          }
+          this.aerqc.codesList = trimmedCodesList;
+          return this.aerqc.runRequestedSearch();
         }
       }
     };
