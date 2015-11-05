@@ -89,12 +89,13 @@
           json: true
         }, (function(_this) {
           return function(error, response, json) {
-            if (!error && response.statusCode === 200) {
+            if (!error && response.statusCode === 200 && (json.codeName != null)) {
               return callback(json);
             } else {
               console.log('got ajax error trying to update lsThing');
               console.log(error);
-              return console.log(response);
+              console.log(response);
+              return callback("update lsThing failed");
             }
           };
         })(this));

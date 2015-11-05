@@ -76,12 +76,13 @@ updateThing = (thing, testMode, callback) ->
 				body: thing
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200
+				if !error && response.statusCode == 200 and json.codeName?
 					callback json
 				else
 					console.log 'got ajax error trying to update lsThing'
 					console.log error
 					console.log response
+					callback "update lsThing failed"
 			)
 
 

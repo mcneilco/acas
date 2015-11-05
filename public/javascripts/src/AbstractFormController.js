@@ -98,21 +98,21 @@
     };
 
     AbstractFormController.prototype.disableAllInputs = function() {
-      this.$('input').attr('disabled', 'disabled');
-      this.$('button').attr('disabled', 'disabled');
-      this.$('select').attr('disabled', 'disabled');
-      this.$("textarea").attr('disabled', 'disabled');
-      this.$(".bv_experimentCode").css("background-color", "#eeeeee");
-      this.$(".bv_experimentCode").css("color", "#333333");
-      this.$(".bv_completionDateIcon").addClass("uneditable-input");
-      this.$(".bv_completionDateIcon").on("click", function() {
+      this.$('input').not('.dontdisable').attr('disabled', 'disabled');
+      this.$('button').not('.dontdisable').attr('disabled', 'disabled');
+      this.$('select').not('.dontdisable').attr('disabled', 'disabled');
+      this.$("textarea").not('.dontdisable').attr('disabled', 'disabled');
+      this.$(".bv_experimentCode").not('.dontdisable').css("background-color", "#eeeeee");
+      this.$(".bv_experimentCode").not('.dontdisable').css("color", "#333333");
+      this.$(".bv_completionDateIcon").not('.dontdisable').addClass("uneditable-input");
+      this.$(".bv_completionDateIcon").not('.dontdisable').on("click", function() {
         return false;
       });
-      this.$(".bv_group_tags input").prop("placeholder", "");
-      this.$(".bv_group_tags input").css("background-color", "#eeeeee");
-      this.$(".bv_group_tags input").css("color", "#333333");
-      this.$(".bv_group_tags div.bootstrap-tagsinput").css("background-color", "#eeeeee");
-      return this.$("span.tag.label.label-info span").attr("data-role", "");
+      this.$(".bv_group_tags input").not('.dontdisable').prop("placeholder", "");
+      this.$(".bv_group_tags input").not('.dontdisable').css("background-color", "#eeeeee");
+      this.$(".bv_group_tags input").not('.dontdisable').css("color", "#333333");
+      this.$(".bv_group_tags div.bootstrap-tagsinput").not('.dontdisable').css("background-color", "#eeeeee");
+      return this.$("span.tag.label.label-info span").not('.dontdisable').attr("data-role", "");
     };
 
     AbstractFormController.prototype.enableAllInputs = function() {
