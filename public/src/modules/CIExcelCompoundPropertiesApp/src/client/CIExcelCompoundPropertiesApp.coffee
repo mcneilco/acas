@@ -74,7 +74,10 @@ class window.PropertyDescriptorController extends Backbone.View
 		@model.set 'isChecked', false
 		@$el.html @template(@model.attributes)
 		@$('.bv_descriptorLabel').text(@model.get('valueDescriptor').prettyName)
-		@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
+		if @model.get('valueDescriptor').description?
+			@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
+		else
+			@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').prettyName
 		@
 
 	handleDescriptorCheckboxZoneClicked: ->

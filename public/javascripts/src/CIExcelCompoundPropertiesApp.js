@@ -51,7 +51,9 @@
     function AttributesController() {
       this.getIncludeRequestedID = bind(this.getIncludeRequestedID, this);
       this.getInsertColumnHeaders = bind(this.getInsertColumnHeaders, this);
+      this.handleIncludeRequestedIDClickZone = bind(this.handleIncludeRequestedIDClickZone, this);
       this.handleIncludeRequestedID = bind(this.handleIncludeRequestedID, this);
+      this.handleInsertColumnHeadersClickZone = bind(this.handleInsertColumnHeadersClickZone, this);
       this.handleInsertColumnHeaders = bind(this.handleInsertColumnHeaders, this);
       this.render = bind(this.render, this);
       return AttributesController.__super__.constructor.apply(this, arguments);
@@ -64,7 +66,9 @@
     AttributesController.prototype.events = function() {
       return {
         'change .bv_insertColumnHeaders': 'handleInsertColumnHeaders',
-        'change .bv_includeRequestedID': 'handleIncludeRequestedID'
+        'click .bv_insertColumnHeadersClickZone': 'handleInsertColumnHeadersClickZone',
+        'change .bv_includeRequestedID': 'handleIncludeRequestedID',
+        'click .bv_includeRequestedIDClickZone': 'handleIncludeRequestedIDClickZone'
       };
     };
 
@@ -78,8 +82,16 @@
       return this.model.set('insertColumnHeaders', this.$('.bv_insertColumnHeaders').is(":checked"));
     };
 
+    AttributesController.prototype.handleInsertColumnHeadersClickZone = function() {
+      return this.$('.bv_insertColumnHeaders').click();
+    };
+
     AttributesController.prototype.handleIncludeRequestedID = function() {
       return this.model.set('includeRequestedID', this.$('.bv_includeRequestedID').is(":checked"));
+    };
+
+    AttributesController.prototype.handleIncludeRequestedIDClickZone = function() {
+      return this.$('.bv_includeRequestedID').click();
     };
 
     AttributesController.prototype.getInsertColumnHeaders = function() {
@@ -128,7 +140,11 @@
       this.model.set('isChecked', false);
       this.$el.html(this.template(this.model.attributes));
       this.$('.bv_descriptorLabel').text(this.model.get('valueDescriptor').prettyName);
-      this.$('.bv_descriptorLabel').attr('title', this.model.get('valueDescriptor').description);
+      if (this.model.get('valueDescriptor').description != null) {
+        this.$('.bv_descriptorLabel').attr('title', this.model.get('valueDescriptor').description);
+      } else {
+        this.$('.bv_descriptorLabel').attr('title', this.model.get('valueDescriptor').prettyName);
+      }
       return this;
     };
 
@@ -389,7 +405,7 @@
       });
       this.$("[data-toggle=options]").popover({
         html: true,
-        content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a>'
+        content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a><br /><a class="btn btn-xs btn-primary">Show Log'
       });
       return Office.context.document.addHandlerAsync(Office.EventType.DocumentSelectionChanged, (function(_this) {
         return function() {
