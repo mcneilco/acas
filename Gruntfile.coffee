@@ -270,7 +270,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: false
 					cwd: "."
-					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.R", "#{i}/modules/**/src/server/*.r"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = matchedSrcPath.split("/")[2]
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
