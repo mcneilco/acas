@@ -313,8 +313,8 @@ module.exports = (grunt) ->
 					return result.output
 		browserify:
 				module_client:
-					src: 'public/javascripts/src/ExcelApp.js'
-					dest: 'public/javascripts/src/ExcelApp.js'
+					src: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
+					dest: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
 		watch:
 			module_client_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
@@ -397,6 +397,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
 	grunt.loadNpmTasks "grunt-browserify"
+	grunt.loadNpmTasks "remapify"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]

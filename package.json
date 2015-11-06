@@ -39,6 +39,7 @@
     "winston": "*",
     "winston-mongodb": "*",
     "mocha": "*",
-    "properties-parser": "*"
+    "properties-parser": "*",
+    "remapify": "*"
   }
 }
