@@ -31,7 +31,9 @@ class window.AttributesController extends Backbone.View
 
 	events: ->
 		'change .bv_insertColumnHeaders': 'handleInsertColumnHeaders'
+		'click .bv_insertColumnHeadersClickZone': 'handleInsertColumnHeadersClickZone'
 		'change .bv_includeRequestedID': 'handleIncludeRequestedID'
+		'click .bv_includeRequestedIDClickZone': 'handleIncludeRequestedIDClickZone'
 
 	render: =>
 		@$el.empty()
@@ -41,8 +43,14 @@ class window.AttributesController extends Backbone.View
 	handleInsertColumnHeaders: =>
 		@model.set 'insertColumnHeaders', @$('.bv_insertColumnHeaders').is(":checked")
 
+	handleInsertColumnHeadersClickZone: =>
+		@$('.bv_insertColumnHeaders').click()
+
 	handleIncludeRequestedID: =>
 		@model.set 'includeRequestedID', @$('.bv_includeRequestedID').is(":checked")
+
+	handleIncludeRequestedIDClickZone: =>
+		@$('.bv_includeRequestedID').click()
 
 	getInsertColumnHeaders: =>
 		@model.get 'insertColumnHeaders'
@@ -219,7 +227,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
 		@$("[data-toggle=options]").popover
 			html: true
-			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a>'
+			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a><br /><a class="btn btn-xs btn-primary">Show Log'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
 			@validate()
 

@@ -1,9 +1,9 @@
 
 <script type="text/template" id="AttributesControllerView">
-    <div class="col-xs-6">
-        <input type="checkbox" name="bv_insertColumnHeaders" class="bv_insertColumnHeaders" <% if (insertColumnHeaders) { %> checked="checked"<% }%> />Insert Column Headers
+    <div class="bv_insertColumnHeadersClickZone col-xs-6">
+        <input type="checkbox" name="bv_insertColumnHeaders" class="bv_insertColumnHeaders" style="margin-right:10px;" <% if (insertColumnHeaders) { %> checked="checked"<% }%> />Insert Column Headers
     </div>
-    <div class="col-xs-5">
+    <div class="bv_includeRequestedIDClickZone col-xs-5">
         <input type="checkbox" name="bv_includeRequestedID" class="bv_includeRequestedID" style="margin-right:10px;" <% if (includeRequestedID) { %> checked="checked"<% }%> />Include Requested ID
     </div>
 </script>
@@ -18,9 +18,9 @@
 <script type="text/template" id="PropertyDescriptorListControllerView">
     <div style="margin-bottom:10px;margin-top:0px;">
         <div class="col-xs-3 bv_propertyDescriptorListControllerCollapser" style="width:250px;margin-right:0px;padding-left:0px;">
-            <h4 class="col-xs-8 propertyDescriptorListControllerTitle" style="padding-left:0px;margin-right:0px;padding-right:0px">Descriptors</h4>
-            <i class="bv_collapseDown glyphicon glyphicon-collapse-down" style="padding-top:12px;"></i>
-            <i class="bv_collapseExpand glyphicon glyphicon-expand hide" style="padding-top:12px;"></i>
+            <h4 class="col-xs-8 propertyDescriptorListControllerTitle" style="margin-right:0px;padding-right:0px">Descriptors</h4>
+            <i class="bv_collapseDown glyphicon glyphicon-triangle-bottom" style="padding-top:12px;"></i>
+            <i class="bv_collapseExpand glyphicon glyphicon glyphicon-triangle-right hide" style="padding-top:12px;"></i>
         </div>
         <div style="padding-top:8px;">
             <button type="button" class="btn-link bv_checkAll glyphicon glyphicon-check" data-toggle="tooltip" data-placement="top" title="Check all"></button>
@@ -32,7 +32,7 @@
 </script>
 
 <script type="text/template" id="ExcelInsertCompoundPropertiesView">
-    <div class="well" style="width:510px;padding-bottom:40px;">
+    <div class="well" style="width:510px;padding-bottom:40px;padding-top:5px;">
         <div style="padding-bottom:5px;" >
             <a tabindex="0" class="pull-right bv_instructions" data-placement="left" style="padding:0px;" type="button" data-toggle="instructions" data-trigger="focus" title="Instructions"><i class="glyphicon glyphicon-info-sign"style="margin-top:2px;"></i></a>
             <a tabindex="1" class="pull-right bv_options" data-placement="left" style="padding:0px;" type="button" data-toggle="options" data-trigger="focus" title="Options"><i class="glyphicon glyphicon-cog"style="margin-top:2px;margin-right:10px"></i></a>

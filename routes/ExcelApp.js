@@ -4,7 +4,9 @@
   };
 
   exports.excelAppIndex = function(req, resp) {
-    var config, loginUser, loginUserName;
+    var config, csUtilities, loginUser, loginUserName;
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    csUtilities.logUsage("Index requested", "" + req.url, req.body.user);
     global.specRunnerTestmode = global.stubsMode ? true : false;
     config = require('../conf/compiled/conf.js');
     if (config.all.client.require.login) {
