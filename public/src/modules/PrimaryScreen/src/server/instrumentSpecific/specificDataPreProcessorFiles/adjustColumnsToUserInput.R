@@ -61,6 +61,18 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
+      } else if(calculation == "Calc: (R1-R2)/(R1+R2)*1000") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        
+        if(!inputColumnTable[userReadOrder==1]$calculatedRead && !inputColumnTable[userReadOrder==2]$calculatedRead) {
+          inputDataTable[ , calculatedRead := ((get(inputColumnTable[userReadOrder==1]$newActivityColName) -
+                                              get(inputColumnTable[userReadOrder==2]$newActivityColName)) /
+                                              (get(inputColumnTable[userReadOrder==1]$newActivityColName) +
+                                              get(inputColumnTable[userReadOrder==2]$newActivityColName))) * 1000 ]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
       } else if(calculation == "Calc: R1/Heavy Atom Count") {
         verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 1)
         
