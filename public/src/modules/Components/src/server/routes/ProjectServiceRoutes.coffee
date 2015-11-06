@@ -1,15 +1,20 @@
 exports.setupAPIRoutes = (app) ->
-  app.get '/api/projects', exports.getProjects
+  app.get '/api/projects/:username', exports.getProjects
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/projects', loginRoutes.ensureAuthenticated, exports.getProjects
 
 exports.getProjects = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	console.log(req.params)
+	if !req.user?
+		console.log("No user!")
+		req.user = {}
+		req.user.username = req.params.username
 	if global.specRunnerTestmode
 		projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		resp.end JSON.stringify projectServiceTestJSON.projects
 	else
-		csUtilities.getProjects resp
+		csUtilities.getProjects req, resp
 
 

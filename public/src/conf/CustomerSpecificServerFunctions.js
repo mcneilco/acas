@@ -209,20 +209,29 @@
     });
   };
 
-  exports.getProjects = function(resp) {
-    var projects;
-    projects = exports.projects = [
-      {
-        code: "project1",
-        name: "Project 1",
-        ignored: false
-      }, {
-        code: "project2",
-        name: "Project 2",
-        ignored: false
-      }
-    ];
-    return resp.end(JSON.stringify(projects));
+  exports.getProjects = function(req, resp) {
+    var config, request, url;
+    config = require('../../../conf/compiled/conf.js');
+    url = config.all.client.service.persistence.fullpath + "authorization/projects?find=ByUserName&userName=" + req.user.username + "&format=codeTable";
+    request = require('request');
+    return request({
+      method: 'GET',
+      url: url,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          return resp.json(json);
+        } else {
+          console.log('got ajax error trying get acas project codes');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          resp.status(response.statusCode);
+          return resp.json(json);
+        }
+      };
+    })(this));
   };
 
   exports.makeServiceRequestHeaders = function(user) {
