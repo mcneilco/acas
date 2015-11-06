@@ -8,7 +8,7 @@ COPY 	. /home/runner/acas
 RUN 	mkdir /home/runner/logs
 RUN 	chown -R runner:runner /home/runner
 USER    runner
-RUN     grunt build
+RUN     npm install
 WORKDIR /home/runner/acas/build
 RUN     chmod u+x bin/*.sh
 ENV     PREPARE_MODULE_CONF_JSON=true

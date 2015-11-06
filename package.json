@@ -1,9 +1,11 @@
 {
-  "name": "application-name",
+  "name": "ACAS",
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node app"
+    "start": "cd build && node app.js",
+    "clean" : "grunt clean",
+    "postinstall" : "grunt build"
   },
   "dependencies": {
     "assert": "~1.1.1",
@@ -15,15 +17,6 @@
     "flat": "*",
     "forever-monitor": "*",
     "glob": "*",
-    "grunt": "*",
-    "grunt-contrib-coffee": "*",
-    "gitignore-to-glob": "*",
-    "grunt-contrib-copy": "*",
-    "grunt-contrib-watch": "*",
-    "grunt-contrib-clean": "*",
-    "grunt-newer": "*",
-    "grunt-browserify": "*",
-    "grunt-execute": "*",
     "jade": "0.35.0",
     "jszip": "*",
     "mongojs": "*",
@@ -40,6 +33,18 @@
     "winston-mongodb": "*",
     "mocha": "*",
     "properties-parser": "*",
+    "marked": "*"
+  },
+  "devDependencies": {
+    "grunt": "*",
+    "grunt-contrib-coffee": "*",
+    "gitignore-to-glob": "*",
+    "grunt-contrib-copy": "*",
+    "grunt-contrib-watch": "*",
+    "grunt-contrib-clean": "*",
+    "grunt-newer": "*",
+    "grunt-browserify": "*",
+    "grunt-execute": "*",
     "remapify": "*"
   }
 }

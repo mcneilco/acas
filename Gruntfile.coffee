@@ -27,6 +27,7 @@ module.exports = (grunt) ->
 	grunt.initConfig
 	# Project configuration
 	# ---------------------
+		pkg: grunt.file.readJSON('package.json')
 		acas_custom: 'acas_custom'
 		acas_base: '.'
 		build: 'build'
@@ -164,6 +165,12 @@ module.exports = (grunt) ->
 					dest: "<%= build %>"
 				]
 			package_json:
+				options:
+					process: (content, srcpath) ->
+						packageJSON =  JSON.parse(content)
+						packageJSON.scripts.start = "node app.js"
+						delete packageJSON.scripts.postinstall
+						return JSON.stringify(packageJSON, null, '\t')
 				files: [
 					expand: true
 					cwd: "."
@@ -302,7 +309,7 @@ module.exports = (grunt) ->
 					build: "<%= build %>"
 				call: (grunt, options) ->
 					shell = require('shelljs')
-					result = shell.exec("cd #{options.build} && npm install", {silent:true})
+					result = shell.exec("cd #{options.build} && npm install --production", {silent:true})
 					return result.output
 			install_racas:
 				options:
