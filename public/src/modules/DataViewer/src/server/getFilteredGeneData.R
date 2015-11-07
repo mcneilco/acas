@@ -9,8 +9,10 @@ require('reshape2')
 
 #setwd('/opt/acas_home/app_1.4/acas/public/src/modules/DataViewer/src/server')
 #setwd('/opt/acas_homes/acas/acas/public/src/modules/DataViewer/src/server')
-source('getSELColOrder.R')
-source('getExperimentColOrder.R')
+#source('getSELColOrder.R')
+#source('getExperimentColOrder.R')
+source(file.path(racas::applicationSettings$appHome,"public/src/modules/DataViewer/src/server/getSELColOrder.R"))
+
 
 # Load the configs
 configList <- racas::applicationSettings
@@ -133,7 +135,7 @@ if(is.null(GET$format)){
 }
 
 postData <- rawToChar(receiveBin())
-myLogger$debug(postData)
+myLogger$info(postData)
 
 #postData <- '{"queryParams":{"batchCodes":"29 60","experimentCodeList":["EXPT-00017","tags_EXPT-00017","PROT-00014","_External data_Published Influenza Datasets"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
 #postData <- '{"queryParams":{"batchCodes":"","experimentCodeList":["EXPT-00000039"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
@@ -153,33 +155,6 @@ if (!is.null(postData.list$queryParams$batchCodes)) {
   }else{
       batchCodeList <- geneDataList
   }
-  #
-  # if (length(geneDataList) > 0) {
-  #   requestList <- list()
-  #   for (i in 1:length(geneDataList)){
-  #     requestList[[length(requestList)+1]] <- list(requestName=geneDataList[[i]])
-  #   }
-  #   requestObject <- list()
-  #   requestObject$requests <- requestList
-  #   geneNameList <- getURL(
-  #     #			paste0("http://localhost:8080/acas/lsthings/getGeneCodeNameFromNameRequest"),
-  #     paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
-  #     customrequest='POST',
-  #     httpheader=c('Content-Type'='application/json'),
-  #     postfields=toJSON(requestObject))
-  #
-  #   genes <- fromJSON(geneNameList)$results
-  #   batchCodeList <- list()
-  #   for (i in 1:length(genes)){
-  #     if (genes[[i]]$referenceName != ""){
-  #       batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$referenceName
-  #     }
-  #     #Hack to include compound ids
-  #     else{
-  #       batchCodeList[[length(batchCodeList)+1]] <- genes[[i]]$requestName
-  #     }
-  #   }
-  # }
 }
 
 searchParams <- list()
@@ -216,11 +191,14 @@ myLogger$debug(searchParams)
 #save(searchParams, file="searchParams.Rda")
 
 serverURL <- racas::applicationSettings$client.service.persistence.fullpath
+
 dataCsv <- getURL(
   paste0(serverURL, "experiments/agdata/batchcodelist/experimentcodelist?format=csv&onlyPublicData=", onlyPublicData),
   customrequest='POST',
   httpheader=c('Content-Type'='application/json'),
   postfields=toJSON(searchParams))
+
+myLogger$info(dataCsv)
 
 errorFlag <- tryCatch({
   dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
@@ -404,6 +382,30 @@ modifyFileValues <- function(outputDT, fileValues){
   return(outputDT)
 }
 
+extractFileName <- function(inputFilePath){
+	  	annotationFileSplit <- strsplit(inputFilePath, '/')[[1]]
+  		annotationFileName <- annotationFileSplit[length(annotationFileSplit)]
+return(annotationFileName)
+}
+
+modifyReportFileValues <- function(outputDT, reportFileValues){
+  if(exportCSV){
+    # Do nothing?
+  }else if (aggregate){
+
+  } else { #aggregate is false
+    # Replace each inlineFileValue with a link to the file
+    for (i in reportFileValues){
+		outputDT[[i]] <- sapply(outputDT[[i]], 
+	                      function(x) 
+	                      if (length(x) == 0 || is.na(x)) NA 
+	                      else list(c(
+									paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1], '">', extractFileName(x[1]), '</a>'),
+	   							x[2])))
+    }
+  }
+  return(outputDT)
+}
 
 # Function to modify the curve id column to display a render of the actual curve
 # curveIdCol is the column from outputDT containing curve id's
@@ -476,6 +478,14 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       # get the columns in outputDT in the same order as in the SEL file(s)
       exptDataColumns <- getColOrder(experimentList, outputDT)
 
+## add in columns that are in the database but not in the original SEL file
+missingDataColumns <- setdiff(names(outputDT), exptDataColumns)
+missingDataColumns <- setdiff(missingDataColumns, "geneId")
+if (length(missingDataColumns) > 0){
+	exptDataColumns <- c(exptDataColumns, missingDataColumns)
+}
+
+
       # Handle inlineFileValue coluns (uploaded images e.g. Western Blot)
       if (aggregate){
         fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & protocolId == expt,lsKind))))
@@ -484,6 +494,15 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       }
       outputDT <- modifyFileValues(outputDT, fileValues)
       exptDataColumns <- c(exptDataColumns,fileValues)
+
+      # Handle File Report columns (uploaded annotation file)
+      if (aggregate){
+        reportFileValues <- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & protocolId == expt, lsKind))))
+      } else {
+        reportFileValues <- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & experimentId == expt, lsKind))))
+      }
+      outputDT <- modifyReportFileValues(outputDT, reportFileValues)
+
 
       # Modify curve id column to display curve
       if (!is.null(outputDT[["curve id"]])){  # column exists
@@ -494,7 +513,11 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   		myLogger$debug(exptDataColumns)
 
   		# Get the data in same order as the column titles
-   		outputDT <- subset(outputDT, ,sel=c("geneId", exptDataColumns))
+   	outputDT <- subset(outputDT, ,sel=c("geneId", exptDataColumns))
+
+
+
+
 
   		for (colName in exptDataColumns){
   			setnames(outputDT, colName, paste0(currentPassName, "::", colName))
@@ -538,6 +561,12 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
       # get the columns in outputDT in the same order as in the SEL file(s)
       exptDataColumns <- getColOrder(experimentList, outputDT2)
 
+## add in columns that are in the database but not in the original SEL file
+missingDataColumns <- setdiff(names(outputDT), exptDataColumns)
+missingDataColumns <- setdiff(missingDataColumns, "geneId")
+if (length(missingDataColumns) > 0){
+	exptDataColumns <- c(exptDataColumns, missingDataColumns)
+}
 
       # Handle inlineFileValue coluns (uploaded images e.g. Southern Blot)
       if (aggregate){
@@ -551,6 +580,16 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
 
   		# Get the data in same order as the column titles
   		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
+
+
+      # Handle File Report columns (uploaded annotation file)
+      if (aggregate){
+        reportFileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & protocolId == expt,lsKind))))
+      } else {
+        reportFileValues2<- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & experimentId == expt,lsKind))))
+      }
+      outputDT2 <- modifyReportFileValues(outputDT2, reportFileValues2)
+
 
       # Modify curve id column to display curve
       if (!is.null(outputDT2[["curve id"]])){  # column exists
@@ -656,7 +695,6 @@ if (nrow(dataDT) > 0){  # If data was returned from the server
   responseJson$results$experimentCodeList <- searchParams$experimentCodeList
   responseJson$results$searchFilters <- postData.list$queryParams$searchFilters
   responseJson$results$htmlSummary <- "OK"
-  responseJson$
   responseJson$hasError <- FALSE
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
@@ -735,3 +773,6 @@ if (exportCSV){
 
 # #stops timing the code profiling
 # Rprof(NULL)
+
+saveSession('getFilteredGeneData-session.rda')
+
