@@ -3,7 +3,7 @@ USER 	root
 RUN 	npm install -g grunt grunt-cli forever
 COPY 	package.json /home/runner/acas/package.json
 WORKDIR /home/runner/acas
-RUN 	npm install && mkdir build && cp -r node_modules build && mv /home/runner/r_libs build && mkdir build/privateUploads
+RUN 	npm install && mkdir build && cp -r node_modules build && mv /home/runner/r_libs build && mkdir build/privateUploads && mkdir build/acas_custom
 COPY 	. /home/runner/acas
 RUN 	mkdir /home/runner/logs
 RUN 	chown -R runner:runner /home/runner
