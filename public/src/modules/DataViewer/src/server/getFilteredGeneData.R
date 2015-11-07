@@ -382,17 +382,42 @@ modifyFileValues <- function(outputDT, fileValues){
   return(outputDT)
 }
 
-extractFileName <- function(inputFilePath){
+extractFileNameSingle <- function(inputFilePath){
+	print(inputFilePath)
 	  	annotationFileSplit <- strsplit(inputFilePath, '/')[[1]]
   		annotationFileName <- annotationFileSplit[length(annotationFileSplit)]
 return(annotationFileName)
+}
+
+extractFileName <- function(inputFilePath){
+	firstPass <- TRUE
+	for (singlePath in inputFilePath){
+	  	annotationFileSplit <- strsplit(singlePath, '/')[[1]]
+  		annotationFileName <- annotationFileSplit[length(annotationFileSplit)]	
+		if (firstPass){
+			combinedOutput <- annotationFileName
+			firstPass <- FALSE
+		} else {
+			combinedOutput <- c(combinedOutput, annotationFileName)
+		}
+	}
+return(combinedOutput)
 }
 
 modifyReportFileValues <- function(outputDT, reportFileValues){
   if(exportCSV){
     # Do nothing?
   }else if (aggregate){
-
+	i <- "report file"
+      ids <- vapply(outputDT[[i]],function(x) as.character(x[2]),"")  #get ids
+      split <-  strsplit(vapply(outputDT[[i]],function(x) if(is.null(x)) as.character(NA) else as.character(x[1]),""),"<br>")  #get urls and split on <br> which was used to aggregate in aggregateData()
+      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" >', extractFileName(x),'</a>'), simplify=FALSE)
+      if (length(urlSplit[[1]]) > 1){  # There are multiple report file links in one cell, recombine
+        urlCombined <- vapply(urlSplit,function(x) paste(x,collapse = "<br>"),"")
+        outputDT[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
+      } else{  # There is only one report file per cell, urlSplit has correct dimensionality
+        outputDT[[i]] <- strsplit(paste(urlSplit,ids,sep="::"),split="::") #strsplit is used to coerce into a list
+      }
   } else { #aggregate is false
     # Replace each inlineFileValue with a link to the file
     for (i in reportFileValues){
@@ -400,7 +425,7 @@ modifyReportFileValues <- function(outputDT, reportFileValues){
 	                      function(x) 
 	                      if (length(x) == 0 || is.na(x)) NA 
 	                      else list(c(
-									paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1], '">', extractFileName(x[1]), '</a>'),
+									paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1], '">', extractFileNameSingle(x[1]), '</a>'),
 	   							x[2])))
     }
   }
@@ -501,6 +526,8 @@ if (length(missingDataColumns) > 0){
       } else {
         reportFileValues <- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & experimentId == expt, lsKind))))
       }
+
+saveSession('bforeModReportFile.rda')
       outputDT <- modifyReportFileValues(outputDT, reportFileValues)
 
 
