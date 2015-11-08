@@ -383,7 +383,6 @@ modifyFileValues <- function(outputDT, fileValues){
 }
 
 extractFileNameSingle <- function(inputFilePath){
-	print(inputFilePath)
 	  	annotationFileSplit <- strsplit(inputFilePath, '/')[[1]]
   		annotationFileName <- annotationFileSplit[length(annotationFileSplit)]
 return(annotationFileName)
@@ -589,7 +588,7 @@ saveSession('bforeModReportFile.rda')
       exptDataColumns <- getColOrder(experimentList, outputDT2)
 
 ## add in columns that are in the database but not in the original SEL file
-missingDataColumns <- setdiff(names(outputDT), exptDataColumns)
+missingDataColumns <- setdiff(names(outputDT2), exptDataColumns)
 missingDataColumns <- setdiff(missingDataColumns, "geneId")
 if (length(missingDataColumns) > 0){
 	exptDataColumns <- c(exptDataColumns, missingDataColumns)
