@@ -1,6 +1,6 @@
 FROM 	mcneilco/racas:1.6.1.0-release
 USER 	root
-RUN 	npm install -g grunt grunt-cli forever
+RUN 	npm install -g grunt grunt-cli forever node-inspector
 COPY 	package.json /home/runner/acas/package.json
 WORKDIR /home/runner/acas
 RUN 	npm install && mkdir build && cp -r node_modules build && mv /home/runner/r_libs build && mkdir build/privateUploads && mkdir build/acas_custom

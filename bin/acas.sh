@@ -107,7 +107,8 @@ start_server() {
 }
 
 run_server() {
-    runCommand="node app.js"
+    runCommand="npm run $@"
+    echo "runCommand: $runCommand"
     if [ $(whoami) != "$ACAS_USER" ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
@@ -183,7 +184,7 @@ DIETIME=10              # Time to wait for the server to die, in seconds
 # let some servers to die gracefully and
 # 'restart' will not work
 
-STARTTIME=2             # Time to wait for the server to start, in seconds
+STARTTIME=0.1             # Time to wait for the server to start, in seconds
 # If this value is set each time the server is
 # started (on start or restart) the script will
 # stall to try to determine if it is running
@@ -291,7 +292,7 @@ do_run() {
     if [ $name == "acas" ] || [ $name == "all" ]; then
         dirname=`basename $ACAS_HOME`
         LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
-        action "Running app.js" run_server
+        action "Running app.js" run_server "${@:2}"
         RETVAL=$?
     fi
     return $RETVAL
@@ -396,7 +397,7 @@ case "$1" in
         name=$2
         name=${name:-all}
         if [[ "$name" =~ ^(acas|rservices|all)$ ]]; then
-            do_run $name
+            do_run $name "${@:3}"
         else
             usage
         fi
