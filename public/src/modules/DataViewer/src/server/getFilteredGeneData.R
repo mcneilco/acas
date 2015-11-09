@@ -410,7 +410,7 @@ modifyReportFileValues <- function(outputDT, reportFileValues){
 	i <- "report file"
       ids <- vapply(outputDT[[i]],function(x) as.character(x[2]),"")  #get ids
       split <-  strsplit(vapply(outputDT[[i]],function(x) if(is.null(x)) as.character(NA) else as.character(x[1]),""),"<br>")  #get urls and split on <br> which was used to aggregate in aggregateData()
-      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" >', extractFileName(x),'</a>'), simplify=FALSE)
+      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank" download>', extractFileName(x),'</a>'), simplify=FALSE)
       if (length(urlSplit[[1]]) > 1){  # There are multiple report file links in one cell, recombine
         urlCombined <- vapply(urlSplit,function(x) paste(x,collapse = "<br>"),"")
         outputDT[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
@@ -424,7 +424,7 @@ modifyReportFileValues <- function(outputDT, reportFileValues){
 	                      function(x) 
 	                      if (length(x) == 0 || is.na(x)) NA 
 	                      else list(c(
-									paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1], '">', extractFileNameSingle(x[1]), '</a>'),
+									paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x[1], '" target="_blank" download>', extractFileNameSingle(x[1]), '</a>'),
 	   							x[2])))
     }
   }
@@ -801,4 +801,3 @@ if (exportCSV){
 # Rprof(NULL)
 
 saveSession('getFilteredGeneData-session.rda')
-
