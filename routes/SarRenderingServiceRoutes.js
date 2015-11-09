@@ -70,7 +70,7 @@
 
   exports.getBatchRender = function(referenceCode, callback) {
     var htmlReturn;
-    htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '">';
+    htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '"><br />';
     htmlReturn += '<a href="' + config.all.client.service.external.lotDetails.url + referenceCode + '" target="_blank" align="center">' + referenceCode + '</a>';
     return callback({
       html: htmlReturn
