@@ -4,7 +4,11 @@ require('RCurl')
 require('rjson')
 require('data.table')
 require('racas')
+source(file.path(racas::applicationSettings$appHome,"public/src/modules/GeneDataQueries/src/server/getSELColOrder.R"))
 
+##### adding code to add data column information required for ACAS DataViewer #####
+#source(file.path(racas::applicationSettings$appHome,"public/src/modules/GeneDataQueries/src/server/getSELColOrder.R"))
+#getExperimentColNames(experimentCode=as.character(experiment$codeName), showAllColumns=TRUE)
 
 #myMessenger <- messenger()$reset()
 #myMessenger$logger <- logger(logName = "com.acas.get.genedata")
@@ -29,7 +33,7 @@ if (!is.null(postData.list$geneIDs)) {
   geneData <- postData.list$geneIDs
   geneDataList <- strsplit(geneData, split="\\W")[[1]]
   geneDataList <- geneDataList[geneDataList!=""]
-
+  
   if (length(geneDataList) > 0) {
     requestList <- list()
     for (i in 1:length(geneDataList)){
@@ -42,7 +46,7 @@ if (!is.null(postData.list$geneIDs)) {
       customrequest='POST',
       httpheader=c('Content-Type'='application/json'),
       postfields=toJSON(requestObject))
-
+    
     genes <- fromJSON(geneNameList)$results
     batchCodeList <- list()
     for (i in 1:length(genes)){
@@ -73,41 +77,62 @@ pivotResults <- function(geneId, lsKind, result){
   return(answers)
 }
 
+
 if (nrow(dataDT) > 0){
   firstPass <- TRUE
   for (expt in unique(dataDT$experimentId)){
     if(firstPass){
-      outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
-      experimentName <- dataDT[experimentId == expt, unique(experimentName)]
-      codeName <- as.character(unique(outputDT$experimentCodeName))
-      outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId))
-      colNames <- setdiff(names(outputDT),c("geneId"))
-      setnames(outputDT, c("geneId", paste0(experimentName, "::", colNames)))
-      firstPass <- FALSE
-      colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
-      allColNamesDF <- merge(data.frame(lsKind=colNames), colNamesDF)
+		outputDT <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
+		experimentName <- as.character(unique(outputDT$experimentName))
+		codeName <- as.character(unique(outputDT$experimentCodeName))
+		outputDT <- subset(outputDT, ,-c(experimentCodeName, experimentId, experimentName))
+		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
+        exptDataColumns <- intersect(exptDataColumns, names(outputDT))
 
-    } else {
-      outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId) ]
-      experimentName <- dataDT[experimentId == expt, unique(experimentName)]
-      codeName <- as.character(unique(outputDT2$experimentCodeName))
-      outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId))
-      colNames2 <- setdiff(names(outputDT2),c("geneId"))
-      colNames <- c(colNames, colNames2)
-      setnames(outputDT2, c("geneId", paste0(experimentName, "::", colNames2)))
-      outputDT <- merge(outputDT, outputDT2, by="geneId", all=TRUE)
-      colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
-      colNamesDF2 <- merge(data.frame(lsKind=colNames2), colNamesDF2)
-      allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
-    }
+		#setcolorder(outputDT, c("geneId",exptDataColumns))
+		outputDT <- subset(outputDT, ,sel=c("geneId",exptDataColumns))
+
+		for (colName in exptDataColumns){
+			setnames(outputDT, colName, paste0(experimentName, "::", colName))
+		}
+		firstPass <- FALSE
+
+		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
+		orderCols$order <- as.integer(as.character(orderCols$order))
+		colNamesDF <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
+		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
+
+      
+    } else { 
+		outputDT2 <- dataDT[ experimentId == expt , pivotResults(testedLot, lsKind, result), by=list(experimentCodeName, experimentId, experimentName) ]
+		experimentName <- as.character(unique(outputDT2$experimentName))
+		codeName <- as.character(unique(outputDT2$experimentCodeName))
+		outputDT2 <- subset(outputDT2, ,-c(experimentCodeName, experimentId, experimentName))
+		exptDataColumns <- getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV)
+		exptDataColumns <- intersect(exptDataColumns, names(outputDT2))
+
+		#setcolorder(outputDT2, c("geneId",exptDataColumns))
+		outputDT2 <- subset(outputDT2, ,sel=c("geneId",exptDataColumns))
+		for (colName in exptDataColumns){
+			setnames(outputDT2, colName, paste0(experimentName, "::", colName))
+		}
+		outputDT <- merge(outputDT, outputDT2, by="geneId", all=TRUE)
+		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
+		orderCols$order <- as.integer(as.character(orderCols$order))
+		colNamesDF2 <- unique(subset(dataDT, experimentId == expt, select=c(experimentId, experimentCodeName, experimentName, lsType, lsKind)))
+		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
+		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
+		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
+   }
   }
-
+  
   outputDF <- as.data.frame(outputDT)
   names(outputDF) <- NULL
   outputDT.list <- as.list(as.data.frame(t(outputDF)))
   names(outputDT.list) <- NULL
-
-
+  
+  
   setType <- function(lsType){
     if (lsType == "stringValue"){
       sType <- "string"
@@ -116,28 +141,28 @@ if (nrow(dataDT) > 0){
     }
     return(sType)
   }
-
+  
   allColNamesDT <- as.data.table(allColNamesDF)
   allColNamesDT[ , sType := setType(lsType), by=list(lsKind, experimentId)]
   allColNamesDT[ , numberOfColumns := length(lsKind), by=list(experimentId)]
   allColNamesDT[ , titleText := experimentName, by=list(experimentId)]
   allColNamesDT$sClass <- "center"
   setnames(allColNamesDT, "lsKind", "sTitle")
-
-
+  
+  
   aoColumnsDF <- as.data.frame(subset(allColNamesDT, ,select=c(sTitle, sClass)))
   aoColumnsDF <- rbind(data.frame(sTitle="Gene ID", sClass="center"), aoColumnsDF)
-
-
+  
+  
   groupHeadersDF <- unique(as.data.frame(subset(allColNamesDT, ,select=c(numberOfColumns, titleText))))
   groupHeadersDF <- rbind(data.frame(numberOfColumns=1, titleText=' '), groupHeadersDF)
-
+  
   aoColumnsDF.list <- as.list(as.data.frame(t(aoColumnsDF)))
   names(aoColumnsDF.list) <- NULL
-
+  
   groupHeadersDF.list <- as.list(as.data.frame(t(groupHeadersDF)))
   names(groupHeadersDF.list) <- NULL
-
+  
   responseJson <- list()
   responseJson$results$data$aaData <- outputDT.list
   responseJson$results$data$iTotalRecords <- nrow(outputDT)
@@ -149,9 +174,9 @@ if (nrow(dataDT) > 0){
   responseJson$hasWarning <- FALSE
   responseJson$errorMessages <- list()
   setStatus(status=200L)
-
+  
 } else {
-
+  
   responseJson <- list()
   responseJson$results$data$aaData <- list()
   responseJson$results$data$iTotalRecords <- 0
@@ -165,7 +190,7 @@ if (nrow(dataDT) > 0){
   error2 <- list(errorLevel="error", message="Please load more data.")
   responseJson$errorMessages <- list(error1, error2)
   setStatus(status=506L)
-
+  
 }
 
 if (exportCSV){
@@ -176,5 +201,6 @@ if (exportCSV){
   setHeader("Access-Control-Allow-Origin" ,"*");
   setContentType("application/json")
   cat(toJSON(responseJson))
-
+  
 }
+
