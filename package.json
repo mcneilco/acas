@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "start": "cd build && node app.js",
+    "debug": "cd build && node --debug app.js",
+    "dev": "cd build && nodemon app.js -w app.js -w views/* -w routes/* -w src/*",
     "clean" : "grunt clean",
     "postinstall" : "grunt build"
   },
@@ -45,6 +47,6 @@
     "grunt-newer": "*",
     "grunt-browserify": "*",
     "grunt-execute": "*",
-    "remapify": "*"
+    "nodemon": "*"
   }
 }

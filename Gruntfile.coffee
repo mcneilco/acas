@@ -168,8 +168,11 @@ module.exports = (grunt) ->
 				options:
 					process: (content, srcpath) ->
 						packageJSON =  JSON.parse(content)
-						packageJSON.scripts.start = "node app.js"
+						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd build && ", ""
+						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd build && ", ""
+						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd build && ", ""
 						delete packageJSON.scripts.postinstall
+						delete packageJSON.scripts.clean
 						return JSON.stringify(packageJSON, null, '\t')
 				files: [
 					expand: true
@@ -404,7 +407,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
 	grunt.loadNpmTasks "grunt-browserify"
-	grunt.loadNpmTasks "remapify"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
