@@ -11,18 +11,21 @@ renderCurve <- function(getParams) {
   }
   # Parse GET Parameters
   parsedParams <- racas::parse_params_curve_render_dr(getParams)
-
+  
   # GET Cached Curve Data
   data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
-  data$parameters <- data$parameters[!is.null(category) && category %in% c("inactive","potent"), c("fittedmax", "fittedmin") := {
-                      pts <- data$points[curveId == curveId]
-                      responseMean <- mean(pts[userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
-                      list("fittedmax" = responseMean, "fittedmin" = responseMean)
-                    }, by = curveId]
-
+  data$parameters <- unique(data$parameters)
+  if("category" %in% names(data$parameters)) {
+    data$parameters <- data$parameters[category %in% c("inactive","potent"), c("fittedmax", "fittedmin") := {
+      pts <- data$points[curveId == curveId]
+      responseMean <- mean(pts[userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
+      list("fittedmax" = responseMean, "fittedmin" = responseMean)
+    }, by = curveId]
+  }
+  
   data$parameters <- as.data.frame(data$parameters)
   data$points <- as.data.frame(data$points)
-
+  
   #To be backwards compatable with hill slope example files
   hillSlopes <- which(!is_null_or_na(data$parameters$hillslope))
   if(length(hillSlopes) > 0  ) {
@@ -47,10 +50,10 @@ renderCurve <- function(getParams) {
     if(is.na(parsedParams$yMin)) parsedParams$yMin <- recommendedDisplayWindow$ymin
     if(is.na(parsedParams$yMax)) parsedParams$yMax <- recommendedDisplayWindow$ymax
   }
-
+  
   #Retrieve rendering hint parameters
   renderingOptions <- racas::get_rendering_hint_options(data$parameters[1,]$renderingHint)
-
+  
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=",getParams$curveIds))
   t <- tempfile()
