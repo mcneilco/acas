@@ -59,7 +59,7 @@
     };
 
     DataViewerInputController.prototype.handleInputFieldChanged = function() {
-      if ($.trim(this.$('.bv_gidListString').val()).length > 1) {
+      if ($.trim(this.$('.bv_gidListString').val()).length > 0) {
         return this.$('.bv_search').removeAttr('disabled');
       } else {
         return this.$('.bv_search').attr('disabled', 'disabled');
@@ -71,8 +71,12 @@
     };
 
     DataViewerInputController.prototype.handleKeyInInputField = function(e) {
+      console.log("handle key in input field");
       if (e.keyCode === 13) {
-        return this.handleSearchClicked();
+        console.log($.trim(this.$('.bv_gidListString').val()));
+        if ($.trim(this.$('.bv_gidListString').val()) !== "") {
+          return this.handleSearchClicked();
+        }
       }
     };
 

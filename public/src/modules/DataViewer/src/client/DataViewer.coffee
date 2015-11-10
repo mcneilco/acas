@@ -38,7 +38,7 @@ class window.DataViewerInputController extends Backbone.View
 		@displayName = @displayNameListController.getSelectedCode()
 
 	handleInputFieldChanged: =>
-		if $.trim(@$('.bv_gidListString').val()).length > 1
+		if $.trim(@$('.bv_gidListString').val()).length > 0
 			@$('.bv_search').removeAttr('disabled')
 		else
 			@$('.bv_search').attr('disabled','disabled')
@@ -47,8 +47,11 @@ class window.DataViewerInputController extends Backbone.View
 		@aggregate = @$("input[name='bv_aggregation']:checked").val()
 
 	handleKeyInInputField: (e) =>
+		console.log "handle key in input field"
 		if e.keyCode == 13
-			@handleSearchClicked()
+			console.log $.trim(@$('.bv_gidListString').val())
+			unless $.trim(@$('.bv_gidListString').val()) is ""
+				@handleSearchClicked()
 
 	handleSearchClicked: =>
 		@trigger 'search-requested', $.trim(@$('.bv_gidListString').val()), @displayName
