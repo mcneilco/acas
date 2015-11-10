@@ -81,7 +81,7 @@ module.exports = (grunt) ->
 			module_serviceTests:
 				files: [
 					expand: true
-					flatten: true
+					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee","#{i}/public/conf/serviceTests/*.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = matchedSrcPath.split("/")[2]
