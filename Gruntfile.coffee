@@ -135,7 +135,7 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: true
 					src: ["<%= acas_custom %>/public_conf/*.coffee"]
-					dest: "<%= build %>/src"
+					dest: "<%= build %>/src/javascripts/ServerAPI/"
 					ext: '.js'
 				]
 		copy:
