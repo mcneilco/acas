@@ -1,6 +1,6 @@
 # The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
 # ROUTE: /curve/render/dr-cache
-
+library(data.table)
 renderCurve <- function(getParams) {
   # Redirect to Curator if applicable
   redirectInfo <- racas::api_get_curve_curator_url(getParams$curveIds, getParams$inTable, globalConnect = TRUE)
@@ -16,8 +16,9 @@ renderCurve <- function(getParams) {
   data <- racas::get_cached_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
   data$parameters <- unique(data$parameters)
   if("category" %in% names(data$parameters)) {
-    data$parameters <- data$parameters[category %in% c("inactive","potent"), c("fittedmax", "fittedmin") := {
-      pts <- data$points[curveId == curveId]
+    data$parameters <- data$parameters[category %chin%  c("inactive","potent"), c("fittedmax", "fittedmin") := {
+      cid <- curveId
+      pts <- data$points[curveId == cid]
       responseMean <- mean(pts[userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
       list("fittedmax" = responseMean, "fittedmin" = responseMean)
     }, by = curveId]
