@@ -10,9 +10,7 @@
   exports.getProjects = function(req, resp) {
     var csUtilities, projectServiceTestJSON;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-    console.log(req.params);
     if (req.user == null) {
-      console.log("No user!");
       req.user = {};
       req.user.username = req.params.username;
     }

@@ -6,9 +6,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getProjects = (req, resp) ->
 	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
-	console.log(req.params)
 	if !req.user?
-		console.log("No user!")
 		req.user = {}
 		req.user.username = req.params.username
 	if global.specRunnerTestmode
