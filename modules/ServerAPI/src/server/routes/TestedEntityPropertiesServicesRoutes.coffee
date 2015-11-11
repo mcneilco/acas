@@ -104,7 +104,7 @@ exports.getEntityProperties = (properties, entityIdStringLines, callback) ->
 
 
 exports.entityPropertyDescriptors = (req, resp) ->
-	csUtilities = require './CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
 		entityDescriptorServiceTestJSON = require "../public/javascripts/spec/testFixtures/EntityPropertyDescriptorsServiceTestJSON.js"
 		resp.json entityDescriptorServiceTestJSON.propertyDescriptors[req.params.entityType][req.params.entityKind]
