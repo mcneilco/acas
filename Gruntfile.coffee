@@ -118,8 +118,11 @@ module.exports = (grunt) ->
 			module_conf:
 				files: [
 					expand: true
-					flatten: true
+					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf",module)}"
 					dest: "<%= build %>/public/javascripts/conf/"
 					ext: '.js'
 				]
@@ -261,6 +264,18 @@ module.exports = (grunt) ->
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 					dest: "<%= build %>/views"
 				]
+			module_conf:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!*.coffee"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						console.log "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf/",module)}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf",module)}"
+					dest: "<%= build %>/public/conf"
+				]
 			public_lib:
 				files: [
 					expand: true
@@ -360,6 +375,9 @@ module.exports = (grunt) ->
 			module_conf_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
 				tasks: "newer:coffee:module_conf"
+			module_conf:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!*.coffee"]
+				tasks: "newer:copy:module_conf"
 			public_conf_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.coffee"]
 				tasks: "newer:coffee:public_conf"
@@ -379,6 +397,9 @@ module.exports = (grunt) ->
 			copy_custom_public_conf:
 				files: "<%= acas_custom %>/public_conf/**"
 				tasks: "newer:copy:custom_public_conf"
+			copy_module_jade:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
+				tasks: "newer:copy:module_jade"
 			prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
