@@ -1,7 +1,16 @@
 module.exports = (grunt) ->
 	"use strict"
 
-	# configure build tasks
+  # upgrade config files tas
+	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
+		upgrade = require './modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee'
+		glob = require 'glob'
+		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
+		for configFile in configFiles
+			outFile = "#{configFile}.diff"
+			upgrade.upgradeConfigFiles "#{grunt.config.get('acas_base')}/conf/config.properties.example", configFile, outFile
+
+		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
 		build =  grunt.option('buildPath') || 'build'
 		console.log "building to '#{build}'"
@@ -11,6 +20,7 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_base',"$$$$$$$$$$$$")
 		if grunt.option('baseonly') ||  false
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
+		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'copy'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
