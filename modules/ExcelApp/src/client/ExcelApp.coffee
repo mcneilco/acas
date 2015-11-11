@@ -16,7 +16,7 @@ class window.ExcelAppController extends Backbone.View
 		@$el.html @template()
 		$.ajax
 			type: 'GET'
-			url: "/src/modules/ExcelApp/conf/main.md"
+			url: "/conf/ExcelApp/main.md"
 			success: (markdown) =>
 				console.log markdown
 				appHTML = marked(markdown)
