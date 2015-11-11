@@ -31,7 +31,9 @@ class window.AttributesController extends Backbone.View
 
 	events: ->
 		'change .bv_insertColumnHeaders': 'handleInsertColumnHeaders'
+		'click .bv_insertColumnHeadersClickZone': 'handleInsertColumnHeadersClickZone'
 		'change .bv_includeRequestedID': 'handleIncludeRequestedID'
+		'click .bv_includeRequestedIDClickZone': 'handleIncludeRequestedIDClickZone'
 
 	render: =>
 		@$el.empty()
@@ -41,8 +43,14 @@ class window.AttributesController extends Backbone.View
 	handleInsertColumnHeaders: =>
 		@model.set 'insertColumnHeaders', @$('.bv_insertColumnHeaders').is(":checked")
 
+	handleInsertColumnHeadersClickZone: =>
+		@$('.bv_insertColumnHeaders').click()
+
 	handleIncludeRequestedID: =>
 		@model.set 'includeRequestedID', @$('.bv_includeRequestedID').is(":checked")
+
+	handleIncludeRequestedIDClickZone: =>
+		@$('.bv_includeRequestedID').click()
 
 	getInsertColumnHeaders: =>
 		@model.get 'insertColumnHeaders'
@@ -59,14 +67,21 @@ class window.PropertyDescriptorController extends Backbone.View
 
 	events: ->
 		'change .bv_propertyDescriptorCheckbox': 'handleDescriptorCheckboxChanged'
+		'click .bv_propertyDescriptorCheckboxClickZone': 'handleDescriptorCheckboxZoneClicked'
 
 	render: ->
 		@$el.empty()
 		@model.set 'isChecked', false
 		@$el.html @template(@model.attributes)
 		@$('.bv_descriptorLabel').text(@model.get('valueDescriptor').prettyName)
-		@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
+		if @model.get('valueDescriptor').description?
+			@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').description
+		else
+			@$('.bv_descriptorLabel').attr 'title', @model.get('valueDescriptor').prettyName
 		@
+
+	handleDescriptorCheckboxZoneClicked: ->
+		@$('.bv_propertyDescriptorCheckbox').click()
 
 	handleDescriptorCheckboxChanged: ->
 		checked = @$('.bv_propertyDescriptorCheckbox').is(":checked")
@@ -84,6 +99,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 		'click .bv_checkAll': 'handleCheckAllClicked'
 		'click .bv_invert': 'handleInvertSelectionClicked'
 		'click .bv_uncheckAll': 'handleUncheckAllClicked'
+		'click .bv_propertyDescriptorListControllerCollapser': 'togglePropertyDescriptorListCollapse'
 
 	initialize: ->
 		@numberChecked=0
@@ -107,6 +123,14 @@ class window.PropertyDescriptorListController extends Backbone.View
 		@$('.propertyDescriptorListControllerTitle').html @title
 		@propertyControllersList.forEach (pdc) =>
 			@$('.bv_propertyDescriptorList').append pdc.render().el
+		@$('.bv_propertyDescriptorList').collapse
+			toggle: true
+		@$('.bv_propertyDescriptorList').on 'shown.bs.collapse', =>
+			@$('.bv_collapseExpand').addClass('hide')
+			@$('.bv_collapseDown').removeClass('hide')
+		@$('.bv_propertyDescriptorList').on 'hidden.bs.collapse', =>
+			@$('.bv_collapseExpand').removeClass('hide')
+			@$('.bv_collapseDown').addClass('hide')
 		@
 
 	handleCheckAllClicked: ->
@@ -156,8 +180,8 @@ class window.PropertyDescriptorListController extends Backbone.View
 				@valid = true
 				@trigger 'valid'
 
-
-
+	togglePropertyDescriptorListCollapse: ->
+		@$('.bv_propertyDescriptorList').collapse('toggle')
 
 class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	events:
@@ -206,7 +230,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
 		@$("[data-toggle=options]").popover
 			html: true
-			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a>'
+			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a><br /><a class="btn btn-xs btn-primary">Show Log'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
 			@validate()
 
@@ -251,9 +275,9 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	setPropertyLookUpStatus: (status) =>
 	  @.$('.bv_propertyLookUpStatus').html status
 
-	setErrorStatus: (status) =>
+	setErrorStatus: (status, force = false) =>
 		@.$('.bv_errorStatus').html status
-		if status == "" | @.$('.bv_propertyLookUpStatus').html() == "Data ready to insert" | @.$('.bv_propertyLookUpStatus').html() == "Fetching data..."
+		if status == "" | (force == false && (@.$('.bv_propertyLookUpStatus').html() == "Data ready to insert" | @.$('.bv_propertyLookUpStatus').html() == "Fetching data..."))
 			@.$('.bv_errorStatus').addClass('hide')
 		else
 			@.$('.bv_errorStatus').removeClass('hide')
@@ -275,10 +299,14 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	handleInsertPropertiesClicked: =>
 		@insertTable @outputArray
 
-	insertTable: (dataArray) ->
+	insertTable: (dataArray) =>
 		Office.context.document.setSelectedDataAsync dataArray, coercionType: 'matrix', (result) =>
 			if result.status != 'succeeded'
-				logger.log result.error.name + ':' + result.error.message
+				if result.error.message == 'The set operation failed because the supplied data object will overwrite or shift data.'
+					@setErrorStatus 'Data overwrite error: cannot overwrite data', true
+				else
+					logger.log result.error.name + ':' + result.error.message
+					@setErrorStatus 'Unknown insert error: see log below', true
 
 	getPropertiesAndRequestData: (request) ->
 		@$('.bv_insertProperties').attr 'disabled', 'disabled'
