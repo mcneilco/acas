@@ -8,7 +8,7 @@ module.exports = (grunt) ->
 		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
 		for configFile in configFiles
 			outFile = "#{configFile}.diff"
-			upgrade.upgradeConfigFiles "#{grunt.config.get('acas_base')}/conf/config.properties.example", configFile, outFile
+			upgrade.upgradeConfigFiles "./conf/config.properties.example", configFile, outFile
 
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
