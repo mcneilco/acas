@@ -1,6 +1,7 @@
 fs = require 'fs'
 glob = require 'glob'
 _ = require "underscore"
+path = require "path"
 ACAS_HOME="../../.."
 
 mkdirSync = (path) ->
@@ -11,15 +12,18 @@ mkdirSync = (path) ->
 			throw e
 	return
 
-allModuleConfJSFiles = glob.sync "#{ACAS_HOME}/public/javascripts/conf/*.js"
+mkdirSync "#{ACAS_HOME}/public/javascripts/conf/confJSON"
+mkdirSync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON"
+
+allModuleConfJSFiles = glob.sync "#{ACAS_HOME}/public/javascripts/conf/**/*.js"
 for fileName in allModuleConfJSFiles
 	data = require fileName
 	jsonfilestring = JSON.stringify data
 	newFileName = fileName.replace "conf", "conf/confJSON/moduleJSON"
-	mkdirSync "#{ACAS_HOME}/public/javascripts/conf/confJSON"
-	mkdirSync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON"
+	mkdirSync path.dirname(newFileName)
 	newFileName = newFileName.replace ".js", ".json"
 	fs.writeFileSync newFileName, jsonfilestring
+
 
 typeKinds = [
 	"codetables"
@@ -57,7 +61,7 @@ if selectedConfJSONFiles?
 		console.log "Check the file path. The file should be in /public/javascripts/conf/confJSON/moduleJSON"
 		process.exit -1
 else
-	confJSONFilesToCompile = glob.sync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON/*.json"
+	confJSONFilesToCompile = glob.sync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON/**/*.json"
 
 allModulesTypesAndKinds = {}
 
