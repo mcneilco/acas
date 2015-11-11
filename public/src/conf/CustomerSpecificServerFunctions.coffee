@@ -158,18 +158,25 @@ exports.loginStrategy = (username, password, done) ->
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
 
-exports.getProjects = (resp) ->
-	projects = 	exports.projects = [
-		code: "project1"
-		name: "Project 1"
-		ignored: false
-	,
-		code: "project2"
-		name: "Project 2"
-		ignored: false
-	]
-
-	resp.end JSON.stringify projects
+exports.getProjects = (req, resp) ->
+	config = require '../../../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"authorization/projects?find=ByUserName&userName="+req.user.username+"&format=codeTable"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			resp.json json
+		else
+			console.log 'got ajax error trying get acas project codes'
+			console.log error
+			console.log json
+			console.log response
+			resp.status response.statusCode
+			resp.json json
+	)
 
 exports.makeServiceRequestHeaders = (user) ->
 	username = if user? then user.username else "testmode"
