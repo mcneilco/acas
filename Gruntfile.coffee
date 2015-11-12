@@ -400,6 +400,9 @@ module.exports = (grunt) ->
 			copy_module_jade:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 				tasks: "newer:copy:module_jade"
+			copy_conf:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
+				tasks: "newer:copy:conf"
 			prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
@@ -423,7 +426,7 @@ module.exports = (grunt) ->
 					"<%= build %>/conf/conf*.properties"
 					"<%= build %>/src/r/*"
 				]
-				tasks: ["copy:conf", "execute:prepare_config_files"]
+				tasks: ["execute:prepare_config_files"]
 			prepare_test_JSON:
 				files: [
 					"<%= build %>/public/javascripts/spec/testFixtures/*.js"
