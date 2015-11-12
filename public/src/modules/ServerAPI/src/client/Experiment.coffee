@@ -259,7 +259,6 @@ class window.ExperimentBaseController extends BaseEntityController
 			@completeInitialization()
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
-				console.log window.AppLaunchParams
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
 						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
@@ -347,11 +346,12 @@ class window.ExperimentBaseController extends BaseEntityController
 		super()
 		if @model.isNew()
 			@$('.bv_experimentName').attr('disabled','disabled')
-			@$('.bv_openInLiveDesignWrapper').hide()
+			@$('.bv_openInQueryToolWrapper').hide()
 		else
 			@setupExptNameChkbx()
-			@$('.bv_openInLiveDesignWrapper').show()
-			@$('.bv_openInLiveDesignLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
+			@$('.bv_openInQueryToolWrapper').show()
+			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 		@
 
 	modelSyncCallback: =>
@@ -633,4 +633,4 @@ class window.ExperimentBaseController extends BaseEntityController
 
 	displayInReadOnlyMode: =>
 		super()
-		@$('.bv_openInLiveDesignWrapper').hide()
+		@$('.bv_openInQueryToolWrapper').hide()
