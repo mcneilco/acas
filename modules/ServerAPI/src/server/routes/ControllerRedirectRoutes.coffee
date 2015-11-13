@@ -13,7 +13,6 @@ config = require '../conf/compiled/conf.js'
 
 exports.redirectToEditor = (req, resp) ->
 	controllerRedirectConfFile = require '../src/javascripts/ServerAPI/ControllerRedirectConf.js'
-
 	controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
 	queryPrefix = null
 	prefixKeyIndex = 0
