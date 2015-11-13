@@ -5,7 +5,7 @@
   "scripts": {
     "start": "cd build && node app.js",
     "debug": "cd build && node-inspector --web-host 0.0.0.0 & node --debug app.js",
-    "dev": "cd build && node-inspector & grunt & nodemon --debug app.js -w app.js -w views -w routes -w src",
+    "dev": "grunt build && cd build && node-inspector & grunt & nodemon --debug app.js -w app.js -w views -w routes -w src",
     "clean" : "grunt clean",
     "postinstall" : "grunt build"
   },
