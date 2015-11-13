@@ -420,7 +420,6 @@
         return this.completeInitialization();
       } else {
         if (window.AppLaunchParams.moduleLaunchParams != null) {
-          console.log(window.AppLaunchParams);
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             if (window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity) {
               this.createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code);
@@ -535,11 +534,12 @@
       ExperimentBaseController.__super__.render.call(this);
       if (this.model.isNew()) {
         this.$('.bv_experimentName').attr('disabled', 'disabled');
-        this.$('.bv_openInLiveDesignWrapper').hide();
+        this.$('.bv_openInQueryToolWrapper').hide();
       } else {
         this.setupExptNameChkbx();
-        this.$('.bv_openInLiveDesignWrapper').show();
-        this.$('.bv_openInLiveDesignLink').attr('href', "/openExptInQueryTool?experiment=" + this.model.get('codeName'));
+        this.$('.bv_openInQueryToolWrapper').show();
+        this.$('.bv_queryToolDisplayName').html(window.conf.service.result.viewer.displayName);
+        this.$('.bv_openInQueryToolLink').attr('href', "/openExptInQueryTool?experiment=" + this.model.get('codeName'));
       }
       return this;
     };
@@ -922,7 +922,7 @@
 
     ExperimentBaseController.prototype.displayInReadOnlyMode = function() {
       ExperimentBaseController.__super__.displayInReadOnlyMode.call(this);
-      return this.$('.bv_openInLiveDesignWrapper').hide();
+      return this.$('.bv_openInQueryToolWrapper').hide();
     };
 
     return ExperimentBaseController;
