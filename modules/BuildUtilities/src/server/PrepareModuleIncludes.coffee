@@ -56,10 +56,13 @@ makeScriptLines = (scripts) ->
 	scriptLines = ""
 	for fname, path of scripts
 		script = '\t"'
-		script += path.replace "../../public/", "/"
+		script += path.replace "../../../public/", "/"
 		script += '",\n'
 		scriptLines += script
 	scriptLines.replace /,([^,]*)$/, "" #kill last comma and newline
+
+
+
 
 prepAppScripts = ->
 	appScriptsInJavascripts = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/src/**/*.js")
@@ -69,13 +72,13 @@ prepAppScripts = ->
 	makeScriptLines allScripts
 
 prepSpecScripts = ->
-	testJSONInModules = makeFileNameHash glob.sync("#{ACAS_HOME}/public/src/modules/*/spec/testFixtures/*.js")
-	testJSONInJavascripts = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/spec/testFixtures/*.js")
+	testJSONInModules = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/spec/*/*.js")
+	testJSONInJavascripts = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/spec/*/testFixtures/*.js")
 	testJSONInJavascripts = _.omit testJSONInJavascripts, _.keys(testJSONInModules)
 	testJSONScripts = _.extend testJSONInModules, testJSONInJavascripts
 	testJSONScripts = _.omit testJSONScripts, ["CodeTableJSON.js"]
 
-	specScriptsInModules = makeFileNameHash glob.sync("#{ACAS_HOME}/public/src/modules/*/spec/*.js")
+	specScriptsInModules = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/spec/*/*.js")
 	specScriptsInJavascripts = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/spec/*.js")
 	specScriptsInJavascripts = _.omit specScriptsInJavascripts, _.keys(specScriptsInModules)
 	templateSpecScripts = makeFileNameHash scriptPaths.specScripts
