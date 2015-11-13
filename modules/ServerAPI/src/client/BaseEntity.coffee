@@ -341,7 +341,7 @@ class window.BaseEntityController extends AbstractFormController
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
 			firstOptionName: "Select Method"
-			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'rar']
 			fileTypeList: fileTypeList
 			required: false
 		@attachFileListController.on 'amClean', =>
