@@ -300,7 +300,7 @@ module.exports = (grunt) ->
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.R"]
 					dest: "<%= build %>/src/r"
 				]
-			module_r:
+			module_legacy_r:
 				files: [
 					expand: true
 					flatten: false
@@ -309,6 +309,17 @@ module.exports = (grunt) ->
 					rename: (dest, matchedSrcPath, options) ->
 						module = matchedSrcPath.split("/")[2]
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
+					dest: "<%= build %>/src/r"
+				]
+			module_r:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = matchedSrcPath.split("/")[2]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server/r",module)}"
 					dest: "<%= build %>/src/r"
 				]
 			module_routes_js:
@@ -390,6 +401,15 @@ module.exports = (grunt) ->
 			module_routes_js:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
 				tasks: "newer:copy:module_routes_js"
+			copy_module_jade:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
+				tasks: "newer:copy:module_jade"
+			copy_conf:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
+				tasks: "newer:copy:conf"
+			module_r:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
+				tasks: "newer:copy:module_r"
 		#watchers on the custom folder
 			custom_compilePublicConf:
 				files: "<%= acas_custom %>/public_conf/*.coffee"
@@ -397,12 +417,6 @@ module.exports = (grunt) ->
 			copy_custom_public_conf:
 				files: "<%= acas_custom %>/public_conf/**"
 				tasks: "newer:copy:custom_public_conf"
-			copy_module_jade:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
-				tasks: "newer:copy:module_jade"
-			copy_conf:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
-				tasks: "newer:copy:conf"
 			prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
