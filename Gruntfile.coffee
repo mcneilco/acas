@@ -272,7 +272,6 @@ module.exports = (grunt) ->
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!*.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = matchedSrcPath.split("/")[2]
-						console.log "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf/",module)}"
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf",module)}"
 					dest: "<%= build %>/public/conf"
 				]
