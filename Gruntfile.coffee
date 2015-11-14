@@ -183,7 +183,7 @@ module.exports = (grunt) ->
 						packageJSON =  JSON.parse(content)
 						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd build && ", ""
 						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd build && ", ""
-						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "grunt build && cd build && ", ""
+						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd build && ", ""
 						delete packageJSON.scripts.postinstall
 						delete packageJSON.scripts.clean
 						return JSON.stringify(packageJSON, null, '\t')
