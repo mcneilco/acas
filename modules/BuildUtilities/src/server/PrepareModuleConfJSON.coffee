@@ -90,10 +90,8 @@ config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 
 async.forEachSeries typeKinds, ((typeOrKind, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath+"setup/"+typeOrKind
-	console.log baseurl
 	if data[typeOrKind]?
 		console.log "trying to save " + typeOrKind
-		console.log "data", data[typeOrKind]
 		request(
 			method: 'POST'
 			url: baseurl
