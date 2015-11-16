@@ -188,7 +188,6 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/Gruntfile.coffee"]
 					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
@@ -214,7 +213,6 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/views/*.jade", "#{i}/views/*.jade_template"]
 					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
@@ -223,7 +221,6 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/node_modules_customized/**"]
 					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
@@ -232,7 +229,6 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/stylesheets/**"]
 					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
@@ -242,7 +238,6 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: false
 					cwd: "."
-
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.html"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
