@@ -3,17 +3,17 @@ module.exports = (grunt) ->
 
   # upgrade config files tas
 	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
-		upgrade = require './modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee'
+		upgrade = require "#{acas_base}/modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee"
 		glob = require 'glob'
 		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
 		for configFile in configFiles
 			outFile = "#{configFile}.diff"
-			upgrade.upgradeConfigFiles "./conf/config.properties.example", configFile, outFile
+			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
 
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
-		build =  grunt.option('buildPath') || 'build'
 		console.log "building to '#{build}'"
+		console.log "building from '#{acas_base}'"
 		grunt.config.set('build', "#{build}")
 		#Definitely a better way to do this but it works to set the custom or base directory to nonsense if we don't want to build them
 		if grunt.option('customonly') || false
@@ -50,8 +50,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/src/client/*.coffee"
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/javascripts/src/"
 					ext: '.js'
 				]
@@ -61,8 +62,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/src/server/*.coffee"
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server",module)}"
 					dest: "<%= build %>/src/javascripts"
 					ext: '.js'
 				]
@@ -72,8 +74,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/spec/*.coffee"
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/spec",module)}"
 					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
@@ -83,8 +86,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> "#{i}/modules/**/spec/testFixtures/*.coffee"
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/spec",module)}"
 					dest: "<%= build %>/public/javascripts/spec/"
 					ext: '.js'
 				]
@@ -94,8 +98,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee","#{i}/public/conf/serviceTests/*.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/spec",module)}"
 					dest: "<%= build %>/src/spec/"
 					ext: '.js'
 				]
@@ -121,8 +126,9 @@ module.exports = (grunt) ->
 					flatten: false
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/conf",module)}"
 					dest: "<%= build %>/public/javascripts/conf/"
 					ext: '.js'
 				]
@@ -161,12 +167,12 @@ module.exports = (grunt) ->
 					# this is because the cwd option only allows a single string so paths in the destination would include the base and custom directory names if we didn't sub them out
 					# this is only needed if flatten: false or missing (because default is false)
 					rename: (dest, matchedSrcPath, options) ->
-#						console.log "dest:          #{dest}"
-#						console.log "matchedSrcPath #{matchedSrcPath}"
-#						console.log "destre:        #{dest.replace(/\/$/, "")}"
-#						console.log "outre:         #{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
-#						console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+						# console.log "dest:          #{dest}"
+						# console.log "matchedSrcPath #{matchedSrcPath}"
+						# console.log "destre:        #{dest.replace(/\/$/, "")}"
+						# console.log "outre:         #{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
+						# console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			conf:
@@ -174,16 +180,26 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) ->
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
+					dest: "<%= build %>"
+				]
+			gruntfile:
+				files: [
+					expand: true
+					cwd: "."
+
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/Gruntfile.coffee"]
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			package_json:
 				options:
 					process: (content, srcpath) ->
 						packageJSON =  JSON.parse(content)
-						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd build && ", ""
-						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd build && ", ""
-						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd build && ", ""
+						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd process.env.BUILD_PATH  && ", ""
+						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd process.env.BUILD_PATH  && ", ""
+						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd process.env.BUILD_PATH && ", ""
 						delete packageJSON.scripts.postinstall
 						delete packageJSON.scripts.clean
 						return JSON.stringify(packageJSON, null, '\t')
@@ -191,31 +207,34 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/package.json"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			jade:
 				files: [
 					expand: true
 					cwd: "."
+
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/views/*.jade", "#{i}/views/*.jade_template"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			node_modules_customized:
 				files: [
 					expand: true
-					cwd: ""
+					cwd: "."
+
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/node_modules_customized/**"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			public_stylesheets:
 				files: [
 					expand: true
 					cwd: "."
+
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/stylesheets/**"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			public_html:
@@ -223,10 +242,11 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: false
 					cwd: "."
+
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.html"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/html"
 				]
 			module_spec_miscellaneous:
@@ -239,10 +259,10 @@ module.exports = (grunt) ->
 #						console.log "dest:          #{dest}"
 #						console.log "matchedSrcPath #{matchedSrcPath}"
 #						console.log "moduleName:    #{matchedSrcPath.split("/")[2]+"/spec"}"
-						module = matchedSrcPath.split("/")[2]
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
 #						console.log "outre:         #{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
 #						console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"spec",module)}"
 					dest: "<%= build %>/src/spec/"
 				]
 			module_css:
@@ -252,8 +272,8 @@ module.exports = (grunt) ->
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.css"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/client",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/stylesheets"
 				]
 			module_jade:
@@ -271,8 +291,8 @@ module.exports = (grunt) ->
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!*.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/conf",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/conf",module)}"
 					dest: "<%= build %>/public/conf"
 				]
 			public_lib:
@@ -280,7 +300,7 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/lib/**"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			public_img:
@@ -288,7 +308,7 @@ module.exports = (grunt) ->
 					expand: true
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/img/**"]
-					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
+					rename: (dest, matchedSrcPath, options) -> "#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
 				]
 			public_conf_r:
@@ -306,8 +326,9 @@ module.exports = (grunt) ->
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server",module)}"
 					dest: "<%= build %>/src/r"
 				]
 			module_r:
@@ -317,8 +338,9 @@ module.exports = (grunt) ->
 					cwd: "."
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
 					rename: (dest, matchedSrcPath, options) ->
-						module = matchedSrcPath.split("/")[2]
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/src/server/r",module)}"
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
+
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server/r",module)}"
 					dest: "<%= build %>/src/r"
 				]
 			module_routes_js:
@@ -409,6 +431,9 @@ module.exports = (grunt) ->
 			module_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
 				tasks: "newer:copy:module_r"
+			public_html:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.html"]
+				tasks: "newer:copy:public_html"
 		#watchers on the custom folder
 			custom_compilePublicConf:
 				files: "<%= acas_custom %>/public_conf/*.coffee"
@@ -446,6 +471,17 @@ module.exports = (grunt) ->
 				]
 				tasks: "execute:prepare_test_JSON"
 
+	path = require 'path'
+	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
+	if build == ""
+		build = "."
+	acas_base =  path.relative '.', grunt.option('acasBase') || process.env.ACAS_BASE || '.'
+	if acas_base == ""
+		acas_base = "."
+	acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || 'acas_custom'
+	grunt.config.set('build', "#{build}")
+	grunt.config.set('acas_base', "#{acas_base}")
+	grunt.config.set('acas_custom', "#{acas_custom}")
 
 	grunt.loadNpmTasks "grunt-contrib-coffee"
 	grunt.loadNpmTasks "grunt-contrib-watch"

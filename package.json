@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "cd build && node app.js",
-    "debug": "cd build && node-inspector --web-host 0.0.0.0 & node --debug app.js",
-    "dev": "grunt build && cd build && (node-inspector &) && (grunt &) && nodemon --debug app.js -w app.js -w conf/compiled -w views -w routes -w src",
+    "start": "node app.js",
+    "debug": "node-inspector --web-host 0.0.0.0 & node --debug app.js",
+    "dev": "(node-inspector &) && (grunt &) && nodemon --debug app.js -w app.js -w conf/compiled -w views -w routes -w src",
     "clean" : "grunt clean",
     "postinstall" : "grunt build"
   },
