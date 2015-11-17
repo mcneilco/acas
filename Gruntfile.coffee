@@ -319,10 +319,9 @@ module.exports = (grunt) ->
 					expand: true
 					flatten: false
 					cwd: "."
-					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
-
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server",module)}"
 					dest: "<%= build %>/src/r"
 				]
@@ -334,7 +333,7 @@ module.exports = (grunt) ->
 					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
-
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server/r",module)}"
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/server/r",module)}"
 					dest: "<%= build %>/src/r"
 				]
@@ -403,7 +402,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*.coffee"]
 				tasks: "newer:coffee:module_conf"
 			module_conf:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!*.coffee"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/conf/*", "!#{i}/modules/**/conf/*.coffee"]
 				tasks: "newer:copy:module_conf"
 			public_conf_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.coffee"]
