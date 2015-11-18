@@ -72,8 +72,11 @@ def make_acas_live_report(api, compound_ids, assays_to_add):
    
     #compound search by id
     search_results = []
-    search_string = ",".join(compound_ids )
-    search_results.extend(api.compound_search_by_id(search_string, database_names=["ACAS"]))
+    if isinstance(compound_ids, (str,unicode)):
+    	search_results.extend(api.compound_search_by_id(compound_ids, database_names=["ACAS"]))
+    else:
+    	for compound_id in compound_ids:
+    		search_results.extend(api.compound_search_by_id(compound_id, database_names=["ACAS"]))
     # Now add the rows for the compound ids for which we want data
     #compound_ids = ["V51411","V51412","V51413","V51414"]
     api.add_rows(lr_id, search_results)
