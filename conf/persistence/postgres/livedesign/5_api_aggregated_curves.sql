@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE VIEW api_aggregated_curves as
+﻿CREATE OR REPLACE VIEW acas.api_aggregated_curves as
 SELECT max(ag_id) as ag_id,
 	cast(max(ag_code_name) as character varying(255)) as ag_code_name,
 	max(experiment_id) as experiment_id,
@@ -22,7 +22,7 @@ SELECT max(ag_id) as ag_id,
  WHERE ls_kind = 'curve id'
  GROUP BY tested_lot, e.protocol_id, ls_type, ls_kind;
 
-ALTER TABLE api_aggregated_curves
+ALTER TABLE acas.api_aggregated_curves
   OWNER TO acas;
-GRANT ALL ON TABLE api_aggregated_curves TO acas;
-GRANT SELECT ON TABLE api_aggregated_curves TO seurat;
+GRANT ALL ON TABLE acas.api_aggregated_curves TO acas;
+GRANT SELECT ON TABLE acas.api_aggregated_curves TO seurat;

@@ -1,4 +1,4 @@
-﻿CREATE OR REPLACE VIEW api_experiment_ld AS
+﻿CREATE OR REPLACE VIEW acas.api_experiment_ld AS
 (SELECT * FROM api_experiment)
 UNION
 (SELECT -1 AS id,
@@ -21,7 +21,7 @@ cast(NULL as text) as scientist,
 cast(NULL as text) as hts_format
 );
 
-ALTER TABLE api_experiment_ld
+ALTER TABLE acas.api_experiment_ld
   OWNER TO acas;
-GRANT ALL ON TABLE api_experiment_ld TO acas;
-GRANT SELECT ON TABLE api_experiment_ld TO seurat;
+GRANT ALL ON TABLE acas.api_experiment_ld TO acas;
+GRANT SELECT ON TABLE acas.api_experiment_ld TO seurat;
