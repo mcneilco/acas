@@ -44,7 +44,7 @@ addJobsOnStartup = ->
 		if not error and response.statusCode < 400
 			for spec in body
 				newCron = spec: spec
-				global.cronJobs[newCode] = newCron
+				global.cronJobs[newCron.spec.codeName] = newCron
 				if not newCron.spec.ignored and newCron.spec.active
 					setupNewCron newCron
 		else
