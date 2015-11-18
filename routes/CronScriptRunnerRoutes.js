@@ -52,7 +52,7 @@
             newCron = {
               spec: spec
             };
-            global.cronJobs[newCode] = newCron;
+            global.cronJobs[newCron.spec.codeName] = newCron;
             if (!newCron.spec.ignored && newCron.spec.active) {
               results.push(setupNewCron(newCron));
             } else {
