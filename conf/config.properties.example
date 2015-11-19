@@ -222,7 +222,7 @@ server.database.username=${env.ACAS_USERNAME}
 server.database.password=${env.ACAS_PASSWORD}
 server.log.level=DEBUG
 
-server.log.path=/home/runner/log
+server.log.path=/home/runner/logs
 
 client.include.project=FALSE
 client.path=
