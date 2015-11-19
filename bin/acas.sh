@@ -107,7 +107,11 @@ start_server() {
 }
 
 run_server() {
-    runCommand="npm run $@"
+    if [ -z "$@" ]; then
+      runCommand="npm run start"
+    else
+      runCommand="npm run $@"
+    fi
     echo "runCommand: $runCommand"
     if [ $(whoami) != "$ACAS_USER" ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
