@@ -26,7 +26,8 @@ module.exports = (grunt) ->
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'execute:prepare_module_includes'
-		grunt.task.run 'execute:prepare_config_files'
+		if grunt.option('conf')
+			grunt.task.run 'execute:prepare_config_files'
 		grunt.task.run 'execute:prepare_test_JSON'
 		return
 	#

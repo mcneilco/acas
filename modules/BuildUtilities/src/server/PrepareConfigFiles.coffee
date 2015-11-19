@@ -16,76 +16,7 @@ global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
 
 sysEnv = process.env
 
-csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
-	mkdirSync = (path) ->
-		try
-			fs.mkdirSync path
-		catch e
-			if e.code != 'EEXIST'
-				throw e
-		return
-
-	mkdirSync(configDir)
-
-	getProperties = (configDir) =>
-		configFiles = glob.sync("#{configDir}/*.properties")
-		configFiles.push "#{configDir}/config.properties.example"
-		if configFiles.length == 0
-			console.warn "no config files found"
-			return
-
-		substitutions =
-			env: sysEnv
-			conf: confVars
-		options =
-			path: true
-			namespaces: true
-			sections: true
-			variables: true
-			include: true
-			vars: substitutions
-
-		allConf = Object()
-		numParsed = 0
-		for configFile, i in configFiles
-			properties.parse configFile, options, (error, conf) ->
-				numParsed = numParsed + 1
-				if error?
-					console.log "Problem parsing #{configFile}: "+error
-				else
-					allConf = _.deepExtend conf, allConf
-					if numParsed == configFiles.length
-						if allConf.client.deployMode == "Prod"
-							allConf.server.enableSpecRunner = false
-						else
-							allConf.server.enableSpecRunner = true
-						allConf.server.run = user: do =>
-							if !allConf.server.run?
-								console.log "server.run.user is not set"
-								if sysEnv.USER
-									console.log "using process.env.USER #{sysEnv.USER}"
-									return sysEnv.USER
-								else
-									console.log "process.env.USER is not set"
-									if process.getuid()
-										user = shell.exec('whoami',{silent:true}).output.replace('\n','')
-										console.log "using whoami result #{user}"
-										return user
-									else
-										console.log "could not get run user exiting"
-										process.exit 1
-
-							return allConf.server.run.user
-
-						writeJSONFormat allConf
-						writeClientJSONFormat allConf
-						writePropertiesFormat allConf
-						writeApacheConfFile allConf
-
-	getProperties(configDir)
-
-#
 mkdirSync = (path) ->
 	try
 		fs.mkdirSync path
@@ -254,7 +185,6 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	apacheSpecificConfs.join('\n')
 
-
 apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
 	{directive: 'ServerSignature', value: 'On'},
 	{directive: 'HostnameLookups', value: 'On'},
@@ -275,3 +205,78 @@ writeApacheConfFile = (config)->
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
 	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
 	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
+
+csUtilities.getConfServiceVars sysEnv, (confVars) ->
+
+	mkdirSync = (path) ->
+		try
+			fs.mkdirSync path
+		catch e
+			if e.code != 'EEXIST'
+				throw e
+		return
+
+	mkdirSync(configDir)
+
+	getProperties = (configDir) =>
+		configFiles = glob.sync("#{configDir}/*.properties")
+		configFiles.unshift "#{configDir}/config.properties.example"
+
+		if configFiles.length == 0
+			console.warn "no config files found"
+			return
+
+		allConf = []
+		for configFile in configFiles
+			allConf = _.extend allConf, propertiesParser.read(configFile)
+
+		configString = ""
+		for attr, value of allConf
+			if value != null
+				configString += attr+"="+value+"\n"
+			else
+				configString += attr+"=\n"
+
+		substitutions =
+			env: sysEnv
+			conf: confVars
+		options =
+			path: false
+			namespaces: true
+			sections: true
+			variables: true
+			include: true
+			vars: substitutions
+
+		properties.parse configString, options, (error, conf) =>
+			if error?
+				console.log "Problem parsing #{configFile}: "+error
+			else
+				if conf.client.deployMode == "Prod"
+					conf.server.enableSpecRunner = false
+				else
+					conf.server.enableSpecRunner = true
+				conf.server.run = user: do =>
+					if !conf.server.run?
+						console.log "server.run.user is not set"
+						if sysEnv.USER
+							console.log "using process.env.USER #{sysEnv.USER}"
+							return sysEnv.USER
+						else
+							console.log "process.env.USER is not set"
+							if process.getuid()
+								user = shell.exec('whoami',{silent:true}).output.replace('\n','')
+								console.log "using whoami result #{user}"
+								return user
+							else
+								console.log "could not get run user exiting"
+								process.exit 1
+
+					return conf.server.run.user
+
+			writeJSONFormat conf
+			writeClientJSONFormat conf
+			writePropertiesFormat conf
+			writeApacheConfFile conf
+
+	getProperties(configDir)

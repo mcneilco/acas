@@ -111,7 +111,7 @@ server.nodeapi.port=3001
 server.nodeapi.path=http://${client.host}:${server.nodeapi.port}
 
 client.service.persistence.path=acas/api/v1
-client.service.persistence.host=host5.labsynch.com
+client.service.persistence.host=tomcat
 client.service.persistence.port=8080
 client.service.persistence.fullpath=http://${client.service.persistence.host}:${client.service.persistence.port}/${client.service.persistence.path}/
 
@@ -133,7 +133,7 @@ client.datafiles.downloadurl.prefix=/dataFiles/
 
 # Is used to know location on server when sending from R to tomcat on separate server
 # Normally {$ACAS_HOME}/${server.datafiles.relative_path}
-server.service.persistence.filePath=/opt/acas_home/app/acas/privateUploads
+server.service.persistence.filePath=/home/runner/build/privateUploads
 server.service.persistence.fileUrl=${client.host}:${server.nodeapi.port}/uploads
 
 
@@ -157,7 +157,7 @@ server.ssl.cert.authority.file.path=../certs/ca.crt
 server.ssl.cert.passphrase=selfCertForACASServer
 
 client.service.rapache.port=1080
-server.rapache.listen=localhost
+server.rapache.listen=*
 #todo not in codebase 6/2015
 client.service.rapache.use.ssl=${client.use.ssl}
 client.service.rapache.host=${client.host}
@@ -179,7 +179,7 @@ client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.s
 #
 # Example: client.deployMode=Dev
 #
-client.deployMode=Dev
+client.deployMode=${env.APP_NAME}
 
 # Settings for the logging service
 #
@@ -217,12 +217,12 @@ logging.logtoconsole=true
 # todo add options for using flat file instead of mongo
 # printing out to console.log
 
-server.database.name=prod
-server.database.username=acas
-server.database.password=acas
+server.database.name=${env.ACAS_DB_NAME}
+server.database.username=${env.ACAS_USERNAME}
+server.database.password=${env.ACAS_PASSWORD}
 server.log.level=DEBUG
 
-server.log.path=/tmp
+server.log.path=/home/runner/log
 
 client.include.project=FALSE
 client.path=
@@ -244,7 +244,7 @@ client.roologin.showpasswordchange=true
 server.allow.protocol.creation.formats=Generic,Dose Response,Custom Example,Example2,Time Result
 server.database.driver=org.postgresql.Driver
 server.database.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
-server.database.host=${client.service.persistence.host}
+server.database.host=db
 server.database.port=5432
 
 #todo move to R stuff?
@@ -328,3 +328,11 @@ client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
+
+
+client.service.preferred.batchid.path=/api/preferredBatchId
+client.service.project.path=/api/projects
+client.service.users.path=/api/users
+server.file.server.path=privateUploads
+server.temp.file.server.path=privateTempFiles
+server.service.persistence.jdbc.validation.query=select version()
