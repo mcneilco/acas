@@ -103,7 +103,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 	else  # internal source
 		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
 		console.log entityType
-		if entityType.codeOrigin is "ACAS LSThing"
+		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
 				thingType: entityType.type
@@ -171,7 +171,7 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 
 	else  # sourceExternal = false
 		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
-		if entityType.codeOrigin is "ACAS LSThing"
+		if entityType.codeOrigin is "ACAS LsThing"
 			preferredThingService = require "./ThingServiceRoutes.js"
 			reqHashes =
 				thingType: entityType.type

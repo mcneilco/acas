@@ -126,7 +126,7 @@
     } else {
       entityType = configuredEntityTypes.entityTypes[requestData.displayName];
       console.log(entityType);
-      if (entityType.codeOrigin === "ACAS LSThing") {
+      if (entityType.codeOrigin === "ACAS LsThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
           thingType: entityType.type,
@@ -212,7 +212,7 @@
       });
     } else {
       entityType = configuredEntityTypes.entityTypes[requestData.displayName];
-      if (entityType.codeOrigin === "ACAS LSThing") {
+      if (entityType.codeOrigin === "ACAS LsThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
           thingType: entityType.type,
