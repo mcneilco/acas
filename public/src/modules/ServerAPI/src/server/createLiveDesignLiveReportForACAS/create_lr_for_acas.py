@@ -24,7 +24,7 @@ from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
 from ldclient.models import ViewSelection
 
-def make_acas_live_report(api, compound_ids, assays_to_add):
+def make_acas_live_report(api, compound_ids, assays_to_add, database):
 
    
     lr = LiveReport("Live Report of ACAS Registered data", 
@@ -73,10 +73,10 @@ def make_acas_live_report(api, compound_ids, assays_to_add):
     #compound search by id
     search_results = []
     if isinstance(compound_ids, (str,unicode)):
-    	search_results.extend(api.compound_search_by_id(compound_ids, database_names=["ACAS"]))
+    	search_results.extend(api.compound_search_by_id(compound_ids, database_names=[database]))
     else:
     	for compound_id in compound_ids:
-    		search_results.extend(api.compound_search_by_id(compound_id, database_names=["ACAS"]))
+    		search_results.extend(api.compound_search_by_id(compound_id, database_names=[database]))
     # Now add the rows for the compound ids for which we want data
     #compound_ids = ["V51411","V51412","V51413","V51414"]
     api.add_rows(lr_id, search_results)
@@ -96,11 +96,13 @@ def main():
     parser.add_argument('-e', '--endpoint', type=str)
     parser.add_argument('-u', '--username', type=str)
     parser.add_argument('-p', '--password', type=str)
+    parser.add_argument('-d', '--database', type=str)
     args = parser.parse_args()
     args = vars(args)
     endpoint = args['endpoint']
     username = args['username']
     password = args['password']
+    database = args['database']
     
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
@@ -109,7 +111,7 @@ def main():
     apiEndpoint = endpoint + apiSuffix;
     api = Api(apiEndpoint, username, password)
     api.reload_db_constants()
-    lr_id = make_acas_live_report(api, compound_ids, assays_to_add)
+    lr_id = make_acas_live_report(api, compound_ids, assays_to_add, database)
     
     liveReportSuffix = "/#/projects/0/livereports/";
     print endpoint + liveReportSuffix + str(lr_id)
