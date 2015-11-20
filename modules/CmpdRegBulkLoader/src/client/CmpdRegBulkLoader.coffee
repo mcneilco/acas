@@ -139,10 +139,14 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		else
 			mappings = @mappings
 
+		if @tempName is "none"
+			templateName = null
+		else
+			templateName = @tempName
 		sdfInfo =
 			fileName: @fileName
 			numRecords: @numRecords
-			templateName: @tempName
+			templateName: templateName
 			mappings: mappings
 			userName: window.AppLaunchParams.loginUser.username
 		$.ajax
@@ -681,6 +685,12 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@trigger 'saveComplete', saveSummary
 
 	handleSdfPropertiesDetected: (properties) =>
+		@$('.bv_templateWarning').hide()
+		@$('.bv_templateWarning').html ""
+		for err in properties.errors
+			if err["level"] is "warning"
+				@$('.bv_templateWarning').append '<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">'+err["message"]+'</div>'
+				@$('.bv_templateWarning').show()
 		@assignSdfPropertiesController.createPropertyCollections(properties)
 		@detectSdfPropertiesController.mappings = @assignSdfPropertiesController.assignedPropertiesList
 		@detectSdfPropertiesController.updatePropertiesRead(@assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead)

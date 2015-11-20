@@ -107,7 +107,11 @@ start_server() {
 }
 
 run_server() {
-    runCommand="npm run $@"
+    if [ -z "$@" ]; then
+      runCommand="npm run start"
+    else
+      runCommand="npm run $@"
+    fi
     echo "runCommand: $runCommand"
     if [ $(whoami) != "$ACAS_USER" ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
@@ -133,7 +137,7 @@ apache_running() {
 }
 
 start_apache() {
-
+    remove_apache_pid
     startCommand=" $apacheCMD -f $ACAS_HOME/conf/compiled/apache.conf -k start 2>&1 >/dev/null"
     if [ $(whoami) != "$RAPACHE_START_ACAS_USER" ]; then
         startCommand="su - $RAPACHE_START_ACAS_USER $suAdd -c \"($startCommand)\""
@@ -270,10 +274,15 @@ do_start() {
     return $RETVAL
 }
 
+remove_apache_pid() {
+  if [ -f "$ACAS_HOME/bin/apache.pid" ]; then
+      rm "$ACAS_HOME/bin/apache.pid"
+  fi
+}
 # Runs the server.
 do_run() {
-
     if [ $name == "rservices" ] || [ $name == "all" ]; then
+        remove_apache_pid
         counter=0
         wait=5
         until [ -f $ACAS_HOME/conf/compiled/apache.conf  ] || [ $counter == $wait ]; do
