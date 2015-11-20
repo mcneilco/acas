@@ -257,7 +257,7 @@ module.exports = (grunt) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
 #						console.log "outre:         #{matchedSrcPath.replace matchedSrcPath.split("/")[0]+"/", ""}"
 #						console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(matchedSrcPath.split("/")[0]+"/modules/", "").replace(module+"/spec",module)}"
-						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"spec",module)}"
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/spec",module)}"
 					dest: "<%= build %>/src/spec/"
 				]
 			module_css:
