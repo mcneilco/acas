@@ -19,4 +19,14 @@ ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
 ENV     ACAS_HOME=$BUILD_PATH
 ENV     R_LIBS=$BUILD_PATH/r_libs
+
+# #RSTUDIO INSTALL
+# USER root
+# RUN echo "runner" | passwd --stdin runner && \
+#      wget https://download2.rstudio.org/rstudio-server-rhel-0.99.489-x86_64.rpm --no-verbose && \
+#      yum install -y --nogpgcheck rstudio-server-rhel-0.99.489-x86_64.rpm && \
+#      yum install -y git
+# USER runner
+# RUN printf "R_LIBS_USER=$BUILD_PATH/r_libs\nR_DEFAULT_PACKAGES=\"utils,racas\"" > /home/runner/.Renviron
+
 CMD     ["/bin/sh","bin/acas-docker.sh", "run"]
