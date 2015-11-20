@@ -270,7 +270,7 @@ do_start() {
 }
 
 remove_apache_pid() {
-  if [ -a "$ACAS_HOME/bin/apache.pid" ]; then
+  if [ -f "$ACAS_HOME/bin/apache.pid" ]; then
       rm "$ACAS_HOME/bin/apache.pid"
   fi
 }
