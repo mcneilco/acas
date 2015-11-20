@@ -423,12 +423,18 @@ module.exports = (grunt) ->
 			copy_conf:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
 				tasks: "newer:copy:conf"
+			module_legacy_r:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
+				tasks: "newer:copy:module_r"
 			module_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
 				tasks: "newer:copy:module_r"
 			public_html:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.html"]
 				tasks: "newer:copy:public_html"
+			module_css:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.css"]
+				tasks: "newer:copy:module_css"
 		#watchers on the custom folder
 			custom_compilePublicConf:
 				files: "<%= acas_custom %>/public_conf/*.coffee"
