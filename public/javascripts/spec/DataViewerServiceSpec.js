@@ -105,13 +105,13 @@ This service takes a list of geneids and returns related experimental data,
     ]
   };
 
-  describe('Gene Data Queries Service testing', function() {
+  describe('ACAS Data Viewer Service testing', function() {
     beforeEach(function() {
       return this.waitForServiceReturn = function() {
         return typeof this.serviceReturn !== 'undefined';
       };
     });
-    describe("basic gene data query", function() {
+    describe("basic data viewer query", function() {
       describe('when run with valid input data', function() {
         beforeEach(function() {
           return runs(function() {

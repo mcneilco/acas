@@ -56,14 +56,14 @@
                 dirName = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query';
                 return fs.mkdir('./privateTempFiles/' + dirName, function(err) {
                   if (err) {
-                    console.log('there was an error creating a gene id query directory');
+                    console.log('there was an error creating a ACAS Data Viewer directory');
                     console.log(err);
                     resp.end("gene query directory could not be saved");
                   } else {
                     filename = 'GeneQuery.csv';
                     fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
                       if (err) {
-                        console.log('there was an error saving a gene id query csv file');
+                        console.log('there was an error saving a ACAS Data Viewer csv file');
                         console.log(err);
                         resp.end("File could not be saved");
                       } else {
@@ -282,7 +282,7 @@
       };
     }
     return res.render('DataViewer', {
-      title: "Gene ID Query",
+      title: "ACAS Data Viewer",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -316,7 +316,7 @@
       };
     }
     return res.render('DataViewer', {
-      title: "Gene ID Query",
+      title: "ACAS Data Viewer",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -350,7 +350,7 @@
       };
     }
     return res.render('DataViewer', {
-      title: "Gene ID Query",
+      title: "ACAS Data Viewer",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,
@@ -406,14 +406,14 @@
                 dirName = 'gene' + crypto.randomBytes(4).readUInt32LE(0) + 'query';
                 return fs.mkdir('./privateTempFiles/' + dirName, function(err) {
                   if (err) {
-                    console.log('there was an error creating a gene id query directory');
+                    console.log('there was an error creating an ACAS Data Viewer directory');
                     console.log(err);
                     resp.end("gene query directory could not be saved");
                   } else {
                     filename = 'GeneQuery.csv';
                     fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
                       if (err) {
-                        console.log('there was an error saving a gene id query csv file');
+                        console.log('there was an error saving an ACAS Data Viewer csv file');
                         console.log(err);
                         resp.end("File could not be saved");
                       } else {

@@ -6,8 +6,8 @@ afterEach ->
 	$("#fixture").remove()
 	$("body").append '<div id="fixture"></div>'
 
-describe "Gene Data Queries Module Testing", ->
-	describe "Gene ID Query Input Controller", ->
+describe "ACAS Data Viewer Module Testing", ->
+	describe "ACAS Data Viewer Input Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
 				@gidqic = new DataViewerInputController
@@ -57,7 +57,7 @@ describe "Gene Data Queries Module Testing", ->
 					runs ->
 						expect(@advanceTriggered).toBeTruthy()
 
-	describe "Gene ID Query Result Controller", ->
+	describe "ACAS Data Viewer Result Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
 				@gidqrc = new DataViewerResultController
@@ -102,7 +102,7 @@ describe "Gene Data Queries Module Testing", ->
 				it "should hide the download CSV option", ->
 					expect(@gidqrc.$('.bv_gidDownloadCSV')).toBeHidden()
 
-	describe "Gene ID Query Search Controller", ->
+	describe "ACAS Data Viewer Search Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
 				@gidqsc = new DataViewerSearchController
@@ -555,7 +555,7 @@ describe "Gene Data Queries Module Testing", ->
 
 
 	################ stand-alone app launcher   ##########
-	describe "Gene ID Query App Controller", ->
+	describe "ACAS Data Viewer App Controller", ->
 		describe 'when instantiated', ->
 			beforeEach ->
 				@gidqac = new DataViewerAppController
