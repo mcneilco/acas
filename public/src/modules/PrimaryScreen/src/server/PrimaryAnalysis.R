@@ -175,7 +175,7 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
-  
+  save(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode, file="getWellTypes.Rda")
   wellTypes <- rep.int("test", length(batchNames))
   
   
@@ -192,7 +192,7 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
   if (is.null(toleranceRange)) {
-    warnUser("Config issue: control tolerance not set")
+    warnUser("Config issue: control tolerance client.service.control.tolerance.percentage not set")
     toleranceRange <- 0
   }
   #   toleranceRange <- 0.01
@@ -1781,7 +1781,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
     
     # TODO: add config server.service.genericSpecificPreProcessor
-    if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
+    if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
       instrumentData <- specificDataPreProcessor(parameters=parameters, 
                                                  folderToParse=fullPathToParse, 
                                                  errorEnv=errorEnv, 
@@ -1803,20 +1803,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # RED (client-specific)
     # getCompoundAssignments
     
-    # TODO: add config server.service.genericSpecificPreProcessor
     # exampleClient is set at the head of runMain function
-    if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
+    if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
+      resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData, 
+                                                    testMode, parameters)
+    } else {
       resultTable <- getCompoundAssignments(fullPathToParse, instrumentData, 
                                             testMode, parameters, 
                                             tempFilePath=specDataPrepFileLocation)
-    } else {
-      resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData, 
-                                                    testMode, parameters)
     }
     
     # this also performs any calculations from the GUI
+    source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R") 
+    # TODO: break this function into customer-specific usable parts
+    save(resultTable, instrumentData, file="beforeAdjust.Rda")
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
-    
+    save(resultTable, file="afterAdjust.Rda")
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit, 
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
@@ -2600,6 +2602,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   testMode <- interpretJSONBoolean(testMode)
   # If there is a global defined by another R code, this will overwrite it
   errorList <<- list()
+  developmentMode <- globalMessenger$devMode
   
   if (developmentMode) {
     loadResult <- list(value = runMain(folderToParse = folderToParse, 

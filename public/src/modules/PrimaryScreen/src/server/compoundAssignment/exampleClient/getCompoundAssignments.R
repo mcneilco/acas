@@ -1,7 +1,6 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
   # exampleClient
-  
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
                                             testMode=testMode,
@@ -39,6 +38,7 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
 
 getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMode, parameters) {
   
+  save(folderToParse, instrumentData, testMode, parameters, file="cmpdAssignments.Rda")
   resultTable <- instrumentData
   
   barcodeList <- levels(resultTable$barcode)
@@ -87,14 +87,14 @@ getAgonist <- function(agonist, wellTable) {
   
   # For Dose Response agonist, we will have a variety of concentrations. Then the agonist concentration should be null
   if (is.null(agonist$concentration) || agonist$concentration == "") {
-    agonistRows <- which(wellTable$BATCH_CODE == agonist$batchCode & 
+    agonistRows <- wellTable$BATCH_CODE == agonist$batchCode & 
       wellTable$CONCENTRATION == agonist$concentration &
-      wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits)
+      wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
   } else {
-    agonistRows <- which(wellTable$BATCH_CODE == agonist$batchCode)
+    agonistRows <- wellTable$BATCH_CODE == agonist$batchCode
   }
   
-  agonistMatch <- wellTable[, c("plateAndWell", "concentration")]
+  agonistMatch <- wellTable[agonistRows, c("plateAndWell", "CONCENTRATION")]
   names(agonistMatch) <- c("plateAndWell", "agonistConc")
   
   #agonistTable <- wellTable[agonistRows, c("BARCODE", "WELL_NAME")]
@@ -134,8 +134,8 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   
   wellUniqueId <- paste(barcode, well)
   wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
-  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT", "hasAgonist")]
-  names(outputFrame) <- c("batchName","concentration","concUnit", "hasAgonist")
+  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT", "agonistConc")]
+  names(outputFrame) <- c("batchName","concentration","concUnit", "agonistConc")
   return(outputFrame)
 }
 
@@ -154,7 +154,7 @@ createWellTable <- function(barcodeList, testMode) {
   testMode <- TRUE
   if (testMode) {
     # wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
-    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsAddedA copy.csv", stringsAsFactors = FALSE)
+    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsAddedA.csv", stringsAsFactors = FALSE)
     #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
     #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
     #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
