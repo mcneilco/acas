@@ -6,9 +6,8 @@
     app.post('/api/cronScriptRunner', exports.postCronScriptRunner);
     app.get('/api/cronScriptRunner/:code', exports.getCronScriptRunner);
     app.put('/api/cronScriptRunner/:code', exports.putCronScriptRunner);
-    console.log("about to declare global in setup");
     global.cronJobs = {};
-    console.log("just declared global in setup");
+    console.log("just declared global cronJobs in setup");
     return addJobsOnStartup();
   };
 
@@ -24,7 +23,6 @@
     var codeInt, cronConfig, i, len, newCode, newCron, persistenceURL, ref, spec;
     cronConfig = require('../public/javascripts/conf/StartupCronJobsConfJSON.js');
     persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs";
-    global.cronJobs = [];
     codeInt = 1;
     ref = cronConfig.jobsToStart;
     for (i = 0, len = ref.length; i < len; i++) {
@@ -33,7 +31,7 @@
       newCron = {
         spec: spec
       };
-      newCron.spec.cronCode = newCode;
+      newCron.spec.codeName = newCode;
       newCron.spec.numberOfExcutions = 0;
       newCron.spec.ignored = false;
       global.cronJobs[newCode] = newCron;
@@ -41,13 +39,13 @@
         setupNewCron(newCron);
       }
     }
-    if (global.specRunnerTestmode === false) {
+    if (!global.specRunnerTestmode) {
       return request.get({
         url: persistenceURL,
         json: true
       }, (function(_this) {
         return function(error, response, body) {
-          var j, len1, results;
+          var j, len1, ref1, ref2, results, startOnRestart;
           if (!error && response.statusCode < 400) {
             results = [];
             for (j = 0, len1 = body.length; j < len1; j++) {
@@ -55,8 +53,12 @@
               newCron = {
                 spec: spec
               };
-              global.cronJobs[newCode] = newCron;
-              if (!newCron.spec.ignored && newCron.spec.active) {
+              global.cronJobs[newCron.spec.codeName] = newCron;
+              startOnRestart = (ref1 = config.all.server.service) != null ? (ref2 = ref1.cron) != null ? ref2.startOnRestart : void 0 : void 0;
+              if (startOnRestart == null) {
+                startOnRestart = true;
+              }
+              if (!newCron.spec.ignored && newCron.spec.active && startOnRestart) {
                 results.push(setupNewCron(newCron));
               } else {
                 results.push(void 0);
@@ -138,11 +140,11 @@
     if ((req.query.testMode === true) || (global.specRunnerTestmode === true)) {
       cronScriptRunnerTestJSON = require('../public/javascripts/spec/testFixtures/CronScriptRunnerTestJSON.js');
       if (req.params.code.indexOf('error') > -1) {
-        resp.send("cronCode " + code + " not found", 404);
+        resp.send("codeName " + code + " not found", 404);
         return;
       }
       respCron = JSON.parse(JSON.stringify(cronScriptRunnerTestJSON.savedCronEntry));
-      respCron.cronCode = req.params.code;
+      respCron.codeName = req.params.code;
       if (req.body.active != null) {
         respCron.active = req.body.active;
       }
@@ -154,7 +156,7 @@
       code = req.params.code;
       cronJob = global.cronJobs[code];
       if (cronJob == null) {
-        resp.send("cronCode " + code + " not found", 404);
+        resp.send("codeName " + code + " not found", 404);
         return;
       }
       return updateCronScriptRunner(code, req.body, function(err, response) {
@@ -183,7 +185,7 @@
       if (cronJob != null) {
         return resp.json(cronJob.spec);
       } else {
-        return resp.status(500).send("Cron Job not found");
+        return resp.status(400).send("Cron Job not found");
       }
     }
   };
@@ -192,7 +194,7 @@
     var cronJob, key, persistenceURL, value;
     cronJob = global.cronJobs[code];
     if (cronJob == null) {
-      callback("cronCode " + code + " not found");
+      callback("codeName " + code + " not found");
       return;
     }
     for (key in newSpec) {
@@ -246,10 +248,10 @@
     var jobStart, serverUtilityFunctions;
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     jobStart = new Date();
-    console.log('started r script');
+    console.log('started cron r script ' + spec.codeName);
     return serverUtilityFunctions.runRFunctionOutsideRequest(spec.user, JSON.parse(spec.scriptJSONData), spec.scriptFile, spec.functionName, function(rReturn) {
       var duration;
-      console.log('finished r script');
+      console.log('finished cron r script ' + spec.codeName);
       duration = new Date() - jobStart;
       return scriptComplete(spec.codeName, jobStart.getTime(), duration, rReturn);
     });
