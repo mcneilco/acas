@@ -42,7 +42,10 @@
 
 source("public/src/conf/customFunctions.R")
 
-
+# inputParameters$timeWindowList <- list(
+#   list(windowName = "T1", statistic="max", windowStart=15, windowEnd=30, windowUnit = "s"),
+#   list(windowName = "T2", statistic="min", windowStart=5, windowEnd=10, windowUnit = "s")
+#   )
 
 
 getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experiment, parameters) {
