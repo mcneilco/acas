@@ -1,4 +1,5 @@
 exports.setupAPIRoutes = (app) ->
+	app.get '/api/cronScriptRunner', exports.getAllCronScriptRunner
 	app.post '/api/cronScriptRunner', exports.postCronScriptRunner
 	app.get '/api/cronScriptRunner/:code', exports.getCronScriptRunner
 	app.put '/api/cronScriptRunner/:code', exports.putCronScriptRunner
@@ -20,6 +21,8 @@ addJobsOnStartup = ->
 	cronConfig = require '../public/javascripts/conf/StartupCronJobsConfJSON.js'
 	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
 
+	global.cronJobs = []
+
 	#We don't want to save these to the database, so make our own special cronCodes and launch
 	codeInt = 1
 	for spec in cronConfig.jobsToStart
@@ -37,22 +40,27 @@ addJobsOnStartup = ->
 			setupNewCron newCron
 
 	# Get existing jobs
-	request.get
-		url: persistenceURL
-		json: true
-	, (error, response, body) =>
-		if not error and response.statusCode < 400
-			for spec in body
-				newCron = spec: spec
-				global.cronJobs[newCron.spec.codeName] = newCron
-				if not newCron.spec.ignored and newCron.spec.active
-					setupNewCron newCron
-		else
-			console.log 'Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body
+	if global.specRunnerTestmode is false
+		request.get
+			url: persistenceURL
+			json: true
+		, (error, response, body) =>
+			if not error and response.statusCode < 400
+				for spec in body
+					newCron = spec: spec
+					global.cronJobs[newCode] = newCron
+					if not newCron.spec.ignored and newCron.spec.active
+						setupNewCron newCron
+			else
+				console.log 'Failed to get list of existing cronjobs, error:' + error + '\n body: ' + body
 
 
+exports.getAllCronScriptRunner = (req, resp) ->
+	allSavedSpecs = (job.spec for code, job of global.cronJobs)
+	resp.json allSavedSpecs
 
 exports.postCronScriptRunner = (req, resp) ->
+	console.log "global.specRunnerTestmode: " + global.specRunnerTestmode
 	validation = validateSpec(JSON.parse(JSON.stringify(req.body)))
 	if !validation.valid
 		console.log validation
@@ -129,7 +137,10 @@ exports.getCronScriptRunner = (req, resp) ->
 	else
 		code = req.params.code
 		cronJob = global.cronJobs[code]
-		resp.json cronJob.spec
+		if cronJob?
+			resp.json cronJob.spec
+		else
+			resp.status(500).send "Cron Job not found"
 
 updateCronScriptRunner = (code, newSpec, callback) ->
 	cronJob = global.cronJobs[code]

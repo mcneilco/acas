@@ -48,19 +48,27 @@ describe "Cron Script Runner Services Spec", ->
 				@serverError = error
 				@responseJSON = body
 				@serverResponse = response
-				#cleanup
-				request.put
-					url: baseURL+"/api/cronScriptRunner/"+body.codeName
+				request
+					url: baseURL+"/api/cronScriptRunner"
 					json: true
-					body:
-						active: false
-						ignored: true
 				, (error, response, body) =>
-					done()
+					@allJSON = body
+					#cleanup
+					request.put
+						url: baseURL+"/api/cronScriptRunner/"+@responseJSON.codeName
+						json: true
+						body:
+							active: false
+							ignored: true
+					, (error, response, body) =>
+						done()
 		it "should return a success status code of 200", ->
 			assert.equal @serverResponse.statusCode, 200
 		it "should supply a new code", ->
 			assert.equal @responseJSON.codeName?, true
+		it "should list the cron in the list of all", ->
+			allCodes = (spec.code for spec in @allJSON)
+			assert allCodes.indexOf @responseJSON.codeName > 0
 
 	describe "updating jobs", ->
 		describe "disable current cron and delete", ->

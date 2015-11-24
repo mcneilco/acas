@@ -3,7 +3,7 @@ exports.jobsToStart = [
 #		scriptType: "R"
 #		scriptFile: "public/src/modules/ServerAPI/src/server/RunRFunctionTestStub.R"
 #		functionName: "runRFunctionTest"
-#		scriptJSONData: '{"fileToParse": "public/src/modules/BulkLoadSampleTransfers/spec/specFiles/SampleTransfers_good.csv", "dryRun": "true", "user": "jmcneil" }'
+#		scriptJSONData: '{"fileToParse": "public/src/modules/BulkLoadSampleTransfers/spec/specFiles/shortTransfer.csv", "dryRun": "true", "user": "jmcneil" }'
 #		active: true
 #	,
 #		schedule: "0-59/2 * * * * *"
