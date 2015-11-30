@@ -22,19 +22,20 @@ addJobsOnStartup = ->
 
 	#We don't want to save these to the database, so make our own special cronCodes and launch
 	codeInt = 1
-	for spec in cronConfig.jobsToStart
-		newCode = CRON_CONFIG_PREFIX + codeInt++
+	if cronConfig.jobsToStart?
+		for spec in cronConfig.jobsToStart
+			newCode = CRON_CONFIG_PREFIX + codeInt++
 
-		newCron =
-			spec: spec
-		newCron.spec.codeName = newCode
-		newCron.spec.numberOfExcutions = 0
-		newCron.spec.ignored = false
+			newCron =
+				spec: spec
+			newCron.spec.codeName = newCode
+			newCron.spec.numberOfExcutions = 0
+			newCron.spec.ignored = false
 
-		global.cronJobs[newCode] = newCron
+			global.cronJobs[newCode] = newCron
 
-		if newCron.spec.active
-			setupNewCron newCron
+			if newCron.spec.active
+				setupNewCron newCron
 
 	# Get existing jobs
 	if not global.specRunnerTestmode
