@@ -14,6 +14,7 @@ html
         link(rel='stylesheet', href='/lib/bootstrap-combobox/css/bootstrap-combobox.css')
         link(rel='stylesheet', href='/lib/jsxgraph/jsxgraph.css')
         link(rel='stylesheet', href='/lib/jstree/themes/default/style.min.css')
+        link(rel='stylesheet', href='/lib/handsontable/dist/handsontable.full.css')
         // inserted by PrepareModuleIncludes
 TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
         // end inserted by PrepareModuleIncludes

@@ -22,7 +22,8 @@ exports.requiredScripts = [
 	'/lib/jstree/jstree.min.js',
 	'/lib/moment.min.js',
 	'/lib/spin/js/spin.js',
-	'/lib/spin/js/jquery-spin.js'
+	'/lib/spin/js/jquery-spin.js',
+	'/lib/handsontable/dist/handsontable.full.js'
 ];
 
 exports.applicationScripts = [
