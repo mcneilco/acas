@@ -154,7 +154,7 @@ createWellTable <- function(barcodeList, testMode) {
   testMode <- TRUE
   if (testMode) {
     # wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
-    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsAddedA.csv", stringsAsFactors = FALSE)
+    wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsControlsRemoved.csv", stringsAsFactors = FALSE)
     #     fakeAPI <- read.csv("public/src/modules/PrimaryScreen/spec/api_container_export.csv")
     #     fakeAPI$BARCODE <- gsub("BF00007450", "TL00098001", fakeAPI$BARCODE)
     #     fakeAPI$BARCODE <- gsub("BF00007460","TL00098002",fakeAPI$BARCODE)
