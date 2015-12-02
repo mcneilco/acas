@@ -210,7 +210,7 @@
       this.checkIfNeedToAddNew = bind(this.checkIfNeedToAddNew, this);
       this.ensureValidCollectionLength = bind(this.ensureValidCollectionLength, this);
       this.addBasicFile = bind(this.addBasicFile, this);
-      this.uploadNewBasicFile = bind(this.uploadNewBasicFile, this);
+      this.uploadNewFile = bind(this.uploadNewFile, this);
       this.render = bind(this.render, this);
       return BasicFileListController.__super__.constructor.apply(this, arguments);
     }
@@ -259,7 +259,7 @@
       return this;
     };
 
-    BasicFileListController.prototype.uploadNewBasicFile = function() {
+    BasicFileListController.prototype.uploadNewFile = function() {
       var newModel;
       newModel = new BasicFile;
       this.collection.add(newModel);
@@ -300,13 +300,13 @@
         return model.get('ignored') === false || model.get('ignored') === void 0;
       });
       if (notIgnoredFiles.length === 0) {
-        return this.uploadNewBasicFile();
+        return this.uploadNewFile();
       }
     };
 
     BasicFileListController.prototype.checkIfNeedToAddNew = function() {
       if (this.autoAddAttachFileModel) {
-        return this.uploadNewBasicFile();
+        return this.uploadNewFile();
       }
     };
 
@@ -411,7 +411,7 @@
 
     function AttachFileListController() {
       this.addAttachFile = bind(this.addAttachFile, this);
-      this.uploadNewAttachFile = bind(this.uploadNewAttachFile, this);
+      this.uploadNewFile = bind(this.uploadNewFile, this);
       this.render = bind(this.render, this);
       return AttachFileListController.__super__.constructor.apply(this, arguments);
     }
@@ -419,7 +419,7 @@
     AttachFileListController.prototype.template = _.template($("#AttachFileListView").html());
 
     AttachFileListController.prototype.events = {
-      "click .bv_addFileInfo": "uploadNewAttachFile"
+      "click .bv_addFileInfo": "uploadNewFile"
     };
 
     AttachFileListController.prototype.initialize = function() {
@@ -446,13 +446,13 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.uploadNewAttachFile();
+        this.uploadNewFile();
       }
       this.trigger('renderComplete');
       return this;
     };
 
-    AttachFileListController.prototype.uploadNewAttachFile = function() {
+    AttachFileListController.prototype.uploadNewFile = function() {
       var newModel;
       newModel = new AttachFile;
       this.collection.add(newModel);
