@@ -22,18 +22,29 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 
 exports.thingsByTypeKind = (req, resp) ->
-	if req.query.testMode or global.specRunnerTestmode
-		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.end JSON.stringify thingServiceTestJSON.batchList
-	else
-		config = require '../conf/compiled/conf.js'
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
-		stubFlag = "with=stub"
-		if req.query.stub
-			baseurl += "?#{stubFlag}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	if req.query.format? and req.query.format=="codetable" #ie has '?format=codetable' appended to end of api route
+		if req.query.testMode or global.specRunnerTestmode
+			resp.end JSON.stringify "stubsMode for getting things in codetable format not implemented yet"
+		else
+	#		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+			baseurl = config.all.client.service.persistence.fullpath+"lsthings/codetable?lsType=#{req.params.lsType}&lsKind=#{req.params.lsKind}"
+			stubFlag = "with=stub"
+			if req.query.stub
+				baseurl += "?#{stubFlag}"
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+	else
+		if req.query.testMode or global.specRunnerTestmode
+			thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+			resp.end JSON.stringify thingServiceTestJSON.batchList
+		else
+			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+			stubFlag = "with=stub"
+			if req.query.stub
+				baseurl += "?#{stubFlag}"
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
