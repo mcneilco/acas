@@ -313,14 +313,16 @@ modifyReportFileValues <- function(outputDT, reportFileValues){
   }else if (aggregateData){
 	i <- "report file"
       ids <- vapply(outputDT[[i]],function(x) as.character(x[2]),"")  #get ids
-      split <-  strsplit(vapply(outputDT[[i]],function(x) if(is.null(x)) as.character(NA) else as.character(x[1]),""),"<br>")  #get urls and split on <br> which was used to aggregate in aggregateData()
-      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank" download>', extractFileName(x),'</a>'), simplify=FALSE)
-      if (length(urlSplit[[1]]) > 1){  # There are multiple report file links in one cell, recombine
-        urlCombined <- vapply(urlSplit,function(x) paste(x,collapse = "<br>"),"")
-        outputDT[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
-      } else{  # There is only one report file per cell, urlSplit has correct dimensionality
-        outputDT[[i]] <- strsplit(paste(urlSplit,ids,sep="::"),split="::") #strsplit is used to coerce into a list
-      }
+		if (length(ids) > 0){
+	      split <-  strsplit(vapply(outputDT[[i]],function(x) if(is.null(x)) as.character(NA) else as.character(x[1]),""),"<br>")  #get urls and split on <br> which was used to aggregate in aggregateData()
+	      urlSplit <- sapply(split,function(x) if (length(x) == 0 || is.na(x)) NA else paste0('<a href="',configList$server.nodeapi.path,'/dataFiles/',x,'" target="_blank" download>', extractFileName(x),'</a>'), simplify=FALSE)
+	      if (length(urlSplit[[1]]) > 1){  # There are multiple report file links in one cell, recombine
+	        urlCombined <- vapply(urlSplit,function(x) paste(x,collapse = "<br>"),"")
+	        outputDT[[i]] <- strsplit(paste(urlCombined,ids,sep="::"),split="::")
+	      } else{  # There is only one report file per cell, urlSplit has correct dimensionality
+	        outputDT[[i]] <- strsplit(paste(urlSplit,ids,sep="::"),split="::") #strsplit is used to coerce into a list
+	      }		
+		}
   } else { #aggregate is false
     # Replace each inlineFileValue with a link to the file
     for (i in reportFileValues){
@@ -385,8 +387,6 @@ processData <- function(postData){
 	searchParams$searchFilters <- postData.list$queryParams$searchFilters$filters
 	searchParams$booleanFilter <- postData.list$queryParams$searchFilters$booleanFilter
 	searchParams$advancedFilter <- postData.list$queryParams$searchFilters$advancedFilter
-
-	expt = searchParams$experimentCodeList
 
 	# Whether or not to aggregate on protocol
 	# TODO refactor this so it is not a global -- pass param to all functions
