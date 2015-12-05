@@ -58,6 +58,14 @@
       });
     };
 
+    LabelList.prototype.getACASLsThingCorpName = function() {
+      var corpName;
+      corpName = _.filter(this.getCurrent(), function(lab) {
+        return lab.get('lsType') === "corpName" && lab.get('lsKind') === 'ACAS LsThing';
+      });
+      return corpName[0];
+    };
+
     LabelList.prototype.pickBestLabel = function() {
       var bestLabel, current, names, preferred;
       preferred = this.getPreferred();
