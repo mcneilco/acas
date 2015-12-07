@@ -276,7 +276,11 @@
           if (!error && response.statusCode === 202) {
             return resp.json(json);
           } else if (response.statusCode === 409) {
-            return resp.json("not unique name");
+            console.log("not unique name - 409");
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return resp.json(json);
           } else {
             console.log('got ajax error trying to save thing parent');
             console.log(error);
@@ -360,7 +364,7 @@
           } else {
             console.log('got ajax error trying to lookup lsThing name');
             console.log(error);
-            console.log(jsonthing);
+            console.log(json);
             console.log(response);
             return callback(json);
           }

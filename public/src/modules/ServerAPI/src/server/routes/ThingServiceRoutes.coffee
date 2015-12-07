@@ -222,7 +222,11 @@ exports.validateName = (req, resp) ->
 			if !error && response.statusCode == 202
 				resp.json json
 			else if response.statusCode == 409
-				resp.json "not unique name"
+				console.log "not unique name - 409"
+				console.log error
+				console.log response
+				console.log json
+				resp.json json
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error
@@ -288,7 +292,7 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 			else
 				console.log 'got ajax error trying to lookup lsThing name'
 				console.log error
-				console.log jsonthing
+				console.log json
 				console.log response
 				callback json
 		)
