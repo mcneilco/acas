@@ -594,11 +594,11 @@
     EditablePickListSelectController.prototype.handleAddOptionRequested = function() {
       var newOptionCode, newPickList, requestedOptionModel;
       requestedOptionModel = this.addPanelController.model;
-      newOptionCode = requestedOptionModel.get('newOptionLabel').toLowerCase();
+      newOptionCode = requestedOptionModel.get('newOptionLabel');
       if (this.pickListController.checkOptionInCollection(newOptionCode) === void 0) {
         newPickList = new PickList({
           code: newOptionCode,
-          name: requestedOptionModel.get('newOptionLabel'),
+          name: newOptionCode,
           ignored: false,
           codeType: requestedOptionModel.get('codeType'),
           codeKind: requestedOptionModel.get('codeKind'),
