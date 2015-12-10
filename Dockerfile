@@ -4,7 +4,7 @@ ENV     APP_NAME ACAS
 ENV     BUILD_PATH /home/runner/build
 ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
-RUN     npm install -g grunt grunt-cli forever node-inspector nodemon
+RUN     npm install -g grunt grunt-cli forever node-inspector nodemon mocha
 COPY    package.json $ACAS_BASE/package.json
 WORKDIR $ACAS_BASE
 RUN     npm install && cp -r node_modules $BUILD_PATH && mkdir $BUILD_PATH/privateUploads
