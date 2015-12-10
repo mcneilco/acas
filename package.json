@@ -7,7 +7,9 @@
 		"startstubs": "node app.js stubsMode",
 		"debug": "node-inspector --web-host 0.0.0.0 & node --debug app.js",
 		"dev": "grunt build && (node-inspector &) && (grunt &) && nodemon --debug app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-		"devstubs": "grunt build && (node-inspector &) && (grunt &) && nodemon --debug app.js stubsMode -w app.js -w conf/compiled -w views -w routes -w src/javascripts"
+		"devstubs": "grunt build && (node-inspector &) && (grunt &) && nodemon --debug app.js stubsMode -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "postinstall" : "grunt build",
+		"clean" : "grunt clean"
 	},
 	"dependencies": {
 		"assert": "~1.1.1",
