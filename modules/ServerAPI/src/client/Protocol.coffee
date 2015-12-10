@@ -219,6 +219,26 @@ class window.ProtocolBaseController extends BaseEntityController
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
 
+	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
+		if @attachFileListController?
+			@attachFileListController.undelegateEvents()
+		@attachFileListController= new AttachFileListController
+			autoAddAttachFileModel: false
+			el: @$('.bv_attachFileList')
+			collection: attachFileList
+			firstOptionName: "Select Method"
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'rar', 'zip', 'tar']
+			fileTypeList: fileTypeList
+			required: false
+		@attachFileListController.on 'amClean', =>
+			@trigger 'amClean'
+		@attachFileListController.on 'renderComplete', =>
+			@checkDisplayMode()
+		@attachFileListController.render()
+		@attachFileListController.on 'amDirty', =>
+			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
+			@model.trigger 'change'
+
 	handleDeleteStatusChosen: =>
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
