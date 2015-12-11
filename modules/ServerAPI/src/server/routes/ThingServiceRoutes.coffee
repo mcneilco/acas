@@ -22,29 +22,18 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 
 exports.thingsByTypeKind = (req, resp) ->
-	config = require '../conf/compiled/conf.js'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	if req.query.format? and req.query.format=="codetable" #ie has '?format=codetable' appended to end of api route
-		if req.query.testMode or global.specRunnerTestmode
-			resp.end JSON.stringify "stubsMode for getting things in codetable format not implemented yet"
-		else
-	#		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
-			baseurl = config.all.client.service.persistence.fullpath+"lsthings/codetable?lsType=#{req.params.lsType}&lsKind=#{req.params.lsKind}"
-			stubFlag = "with=stub"
-			if req.query.stub
-				baseurl += "?#{stubFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
-
+	if req.query.testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.batchList
 	else
-		if req.query.testMode or global.specRunnerTestmode
-			thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-			resp.end JSON.stringify thingServiceTestJSON.batchList
-		else
-			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
-			stubFlag = "with=stub"
-			if req.query.stub
-				baseurl += "?#{stubFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
+		stubFlag = "with=stub"
+		if req.query.stub
+			baseurl += "?#{stubFlag}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
@@ -79,7 +68,7 @@ updateThing = (thing, testMode, callback) ->
 			callback thing
 		else
 			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.code
+			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
 			request = require 'request'
 			request(
 				method: 'PUT'
@@ -87,12 +76,13 @@ updateThing = (thing, testMode, callback) ->
 				body: thing
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200
+				if !error && response.statusCode == 200 and json.codeName?
 					callback json
 				else
 					console.log 'got ajax error trying to update lsThing'
 					console.log error
 					console.log response
+					callback "update lsThing failed"
 			)
 
 
@@ -138,6 +128,8 @@ postThing = (isBatch, req, resp) ->
 			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
 			if isBatch
 				baseurl += "/?parentIdOrCodeName="+req.params.parentCode
+			else
+				baseurl += "?with=nestedfull"
 			request = require 'request'
 			request(
 				method: 'POST'
@@ -220,15 +212,11 @@ exports.validateName = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/validate"
-		if req.params.componentOrAssembly is "component"
-			baseurl += "?uniqueName=true"
-		else #is assembly
-			baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true"
 		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body.modelToSave
+			body: req.body.data
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 202
@@ -238,7 +226,7 @@ exports.validateName = (req, resp) ->
 			else
 				console.log 'got ajax error trying to save thing parent'
 				console.log error
-				console.log jsonthing
+				console.log json
 				console.log response
 		)
 

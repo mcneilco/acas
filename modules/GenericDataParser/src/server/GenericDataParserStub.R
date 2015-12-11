@@ -1,17 +1,17 @@
 parseGenericData <- function(request) {
 	hasError <- FALSE
 	errorMessages <- list()
-	transactionId = NULL
-	fileName <- request[[1]]
-	reportFileName <- request[[2]]
-	cat (request[[2]])
-	dryRun <- request[[3]]
-	#	dryRun <- request[[4]]
+	transactionId <- NULL
+	request <- as.list(request)
+	fileName <- request$fileToParse
+	reportFileName <- request$reportFile
+	cat(request$testMode)
+	dryRun <- request$dryRunMode
 	if (grepl("unhandled_error", fileName, fixed = TRUE)) {
 	  stop("unhandled R error")
 	}
-	if (regexpr("with_error", fileName)>0)  {
-		hasError = TRUE
+	if (grepl("with_error", fileName, fixed = TRUE))  {
+		hasError <- TRUE
 		errorMessages <- c(errorMessages, list(list(errorLevel="error", message="Input file not found")))
 	}
 	response <- list(
@@ -28,13 +28,13 @@ parseGenericData <- function(request) {
 		errorMessages= errorMessages
 	)
 
-	if(dryRun=="false") {
+	if (as.logical(dryRun)==FALSE) {
 	    response$results$experimentCode = "EXPT-000001"
 	    #Only needs to be returned in the case that dose response analysis is run after (not during generic loads)
 	    response$results$renderingHint = "4 parameter D-R"
 	}
 
-	return( response)
+	return(response)
 
 }
 

@@ -281,6 +281,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
+		"click .bv_openInQueryTool": "handleOpenInQueryToolClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -293,6 +294,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
+		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
@@ -387,6 +389,9 @@ class window.ExperimentBrowserController extends Backbone.View
 			window.open("/entity/copy/primary_screen_experiment/#{@experimentController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
+
+	handleOpenInQueryToolClicked: =>
+		window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?

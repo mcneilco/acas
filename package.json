@@ -8,7 +8,7 @@
 		"debug": "node-inspector --web-host 0.0.0.0 & node --debug app.js",
 		"dev": "grunt build && (node-inspector &) && (grunt &) && nodemon --debug app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
 		"devstubs": "grunt build && (node-inspector &) && (grunt &) && nodemon --debug app.js stubsMode -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "postinstall" : "grunt build",
+		"postinstall" : "grunt build",
 		"clean" : "grunt clean"
 	},
 	"dependencies": {
@@ -16,6 +16,7 @@
 		"async": "^0.9.0",
 		"asyncblock": "*",
 		"connect-flash": "~0.1.0",
+		"cron": "*",
 		"each": ">= 0.0.0",
 		"express": "3.0.2",
 		"flat": "*",
@@ -25,6 +26,7 @@
 		"jszip": "*",
 		"mongojs": "*",
 		"ncp": "*",
+		"open-graph": "*",
 		"passport": ">= 0.0.0",
 		"passport-local": ">= 0.0.0",
 		"properties": "*",

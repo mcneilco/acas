@@ -261,67 +261,83 @@ exports.deleteExperiment = (req, res) ->
 		)
 
 exports.resultViewerURLByExperimentCodename = (request, resp) ->
-	console.log __dirname
-	_ = require '../public/lib/underscore.js'
 	if (request.query.testMode is true) or (global.specRunnerTestmode is true)
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
 		resp.end JSON.stringify experimentServiceTestJSON.resultViewerURLByExperimentCodeName
 	else
-		config = require '../conf/compiled/conf.js'
-		if config.all.client.service.result && config.all.client.service.result.viewer && config.all.client.service.result.viewer.experimentPrefix? && config.all.client.service.result.viewer.protocolPrefix? && config.all.client.service.result.viewer.experimentNameColumn?
-			resultViewerURL = [resultViewerURL: ""]
-			serverUtilityFunctions = require './ServerUtilityFunctions.js'
-			baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+request.params.code
-			request = require 'request'
-			request(
-				method: 'GET'
-				url: baseurl
-				json: true
-			, (error, response, experiment) =>
-				if !error && response.statusCode == 200
-					if experiment.length == 0
-						resp.statusCode = 404
-						resp.json resultViewerURL
-					else
-						baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment.protocol.id
-						request = require 'request'
-						request(
-							method: 'GET'
-							url: baseurl
-							json: true
-						, (error, response, protocol) =>
-							if response.statusCode == 404
-								resp.statusCode = 404
-								resp.json resultViewerURL
-							else
-								if !error && response.statusCode == 200
-									preferredExperimentLabel = _.filter experiment.lsLabels, (lab) ->
-										lab.preferred && lab.ignored==false
-									preferredExperimentLabelText = preferredExperimentLabel[0].labelText
-									if config.all.client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME"
-										experimentName = experiment.codeName + "::" + preferredExperimentLabelText
-									else
-										experimentName = preferredExperimentLabelText
-									preferredProtocolLabel = _.filter protocol.lsLabels, (lab) ->
-										lab.preferred && lab.ignored==false
-									preferredProtocolLabelText = preferredProtocolLabel[0].labelText
-									resp.json
-										resultViewerURL: config.all.client.service.result.viewer.protocolPrefix + encodeURIComponent(preferredProtocolLabelText) + config.all.client.service.result.viewer.experimentPrefix + encodeURIComponent(experimentName)
-								else
-									console.log 'got ajax error trying to save new experiment'
-									console.log error
-									console.log json
-									console.log response
-						)
+		exports.resultViewerURLFromExperimentCodeName request.params.code, (err, res) ->
+			if err? or not res.resultViewerURL?
+				resp.statusCode = 500
+				if err.error? and typeof err.error is 'object'
+					resp.json err.error
 				else
-					console.log 'got ajax error trying to save new experiment'
-					console.log error
-					console.log json
-					console.log response
-			)
-		else
-			resp.statusCode = 500
-			resp.end "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
+					resp.send err.error
+			else if res.resultViewerURL is ""
+				resp.status(404).json res
+			else
+				resp.json res
+
+exports.resultViewerURLFromExperimentCodeName = (codeName, callback) ->
+	# Error callback should be json
+	_ = require '../public/lib/underscore.js'
+	config = require '../conf/compiled/conf.js'
+	if config.all.client.service.result && config.all.client.service.result.viewer and
+		 config.all.client.service.result.viewer.experimentPrefix? and
+		 config.all.client.service.result.viewer.protocolPrefix? and
+		 config.all.client.service.result.viewer.experimentNameColumn?
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+codeName
+		request = require 'request'
+		request
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, experiment) =>
+			if !error && response.statusCode == 200
+				if experiment.length == 0
+					callback null,
+						resultViewerURL: ""
+				else
+					baseurl = config.all.client.service.persistence.fullpath+"protocols/"+experiment.protocol.id
+					request = require 'request'
+					request
+						method: 'GET'
+						url: baseurl
+						json: true
+					, (error, response, protocol) =>
+						if response.statusCode == 404
+							callback null,
+								resultViewerURL: ""
+						else
+							if !error && response.statusCode == 200
+								preferredExperimentLabel = _.filter experiment.lsLabels, (lab) ->
+									lab.preferred && lab.ignored==false
+								preferredExperimentLabelText = preferredExperimentLabel[0].labelText
+								if config.all.client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME"
+									experimentName = experiment.codeName + "::" + preferredExperimentLabelText
+								else
+									experimentName = preferredExperimentLabelText
+								preferredProtocolLabel = _.filter protocol.lsLabels, (lab) ->
+									lab.preferred && lab.ignored==false
+								preferredProtocolLabelText = preferredProtocolLabel[0].labelText
+								callback null,
+									resultViewerURL: config.all.client.service.result.viewer.protocolPrefix +
+									 encodeURIComponent(preferredProtocolLabelText) +
+									 config.all.client.service.result.viewer.experimentPrefix +
+									 encodeURIComponent(experimentName)
+							else
+								console.log error
+								console.log response
+								callback
+									error: 'got error trying to get protocol'
+			else
+				console.log error
+				console.log response
+				callback
+					error: 'got error trying to get experiment'
+	else
+		callback
+			error: "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
 
 exports.experimentValueById = (req, resp) ->
 	console.log req.params.id

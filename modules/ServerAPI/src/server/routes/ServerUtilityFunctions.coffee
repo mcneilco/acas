@@ -88,16 +88,19 @@ exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preV
 							console.log error
 
 exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+	testMode = req.query.testMode
+	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode
+
+exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(req.body), req.body.user
+	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(argumentsJSON), username
 	if preValidationFunction?
-		preValErrors = preValidationFunction.call @, req.body
+		preValErrors = preValidationFunction.call @, argumentsJSON
 	else
-		preValErrors = basicRScriptPreValidation req.body
+		preValErrors = basicRScriptPreValidation argumentsJSON
 
 	if preValErrors.hasError
 		console.log preValErrors
@@ -108,10 +111,11 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	requestBody =
 		rScript:rScript
 		rFunction:rFunction
-		request: JSON.stringify(req.body)
+		request: JSON.stringify(argumentsJSON)
 
-	if req.query.testMode or global.specRunnerTestmode
+	if testMode or global.specRunnerTestmode
 		runRFunctionServiceTestJSON = require '../public/javascripts/spec/testFixtures/runRFunctionServiceTestJSON.js'
+		console.log 'test'
 		console.log JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError)
 		returnFunction.call @, JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse)
 	else
@@ -121,7 +125,6 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 			json: true
 			body: JSON.stringify(requestBody)
 		, (error, response, body) =>
-
 			@serverError = error
 			@responseJSON = body
 			if response.statusCode != 200 or (@responseJSON? && @responseJSON["RExecutionError"]?) or @serverError?
@@ -143,14 +146,14 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 					results:
 						htmlSummary: messageText
 				returnFunction.call @, JSON.stringify(result)
-				csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), req.body.user
+				csUtilities.logUsage "Returned R execution error R function: "+rFunction, JSON.stringify(result.errorMessages), username
 			else
 				returnFunction.call @, JSON.stringify(@responseJSON)
 				try
 					if @responseJSON.hasError
-						csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, JSON.stringify(@responseJSON), req.body.user
+						csUtilities.logUsage "Returned success from R function with trapped errors: "+rFunction, JSON.stringify(@responseJSON), username
 					else
-						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", req.body.user
+						csUtilities.logUsage "Returned success from R function: "+rFunction, "NA", username
 				catch error
 					console.log error
 
@@ -262,6 +265,21 @@ exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 				unless (ignoreSaved and v.id?)
 					fvs.push v
 	fvs
+
+exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
+	fvs = []
+	unless collection.lsStates?
+		collection = JSON.parse collection
+	for state in collection.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
+	if fvs.length > 0
+		return fvs
+	else
+		return null
 
 controllerRedirect= require '../src/javascripts/ServerAPI/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->

@@ -18,7 +18,7 @@ exports.entityTypes =
   'Protein Parent':
     type: 'parent'
     kind: 'protein'
-    codeOrigin: 'ACAS LSThing'
+    codeOrigin: 'ACAS LsThing'
     displayName: 'Protein Parent'
     sourceExternal: false
     parent: true
@@ -26,7 +26,7 @@ exports.entityTypes =
   'Protein Batch':
     type: 'batch'
     kind: 'protein'
-    codeOrigin: 'ACAS LSThing'
+    codeOrigin: 'ACAS LsThing'
     displayName: 'Protein Batch'
     sourceExternal: false
     parent: false
@@ -34,7 +34,7 @@ exports.entityTypes =
   'Gene ID':
     type: 'gene'
     kind: 'entrez gene'
-    codeOrigin: 'ACAS LSThing'
+    codeOrigin: 'ACAS LsThing'
     displayName: 'Gene ID'
     sourceExternal: false
     parent: false
