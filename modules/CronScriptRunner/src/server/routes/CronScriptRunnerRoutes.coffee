@@ -17,7 +17,7 @@ request = require 'request'
 CRON_CONFIG_PREFIX = "CONF_CRON"
 
 addJobsOnStartup = ->
-	cronConfig = require '../public/javascripts/conf/StartupCronJobsConfJSON.js'
+	cronConfig = require '../public/javascripts/conf/CronScriptRunner/StartupCronJobsConfJSON.js'
 	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs"
 
 	#We don't want to save these to the database, so make our own special cronCodes and launch
