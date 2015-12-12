@@ -61,7 +61,7 @@ if selectedConfJSONFiles?
 		console.log "Check the file path. The file should be in /public/javascripts/conf/confJSON/moduleJSON"
 		process.exit -1
 else
-	confJSONFilesToCompile = glob.sync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON/**/*.json"
+	confJSONFilesToCompile = glob.sync "#{ACAS_HOME}/public/javascripts/conf/confJSON/moduleJSON/**/*ConfJSON.json"
 
 allModulesTypesAndKinds = {}
 

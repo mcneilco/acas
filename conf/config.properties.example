@@ -377,3 +377,11 @@ client.protocol.showAssayTreeRule=false
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
+
+
+client.service.preferred.batchid.path=/api/preferredBatchId
+client.service.project.path=/api/projects
+client.service.users.path=/api/users
+server.file.server.path=privateUploads
+server.temp.file.server.path=privateTempFiles
+server.service.persistence.jdbc.validation.query=select version()

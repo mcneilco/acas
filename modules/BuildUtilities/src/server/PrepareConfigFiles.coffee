@@ -256,6 +256,8 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 					conf.server.enableSpecRunner = false
 				else
 					conf.server.enableSpecRunner = true
+				if !conf.server?.file?.server?.path?
+					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve ACAS_HOME+"/"+conf.server.datafiles.relative_path}"
 				conf.server.run = user: do =>
 					if !conf.server.run?
 						console.log "server.run.user is not set"
