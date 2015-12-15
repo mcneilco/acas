@@ -27,6 +27,12 @@
 				kindName: "experiment metadata"
 			,
 				typeName: "metadata"
+				kindName: "custom experiment metadata"
+			,
+				typeName: "metadata"
+				kindName: "custom experiment metadata gui"
+			,
+				typeName: "metadata"
 				kindName: "raw results locations"
 			,
 				typeName: "metadata"
@@ -113,6 +119,21 @@
 			,
 				typeName: "clobValue"
 				kindName: "GUI descriptor"
+			,
+				typeName: "numericValue"
+				kindName: "column order"
+			,
+				typeName: "stringValue"
+				kindName: "column name"
+			,
+				typeName: "stringValue"
+				kindName: "column units"
+			,
+				typeName: "stringValue"
+				kindName: "column type"
+			,
+				typeName: "stringValue"
+				kindName: "hide column"
 			]
 
 		labeltypes:
