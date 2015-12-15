@@ -101,12 +101,10 @@ exports.getEntityProperties = (properties, entityIdStringLines, callback) ->
 			else
 				callback "problem with property request, check log"
 
-
-
 exports.entityPropertyDescriptors = (req, resp) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	if global.specRunnerTestmode
-		entityDescriptorServiceTestJSON = require "../public/javascripts/spec/testFixtures/EntityPropertyDescriptorsServiceTestJSON.js"
+		entityDescriptorServiceTestJSON = require "../public/javascripts/spec/ServerAPI/testFixtures/EntityPropertyDescriptorsServiceTestJSON.js"
 		resp.json entityDescriptorServiceTestJSON.propertyDescriptors[req.params.entityType][req.params.entityKind]
 	else
 		csUtilities.getEntityPropertyDescriptors req.params.entityType, req.params.entityKind, (descriptorsJSON)->
