@@ -69,6 +69,58 @@
         });
       });
     });
+    describe("Primary Analysis Time Window model testing", function() {
+      return describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.par = new PrimaryAnalysisTimeWindow();
+        });
+        describe("Existence and Defaults", function() {
+          it("should be defined", function() {
+            return expect(this.par).toBeDefined();
+          });
+          return it("should have defaults", function() {
+            expect(this.par.get('position')).toEqual(1);
+            expect(this.par.get('statistic')).toEqual("max");
+            expect(this.par.get('windowStart')).toBeFalsy();
+            expect(this.par.get('windowEnd')).toBeFalsy();
+            return expect(this.par.get('unit')).toEqual("s");
+          });
+        });
+        return describe("model validation tests", function() {
+          beforeEach(function() {
+            return this.par = new PrimaryAnalysisTimeWindow(window.primaryScreenTestJSON.primaryAnalysisTimeWindows[0]);
+          });
+          it("should be valid as initialized", function() {
+            return expect(this.par.isValid()).toBeTruthy();
+          });
+          it("should be invalid when window start is text", function() {
+            var filteredErrors;
+            this.par.set({
+              windowStart: "the first one"
+            });
+            expect(this.par.isValid()).toBeFalsy();
+            filteredErrors = _.filter(this.par.validationError, function(err) {
+              return err.attribute === 'windowStart';
+            });
+            return expect(filteredErrors.length).toBeGreaterThan(0);
+          });
+          return it("should be invalid when window end is text", function() {
+            var filteredErrors;
+            this.par.set({
+              windowStart: 0
+            });
+            this.par.set({
+              windowEnd: "the end of the world as we know it..."
+            });
+            expect(this.par.isValid()).toBeFalsy();
+            filteredErrors = _.filter(this.par.validationError, function(err) {
+              return err.attribute === 'windowEnd';
+            });
+            return expect(filteredErrors.length).toBeGreaterThan(0);
+          });
+        });
+      });
+    });
     describe("Transformation Rule Model testing", function() {
       describe("When loaded from new", function() {
         beforeEach(function() {
@@ -114,7 +166,7 @@
           });
         });
       });
-      return describe("When loaded form existing", function() {
+      return describe("When loaded from existing", function() {
         beforeEach(function() {
           return this.parl = new PrimaryAnalysisReadList(window.primaryScreenTestJSON.primaryAnalysisReads);
         });
@@ -144,6 +196,50 @@
           expect(readthree.get('readPosition')).toEqual(13);
           expect(readthree.get('readName')).toEqual("luminescence");
           return expect(readthree.get('activity')).toBeFalsy();
+        });
+      });
+    });
+    describe("Primary Analysis Time Window List testing", function() {
+      describe("When loaded from new", function() {
+        beforeEach(function() {
+          return this.parl = new PrimaryAnalysisTimeWindowList();
+        });
+        return describe("Existence", function() {
+          return it("should be defined", function() {
+            return expect(this.parl).toBeDefined();
+          });
+        });
+      });
+      return describe("When loaded from existing", function() {
+        beforeEach(function() {
+          return this.parl = new PrimaryAnalysisTimeWindowList(window.primaryScreenTestJSON.primaryAnalysisTimeWindows);
+        });
+        it("should have three reads", function() {
+          return expect(this.parl.length).toEqual(3);
+        });
+        it("should have the correct read info for the first read", function() {
+          this.par = this.parl.at(0);
+          expect(this.par.get('position')).toEqual(1);
+          expect(this.par.get('statistic')).toEqual("max");
+          expect(this.par.get('windowStart')).toEqual(-5);
+          expect(this.par.get('windowEnd')).toEqual(5);
+          return expect(this.par.get('unit')).toEqual("s");
+        });
+        it("should have the correct read info for the second read", function() {
+          this.par = this.parl.at(1);
+          expect(this.par.get('position')).toEqual(2);
+          expect(this.par.get('statistic')).toEqual("min");
+          expect(this.par.get('windowStart')).toEqual(0);
+          expect(this.par.get('windowEnd')).toEqual(15);
+          return expect(this.par.get('unit')).toEqual("s");
+        });
+        return it("should have the correct read info for the third read", function() {
+          this.par = this.parl.at(2);
+          expect(this.par.get('position')).toEqual(3);
+          expect(this.par.get('statistic')).toEqual("max");
+          expect(this.par.get('windowStart')).toEqual(20);
+          expect(this.par.get('windowEnd')).toEqual(50);
+          return expect(this.par.get('unit')).toEqual("s");
         });
       });
     });

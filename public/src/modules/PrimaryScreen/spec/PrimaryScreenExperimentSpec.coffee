@@ -45,6 +45,39 @@ describe "Primary Screen Experiment module testing", ->
 					err.attribute=='readName'
 				expect(filtErrors.length).toBeGreaterThan 0
 
+
+	describe "Primary Analysis Time Window model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@par = new PrimaryAnalysisTimeWindow()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@par).toBeDefined()
+				it "should have defaults", ->
+					expect(@par.get('position')).toEqual 1
+					expect(@par.get('statistic')).toEqual "max"
+					expect(@par.get('windowStart')).toBeFalsy()
+					expect(@par.get('windowEnd')).toBeFalsy()
+					expect(@par.get('unit')).toEqual "s"
+			describe "model validation tests", ->
+				beforeEach ->
+					@par = new PrimaryAnalysisTimeWindow window.primaryScreenTestJSON.primaryAnalysisTimeWindows[0]
+				it "should be valid as initialized", ->
+					expect(@par.isValid()).toBeTruthy()
+				it "should be invalid when window start is text", ->
+					@par.set windowStart: "the first one"
+					expect(@par.isValid()).toBeFalsy()
+					filteredErrors = _.filter @par.validationError, (err) ->
+						err.attribute=='windowStart'
+					expect(filteredErrors.length).toBeGreaterThan 0
+				it "should be invalid when window end is text", ->
+					@par.set windowStart: 0
+					@par.set windowEnd: "the end of the world as we know it..."
+					expect(@par.isValid()).toBeFalsy()
+					filteredErrors = _.filter @par.validationError, (err) ->
+						err.attribute=='windowEnd'
+					expect(filteredErrors.length).toBeGreaterThan 0
+
 	describe "Transformation Rule Model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -73,7 +106,7 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@parl).toBeDefined()
-		describe "When loaded form existing", ->
+		describe "When loaded from existing", ->
 			beforeEach ->
 				@parl = new PrimaryAnalysisReadList window.primaryScreenTestJSON.primaryAnalysisReads
 			it "should have three reads", ->
@@ -96,6 +129,40 @@ describe "Primary Screen Experiment module testing", ->
 				expect(readthree.get('readPosition')).toEqual 13
 				expect(readthree.get('readName')).toEqual "luminescence"
 				expect(readthree.get('activity')).toBeFalsy()
+
+	describe "Primary Analysis Time Window List testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisTimeWindowList()
+			describe "Existence", ->
+				it "should be defined", ->
+					expect(@parl).toBeDefined()
+		describe "When loaded from existing", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisTimeWindowList window.primaryScreenTestJSON.primaryAnalysisTimeWindows
+			it "should have three reads", ->
+				expect(@parl.length).toEqual 3
+			it "should have the correct read info for the first read", ->
+				@par = @parl.at(0)
+				expect(@par.get('position')).toEqual 1
+				expect(@par.get('statistic')).toEqual "max"
+				expect(@par.get('windowStart')).toEqual -5
+				expect(@par.get('windowEnd')).toEqual 5
+				expect(@par.get('unit')).toEqual "s"
+			it "should have the correct read info for the second read", ->
+				@par = @parl.at(1)
+				expect(@par.get('position')).toEqual 2
+				expect(@par.get('statistic')).toEqual "min"
+				expect(@par.get('windowStart')).toEqual 0
+				expect(@par.get('windowEnd')).toEqual 15
+				expect(@par.get('unit')).toEqual "s"
+			it "should have the correct read info for the third read", ->
+				@par = @parl.at(2)
+				expect(@par.get('position')).toEqual 3
+				expect(@par.get('statistic')).toEqual "max"
+				expect(@par.get('windowStart')).toEqual 20
+				expect(@par.get('windowEnd')).toEqual 50
+				expect(@par.get('unit')).toEqual "s"
 
 
 	describe "Transformation Rule List testing", ->

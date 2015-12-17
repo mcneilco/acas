@@ -136,6 +136,18 @@
         </div>
     </div>
 
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
+    <h5>Time Windows</h5>
+
+    <span style="margin-left:0px;margin-bottom:5px;">Position</span>
+    <span style="margin-left:7px;margin-bottom:5px;">Statistic</span>
+    <span style="margin-left:80px;margin-bottom:5px;">Window Start</span>
+    <span style="margin-left:50px;margin-bottom:5px;">Window End</span>
+    <span style="margin-left:90px;margin-bottom:5px;">Unit</span>
+    <div class="bv_timeWindowList"></div>
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
+    <h5>Assay Reads</h5>
 
     <span style="margin-left:0px;margin-bottom:5px;">Read Number</span>
     <span style="margin-left:7px;margin-bottom:5px;">Read Position</span>
@@ -268,11 +280,39 @@
     </div>
 </script>
 
+<script type="text/template" id="PrimaryAnalysisTimeWindowView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_timePosition">
+            <span class="bv_timePosition" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_timeStatistic">
+            <select class="span6 bv_timeStatistic" style="margin-right:15px;width:100px;"></select>
+        </span>
+        <span class="control-group bv_group_timeWindowStart">
+            <input class="span1 bv_timeWindowStart" style="margin-right: 22px; margin-left: 35px; width: 70px;" value="<%=windowStart%>" type="text">
+        </span>
+        <span class="control-group bv_group_timeWindowEnd">
+            <input class="span1 bv_timeWindowEnd" style="margin-right: 50px; margin-left: 35px; width: 70px;" value="<%=windowEnd%>" type="text">
+        </span>
+        <span class="control-group bv_group_timeUnit">
+            <select class="span6 bv_timeUnit" style="margin-right:15px;width:70px;">
+                <option value="s">Sec</option>
+            </select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
 <script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_readInfo"></div>
     <button class="btn bv_addReadButton" style="margin-left:465px;">Add Read</button>
 </script>
 
+<script type="text/template" id="PrimaryAnalysisTimeWindowListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_timeWindowInfo"></div>
+    <button class="btn bv_addTimeWindowButton" style="margin-left:465px;">Add Window</button>
+</script>
 
 <script type="text/template" id="TransformationRuleView" xmlns="http://www.w3.org/1999/html">
     <div class="span5" style="width:510px;">

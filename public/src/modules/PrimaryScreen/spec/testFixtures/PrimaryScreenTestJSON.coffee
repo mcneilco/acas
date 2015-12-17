@@ -16,6 +16,26 @@
 		activity: false
 	]
 
+	exports.primaryAnalysisTimeWindows = [
+		position: 1
+		statistic: "max"
+		windowStart: -5
+		windowEnd: 5
+		unit: "s"
+	,
+		position: 2
+		statistic: "min"
+		windowStart: 0
+		windowEnd: 15
+		unit: "s"
+	,
+		position: 3
+		statistic: "max"
+		windowStart: 20
+		windowEnd: 50
+		unit: "s"
+	]
+
 	exports.transformationRules = [
 		transformationRule: "% efficacy"
 	,
