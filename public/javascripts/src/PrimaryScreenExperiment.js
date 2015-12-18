@@ -66,14 +66,14 @@
       ws = attrs.windowStart;
       if (_.isNaN(ws) || ws === "" || ws === null || ws === void 0 || isNaN(ws)) {
         errors.push({
-          attribute: 'windowStart',
+          attribute: 'timeWindowStart',
           message: "Window Start must be a number"
         });
       }
       we = attrs.windowEnd;
       if (_.isNaN(we) || we === "" || we === null || we === void 0 || isNaN(we)) {
         errors.push({
-          attribute: 'windowEnd',
+          attribute: 'timeWindowEnd',
           message: "Window End must be a number"
         });
       }

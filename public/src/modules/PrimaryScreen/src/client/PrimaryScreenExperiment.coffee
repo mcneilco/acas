@@ -34,12 +34,12 @@ class window.PrimaryAnalysisTimeWindow extends Backbone.Model
 		ws = attrs.windowStart
 		if _.isNaN(ws) or ws is "" or ws is null or ws is undefined or isNaN(ws)
 			errors.push
-				attribute: 'windowStart'
+				attribute: 'timeWindowStart'
 				message: "Window Start must be a number"
 		we = attrs.windowEnd
 		if _.isNaN(we) or we is "" or we is null or we is undefined or isNaN(we)
 			errors.push
-				attribute: 'windowEnd'
+				attribute: 'timeWindowEnd'
 				message: "Window End must be a number"
 		if errors.length > 0
 			return errors
