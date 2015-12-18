@@ -115,9 +115,10 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   # If at least one well is common (i.e. well is registered as both a control and a test), then warn the user
   # with the following warning, displaying all the common wells
   if (length(commonWellsNames)>0) {
-    warnUser("The following wells were found assigned to both controls and test compounds:")
-    warnUser(paste(commonWellsNames,collapse=', ')) #as.character(controlsFrame$WELL_NAME[commonWellsNames]))
-    warnUser("In those wells, the test compounds will be replaced with the controls!")
+    mssg1 <- "The following wells were found assigned to both controls and test compounds: "
+    mssg2 <- paste(commonWellsNames,collapse=', ')     #as.character(controlsFrame$WELL_NAME[commonWellsNames]))
+    mssg3 <- ". In those wells, the test compounds will be replaced with the controls!"
+    warnUser(paste(mssg1, mssg2, mssg3))
   }
   
   # Remove any wells with test compounds from wellTable dataframe that are annotated as controls in the template
