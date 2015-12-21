@@ -1,7 +1,7 @@
 ###
 # install.R
 # Installs racas and depencies
-## 
+##
 
 passwordPrompt <- function(auth_user, appName = "") {
   cat(paste0(appName, " password for ",auth_user,": "))
@@ -37,8 +37,9 @@ if(!interactive()) {
 }
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
-acasHome <- normalizePath("..")
+acasHome <- normalizePath("../../../")
 rLibs <- file.path(acasHome,"r_libs")
+cat("HERE ", rLibs)
 dir.create(rLibs, recursive = TRUE, showWarnings = FALSE)
 Sys.setenv(ACAS_HOME=acasHome)
 Sys.setenv(R_LIBS=rLibs)
@@ -58,11 +59,9 @@ tryBitbucket <- function(ref, auth_user, password, repo = "racas", username = "m
   setwd(tempracasdir)
   system(paste0("curl --user ",user, " ", url," | tar xvz --strip-components=1"))
   source("./R/installation.R", local = TRUE)
+  installDeps()
+  install.packages(".", type = 'source', repos = NULL)
   setwd(originalWD)
-  temprepodir <- tempfile()
-  dir.create(temprepodir)
-  makeRepo(path=temprepodir, description = file.path(tempracasdir,"DESCRIPTION"), racasPath = tempracasdir)
-  install.packages("racas", repos= paste0("file://",temprepodir), type = 'source')
 }
 tryBitbucket(ref = ref, auth_user = auth_user, password = password, attempts = 3, repo = "racas", username = "mcneilco")
 

@@ -425,7 +425,7 @@ module.exports = (grunt) ->
 				tasks: "newer:copy:conf"
 			module_legacy_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
-				tasks: "newer:copy:module_r"
+				tasks: "newer:copy:module_legacy_r"
 			module_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/r/**"]
 				tasks: "newer:copy:module_r"
