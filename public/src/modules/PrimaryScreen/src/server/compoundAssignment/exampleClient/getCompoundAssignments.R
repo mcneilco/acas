@@ -37,23 +37,108 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
 
 
 getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMode, parameters) {
+  library(data.table)  
+  library(plyr)
   
-  save(folderToParse, instrumentData, testMode, parameters, file="cmpdAssignments.Rda")
-  resultTable <- instrumentData
+  # save(folderToParse, instrumentData, testMode, parameters, file="public/cmpdAssignments.Rda")
+  resultTable <- instrumentData$assayData
   
-  barcodeList <- levels(resultTable$barcode)
+  barcodeList <- unique(resultTable$assayBarcode)
   
   wellTable <- createWellTable(barcodeList, testMode)
-  
   
   # apply dilution
   if (!is.null(parameters$dilutionRatio)) {
     wellTable$CONCENTRATION <- wellTable$CONCENTRATION / parameters$dilutionRatio
   }
+  
+  
+  # Define file path for template
+  templatePath <- paste0(folderToParse, "/Template_v1.xlsx")
+  
+  # Warn user if the template was not found in the designated folder
+  if (!file.exists(templatePath)) {
+    stopUser("The template containing controls, agonist concentration, and vehicle was not found in the target directory!")
+  }
+  
+  # Read the template containing information about controls, agonist conc., vehicle and insert in dataframe
+  extraColumn <- getControlValues(templatePath)
+  
+  
+  # Isolate wells that only contain controls from the dataframe
+  controlsIsolate <- data.frame(extraColumn[c('WELL_NAME','controls')])
+  
+  # Exclude the rows that contain no controls
+  controlsRows <- controlsIsolate[controlsIsolate$controls!='NA',]
+  
+  # Define dataframe that will be filled with all the necessary values related to the controls
+  controlsFrame <- data.frame(ID=NA, BARCODE=NA, WELL_ID=NA, WELL_NAME=controlsRows$WELL_NAME, BATCH_CODE=NA, VOLUME=Inf, VOLUME_STRING=NA, 
+                              VOLUME_UNIT='uL', CONCENTRATION=NA,
+                              CONCENTRATION_STRING=NA, CONCENTRATION_UNIT='uM', WELL_TYPE=controlsRows$controls)
+  
+  
+  # Fill in values for controls concentration
+  negativeConc <- Inf
+  if (!is.null(parameters$negativeControl$concentration)) {
+    negativeConc <- parameters$negativeControl$concentration
+  }
+  controlsFrame$CONCENTRATION <- ifelse(controlsFrame$WELL_TYPE=='PC', yes = parameters$positiveControl$concentration, no = negativeConc)
+  
+  # Set infinity chracter in concentration strings if concentration is defined with infinity
+  controlsFrame$CONCENTRATION_STRING[controlsFrame$CONCENTRATION==Inf] <- "infinite"
+  
+  # Set batch Code for controls
+  controlsFrame$BATCH_CODE[controlsFrame$WELL_TYPE=='PC'] <- parameters$positiveControl$batchCode
+  controlsFrame$BATCH_CODE[controlsFrame$WELL_TYPE=='NC'] <- parameters$negativeControl$batchCode
+  
+  
+  # Remove the column that annotates positive vs negative controls from dataframe
+  controlsFrame <- subset(controlsFrame, select=-WELL_TYPE)
+  
+  # Find the number of elements in the dataframe
+  numberRowsFrame <- nrow(controlsFrame)
+  
+  # Duplicate all entries in the dataframe
+  controlsFrameDupl <- controlsFrame[rep(row.names(controlsFrame), length(barcodeList)), ]
+  
+  # Update the barcodes in the dataframe with both available ones
+  controlsFrameDupl$BARCODE <- rep(barcodeList, each=numberRowsFrame)
+  
+  controlsFrame <- controlsFrameDupl
+  
 
   
-  wellTable <- getAgonist(parameters$agonistControl, wellTable) 
-  wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+  # Find any wells annotated in the template as (positive/negative) controls that are simultaneously annotated also as test compounds 
+  commonWellsNames <- intersect(controlsFrame$WELL_NAME,wellTable$WELL_NAME)
+
+  
+  # If at least one well is common (i.e. well is registered as both a control and a test), then warn the user
+  # with the following warning, displaying all the common wells
+  if (length(commonWellsNames)>0) {
+    mssg1 <- "The following wells were found assigned to both controls and test compounds: "
+    mssg2 <- paste(commonWellsNames,collapse=', ')     #as.character(controlsFrame$WELL_NAME[commonWellsNames]))
+    mssg3 <- ". In those wells, the test compounds will be replaced with the controls!"
+    warnUser(paste(mssg1, mssg2, mssg3))
+  }
+  
+  # Remove any wells with test compounds from wellTable dataframe that are annotated as controls in the template
+  wellTablePurged <- subset(wellTable, !(WELL_NAME %in% commonWellsNames))
+  wellTable <- wellTablePurged
+  
+  # Merge the existing dataframe for test compounds with the controls-related dataframe
+  ww <- rbind.fill(controlsFrame, wellTable)
+  wellTable <- ww[order(ww$WELL_NAME), ]
+  
+  # Reset the row counter of the merged dataframe
+  rownames(wellTable) <- NULL
+  
+  # Add the extra column that pertains to the agonist concentration extracted from the template above
+  wellTable <- merge(wellTable, extraColumn[c('WELL_NAME','agonist')], all=TRUE)
+  
+  # De-activate the getAgonist and removeVehicle functions
+  #wellTable <- getAgonist(parameters$agonistControl, wellTable)
+  
+  #wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
   
 
   if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
@@ -62,15 +147,21 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
                     "'. Please contact your system administrator."))
   }
   
-  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable[[1]]$assayBarcode, resultTable[[1]]$wellReference, wellTable)
   
-  resultTable <- cbind(resultTable[[1]],batchNamesAndConcentrations)  #added in [[1]] in resultTable in lines 89 and 94
+  batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable$assayBarcode, resultTable$wellReference, wellTable)
+  # The indices in the following line were raising n error so I fed the function above with the full resultTable$assayBarcode and
+  # resultTable$wellReference vectors
+  #batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable[[1]]$assayBarcode, resultTable[[1]]$wellReference, wellTable)
 
   
+  
+  #print(resultTable)
+  resultTable <- cbind(resultTable[[1]],batchNamesAndConcentrations)  #added in [[1]] in resultTable in lines 89 and 94
   
   
   setnames(resultTable,c("batchName", "concentration"),c("batchCode", "cmpdConc"))  #previously batchName was barcode
   
+  # save(resultTable, file="public/cmpdAssignmentsOutput.Rda")  
   return(resultTable)
 
 }
@@ -134,8 +225,10 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   
   wellUniqueId <- paste(barcode, well)
   wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
-  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT", "agonistConc")]
-  names(outputFrame) <- c("batchName","concentration","concUnit", "agonistConc")
+  # definition of outputFrame below was expanded to include the agonist values extracted from template (see getControlValues function)
+  # and remove the row "agonistConc" which was not added any more by function getAgonist() defined above
+  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT","agonist")]   #"agonistConc",
+  names(outputFrame) <- c("batchName","concentration","concUnit","agonist")  #"agonistConc",
   return(outputFrame)
 }
 
@@ -179,5 +272,80 @@ createWellTable <- function(barcodeList, testMode) {
   
   return(wellTable)
   }
+
+
+
+
+
+
+getControlValues <- function(pathToExcelFile) {
+  # Description: A function getControlValues(pathToExcelFile) that returns 
+  # a data.frame with colums "index","controls","agonist","vehicle", and uses no globals
+  #
+  # Creates the 4 vectors necessary to construct the wanted data.frame
+  # i.e. 1 for the well index and 3 for the sheets in the excel file
+  #
+  # Arg: file path to target excel file
+  #
+  # Returns: The wanted data.frame
+
+  #path <- "~/Desktop/Template_v1.xlsx"  #temporary file-path
+  
+  
+  # Load the library to extract from Excel
+  library(XLConnect)
+
+  # Generate index vector for well location
+  first.letter <- rep(LETTERS[1:16], time=24)
+  numbers <- rep(seq(1:24), each=16)
+  suffix <- formatC(numbers, width = 2, format = "d", flag = "0")
+  WELL_NAME <- paste0(first.letter, suffix)
+  
+  
+  # Define template file-path
+  excel.file <- file.path(pathToExcelFile)
+  
+  # Load workbook
+  wb <- loadWorkbook(excel.file)
+  
+  # Query available worksheets
+  sheets <- getSheets(wb)
+  
+  number.sheets <- length(sheets)
+  
+  # Display error if there is less than three (3) sheets in the excel file
+  
+  if (number.sheets < 3) {
+    stop("Insufficient number of sheets detected in Template: required number of sheets = 3")
+  }
+  
+  
+  readInputFiles <- function(sheet.name) {
+    # Reads the specified sheet and stores all data row-by-row in a vector
+    #
+    # Arg: sheet name captured from the excel file
+    #
+    # Returns: The vector containing all entries from the sheet row-after-row
+    
+    tableX1 <- readWorksheetFromFile(excel.file, sheet=sheet.name)
+    tableX1.matrix <- apply(tableX1, 2, paste0)
+    tableX1.matrixTrimmed <- tableX1.matrix[1:16,2:25]
+    outputVector <- as.vector(tableX1.matrixTrimmed)
+    
+    return(outputVector)
+  }
+  
+  
+  # Apply (sub)function readInputFiles to create a different vector from each of the 3 sheets
+  controls <- readInputFiles(sheets[1])
+  agonist <- readInputFiles(sheets[2])
+  vehicle <- readInputFiles(sheets[3])
+  
+  
+  
+  # Fill the wanted data.frame using the 4 vectors
+  final <- data.frame(WELL_NAME,controls,agonist,vehicle)
+  return(final)
+}
 
 
