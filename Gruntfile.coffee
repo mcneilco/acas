@@ -1,18 +1,6 @@
 module.exports = (grunt) ->
 	"use strict"
 
-	# configure build tasks
-	global['clean'] = grunt.option('clean')
-	grunt.registerTask 'build', 'build task', () ->
-		compiledPath =  grunt.option('compilePath') || '../compiled'
-		console.log "compiling to #{compiledPath}"
-		grunt.config.set('acas_custom', "#{compiledPath}/acas_custom")
-		grunt.config.set('acas_base', "#{compiledPath}")
-		grunt.task.run 'sync'
-		grunt.task.run 'copy'
-		grunt.task.run 'execute:prepare_module_includes'
-		return
-
 	#
 	# Grunt configuration:
 	#
@@ -193,32 +181,6 @@ module.exports = (grunt) ->
 					dest: "acas_custom/routes/"
 					ext: '.js'
 				]
-		sync:
-			custom:
-				files: [
-					expand: true
-					cwd: "acas_custom"
-					src: ["**"]
-					dest: '<%= acas_custom %>'
-				]
-				compareUsing: "md5"
-				verbose: true
-				updateAndDelete: global['clean']
-			base:
-				files: [
-					expand: true
-					cwd: "."
-					src: ["**"
-					      "!**/*.coffee"
-					      "!acas_custom/**"
-					      "!tmp/**"
-					].concat require('gitignore-to-glob')()
-					dest: '<%= acas_base %>'
-				]
-				ignoreInDest: "acas_custom/**"
-				compareUsing: "md5"
-				verbose: true
-				updateAndDelete: global['clean']
 		copy:
 			custom_routes:
 				files: [
