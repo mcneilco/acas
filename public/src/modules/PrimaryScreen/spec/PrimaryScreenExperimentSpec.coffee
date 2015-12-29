@@ -154,6 +154,10 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeTruthy()
 					expect(@psap.get('matchReadName')).toBeFalsy()
+					expect(@psap.get('fluorescentStart')).toBeNull()
+					expect(@psap.get('fluorescentEnd')).toBeNull()
+					expect(@psap.get('fluorescentStep')).toBeNull()
+					expect(@psap.get('latePeakTime')).toBeNull()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
 					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 
@@ -284,6 +288,28 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='normalizationRule'
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when fluorescentStart is NaN (but can be empty)", ->
+					@psap.set fluorescentStart: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentStart'
+				it "should be invalid when fluorescentEnd is NaN (but can be empty)", ->
+					@psap.set fluorescentEnd: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentEnd'
+				it "should be invalid when fluorescentStep is NaN (but can be empty)", ->
+					@psap.set fluorescentStep: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentStep'
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when latePeakTime is NaN (but can be empty)", ->
+					@psap.set latePeakTime: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='latePeakTime'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", ->
 					@psap.set volumeType: "dilution"
