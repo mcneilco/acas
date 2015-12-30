@@ -224,6 +224,13 @@ module.exports = (grunt) ->
 					src: ["**"]
 					dest: "<%= acas_base %>/public/src/modules"
 				]
+			custom_bin:
+				files: [
+					expand: true
+					cwd: "<%= acas_custom %>/bin/"
+					src: ["**"]
+					dest: "<%= acas_base %>/bin"
+				]
 			public_jade:
 				files: [
 					expand: true
