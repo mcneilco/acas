@@ -1075,6 +1075,22 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_assayVolume').val "b"
 					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentStart is NaN", ->
+					@psapc.$('.bv_fluorescentStart').val "b"
+					@psapc.$('.bv_fluorescentStart').keyup()
+					expect(@psapc.$('.bv_group_fluorescentStart').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentEnd is NaN", ->
+					@psapc.$('.bv_fluorescentEnd').val "b"
+					@psapc.$('.bv_fluorescentEnd').keyup()
+					expect(@psapc.$('.bv_group_fluorescentEnd').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentStep is NaN", ->
+					@psapc.$('.bv_fluorescentStep').val "b"
+					@psapc.$('.bv_fluorescentStep').keyup()
+					expect(@psapc.$('.bv_group_fluorescentStep').hasClass("error")).toBeTruthy()
+				it "should show error if latePeakTime is NaN", ->
+					@psapc.$('.bv_latePeakTime').val "b"
+					@psapc.$('.bv_latePeakTime').keyup()
+					expect(@psapc.$('.bv_group_latePeakTime').hasClass("error")).toBeTruthy()
 				it "should not show error if assayVolume, dilutionFactor, and transferVolume are empty", ->
 					@psapc.$('.bv_assayVolume').val ""
 					@psapc.$('.bv_assayVolume').keyup()

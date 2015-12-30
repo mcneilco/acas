@@ -1570,6 +1570,26 @@
             this.psapc.$('.bv_assayVolume').keyup();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
           });
+          it("should show error if fluorescentStart is NaN", function() {
+            this.psapc.$('.bv_fluorescentStart').val("b");
+            this.psapc.$('.bv_fluorescentStart').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentStart').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if fluorescentEnd is NaN", function() {
+            this.psapc.$('.bv_fluorescentEnd').val("b");
+            this.psapc.$('.bv_fluorescentEnd').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentEnd').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if fluorescentStep is NaN", function() {
+            this.psapc.$('.bv_fluorescentStep').val("b");
+            this.psapc.$('.bv_fluorescentStep').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentStep').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if latePeakTime is NaN", function() {
+            this.psapc.$('.bv_latePeakTime').val("b");
+            this.psapc.$('.bv_latePeakTime').keyup();
+            return expect(this.psapc.$('.bv_group_latePeakTime').hasClass("error")).toBeTruthy();
+          });
           it("should not show error if assayVolume, dilutionFactor, and transferVolume are empty", function() {
             this.psapc.$('.bv_assayVolume').val("");
             this.psapc.$('.bv_assayVolume').keyup();
