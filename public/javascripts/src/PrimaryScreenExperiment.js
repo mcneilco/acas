@@ -206,6 +206,10 @@
         htsFormat: true,
         autoHitSelection: false,
         matchReadName: false,
+        fluorescentStart: null,
+        fluorescentEnd: null,
+        fluorescentStep: null,
+        latePeakTime: null,
         primaryAnalysisReadList: new PrimaryAnalysisReadList(),
         transformationRuleList: new TransformationRuleList()
       };
@@ -413,6 +417,30 @@
         errors.push({
           attribute: 'transferVolume',
           message: "Transfer volume must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentStart)) {
+        errors.push({
+          attribute: 'fluorescentStart',
+          message: "Fluorescent Start must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentEnd)) {
+        errors.push({
+          attribute: 'fluorescentEnd',
+          message: "Fluorescent End must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentStep)) {
+        errors.push({
+          attribute: 'fluorescentStep',
+          message: "Fluorescent Step must be a number"
+        });
+      }
+      if (_.isNaN(attrs.latePeakTime)) {
+        errors.push({
+          attribute: 'latePeakTime',
+          message: "Late Peak Time must be a number"
         });
       }
       if (errors.length > 0) {
@@ -1000,7 +1028,11 @@
       "change .bv_volumeTypeDilution": "handleVolumeTypeChanged",
       "change .bv_autoHitSelection": "handleAutoHitSelectionChanged",
       "change .bv_htsFormat": "attributeChanged",
-      "click .bv_matchReadName": "handleMatchReadNameChanged"
+      "click .bv_matchReadName": "handleMatchReadNameChanged",
+      "keyup .bv_fluorescentStart": "attributeChanged",
+      "keyup .bv_fluorescentEnd": "attributeChanged",
+      "keyup .bv_fluorescentStep": "attributeChanged",
+      "keyup .bv_latePeakTime": "attributeChanged"
     };
 
     PrimaryScreenAnalysisParametersController.prototype.initialize = function() {
@@ -1147,6 +1179,10 @@
         assayVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')),
         transferVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')),
         dilutionFactor: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')),
+        fluorescentStart: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStart')),
+        fluorescentEnd: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentEnd')),
+        fluorescentStep: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStep')),
+        latePeakTime: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_latePeakTime')),
         htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
@@ -1179,6 +1215,26 @@
       if (this.model.get('agonistControl').get('concentration') !== "") {
         this.model.get('agonistControl').set({
           concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
+        });
+      }
+      if (this.model.get('fluorescentStart') !== "") {
+        this.model.set({
+          fluorescentStart: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStart')))
+        });
+      }
+      if (this.model.get('fluorescentEnd') !== "") {
+        this.model.set({
+          fluorescentEnd: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentEnd')))
+        });
+      }
+      if (this.model.get('fluorescentStep') !== "") {
+        this.model.set({
+          fluorescentStep: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStep')))
+        });
+      }
+      if (this.model.get('latePeakTime') !== "") {
+        this.model.set({
+          latePeakTime: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_latePeakTime')))
         });
       }
       return this.trigger('updateState');

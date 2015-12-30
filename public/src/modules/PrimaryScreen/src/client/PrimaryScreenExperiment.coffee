@@ -117,6 +117,10 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		htsFormat: true
 		autoHitSelection: false
 		matchReadName: false
+		fluorescentStart: null
+		fluorescentEnd: null
+		fluorescentStep: null
+		latePeakTime: null
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
 		transformationRuleList: new TransformationRuleList()
 
@@ -252,6 +256,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
+		if _.isNaN(attrs.fluorescentStart)
+			errors.push
+				attribute: 'fluorescentStart'
+				message: "Fluorescent Start must be a number"
+		if _.isNaN(attrs.fluorescentEnd)
+			errors.push
+				attribute: 'fluorescentEnd'
+				message: "Fluorescent End must be a number"
+		if _.isNaN(attrs.fluorescentStep)
+			errors.push
+				attribute: 'fluorescentStep'
+				message: "Fluorescent Step must be a number"
+		if _.isNaN(attrs.latePeakTime)
+			errors.push
+				attribute: 'latePeakTime'
+				message: "Late Peak Time must be a number"
 		if errors.length > 0
 			return errors
 		else
@@ -606,6 +626,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 		"change .bv_htsFormat": "attributeChanged"
 		"click .bv_matchReadName": "handleMatchReadNameChanged"
+		"keyup .bv_fluorescentStart": "attributeChanged"
+		"keyup .bv_fluorescentEnd": "attributeChanged"
+		"keyup .bv_fluorescentStep": "attributeChanged"
+		"keyup .bv_latePeakTime": "attributeChanged"
 
 
 
@@ -728,6 +752,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
 			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
 			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
+			fluorescentStart: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart')
+			fluorescentEnd: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd')
+			fluorescentStep: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep')
+			latePeakTime: UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
 			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
@@ -746,6 +774,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
+		if @model.get('fluorescentStart') != ""
+			@model.set fluorescentStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart'))
+		if @model.get('fluorescentEnd') != ""
+			@model.set fluorescentEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd'))
+		if @model.get('fluorescentStep') != ""
+			@model.set fluorescentStep: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep'))
+		if @model.get('latePeakTime') != ""
+			@model.set latePeakTime: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime'))
 		@trigger 'updateState'
 
 	handlePositiveControlBatchChanged: ->
