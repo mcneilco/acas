@@ -321,6 +321,10 @@
             expect(this.psap.get('autoHitSelection')).toBeFalsy();
             expect(this.psap.get('htsFormat')).toBeTruthy();
             expect(this.psap.get('matchReadName')).toBeFalsy();
+            expect(this.psap.get('fluorescentStart')).toBeNull();
+            expect(this.psap.get('fluorescentEnd')).toBeNull();
+            expect(this.psap.get('fluorescentStep')).toBeNull();
+            expect(this.psap.get('latePeakTime')).toBeNull();
             expect(this.psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy();
             return expect(this.psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy();
           });
@@ -538,6 +542,48 @@
             expect(this.psap.isValid()).toBeFalsy();
             filtErrors = _.filter(this.psap.validationError, function(err) {
               return err.attribute === 'normalizationRule';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when fluorescentStart is NaN (but can be empty)", function() {
+            var filtErrors;
+            this.psap.set({
+              fluorescentStart: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            return filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'fluorescentStart';
+            });
+          });
+          it("should be invalid when fluorescentEnd is NaN (but can be empty)", function() {
+            var filtErrors;
+            this.psap.set({
+              fluorescentEnd: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            return filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'fluorescentEnd';
+            });
+          });
+          it("should be invalid when fluorescentStep is NaN (but can be empty)", function() {
+            var filtErrors;
+            this.psap.set({
+              fluorescentStep: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'fluorescentStep';
+            });
+            return expect(filtErrors.length).toBeGreaterThan(0);
+          });
+          it("should be invalid when latePeakTime is NaN (but can be empty)", function() {
+            var filtErrors;
+            this.psap.set({
+              latePeakTime: NaN
+            });
+            expect(this.psap.isValid()).toBeFalsy();
+            filtErrors = _.filter(this.psap.validationError, function(err) {
+              return err.attribute === 'latePeakTime';
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
@@ -1619,6 +1665,26 @@
             this.psapc.$('.bv_assayVolume').val("b");
             this.psapc.$('.bv_assayVolume').keyup();
             return expect(this.psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if fluorescentStart is NaN", function() {
+            this.psapc.$('.bv_fluorescentStart').val("b");
+            this.psapc.$('.bv_fluorescentStart').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentStart').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if fluorescentEnd is NaN", function() {
+            this.psapc.$('.bv_fluorescentEnd').val("b");
+            this.psapc.$('.bv_fluorescentEnd').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentEnd').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if fluorescentStep is NaN", function() {
+            this.psapc.$('.bv_fluorescentStep').val("b");
+            this.psapc.$('.bv_fluorescentStep').keyup();
+            return expect(this.psapc.$('.bv_group_fluorescentStep').hasClass("error")).toBeTruthy();
+          });
+          it("should show error if latePeakTime is NaN", function() {
+            this.psapc.$('.bv_latePeakTime').val("b");
+            this.psapc.$('.bv_latePeakTime').keyup();
+            return expect(this.psapc.$('.bv_group_latePeakTime').hasClass("error")).toBeTruthy();
           });
           it("should not show error if assayVolume, dilutionFactor, and transferVolume are empty", function() {
             this.psapc.$('.bv_assayVolume').val("");

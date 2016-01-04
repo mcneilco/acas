@@ -76,6 +76,10 @@
 		autoHitSelection: false
 		htsFormat: false
 		matchReadName: false
+		fluorescentStart: -5
+		fluorescentEnd: 10
+		fluorescentStep: 50
+		latePeakTime: 80
 		primaryAnalysisReadList: exports.primaryAnalysisReads
 		transformationRuleList: exports.transformationRules
 

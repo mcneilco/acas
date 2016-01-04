@@ -221,6 +221,10 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeTruthy()
 					expect(@psap.get('matchReadName')).toBeFalsy()
+					expect(@psap.get('fluorescentStart')).toBeNull()
+					expect(@psap.get('fluorescentEnd')).toBeNull()
+					expect(@psap.get('fluorescentStep')).toBeNull()
+					expect(@psap.get('latePeakTime')).toBeNull()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
 					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
 
@@ -351,6 +355,28 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='normalizationRule'
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when fluorescentStart is NaN (but can be empty)", ->
+					@psap.set fluorescentStart: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentStart'
+				it "should be invalid when fluorescentEnd is NaN (but can be empty)", ->
+					@psap.set fluorescentEnd: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentEnd'
+				it "should be invalid when fluorescentStep is NaN (but can be empty)", ->
+					@psap.set fluorescentStep: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='fluorescentStep'
+					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be invalid when latePeakTime is NaN (but can be empty)", ->
+					@psap.set latePeakTime: NaN
+					expect(@psap.isValid()).toBeFalsy()
+					filtErrors = _.filter @psap.validationError, (err) ->
+						err.attribute=='latePeakTime'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when volumeType is dilution and dilutionFactor is not a number (but can be empty)", ->
 					@psap.set volumeType: "dilution"
@@ -1116,6 +1142,22 @@ describe "Primary Screen Experiment module testing", ->
 					@psapc.$('.bv_assayVolume').val "b"
 					@psapc.$('.bv_assayVolume').keyup()
 					expect(@psapc.$('.bv_group_assayVolume').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentStart is NaN", ->
+					@psapc.$('.bv_fluorescentStart').val "b"
+					@psapc.$('.bv_fluorescentStart').keyup()
+					expect(@psapc.$('.bv_group_fluorescentStart').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentEnd is NaN", ->
+					@psapc.$('.bv_fluorescentEnd').val "b"
+					@psapc.$('.bv_fluorescentEnd').keyup()
+					expect(@psapc.$('.bv_group_fluorescentEnd').hasClass("error")).toBeTruthy()
+				it "should show error if fluorescentStep is NaN", ->
+					@psapc.$('.bv_fluorescentStep').val "b"
+					@psapc.$('.bv_fluorescentStep').keyup()
+					expect(@psapc.$('.bv_group_fluorescentStep').hasClass("error")).toBeTruthy()
+				it "should show error if latePeakTime is NaN", ->
+					@psapc.$('.bv_latePeakTime').val "b"
+					@psapc.$('.bv_latePeakTime').keyup()
+					expect(@psapc.$('.bv_group_latePeakTime').hasClass("error")).toBeTruthy()
 				it "should not show error if assayVolume, dilutionFactor, and transferVolume are empty", ->
 					@psapc.$('.bv_assayVolume').val ""
 					@psapc.$('.bv_assayVolume').keyup()
