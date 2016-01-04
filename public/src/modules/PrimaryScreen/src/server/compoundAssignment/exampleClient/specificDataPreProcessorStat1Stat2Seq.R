@@ -33,6 +33,8 @@ specificDataPreProcessorStat1Stat2Seq <- function(parameters, folderToParse, err
   
   # Create lists of unique entries for types of statistics, barcodes and filenames that will be used immediately below
   vectColumnsNames <- names(resultTable)
+  # Skip the first 5 names extracted from the resultTable columns (i.e. "well", "barcode", "fileName", "timePoints", "sequence")
+  # and start registering the names of all statistics from column 6
   vectStatistics <- (vectColumnsNames[6:length(resultTable)])
   vectBarcodes <- unique(resultTable$barcode)
   vectFiles <- unique(resultTable$fileName)
@@ -447,13 +449,13 @@ combineFilesNoStatFiles <- function(fileSet, timeWindowList) {
       functionToApply=min
     }
     
-    stuff <- vapply(allStatFrame$sequence, applyFunctionTabDelimited, 1,
-                            startIndex=currentStatWindow$startReadIndex, 
-                            endIndex=currentStatWindow$startReadIndex, 
-                            functionApply=functionToApply)
+    calculatedStatistic <- vapply(allStatFrame$sequence, applyFunctionTabDelimited, 1,
+                                  startIndex=currentStatWindow$startReadIndex, 
+                                  endIndex=currentStatWindow$startReadIndex, 
+                                  functionApply=functionToApply)
     
 
-    allStatFrame[, paste("T", as.character(timeWindow$position), sep="")] <- stuff
+    allStatFrame[, paste("T", as.character(timeWindow$position), sep="")] <- calculatedStatistic
   }
   
   
