@@ -350,42 +350,29 @@ bulkLoadContainersFromSDF <- function(request) {
   dryRun <- interpretJSONBoolean(dryRun)
   
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy))
+  loadResult <- tryCatchLog(runMain(fileName,dryRun,recordedBy))
   
-  # If the output has class simpleError, save it as an error
-  errorList <- list()
-  if(class(loadResult$value)[1]=="simpleError") {
-    errorList <- list(loadResult$value$message)
-    loadResult$errorList <- errorList
-    loadResult$value <- NULL
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
-  # Save warning messages (but not the function call, as it is only useful while programming)
-  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
-    
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
-  
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
+  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
   
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
+  # Create the HTML to display
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
+  
   
   response <- list(
-    commit= !hasError,
+    commit= (!dryRun && !hasError),
     transactionId= loadResult$value$lsTransactionId,
     results= list(
       id= loadResult$value$lsTransactionId,
@@ -399,6 +386,6 @@ bulkLoadContainersFromSDF <- function(request) {
     errorMessages= errorMessages
   )
   
-  return( response) 
+  return(response) 
 }
 
