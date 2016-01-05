@@ -105,9 +105,9 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
       
     }
   }
-  allResultTable[, fluorescent := as.character(assayData$fluorescent)]
-  allResultTable[, timePoints := as.character(assayData$timePoints)]
-  allResultTable[, sequence := as.character(assayData$sequence)]
+#   allResultTable[, fluorescent := as.character(assayData$fluorescent)]
+#   allResultTable[, timePoints := as.character(assayData$timePoints)]
+#   allResultTable[, sequence := as.character(assayData$sequence)]
 
   setkeyv(allResultTable, c("assayBarcode", "batchCode"))
     
@@ -124,18 +124,22 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
     # wellType could be fluorescentWells, and then wellTypeName would be "Fluorescent Wells"
     if(nrow(wellType) > 0) {
       par(mfcol=c(4,3), mar=c(4,4,4,4), oma =c(2,2,2,2))
-      mapply(plotFigure, wellType$timePoints, wellType$sequence, wellType$assayBarcode, wellType$well, wellType$batchCode, wellTypeName)
+      mapply(plotFigure, wellType$T_timePoints, wellType$T_sequence, wellType$assayBarcode, wellType$well, wellType$batchCode, wellTypeName)
     }
   }
-  fluorescentWells <- allResultTable[allResultTable$fluorescent == TRUE, ]
-  hitWells <- allResultTable[allResultTable$threshold == TRUE, ]
-  latePeakWells <- allResultTable[allResultTable$latePeak == TRUE, ]
-  flaggedWells <- allResultTable[!is.na(allResultTable$flag), ] #,well,sequence,timePoints,batchName)]
+  fluorescentWells <- allResultTable[allResultTable$autoFlagObservation == "fluorescent", ]
+  hitWells <- allResultTable[allResultTable$flag == "HIT", ]
+  latePeakWells <- allResultTable[allResultTable$autoFlagObservation == "late peak", ]
+  flaggedWells <- allResultTable[allResultTable$flag == "KO", ] #,well,sequence,timePoints,batchName)]
+  positiveControlWells <- allResultTable[allResultTable$wellType == "PC", ]
+  negativeControlWells <- allResultTable[allResultTable$wellType == "NC", ]
   
   plotWells(fluorescentWells, "Fluorescent Wells")
   plotWells(latePeakWells, "Late Peak Wells")
   plotWells(hitWells, "Hit Wells")
   plotWells(flaggedWells, "Flagged Wells")
+  plotWells(positiveControlWells, "Positive Control Wells")
+  plotWells(negativeControlWells, "Negative Control Wells")
   
   dev.off()
   
