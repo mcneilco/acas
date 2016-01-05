@@ -18,11 +18,11 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrument
   }
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
-  resultTable[, index:=1:nrow(resultTable)]
+  # resultTable[, index:=1:nrow(resultTable)]
 
-  resultTable[, maxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t")))[instrumentData$assayData$startReadMax[1]:instrumentData$assayData$endReadMax[1]]) + as.integer(instrumentData$assayData$startReadMax[1]) - 1L]), by = index]
-  resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t"))))]), by = index]
-  resultTable[, fluorescent := instrumentData$assayData$fluorescent]
+  # resultTable[, maxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t")))[instrumentData$assayData$startReadMax[1]:instrumentData$assayData$endReadMax[1]]) + as.integer(instrumentData$assayData$startReadMax[1]) - 1L]), by = index]
+  # resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t"))))]), by = index]
+  # resultTable[, fluorescent := instrumentData$assayData$fluorescent]
   resultTable[, zPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$normalizedActivity,
                                         negativeControls=resultTable[wellType == "NC" & is.na(flag), ]$normalizedActivity)]
   resultTable[, rawZPrime := computeZPrime(positiveControls=resultTable[wellType == "PC" & is.na(flag), ]$activity,
@@ -33,33 +33,33 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrument
               by=assayBarcode]
   
   #TODO: remove once real data is in place
-  if (any(is.na(resultTable$batchName))) {
-    warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
-    resultTable <- resultTable[!is.na(resultTable$batchName), ]
-  }
+#   if (any(is.na(resultTable$batchName))) {
+#     warnUser("Some wells did not have recorded contents in the database- they will be skipped. Make sure all transfers have been loaded.")
+#     resultTable <- resultTable[!is.na(resultTable$batchName), ]
+#   }
   
-  hitSelection <- parameters$thresholdType #Other choice is "efficacyThreshold"
-  if (is.logical(hitSelection=="sd") & length(hitSelection=="sd")==0) {
-    efficacyThreshold <- parameters$hitEfficacyThreshold
-  } else if (hitSelection == "sd") {
-    efficacyThreshold <- meanValue + sdValue * parameters$hitSDThreshold
-  } else {
-    efficacyThreshold <- parameters$hitEfficacyThreshold
-  }
+#   hitSelection <- parameters$thresholdType #Other choice is "efficacyThreshold"
+#   if (is.logical(hitSelection=="sd") & length(hitSelection=="sd")==0) {
+#     efficacyThreshold <- parameters$hitEfficacyThreshold
+#   } else if (hitSelection == "sd") {
+#     efficacyThreshold <- meanValue + sdValue * parameters$hitSDThreshold
+#   } else {
+#     efficacyThreshold <- parameters$hitEfficacyThreshold
+#   }
   
-  if (is.null(efficacyThreshold)){
-    # Get the late peak points
-    resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & !resultTable$fluorescent
-    # Get individual points that are greater than the threshold
-    resultTable$threshold <-  resultTable$fluorescent==F & resultTable$wellType=="test" & resultTable$latePeak==F
-  } else {
-    # Get the late peak points
-    resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & 
-      (resultTable$normalizedActivity > efficacyThreshold) & !resultTable$fluorescent  #also, efficacyThreshold is NULL
-    # Get individual points that are greater than the threshold
-    resultTable$threshold <- (resultTable$normalizedActivity > efficacyThreshold) & resultTable$fluorescent==F & 
-      resultTable$wellType=="test" & resultTable$latePeak==F
-  }
+#   if (is.null(efficacyThreshold)){
+#     # Get the late peak points
+#     # resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & !resultTable$fluorescent
+#     # Get individual points that are greater than the threshold
+#     # resultTable$threshold <-  resultTable$fluorescent==F & resultTable$wellType=="test" & resultTable$latePeak==F
+#   } else {
+#     # Get the late peak points
+#     # resultTable$latePeak <- (resultTable$overallMaxTime > parameters$latePeakTime) & 
+#       # (resultTable$normalizedActivity > efficacyThreshold) & !resultTable$fluorescent  #also, efficacyThreshold is NULL
+#     # Get individual points that are greater than the threshold
+#     # resultTable$threshold <- (resultTable$normalizedActivity > efficacyThreshold) & resultTable$fluorescent==F & 
+#       # resultTable$wellType=="test" & resultTable$latePeak==F
+#   }
 
   return(resultTable)
 }

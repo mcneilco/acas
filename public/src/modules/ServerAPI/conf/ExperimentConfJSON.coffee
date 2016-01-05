@@ -339,6 +339,27 @@
 				name: "Luminescence"
 				ignored: false
 			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "maximum"
+				name: "Maximum"
+				ignored: false
+			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "minimum"
+				name: "Minimum"
+				ignored: false
+			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "Calc: (R2-R1)/R1"
+				name: "Calc: (R2-R1)/R1"
+				ignored: false
+			,
 				codeType: "analysis parameter"
 				codeKind: "signal direction"
 				codeOrigin: "ACAS DDICT"

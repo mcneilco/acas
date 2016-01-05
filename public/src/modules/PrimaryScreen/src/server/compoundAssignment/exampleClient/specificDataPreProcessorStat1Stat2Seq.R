@@ -48,7 +48,7 @@ specificDataPreProcessorStat1Stat2Seq <- function(parameters, folderToParse, err
                                    sideCarBarcode=NA, 
                                    assayFileName=rep(vectFiles, each=length(vectStatistics)),    #resultTable$fileName[c(1:3, 766:768)],
                                    instrumentType=rep(parameters$instrumentReader, length(vectStatistics)*length(vectFiles)), 
-                                   dataTitle= colnames(resultTable)[rep(6:length(resultTable), length(vectFiles))])
+                                   dataTitle= colnames(resultTable)[rep(6:length(resultTable), length(vectFiles))]) # Skip the first 5 names extracted from the resultTable columns (i.e. "well", "barcode", "fileName", "timePoints", "sequence")
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
   userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, 
@@ -235,7 +235,7 @@ makeDataFrameOfWellsGrid <- function(allData, barcode, valueName) {
 formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFilePath, matchNames) {
   
   # For log file
-  write.table(paste0(Sys.time(), "\tbegin formatUserInputActivityColumns"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
+  # write.table(paste0(Sys.time(), "\tbegin formatUserInputActivityColumns"), file = file.path(tempFilePath, "runlog.tab"), append=FALSE, quote=FALSE, sep="\t", row.names=FALSE, col.names=FALSE)
   
   userInput <- copy(readsTable)
   setnames(userInput, c("readPosition", "readName","activity"), c("userReadPosition", "userReadName","activityCol"))
@@ -281,7 +281,12 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
     # Assigns new activity column names of format "Rn {userInputReadName}"
     # Filters out calculated read columns since those don't have a position in the raw data files
     for (order in userInput[calculatedRead == FALSE]$userReadPosition) {
-      userInput[userReadPosition == order, activityColName := activityColNames[[order]]]
+      # if numeric
+      if (!is.na(suppressWarnings(as.numeric(order)))) {
+        userInput[userReadPosition == order, activityColName := activityColNames[[as.numeric(order)]]]
+      } else {
+        userInput[userReadPosition == order, activityColName := order]
+      }
     }
     # Checks to see if data has a generic name (Rn)
     for(name in userInput[calculatedRead == FALSE]$userReadName) {

@@ -156,7 +156,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   
   #print(resultTable)
-  resultTable <- cbind(resultTable[[1]],batchNamesAndConcentrations)  #added in [[1]] in resultTable in lines 89 and 94
+  resultTable <- cbind(resultTable,batchNamesAndConcentrations)
   
   
   setnames(resultTable,c("batchName", "concentration"),c("batchCode", "cmpdConc"))  #previously batchName was barcode

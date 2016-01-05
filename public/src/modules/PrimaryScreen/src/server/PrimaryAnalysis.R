@@ -1536,6 +1536,14 @@ autoFlagWells <- function(resultTable, parameters) {
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
+  
+  
+  # Add fluorescent as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")
+  
+  # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
+  
+  
+  # Flag HITs
   if(!parameters$autoHitSelection) {
     return(resultTable)
   }
@@ -1802,7 +1810,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                               tempFilePath=specDataPrepFileLocation)
     }
     
-    
     # RED (client-specific)
     # getCompoundAssignments
     
@@ -1819,9 +1826,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # this also performs any calculations from the GUI
     source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R") 
     # TODO: break this function into customer-specific usable parts
-    save(resultTable, instrumentData, file="beforeAdjust.Rda")
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
-    save(resultTable, file="afterAdjust.Rda")
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit, 
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
@@ -1996,7 +2001,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          '/dataFiles/experiments/', experiment$codeName, "/draft/", 
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
     
-    ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                              experiment, parameters, user)
     # TODO: loop or lapply to get all
@@ -2583,7 +2587,6 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   #   externalFlagging should be TRUE when flagging is coming from a service,
   #   e.g. when called by spotfire
   library('racas')
-  
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE
   options("scipen"=15)
