@@ -8,7 +8,9 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
+		# Possible issue: this lets letters following the numbers pass, like "12341a"
+		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
+		if (not readPositionIsNumeric or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -16,6 +18,31 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 			errors.push
 				attribute: 'readName'
 				message: "Read name must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.PrimaryAnalysisTimeWindow extends Backbone.Model
+	defaults:
+		position: 1
+		statistic: "max"
+		windowStart: ""
+		windowEnd: ""
+		unit: "s"
+
+	validate: (attrs) =>
+		errors = []
+		ws = attrs.windowStart
+		if _.isNaN(ws) or ws is "" or ws is null or ws is undefined or isNaN(ws)
+			errors.push
+				attribute: 'timeWindowStart'
+				message: "Window Start must be a number"
+		we = attrs.windowEnd
+		if _.isNaN(we) or we is "" or we is null or we is undefined or isNaN(we)
+			errors.push
+				attribute: 'timeWindowEnd'
+				message: "Window End must be a number"
 		if errors.length > 0
 			return errors
 		else
@@ -66,6 +93,22 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 					usedReadNames[currentReadName] = index
 		return modelErrors
 
+class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
+	model: PrimaryAnalysisTimeWindow
+
+	validateCollection: (matchReadName) =>
+		modelErrors = []
+		@each (model, index) ->
+			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
+			# which adds the class "error" to the invalid attributes
+			indivModelErrors = model.validate(model.attributes)
+			if indivModelErrors?
+				for error in indivModelErrors
+					unless (matchReadName and error.attribute == 'readPosition')
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+		return modelErrors
 
 class window.TransformationRuleList extends Backbone.Collection
 	model: TransformationRule
@@ -123,6 +166,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		latePeakTime: null
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
 		transformationRuleList: new TransformationRuleList()
+		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
 
 
 	initialize: ->
@@ -156,6 +200,13 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				@trigger 'change'
 			resp.primaryAnalysisReadList.on 'amDirty', =>
 				@trigger 'amDirty'
+		if resp.primaryAnalysisTimeWindowList?
+			if resp.primaryAnalysisTimeWindowList not instanceof PrimaryAnalysisTimeWindowList
+				resp.primaryAnalysisTimeWindowList = new PrimaryAnalysisTimeWindowList(resp.primaryAnalysisTimeWindowList)
+			resp.primaryAnalysisTimeWindowList.on 'change', =>
+				@trigger 'change'
+			resp.primaryAnalysisTimeWindowList.on 'amDirty', =>
+				@trigger 'amDirty'
 		if resp.transformationRuleList?
 			if resp.transformationRuleList not instanceof TransformationRuleList
 				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
@@ -170,6 +221,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
+		timeWindowErrors = @get('primaryAnalysisTimeWindowList').validateCollection(attrs.matchReadName)
+		errors.push timeWindowErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
@@ -358,6 +411,51 @@ class window.PrimaryScreenExperiment extends Experiment
 #		super(protocol)
 #		@getModelFitStatus().set codeValue: modelFitStatus
 
+class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"keyup .bv_timeWindowStart": "attributeChanged"
+		"keyup .bv_timeWindowEnd": "attributeChanged"
+		"change .bv_timeStatistic": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'PrimaryAnalysisTimeWindowController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@$('.bv_timePosition').html('T'+@model.get('position'))
+		@setUpStatisticSelect()
+		@
+
+	setUpStatisticSelect: ->
+		@timeStatisticList = new PickListList()
+		@timeStatisticList.url = "/api/codetables/analysis parameter/statistic"
+		@timeStatisticListController = new PickListSelectController
+			el: @$('.bv_timeStatistic')
+			collection: @timeStatisticList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Statistic"
+			selectedCode: @model.get('statistic')
+
+
+	updateModel: =>
+		@model.set
+			windowStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowStart'))
+			windowEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowEnd'))
+			statistic: @timeStatisticListController.getSelectedCode()
+		@trigger 'updateState'
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
+
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"
@@ -414,7 +512,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	updateModel: =>
 		@model.set
-			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
+			readPosition: UtilityFunctions::getTrimmedInput @$('.bv_readPosition')
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
@@ -431,7 +529,9 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
 
 class window.TransformationRuleController extends AbstractFormController
 	template: _.template($("#TransformationRuleView").html())
@@ -472,6 +572,52 @@ class window.TransformationRuleController extends AbstractFormController
 	clear: =>
 		@model.destroy()
 		@attributeChanged()
+
+
+class window.PrimaryAnalysisTimeWindowListController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowListView").html())
+	nextPositionNumber: 1
+	events:
+		"click .bv_addTimeWindowButton": "addNewWindow"
+
+	initialize: =>
+		@collection.on 'remove', @renumberTimeWindows
+		@collection.on 'remove', => @collection.trigger 'change'
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (timeWindow) =>
+			@addOneWindow(timeWindow)
+		@
+
+	addNewWindow: (skipAmDirtyTrigger) =>
+		newModel = new PrimaryAnalysisTimeWindow()
+		@collection.add newModel
+		@addOneWindow(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneWindow: (timeWindow) ->
+		timeWindow.set position: @nextPositionNumber
+		@nextPositionNumber++
+		parc = new PrimaryAnalysisTimeWindowController
+			model: timeWindow
+		@$('.bv_timeWindowInfo').append parc.render().el
+		parc.on 'updateState', =>
+			@trigger 'updateState'
+		parc.on 'updateAllActivities', @updateAllActivities
+
+	renumberTimeWindows: =>
+		@nextPositionNumber = 1
+		index = 0
+		while index < @collection.length
+			windowNumber = 'T' + @nextPositionNumber.toString()
+			@collection.at(index).set position: @nextPositionNumber
+			@$('.bv_timePosition:eq('+index+')').html(windowNumber)
+			index++
+			@nextPositionNumber++
 
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController
@@ -660,6 +806,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
+		@setupTimeWindowListController()
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged(true)
 
@@ -727,6 +874,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			collection: @model.get('primaryAnalysisReadList')
 		@readListController.render()
 		@readListController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupTimeWindowListController: ->
+		@timeWindowListController= new PrimaryAnalysisTimeWindowListController
+			el: @$('.bv_timeWindowList')
+			collection: @model.get('primaryAnalysisTimeWindowList')
+		@timeWindowListController.render()
+		@timeWindowListController.on 'updateState', =>
 			@trigger 'updateState'
 
 	setupTransformationRuleListController: ->

@@ -121,6 +121,20 @@
             ignored: false
           }
         ]
+      }, {
+        type: "analysis parameter",
+        kind: "statistic",
+        codes: [
+          {
+            code: "max",
+            name: "Maximum",
+            ignored: false
+          }, {
+            code: "min",
+            name: "Minimum",
+            ignored: false
+          }
+        ]
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.primaryScreenCodeTableTestJSON = window.primaryScreenCodeTableTestJSON || {} : exports));

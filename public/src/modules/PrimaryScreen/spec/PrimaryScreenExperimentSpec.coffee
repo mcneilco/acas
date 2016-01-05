@@ -24,8 +24,8 @@ describe "Primary Screen Experiment module testing", ->
 				@par = new PrimaryAnalysisRead window.primaryScreenTestJSON.primaryAnalysisReads[0]
 			it "should be valid as initialized", ->
 				expect(@par.isValid()).toBeTruthy()
-			it "should be invalid when read position is NaN and read name is not calculated", ->
-				@par.set readPosition: NaN
+			it "should be invalid when read position is text and read name is not calculated", ->
+				@par.set readPosition: "text"
 				expect(@par.isValid()).toBeFalsy()
 				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readPosition'
@@ -44,6 +44,39 @@ describe "Primary Screen Experiment module testing", ->
 				filtErrors = _.filter @par.validationError, (err) ->
 					err.attribute=='readName'
 				expect(filtErrors.length).toBeGreaterThan 0
+
+
+	describe "Primary Analysis Time Window model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@par = new PrimaryAnalysisTimeWindow()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@par).toBeDefined()
+				it "should have defaults", ->
+					expect(@par.get('position')).toEqual 1
+					expect(@par.get('statistic')).toEqual "max"
+					expect(@par.get('windowStart')).toBeFalsy()
+					expect(@par.get('windowEnd')).toBeFalsy()
+					expect(@par.get('unit')).toEqual "s"
+			describe "model validation tests", ->
+				beforeEach ->
+					@par = new PrimaryAnalysisTimeWindow window.primaryScreenTestJSON.primaryAnalysisTimeWindows[0]
+				it "should be valid as initialized", ->
+					expect(@par.isValid()).toBeTruthy()
+				it "should be invalid when window start is NaN", ->
+					@par.set windowStart: NaN
+					expect(@par.isValid()).toBeFalsy()
+					filteredErrors = _.filter @par.validationError, (err) ->
+						err.attribute=='timeWindowStart'
+					expect(filteredErrors.length).toBeGreaterThan 0
+				it "should be invalid when window end is text", ->
+					@par.set windowStart: 0
+					@par.set windowEnd: "the end of the world as we know it..."
+					expect(@par.isValid()).toBeFalsy()
+					filteredErrors = _.filter @par.validationError, (err) ->
+						err.attribute=='timeWindowEnd'
+					expect(filteredErrors.length).toBeGreaterThan 0
 
 	describe "Transformation Rule Model testing", ->
 		describe "When loaded from new", ->
@@ -73,7 +106,7 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@parl).toBeDefined()
-		describe "When loaded form existing", ->
+		describe "When loaded from existing", ->
 			beforeEach ->
 				@parl = new PrimaryAnalysisReadList window.primaryScreenTestJSON.primaryAnalysisReads
 			it "should have three reads", ->
@@ -96,6 +129,40 @@ describe "Primary Screen Experiment module testing", ->
 				expect(readthree.get('readPosition')).toEqual 13
 				expect(readthree.get('readName')).toEqual "luminescence"
 				expect(readthree.get('activity')).toBeFalsy()
+
+	describe "Primary Analysis Time Window List testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisTimeWindowList()
+			describe "Existence", ->
+				it "should be defined", ->
+					expect(@parl).toBeDefined()
+		describe "When loaded from existing", ->
+			beforeEach ->
+				@parl = new PrimaryAnalysisTimeWindowList window.primaryScreenTestJSON.primaryAnalysisTimeWindows
+			it "should have three reads", ->
+				expect(@parl.length).toEqual 3
+			it "should have the correct read info for the first read", ->
+				@par = @parl.at(0)
+				expect(@par.get('position')).toEqual 1
+				expect(@par.get('statistic')).toEqual "max"
+				expect(@par.get('windowStart')).toEqual -5
+				expect(@par.get('windowEnd')).toEqual 5
+				expect(@par.get('unit')).toEqual "s"
+			it "should have the correct read info for the second read", ->
+				@par = @parl.at(1)
+				expect(@par.get('position')).toEqual 2
+				expect(@par.get('statistic')).toEqual "min"
+				expect(@par.get('windowStart')).toEqual 0
+				expect(@par.get('windowEnd')).toEqual 15
+				expect(@par.get('unit')).toEqual "s"
+			it "should have the correct read info for the third read", ->
+				@par = @parl.at(2)
+				expect(@par.get('position')).toEqual 3
+				expect(@par.get('statistic')).toEqual "max"
+				expect(@par.get('windowStart')).toEqual 20
+				expect(@par.get('windowEnd')).toEqual 50
+				expect(@par.get('unit')).toEqual "s"
 
 
 	describe "Transformation Rule List testing", ->
@@ -481,7 +548,7 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the readPosition ", ->
 					@parc.$('.bv_readPosition').val( '42' )
 					@parc.$('.bv_readPosition').keyup()
-					expect(@parc.model.get('readPosition')).toEqual 42
+					expect(@parc.model.get('readPosition')).toEqual '42'
 				it "should update the read name", ->
 					waitsFor ->
 						@parc.$('.bv_readName option').length > 0
@@ -506,6 +573,43 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@parc.model.get('readName')).toEqual "Calc: (maximum-minimum)/minimum"
 					expect(@parc.$('.bv_readPosition')).toBeHidden()
 					expect(@parc.$('.bv_readPositionHolder')).toBeVisible()
+
+	describe "PrimaryAnalysisTimeWindowController", ->
+		describe "when instantiated", ->
+			beforeEach ->
+				@parc = new PrimaryAnalysisTimeWindowController
+					model: new PrimaryAnalysisTimeWindow window.primaryScreenTestJSON.primaryAnalysisTimeWindows[0]
+					el: $('#fixture')
+				@parc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@parc).toBeDefined()
+				it "should load a template", ->
+					expect(@parc.$('.bv_timeWindowStart').length).toEqual 1
+			describe "render existing parameters", ->
+				it "should show window start", ->
+					expect(@parc.$('.bv_timeWindowStart').val()).toEqual "-5"
+				it "should show window end", ->
+					expect(@parc.$('.bv_timeWindowEnd').val()).toEqual "5"
+				it "should show statistic", ->
+					waitsFor ->
+						@parc.$('.bv_timeStatistic option').length > 0
+					, 1000
+					runs ->
+						expect(@parc.$('.bv_timeStatistic').val()).toEqual "max"
+			describe "model updates", ->
+				it "should update the window end", ->
+					@parc.$('.bv_timeWindowEnd').val( '42' )
+					@parc.$('.bv_timeWindowEnd').keyup()
+					expect(@parc.model.get('windowEnd')).toEqual 42
+				it "should update the statistic", ->
+					waitsFor ->
+						@parc.$('.bv_timeStatistic option').length > 0
+					, 1000
+					runs ->
+						@parc.$('.bv_timeStatistic').val('unassigned')
+						@parc.$('.bv_timeStatistic').change()
+						expect(@parc.model.get('statistic')).toEqual "unassigned"
 
 
 	describe "TransformationRuleController", ->
@@ -605,6 +709,82 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@parlc.$('.bv_readPosition:eq(2)').val()).toEqual "13"
 					expect(@parlc.$('.bv_readName:eq(2)').val()).toEqual "luminescence"
 					expect(@parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined()
+
+	describe "Primary Analysis Time Window List Controller testing", ->
+		describe "when instantiated with no data", ->
+			beforeEach ->
+				@parlc= new PrimaryAnalysisTimeWindowListController
+					el: $('#fixture')
+					collection: new PrimaryAnalysisTimeWindowList()
+				@parlc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@parlc).toBeDefined()
+				it "should load a template", ->
+					expect(@parlc.$('.bv_addTimeWindowButton').length).toEqual 1
+			describe "rendering", ->
+				it "should show no time windows", ->
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 0
+					expect(@parlc.collection.length).toEqual 0
+			describe "adding and removing", ->
+				it "should have one read when add read is clicked", ->
+					@parlc.$('.bv_addTimeWindowButton').click()
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 1
+					expect(@parlc.collection.length).toEqual 1
+				it "should have two reads when add read is clicked again", ->
+					@parlc.$('.bv_addTimeWindowButton').click()
+					@parlc.$('.bv_addTimeWindowButton').click()
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 2
+					expect(@parlc.collection.length).toEqual 2
+				it "should have no reads when there is one read and remove is clicked", ->
+					@parlc.$('.bv_addTimeWindowButton').click()
+					expect(@parlc.collection.length).toEqual 1
+					@parlc.$('.bv_delete').click()
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 0
+					expect(@parlc.collection.length).toEqual 0
+				it "should have one read when there are two reads and remove is clicked", ->
+					@parlc.$('.bv_addTimeWindowButton').click()
+					@parlc.$('.bv_addTimeWindowButton').click()
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 2
+					@parlc.$('.bv_delete:eq(0)').click()
+					expect(@parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual 1
+					expect(@parlc.collection.length).toEqual 1
+		describe "when instantiated with data", ->
+			beforeEach ->
+				@parlc= new PrimaryAnalysisTimeWindowListController
+					el: $('#fixture')
+					collection: new PrimaryAnalysisTimeWindowList window.primaryScreenTestJSON.primaryAnalysisTimeWindows
+				@parlc.render()
+			it "should have three time windows", ->
+				expect(@parlc.collection.length).toEqual 3
+			it "should have the correct read info for the first time window", ->
+				waitsFor ->
+					@parlc.$('.bv_timeStatistic option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_timePosition:eq(0)').html()).toEqual "T1"
+					expect(@parlc.$('.bv_timeStatistic:eq(0)').val()).toEqual "max"
+					expect(@parlc.$('.bv_timeWindowStart:eq(0)').val()).toEqual "-5"
+					expect(@parlc.$('.bv_timeWindowEnd:eq(0)').val()).toEqual "5"
+			it "should have the correct read info for the second time window", ->
+				waitsFor ->
+					@parlc.$('.bv_timeStatistic option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_timePosition:eq(1)').html()).toEqual "T2"
+					expect(@parlc.$('.bv_timeStatistic:eq(1)').val()).toEqual "min"
+					expect(@parlc.$('.bv_timeWindowStart:eq(1)').val()).toEqual "0"
+					expect(@parlc.$('.bv_timeWindowEnd:eq(1)').val()).toEqual "15"
+			it "should have the correct read info for the third time window", ->
+				waitsFor ->
+					@parlc.$('.bv_timeStatistic option').length > 0
+				, 1000
+				runs ->
+					expect(@parlc.$('.bv_timePosition:eq(2)').html()).toEqual "T3"
+					expect(@parlc.$('.bv_timeStatistic:eq(2)').val()).toEqual "max"
+					expect(@parlc.$('.bv_timeWindowStart:eq(2)').val()).toEqual "20"
+					expect(@parlc.$('.bv_timeWindowEnd:eq(2)').val()).toEqual "50"
+
 
 	describe "Transformation Rule List Controller testing", ->
 		describe "when instantiated with no data", ->

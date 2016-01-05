@@ -187,6 +187,9 @@
 				typeName: "analysis parameter"
 				kindName: "transformation"
 			,
+				typeName: "analysis parameter"
+				kindName: "statistic"
+			,
 				typeName: "experiment metadata"
 				kindName: "file type"
 			,
@@ -390,6 +393,20 @@
 				codeOrigin: "ACAS DDICT"
 				code: "4 parameter D-R"
 				name: "EC50"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "max"
+				name: "Max"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "min"
+				name: "Min"
 				ignored: false
 			]
 

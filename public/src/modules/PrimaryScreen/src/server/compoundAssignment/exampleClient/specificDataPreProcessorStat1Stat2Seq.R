@@ -1,11 +1,22 @@
-specificDataPreProcessorStat1Stat2Seq <- function(parameters=parameters, folderToParse=folderToParse, errorEnv=errorEnv, dryRun=dryRun, 
-                                                  instrumentClass=instrumentReadParams$dataFormat, testMode, tempFilePath=tempFilePath) {
-  fileNameTable <- validateInputFiles(folderToParse)
+specificDataPreProcessorStat1Stat2Seq <- function(parameters, folderToParse, errorEnv, dryRun, instrumentClass, testMode, tempFilePath) {
+                                                  
+  
+  # Load necessary libraries to run current function
+  library(racas)
+  library(data.table)
+  library(plyr)
+  
+  # Call a modified function that validates the seq files when no Stat files are present
+  fileNameTable <- validateInputFilesNoStatFiles(folderToParse)
+  
   
   # TODO maybe: http://stackoverflow.com/questions/2209258/merge-several-data-frames-into-one-data-frame-with-a-loop/2209371
+
+
+    
+  # Use an updated version of the following function
+  resultList <- apply(fileNameTable,1,combineFilesNoStatFiles, timeWindowList=parameters$primaryAnalysisTimeWindowList)
   
-  
-  resultList <- apply(fileNameTable,1,combineFiles)
   resultTable <- as.data.table(do.call("rbind",resultList))
   assayData <- data.table(assayFileName=unlist(lapply(lapply(lapply(resultTable$fileName, strsplit, split="/"), unlist), tail, n=1)), 
                           assayBarcode=as.character(resultTable$barcode),
@@ -17,23 +28,38 @@ specificDataPreProcessorStat1Stat2Seq <- function(parameters=parameters, folderT
                           Well=NA,
                           resultTable[, 4:length(resultTable), with = FALSE])
   
-  plateAssociationDT <- data.table(plateOrder=as.numeric(as.factor(resultTable$barcode))[4:length(resultTable)], 
-                                   readPosition=(4:length(resultTable)) - 3, 
-                                   assayBarcode=resultTable$barcode[4:length(resultTable)], 
+  # Rename a subset of the columns in assayData
+  setnames(assayData, c("timePoints", "sequence"), c("T_timePoints", "T_sequence"))
+  
+  # Create lists of unique entries for types of statistics, barcodes and filenames that will be used immediately below
+  vectColumnsNames <- names(resultTable)
+  # Skip the first 5 names extracted from the resultTable columns (i.e. "well", "barcode", "fileName", "timePoints", "sequence")
+  # and start registering the names of all statistics from column 6
+  vectStatistics <- (vectColumnsNames[6:length(resultTable)])
+  vectBarcodes <- unique(resultTable$barcode)
+  vectFiles <- unique(resultTable$fileName)
+  
+  
+  # Modified the range of elements that are accessed for each column of the following dataframe
+  plateAssociationDT <- data.table(plateOrder=rep(unique(as.numeric(as.factor(resultTable$barcode))), each=length(vectStatistics)),  #as.numeric(as.factor(resultTable$barcode))[c(1:3, 766:768)], 
+                                   readPosition=rep(1:length(vectStatistics), length(vectFiles)), 
+                                   assayBarcode=rep(vectBarcodes, each=length(vectStatistics)),   #resultTable$barcode[c(1:3, 766:768)], 
                                    compoundBarcode_1=NA, 
                                    sideCarBarcode=NA, 
-                                   assayFileName=resultTable$fileName[4:length(resultTable)],
-                                   instrumentType=rep(parameters$instrumentReader, length(resultTable)-3), 
-                                   dataTitle= colnames(resultTable)[4:length(resultTable)])
+                                   assayFileName=rep(vectFiles, each=length(vectStatistics)),    #resultTable$fileName[c(1:3, 766:768)],
+                                   instrumentType=rep(parameters$instrumentReader, length(vectStatistics)*length(vectFiles)), 
+                                   dataTitle= colnames(resultTable)[rep(6:length(resultTable), length(vectFiles))])
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
   userInputReadTable <- formatUserInputActivityColumns(readsTable=readsTable, 
                                                        activityColNames=unique(plateAssociationDT$dataTitle), 
                                                        tempFilePath=tempFilePath, matchNames=FALSE)
   
-  instrumentData <- list(assayData=assayData, plateAssociationDT=plateAssociationDT, userInputReadTable=userInputReadTable)
-  
-  return(instrumentData)
+  # Rename the final composite output
+  newInstrumentData <- list(assayData=assayData, plateAssociationDT=plateAssociationDT, userInputReadTable=userInputReadTable)
+
+
+  return(newInstrumentData)
 }
 
 
@@ -48,7 +74,7 @@ combineFiles <- function(fileSet) {
   stat1Frame <- parseStatFile(as.character(fileSet[1]))
   stat2Frame <- parseStatFile(as.character(fileSet[2]))
   seqData <- parseSeqFile(as.character(fileSet[3]))
-  
+
   fluorescentList <- findFluorescents(seqData)
   allStatFrame <- merge(stat1Frame,stat2Frame)
   allStatFrame$fluorescent <- allStatFrame$well %in% fluorescentList
@@ -288,4 +314,220 @@ formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFil
   #   }
   
   return(userInput)
+}
+
+
+
+
+## Additional functions required in the absence of stat1, stat2 files below
+
+
+validateInputFilesNoStatFiles <- function(dataDirectory) {
+  # Validates and organizes the names of the input files - no stat files present in the folder
+  #
+  # Args:
+  #   dataDirectory:      A string that is a path to a folder full of files
+  # Returns:
+  #   A data.frame with one column for all files of seq type (no stat1, stat2)
+  #     Files are organized alphabetically in rows
+  
+  
+  #possible errors:
+  #lack of protocol
+  #no files
+  #uneven files (no match or different lengths)
+  #save(dataDirectory, file="dataDirectory.Rda")
+  #collect the names of files
+  ## No stat files # fileList <- list.files(path = dataDirectory, pattern = "\\.stat[^\\.]*", full.names = TRUE)
+  seqFileList <- list.files(path = dataDirectory, pattern = "\\.seq\\d$", full.names = TRUE)
+  
+  
+  # the program exits when there are no files
+  if (length(seqFileList) == 0) {
+    stopUser("No files found")
+  }
+  
+  ## No stat files # stat1List <- grep("\\.stat1$", fileList, value="TRUE")
+  ## No stat files # stat2List <- grep("\\.stat2$", fileList, value="TRUE")
+  
+  ##if (length(stat1List) != length(stat2List) | length(stat1List) != length(seqFileList)) {
+  ##  stopUser("Number of Maximum and Minimum and sequence files do not match")
+  ##}
+  
+  fileNameTable <- data.frame(seq= sort(seqFileList))
+                              ##stat1= sort(stat1List),
+                              ##stat2= sort(stat2List),
+                              
+  
+  checkSameName <- function(x) {
+    # This function is used below, it checks that all columns have the same name
+    firstName <- gsub(pattern="\\.stat1$",replacement="",x[1])
+    return(gsub("\\.stat2$","",x[2])==firstName && gsub("\\.seq1$","",x[2])==firstName)
+  }
+  
+  ## Since there are no stat files, there is also no need to invoke the following function
+  # TODO: tell user which ones
+  ##if (any(apply(fileNameTable,1,checkSameName))) {
+  ##  stopUser("File names do not match")
+  ##}
+  
+  return(fileNameTable)
+}
+
+
+
+combineFilesNoStatFiles <- function(fileSet, timeWindowList) {
+  # Takes the seq files and creates an output dataframe in the absence of stat1, stat2 files
+  #
+  # Args:
+  #   fileSet: a list of files which includes seq files and statistic info
+  # Returns:
+  #   A data.frame with columns seq files in sorted columns
+  
+  # Creates the basic frame in the absence of stat1, stat2 files
+  basicFrame <- parseSeqFileBarcodeFilename(fileSet[1])
+  # Rename the column of the dataframe for ease
+  colnames(basicFrame)[1] <- "well"
+  
+  ## No stat files
+  #stat1Frame <- parseStatFile(as.character(fileSet[1]))
+  #stat2Frame <- parseStatFile(as.character(fileSet[2]))
+  
+  seqData <- parseSeqFile(as.character(fileSet[1]))
+  
+  
+  # Create the basic frame containing barcodes, fileNames, amd wells before attaching timepoints and sequences below
+  allStatFrame <- basicFrame
+  
+  ## No fluorescent cells detected   
+  ## fluorescentList <- findFluorescents(seqData)
+  #allStatFrame <- merge(stat1Frame,stat2Frame)
+  #allStatFrame$fluorescent <- allStatFrame$well %in% fluorescentList
+  
+  timeValues <- gsub("X","", row.names(seqData))
+  allStatFrame$timePoints <- paste(timeValues, collapse = "\t")
+  
+  # Isolate the string that contains all the timepoints collapsed with /t.
+  # Assuming that all strings in all elements of timePoints vector are identical, then the first string is selected and
+  # parsed into multiple elements of a list, then unlisted and saved in one vector as numeric values
+  timeSequence <- allStatFrame$timePoints[1]
+  timePointList <- strsplit(timeSequence, "\t")
+  vectTime <- unlist(timePointList)
+  vectTime <- as.numeric(vectTime)
+  
+  
+  # Find the index of the vector elements (i.e. numerical indices) that bracket the time window of interest
+  findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
+    # This function is used immediately below and finds the indices of two elements in a vector containing incrementing timepoints,
+    # one pointing to the start the other ot the end of the time window of interest
+    #
+    # Args:
+    #   vectTime:         a vector that contains time points sorted in an incremental fashion
+    #   timeWindowStart:  time in seconds denoting the start of the time window of interest
+    #   timeWindowEnd:    time in seconds denoting the end of the time window of interest
+    # Returns:
+    #   A list containing two values: element index pointing to the start and element index pointing to the end of the time window
+    
+    logicTimeStart <- (vectTime>=timeWindowStart)
+    startReadIndex <- min(which(logicTimeStart == TRUE))
+    logicTimeEnd <- (vectTime<timeWindowEnd)
+    endReadIndex <- max(which(logicTimeEnd == TRUE))
+    components <- list(startReadIndex = startReadIndex, endReadIndex = endReadIndex)
+    return(components)
+  }
+  
+
+  allStatFrame$sequence <- unlist(lapply(seqData[,as.character(allStatFrame$well)], paste, collapse="\t"),use.names=FALSE)
+  
+
+  for (timeWindow in timeWindowList) {
+    currentStatWindow <- findTimeWindowBrackets(vectTime, timeWindow$windowStart, timeWindow$windowEnd)
+    
+    if (timeWindow$statistic=="max") {
+      functionToApply=max
+    } else if (timeWindow$statistic=="min") {
+      functionToApply=min
+    }
+    
+    calculatedStatistic <- vapply(allStatFrame$sequence, applyFunctionTabDelimited, 1,
+                                  startIndex=currentStatWindow$startReadIndex, 
+                                  endIndex=currentStatWindow$startReadIndex, 
+                                  functionApply=functionToApply)
+    
+
+    allStatFrame[, paste("T", as.character(timeWindow$position), sep="")] <- calculatedStatistic
+  }
+  
+  
+  return(allStatFrame)
+}
+
+
+
+applyFunctionTabDelimited <- function(stringElement, startIndex, endIndex, functionApply) {
+  # Finds the minimum or maximum in a string that passes raw data from the instrument, within predetermined time windows,
+  # depending on the definition of functionApply (minimum or maximum, respectively)
+  #
+  # Args:
+  #   stringElement:    A string where subsequent measurements are separated by the "\t" character
+  #   startIndex:       Element index that defines the start of the time window to apply the function
+  #   endIndex:         Element index that defines the end of the time window to apply the function
+  #   functionApply:    The type of function that is needed to be applied to the raw data (minimum or maximum)
+  #
+  # Returns:
+  #   A vector with the calculated value for the minimum or maximum
+  
+  # Parse the input string into multiple elements of a list, then unlist and save in vector as numeric values
+  seqList <- strsplit(stringElement, "\t")
+  vectElement <- unlist(seqList)
+  vectElement <- as.numeric(vectElement)
+  
+  # apply chosen function (minimum or maximum) in sequence elements specified as arguments in current function
+  appliedOptimum <- functionApply(vectElement[c(startIndex:endIndex)])
+  
+  return(appliedOptimum)
+}
+
+
+
+parseSeqFileBarcodeFilename <- function(fileName) {
+  # Parses a seq file and retrieves wells, barcode, and filename
+  #
+  # Args:
+  #   fileName:   the path to a seq file
+  #
+  # Returns:
+  #   A data.frame with a column for each well
+  
+  # Extract wells and parameters embedded in the seq file and rename the columns of dataframes for ease  
+  inputData <- read.delim(file=fileName, as.is=TRUE, stringsAsFactors = FALSE)
+  well <- inputData[5]
+  colnames(well) <- "AA"
+  paramLines <- inputData[1]
+  colnames(paramLines) <- "Alpha"
+  
+  # Locate the element of the parameters dataframe that contains the plate barcode and isolate the barcode
+  key <- "Source Plate 2 Barcode"
+  index <- grep(key, paramLines$Alpha)
+  line <- paramLines[index, ]
+  components <- unlist(strsplit(line, " = "))
+  barcode <- components[2]
+
+  # Extract the fileName and truncate
+  fileName <- gsub("(.*)\\.seq.$","\\1",fileName)
+  
+  # Validation of the barcode
+  barcode <- validateBarcode(barcode, fileName)
+
+  # Normalize the wells in terms of number of characters per well name
+  backDigits <- substr(well$A, 2, nchar(well$A))
+  normalizedDigits <- ifelse(nchar(backDigits)==1, yes=paste0("0",backDigits), no=backDigits)
+  frontLetter <- substr(well$A, 1, 1)
+  normalizedWells <- paste0("", frontLetter, normalizedDigits)
+  
+  # Structure the output dataframe
+  outputData <- data.frame(normalizedWells)
+  outputData$barcode <- rep(barcode, times=nrow(outputData))
+  outputData$fileName <- rep(fileName, times=nrow(outputData))
+  return(outputData)
 }
