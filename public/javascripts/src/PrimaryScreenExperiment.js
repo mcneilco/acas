@@ -19,9 +19,10 @@
     };
 
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
-      var errors;
+      var errors, readPositionIsNumeric;
       errors = [];
-      if ((_.isNaN(attrs.readPosition || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0)) && attrs.readName.slice(0, 5) !== "Calc:") {
+      readPositionIsNumeric = !_.isNaN(parseInt(attrs.readPosition)) || !_.isNaN(parseInt(attrs.readPosition.slice(1)));
+      if ((!readPositionIsNumeric || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
         errors.push({
           attribute: 'readPosition',
           message: "Read position must be a number"
@@ -693,8 +694,6 @@
 
     function PrimaryAnalysisTimeWindowController() {
       this.clear = bind(this.clear, this);
-      this.handleActivityChanged = bind(this.handleActivityChanged, this);
-      this.handleReadNameChanged = bind(this.handleReadNameChanged, this);
       this.updateModel = bind(this.updateModel, this);
       this.render = bind(this.render, this);
       return PrimaryAnalysisTimeWindowController.__super__.constructor.apply(this, arguments);
@@ -737,7 +736,7 @@
           code: "unassigned",
           name: "Select Statistic"
         }),
-        selectedCode: this.model.get('timeStatistic')
+        selectedCode: this.model.get('statistic')
       });
     };
 
@@ -748,26 +747,6 @@
         statistic: this.timeStatisticListController.getSelectedCode()
       });
       return this.trigger('updateState');
-    };
-
-    PrimaryAnalysisTimeWindowController.prototype.handleReadNameChanged = function() {
-      var readName;
-      readName = this.readNameListController.getSelectedCode();
-      this.hideReadPosition(readName);
-      this.model.set({
-        readName: readName
-      });
-      return this.attributeChanged();
-    };
-
-    PrimaryAnalysisTimeWindowController.prototype.handleActivityChanged = function() {
-      var activity;
-      activity = this.$('.bv_activity').is(":checked");
-      this.model.set({
-        activity: activity
-      });
-      this.attributeChanged();
-      return this.trigger('updateAllActivities');
     };
 
     PrimaryAnalysisTimeWindowController.prototype.clear = function() {

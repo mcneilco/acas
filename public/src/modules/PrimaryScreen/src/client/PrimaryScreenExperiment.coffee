@@ -8,7 +8,9 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN attrs.readPosition or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
+		# Possible issue: this lets letters following the numbers pass, like "12341a"
+		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
+		if (not readPositionIsNumeric or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -417,7 +419,6 @@ class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
 		"keyup .bv_timeWindowStart": "attributeChanged"
 		"keyup .bv_timeWindowEnd": "attributeChanged"
 		"change .bv_timeStatistic": "attributeChanged"
-#		"click .bv_activity": "handleActivityChanged"
 		"click .bv_delete": "clear"
 
 	initialize: ->
@@ -425,15 +426,11 @@ class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
 		@setBindings()
 		@model.on "destroy", @remove, @
 
-
-
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@$('.bv_timePosition').html('T'+@model.get('position'))
 		@setUpStatisticSelect()
-#		@hideReadPosition(@model.get('readName'))
-
 		@
 
 	setUpStatisticSelect: ->
@@ -445,23 +442,7 @@ class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
 			insertFirstOption: new PickList
 				code: "unassigned"
 				name: "Select Statistic"
-			selectedCode: @model.get('timeStatistic')
-
-#	hideReadPosition: (readName) ->
-#		isCalculatedRead = readName.slice(0,5) == "Calc:"
-#		if isCalculatedRead is true
-#			@$('.bv_readPosition').val('')
-#			@$('.bv_readPosition').hide()
-#			@$('.bv_readPositionHolder').show()
-#		else
-#			@$('.bv_readPosition').show()
-#			@$('.bv_readPositionHolder').hide()
-
-#	setUpReadPosition: (matchReadNameChecked) ->
-#		if matchReadNameChecked
-#			@$('.bv_readPosition').attr('disabled','disabled')
-#		else
-#			@$('.bv_readPosition').removeAttr('disabled')
+			selectedCode: @model.get('statistic')
 
 
 	updateModel: =>
@@ -470,20 +451,6 @@ class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
 			windowEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowEnd'))
 			statistic: @timeStatisticListController.getSelectedCode()
 		@trigger 'updateState'
-
-	handleReadNameChanged: =>
-		readName = @readNameListController.getSelectedCode()
-		@hideReadPosition(readName)
-		@model.set
-			readName: readName
-		@attributeChanged()
-
-	handleActivityChanged: =>
-		activity = @$('.bv_activity').is(":checked")
-		@model.set
-			activity: activity
-		@attributeChanged()
-		@trigger 'updateAllActivities'
 
 	clear: =>
 		@model.destroy()
@@ -614,7 +581,6 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 		"click .bv_addTimeWindowButton": "addNewWindow"
 
 	initialize: =>
-#		@collection.on 'remove', @checkActivity
 		@collection.on 'remove', @renumberTimeWindows
 		@collection.on 'remove', => @collection.trigger 'change'
 
@@ -624,18 +590,12 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 		$(@el).html @template()
 		@collection.each (timeWindow) =>
 			@addOneWindow(timeWindow)
-#		if @collection.length == 0
-#			@addNewWindow(true)
-#		@checkActivity()
-
 		@
 
 	addNewWindow: (skipAmDirtyTrigger) =>
 		newModel = new PrimaryAnalysisTimeWindow()
 		@collection.add newModel
 		@addOneWindow(newModel)
-#		if @collection.length ==1
-#			@checkActivity()
 		unless skipAmDirtyTrigger is true
 			newModel.trigger 'amDirty'
 
@@ -645,31 +605,9 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 		parc = new PrimaryAnalysisTimeWindowController
 			model: timeWindow
 		@$('.bv_timeWindowInfo').append parc.render().el
-#		parc.setUpTimeWindowPosition(@matchReadNameChecked)
 		parc.on 'updateState', =>
 			@trigger 'updateState'
 		parc.on 'updateAllActivities', @updateAllActivities
-
-#	matchReadNameChanged: (matchReadName) =>
-#		@matchReadNameChecked = matchReadName
-#		if @matchReadNameChecked
-#			@$('.bv_readPosition').val('')
-#			@$('.bv_readPosition').attr('disabled','disabled')
-#			@collection.each (read) =>
-#				read.set readPosition: ''
-#		else
-#			@$('.bv_readPosition').removeAttr('disabled')
-
-#	checkActivity: => #check that at least one activity is set
-#		index = @collection.length-1
-#		activitySet = false
-#		while index >= 0 and activitySet == false
-#			if @collection.at(index).get('activity') == true
-#				activitySet = true
-#			if index == 0
-#				@$('.bv_activity:eq(0)').attr('checked','checked')
-#				@collection.at(index).set activity: true
-#			index = index - 1
 
 	renumberTimeWindows: =>
 		@nextPositionNumber = 1
@@ -680,13 +618,6 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 			@$('.bv_timePosition:eq('+index+')').html(windowNumber)
 			index++
 			@nextPositionNumber++
-
-#	updateAllActivities: =>
-#		index = @collection.length-1
-#		while index >=0
-#			activity = @$('.bv_activity:eq('+index+')').is(":checked")
-#			@collection.at(index).set activity: activity
-#			index--
 
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController

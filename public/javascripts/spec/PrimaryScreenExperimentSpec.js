@@ -33,10 +33,10 @@
         it("should be valid as initialized", function() {
           return expect(this.par.isValid()).toBeTruthy();
         });
-        it("should be invalid when read position is NaN and read name is not calculated", function() {
+        it("should be invalid when read position is text and read name is not calculated", function() {
           var filtErrors;
           this.par.set({
-            readPosition: NaN
+            readPosition: "text"
           });
           expect(this.par.isValid()).toBeFalsy();
           filtErrors = _.filter(this.par.validationError, function(err) {
@@ -93,14 +93,14 @@
           it("should be valid as initialized", function() {
             return expect(this.par.isValid()).toBeTruthy();
           });
-          it("should be invalid when window start is text", function() {
+          it("should be invalid when window start is NaN", function() {
             var filteredErrors;
             this.par.set({
-              windowStart: "the first one"
+              windowStart: NaN
             });
             expect(this.par.isValid()).toBeFalsy();
             filteredErrors = _.filter(this.par.validationError, function(err) {
-              return err.attribute === 'windowStart';
+              return err.attribute === 'timeWindowStart';
             });
             return expect(filteredErrors.length).toBeGreaterThan(0);
           });
@@ -114,7 +114,7 @@
             });
             expect(this.par.isValid()).toBeFalsy();
             filteredErrors = _.filter(this.par.validationError, function(err) {
-              return err.attribute === 'windowEnd';
+              return err.attribute === 'timeWindowEnd';
             });
             return expect(filteredErrors.length).toBeGreaterThan(0);
           });
@@ -894,7 +894,7 @@
           it("should update the readPosition ", function() {
             this.parc.$('.bv_readPosition').val('42');
             this.parc.$('.bv_readPosition').keyup();
-            return expect(this.parc.model.get('readPosition')).toEqual(42);
+            return expect(this.parc.model.get('readPosition')).toEqual('42');
           });
           return it("should update the read name", function() {
             waitsFor(function() {
@@ -926,6 +926,58 @@
             expect(this.parc.model.get('readName')).toEqual("Calc: (maximum-minimum)/minimum");
             expect(this.parc.$('.bv_readPosition')).toBeHidden();
             return expect(this.parc.$('.bv_readPositionHolder')).toBeVisible();
+          });
+        });
+      });
+    });
+    describe("PrimaryAnalysisTimeWindowController", function() {
+      return describe("when instantiated", function() {
+        beforeEach(function() {
+          this.parc = new PrimaryAnalysisTimeWindowController({
+            model: new PrimaryAnalysisTimeWindow(window.primaryScreenTestJSON.primaryAnalysisTimeWindows[0]),
+            el: $('#fixture')
+          });
+          return this.parc.render();
+        });
+        describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.parc).toBeDefined();
+          });
+          return it("should load a template", function() {
+            return expect(this.parc.$('.bv_timeWindowStart').length).toEqual(1);
+          });
+        });
+        describe("render existing parameters", function() {
+          it("should show window start", function() {
+            return expect(this.parc.$('.bv_timeWindowStart').val()).toEqual("-5");
+          });
+          it("should show window end", function() {
+            return expect(this.parc.$('.bv_timeWindowEnd').val()).toEqual("5");
+          });
+          return it("should show statistic", function() {
+            waitsFor(function() {
+              return this.parc.$('.bv_timeStatistic option').length > 0;
+            }, 1000);
+            return runs(function() {
+              return expect(this.parc.$('.bv_timeStatistic').val()).toEqual("max");
+            });
+          });
+        });
+        return describe("model updates", function() {
+          it("should update the window end", function() {
+            this.parc.$('.bv_timeWindowEnd').val('42');
+            this.parc.$('.bv_timeWindowEnd').keyup();
+            return expect(this.parc.model.get('windowEnd')).toEqual(42);
+          });
+          return it("should update the statistic", function() {
+            waitsFor(function() {
+              return this.parc.$('.bv_timeStatistic option').length > 0;
+            }, 1000);
+            return runs(function() {
+              this.parc.$('.bv_timeStatistic').val('unassigned');
+              this.parc.$('.bv_timeStatistic').change();
+              return expect(this.parc.model.get('statistic')).toEqual("unassigned");
+            });
           });
         });
       });
@@ -1057,6 +1109,104 @@
             expect(this.parlc.$('.bv_readPosition:eq(2)').val()).toEqual("13");
             expect(this.parlc.$('.bv_readName:eq(2)').val()).toEqual("luminescence");
             return expect(this.parlc.$('.bv_activity:eq(2)').attr("checked")).toBeUndefined();
+          });
+        });
+      });
+    });
+    describe("Primary Analysis Time Window List Controller testing", function() {
+      describe("when instantiated with no data", function() {
+        beforeEach(function() {
+          this.parlc = new PrimaryAnalysisTimeWindowListController({
+            el: $('#fixture'),
+            collection: new PrimaryAnalysisTimeWindowList()
+          });
+          return this.parlc.render();
+        });
+        describe("basic existence tests", function() {
+          it("should exist", function() {
+            return expect(this.parlc).toBeDefined();
+          });
+          return it("should load a template", function() {
+            return expect(this.parlc.$('.bv_addTimeWindowButton').length).toEqual(1);
+          });
+        });
+        describe("rendering", function() {
+          return it("should show no time windows", function() {
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(0);
+            return expect(this.parlc.collection.length).toEqual(0);
+          });
+        });
+        return describe("adding and removing", function() {
+          it("should have one read when add read is clicked", function() {
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(1);
+            return expect(this.parlc.collection.length).toEqual(1);
+          });
+          it("should have two reads when add read is clicked again", function() {
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(2);
+            return expect(this.parlc.collection.length).toEqual(2);
+          });
+          it("should have no reads when there is one read and remove is clicked", function() {
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            expect(this.parlc.collection.length).toEqual(1);
+            this.parlc.$('.bv_delete').click();
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(0);
+            return expect(this.parlc.collection.length).toEqual(0);
+          });
+          return it("should have one read when there are two reads and remove is clicked", function() {
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            this.parlc.$('.bv_addTimeWindowButton').click();
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(2);
+            this.parlc.$('.bv_delete:eq(0)').click();
+            expect(this.parlc.$('.bv_timeWindowInfo .bv_timeWindowStart').length).toEqual(1);
+            return expect(this.parlc.collection.length).toEqual(1);
+          });
+        });
+      });
+      return describe("when instantiated with data", function() {
+        beforeEach(function() {
+          this.parlc = new PrimaryAnalysisTimeWindowListController({
+            el: $('#fixture'),
+            collection: new PrimaryAnalysisTimeWindowList(window.primaryScreenTestJSON.primaryAnalysisTimeWindows)
+          });
+          return this.parlc.render();
+        });
+        it("should have three time windows", function() {
+          return expect(this.parlc.collection.length).toEqual(3);
+        });
+        it("should have the correct read info for the first time window", function() {
+          waitsFor(function() {
+            return this.parlc.$('.bv_timeStatistic option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_timePosition:eq(0)').html()).toEqual("T1");
+            expect(this.parlc.$('.bv_timeStatistic:eq(0)').val()).toEqual("max");
+            expect(this.parlc.$('.bv_timeWindowStart:eq(0)').val()).toEqual("-5");
+            return expect(this.parlc.$('.bv_timeWindowEnd:eq(0)').val()).toEqual("5");
+          });
+        });
+        it("should have the correct read info for the second time window", function() {
+          waitsFor(function() {
+            return this.parlc.$('.bv_timeStatistic option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_timePosition:eq(1)').html()).toEqual("T2");
+            expect(this.parlc.$('.bv_timeStatistic:eq(1)').val()).toEqual("min");
+            expect(this.parlc.$('.bv_timeWindowStart:eq(1)').val()).toEqual("0");
+            return expect(this.parlc.$('.bv_timeWindowEnd:eq(1)').val()).toEqual("15");
+          });
+        });
+        return it("should have the correct read info for the third time window", function() {
+          waitsFor(function() {
+            return this.parlc.$('.bv_timeStatistic option').length > 0;
+          }, 1000);
+          return runs(function() {
+            expect(this.parlc.$('.bv_timePosition:eq(2)').html()).toEqual("T3");
+            expect(this.parlc.$('.bv_timeStatistic:eq(2)').val()).toEqual("max");
+            expect(this.parlc.$('.bv_timeWindowStart:eq(2)').val()).toEqual("20");
+            return expect(this.parlc.$('.bv_timeWindowEnd:eq(2)').val()).toEqual("50");
           });
         });
       });
