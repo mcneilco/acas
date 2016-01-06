@@ -40,7 +40,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   library(data.table)  
   library(plyr)
   
-  # save(folderToParse, instrumentData, testMode, parameters, file="public/cmpdAssignments.Rda")
+  #save(folderToParse, instrumentData, testMode, parameters, file="public/cmpdAssignments.Rda")
   resultTable <- instrumentData$assayData
   
   barcodeList <- unique(resultTable$assayBarcode)
@@ -69,7 +69,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   controlsIsolate <- data.frame(extraColumn[c('WELL_NAME','controls')])
   
   # Exclude the rows that contain no controls
-  controlsRows <- controlsIsolate[controlsIsolate$controls!='NA',]
+  controlsRows <- controlsIsolate[!is.na(controlsIsolate$controls), ]
   
   # Define dataframe that will be filled with all the necessary values related to the controls
   controlsFrame <- data.frame(ID=NA, BARCODE=NA, WELL_ID=NA, WELL_NAME=controlsRows$WELL_NAME, BATCH_CODE=NA, VOLUME=Inf, VOLUME_STRING=NA, 
@@ -133,7 +133,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   rownames(wellTable) <- NULL
   
   # Add the extra column that pertains to the agonist concentration extracted from the template above
-  wellTable <- merge(wellTable, extraColumn[c('WELL_NAME','agonist')], all=TRUE)
+  wellTable <- merge(wellTable, extraColumn[c('WELL_NAME','agonistConc')], all=TRUE)
   
   # De-activate the getAgonist and removeVehicle functions
   #wellTable <- getAgonist(parameters$agonistControl, wellTable)
@@ -221,14 +221,14 @@ getBatchNamesAndConcentrations <- function(barcode, well, wellTable) {
   #   well:           A vector of the wells
   #   wellTabe:       A data.frame with columns of BARCODE, WELL_NAME, BATCH_CODE,CONCENTRATION,CONCENTRATION_UNIT
   # Returns:
-  #   A data.frame with batchName,concentration, and concUnit that matches the order of the input barcodes and wells
+  #   A data.frame with batchName,concentration, concUnit, agonistConc that matches the order of the input barcodes and wells
   
   wellUniqueId <- paste(barcode, well)
   wellTableUniqueId <- paste(wellTable$BARCODE, wellTable$WELL_NAME)
   # definition of outputFrame below was expanded to include the agonist values extracted from template (see getControlValues function)
   # and remove the row "agonistConc" which was not added any more by function getAgonist() defined above
-  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT","agonist")]   #"agonistConc",
-  names(outputFrame) <- c("batchName","concentration","concUnit","agonist")  #"agonistConc",
+  outputFrame <- wellTable[match(wellUniqueId,wellTableUniqueId),c("BATCH_CODE","CONCENTRATION","CONCENTRATION_UNIT","agonistConc")]
+  names(outputFrame) <- c("batchName","concentration","concUnit","agonistConc")
   return(outputFrame)
 }
 
@@ -328,9 +328,8 @@ getControlValues <- function(pathToExcelFile) {
     # Returns: The vector containing all entries from the sheet row-after-row
     
     tableX1 <- readWorksheetFromFile(excel.file, sheet=sheet.name)
-    tableX1.matrix <- apply(tableX1, 2, paste0)
-    tableX1.matrixTrimmed <- tableX1.matrix[1:16,2:25]
-    outputVector <- as.vector(tableX1.matrixTrimmed)
+    tableX1Trimmed <- tableX1[1:16,2:25]
+    outputVector <- as.vector(as.matrix(tableX1Trimmed))
     
     return(outputVector)
   }
@@ -338,13 +337,13 @@ getControlValues <- function(pathToExcelFile) {
   
   # Apply (sub)function readInputFiles to create a different vector from each of the 3 sheets
   controls <- readInputFiles(sheets[1])
-  agonist <- readInputFiles(sheets[2])
+  agonist <- as.numeric(readInputFiles(sheets[2]))
   vehicle <- readInputFiles(sheets[3])
   
   
   
   # Fill the wanted data.frame using the 4 vectors
-  final <- data.frame(WELL_NAME,controls,agonist,vehicle)
+  final <- data.frame(WELL_NAME,controls,agonistConc=agonist,vehicle, stringsAsFactors = FALSE)
   return(final)
 }
 

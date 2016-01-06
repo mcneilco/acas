@@ -114,6 +114,9 @@
         }, {
           typeName: "codeValue",
           kindName: "model fit type"
+        }, {
+          typeName: "numericValue",
+          kindName: "agonist concentration"
         }
       ],
       labeltypes: [

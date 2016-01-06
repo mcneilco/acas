@@ -178,7 +178,6 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
-  save(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode, file="getWellTypes.Rda")
   wellTypes <- rep.int("test", length(batchNames))
   
   
@@ -1876,7 +1875,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Save full resultTable, including wells with no compounds, to write to the spotfire file.
   # Remove the wells with no compounds to save to the database
   spotfireResultTable <- copy(resultTable)
-  resultTable <- resultTable[batchCode != "::"]
+  resultTable <- resultTable[!is.na(batchCode) & batchCode != "::"]
   
   # was "across plates"
   groupBy <- switch(parameters$aggregateBy,
@@ -1890,7 +1889,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     warnUser("No valid aggregation selected. Using no aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
-  treatmentGroupBy <- c(groupBy, "cmpdConc")
+  treatmentGroupBy <- c(groupBy, "cmpdConc", "agonistConc")
   
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
   
@@ -1981,7 +1980,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
                      clientName,"createPDF.R"))
-  
+    
     if(!parameters$autoHitSelection) {
       hitThreshold <- ""
     } else if(!is.null(parameters$hitEfficacyThreshold) && parameters$hitEfficacyThreshold != "") {
@@ -2071,7 +2070,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: move to correct location
     # Removes rows that have no compound data
     analysisGroupData <- analysisGroupData[ analysisGroupData$batchCode != "NA::NA", ]
-    
     # transformed and normalized should be included if they are not null
     # resultKinds should include activityColumns, numericValue, data, results
     # example set:
@@ -2430,7 +2428,7 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   library(data.table)
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[, doseResponse := length(unique(cmpdConc)) >= 3, by=tempParentId]
+  preCurveData[, doseResponse := length(unique(paste(cmpdConc, "-", agonistConc))) >= 3, by=tempParentId]
   setkey(preCurveData, tempParentId)
   
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]

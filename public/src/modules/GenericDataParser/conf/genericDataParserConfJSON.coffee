@@ -58,10 +58,10 @@
 		interactionkinds:
 			[
 				kindName: "test subject"
-				typeName: "first refers to second"
+				typeName: "refers to"
 			,
 				kindName: "plate well"
-				typeName: "first has second as a member"
+				typeName: "has member"
 			]
 
 		containertypes:

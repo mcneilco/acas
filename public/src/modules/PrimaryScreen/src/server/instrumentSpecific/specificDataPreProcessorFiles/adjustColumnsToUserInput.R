@@ -16,7 +16,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   #   everthing else....
   
   # These columns should always exist
-  timeColumns <- c("T_timePoints", "T_sequence")
+  timeColumns <- c("T_timePoints", "T_sequence", "agonistConc")
   
   # sets the names for all of the "defined" reads, but none of the calculated reads
   setnames(inputDataTable, 

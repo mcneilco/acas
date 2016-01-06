@@ -18,7 +18,7 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrument
   }
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
-  # resultTable[, index:=1:nrow(resultTable)]
+  resultTable[, index:=1:nrow(resultTable)]
 
   # resultTable[, maxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t")))[instrumentData$assayData$startReadMax[1]:instrumentData$assayData$endReadMax[1]]) + as.integer(instrumentData$assayData$startReadMax[1]) - 1L]), by = index]
   # resultTable[, overallMaxTime:=as.numeric(unlist(strsplit(instrumentData$assayData$timePoints, "\t"))[which.max(as.numeric(unlist(strsplit(instrumentData$assayData$sequence, "\t"))))]), by = index]
@@ -177,6 +177,7 @@ computeRawZPrimeByPlate <- function(mainData) {
 }
 
 computeTransformedResults <- function(mainData, transformation, parameters) { 
+  # mainData is a data.table, columns include wellType, normalizedActivity, ...
   #TODO switch on transformation
   if (transformation == "percent efficacy") {
     aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
