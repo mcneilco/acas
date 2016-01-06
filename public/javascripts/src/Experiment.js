@@ -9,6 +9,7 @@
     function Experiment() {
       this.prepareToSave = bind(this.prepareToSave, this);
       this.duplicateEntity = bind(this.duplicateEntity, this);
+      this.getAttachedFiles = bind(this.getAttachedFiles, this);
       this.copyProtocolAttributes = bind(this.copyProtocolAttributes, this);
       this.parse = bind(this.parse, this);
       return Experiment.__super__.constructor.apply(this, arguments);
@@ -283,6 +284,53 @@
 
     Experiment.prototype.getCompletionDate = function() {
       return this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "dateValue", "completion date");
+    };
+
+    Experiment.prototype.getAttachedFiles = function(fileTypes) {
+      var afm, analyticalFileState, analyticalFileValues, attachFileList, displayName, file, fileModel, i, j, len, len1, type;
+      attachFileList = new ExperimentAttachFileList();
+      for (i = 0, len = fileTypes.length; i < len; i++) {
+        type = fileTypes[i];
+        analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('subclass') + " metadata");
+        analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
+        if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
+          for (j = 0, len1 = analyticalFileValues.length; j < len1; j++) {
+            file = analyticalFileValues[j];
+            if (file.get('ignored') === false) {
+              afm = new AttachFile({
+                fileType: type.code,
+                fileValue: file.get('fileValue'),
+                id: file.get('id')
+              });
+            }
+            displayName = file.get('comments');
+            if (displayName == null) {
+              displayName = file.get('fileValue').split("/");
+              displayName = displayName[displayName.length - 1];
+            }
+            fileModel = new AttachFile({
+              fileType: type.code,
+              fileValue: file.get('fileValue'),
+              id: file.get('id'),
+              comments: displayName
+            });
+            attachFileList.add(fileModel);
+          }
+        }
+      }
+      return attachFileList;
+    };
+
+    Experiment.prototype.getSourceFile = function() {
+      if (this.get('lsKind') === "default") {
+        return this.get('lsStates').getStateValueByTypeAndKind("metadata", "raw results locations", "fileValue", "source file");
+      } else {
+        return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "fileValue", "source file");
+      }
+    };
+
+    Experiment.prototype.getSELReportFile = function() {
+      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "report locations", "fileValue", "annotation file");
     };
 
     Experiment.prototype.duplicateEntity = function() {
@@ -561,6 +609,38 @@
         this.model.trigger('saveSuccess');
       }
       return this.setupAttachFileListController();
+    };
+
+    ExperimentBaseController.prototype.finishSetupAttachFileListController = function(attachFileList, fileTypeList) {
+      if (this.attachFileListController != null) {
+        this.attachFileListController.undelegateEvents();
+      }
+      this.attachFileListController = new ExperimentAttachFileListController({
+        autoAddAttachFileModel: false,
+        el: this.$('.bv_attachFileList'),
+        collection: attachFileList,
+        firstOptionName: "Select Method",
+        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'],
+        fileTypeList: fileTypeList,
+        required: false
+      });
+      this.attachFileListController.on('amClean', (function(_this) {
+        return function() {
+          return _this.trigger('amClean');
+        };
+      })(this));
+      this.attachFileListController.on('renderComplete', (function(_this) {
+        return function() {
+          return _this.checkDisplayMode();
+        };
+      })(this));
+      this.attachFileListController.render();
+      return this.attachFileListController.on('amDirty', (function(_this) {
+        return function() {
+          _this.trigger('amDirty');
+          return _this.model.trigger('change');
+        };
+      })(this));
     };
 
     ExperimentBaseController.prototype.setupExptNameChkbx = function() {

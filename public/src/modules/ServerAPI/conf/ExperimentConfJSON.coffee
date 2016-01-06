@@ -96,6 +96,9 @@
 				typeName: "fileValue"
 				kindName: "reference file"
 			,
+				typeName: "fileValue"
+				kindName: "source file"
+			,
 				typeName: "clobValue"
 				kindName: "data analysis parameters"
 			,
@@ -112,7 +115,7 @@
 				kindName: "image file"
 			,
 				typeName: "fileValue"
-				kindName: "report file"
+				kindName: "annotation file"
 			,
 				typeName: "codeValue"
 				kindName: "model fit type"
@@ -402,6 +405,20 @@
 				codeOrigin: "ACAS DDICT"
 				code: "reference file"
 				name: "Reference File"
+				ignored: false
+			,
+				codeType: "experiment metadata"
+				codeKind: "file type"
+				codeOrigin: "ACAS DDICT"
+				code: "source file"
+				name: "Source File"
+				ignored: false
+			,
+				codeType: "experiment metadata"
+				codeKind: "file type"
+				codeOrigin: "ACAS DDICT"
+				code: "annotation file"
+				name: "Report File"
 				ignored: false
 			,
 				codeType: "model fit"

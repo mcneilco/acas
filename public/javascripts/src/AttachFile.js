@@ -96,6 +96,59 @@
 
   })(BasicFileList);
 
+  window.ExperimentAttachFileList = (function(superClass) {
+    extend(ExperimentAttachFileList, superClass);
+
+    function ExperimentAttachFileList() {
+      this.validateCollection = bind(this.validateCollection, this);
+      return ExperimentAttachFileList.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentAttachFileList.prototype.validateCollection = function() {
+      var currentFileType, error, i, index, indivModelErrors, j, len, model, modelErrors, ref, uneditableFileTypes, usedFileTypes;
+      modelErrors = [];
+      usedFileTypes = {};
+      if (this.length !== 0) {
+        for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
+          model = this.at(index);
+          indivModelErrors = model.validate(model.attributes);
+          if (indivModelErrors !== null) {
+            for (j = 0, len = indivModelErrors.length; j < len; j++) {
+              error = indivModelErrors[j];
+              modelErrors.push({
+                attribute: error.attribute + ':eq(' + index + ')',
+                message: error.message
+              });
+            }
+          }
+          currentFileType = model.get('fileType');
+          uneditableFileTypes = window.conf.experiment.uneditableFileTypes;
+          if (uneditableFileTypes == null) {
+            uneditableFileTypes = "";
+          }
+          if (uneditableFileTypes.indexOf(currentFileType) > -1) {
+            if (currentFileType in usedFileTypes) {
+              modelErrors.push({
+                attribute: 'fileType:eq(' + index + ')',
+                message: "This file type can not be chosen more than once"
+              });
+              modelErrors.push({
+                attribute: 'fileType:eq(' + usedFileTypes[currentFileType] + ')',
+                message: "This file type can not be chosen more than once"
+              });
+            } else {
+              usedFileTypes[currentFileType] = index;
+            }
+          }
+        }
+      }
+      return modelErrors;
+    };
+
+    return ExperimentAttachFileList;
+
+  })(AttachFileList);
+
   window.BasicFileController = (function(superClass) {
     extend(BasicFileController, superClass);
 
@@ -353,7 +406,7 @@
     };
 
     AttachFileController.prototype.render = function() {
-      var fileValue;
+      var fileValue, uneditableFileTypes;
       $(this.el).empty();
       $(this.el).html(this.template(this.model.attributes));
       this.setUpFileTypeSelect();
@@ -362,6 +415,17 @@
         this.createNewFileChooser();
       } else {
         this.$('.bv_uploadFile').html('<div style="margin-top:5px;margin-left:4px;"> <a href="' + window.conf.datafiles.downloadurl.prefix + fileValue + '">' + this.model.get('comments') + '</a></div>');
+      }
+      uneditableFileTypes = window.conf.experiment.uneditableFileTypes;
+      if (uneditableFileTypes == null) {
+        uneditableFileTypes = "";
+      }
+      if (uneditableFileTypes.indexOf(this.model.get('fileType')) > -1 && (this.model.get('id') != null)) {
+        this.$('.bv_delete').hide();
+        this.$('.bv_fileType').attr('disabled', 'disabled');
+      } else {
+        this.$('.bv_delete').show();
+        this.$('.bv_fileType').removeAttr('disabled');
       }
       return this;
     };
@@ -491,5 +555,82 @@
     return AttachFileListController;
 
   })(BasicFileListController);
+
+  window.ExperimentAttachFileListController = (function(superClass) {
+    extend(ExperimentAttachFileListController, superClass);
+
+    function ExperimentAttachFileListController() {
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.isValid = bind(this.isValid, this);
+      return ExperimentAttachFileListController.__super__.constructor.apply(this, arguments);
+    }
+
+    ExperimentAttachFileListController.prototype.initialize = function() {
+      var newModel;
+      if (this.collection == null) {
+        this.collection = new ExperimentAttachFileList();
+        newModel = new AttachFile;
+        this.collection.add(newModel);
+      }
+      ExperimentAttachFileListController.__super__.initialize.call(this);
+      if (this.options.fileTypeList != null) {
+        return this.fileTypeList = this.options.fileTypeList;
+      } else {
+        return this.fileTypeList = new PickListList();
+      }
+    };
+
+    ExperimentAttachFileListController.prototype.isValid = function() {
+      var errors, validCheck;
+      validCheck = true;
+      errors = this.collection.validateCollection();
+      if (errors.length > 0) {
+        validCheck = false;
+      }
+      this.validationError(errors);
+      return validCheck;
+    };
+
+    ExperimentAttachFileListController.prototype.validationError = function(errors) {
+      this.clearValidationErrorStyles();
+      return _.each(errors, (function(_this) {
+        return function(err) {
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
+        };
+      })(this));
+    };
+
+    ExperimentAttachFileListController.prototype.clearValidationErrorStyles = function() {
+      var errorElms;
+      errorElms = this.$('.input_error');
+      return _.each(errorElms, (function(_this) {
+        return function(ee) {
+          $(ee).removeAttr('data-toggle');
+          $(ee).removeAttr('data-placement');
+          $(ee).removeAttr('title');
+          $(ee).removeAttr('data-original-title');
+          return $(ee).removeClass('input_error error');
+        };
+      })(this));
+    };
+
+    return ExperimentAttachFileListController;
+
+  })(AttachFileListController);
 
 }).call(this);

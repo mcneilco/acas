@@ -178,6 +178,43 @@ class window.Experiment extends BaseEntity
 	getCompletionDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
+	getAttachedFiles: (fileTypes) =>
+		#get list of possible kinds of analytical files
+		attachFileList = new ExperimentAttachFileList()
+		for type in fileTypes
+			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
+			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
+			if analyticalFileValues.length > 0 and type.code != "unassigned"
+				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+				#add new afm to attach file list
+				for file in analyticalFileValues
+					if file.get('ignored') is false
+						afm = new AttachFile
+							fileType: type.code
+							fileValue: file.get('fileValue')
+							id: file.get('id')
+					displayName = file.get('comments')
+					unless displayName? #TODO: delete this once SEL saves file names in the comments
+						displayName = file.get('fileValue').split("/")
+						displayName = displayName[displayName.length-1]
+					fileModel = new AttachFile
+						fileType: type.code
+						fileValue: file.get('fileValue')
+						id: file.get('id')
+						comments: displayName
+					attachFileList.add fileModel
+		attachFileList
+
+	getSourceFile: ->
+		if @get('lsKind') is "default" #TODO: remove this once SEL files are saved to experiment metadata state
+			return @get('lsStates').getStateValueByTypeAndKind "metadata", "raw results locations", "fileValue", "source file"
+
+		else #is "plateAnalysis"
+			return @get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "fileValue", "source file"
+
+	getSELReportFile: -> #for getting report files uploaded through SEL
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "report locations", "fileValue", "annotation file"
+
 	duplicateEntity: =>
 		copiedEntity = super()
 		copiedEntity.getCompletionDate().set dateValue: null
@@ -367,6 +404,26 @@ class window.ExperimentBaseController extends BaseEntityController
 			@trigger 'amClean'
 			@model.trigger 'saveSuccess'
 		@setupAttachFileListController()
+
+	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
+		if @attachFileListController?
+			@attachFileListController.undelegateEvents()
+		@attachFileListController= new ExperimentAttachFileListController
+			autoAddAttachFileModel: false
+			el: @$('.bv_attachFileList')
+			collection: attachFileList
+			firstOptionName: "Select Method"
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			fileTypeList: fileTypeList
+			required: false
+		@attachFileListController.on 'amClean', =>
+			@trigger 'amClean'
+		@attachFileListController.on 'renderComplete', =>
+			@checkDisplayMode()
+		@attachFileListController.render()
+		@attachFileListController.on 'amDirty', =>
+			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
+			@model.trigger 'change'
 
 	setupExptNameChkbx: ->
 		code = @model.get('codeName')

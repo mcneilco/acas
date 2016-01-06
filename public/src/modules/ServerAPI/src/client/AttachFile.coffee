@@ -38,6 +38,38 @@ class window.AttachFile extends BasicFile
 class window.AttachFileList extends BasicFileList
 	model: AttachFile
 
+class window.ExperimentAttachFileList extends AttachFileList
+
+	validateCollection: =>
+		modelErrors = []
+		usedFileTypes={}
+		if @.length != 0
+			for index in [0..@.length-1]
+				model = @.at(index)
+				indivModelErrors = model.validate(model.attributes)
+				if indivModelErrors != null
+					for error in indivModelErrors
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+				currentFileType = model.get('fileType')
+				uneditableFileTypes = window.conf.experiment.uneditableFileTypes
+				unless uneditableFileTypes?
+					uneditableFileTypes = ""
+				if uneditableFileTypes.indexOf(currentFileType)>-1
+					if currentFileType of usedFileTypes
+						modelErrors.push
+							attribute: 'fileType:eq('+index+')'
+							message: "This file type can not be chosen more than once"
+						modelErrors.push
+							attribute: 'fileType:eq('+usedFileTypes[currentFileType]+')'
+							message: "This file type can not be chosen more than once"
+					else
+						usedFileTypes[currentFileType] = index
+		modelErrors
+
+
+
 class window.BasicFileController extends AbstractFormController
 	template: _.template($("#BasicFileView").html())
 	tagName: "div"
@@ -212,6 +244,16 @@ class window.AttachFileController extends BasicFileController
 			@createNewFileChooser()
 		else
 			@$('.bv_uploadFile').html '<div style="margin-top:5px;margin-left:4px;"> <a href="'+window.conf.datafiles.downloadurl.prefix+fileValue+'">'+@model.get('comments')+'</a></div>'
+
+		uneditableFileTypes = window.conf.experiment.uneditableFileTypes
+		unless uneditableFileTypes?
+			uneditableFileTypes = ""
+		if uneditableFileTypes.indexOf(@model.get('fileType'))>-1 and @model.get('id')?
+			@$('.bv_delete').hide()
+			@$('.bv_fileType').attr 'disabled', 'disabled'
+		else
+			@$('.bv_delete').show()
+			@$('.bv_fileType').removeAttr 'disabled'
 		@
 
 	setUpFileTypeSelect: ->
@@ -295,3 +337,46 @@ class window.AttachFileListController extends BasicFileListController
 		afc.on 'amDirty', =>
 			@trigger 'amDirty'
 		@$('.bv_attachFileInfo').append afc.render().el
+
+class window.ExperimentAttachFileListController extends AttachFileListController
+
+	initialize: ->
+		unless @collection?
+			@collection = new ExperimentAttachFileList()
+			newModel = new AttachFile
+			@collection.add newModel
+		super()
+		if @options.fileTypeList?
+			@fileTypeList = @options.fileTypeList
+		else
+			@fileTypeList = new PickListList()
+
+	isValid: =>
+		validCheck = true
+		errors = @collection.validateCollection()
+		if errors.length > 0
+			validCheck = false
+		@validationError(errors)
+		validCheck
+
+	validationError: (errors) =>
+		@clearValidationErrorStyles()
+		_.each errors, (err) =>
+			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
+				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
+				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
+				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
+				#				@$('.bv_group_'+err.attribute).tooltip();
+				@$("[data-toggle=tooltip]").tooltip();
+				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).addClass 'input_error error'
+				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
+
+	clearValidationErrorStyles: =>
+		errorElms = @$('.input_error')
+		_.each errorElms, (ee) =>
+			$(ee).removeAttr('data-toggle')
+			$(ee).removeAttr('data-placement')
+			$(ee).removeAttr('title')
+			$(ee).removeAttr('data-original-title')
+			$(ee).removeClass 'input_error error'
