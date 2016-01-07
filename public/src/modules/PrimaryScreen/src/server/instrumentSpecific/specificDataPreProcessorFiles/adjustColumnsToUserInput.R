@@ -16,7 +16,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   #   everthing else....
   
   # These columns should always exist
-  timeColumns <- c("T_timePoints", "T_sequence", "agonistConc")
+  lockedColumns <- c("T_timePoints", "T_sequence", "agonistConc", "agonistBatchCode")
   
   # sets the names for all of the "defined" reads, but none of the calculated reads
   setnames(inputDataTable, 
@@ -135,7 +135,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
                               "cmpdConc",
                               "batchCode")
   colNamesToCheck <- setdiff(colnames(inputDataTable), standardListOfColNames)
-  colNamesToKeep <- c(inputColumnTable$newActivityColName, timeColumns)
+  colNamesToKeep <- c(inputColumnTable$newActivityColName, lockedColumns)
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
   inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)

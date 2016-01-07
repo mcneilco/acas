@@ -1889,7 +1889,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     warnUser("No valid aggregation selected. Using no aggregation.")
     groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
   }
-  treatmentGroupBy <- c(groupBy, "cmpdConc", "agonistConc")
+  treatmentGroupBy <- c(groupBy, "cmpdConc", "agonistConc", "agonistBatchCode")
   
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
   
@@ -2428,7 +2428,7 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   library(data.table)
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
-  preCurveData[, doseResponse := length(unique(paste(cmpdConc, "-", agonistConc))) >= 3, by=tempParentId]
+  preCurveData[, doseResponse := length(unique(paste(cmpdConc, "-", agonistConc, "-", agonistBatchCode))) >= 3, by=tempParentId]
   setkey(preCurveData, tempParentId)
   
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
@@ -2488,7 +2488,10 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if ("tempParentId" %in% names(resultTable)) {
     idVars <- c(idVars, "tempParentId")
   }
-  codeIdVars <- c(idVars, "cmpdConc")
+  
+  # Cannot use a single concentration column for more than one columnName
+  codeConcVector <- na.omit(resultTypes$concColumn)
+  codeIdVars <- c(idVars, codeConcVector)
   
   # Get columns that are in resultTypes and are correct for this melt type
   usedCol <- (resultTypes$columnName %in% names(resultTable)) & (resultTypes[, includedColumn, with=F][[1]])
@@ -2530,15 +2533,25 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
     numericResults <- numericResults[numRepResults]
   }
   
-  codeResults[, concentration:=cmpdConc]
-  codeResults[, cmpdConc:=NULL]
-  codeResults[columnName != "batchCode", concentration:=NA]
-  codeResults[!is.na(concentration), concUnit:="uM"]
+  # Get concentrations
+  codeResults[, concentration:=NA_real_]
+  setkeyv(codeResults, "columnName")
+  for (concCol in codeConcVector) {
+    codeResults[columnName == resultTypes[concColumn == concCol, columnName], concentration:=get(concCol)]
+  }
+  codeResults[, (codeConcVector) := NULL]
+  codeConcDT <- resultTypes[!is.na(concColumn), list(columnName, concUnit)]
+  setkeyv(codeConcDT, "columnName")
+  
+  codeResults <- merge(codeResults, codeConcDT, all.x = TRUE)
   
   # Combines all tables, filling with NA
   longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
   
-  fullTable <- merge(longResults, resultTypes, by = "columnName")
+  # Get publicData, stateType, stateKind, etc.
+  resultTypesCopy <- copy(resultTypes)
+  resultTypesCopy[, c("concColumn", "concUnit") := NULL]
+  fullTable <- merge(longResults, resultTypesCopy, by = "columnName")
   
   if (forceBatchCodeAdd) {
     fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
@@ -2604,8 +2617,6 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   # Fix capitalization mismatch between R and javascript
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
-  # If there is a global defined by another R code, this will overwrite it
-  errorList <<- list()
   developmentMode <- globalMessenger$devMode
   
   if (developmentMode) {
@@ -2634,7 +2645,6 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   warningList <- getWarningText(loadResult$warningList)
   
   # Organize the error outputs
-  allTextErrors <- c(allTextErrors, errorList)
   hasError <- length(allTextErrors) > 0
   hasWarning <- length(warningList) > 0
   

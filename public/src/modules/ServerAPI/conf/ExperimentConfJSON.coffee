@@ -114,8 +114,8 @@
 				typeName: "codeValue"
 				kindName: "model fit type"
 			,
-				typeName: "numericValue"
-				kindName: "agonist concentration"
+				typeName: "codeValue"
+				kindName: "agonist batch code"
 			]
 
 		labeltypes:
