@@ -52,12 +52,13 @@ source("public/src/conf/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
-validateMetaData <- function(metaData, configList, formatSettings = list(), errorEnv = NULL, testMode = FALSE) {
+validateMetaData <- function(metaData, configList, username, formatSettings = list(), errorEnv = NULL, testMode = FALSE) {
   # Valides the meta data section
   #
   # Args:
   #   metaData: 			A "data.frame" of two columns containing the Meta data for the experiment
   #	  configList:     Also known as racas::applicationSettings
+  #   username:       A string containing a username, carried by 'recordedBy' one function level higher  
   #   formatSettings: A nested list containing types of experiments and extra information about
   #                   them (particularly relevant here is the "extraHeaders" column)
   # Returns:
@@ -176,7 +177,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, errorEnv) 
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, errorEnv) 
   }
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
@@ -1769,19 +1770,20 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- getExperimentById(experiment$id)
   return(experiment)
 }
-validateProject <- function(projectName, configList, errorEnv) {
+validateProject <- function(projectName, configList, username, errorEnv) {
   # checks with Roo services to ensure that a project is available and correct
   # 
   # Args:
   #   projectName:         A string naming the project
   #   configList:          Also known as racas::applicationSettings
+  #   username:            A string containing a username, carried by 'recordedBy' two function levels higher  
   #
   # Returns:
   #  The projectName if validation was successful, or the empty string if it was not
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.project.path, "/", username))
   }, error = function(e) {
     stopUser("The project service did not respond correctly, contact your system administrator")
   })
@@ -2493,7 +2495,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   customFormatSettings <- getFormatSettings()$rawOnly
   
-  validatedMetaDataList <- validateMetaData(metaData, configList, customFormatSettings, errorEnv)
+  validatedMetaDataList <- validateMetaData(metaData, configList, recordedBy, customFormatSettings, errorEnv)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
   duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
   useExisting <- validatedMetaDataList$useExisting
