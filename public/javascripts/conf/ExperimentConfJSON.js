@@ -28,9 +28,6 @@
           kindName: "experiment metadata"
         }, {
           typeName: "metadata",
-          kindName: "custom experiment metadata"
-        }, {
-          typeName: "metadata",
           kindName: "raw results locations"
         }, {
           typeName: "metadata",
@@ -115,6 +112,9 @@
           typeName: "codeValue",
           kindName: "model fit type"
         }, {
+          typeName: "clobValue",
+          kindName: "GUI descriptor"
+        }, {
           typeName: "numericValue",
           kindName: "agonist concentration"
         }
@@ -149,8 +149,6 @@
           typeName: "analysis parameter"
         }, {
           typeName: "experiment metadata"
-        }, {
-          typeName: "custom experiment metadata"
         }
       ],
       ddictkinds: [

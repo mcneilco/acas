@@ -264,7 +264,7 @@
     };
 
     DetectSdfPropertiesController.prototype.getProperties = function() {
-      var mappings, sdfInfo;
+      var mappings, sdfInfo, templateName;
       this.$('.bv_detectedSdfPropertiesList').html("Loading...");
       this.disableInputs();
       this.$('.bv_deleteFile').attr('disabled', 'disabled');
@@ -273,10 +273,15 @@
       } else {
         mappings = this.mappings;
       }
+      if (this.tempName === "none") {
+        templateName = null;
+      } else {
+        templateName = this.tempName;
+      }
       sdfInfo = {
         fileName: this.fileName,
         numRecords: this.numRecords,
-        templateName: this.tempName,
+        templateName: templateName,
         mappings: mappings,
         userName: window.AppLaunchParams.loginUser.username
       };
@@ -580,6 +585,7 @@
       this.showValidationErrors = bind(this.showValidationErrors, this);
       this.isValid = bind(this.isValid, this);
       this.handleOverwriteRadioSelectChanged = bind(this.handleOverwriteRadioSelectChanged, this);
+      this.handleFileDateIconClicked = bind(this.handleFileDateIconClicked, this);
       return AssignSdfPropertiesController.__super__.constructor.apply(this, arguments);
     }
 
@@ -587,6 +593,9 @@
 
     AssignSdfPropertiesController.prototype.events = {
       "change .bv_dbProject": "handleDbProjectChanged",
+      "keyup .bv_fileDate": "handleFileDateChanged",
+      "change .bv_fileDate": "handleFileDateChanged",
+      "click .bv_fileDateIcon": "handleFileDateIconClicked",
       "change .bv_useTemplate": "handleTemplateChanged",
       "change .bv_saveTemplate": "handleSaveTemplateCheckboxChanged",
       "keyup .bv_templateName": "handleNameTemplateChanged",
@@ -599,6 +608,14 @@
       $(this.el).empty();
       $(this.el).html(this.template());
       this.getAndFormatTemplateOptions();
+      if (window.conf.cmpdReg.showFileDate) {
+        this.$('.bv_group_fileDate').show();
+        this.fileDate = null;
+        this.$('.bv_fileDate').datepicker();
+        this.$('.bv_fileDate').datepicker("option", "dateFormat", "yy-mm-dd");
+      } else {
+        this.$('.bv_group_fileDate').hide();
+      }
       if (window.conf.cmpdReg.showProjectSelect) {
         this.setupProjectSelect();
         this.isValid();
@@ -734,6 +751,19 @@
       return this.trigger('projectChanged', project);
     };
 
+    AssignSdfPropertiesController.prototype.handleFileDateChanged = function() {
+      if (UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fileDate')) === "") {
+        this.fileDate = null;
+      } else {
+        this.fileDate = UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fileDate')));
+      }
+      return this.isValid();
+    };
+
+    AssignSdfPropertiesController.prototype.handleFileDateIconClicked = function() {
+      return this.$(".bv_fileDate").datepicker("show");
+    };
+
     AssignSdfPropertiesController.prototype.handleTemplateChanged = function() {
       var mappings, templateName;
       templateName = this.templateListController.getSelectedCode();
@@ -842,6 +872,9 @@
       if (window.conf.cmpdReg.showProjectSelect) {
         otherErrors.push.apply(otherErrors, this.getProjectErrors());
       }
+      if (window.conf.cmpdReg.showFileDate) {
+        otherErrors.push.apply(otherErrors, this.getFileDateErrors());
+      }
       if (this.assignedPropertiesList != null) {
         otherErrors.push.apply(otherErrors, this.assignedPropertiesList.checkDuplicates());
         otherErrors.push.apply(otherErrors, this.assignedPropertiesList.checkSaltProperties());
@@ -889,6 +922,18 @@
         })(this));
       }
       return validCheck;
+    };
+
+    AssignSdfPropertiesController.prototype.getFileDateErrors = function() {
+      var fileDateErrors;
+      fileDateErrors = [];
+      if (_.isNaN(this.fileDate) && this.fileDate !== null) {
+        fileDateErrors.push({
+          attribute: 'fileDate',
+          message: "File date must be a valid date"
+        });
+      }
+      return fileDateErrors;
     };
 
     AssignSdfPropertiesController.prototype.getTemplateErrors = function() {
@@ -1006,6 +1051,9 @@
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
         userName: window.AppLaunchParams.loginUser.username
       };
+      if (window.conf.cmpdReg.showFileDate) {
+        dataToPost.fileDate = this.fileDate;
+      }
       return $.ajax({
         type: 'POST',
         url: "/api/cmpdRegBulkLoader/registerCmpds",
@@ -1108,6 +1156,17 @@
     };
 
     BulkRegCmpdsController.prototype.handleSdfPropertiesDetected = function(properties) {
+      var err, i, len, ref;
+      this.$('.bv_templateWarning').hide();
+      this.$('.bv_templateWarning').html("");
+      ref = properties.errors;
+      for (i = 0, len = ref.length; i < len; i++) {
+        err = ref[i];
+        if (err["level"] === "warning") {
+          this.$('.bv_templateWarning').append('<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">' + err["message"] + '</div>');
+          this.$('.bv_templateWarning').show();
+        }
+      }
       this.assignSdfPropertiesController.createPropertyCollections(properties);
       this.detectSdfPropertiesController.mappings = this.assignSdfPropertiesController.assignedPropertiesList;
       this.detectSdfPropertiesController.updatePropertiesRead(this.assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead);
@@ -1190,10 +1249,16 @@
     };
 
     FileRowSummaryController.prototype.render = function() {
-      var toDisplay;
+      var fileDate, toDisplay;
+      fileDate = this.model.get('fileDate');
+      if (fileDate === null) {
+        fileDate = "";
+      } else {
+        fileDate = UtilityFunctions.prototype.convertMSToYMDDate(fileDate);
+      }
       toDisplay = {
         fileName: this.model.get('fileName'),
-        loadDate: UtilityFunctions.prototype.convertMSToYMDDate(this.model.get('recordedDate')),
+        loadDate: fileDate,
         loadUser: this.model.get('recordedBy')
       };
       $(this.el).html(this.template(toDisplay));

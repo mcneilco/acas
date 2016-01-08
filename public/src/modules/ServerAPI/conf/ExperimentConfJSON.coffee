@@ -27,13 +27,16 @@
 				kindName: "experiment metadata"
 			,
 				typeName: "metadata"
-				kindName: "custom experiment metadata"
-			,
-				typeName: "metadata"
 				kindName: "raw results locations"
 			,
 				typeName: "metadata"
 				kindName: "report locations"
+			,
+				typeName: "metadata"
+				kindName: "custom experiment metadata"
+			,
+				typeName: "metadata"
+				kindName: "custom experiment metadata gui"
 			]
 
 		valuetypes:
@@ -114,6 +117,24 @@
 				typeName: "codeValue"
 				kindName: "model fit type"
 			,
+				typeName: "clobValue"
+				kindName: "GUI descriptor"
+			,
+				typeName: "numericValue"
+				kindName: "column order"
+			,
+				typeName: "stringValue"
+				kindName: "column name"
+			,
+				typeName: "stringValue"
+				kindName: "column units"
+			,
+				typeName: "stringValue"
+				kindName: "column type"
+			,
+				typeName: "stringValue"
+				kindName: "hide column"	
+			,
 				typeName: "codeValue"
 				kindName: "agonist batch code"
 			]
@@ -148,8 +169,6 @@
 				typeName: "analysis parameter"
 			,
 				typeName: "experiment metadata"
-			,
-				typeName: "custom experiment metadata"
 			]
 
 		ddictkinds:

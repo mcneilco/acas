@@ -321,84 +321,101 @@
   };
 
   exports.resultViewerURLByExperimentCodename = function(request, resp) {
-    var _, baseurl, config, experimentServiceTestJSON, resultViewerURL;
-    console.log(__dirname);
-    _ = require('../public/src/lib/underscore.js');
+    var experimentServiceTestJSON;
     if ((request.query.testMode === true) || (global.specRunnerTestmode === true)) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
       return resp.end(JSON.stringify(experimentServiceTestJSON.resultViewerURLByExperimentCodeName));
     } else {
-      config = require('../conf/compiled/conf.js');
-      if (config.all.client.service.result && config.all.client.service.result.viewer && (config.all.client.service.result.viewer.experimentPrefix != null) && (config.all.client.service.result.viewer.protocolPrefix != null) && (config.all.client.service.result.viewer.experimentNameColumn != null)) {
-        resultViewerURL = [
-          {
-            resultViewerURL: ""
+      return exports.resultViewerURLFromExperimentCodeName(request.params.code, function(err, res) {
+        if ((err != null) || (res.resultViewerURL == null)) {
+          resp.statusCode = 500;
+          if ((err.error != null) && typeof err.error === 'object') {
+            return resp.json(err.error);
+          } else {
+            return resp.send(err.error);
           }
-        ];
-        serverUtilityFunctions = require('./ServerUtilityFunctions.js');
-        baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + request.params.code;
-        request = require('request');
-        return request({
-          method: 'GET',
-          url: baseurl,
-          json: true
-        }, (function(_this) {
-          return function(error, response, experiment) {
-            if (!error && response.statusCode === 200) {
-              if (experiment.length === 0) {
-                resp.statusCode = 404;
-                return resp.json(resultViewerURL);
-              } else {
-                baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment.protocol.id;
-                request = require('request');
-                return request({
-                  method: 'GET',
-                  url: baseurl,
-                  json: true
-                }, function(error, response, protocol) {
-                  var experimentName, preferredExperimentLabel, preferredExperimentLabelText, preferredProtocolLabel, preferredProtocolLabelText;
-                  if (response.statusCode === 404) {
-                    resp.statusCode = 404;
-                    return resp.json(resultViewerURL);
-                  } else {
-                    if (!error && response.statusCode === 200) {
-                      preferredExperimentLabel = _.filter(experiment.lsLabels, function(lab) {
-                        return lab.preferred && lab.ignored === false;
-                      });
-                      preferredExperimentLabelText = preferredExperimentLabel[0].labelText;
-                      if (config.all.client.service.result.viewer.experimentNameColumn === "EXPERIMENT_NAME") {
-                        experimentName = experiment.codeName + "::" + preferredExperimentLabelText;
-                      } else {
-                        experimentName = preferredExperimentLabelText;
-                      }
-                      preferredProtocolLabel = _.filter(protocol.lsLabels, function(lab) {
-                        return lab.preferred && lab.ignored === false;
-                      });
-                      preferredProtocolLabelText = preferredProtocolLabel[0].labelText;
-                      return resp.json({
-                        resultViewerURL: config.all.client.service.result.viewer.protocolPrefix + encodeURIComponent(preferredProtocolLabelText) + config.all.client.service.result.viewer.experimentPrefix + encodeURIComponent(experimentName)
-                      });
-                    } else {
-                      console.log('got ajax error trying to save new experiment');
-                      console.log(error);
-                      console.log(json);
-                      return console.log(response);
-                    }
-                  }
-                });
-              }
+        } else if (res.resultViewerURL === "") {
+          return resp.status(404).json(res);
+        } else {
+          return resp.json(res);
+        }
+      });
+    }
+  };
+
+  exports.resultViewerURLFromExperimentCodeName = function(codeName, callback) {
+    var _, baseurl, config, request;
+    _ = require('../public/src/lib/underscore.js');
+    config = require('../conf/compiled/conf.js');
+    if (config.all.client.service.result && config.all.client.service.result.viewer && (config.all.client.service.result.viewer.experimentPrefix != null) && (config.all.client.service.result.viewer.protocolPrefix != null) && (config.all.client.service.result.viewer.experimentNameColumn != null)) {
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      baseurl = config.all.client.service.persistence.fullpath + "experiments/codename/" + codeName;
+      request = require('request');
+      return request({
+        method: 'GET',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, experiment) {
+          if (!error && response.statusCode === 200) {
+            if (experiment.length === 0) {
+              return callback(null, {
+                resultViewerURL: ""
+              });
             } else {
-              console.log('got ajax error trying to save new experiment');
-              console.log(error);
-              console.log(json);
-              return console.log(response);
+              baseurl = config.all.client.service.persistence.fullpath + "protocols/" + experiment.protocol.id;
+              request = require('request');
+              return request({
+                method: 'GET',
+                url: baseurl,
+                json: true
+              }, function(error, response, protocol) {
+                var experimentName, preferredExperimentLabel, preferredExperimentLabelText, preferredProtocolLabel, preferredProtocolLabelText;
+                if (response.statusCode === 404) {
+                  return callback(null, {
+                    resultViewerURL: ""
+                  });
+                } else {
+                  if (!error && response.statusCode === 200) {
+                    preferredExperimentLabel = _.filter(experiment.lsLabels, function(lab) {
+                      return lab.preferred && lab.ignored === false;
+                    });
+                    preferredExperimentLabelText = preferredExperimentLabel[0].labelText;
+                    if (config.all.client.service.result.viewer.experimentNameColumn === "EXPERIMENT_NAME") {
+                      experimentName = experiment.codeName + "::" + preferredExperimentLabelText;
+                    } else {
+                      experimentName = preferredExperimentLabelText;
+                    }
+                    preferredProtocolLabel = _.filter(protocol.lsLabels, function(lab) {
+                      return lab.preferred && lab.ignored === false;
+                    });
+                    preferredProtocolLabelText = preferredProtocolLabel[0].labelText;
+                    return callback(null, {
+                      resultViewerURL: config.all.client.service.result.viewer.protocolPrefix + encodeURIComponent(preferredProtocolLabelText) + config.all.client.service.result.viewer.experimentPrefix + encodeURIComponent(experimentName)
+                    });
+                  } else {
+                    console.log(error);
+                    console.log(response);
+                    return callback({
+                      error: 'got error trying to get protocol'
+                    });
+                  }
+                }
+              });
             }
-          };
-        })(this));
-      } else {
-        resp.statusCode = 500;
-        return resp.end("configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist");
-      }
+          } else {
+            console.log(error);
+            console.log(response);
+            return callback({
+              error: 'got error trying to get experiment'
+            });
+          }
+        };
+      })(this));
+    } else {
+      return callback({
+        error: "configuration client.service.result.viewer.protocolPrefix and experimentPrefix and experimentNameColumn must exist"
+      });
     }
   };
 
@@ -420,7 +437,7 @@
     var baseurl, config, experimentServiceTestJSON;
     if (global.specRunnerTestmode) {
       experimentServiceTestJSON = require('../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js');
-      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind));
+      return resp.end(JSON.stringify(experimentServiceTestJSON.experimentValueByStateTypeKindAndValueTypeKind[req.params.stateType][req.params.stateKind][req.params.valueType][req.params.valueKind]));
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "/experiments/" + req.params.idOrCode + "/exptvalues/bystate/" + req.params.stateType + "/" + req.params.stateKind + "/byvalue/" + req.params.valueType + "/" + req.params.valueKind + "/json";

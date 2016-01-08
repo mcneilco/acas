@@ -103,12 +103,25 @@
             </div>
 
             <div class="form-horizontal" style="margin-left:0px;">
-                <div class="control-group bv_group_useTemplate" style="margin-bottom:25px;width:400px;margin-right:0px;">
+                <div class="control-group bv_group_fileDate" style="margin-bottom:25px;margin-right:0px;">
+                    <label class="control-label" style="width:100px;">File Date</label>
+                    <div class="controls" style="margin-left:10px;width:420px;">
+                        <div class="input-append date" id="dp3" data-date="" data-date format="yy-mm-dd">
+                            <input class="bv_fileDate" type="text" value="" placeholder="yyyy-mm-dd" style="width:259px;margin-left:6px;">
+                            <span class="add-on bv_fileDateIcon"><i class="icon-th"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-horizontal" style="margin-left:0px;">
+                <div class="control-group bv_group_useTemplate" style="margin-bottom:25px;margin-right:0px;">
                     <label class="control-label" style="width:100px;">Use Template</label>
                     <div class="controls" style="margin-left:10px;width:420px;">
                         <select class="bv_useTemplate" style="width:300px;margin-left:6px;">
                         </select>
                     </div>
+                    <div class="bv_templateWarning"></div>
                 </div>
             </div>
 

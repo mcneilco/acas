@@ -139,10 +139,14 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		else
 			mappings = @mappings
 
+		if @tempName is "none"
+			templateName = null
+		else
+			templateName = @tempName
 		sdfInfo =
 			fileName: @fileName
 			numRecords: @numRecords
-			templateName: @tempName
+			templateName: templateName
 			mappings: mappings
 			userName: window.AppLaunchParams.loginUser.username
 		$.ajax
@@ -340,6 +344,9 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	events:
 		"change .bv_dbProject": "handleDbProjectChanged"
+		"keyup .bv_fileDate": "handleFileDateChanged"
+		"change .bv_fileDate": "handleFileDateChanged" #have this here too for when you set date using date icon
+		"click .bv_fileDateIcon": "handleFileDateIconClicked"
 		"change .bv_useTemplate": "handleTemplateChanged"
 		"change .bv_saveTemplate": "handleSaveTemplateCheckboxChanged"
 		"keyup .bv_templateName": "handleNameTemplateChanged"
@@ -351,6 +358,13 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@getAndFormatTemplateOptions()
+		if window.conf.cmpdReg.showFileDate
+			@$('.bv_group_fileDate').show()
+			@fileDate = null
+			@$('.bv_fileDate').datepicker();
+			@$('.bv_fileDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
+		else
+			@$('.bv_group_fileDate').hide()
 		if window.conf.cmpdReg.showProjectSelect
 			@setupProjectSelect()
 			@isValid()
@@ -443,6 +457,15 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@isValid()
 		@trigger 'projectChanged', project
 
+	handleFileDateChanged: ->
+		if UtilityFunctions::getTrimmedInput(@$('.bv_fileDate')) is ""
+			@fileDate = null
+		else
+			@fileDate = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_fileDate'))
+		@isValid()
+
+	handleFileDateIconClicked: =>
+		@$( ".bv_fileDate" ).datepicker( "show" )
 
 	handleTemplateChanged: ->
 		templateName = @templateListController.getSelectedCode()
@@ -510,6 +533,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		otherErrors = []
 		if window.conf.cmpdReg.showProjectSelect
 			otherErrors.push @getProjectErrors()...
+		if window.conf.cmpdReg.showFileDate
+			otherErrors.push @getFileDateErrors()...
 		if @assignedPropertiesList?
 			otherErrors.push @assignedPropertiesList.checkDuplicates()...
 			otherErrors.push @assignedPropertiesList.checkSaltProperties()...
@@ -543,6 +568,14 @@ class window.AssignSdfPropertiesController extends Backbone.View
 				if validModel is false
 					validCheck = false
 		validCheck
+
+	getFileDateErrors: ->
+		fileDateErrors = []
+		if _.isNaN(@fileDate) and @fileDate != null
+			fileDateErrors.push
+				attribute: 'fileDate'
+				message: "File date must be a valid date"
+		fileDateErrors
 
 	getTemplateErrors: ->
 		templateErrors = []
@@ -625,6 +658,8 @@ class window.AssignSdfPropertiesController extends Backbone.View
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
 			userName: window.AppLaunchParams.loginUser.username
+		if window.conf.cmpdReg.showFileDate
+			dataToPost.fileDate = @fileDate
 		$.ajax
 			type: 'POST'
 			url: "/api/cmpdRegBulkLoader/registerCmpds"
@@ -681,6 +716,12 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@trigger 'saveComplete', saveSummary
 
 	handleSdfPropertiesDetected: (properties) =>
+		@$('.bv_templateWarning').hide()
+		@$('.bv_templateWarning').html ""
+		for err in properties.errors
+			if err["level"] is "warning"
+				@$('.bv_templateWarning').append '<div class="alert" style="margin-left: 105px;margin-right: 100px;width: 550px;margin-top: 10px;margin-bottom: 0px;">'+err["message"]+'</div>'
+				@$('.bv_templateWarning').show()
 		@assignSdfPropertiesController.createPropertyCollections(properties)
 		@detectSdfPropertiesController.mappings = @assignSdfPropertiesController.assignedPropertiesList
 		@detectSdfPropertiesController.updatePropertiesRead(@assignSdfPropertiesController.sdfPropertiesList, properties.numRecordsRead)
@@ -729,9 +770,14 @@ class window.FileRowSummaryController extends Backbone.View
 		@template = _.template($('#FileRowSummaryView').html())
 
 	render: =>
+		fileDate = @model.get('fileDate')
+		if fileDate is null
+			fileDate = ""
+		else
+			fileDate = UtilityFunctions::convertMSToYMDDate(fileDate)
 		toDisplay =
 			fileName: @model.get('fileName')
-			loadDate: UtilityFunctions::convertMSToYMDDate(@model.get('recordedDate'))
+			loadDate: fileDate
 			loadUser: @model.get('recordedBy')
 		$(@el).html(@template(toDisplay))
 

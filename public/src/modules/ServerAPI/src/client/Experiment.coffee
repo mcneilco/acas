@@ -326,6 +326,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
 		@setupProjectSelect()
 		@setupAttachFileListController()
+		@setupCustomExperimentMetadataController()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -345,9 +346,12 @@ class window.ExperimentBaseController extends BaseEntityController
 		super()
 		if @model.isNew()
 			@$('.bv_experimentName').attr('disabled','disabled')
+			@$('.bv_openInQueryToolWrapper').hide()
 		else
 			@setupExptNameChkbx()
-
+			@$('.bv_openInQueryToolWrapper').show()
+			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 		@
 
 	modelSyncCallback: =>
@@ -426,6 +430,15 @@ class window.ExperimentBaseController extends BaseEntityController
 			el: @$('.bv_tags')
 			collection: @model.get 'lsTags'
 		@tagListController.render()
+
+	setupCustomExperimentMetadataController: ->
+		experimentStates = @model.get('lsStates')
+		customExperimentMetaDataState = experimentStates.getStatesByTypeAndKind "metadata", "custom experiment metadata"
+		if customExperimentMetaDataState.length > 0
+			@customerExperimentMetadataListController = new CustomExperimentMetadataListController
+				el: @$('.bv_custom_experiment_metadata')
+				model: @model
+			@customerExperimentMetadataListController.render()
 
 	setUseProtocolParametersDisabledState: ->
 		if (not @model.isNew()) or (@model.get('protocol') == null) or (@protocolListController.getSelectedCode() == "")
@@ -618,6 +631,6 @@ class window.ExperimentBaseController extends BaseEntityController
 		@saveEntity()
 
 
-#	displayInReadOnlyMode: =>
-#		@$(".bv_save").addClass "hide"
-#		@disableAllInputs()
+	displayInReadOnlyMode: =>
+		super()
+		@$('.bv_openInQueryToolWrapper').hide()

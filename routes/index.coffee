@@ -14,9 +14,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	if config.all.server.enableSpecRunner
 		app.get '/SpecRunner', loginRoutes.ensureAuthenticated, exports.specRunner
 		app.get '/LiveServiceSpecRunner', loginRoutes.ensureAuthenticated, exports.liveServiceSpecRunner
-
+		app.get '/CIExcelCompoundPropertiesAppSpecRunner', loginRoutes.ensureAuthenticated, exports.ciExcelCompoundPropertiesAppSpecRunner
 
 exports.autoLaunchWithCode = (req, res) ->
+	console.log "autoLaunchWithCode"
+	console.log req.params
 	moduleLaunchParams =
 		moduleName: req.params.moduleName
 		code: req.params.code
@@ -92,6 +94,18 @@ exports.specRunner = (req, res) ->
 			testMode: true
 			liveServiceTest: false
 			deployMode: global.deployMode
+	})
+
+exports.ciExcelCompoundPropertiesAppSpecRunner = (req, res) ->
+	"use strict"
+	global.specRunnerTestmode = true
+
+
+	#scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.jasmineScripts, scriptPaths.specScripts)
+	#scriptsToLoad = scriptsToLoad.concat(scriptPaths.applicationScripts)
+
+	res.render('CIExcelCompoundPropertiesAppSpecRunner', {
+		title: 'SeuratAddOns SpecRunner'
 	})
 
 exports.liveServiceSpecRunner = (req, res) ->
