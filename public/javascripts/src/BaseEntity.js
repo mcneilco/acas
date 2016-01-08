@@ -565,7 +565,7 @@
         el: this.$('.bv_attachFileList'),
         collection: attachFileList,
         firstOptionName: "Select Method",
-        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'],
+        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip'],
         fileTypeList: fileTypeList,
         required: false
       });
