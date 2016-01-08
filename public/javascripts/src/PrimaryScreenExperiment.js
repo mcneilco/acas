@@ -1602,7 +1602,8 @@
         return this.setExperimentNotSaved();
       } else {
         this.setExperimentSaved();
-        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        return this.checkForSourceFile();
       }
     };
 
@@ -1846,6 +1847,24 @@
           return _this.trigger('amClean');
         };
       })(this));
+    };
+
+    PrimaryScreenAnalysisController.prototype.checkForSourceFile = function() {
+      var sourceFile, sourceFileValue;
+      console.log("check for source file");
+      sourceFile = this.model.getSourceFile();
+      if (sourceFile != null) {
+        console.log(sourceFile.get('fileValue'));
+        sourceFileValue = sourceFile.get('fileValue');
+        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + sourceFileValue + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
+        return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
+          return function() {
+            _this.dataAnalysisController.parseFileController.render();
+            return _this.dataAnalysisController.handleParseFileRemoved();
+          };
+        })(this));
+      }
     };
 
     return PrimaryScreenAnalysisController;

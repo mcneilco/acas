@@ -1025,7 +1025,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setExperimentSaved()
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
-
+			@checkForSourceFile()
 
 	render: =>
 		@showExistingResults()
@@ -1217,6 +1217,21 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
 #		@showExistingResults()
+
+	checkForSourceFile: ->
+		console.log "check for source file"
+		sourceFile = @model.getSourceFile()
+		if sourceFile?
+			console.log sourceFile.get('fileValue')
+			sourceFileValue = sourceFile.get('fileValue')
+			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+sourceFileValue+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
+			#TODO: should find file name in comments
+			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
+			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
+				@dataAnalysisController.parseFileController.render()
+				@dataAnalysisController.handleParseFileRemoved()
+#			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+@model.get('structural file').get('comments')+'</a></div>'
+#			@dataAnalysisController.parseFileController.lsFileChooser.fileUploadComplete(null,result:[name:sourceFile.get('fileValue')])
 
 
 # This wraps all the tabs
