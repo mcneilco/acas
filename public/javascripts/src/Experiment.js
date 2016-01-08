@@ -312,12 +312,8 @@
             file = this.getSourceFile();
           } else {
             file = this.getSELReportFile();
-            console.log("report file");
-            console.log(file);
           }
           if (file != null) {
-            console.log("fileValue for file from other location");
-            console.log(file.get('fileValue'));
             displayName = file.get('comments');
             if (displayName == null) {
               displayName = file.get('fileValue').split("/");

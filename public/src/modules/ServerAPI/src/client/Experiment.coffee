@@ -202,11 +202,7 @@ class window.Experiment extends BaseEntity
 					file = @getSourceFile()
 				else
 					file = @getSELReportFile()
-					console.log "report file"
-					console.log file
 				if file?
-					console.log "fileValue for file from other location"
-					console.log file.get('fileValue')
 					displayName = file.get('comments')
 					unless displayName? #TODO: delete this once SEL saves file names in the comments
 						displayName = file.get('fileValue').split("/")
