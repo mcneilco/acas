@@ -193,6 +193,20 @@ class window.Experiment extends BaseEntity
 							fileType: type.code
 							fileValue: file.get('fileValue')
 							id: file.get('id')
+							comments: file.get('comments')
+						attachFileList.add afm
+
+			# get files not saved in metadata_experiment metadata state
+			if (type.code is "source file" and @get('lsKind') is "default") or type.code is "annotation file"
+				if type.code is "source file" # TODO: remove this once SEL files are saved in metadata_experiment metadata state
+					file = @getSourceFile()
+				else
+					file = @getSELReportFile()
+					console.log "report file"
+					console.log file
+				if file?
+					console.log "fileValue for file from other location"
+					console.log file.get('fileValue')
 					displayName = file.get('comments')
 					unless displayName? #TODO: delete this once SEL saves file names in the comments
 						displayName = file.get('fileValue').split("/")

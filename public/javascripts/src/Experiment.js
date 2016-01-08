@@ -300,9 +300,24 @@
               afm = new AttachFile({
                 fileType: type.code,
                 fileValue: file.get('fileValue'),
-                id: file.get('id')
+                id: file.get('id'),
+                comments: file.get('comments')
               });
+              attachFileList.add(afm);
             }
+          }
+        }
+        if ((type.code === "source file" && this.get('lsKind') === "default") || type.code === "annotation file") {
+          if (type.code === "source file") {
+            file = this.getSourceFile();
+          } else {
+            file = this.getSELReportFile();
+            console.log("report file");
+            console.log(file);
+          }
+          if (file != null) {
+            console.log("fileValue for file from other location");
+            console.log(file.get('fileValue'));
             displayName = file.get('comments');
             if (displayName == null) {
               displayName = file.get('fileValue').split("/");
