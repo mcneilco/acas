@@ -142,7 +142,7 @@ class window.BasicFileListController extends Backbone.View
 		@collection.each (fileInfo) =>
 			@addBasicFile(fileInfo)
 		if @collection.length == 0
-			@uploadNewBasicFile()
+			@uploadNewFile()
 		@trigger 'renderComplete'
 		@
 

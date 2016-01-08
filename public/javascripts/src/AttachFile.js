@@ -253,7 +253,7 @@
         };
       })(this));
       if (this.collection.length === 0) {
-        this.uploadNewBasicFile();
+        this.uploadNewFile();
       }
       this.trigger('renderComplete');
       return this;
