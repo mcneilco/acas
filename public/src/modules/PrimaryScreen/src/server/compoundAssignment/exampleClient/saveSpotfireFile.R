@@ -48,7 +48,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                                         targetPath = "testSpotfire.txt")
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
-    # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
+    # example: tibcospotfire:server:http\://severName/:analysis:/user/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
     spotfirePrefix <- paste0("tibcospotfire:server:http\\://", 
                              racas::applicationSettings$client.service.spotfire.host,
                              "/:analysis:",
@@ -65,5 +65,5 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                        racas::applicationSettings$client.port, '/dataFiles/', finalLocation)
     fileLink <- paste0(racas::applicationSettings$server.nodeapi.path, '/dataFiles/', finalLocation)
   }
-  return(list(title="Spotfire", link=userLink, fileLink=fileLink, fileText=fileText))
+  return(list(title="Spotfire", link=userLink, fileLink=fileLink, fileText=fileText, download = FALSE))
 }

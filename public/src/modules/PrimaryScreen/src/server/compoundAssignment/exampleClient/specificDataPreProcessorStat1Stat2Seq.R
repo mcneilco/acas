@@ -62,7 +62,23 @@ specificDataPreProcessorStat1Stat2Seq <- function(parameters, folderToParse, err
   return(newInstrumentData)
 }
 
-
+parseSeqFile <- function(fileName) {
+  # Parses a seq file
+  #
+  # Args:
+  #   fileName:   the path to a file
+  #
+  # Returns:
+  #   A data.frame with a column for each well
+  
+  inputData <- read.delim(file=fileName, as.is=TRUE, stringsAsFactors = FALSE)
+  intermediateMatrix <- t(inputData[5:75])
+  outputData <- as.data.frame(intermediateMatrix[1:nrow(intermediateMatrix)>1,], stringsAsFactors = FALSE)
+  names(outputData) <- normalizeWellNames(intermediateMatrix[1,])
+  outputData[] <- lapply(outputData, as.numeric)
+  
+  return(outputData)
+}
 combineFiles <- function(fileSet) {
   # Takes a set of stat1, stat2, and seq files and merges them
   #

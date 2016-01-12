@@ -32,6 +32,12 @@
         }, {
           typeName: "metadata",
           kindName: "report locations"
+        }, {
+          typeName: "metadata",
+          kindName: "custom experiment metadata"
+        }, {
+          typeName: "metadata",
+          kindName: "custom experiment metadata gui"
         }
       ],
       valuetypes: [
@@ -116,7 +122,22 @@
           kindName: "GUI descriptor"
         }, {
           typeName: "numericValue",
-          kindName: "agonist concentration"
+          kindName: "column order"
+        }, {
+          typeName: "stringValue",
+          kindName: "column name"
+        }, {
+          typeName: "stringValue",
+          kindName: "column units"
+        }, {
+          typeName: "stringValue",
+          kindName: "column type"
+        }, {
+          typeName: "stringValue",
+          kindName: "hide column"
+        }, {
+          typeName: "codeValue",
+          kindName: "agonist batch code"
         }
       ],
       labeltypes: [
@@ -402,6 +423,34 @@
           codeOrigin: "ACAS DDICT",
           code: "percent efficacy",
           name: "% efficacy",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "none",
+          name: "None",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "noAgonist",
+          name: "Without Agonist",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "enhancement",
+          name: "Enhancement: value - (noAgonist + NC)",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "enhancementRatio",
+          name: "Enhancement Ratio: value / (noAgonist + NC)",
           ignored: false
         }, {
           codeType: "experiment metadata",
