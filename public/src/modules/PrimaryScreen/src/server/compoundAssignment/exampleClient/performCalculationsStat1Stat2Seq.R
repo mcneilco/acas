@@ -1,5 +1,4 @@
 performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrumentData=instrumentData) {
-  resultTable[ , activity := computeActivity(resultTable, parameters$transformationRule)]
   
   # This assumes that there is only one normalization rule passed through the GUI
   resultTable <- normalizeData(resultTable, parameters$normalizationRule)
@@ -110,33 +109,33 @@ normalizeData <- function(resultTable, normalization) {
   return(resultTable)
 }
 
-computeNormalized  <- function(values, wellType, flag) {
-  # Computes normalized version of the given values based on the unflagged positive and 
-  # negative controls
-  #
-  # Args:
-  #   values:   A vector of numeric values
-  #   wellType: A vector of the same length as values which marks the type of each
-  #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
-  # Returns:
-  #   A numeric vector of the same length as the inputs that is normalized.
-  
-  if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
-             were flagged, so normalization cannot proceed.")
-  }
-  if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
-             were flagged, so normalization cannot proceed.")
-  }
-  
-  #find min (mean of unflagged Negative Controls)
-  minLevel <- mean(values[(wellType=='NC' & is.na(flag))])
-  #find max (mean of unflagged Positive Controls)
-  maxLevel <- mean(values[(wellType=='PC' & is.na(flag))])
-  
-  return((values - minLevel) / (maxLevel - minLevel))
-}
+# computeNormalized  <- function(values, wellType, flag) {
+#   # Computes normalized version of the given values based on the unflagged positive and 
+#   # negative controls
+#   #
+#   # Args:
+#   #   values:   A vector of numeric values
+#   #   wellType: A vector of the same length as values which marks the type of each
+#   #   flag:     A vector of the same length as values, with text if the well was flagged, and NA otherwise
+#   # Returns:
+#   #   A numeric vector of the same length as the inputs that is normalized.
+#   
+#   if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
+#     stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
+#              were flagged, so normalization cannot proceed.")
+#   }
+#   if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
+#     stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
+#              were flagged, so normalization cannot proceed.")
+#   }
+#   
+#   #find min (mean of unflagged Negative Controls)
+#   minLevel <- mean(values[(wellType=='NC' & is.na(flag))])
+#   #find max (mean of unflagged Positive Controls)
+#   maxLevel <- mean(values[(wellType=='PC' & is.na(flag))])
+#   
+#   return((values - minLevel) / (maxLevel - minLevel))
+# }
 
 computeZ <- function(positiveControls, testCompounds) {
   # Computes Z (by using the Z Prime function, but with test compounds as negative controls)
@@ -161,66 +160,66 @@ computeRobustZ <- function(positiveControls, testCompounds) {
   return(computeRobustZPrime(positiveControls, testCompounds))
 }
 
-computeZPrimeByPlate <- function(mainData) {
-  # creates a vector called
-  positiveControls <- mainData[wellType == "PC" & is.na(flag)]$normalizedActivity
-  negativeControls <- mainData[wellType == "NC" & is.na(flag)]$normalizedActivity
-  
-  return(computeZPrime(positiveControls, negativeControls))
-}
+# computeZPrimeByPlate <- function(mainData) {
+#   # creates a vector called
+#   positiveControls <- mainData[wellType == "PC" & is.na(flag)]$normalizedActivity
+#   negativeControls <- mainData[wellType == "NC" & is.na(flag)]$normalizedActivity
+#   
+#   return(computeZPrime(positiveControls, negativeControls))
+# }
+# 
+# computeRawZPrimeByPlate <- function(mainData) {
+#   positiveControls <- mainData[wellType == "PC" & is.na(flag)]$activity
+#   negativeControls <- mainData[wellType == "NC" & is.na(flag)]$activity
+#   
+#   return(computeZPrime(positiveControls, negativeControls))
+# }
 
-computeRawZPrimeByPlate <- function(mainData) {
-  positiveControls <- mainData[wellType == "PC" & is.na(flag)]$activity
-  negativeControls <- mainData[wellType == "NC" & is.na(flag)]$activity
-  
-  return(computeZPrime(positiveControls, negativeControls))
-}
-
-computeTransformedResults <- function(mainData, transformation, parameters) { 
-  # mainData is a data.table, columns include wellType, normalizedActivity, ...
-  #TODO switch on transformation
-  if (transformation == "percent efficacy") {
-    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
-    
-    # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
-    } else {
-      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
-    }
-    return(
-      (1
-       - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
-       /(aggregateVehControl-aggregatePosControl)) * 100)
-  } else if (transformation == "sd") {
-    
-    # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
-    } else {
-      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
-    }
-    
-    # Use Negative Control if Vehicle Control is not defined
-    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-      stdevVehControl <- sd(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
-    } else {
-      stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
-    }
-    
-    # Determine if signal direction is decreasing or increasing
-    if (parameters$signalDirectionRule == "increasing") {
-      return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
-    } else if (parameters$signalDirectionRule == "decreasing") {
-      return(-(as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
-    } else {
-      stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
-    }
-    
-  } else if (transformation == "null" || transformation == "" || transformation =="none") {
-    warnUser("No transformation applied to activity.")
-    return(mainData$normalizedActivity)
-  } else {
-    stopUser("Transformation not defined in system.")
-  }  
-}
+# computeTransformedResults <- function(mainData, transformation, parameters) { 
+#   # mainData is a data.table, columns include wellType, normalizedActivity, ...
+#   #TODO switch on transformation
+#   if (transformation == "percent efficacy") {
+#     aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
+#     
+#     # Use Negative Control if Vehicle Control is not defined
+#     if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+#       aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
+#     } else {
+#       aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
+#     }
+#     return(
+#       (1
+#        - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
+#        /(aggregateVehControl-aggregatePosControl)) * 100)
+#   } else if (transformation == "sd") {
+#     
+#     # Use Negative Control if Vehicle Control is not defined
+#     if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+#       aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
+#     } else {
+#       aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
+#     }
+#     
+#     # Use Negative Control if Vehicle Control is not defined
+#     if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+#       stdevVehControl <- sd(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
+#     } else {
+#       stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
+#     }
+#     
+#     # Determine if signal direction is decreasing or increasing
+#     if (parameters$signalDirectionRule == "increasing") {
+#       return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+#     } else if (parameters$signalDirectionRule == "decreasing") {
+#       return(-(as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
+#     } else {
+#       stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
+#     }
+#     
+#   } else if (transformation == "null" || transformation == "" || transformation =="none") {
+#     warnUser("No transformation applied to activity.")
+#     return(mainData$normalizedActivity)
+#   } else {
+#     stopUser("Transformation not defined in system.")
+#   }  
+# }

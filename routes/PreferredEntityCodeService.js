@@ -94,8 +94,9 @@
 
   exports.referenceCodes = function(requestData, csv, callback) {
     var csUtilities, entityType, preferredThingService, reqHashes, reqList;
-    console.log(global.specRunnerTestmode);
+    console.log("stubs mode is: " + global.specRunnerTestmode);
     console.log("csv is " + csv);
+    console.log("requestData.displayName is " + requestData.displayName);
     exports.getSpecificEntityType(requestData.displayName, function(json) {
       requestData.type = json.type;
       requestData.kind = json.kind;
@@ -124,7 +125,8 @@
       });
     } else {
       entityType = configuredEntityTypes.entityTypes[requestData.displayName];
-      if (entityType.codeOrigin === "ACAS LSThing") {
+      console.log(entityType);
+      if (entityType.codeOrigin === "ACAS LsThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
           thingType: entityType.type,
@@ -210,7 +212,7 @@
       });
     } else {
       entityType = configuredEntityTypes.entityTypes[requestData.displayName];
-      if (entityType.codeOrigin === "ACAS LSThing") {
+      if (entityType.codeOrigin === "ACAS LsThing") {
         preferredThingService = require("./ThingServiceRoutes.js");
         reqHashes = {
           thingType: entityType.type,
@@ -282,7 +284,7 @@
       entity = ref[i];
       console.log("searching for entity: " + entity.displayName);
       entitySearchData = {
-        displayName: entity.displayName,
+        displayName: entity.name,
         requests: [
           {
             requestName: requestData.requestText

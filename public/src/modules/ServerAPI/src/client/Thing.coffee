@@ -39,6 +39,17 @@ class window.Thing extends Backbone.Model
 						resp.lsStates = new StateList(resp.lsStates)
 					resp.lsStates.on 'change', =>
 						@trigger 'change'
+
+				if resp.firstLsThings?
+					if resp.firstLsThings not instanceof FirstLsThingItxList
+						resp.firstLsThings = new FirstLsThingItxList(resp.firstLsThings)
+					resp.firstLsThings.on 'change', =>
+						@trigger 'change'
+				if resp.secondLsThings?
+					if resp.secondLsThings not instanceof SecondLsThingItxList
+						resp.secondLsThings = new SecondLsThingItxList(resp.secondLsThings)
+					resp.secondLsThings.on 'change', =>
+						@trigger 'change'
 				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
@@ -119,8 +130,8 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultSecondLsThingItx?
 			for itx in @lsProperties.defaultSecondLsThingItx
-					thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
-					@set itx.key, thingItx
+				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+				@set itx.key, thingItx
 
 	getAnalyticalFiles: (fileTypes) =>
 		#get list of possible kinds of analytical files

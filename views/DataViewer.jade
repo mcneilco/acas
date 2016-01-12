@@ -1,0 +1,25 @@
+extends layout
+block content
+    div#appContainer
+
+
+    script
+        window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
+        $(function() {
+            var currentWindowOnload = window.onload;
+            window.onload = function() {
+                if (currentWindowOnload) {
+                    currentWindowOnload();
+                }
+                //window.Todos = new TodoList()
+                //window.app = new app.AppView()
+                // random initialization js goes here
+                // App = new app.AppView
+                window.servicesHostPrefix = "";
+                //TODO
+                window.appController = new DataViewerAppController({
+                                el: $('#appContainer')
+                            });
+                window.appController.render();
+            };
+        });

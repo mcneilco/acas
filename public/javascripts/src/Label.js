@@ -322,6 +322,31 @@
       });
     };
 
+    State.prototype.getOrCreateValueByTypeAndKind = function(vType, vKind) {
+      var descVal, descVals;
+      descVals = this.getValuesByTypeAndKind(vType, vKind);
+      descVal = descVals[0];
+      if (descVal == null) {
+        descVal = this.createValueByTypeAndKind(vType, vKind);
+      }
+      return descVal;
+    };
+
+    State.prototype.createValueByTypeAndKind = function(vType, vKind) {
+      var descVal;
+      descVal = new Value({
+        lsType: vType,
+        lsKind: vKind
+      });
+      this.get('lsValues').add(descVal);
+      descVal.on('change', (function(_this) {
+        return function() {
+          return _this.trigger('change');
+        };
+      })(this));
+      return descVal;
+    };
+
     return State;
 
   })(Backbone.Model);

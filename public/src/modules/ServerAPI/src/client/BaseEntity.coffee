@@ -198,10 +198,11 @@ class window.BaseEntity extends Backbone.Model
 			copiedValues = new ValueList()
 			origValues = st.get('lsValues')
 			origValues.each (sv) ->
-				copiedVal = new Value(sv.attributes)
-				copiedVal.unset 'id'
-				copiedVal.unset 'lsTransaction'
-				copiedValues.add(copiedVal)
+				unless sv.attributes.lsType == 'fileValue'
+					copiedVal = new Value(sv.attributes)
+					copiedVal.unset 'id'
+					copiedVal.unset 'lsTransaction'
+					copiedValues.add(copiedVal)
 			copiedState.set lsValues: copiedValues
 			copiedStates.add(copiedState)
 		copiedEntity.set

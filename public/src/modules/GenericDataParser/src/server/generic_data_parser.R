@@ -310,22 +310,24 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
       lsType = lsType,
       lsKind = lsKind
     )
+    uValue <- userValue
     if(lsType == "codeValue") {
+      uValue <- tolower(uValue)
       stateValueList[["codeKind"]] <- lsKind
       stateValueList[["codeType"]] <- customExperimentMetaDataDdictType
       stateValueList[["codeOrigin"]] <- "ACAS DDICT"
     }
 
-    if(is.na(userValue)) {
+    if(is.na(uValue)) {
       stateValueList[[lsType]] <- NULL
     } else {
       stateValueList[[lsType]] <- switch(lsType,
-                                         "numericValue" = validateNumeric(userValue),
-                                         "dateValue" = validateDate(userValue),
-                                         "stringValue" = validateCharacter(userValue),
-                                         "codeValue" = userValue,
-                                         "clobValue" = userValue,
-                                         "urlValue" = userValue
+                                         "numericValue" = validateNumeric(uValue),
+                                         "dateValue" = validateDate(uValue),
+                                         "stringValue" = validateCharacter(uValue),
+                                         "codeValue" = uValue,
+                                         "clobValue" = uValue,
+                                         "urlValue" = uValue
       )
     }
 
@@ -1598,7 +1600,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
 }
 getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
-  preferredName <- protocol$lsLabels[vapply(protocol$lsLabels, getElement, c(TRUE), "preferred")][[1]]$labelText
+  preferredName <- pickBestName(protocol)$labelText
   if (!is.null(protocolName) && preferredName != protocolName) {
     warnUser(paste0("The protocol name that you entered, '", protocolName, 
                    "', was replaced by the preferred name '", preferredName, "'"))
@@ -1958,7 +1960,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(subjectData$batchCode)
+    batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -2413,7 +2415,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(analysisGroupData$batchCode)
+    batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -2748,10 +2750,13 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
     if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experimentName)
     }
-    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
+    viewerLink <- paste0("http://", racas::applicationSettings$client.host, ":", 
+                         racas::applicationSettings$client.port, 
+                         "/openExptInQueryTool?experiment=", URLencode(experiment$codeName, reserved=TRUE))
+#     viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+#                          URLencode(protocolName, reserved=TRUE), 
+#                          racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+#                          URLencode(experimentName, reserved=TRUE))
   } else {
     viewerLink <- NULL
   }

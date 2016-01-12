@@ -4,36 +4,36 @@
 ## 
 
 passwordPrompt <- function(auth_user, appName = "") {
-    cat(paste0(appName, " password for ",auth_user,": "))
-    system("stty -echo")
-    password <- readLines(con="stdin", 1)
-    system("stty echo")
-    cat("\n")
-    return(password)
+  cat(paste0(appName, " password for ",auth_user,": "))
+  system("stty -echo")
+  password <- readLines(con="stdin", 1)
+  system("stty echo")
+  cat("\n")
+  return(password)
 }
 userPrompt <- function(userTypeName = "user", appName = "") {
-    cat(paste0(appName," ", userTypeName,": "))
-    username <- readLines(con="stdin", 1)
-    cat("\n")
-    return(username)
+  cat(paste0(appName," ", userTypeName,": "))
+  username <- readLines(con="stdin", 1)
+  cat("\n")
+  return(username)
 }
 if(!interactive()) {
-	args <- commandArgs(TRUE)
-	if(length(args) < 2 | length(args) > 3) {
-	  cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
-	  quit("no")
-	} else {
-	  ref <- args[1]
-	  auth_user <- args[2]
-	  password <- args[3]
-	  if(is.na(password)) {
-		password <- passwordPrompt(auth_user, "bitbucket")
-	  }
-	}
+  args <- commandArgs(TRUE)
+  if(length(args) < 2 | length(args) > 3) {
+    cat("Usage: Rscript install.R ref auth_user password (Ex. Rscript install.R master mcneilco mcneilco_pass)\n")
+    quit("no")
+  } else {
+    ref <- args[1]
+    auth_user <- args[2]
+    password <- args[3]
+    if(is.na(password)) {
+      password <- passwordPrompt(auth_user, "bitbucket")
+    }
+  }
 } else {
-	ref <- userPrompt("branch","bitbucket")
-	auth_user <- userPrompt("username","bitbucket")
-	password <- passwordPrompt(auth_user,"bitbucket")
+  ref <- userPrompt("branch","bitbucket")
+  auth_user <- userPrompt("username","bitbucket")
+  password <- passwordPrompt(auth_user,"bitbucket")
 }
 
 #Setting common lib path items to make sure we are always hitting the correct lib directory
@@ -48,34 +48,21 @@ Sys.setenv(R_LIBS=rLibs)
 repos <- "http://cran.rstudio.com/"
 options(repos = "http://cran.rstudio.com/")
 
-
-#Package Installs
-if(!'devtools' %in% row.names(installed.packages(lib.loc = rLibs))){
-  install.packages('devtools', lib = rLibs, repos = repos)
-}
-library(devtools, lib.loc = rLibs)
-#Need to load methods because of a bug in dev tools can remove when bug is fixed
-if(!'methods' %in% row.names(installed.packages(lib.loc = rLibs))){
-  install.packages('methods', lib = rLibs, repos = repos)
-}
-library(methods, lib.loc = rLibs)
-
-
 tryBitbucket <- function(ref, auth_user, password, repo = "racas", username = "mcneilco", attempts = 3) {
-	for(i in 1:attempts) {
-		outcome <- try(install_bitbucket(repo = "racas", username = "mcneilco", ref = ref, auth_user = auth_user, password = password))
-		if(class(outcome) == "try-error") {
-			passwordFailed <- grepl("Maximum.*redirects followed",outcome[1])
-			if(passwordFailed & i < attempts) {
-				auth_user <- userPrompt("username", "bitbucket")
-				password <- passwordPrompt(auth_user,"bitbucket")
-			} else {
-				stop(outcome)
-			}
-		} else {
-			break
-		}
-	}
+  url <- paste0("https://bitbucket.org/",username,"/",repo,"/get/",ref,".tar.gz")
+  user <- paste0(auth_user,":",password)
+  originalWD <- getwd()
+  on.exit(setwd(originalWD))
+  tempracasdir <- tempfile()
+  dir.create(tempracasdir)
+  setwd(tempracasdir)
+  system(paste0("curl --user ",user, " ", url," | tar xvz --strip-components=1"))
+  source("./R/installation.R", local = TRUE)
+  setwd(originalWD)
+  temprepodir <- tempfile()
+  dir.create(temprepodir)
+  makeRepo(path=temprepodir, description = file.path(tempracasdir,"DESCRIPTION"), racasPath = tempracasdir)
+  install.packages("racas", repos= paste0("file://",temprepodir), type = 'source')
 }
 tryBitbucket(ref = ref, auth_user = auth_user, password = password, attempts = 3, repo = "racas", username = "mcneilco")
 

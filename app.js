@@ -3,6 +3,8 @@
 
   global.logger = require("./routes/Logger");
 
+  require('./src/ConsoleLogWinstonOverride');
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
@@ -71,64 +73,78 @@
     indexRoutes = require('./routes/index.js');
     indexRoutes.setupRoutes(app, loginRoutes);
 
-  	routeSet_1 = require("./routes/BaseEntityServiceRoutes.js");
+  	routeSet_1 = require("./routes/AdminPanelRoutes.js");
 	routeSet_1.setupRoutes(app, loginRoutes);
-	routeSet_2 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
+	routeSet_2 = require("./routes/BaseEntityServiceRoutes.js");
 	routeSet_2.setupRoutes(app, loginRoutes);
-	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
+	routeSet_3 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
 	routeSet_3.setupRoutes(app, loginRoutes);
-	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
+	routeSet_4 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	routeSet_4.setupRoutes(app, loginRoutes);
-	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
+	routeSet_5 = require("./routes/CIExcelCompoundPropertiesApp.js");
 	routeSet_5.setupRoutes(app, loginRoutes);
-	routeSet_6 = require("./routes/ControllerRedirectRoutes.js");
+	routeSet_6 = require("./routes/CmpdRegBulkLoaderRoutes.js");
 	routeSet_6.setupRoutes(app, loginRoutes);
-	routeSet_7 = require("./routes/CurveCuratorRoutes.js");
+	routeSet_7 = require("./routes/CodeTableServiceRoutes.js");
 	routeSet_7.setupRoutes(app, loginRoutes);
-	routeSet_8 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_8 = require("./routes/ControllerRedirectRoutes.js");
 	routeSet_8.setupRoutes(app, loginRoutes);
-	routeSet_9 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_9 = require("./routes/CreateLiveDesignLiveReportForACAS.js");
 	routeSet_9.setupRoutes(app, loginRoutes);
-	routeSet_10 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_10 = require("./routes/CronScriptRunnerRoutes.js");
 	routeSet_10.setupRoutes(app, loginRoutes);
-	routeSet_11 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_11 = require("./routes/CurveCuratorRoutes.js");
 	routeSet_11.setupRoutes(app, loginRoutes);
-	routeSet_12 = require("./routes/FileServices.js");
+	routeSet_12 = require("./routes/DataViewerRoutes.js");
 	routeSet_12.setupRoutes(app, loginRoutes);
-	routeSet_13 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_13 = require("./routes/DocForBatchesRoutes.js");
 	routeSet_13.setupRoutes(app, loginRoutes);
-	routeSet_14 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_14 = require("./routes/DoseResponseFitRoutes.js");
 	routeSet_14.setupRoutes(app, loginRoutes);
-	routeSet_15 = require("./routes/LabelServiceRoutes.js");
+	routeSet_15 = require("./routes/ExcelCompundInfoAppRoutes.js");
 	routeSet_15.setupRoutes(app, loginRoutes);
-	routeSet_16 = require("./routes/Logger.js");
+	routeSet_16 = require("./routes/ExperimentBrowserRoutes.js");
 	routeSet_16.setupRoutes(app, loginRoutes);
-	routeSet_17 = require("./routes/LoggingRoutes.js");
+	routeSet_17 = require("./routes/ExperimentServiceRoutes.js");
 	routeSet_17.setupRoutes(app, loginRoutes);
-	routeSet_18 = require("./routes/PreferredBatchIdService.js");
+	routeSet_18 = require("./routes/FileServices.js");
 	routeSet_18.setupRoutes(app, loginRoutes);
-	routeSet_19 = require("./routes/PreferredEntityCodeService.js");
+	routeSet_19 = require("./routes/GenericDataParserRoutes.js");
 	routeSet_19.setupRoutes(app, loginRoutes);
-	routeSet_20 = require("./routes/PrimaryScreenProtocolRoutes.js");
+	routeSet_20 = require("./routes/LabelServiceRoutes.js");
 	routeSet_20.setupRoutes(app, loginRoutes);
-	routeSet_21 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_21 = require("./routes/Logger.js");
 	routeSet_21.setupRoutes(app, loginRoutes);
-	routeSet_22 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_22 = require("./routes/LoggingRoutes.js");
 	routeSet_22.setupRoutes(app, loginRoutes);
-	routeSet_23 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_23 = require("./routes/OpenExptWithQueryTool.js");
 	routeSet_23.setupRoutes(app, loginRoutes);
-	routeSet_24 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_24 = require("./routes/PreferredBatchIdService.js");
 	routeSet_24.setupRoutes(app, loginRoutes);
-	routeSet_25 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_25 = require("./routes/PreferredEntityCodeService.js");
 	routeSet_25.setupRoutes(app, loginRoutes);
-	routeSet_26 = require("./routes/SetupRoutes.js");
+	routeSet_26 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	routeSet_26.setupRoutes(app, loginRoutes);
-	routeSet_27 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_27 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_27.setupRoutes(app, loginRoutes);
-	routeSet_28 = require("./routes/ThingServiceRoutes.js");
+	routeSet_28 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_28.setupRoutes(app, loginRoutes);
-	routeSet_29 = require("./routes/ValidateCloneNameService.js");
+	routeSet_29 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_29.setupRoutes(app, loginRoutes);
+	routeSet_30 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_30.setupRoutes(app, loginRoutes);
+	routeSet_31 = require("./routes/SarRenderingServiceRoutes.js");
+	routeSet_31.setupRoutes(app, loginRoutes);
+	routeSet_32 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_32.setupRoutes(app, loginRoutes);
+	routeSet_33 = require("./routes/SetupRoutes.js");
+	routeSet_33.setupRoutes(app, loginRoutes);
+	routeSet_34 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_34.setupRoutes(app, loginRoutes);
+	routeSet_35 = require("./routes/ThingServiceRoutes.js");
+	routeSet_35.setupRoutes(app, loginRoutes);
+	routeSet_36 = require("./routes/ValidateCloneNameService.js");
+	routeSet_36.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {
@@ -154,7 +170,8 @@
     child = new forever.Monitor("app_api.js", {
       max: 3,
       silent: false,
-      options: options
+      options: options,
+      args: ['--color']
     });
     child.on("exit", function() {
       return console.log("app_api.js has exited after 3 restarts");

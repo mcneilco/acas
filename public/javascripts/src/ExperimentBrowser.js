@@ -420,6 +420,7 @@
     function ExperimentBrowserController() {
       this.render = bind(this.render, this);
       this.destroyExperimentSummaryTable = bind(this.destroyExperimentSummaryTable, this);
+      this.handleOpenInQueryToolClicked = bind(this.handleOpenInQueryToolClicked, this);
       this.handleDuplicateExperimentClicked = bind(this.handleDuplicateExperimentClicked, this);
       this.handleEditExperimentClicked = bind(this.handleEditExperimentClicked, this);
       this.handleCancelDeleteClicked = bind(this.handleCancelDeleteClicked, this);
@@ -437,7 +438,8 @@
       "click .bv_editExperiment": "handleEditExperimentClicked",
       "click .bv_duplicateExperiment": "handleDuplicateExperimentClicked",
       "click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked",
-      "click .bv_cancelDelete": "handleCancelDeleteClicked"
+      "click .bv_cancelDelete": "handleCancelDeleteClicked",
+      "click .bv_openInQueryTool": "handleOpenInQueryToolClicked"
     };
 
     ExperimentBrowserController.prototype.initialize = function() {
@@ -453,7 +455,8 @@
         includeDuplicateAndEdit: this.includeDuplicateAndEdit
       });
       this.searchController.render();
-      return this.searchController.on("searchReturned", this.setupExperimentSummaryTable);
+      this.searchController.on("searchReturned", this.setupExperimentSummaryTable);
+      return this.$('.bv_queryToolDisplayName').html(window.conf.service.result.viewer.displayName);
     };
 
     ExperimentBrowserController.prototype.setupExperimentSummaryTable = function(experiments) {
@@ -557,6 +560,10 @@
       } else {
         return window.open("/entity/copy/experiment_base/" + (this.experimentController.model.get("codeName")), '_blank');
       }
+    };
+
+    ExperimentBrowserController.prototype.handleOpenInQueryToolClicked = function() {
+      return window.open("/openExptInQueryTool?experiment=" + (this.experimentController.model.get("codeName")), '_blank');
     };
 
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {

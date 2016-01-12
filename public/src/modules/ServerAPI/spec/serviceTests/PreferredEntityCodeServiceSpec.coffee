@@ -953,6 +953,5 @@ arrayContains = (array, key, value) ->
 
 	return false
 
-
 #TODO real implementation of getThingCodesFormNamesOrCodes
 #TODO test in live mode for compounds batch, compound parent, and lsthing protein

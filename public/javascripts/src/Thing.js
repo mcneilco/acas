@@ -93,6 +93,26 @@
               };
             })(this));
           }
+          if (resp.firstLsThings != null) {
+            if (!(resp.firstLsThings instanceof FirstLsThingItxList)) {
+              resp.firstLsThings = new FirstLsThingItxList(resp.firstLsThings);
+            }
+            resp.firstLsThings.on('change', (function(_this) {
+              return function() {
+                return _this.trigger('change');
+              };
+            })(this));
+          }
+          if (resp.secondLsThings != null) {
+            if (!(resp.secondLsThings instanceof SecondLsThingItxList)) {
+              resp.secondLsThings = new SecondLsThingItxList(resp.secondLsThings);
+            }
+            resp.secondLsThings.on('change', (function(_this) {
+              return function() {
+                return _this.trigger('change');
+              };
+            })(this));
+          }
           this.set(resp);
           this.createDefaultLabels();
           this.createDefaultStates();

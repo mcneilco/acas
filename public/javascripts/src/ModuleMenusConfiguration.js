@@ -5,33 +5,37 @@
       menuName: "Load Data"
     }, {
       isHeader: false,
-      menuName: "Load Experiment",
+      menuName: "Experiment Loader",
       mainControllerClassName: "GenericDataParserController",
       autoLaunchName: "generic_data_parser"
     }, {
       isHeader: false,
-      menuName: "Dose-Response Fit",
+      menuName: "Dose Response",
       mainControllerClassName: "DoseResponseFitWorkflowController"
     }, {
       isHeader: false,
-      menuName: "Protocol Base",
-      mainControllerClassName: "ProtocolBaseController",
-      autoLaunchName: "protocol_base"
-    }, {
-      isHeader: false,
-      menuName: "Primary Screen Protocol",
+      menuName: "Plate Analysis Protocol Editor",
       mainControllerClassName: "PrimaryScreenProtocolModuleController",
       autoLaunchName: "primary_screen_protocol"
     }, {
       isHeader: false,
-      menuName: "Experiment Base",
+      menuName: "Plate Analysis Experiment Editor",
+      mainControllerClassName: "PrimaryScreenExperimentController",
+      autoLaunchName: "primary_screen_experiment"
+    }, {
+      isHeader: false,
+      menuName: "Protocol Editor",
+      mainControllerClassName: "ProtocolBaseController",
+      autoLaunchName: "protocol_base"
+    }, {
+      isHeader: false,
+      menuName: "Experiment Editor",
       mainControllerClassName: "ExperimentBaseController",
       autoLaunchName: "experiment_base"
     }, {
       isHeader: false,
-      menuName: "Primary Screen Experiment",
-      mainControllerClassName: "PrimaryScreenExperimentController",
-      autoLaunchName: "primary_screen_experiment"
+      menuName: "Data Viewer",
+      autoLaunchName: "dataViewer"
     }, {
       isHeader: false,
       menuName: "Example Thing",
@@ -62,6 +66,11 @@
     }, {
       isHeader: true,
       menuName: "Admin"
+    }, {
+      isHeader: false,
+      menuName: "Admin Panel",
+      mainControllerClassName: "AdminPanelController",
+      autoLaunchName: "admin_panel"
     }, {
       isHeader: false,
       menuName: "Logging",

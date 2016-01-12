@@ -19,7 +19,7 @@
     'Protein Parent': {
       type: 'parent',
       kind: 'protein',
-      codeOrigin: 'ACAS LSThing',
+      codeOrigin: 'ACAS LsThing',
       displayName: 'Protein Parent',
       sourceExternal: false,
       parent: true
@@ -27,7 +27,7 @@
     'Protein Batch': {
       type: 'batch',
       kind: 'protein',
-      codeOrigin: 'ACAS LSThing',
+      codeOrigin: 'ACAS LsThing',
       displayName: 'Protein Batch',
       sourceExternal: false,
       parent: false
@@ -35,7 +35,7 @@
     'Gene ID': {
       type: 'gene',
       kind: 'entrez gene',
-      codeOrigin: 'ACAS LSThing',
+      codeOrigin: 'ACAS LsThing',
       displayName: 'Gene ID',
       sourceExternal: false,
       parent: false

@@ -40,7 +40,19 @@
 # file.copy("/Users/smeyer/Documents/clients/XXX/Specific Data Processor/ArchiveNonTest.zip", "privateUploads/")
 # request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"XXX001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"XXX000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
-source("public/src/conf/customFunctions.R")
+
+source("public/src/conf/customFunctions.R", local=TRUE)
+# TODO: Test structure, probably removing this folder eventually
+clientName <- "exampleClient"
+# END: Test structure
+
+# Source the client specific compound assignment functions
+compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment",
+                                        clientName)
+compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE, pattern = "*.R$")
+for (sourceFile in compoundAssignmentFileList) { # Cannot use lapply because then "local" is inside lapply
+  source(sourceFile, local=TRUE)
+}
 
 # inputParameters$timeWindowList <- list(
 #   list(windowName = "T1", statistic="max", windowStart=15, windowEnd=30, windowUnit = "s"),
@@ -274,7 +286,7 @@ computeZPrime <- function(positiveControls, negativeControls) {
 }
 
 createPlots <- function(resultTable, parameters){
-  source("primaryAnalysisPlots.R")
+  source("primaryAnalysisPlots.R", local = TRUE)
   require('tools')
   
   #don't lose old parameters
@@ -1012,23 +1024,7 @@ validateFlaggingStage <- function(validatedFlagData, flaggingStage, experiment) 
 
 
 
-parseSeqFile <- function(fileName) {
-  # Parses a seq file
-  #
-  # Args:
-  #   fileName:   the path to a file
-  #
-  # Returns:
-  #   A data.frame with a column for each well
-  
-  inputData <- read.delim(file=fileName, as.is=TRUE, stringsAsFactors = FALSE)
-  intermediateMatrix <- t(inputData[5:75])
-  outputData <- as.data.frame(intermediateMatrix[1:nrow(intermediateMatrix)>1,], stringsAsFactors = FALSE)
-  names(outputData) <- normalizeWellNames(intermediateMatrix[1,])
-  outputData[] <- lapply(outputData, as.numeric)
-  
-  return(outputData)
-}
+
 parseAnalysisFlagFile <- function(flaggedWells, resultTable) {
   # Turns a csv or Excel file into a table of analysis group level flag information
   #
@@ -1711,15 +1707,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-  # TODO: Test structure
-  clientName <- "exampleClient"
-  # END: Test structure
-  
-  # Source the client specific compound assignment functions
-  compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment/",
-                                          clientName)
-  compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE)
-  lapply(compoundAssignmentFileList, source)
   
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
@@ -1823,7 +1810,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     # this also performs any calculations from the GUI
-    source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R") 
+    source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE) 
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
@@ -1878,17 +1865,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable <- resultTable[!is.na(batchCode) & batchCode != "::"]
   
   # was "across plates"
-  groupBy <- switch(parameters$aggregateBy,
-                    "entire assay" = c("batchCode", "wellType"),
-                    "cmpd plate" = c("batchCode", "wellType", "cmpdBarcode"),
-                    "assay plate" = c("batchCode", "wellType", "assayBarcode"),
-                    "none" = c("batchCode", "wellType", "assayBarcode", "well"),
-                    "cmpd batch conc" = c("batchCode", "wellType"),               # TODO: remove this line when done with old tests
-                    "compound batch concentration" = c("batchCode", "wellType"))  # TODO: remove this line when done with old tests
-  if (is.null(groupBy)) {
-    warnUser("No valid aggregation selected. Using no aggregation.")
-    groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
-  }
+  groupBy <- getGroupBy(parameters)
   treatmentGroupBy <- c(groupBy, "cmpdConc", "agonistConc", "agonistBatchCode")
   
   resultTable[, tempParentId:=.GRP, by=treatmentGroupBy]
@@ -1905,12 +1882,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
   treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
   # If one concentration, no problem, if three or more, it's a curve, with two... split them
-  treatmentGroupData[, concIndex := seq(1, .N), by = groupBy]
-  treatmentGroupData[, secondConc := (.N == 2 && concIndex == 2), by = groupBy]
+  treatmentGroupData[, concIndex := as.integer(as.factor(cmpdConc)), by = groupBy]
+  treatmentGroupData[, secondConc := (length(unique(cmpdConc)) == 2 & concIndex == 2), by = groupBy]
   treatmentGroupData[, concIndex := NULL]
-  analysisGroupBy <- c(groupBy, "secondConc")
+  agonistComparisonScreen <- "noAgonist" %in% lapply(parameters$transformationRuleList, getElement, name="transformationRule")
+  # agonistComparisonScreen <- !is.null(agonistComparisonScreen) && as.logical(agonistComparisonScreen)
+  if (!agonistComparisonScreen) {
+    analysisGroupBy <- c(groupBy, "secondConc")
+  } else {
+    analysisGroupBy <- groupBy
+  }
   treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
+  save(treatmentGroupData, file="public/treatmentGroupData.Rda")
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
+  if (agonistComparisonScreen) {
+    save(analysisGroupData, file="public/agonistCombineAGD.Rda")
+    analysisGroupData <- analysisGroupData[, combineTwoAgonist(.SD), by=tempId]
+  }
   analysisGroupData[, secondConc := NULL]
   treatmentGroupData[, secondConc := NULL]
   
@@ -1979,7 +1967,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     dir.create(dryRunLocation, showWarnings = FALSE)
     
     source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-                     clientName,"createPDF.R"))
+                     clientName,"createPDF.R"), local = TRUE)
     
     if(!parameters$autoHitSelection) {
       hitThreshold <- ""
@@ -2002,17 +1990,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
                                              experiment, parameters, user)
-    # TODO: loop or lapply to get all
-    singleDryRunReport <- summaryInfo$dryRunReports[[1]]
-    summaryInfo$info[[singleDryRunReport$title]] <- paste0(
-      '<a href="', singleDryRunReport$link, '" target="_blank">', singleDryRunReport$title, '</a>')
     
+    for (dryRunReport in summaryInfo$dryRunReports) {
+      summaryInfo$info[[dryRunReport$title]] <- paste0(
+        '<a href="', dryRunReport$link, '" target="_blank" ', 
+        ifelse(dryRunReport$download, 'download', ''), '>', dryRunReport$title, '</a>')
+    }
   } else { #This section is "If not dry run"
     reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
     dir.create(reportLocation, showWarnings = FALSE)
     
     source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
-                     clientName,"createPDF.R"))
+                     clientName,"createPDF.R"), local = TRUE)
     
     # Create the actual PDF
     if(!parameters$autoHitSelection) {
@@ -2033,13 +2022,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
     
     # Create the final Spotfire File
-    ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
                                        experiment, parameters, user)
-    # TODO: loop or lapply to get all
-    singleReport <- summaryInfo$reports[[1]]
-    summaryInfo$info[[singleReport$title]] <- paste0(
-      '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
+    for (singleReport in summaryInfo$reports) {
+      summaryInfo$info[[singleReport$title]] <- paste0(
+        '<a href="', singleReport$link, '" target="_blank" ', 
+        ifelse(singleReport$download, 'download', ''), '>', singleReport$title, '</a>')
+    }
     
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
@@ -2135,6 +2125,22 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   return(summaryInfo)
 }
 
+combineTwoAgonist <- function(agData) {
+  if(nrow(agData) == 1) {
+    return(agData)
+    outputTable <- copy(agData)
+    # outputTable[, transformed_noAgonist := agData[agonistConc == 0, normalizedActivity]]
+    return(outputTable)
+  } else if (nrow(agData) > 2) { # This should not happen, these should be curves
+    stop(paste("Too many rows for combineTwoAgonist:", nrow(agData)))
+  } else if (sum(agData$agonistConc == 0) != 1) {
+    stopUser(paste("At least one concentration must be 0 for ", agData$batchCode[1]))
+  } else {
+    outputTable <- agData[agonistConc > 0]
+    # outputTable[, transformed_noAgonist := agData[agonistConc == 0, normalizedActivity]]
+    return(outputTable)
+  }
+}
 
 validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
   # valueKinds a vector of valueKinds
@@ -2287,7 +2293,20 @@ selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   
   return(colNameChangeTable)
 }
-
+getGroupBy <- function(parameters) {
+  groupBy <- switch(parameters$aggregateBy,
+                    "entire assay" = c("batchCode", "wellType"),
+                    "cmpd plate" = c("batchCode", "wellType", "cmpdBarcode"),
+                    "assay plate" = c("batchCode", "wellType", "assayBarcode"),
+                    "none" = c("batchCode", "wellType", "assayBarcode", "well"),
+                    "cmpd batch conc" = c("batchCode", "wellType"),               # TODO: remove this line when done with old tests
+                    "compound batch concentration" = c("batchCode", "wellType"))  # TODO: remove this line when done with old tests
+  if (is.null(groupBy)) {
+    warnUser("No valid aggregation selected. Using no aggregation.")
+    groupBy <- c("batchCode", "wellType", "assayBarcode", "well")
+  }
+  return(groupBy)
+}
 getColNameChangeDataTables <- function(parameters) {
   
   colNameDataTable <- data.table(computerColNames = c("plateType",
@@ -2530,6 +2549,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   if (length(numRepColumns) > 0) {
     numRepResults[, columnName := gsub("numberOfReplicates_", "", columnName, fixed = TRUE)]
     setkeyv(numRepResults, keyCols)
+    setkeyv(numericResults, keyCols)
     numericResults <- numericResults[numRepResults]
   }
   
@@ -2597,6 +2617,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   # Highest level function, runs everything else 
   #   externalFlagging should be TRUE when flagging is coming from a service,
   #   e.g. when called by spotfire
+  #save(request, file="public/request.Rda")
   library('racas')
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE

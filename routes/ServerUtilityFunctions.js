@@ -23,7 +23,7 @@
     return result;
   };
 
-  exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
+  exports.runRFunction_HIDDEN = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, config, csUtilities, exec, preValErrors, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions, stdoutFile;
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -110,17 +110,22 @@
     })(this));
   };
 
-  exports.runRApacheFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
-    var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON, serverUtilityFunctions;
+  exports.runRFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
+    var testMode;
+    testMode = req.query.testMode;
+    return exports.runRFunctionOutsideRequest(req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode);
+  };
+
+  exports.runRFunctionOutsideRequest = function(username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode) {
+    var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON;
     request = require('request');
     config = require('../conf/compiled/conf.js');
-    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-    csUtilities.logUsage("About to call RApache function: " + rFunction, JSON.stringify(req.body), req.body.user);
+    csUtilities.logUsage("About to call RApache function: " + rFunction, JSON.stringify(argumentsJSON), username);
     if (preValidationFunction != null) {
-      preValErrors = preValidationFunction.call(this, req.body);
+      preValErrors = preValidationFunction.call(this, argumentsJSON);
     } else {
-      preValErrors = basicRScriptPreValidation(req.body);
+      preValErrors = basicRScriptPreValidation(argumentsJSON);
     }
     if (preValErrors.hasError) {
       console.log(preValErrors);
@@ -130,9 +135,9 @@
     requestBody = {
       rScript: rScript,
       rFunction: rFunction,
-      request: JSON.stringify(req.body)
+      request: JSON.stringify(argumentsJSON)
     };
-    if (req.query.testMode || global.specRunnerTestmode) {
+    if (testMode || global.specRunnerTestmode) {
       runRFunctionServiceTestJSON = require('../public/javascripts/spec/testFixtures/runRFunctionServiceTestJSON.js');
       console.log('test');
       console.log(JSON.stringify(runRFunctionServiceTestJSON.runRFunctionResponse.hasError));
@@ -166,14 +171,14 @@
               experimentId: null
             };
             returnFunction.call(_this, JSON.stringify(result));
-            return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), req.body.user);
+            return csUtilities.logUsage("Returned R execution error R function: " + rFunction, JSON.stringify(result.errorMessages), username);
           } else {
             returnFunction.call(_this, JSON.stringify(_this.responseJSON));
             try {
               if (_this.responseJSON.hasError) {
-                return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, JSON.stringify(_this.responseJSON), req.body.user);
+                return csUtilities.logUsage("Returned success from R function with trapped errors: " + rFunction, JSON.stringify(_this.responseJSON), username);
               } else {
-                return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", req.body.user);
+                return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", username);
               }
             } catch (_error) {
               error = _error;
@@ -307,6 +312,32 @@
       }
     }
     return fvs;
+  };
+
+  exports.getFileValuesFromCollection = function(collection, ignoreSaved) {
+    var fvs, i, j, len, len1, ref, state, v, vals;
+    fvs = [];
+    if (collection.lsStates == null) {
+      collection = JSON.parse(collection);
+    }
+    ref = collection.lsStates;
+    for (i = 0, len = ref.length; i < len; i++) {
+      state = ref[i];
+      vals = state.lsValues;
+      for (j = 0, len1 = vals.length; j < len1; j++) {
+        v = vals[j];
+        if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+          if (!(ignoreSaved && (v.id != null))) {
+            fvs.push(v);
+          }
+        }
+      }
+    }
+    if (fvs.length > 0) {
+      return fvs;
+    } else {
+      return null;
+    }
   };
 
   controllerRedirect = require('../conf/ControllerRedirectConf.js');

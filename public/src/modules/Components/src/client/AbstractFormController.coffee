@@ -64,20 +64,20 @@ class window.AbstractFormController extends Backbone.View
 			@trigger 'invalid'
 
 	disableAllInputs: ->
-		@$('input').attr 'disabled', 'disabled'
-		@$('button').attr 'disabled', 'disabled'
-		@$('select').attr 'disabled', 'disabled'
-		@$("textarea").attr 'disabled', 'disabled'
-		@$(".bv_experimentCode").css "background-color", "#eeeeee"
-		@$(".bv_experimentCode").css "color", "#333333"
-		@$(".bv_completionDateIcon").addClass "uneditable-input"
-		@$(".bv_completionDateIcon").on "click", ->
+		@$('input').not('.dontdisable').attr 'disabled', 'disabled'
+		@$('button').not('.dontdisable').attr 'disabled', 'disabled'
+		@$('select').not('.dontdisable').attr 'disabled', 'disabled'
+		@$("textarea").not('.dontdisable').attr 'disabled', 'disabled'
+		@$(".bv_experimentCode").not('.dontdisable').css "background-color", "#eeeeee"
+		@$(".bv_experimentCode").not('.dontdisable').css "color", "#333333"
+		@$(".bv_completionDateIcon").not('.dontdisable').addClass "uneditable-input"
+		@$(".bv_completionDateIcon").not('.dontdisable').on "click", ->
 			return false
-		@$(".bv_group_tags input").prop "placeholder", ""
-		@$(".bv_group_tags input").css "background-color", "#eeeeee"
-		@$(".bv_group_tags input").css "color", "#333333"
-		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#eeeeee"
-		@$("span.tag.label.label-info span").attr "data-role", ""
+		@$(".bv_group_tags input").not('.dontdisable').prop "placeholder", ""
+		@$(".bv_group_tags input").not('.dontdisable').css "background-color", "#eeeeee"
+		@$(".bv_group_tags input").not('.dontdisable').css "color", "#333333"
+		@$(".bv_group_tags div.bootstrap-tagsinput").not('.dontdisable').css "background-color", "#eeeeee"
+		@$("span.tag.label.label-info span").not('.dontdisable').attr "data-role", ""
 
 
 	enableAllInputs: ->

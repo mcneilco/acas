@@ -21,8 +21,11 @@
     };
 
     ModuleLauncher.prototype.requestActivation = function() {
-      if (this.get('menuName') === "Gene ID Query") {
-        return window.open("/GeneIDQuery", '_blank');
+      console.log("request activation");
+      if (this.get('autoLaunchName') === "dataViewer") {
+        console.log(this);
+        console.log(window.AppLaunchParams.moduleLaunchParams);
+        return window.open("/dataViewer", '_blank');
       } else {
         this.trigger('activationRequested', this);
         return this.set({
@@ -194,6 +197,7 @@
 
     ModuleLauncherMenuListController.prototype.launchModule = function(moduleName) {
       var selector;
+      console.log("launchModule");
       selector = '.bv_launch_' + moduleName;
       return this.$(selector).click();
     };
