@@ -1513,6 +1513,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   return(inputDataTable)
 }
+
 unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   if(!grepl("\\.zip$", zipFile)) {
     stopUser("The file provided must be a zip file or a directory")
@@ -1527,6 +1528,55 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
+
+
+findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
+  # This function is used in autoFlagWells() and finds the indices of two elements in a vector containing incrementing timepoints,
+  # one pointing to the start the other to the end of the time window of interest
+  #
+  # Args:
+  #   vectTime:         a vector that contains time points sorted in an incremental fashion
+  #   timeWindowStart:  time in seconds denoting the start of the time window of interest
+  #   timeWindowEnd:    time in seconds denoting the end of the time window of interest
+  # Returns:
+  #   A list containing two values: element index pointing to the start and element index pointing to the end of the time window
+  
+  logicTimeStart <- (vectTime>=timeWindowStart)
+  startReadIndex <- min(which(logicTimeStart == TRUE))
+  logicTimeEnd <- (vectTime<timeWindowEnd)
+  endReadIndex <- max(which(logicTimeEnd == TRUE))
+  components <- list(startReadIndex = startReadIndex, endReadIndex = endReadIndex)
+  return(components)
+}
+
+
+findFluoroTabDelimited <- function(stringElement, startIndex, endIndex) {
+  # This function is used in autoFlagWells() and finds if the well is fluorescent, given the raw measurements as a tab-delimited string,
+  # by calculating the difference in magnitude between the start and the end of the predetermined time window and determining 
+  # if that difference is larger than 100 units
+  #
+  #
+  # Args:
+  #   stringElement:    A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   startIndex:       Index of the vector element that defines the start of the time window to apply the function
+  #   endIndex:         Index of the vector element that defines the end of the time window to apply the function
+  #
+  #
+  # Returns:
+  #   A logical value: TRUE if >100 units otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numeric values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Calculate difference in magnitude between the end and the start of the target time window
+  diffMagnitude <- vectElement[endIndex] - vectElement[startIndex]
+  
+  # If difference equals or exceeds 100 units then set Fluorescent well as True, else as False
+  isFluorescent <- ifelse(diffMagnitude>=100, yes=TRUE, no=FALSE)
+  
+  return(isFluorescent)
+}
+
 autoFlagWells <- function(resultTable, parameters) {
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
@@ -1537,7 +1587,29 @@ autoFlagWells <- function(resultTable, parameters) {
   
   # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
   
+
+  # Hard-code the start/end of the time window target for fluorescent wells
+  timeWindowStart <- 8
+  timeWindowEnd <- 12
+  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
   
+  # Find the index for elements corresponding to start and end of target time window
+  indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
+  
+  # Apply the function that determines if a well is fluorescent to all wells
+  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, 1, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex)
+  wellsKO <- as.logical(unname(wellsKO))
+  wellsKO <- ifelse(wellsKO==TRUE, yes="knocked out", no=NA_character_)
+  
+  # Create two more vectors based on the wells that are found to be fluorescent or not
+  wellsFluorescent <- ifelse(wellsKO=="knocked out", yes="fluorescent", no=NA_character_)
+  wellsSlope <- ifelse(wellsKO=="knocked out", yes="slope", no=NA_character_)
+  
+  # Update resultTable for all fluorescent wells
+  resultTable[,c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list(wellsKO, wellsFluorescent, wellsSlope)]
+  
+    
   # Flag HITs
   if(!parameters$autoHitSelection) {
     return(resultTable)
