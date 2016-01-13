@@ -20,9 +20,9 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_base',"$$$$$$$$$$$$")
 		if grunt.option('baseonly') ||  false
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
+		grunt.task.run 'copy'
 		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'upgrade_config_files'
-		grunt.task.run 'copy'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
