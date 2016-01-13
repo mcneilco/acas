@@ -476,10 +476,13 @@ module.exports = (grunt) ->
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."
+	console.log "setting build to: #{build}"
 	acas_base =  path.relative '.', grunt.option('acasBase') || process.env.ACAS_BASE || '.'
 	if acas_base == ""
 		acas_base = "."
+	console.log "setting acas_base to: #{acas_base}"
 	acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || 'acas_custom'
+	console.log "setting acas_custom to: #{acas_custom}"
 	grunt.config.set('build', "#{build}")
 	grunt.config.set('acas_base', "#{acas_base}")
 	grunt.config.set('acas_custom', "#{acas_custom}")
