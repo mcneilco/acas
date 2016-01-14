@@ -289,6 +289,11 @@ describe "Primary Screen Experiment module testing", ->
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='agonistControlConc'
 					expect(filtErrors.length).toBeGreaterThan 0
+				it "should be valid when agonist control batch is entered and agonist control conc is ''", ->
+					@psap.get('agonistControl').set
+						batchCode:"CMPD-87654399-01"
+						concentration: ''
+					expect(@psap.isValid()).toBeTruthy()
 				it "should be invalid when agonist control batch is empty and agonist control conc is a number ", ->
 					@psap.get('agonistControl').set
 						batchCode:""
@@ -1143,7 +1148,16 @@ describe "Primary Screen Experiment module testing", ->
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
 						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
-				it "should show error if agonistControl batch is correct but conc is NaN or empty", ->
+				it "should show error if agonistControl batch is correct but conc is NaN", ->
+					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
+					@psapc.$('.bv_agonistControlBatch').keyup()
+					@psapc.$('.bv_agonistControlConc').val "asdfg"
+					@psapc.$('.bv_agonistControlConc').keyup()
+					waits(1000)
+					runs ->
+						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
+				it "should not show error if agonistControl batch is correct but conc is empty", ->
 					@psapc.$('.bv_agonistControlBatch').val "CMPD-12345678-01"
 					@psapc.$('.bv_agonistControlBatch').keyup()
 					@psapc.$('.bv_agonistControlConc').val ""
@@ -1151,7 +1165,7 @@ describe "Primary Screen Experiment module testing", ->
 					waits(1000)
 					runs ->
 						expect(@psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy()
-						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy()
+						expect(@psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy()
 				it "should show error if agonistControl batch is empty but conc is a number", ->
 					@psapc.$('.bv_agonistControlBatch').val ""
 					@psapc.$('.bv_agonistControlBatch').keyup()
