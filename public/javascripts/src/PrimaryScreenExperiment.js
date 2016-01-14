@@ -1937,7 +1937,8 @@
         return this.setExperimentNotSaved();
       } else {
         this.setExperimentSaved();
-        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        return this.checkForSourceFile();
       }
     };
 
@@ -2183,6 +2184,27 @@
       })(this));
     };
 
+    PrimaryScreenAnalysisController.prototype.checkForSourceFile = function() {
+      var displayName, sourceFile, sourceFileValue;
+      sourceFile = this.model.getSourceFile();
+      if ((sourceFile != null) && this.dataAnalysisController.parseFileNameOnServer === "") {
+        sourceFileValue = sourceFile.get('fileValue');
+        displayName = sourceFile.get('comments');
+        if (displayName == null) {
+          displayName = sourceFile.get('fileValue').split("/");
+          displayName = displayName[displayName.length - 1];
+        }
+        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
+        return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
+          return function() {
+            _this.dataAnalysisController.parseFileController.render();
+            return _this.dataAnalysisController.handleParseFileRemoved();
+          };
+        })(this));
+      }
+    };
+
     return PrimaryScreenAnalysisController;
 
   })(Backbone.View);
@@ -2316,6 +2338,13 @@
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
           return _this.fetchModel();
+        };
+      })(this));
+      this.$('.bv_primaryScreenDataAnalysisTab').on('shown', (function(_this) {
+        return function(e) {
+          if (_this.model.getAnalysisStatus().get('codeValue') === "not started") {
+            return _this.analysisController.checkForSourceFile();
+          }
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);

@@ -1216,7 +1216,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setExperimentSaved()
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
-
+			@checkForSourceFile()
 
 	render: =>
 		@showExistingResults()
@@ -1409,6 +1409,23 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amClean'
 #		@showExistingResults()
 
+	checkForSourceFile: ->
+		sourceFile = @model.getSourceFile()
+		if sourceFile? and @dataAnalysisController.parseFileNameOnServer is ""
+			sourceFileValue = sourceFile.get('fileValue')
+			displayName = sourceFile.get('comments')
+			unless displayName? #TODO: delete this once SEL saves file names in the comments
+				displayName = sourceFile.get('fileValue').split("/")
+				displayName = displayName[displayName.length-1]
+			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
+			#TODO: should find file name in comments
+			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
+			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
+				@dataAnalysisController.parseFileController.render()
+				@dataAnalysisController.handleParseFileRemoved()
+#			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+@model.get('structural file').get('comments')+'</a></div>'
+#			@dataAnalysisController.parseFileController.lsFileChooser.fileUploadComplete(null,result:[name:sourceFile.get('fileValue')])
+
 
 # This wraps all the tabs
 class window.AbstractPrimaryScreenExperimentController extends Backbone.View
@@ -1487,6 +1504,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@fetchModel()
+		@$('.bv_primaryScreenDataAnalysisTab').on 'shown', (e) =>
+			if @model.getAnalysisStatus().get('codeValue') is "not started"
+				@analysisController.checkForSourceFile()
+
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@model.on 'statusChanged', @handleStatusChanged
 		@experimentBaseController.render()
