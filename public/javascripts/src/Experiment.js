@@ -400,7 +400,7 @@
           val = valuesToDelete[i];
           value = expState.getValuesByTypeAndKind(val.type, val.kind)[0];
           if (value != null) {
-            if ((val.kind === "data analysis parameters" || val.kind === "model fit parameters" || val.kind === "model fit type" || val.kind === "dry run status" || val.kind === "dry run html") && value.isNew()) {
+            if ((val.kind === "data analysis parameters" || val.kind === "model fit parameters" || val.kind === "model fit type" || val.kind === "dry run status" || val.kind === "dry run html" || val.kind === "source file") && value.isNew()) {
 
             } else {
               expState.get('lsValues').remove(value);
@@ -631,7 +631,7 @@
         el: this.$('.bv_attachFileList'),
         collection: attachFileList,
         firstOptionName: "Select Method",
-        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'],
+        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip'],
         fileTypeList: fileTypeList,
         required: false
       });

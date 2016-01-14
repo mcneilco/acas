@@ -273,7 +273,7 @@ class window.Experiment extends BaseEntity
 			for val in valuesToDelete
 				value = expState.getValuesByTypeAndKind(val.type, val.kind)[0]
 				if value?
-					if ((val.kind is "data analysis parameters" or val.kind is "model fit parameters" or val.kind is "model fit type" or val.kind is "dry run status" or val.kind  is "dry run html") and value.isNew())
+					if ((val.kind is "data analysis parameters" or val.kind is "model fit parameters" or val.kind is "model fit type" or val.kind is "dry run status" or val.kind  is "dry run html" or val.kind is "source file") and value.isNew())
 					else
 						expState.get('lsValues').remove value
 		super()
@@ -423,7 +423,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			el: @$('.bv_attachFileList')
 			collection: attachFileList
 			firstOptionName: "Select Method"
-			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip']
 			fileTypeList: fileTypeList
 			required: false
 		@attachFileListController.on 'amClean', =>

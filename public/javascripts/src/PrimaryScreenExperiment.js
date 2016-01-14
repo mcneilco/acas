@@ -1850,13 +1850,16 @@
     };
 
     PrimaryScreenAnalysisController.prototype.checkForSourceFile = function() {
-      var sourceFile, sourceFileValue;
-      console.log("check for source file");
+      var displayName, sourceFile, sourceFileValue;
       sourceFile = this.model.getSourceFile();
-      if (sourceFile != null) {
-        console.log(sourceFile.get('fileValue'));
+      if ((sourceFile != null) && this.dataAnalysisController.parseFileNameOnServer === "") {
         sourceFileValue = sourceFile.get('fileValue');
-        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + sourceFileValue + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        displayName = sourceFile.get('comments');
+        if (displayName == null) {
+          displayName = sourceFile.get('fileValue').split("/");
+          displayName = displayName[displayName.length - 1];
+        }
+        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
         this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
         return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
           return function() {
@@ -2000,6 +2003,13 @@
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
           return _this.fetchModel();
+        };
+      })(this));
+      this.$('.bv_primaryScreenDataAnalysisTab').on('shown', (function(_this) {
+        return function(e) {
+          if (_this.model.getAnalysisStatus().get('codeValue') === "not started") {
+            return _this.analysisController.checkForSourceFile();
+          }
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);
