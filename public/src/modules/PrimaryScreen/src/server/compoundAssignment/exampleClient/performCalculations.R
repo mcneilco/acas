@@ -130,6 +130,8 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMinLevel=overallMinLevel,
                                                        overallMaxLevel=overallMaxLevel, parameters), 
                 by= section]
+  } else if (normalization == "none") {
+    resultTable[, normalizedActivity := resultTable$activity]
   } else {
     warnUser("No normalization applied.")
     resultTable[, normalizedActivity := resultTable$activity]

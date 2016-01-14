@@ -58,7 +58,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   # Warn user if the template was not found in the designated folder
   if (!file.exists(templatePath)) {
-    stopUser("The template containing controls, agonist concentration, and vehicle was not found in the target directory!")
+    stopUser("The template containing controls, agonist concentration, and vehicle was not found in the zip file.")
   }
   
   # Read the template containing information about controls, agonist conc., vehicle and insert in dataframe
@@ -140,8 +140,8 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   #wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
   
-
   if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+    wellTable$plateAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
     stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
                     paste(wellTable$plateAndWell[duplicated(wellTable$plateAndWell)], collapse = "', '"),
                     "'. Please contact your system administrator."))
@@ -244,7 +244,6 @@ createWellTable <- function(barcodeList, testMode) {
   
   barcodeQuery <- paste(barcodeList,collapse="','")
   
-  testMode <- TRUE
   if (testMode) {
     # wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
     wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsControlsRemoved.csv", stringsAsFactors = FALSE)
@@ -268,6 +267,7 @@ createWellTable <- function(barcodeList, testMode) {
       WHERE barcode IN ('", barcodeQuery, "')"))
   }
   
+  names(wellTable) <- toupper(names(wellTable))
   wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
   
   return(wellTable)

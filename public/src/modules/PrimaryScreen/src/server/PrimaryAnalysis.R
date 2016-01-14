@@ -1566,25 +1566,6 @@ autoFlagWells <- function(resultTable, parameters) {
   
 }
 
-getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
-  if(is.null(numRows) && is.null(numCols)) {
-    stopUser("Internal error: unknown plate dimensions")
-  }
-  
-  if(is.null(numRows)) {
-    colDim <- ceiling((numCols / 12)) * 12
-    rowDim <- (colDim / 12) * 8
-  } else if (is.null(numCols)) {
-    rowDim <- ceiling((numRows / 8)) * 8
-    colDim <- (rowDim / 8) * 12
-  } else {
-    baseSize <- max(ceiling((numCols / 12)), ceiling((numRows / 8)))
-    colDim <- baseSize * 12
-    rowDim <- baseSize * 8
-  }
-  return(list(colDim=colDim, rowDim=rowDim))
-  
-}
 removeNonCurves <- function(analysisData) {
   # Removes non-curve analysis group data, leaving only enough information to create the 
   # analysis groups without states and values so treatment groups can be created
