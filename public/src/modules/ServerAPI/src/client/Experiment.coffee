@@ -182,6 +182,7 @@ class window.Experiment extends BaseEntity
 		#get list of possible kinds of analytical files
 		attachFileList = new ExperimentAttachFileList()
 		for type in fileTypes
+			console.log(type.code + "_" + type.name)
 			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
 			if analyticalFileValues.length > 0 and type.code != "unassigned"
@@ -197,16 +198,21 @@ class window.Experiment extends BaseEntity
 						attachFileList.add afm
 
 			# get files not saved in metadata_experiment metadata state
-			if (type.code is "source file" and @get('lsKind') is "default") or type.code is "annotation file"
+			if (type.code is "source file") or type.code is "annotation file"
+				console.log(type.code)
 				if type.code is "source file" # TODO: remove this once SEL files are saved in metadata_experiment metadata state
 					file = @getSourceFile()
 				else
 					file = @getSELReportFile()
+				console.log(file)
 				if file?
+					console.log(file.get('comments'))
 					displayName = file.get('comments')
+					debugger
 					unless displayName? #TODO: delete this once SEL saves file names in the comments
 						displayName = file.get('fileValue').split("/")
-						displayName = displayName[displayName.length-1]
+
+						displayName = displayName[displayName.length - 1]
 					fileModel = new AttachFile
 						fileType: type.code
 						fileValue: file.get('fileValue')
