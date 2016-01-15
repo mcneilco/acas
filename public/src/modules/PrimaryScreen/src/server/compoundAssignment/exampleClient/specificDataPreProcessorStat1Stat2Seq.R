@@ -436,27 +436,6 @@ combineFilesNoStatFiles <- function(fileSet, timeWindowList) {
   vectTime <- unlist(timePointList)
   vectTime <- as.numeric(vectTime)
   
-  
-  # Find the index of the vector elements (i.e. numerical indices) that bracket the time window of interest
-  findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
-    # This function is used immediately below and finds the indices of two elements in a vector containing incrementing timepoints,
-    # one pointing to the start the other ot the end of the time window of interest
-    #
-    # Args:
-    #   vectTime:         a vector that contains time points sorted in an incremental fashion
-    #   timeWindowStart:  time in seconds denoting the start of the time window of interest
-    #   timeWindowEnd:    time in seconds denoting the end of the time window of interest
-    # Returns:
-    #   A list containing two values: element index pointing to the start and element index pointing to the end of the time window
-    
-    logicTimeStart <- (vectTime>=timeWindowStart)
-    startReadIndex <- min(which(logicTimeStart == TRUE))
-    logicTimeEnd <- (vectTime<timeWindowEnd)
-    endReadIndex <- max(which(logicTimeEnd == TRUE))
-    components <- list(startReadIndex = startReadIndex, endReadIndex = endReadIndex)
-    return(components)
-  }
-  
 
   allStatFrame$sequence <- unlist(lapply(seqData[,as.character(allStatFrame$well)], paste, collapse="\t"),use.names=FALSE)
   

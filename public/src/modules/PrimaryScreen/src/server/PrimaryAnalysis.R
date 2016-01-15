@@ -1550,7 +1550,7 @@ findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
 }
 
 
-findFluoroTabDelimited <- function(stringElement, startIndex, endIndex) {
+findFluoroTabDelimited <- function(stringElement, startIndex, endIndex, functionThreshold) {
   # This function is used in autoFlagWells() and finds if the well is fluorescent, given the raw measurements as a tab-delimited string,
   # by calculating the difference in magnitude between the start and the end of the predetermined time window and determining 
   # if that difference is larger than 100 units
@@ -1572,12 +1572,15 @@ findFluoroTabDelimited <- function(stringElement, startIndex, endIndex) {
   diffMagnitude <- vectElement[endIndex] - vectElement[startIndex]
   
   # If difference equals or exceeds 100 units then set Fluorescent well as True, else as False
-  isFluorescent <- ifelse(diffMagnitude>=100, yes=TRUE, no=FALSE)
+  isFluorescent <- ifelse(diffMagnitude>=functionThreshold, yes=TRUE, no=FALSE)
   
   return(isFluorescent)
 }
 
 autoFlagWells <- function(resultTable, parameters) {
+  # Load necessary library to run current function
+  library(data.table)
+  
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
@@ -1589,8 +1592,12 @@ autoFlagWells <- function(resultTable, parameters) {
   
 
   # Hard-code the start/end of the time window target for fluorescent wells
-  timeWindowStart <- 8
-  timeWindowEnd <- 12
+  timeWindowStart <- parameters$fluorescentStart
+  timeWindowEnd <- parameters$fluorescentEnd
+  
+  # Hardcode the threshold step for determininf fluorescent wells
+  fluoroThreshold <- parameters$fluorescentStep
+  
   # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
   vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
   
@@ -1598,7 +1605,7 @@ autoFlagWells <- function(resultTable, parameters) {
   indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
   
   # Apply the function that determines if a well is fluorescent to all wells
-  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, 1, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex)
+  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, 1, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
   wellsKO <- as.logical(unname(wellsKO))
   wellsKO <- ifelse(wellsKO==TRUE, yes="knocked out", no=NA_character_)
   
