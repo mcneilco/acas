@@ -249,15 +249,18 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if (agonistControl !="" and agonistControl != undefined and agonistControl != null) or (agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
-				errors.push
-					attribute: 'agonistControlBatch'
-					message: "A registered batch number must be provided."
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
-				errors.push
-					attribute: 'agonistControlConc'
-					message: "Agonist control conc must be set"
+		# agonist control concentration field is filled
+		agonistControlConcFilled = agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null
+		agonistControlBlank = agonistControl is "" or agonistControl is undefined or agonistControl is null
+		if (agonistControl is "invalid") or (agonistControlConcFilled and agonistControlBlank)
+			errors.push
+				attribute: 'agonistControlBatch'
+				message: "A registered batch number must be provided."
+		# empty string is still valid for Conc, needed for Dose Response
+		if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is null
+			errors.push
+				attribute: 'agonistControlConc'
+				message: "Agonist control conc must be set"
 		vehicleControl = @get('vehicleControl').get('batchCode')
 		if vehicleControl is "invalid"
 			errors.push
