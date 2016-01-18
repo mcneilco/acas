@@ -17,7 +17,7 @@ try:
 except ImportError:
     # Python 2
     import httplib as http_client
-http_client.HTTPConnection.debuglevel = 2
+http_client.HTTPConnection.debuglevel = 0
 
 
 from ldclient.client import LDClient as Api
@@ -75,8 +75,10 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database):
     if isinstance(compound_ids, (str,unicode)):
     	search_results.extend(api.compound_search_by_id(compound_ids, database_names=[database]))
     else:
+    	search_string = ""
     	for compound_id in compound_ids:
-    		search_results.extend(api.compound_search_by_id(compound_id, database_names=[database]))
+    		search_string += compound_id +"\n"
+    	search_results.extend(api.compound_search_by_id(search_string, database_names=[database]))
     # Now add the rows for the compound ids for which we want data
     #compound_ids = ["V51411","V51412","V51413","V51414"]
     api.add_rows(lr_id, search_results)
