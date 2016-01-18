@@ -1577,10 +1577,39 @@ findFluoroTabDelimited <- function(stringElement, startIndex, endIndex, function
   return(isFluorescent)
 }
 
+
+findLatePeakIndex <- function(stringElement, timePoints, latePeakThreshold) {
+  # This function is used in autoFlagWells() and finds if the well icorresponds to a late peak, given the raw measurements as a tab-delimited string,
+  # by calculating what timepoint corresponds to the max value of all measurements acquired and if that timepoint is later than a late peak threshold
+  #
+  #
+  # Args:
+  #   stringElement:        A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   timePoints:           The vector of timepoints based on which the tab-delimited string was acquired
+  #   latePeakThreshold:    A time (in seconds) after which the max value of the tab-delimited measurements is considered a late peak
+  #
+  #
+  # Returns:
+  #   A logical value:      TRUE if the time corresponding to the max value in the tab-delimited string is later than the late peak threshold, otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numerical values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Find the index within the vector that corresponds to the max value of that same vector
+  index <- which(vectElement==max(vectElement))
+  
+  # Determine what time value corresponds to the aforementioned index and compare with late peak threshold
+  latePeakFlag <- ifelse(timePoints[index]>=latePeakThreshold, yes=TRUE, no=FALSE)
+  
+  return(latePeakFlag)
+}
+
+
+
 autoFlagWells <- function(resultTable, parameters) {
   # Load necessary library to run current function
   library(data.table)
-  
+
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
@@ -1615,6 +1644,25 @@ autoFlagWells <- function(resultTable, parameters) {
   
   # Update resultTable for all fluorescent wells
   resultTable[,c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list(wellsKO, wellsFluorescent, wellsSlope)]
+
+  
+  # Apply the function that determines if a well corresponds to a late peak  
+  wellsLate <- vapply(resultTable[, T_timePoints], findLatePeakIndex, 1, vectTime, parameters$latePeakTime)
+  wellsLate <- as.logical(unname(wellsLate))
+  
+  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks  
+  resultTable$autoFlagType <- ifelse(wellsLate==TRUE, yes="knocked out", no=resultTable$autoFlagType)
+  
+  # Mark the indices of all fluorescent wells before updating the resultTable columns below
+  fluorescentIndices <- which(resultTable$autoFlagObservation=="fluorescent")
+  
+  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks, while keeping the fluorescent ones  
+  resultTable$autoFlagObservation <- ifelse(wellsLate==TRUE, yes="late peak", no=NA_character_)
+  resultTable$autoFlagObservation[fluorescentIndices] <- "fluorescent"
+  
+  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks, while keeping the fluorescent ones
+  resultTable$autoFlagReason <- ifelse(wellsLate==TRUE, yes="max time", no=NA_character_)
+  resultTable$autoFlagReason[fluorescentIndices] <- "slope"
   
     
   # Flag HITs
