@@ -77,7 +77,7 @@
       };
     }
     return res.render('index', {
-      title: "ACAS Home",
+      title: config.all.client.moduleMenus.logoText + " Home",
       scripts: scriptsToLoad,
       AppLaunchParams: {
         loginUserName: loginUserName,

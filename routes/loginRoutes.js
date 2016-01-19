@@ -43,11 +43,12 @@
       resetPasswordOption = false;
     }
     return res.render('login', {
-      title: "ACAS Login",
+      title: config.all.client.moduleMenus.logoText + " Login",
       scripts: [],
       user: user,
       message: errorMsg,
-      resetPasswordOption: resetPasswordOption
+      resetPasswordOption: resetPasswordOption,
+      logoText: config.all.client.moduleMenus.logoText
     });
   };
 
@@ -181,7 +182,7 @@
     }
     if (config.all.server.security.authstrategy === "database") {
       return res.render('passwordReset', {
-        title: "ACAS reset",
+        title: config.all.client.moduleMenus.logoText + " reset",
         scripts: [],
         user: user,
         message: errorMsg
@@ -204,14 +205,14 @@
         errorMsg = error[0];
       }
       return res.render('passwordChange', {
-        title: "ACAS reset",
+        title: config.all.client.moduleMenus.logoText + " reset",
         scripts: [],
         user: user,
         message: errorMsg
       });
     } else {
       return res.render('login', {
-        title: "ACAS login",
+        title: config.all.client.moduleMenus.logoText + " login",
         scripts: [],
         user: user,
         message: "need login or admin"
