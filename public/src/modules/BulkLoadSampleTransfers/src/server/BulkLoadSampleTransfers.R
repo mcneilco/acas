@@ -30,8 +30,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   summaryInfo <- list(info = list(
       "Transfers" = nrow(logFile),
-      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error),
-      "User name" = recordedBy))
+      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error)))
   
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)))
   
@@ -538,10 +537,22 @@ bulkLoadSampleTransfers <- function(request) {
   
   developmentMode <- FALSE
   # Run the main function with error handling
-  loadResult <- tryCatchLog(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
-  
-  allTextErrors <- getErrorText(loadResult$errorList)
-  warningList <- getWarningText(loadResult$warningList)
+  if (grepl("\\.csv$", fileName)) {
+    loadResult <- tryCatchLog(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
+    allTextErrors <- getErrorText(loadResult$errorList)
+    warningList <- getWarningText(loadResult$warningList)
+    summaryInfo <- loadResult$value
+  } else {
+    loadResult <- tryCatchLog(runBulkLoadSampleMult(fileName,dryRun, testMode, developmentMode, recordedBy))
+    if (length(loadResult$errorList) > 0) { # Errors from runner of other code
+      allTextErrors <- getErrorText(loadResult$errorList)
+      warningList <- getWarningText(loadResult$warningList)
+    } else { # Errors within run code
+      allTextErrors <- loadResult$value$allTextErrors
+      warningList <- loadResult$value$allTextWarnings
+    }
+    summaryInfo <- list(info=loadResult$value$info)
+  }
   
   # Organize the error outputs
   hasError <- length(allTextErrors) > 0
@@ -553,7 +564,7 @@ bulkLoadSampleTransfers <- function(request) {
   errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
   errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   
-  htmlSummary <- createHtmlSummary(hasError,allTextErrors,hasWarning,warningList,summaryInfo=loadResult$value,dryRun)
+  htmlSummary <- createHtmlSummary(hasError,allTextErrors,hasWarning,warningList,summaryInfo=summaryInfo,dryRun)
   
   response <- list(
     commit= !hasError,
@@ -570,4 +581,50 @@ bulkLoadSampleTransfers <- function(request) {
     errorMessages= errorMessages
   )
   return(response)
+}
+
+runBulkLoadSampleMult <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
+  targetDir <- tempfile(pattern = "bulkLoadT", tmpdir = racas::applicationSettings$server.file.server.path)
+  unzip(getUploadedFilePath(fileName), exdir = targetDir)
+  csvFiles <- list.files(targetDir, pattern = "\\.csv")
+  csvFiles <- file.path(basename(targetDir), csvFiles)
+  if (length(csvFiles) == 0) {
+    stopUser("No csv files found in zip file")
+  }
+  allTextErrors <- list()
+  allTextWarnings <- list()
+  allSummaryInfo <- list()
+  for (csvFile in csvFiles) {
+    blstMessenger <- Messenger$new(envir = environment())
+    blstMessenger$logger <- logger(logName = "com.acas.bulkLoadSampleTransfer.src.server.BulkLoadSampleTransfers.runBulkLoadSampleMult", reset=TRUE)
+    loadResult <- tryCatchLogM(runMain(csvFile, dryRun, testMode, developmentMode, recordedBy), blstMessenger)
+    textErrors <- getErrorText(loadResult$errorList)
+    if (length(textErrors) > 0) {
+      textErrors <- paste0(basename(csvFile), ": ", textErrors)
+    }
+    textWarnings <- getWarningText(loadResult$warningList)
+    if (length(textWarnings) > 0) {
+      textWarnings <- paste0(basename(csvFile), ": ", textWarnings)
+    }
+    allTextErrors <- c(allTextErrors, textErrors)
+    allTextWarnings <- c(allTextWarnings, textWarnings)
+    if (!is.null(loadResult$value$info)) {
+      info <- loadResult$value$info
+      names(info) <- paste0(basename(csvFile), ": ", names(info))
+      allSummaryInfo <- c(allSummaryInfo, info)
+    }
+  }
+  if(length(allSummaryInfo) == 0) {
+    allSummaryInfo <- NULL #Expected format, despite being weird
+  }
+  return(list(info = allSummaryInfo, allTextErrors=allTextErrors, allTextWarnings=allTextWarnings))
+}
+
+tryCatchLogM <- function(expr, MyMessenger = messenger()) {
+  # Used to get a new messenger to not interfere with tryCatchLog, could later just be an edit to tryCatchLog
+  output <- NULL
+  MyMessenger$capture_output({output <- expr})
+  return(list(value=output, 
+              errorList = MyMessenger$errors, 
+              warningList = MyMessenger$warnings))
 }
