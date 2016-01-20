@@ -1596,10 +1596,10 @@ findLatePeakIndex <- function(stringElement, timePoints, latePeakThreshold) {
   vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
   
   # Find the index within the vector that corresponds to the max value of that same vector
-  index <- which(vectElement==max(vectElement))
+  index <- which.max(vectElement) #(vectElement==max(vectElement))
   
   # Determine what time value corresponds to the aforementioned index and compare with late peak threshold
-  latePeakFlag <- ifelse(timePoints[index]>=latePeakThreshold, yes=TRUE, no=FALSE)
+  latePeakFlag <- timePoints[index]>=latePeakThreshold #ifelse(timePoints[index]>=latePeakThreshold, yes=TRUE, no=FALSE)
   
   return(latePeakFlag)
 }
@@ -1634,36 +1634,20 @@ autoFlagWells <- function(resultTable, parameters) {
   indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
   
   # Apply the function that determines if a well is fluorescent to all wells
-  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, 1, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
-  wellsKO <- as.logical(unname(wellsKO))
-  wellsKO <- ifelse(wellsKO==TRUE, yes="knocked out", no=NA_character_)
-  
-  # Create two more vectors based on the wells that are found to be fluorescent or not
-  wellsFluorescent <- ifelse(wellsKO=="knocked out", yes="fluorescent", no=NA_character_)
-  wellsSlope <- ifelse(wellsKO=="knocked out", yes="slope", no=NA_character_)
-  
-  # Update resultTable for all fluorescent wells
-  resultTable[,c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list(wellsKO, wellsFluorescent, wellsSlope)]
-
+  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
+  wellsKO <- unname(wellsKO)
   
   # Apply the function that determines if a well corresponds to a late peak  
-  wellsLate <- vapply(resultTable[, T_timePoints], findLatePeakIndex, 1, vectTime, parameters$latePeakTime)
-  wellsLate <- as.logical(unname(wellsLate))
+  wellsLate <- vapply(resultTable[, T_timePoints], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+  wellsLate <- unname(wellsLate)
+
+  # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
+  resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
+
+  # Then update the appropriate resultTable columns to reflect the wells found to be fluorescent
+  resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
   
-  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks  
-  resultTable$autoFlagType <- ifelse(wellsLate==TRUE, yes="knocked out", no=resultTable$autoFlagType)
-  
-  # Mark the indices of all fluorescent wells before updating the resultTable columns below
-  fluorescentIndices <- which(resultTable$autoFlagObservation=="fluorescent")
-  
-  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks, while keeping the fluorescent ones  
-  resultTable$autoFlagObservation <- ifelse(wellsLate==TRUE, yes="late peak", no=NA_character_)
-  resultTable$autoFlagObservation[fluorescentIndices] <- "fluorescent"
-  
-  # Update the appropriate resultTable column to reflect the new wells knocked out as late peaks, while keeping the fluorescent ones
-  resultTable$autoFlagReason <- ifelse(wellsLate==TRUE, yes="max time", no=NA_character_)
-  resultTable$autoFlagReason[fluorescentIndices] <- "slope"
-  
+
     
   # Flag HITs
   if(!parameters$autoHitSelection) {
