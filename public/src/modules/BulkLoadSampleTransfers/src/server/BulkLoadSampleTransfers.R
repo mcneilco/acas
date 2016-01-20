@@ -542,16 +542,32 @@ bulkLoadSampleTransfers <- function(request) {
     allTextErrors <- getErrorText(loadResult$errorList)
     warningList <- getWarningText(loadResult$warningList)
     summaryInfo <- loadResult$value
+    lsTransactionId <- loadResult$value$lsTransactionId
   } else {
-    loadResult <- tryCatchLog(runBulkLoadSampleMult(fileName,dryRun, testMode, developmentMode, recordedBy))
-    if (length(loadResult$errorList) > 0) { # Errors from runner of other code
-      allTextErrors <- getErrorText(loadResult$errorList)
-      warningList <- getWarningText(loadResult$warningList)
-    } else { # Errors within run code
-      allTextErrors <- loadResult$value$allTextErrors
-      warningList <- loadResult$value$allTextWarnings
+    if (dryRun) {
+      loadResult <- tryCatchLog(runBulkLoadSampleMult(fileName,dryRun, testMode, developmentMode, recordedBy))
+      if (length(loadResult$errorList) > 0) { # Errors from runner of other code
+        allTextErrors <- getErrorText(loadResult$errorList)
+        warningList <- getWarningText(loadResult$warningList)
+      } else { # Errors within run code
+        allTextErrors <- loadResult$value$allTextErrors
+        warningList <- loadResult$value$allTextWarnings
+      }
+      summaryInfo <- list(info=loadResult$value$info)
+    } else {
+      t1 <- tempfile(fileext = ".R")
+      t2 <- tempfile(fileext = ".json")
+      write(toJSON(list(fileName=fileName, dryRun=dryRun, testMode=testMode, 
+                        developmentMode=developmentMode, recordedBy=recordedBy)), t2)
+      cmd <- 'out <- capture.output(source(file.path(racas::applicationSettings$appHome, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersEmail.R"), local=T))\n'
+      cmd <- paste0(cmd, 'out <- capture.output(runBulkLoadAndEmail(fromJSON(file="', t2, '")))')
+      write(cmd, t1)
+      system(paste0('Rscript ', t1), wait = FALSE)
+      summaryInfo <- list(info=list("Status" = "When the upload is complete, you will receive an email."))
+      allTextErrors <- list()
+      warningList <- list()
     }
-    summaryInfo <- list(info=loadResult$value$info)
+    lsTransactionId <- NULL
   }
   
   # Organize the error outputs
@@ -568,9 +584,9 @@ bulkLoadSampleTransfers <- function(request) {
   
   response <- list(
     commit= !hasError,
-    transactionId= loadResult$value$lsTransactionId,
+    transactionId= lsTransactionId,
     results= list(
-      id= loadResult$value$lsTransactionId,
+      id= lsTransactionId,
       path= getwd(),
       fileToParse= request$fileToParse,
       dryRun= request$dryRun,
