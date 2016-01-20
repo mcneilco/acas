@@ -1600,7 +1600,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
 }
 getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
-  preferredName <- pickBestName(protocol)$labelText
+  preferredName <- pickBestLabel(protocol)$labelText
   if (!is.null(protocolName) && preferredName != protocolName) {
     warnUser(paste0("The protocol name that you entered, '", protocolName, 
                    "', was replaced by the preferred name '", preferredName, "'"))
@@ -1957,14 +1957,13 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                        use.names=FALSE)
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
-      # addFileLink should be defined in customFunctions.R
       addFileLink(batchNameList, recordedBy, experiment, lsTransaction, reportFileSummary, reportFilePath, NULL, annotationType)
     }
   }
@@ -2412,7 +2411,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
