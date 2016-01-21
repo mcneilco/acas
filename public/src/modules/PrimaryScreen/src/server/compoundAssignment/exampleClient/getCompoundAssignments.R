@@ -58,7 +58,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   # Warn user if the template was not found in the designated folder
   if (!file.exists(templatePath)) {
-    stopUser("The template containing controls, agonist concentration, and vehicle was not found in the target directory!")
+    stopUser("The template containing controls, agonist concentration, and vehicle was not found in the zip file.")
   }
   
   # Read the template containing information about controls, agonist conc., vehicle and insert in dataframe
@@ -82,7 +82,10 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   if (!is.null(parameters$negativeControl$concentration)) {
     negativeConc <- parameters$negativeControl$concentration
   }
-  controlsFrame$CONCENTRATION <- ifelse(controlsFrame$WELL_TYPE=='PC', yes = parameters$positiveControl$concentration, no = negativeConc)
+  controlsFrame$CONCENTRATION <- NA_real_
+  controlsFrame$CONCENTRATION[controlsFrame$WELL_TYPE=='PC'] <- parameters$positiveControl$concentration
+  controlsFrame$CONCENTRATION[controlsFrame$WELL_TYPE=='NC'] <- parameters$negativeControl$concentration
+  controlsFrame$CONCENTRATION[controlsFrame$WELL_TYPE=='VC'] <- 0
   
   # Set infinity chracter in concentration strings if concentration is defined with infinity
   controlsFrame$CONCENTRATION_STRING[controlsFrame$CONCENTRATION==Inf] <- "infinite"
@@ -90,6 +93,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   # Set batch Code for controls
   controlsFrame$BATCH_CODE[controlsFrame$WELL_TYPE=='PC'] <- parameters$positiveControl$batchCode
   controlsFrame$BATCH_CODE[controlsFrame$WELL_TYPE=='NC'] <- parameters$negativeControl$batchCode
+  controlsFrame$BATCH_CODE[controlsFrame$WELL_TYPE=='VC'] <- parameters$vehicleControl$batchCode
   
   
   # Remove the column that annotates positive vs negative controls from dataframe
@@ -122,7 +126,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   }
   
   # Remove any wells with test compounds from wellTable dataframe that are annotated as controls in the template
-  wellTablePurged <- subset(wellTable, !(WELL_NAME %in% commonWellsNames))
+  wellTablePurged <- subset(wellTable, !(wellTable$WELL_NAME %in% commonWellsNames))
   wellTable <- wellTablePurged
   
   # Merge the existing dataframe for test compounds with the controls-related dataframe
@@ -140,8 +144,8 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   #wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
   
-
   if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
+    wellTable$plateAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
     stopUser(paste0("Multiple test compounds were found in these wells, so it is unclear which is the tested compound: '", 
                     paste(wellTable$plateAndWell[duplicated(wellTable$plateAndWell)], collapse = "', '"),
                     "'. Please contact your system administrator."))
@@ -240,11 +244,10 @@ createWellTable <- function(barcodeList, testMode) {
   #   barcodeList:    A list of plate barcodes used in the experiment
   #   testMode:       A boolean of the testMode
   # Returns:
-  #   A table of wells and corporate batch id's
+  #   A data.frame of wells and corporate batch id's
   
   barcodeQuery <- paste(barcodeList,collapse="','")
   
-  testMode <- TRUE
   if (testMode) {
     # wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsConfirmation.csv")
     wellTable <- read.csv("public/src/modules/PrimaryScreen/spec/examplePlateContentsControlsRemoved.csv", stringsAsFactors = FALSE)
@@ -268,6 +271,7 @@ createWellTable <- function(barcodeList, testMode) {
       WHERE barcode IN ('", barcodeQuery, "')"))
   }
   
+  names(wellTable) <- toupper(names(wellTable))
   wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
   
   return(wellTable)
@@ -311,12 +315,12 @@ getControlValues <- function(pathToExcelFile) {
   # Query available worksheets
   sheets <- getSheets(wb)
   
-  number.sheets <- length(sheets)
-  
-  # Display error if there is less than three (3) sheets in the excel file
-  
-  if (number.sheets < 3) {
-    stop("Insufficient number of sheets detected in Template: required number of sheets = 3")
+  # Display error if missing sheets
+  if (!"Controls" %in% sheets) {
+    stopUser("Missing 'Controls' sheet in Template_v1.xlsx")
+  }
+  if (!"Agonist" %in% sheets) {
+    stopUser("Missing 'Agonist' sheet in Template_v1.xlsx")
   }
   
   
@@ -336,14 +340,13 @@ getControlValues <- function(pathToExcelFile) {
   
   
   # Apply (sub)function readInputFiles to create a different vector from each of the 3 sheets
-  controls <- readInputFiles(sheets[1])
-  agonist <- as.numeric(readInputFiles(sheets[2]))
-  vehicle <- readInputFiles(sheets[3])
+  controls <- readInputFiles("Controls")
+  agonist <- as.numeric(readInputFiles("Agonist"))
   
   
   
   # Fill the wanted data.frame using the 4 vectors
-  final <- data.frame(WELL_NAME,controls,agonistConc=agonist,vehicle, stringsAsFactors = FALSE)
+  final <- data.frame(WELL_NAME,controls,agonistConc=agonist, stringsAsFactors = FALSE)
   return(final)
 }
 

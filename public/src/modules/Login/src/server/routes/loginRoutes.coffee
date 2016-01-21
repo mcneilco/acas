@@ -38,11 +38,12 @@ exports.loginPage = (req, res) ->
 		resetPasswordOption = false
 
 	res.render 'login',
-		title: "ACAS Login"
+		title: config.all.client.moduleMenus.logoText+" Login"
 		scripts: []
 		user: user
 		message: errorMsg
 		resetPasswordOption: resetPasswordOption
+		logoText: config.all.client.moduleMenus.logoText
 
 exports.resetPost = (req, res) ->
 	console.log req.session
@@ -148,7 +149,7 @@ exports.resetpage = (req, res) ->
 		errorMsg = error[0]
 	if config.all.server.security.authstrategy is "database"
 		res.render 'passwordReset',
-			title: "ACAS reset"
+			title: config.all.client.moduleMenus.logoText+" reset"
 			scripts: []
 			user: user
 			message: errorMsg
@@ -166,13 +167,13 @@ exports.changePage = (req, res) ->
 			errorMsg = error[0]
 
 		res.render 'passwordChange',
-			title: "ACAS reset"
+			title: config.all.client.moduleMenus.logoText+" reset"
 			scripts: []
 			user: user
 			message: errorMsg
 	else
 		res.render 'login',
-			title: "ACAS login"
+			title: config.all.client.moduleMenus.logoText+" login"
 			scripts: []
 			user: user
 			message: "need login or admin"

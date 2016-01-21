@@ -97,6 +97,9 @@
           typeName: "fileValue",
           kindName: "reference file"
         }, {
+          typeName: "fileValue",
+          kindName: "source file"
+        }, {
           typeName: "clobValue",
           kindName: "data analysis parameters"
         }, {
@@ -113,7 +116,7 @@
           kindName: "image file"
         }, {
           typeName: "fileValue",
-          kindName: "report file"
+          kindName: "annotation file"
         }, {
           typeName: "codeValue",
           kindName: "model fit type"
@@ -453,11 +456,32 @@
           name: "Enhancement Ratio: value / (noAgonist + NC)",
           ignored: false
         }, {
+          codeType: "analysis parameter",
+          codeKind: "transformation",
+          codeOrigin: "ACAS DDICT",
+          code: "enhancementGraph",
+          name: "Enhancement Graph",
+          ignored: false
+        }, {
           codeType: "experiment metadata",
           codeKind: "file type",
           codeOrigin: "ACAS DDICT",
           code: "reference file",
           name: "Reference File",
+          ignored: false
+        }, {
+          codeType: "experiment metadata",
+          codeKind: "file type",
+          codeOrigin: "ACAS DDICT",
+          code: "source file",
+          name: "Source File",
+          ignored: false
+        }, {
+          codeType: "experiment metadata",
+          codeKind: "file type",
+          codeOrigin: "ACAS DDICT",
+          code: "annotation file",
+          name: "Report File",
           ignored: false
         }, {
           codeType: "model fit",

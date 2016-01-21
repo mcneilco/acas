@@ -422,6 +422,13 @@
             });
             return expect(filtErrors.length).toBeGreaterThan(0);
           });
+          it("should be valid when agonist control batch is entered and agonist control conc is ''", function() {
+            this.psap.get('agonistControl').set({
+              batchCode: "CMPD-87654399-01",
+              concentration: ''
+            });
+            return expect(this.psap.isValid()).toBeTruthy();
+          });
           it("should be invalid when agonist control batch is empty and agonist control conc is a number ", function() {
             var filtErrors;
             this.psap.get('agonistControl').set({
@@ -1677,7 +1684,18 @@
               return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
             });
           });
-          it("should show error if agonistControl batch is correct but conc is NaN or empty", function() {
+          it("should show error if agonistControl batch is correct but conc is NaN", function() {
+            this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
+            this.psapc.$('.bv_agonistControlBatch').keyup();
+            this.psapc.$('.bv_agonistControlConc').val("asdfg");
+            this.psapc.$('.bv_agonistControlConc').keyup();
+            waits(1000);
+            return runs(function() {
+              expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
+            });
+          });
+          it("should not show error if agonistControl batch is correct but conc is empty", function() {
             this.psapc.$('.bv_agonistControlBatch').val("CMPD-12345678-01");
             this.psapc.$('.bv_agonistControlBatch').keyup();
             this.psapc.$('.bv_agonistControlConc').val("");
@@ -1685,7 +1703,7 @@
             waits(1000);
             return runs(function() {
               expect(this.psapc.$('.bv_group_agonistControlBatch').hasClass("error")).toBeFalsy();
-              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeTruthy();
+              return expect(this.psapc.$('.bv_group_agonistControlConc').hasClass("error")).toBeFalsy();
             });
           });
           it("should show error if agonistControl batch is empty but conc is a number", function() {

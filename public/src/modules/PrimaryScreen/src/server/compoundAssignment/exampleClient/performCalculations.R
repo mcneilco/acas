@@ -1,4 +1,4 @@
-performCalculations <- function(resultTable, parameters) {
+performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun) {
   # exampleClient
   resultTable <- normalizeData(resultTable, parameters)
   
@@ -7,7 +7,7 @@ performCalculations <- function(resultTable, parameters) {
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
     if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters)]
+      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
     }
   }
   
@@ -130,6 +130,8 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMinLevel=overallMinLevel,
                                                        overallMaxLevel=overallMaxLevel, parameters), 
                 by= section]
+  } else if (normalization == "none") {
+    resultTable[, normalizedActivity := resultTable$activity]
   } else {
     warnUser("No normalization applied.")
     resultTable[, normalizedActivity := resultTable$activity]
@@ -177,7 +179,7 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
     + overallMaxLevel)
 }
 
-computeTransformedResults <- function(mainData, transformation, parameters) { 
+computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun) { 
   #switch on transformation
   # based on transformation (custom code for each), responds with a vector of the new transformation
   # Inputs:
@@ -247,6 +249,23 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
       stopUser("Cannot use enhancementRatio if any of the noAgonist + NCMean = 0")
     }
     return(mainCopy[, V1 := normalizedActivity / (transformed_noAgonist + NCMean)]$V1)
+  } else if (transformation == "enhancementGraph") {
+    if (!("transformed_noAgonist" %in% names(mainData))) {
+      mainData[, transformed_noAgonist:=getNoAgonist(parameters, .SD)]
+    }
+    if (dryRun) {
+      filePath <- paste0("experiments/", experimentCodeName, "/dryRun/images")
+    } else {
+      filePath <- paste0("experiments/", experimentCodeName, "/images")
+    }
+    source(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R"), local = TRUE)
+    saveComparisonTraces(mainData, filePath)
+    # Filenames: any rows with wellType other than 'test' are given an entry of NA
+    filePaths <- ifelse(
+      mainData$wellType == 'test',
+      file.path(filePath, paste0(mainData$assayBarcode, "_", mainData$batchCode, ".png")),
+      NA_character_)
+    return(filePaths)
   } else if (transformation == "null" || transformation == "" || transformation =="none") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)

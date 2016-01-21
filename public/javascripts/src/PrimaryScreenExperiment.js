@@ -394,7 +394,7 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, timeWindowErrors, transformationErrors, vehicleControl;
+      var agonistControl, agonistControlBlank, agonistControlConc, agonistControlConcFilled, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, timeWindowErrors, transformationErrors, vehicleControl;
       errors = [];
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
       errors.push.apply(errors, readErrors);
@@ -432,19 +432,19 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if ((agonistControl !== "" && agonistControl !== void 0 && agonistControl !== null) || (agonistControlConc !== "" && agonistControlConc !== void 0 && agonistControlConc !== null)) {
-        if (agonistControl === "" || agonistControl === void 0 || agonistControl === null || agonistControl === "invalid") {
-          errors.push({
-            attribute: 'agonistControlBatch',
-            message: "A registered batch number must be provided."
-          });
-        }
-        if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "" || agonistControlConc === null) {
-          errors.push({
-            attribute: 'agonistControlConc',
-            message: "Agonist control conc must be set"
-          });
-        }
+      agonistControlConcFilled = agonistControlConc !== "" && agonistControlConc !== void 0 && agonistControlConc !== null;
+      agonistControlBlank = agonistControl === "" || agonistControl === void 0 || agonistControl === null;
+      if ((agonistControl === "invalid") || (agonistControlConcFilled && agonistControlBlank)) {
+        errors.push({
+          attribute: 'agonistControlBatch',
+          message: "A registered batch number must be provided."
+        });
+      }
+      if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === null) {
+        errors.push({
+          attribute: 'agonistControlConc',
+          message: "Agonist control conc must be set"
+        });
       }
       vehicleControl = this.get('vehicleControl').get('batchCode');
       if (vehicleControl === "invalid") {
@@ -1937,7 +1937,8 @@
         return this.setExperimentNotSaved();
       } else {
         this.setExperimentSaved();
-        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        return this.checkForSourceFile();
       }
     };
 
@@ -2183,6 +2184,27 @@
       })(this));
     };
 
+    PrimaryScreenAnalysisController.prototype.checkForSourceFile = function() {
+      var displayName, sourceFile, sourceFileValue;
+      sourceFile = this.model.getSourceFile();
+      if ((sourceFile != null) && this.dataAnalysisController.parseFileNameOnServer === "") {
+        sourceFileValue = sourceFile.get('fileValue');
+        displayName = sourceFile.get('comments');
+        if (displayName == null) {
+          displayName = sourceFile.get('fileValue').split("/");
+          displayName = displayName[displayName.length - 1];
+        }
+        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
+        return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
+          return function() {
+            _this.dataAnalysisController.parseFileController.render();
+            return _this.dataAnalysisController.handleParseFileRemoved();
+          };
+        })(this));
+      }
+    };
+
     return PrimaryScreenAnalysisController;
 
   })(Backbone.View);
@@ -2316,6 +2338,13 @@
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
           return _this.fetchModel();
+        };
+      })(this));
+      this.$('.bv_primaryScreenDataAnalysisTab').on('shown', (function(_this) {
+        return function(e) {
+          if (_this.model.getAnalysisStatus().get('codeValue') === "not started") {
+            return _this.analysisController.checkForSourceFile();
+          }
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);

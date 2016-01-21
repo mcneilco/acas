@@ -30,8 +30,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   summaryInfo <- list(info = list(
       "Transfers" = nrow(logFile),
-      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error),
-      "User name" = recordedBy))
+      "Possible Transfer Errors" = sum(logFile$Possible.Transfer.Error)))
   
   containerTable <- getCompoundPlateInfo(unique(c(logFile$Source.Barcode, logFile$Destination.Barcode)))
   
@@ -43,12 +42,12 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   
   repeatNewBarcodes <- setdiff(logFileNewBarcodes, newBarcodeList)
   if(length(repeatNewBarcodes) > 0) {
-    stop(paste0("Some barcodes were marked as new in the log file but have already been registered: '",
+    stopUser(paste0("Some barcodes were marked as new in the log file but have already been registered: '",
                 paste(repeatNewBarcodes, collapse="', '"), "'. It is likely that this file has already been loaded."))
   }
   missingOldBarcodes <- setdiff(logFileOldBarcodes, oldBarcodeList)
   if(length(missingOldBarcodes) > 0) {
-    stop(paste0("Some barcodes were marked as old in the log file but have never been registered: '",
+    stopUser(paste0("Some barcodes were marked as old in the log file but have never been registered: '",
                 paste(missingOldBarcodes, collapse="', '"), 
                 "'. It is likely that this file depends on a file that has not yet been loaded. ",
                 "Check for other files that should be loaded first."))
@@ -83,7 +82,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     logFile <- logFile[!(is.na(logFile$Source.Id) & grepl("\\D01", logFile$Source.Well)), ]
     logFile <- logFile[logFile$Source.Id != "@00", ]
     if(nrow(logFile) == 0) {
-      stop(paste("Not all source plates have been registered. ",
+      stopUser(paste("Not all source plates have been registered. ",
                  "It is likely that this file depends on a file that has not yet been loaded. ",
                  "Check for other files that should be loaded first."))
     }
@@ -93,7 +92,7 @@ runMain <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
     logFile <- logFile[!is.na(logFile$Source.Id), ]
   } else {
     if(any(is.na(logFile$Source.Id))) {
-      stop(paste("Not all source plates have been registered. ",
+      stopUser(paste("Not all source plates have been registered. ",
            "It is likely that this file depends on a file that has not yet been loaded. ",
            "Check for other files that should be loaded first."))
     }
@@ -245,7 +244,7 @@ transferCompounds <- function(containerTable, logFile) {
     newSourceSet <- sourceTable
     newSourceSet$VOLUME <- sourceTable$VOLUME[1] - logRow$Amount.Transferred
     if (newSourceSet$VOLUME[1] < 0) {
-      stop(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
+      warnUser(paste0("More liquid was removed from well ", sourceTable$WELL_ID, " (", sourceTable$WELL_NAME, ") than was available."))
     } else if (newSourceSet$VOLUME[1] == 0) {
       newSourceSet <- data.frame()
     }
@@ -314,15 +313,19 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
   oldPlates <- lapply(oldPlates, function(x) {list(labelText=x)})
   
   response <- getURL(
-    paste(racas::applicationSettings$client.service.persistence.fullpath, "containers/findByLabels/jsonArray", sep=""),
+    paste(racas::applicationSettings$client.service.persistence.fullpath, "containers/findIdsByLabels/jsonArray", sep=""),
     customrequest='POST',
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(oldPlates))
   if (grepl("^<",response)) {
     stop (paste("The loader was unable to find the containers by barcodes. Instead, it got this response:", response))
   }  
-  
-  plateIdTranslation <- ldply(fromJSON(response), function(x) {data.frame(barcode=x$lsLabels[[1]]$labelText, plateId=x$id)})
+  response <- fromJSON(response)
+  if (length(oldPlates) != length(response)) {
+    stop(paste0("plate search returned wrong number of plates (containers/findIdsByLabels/jsonArray): ", toJSON(oldPlates)))
+  }
+  plateIdTranslation <- data.frame(barcode = vapply(oldPlates, getElement, "", name="labelText"), 
+                                   plateId = vapply(response, getElement, 1, name="id"))
   
   newWellInformation <- unique(logFile[logFile$Destination.Id < 0, c('Destination.Barcode', 'Destination.Well', 'Destination.Id')])
   newPlateIds <- plateIdTranslation$plateId[match(newWellInformation$Destination.Barcode, plateIdTranslation$barcode)]
@@ -351,7 +354,8 @@ saveNewWells <- function(newBarcodeList, logFile, lsTransaction, recordedBy, log
     # 5.66 seconds maybe a problem later?
     savedWells <- saveContainers(wellList)
     
-    newWells$wellId <- sapply(savedWells, function(x) x$id)
+    sortedSavedWells <- savedWells[match(newWells$wellCodeName, vapply(savedWells, getElement, "", "codeName"))]
+    newWells$wellId <- sapply(sortedSavedWells, function(x) x$id)
     
     # Save interactions
     newWells$interactionCodeName <- unlist(getAutoLabels(thingTypeAndKind="interaction_containerContainer",
@@ -384,8 +388,9 @@ registerNewPlates <- function(barcodes, lsTransaction, recordedBy, sourceFile) {
   plateList <- apply(plates,MARGIN=2,as.list)
   
   savedPlates <- saveContainers(plateList)
+  sortedSavedPlates <- savedPlates[match(plateCodeNameList, vapply(savedPlates, getElement, "", "codeName"))]
   
-  return(savedPlates)
+  return(sortedSavedPlates)
 }
 createPlateWithBarcode <- function(barcode, codeName, lsTransaction, recordedBy, sourceFile) {
   return(createContainer(
@@ -472,7 +477,7 @@ MarkContainersStatusIgnored <- function(idVector) {
     httpheader=c('Content-Type'='application/json'),
     postfields=toJSON(idList))
   if (grepl("^<",response)) {
-    stop("Server failed to respond to requests for valid container states")
+    stopUser("Server failed to respond to requests for valid container states")
   }
   containerStates <- fromJSON(response)
   
@@ -495,8 +500,7 @@ MarkContainersStatusIgnored <- function(idVector) {
       stop(paste0("The loader was unable to ignore your ", acasCategory, ". Instead, it got this response: ", response))
     }
   }
-  
-  ignoreContainerStates(containerStatesSimplified)
+  ignoreContainerStates(idList)
 }
 convertVolumes <- function (x, from, to) {
   if (from=="nL" && to=="uL") {
@@ -506,13 +510,16 @@ convertVolumes <- function (x, from, to) {
   } else if (from==to) {
     return(x)
   } else {
-    stop(paste("Units not understood: Cannot convert from", from, "to", to))
+    stopUser(paste("Units not understood: Cannot convert from", from, "to", to))
   }
 }
 bulkLoadSampleTransfers <- function(request) {
   # The top level function
   require(racas)
   options("scipen"=15)
+  globalMessenger <- messenger()$reset()
+  globalMessenger$devMode <- FALSE
+  
   # Collect the information from the request
   request <- as.list(request)
   fileName <- request$fileToParse
@@ -530,45 +537,56 @@ bulkLoadSampleTransfers <- function(request) {
   
   developmentMode <- FALSE
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
-  
-  # If the output has class simpleError, save it as an error
-  errorList <- list()
-  if(class(loadResult$value)[1]=="simpleError") {
-    errorList <- list(loadResult$value$message)
-    loadResult$errorList <- errorList
-    loadResult$value <- NULL
-  }
-  
-  # Save warning messages (but not the function call, as it is only useful while programming)
-  loadResult$warningList <- lapply(loadResult$warningList, function(x) x$message)
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
+  if (grepl("\\.csv$", fileName)) {
+    loadResult <- tryCatchLog(runMain(fileName,dryRun, testMode, developmentMode, recordedBy))
+    allTextErrors <- getErrorText(loadResult$errorList)
+    warningList <- getWarningText(loadResult$warningList)
+    summaryInfo <- loadResult$value
+    lsTransactionId <- loadResult$value$lsTransactionId
+  } else {
+    if (dryRun) {
+      loadResult <- tryCatchLog(runBulkLoadSampleMult(fileName,dryRun, testMode, developmentMode, recordedBy))
+      if (length(loadResult$errorList) > 0) { # Errors from runner of other code
+        allTextErrors <- getErrorText(loadResult$errorList)
+        warningList <- getWarningText(loadResult$warningList)
+      } else { # Errors within run code
+        allTextErrors <- loadResult$value$allTextErrors
+        warningList <- loadResult$value$allTextWarnings
+      }
+      summaryInfo <- list(info=loadResult$value$info)
+    } else {
+      t1 <- tempfile(fileext = ".R")
+      t2 <- tempfile(fileext = ".json")
+      write(toJSON(list(fileName=fileName, dryRun=dryRun, testMode=testMode, 
+                        developmentMode=developmentMode, recordedBy=recordedBy)), t2)
+      cmd <- 'out <- capture.output(source(file.path(racas::applicationSettings$appHome, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersEmail.R"), local=T))\n'
+      cmd <- paste0(cmd, 'out <- capture.output(runBulkLoadAndEmail(fromJSON(file="', t2, '")))')
+      write(cmd, t1)
+      system(paste0('Rscript ', t1), wait = FALSE)
+      summaryInfo <- list(info=list("Status" = "When the upload is complete, you will receive an email."))
+      allTextErrors <- list()
+      warningList <- list()
+    }
+    lsTransactionId <- NULL
   }
   
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
-  
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
   
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
+  htmlSummary <- createHtmlSummary(hasError,allTextErrors,hasWarning,warningList,summaryInfo=summaryInfo,dryRun)
   
   response <- list(
     commit= !hasError,
-    transactionId= loadResult$value$lsTransactionId,
+    transactionId= lsTransactionId,
     results= list(
-      id= loadResult$value$lsTransactionId,
+      id= lsTransactionId,
       path= getwd(),
       fileToParse= request$fileToParse,
       dryRun= request$dryRun,
@@ -579,4 +597,50 @@ bulkLoadSampleTransfers <- function(request) {
     errorMessages= errorMessages
   )
   return(response)
+}
+
+runBulkLoadSampleMult <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
+  targetDir <- tempfile(pattern = "bulkLoadT", tmpdir = racas::applicationSettings$server.file.server.path)
+  unzip(getUploadedFilePath(fileName), exdir = targetDir)
+  csvFiles <- list.files(targetDir, pattern = "\\.csv")
+  csvFiles <- file.path(basename(targetDir), csvFiles)
+  if (length(csvFiles) == 0) {
+    stopUser("No csv files found in zip file")
+  }
+  allTextErrors <- list()
+  allTextWarnings <- list()
+  allSummaryInfo <- list()
+  for (csvFile in csvFiles) {
+    blstMessenger <- Messenger$new(envir = environment())
+    blstMessenger$logger <- logger(logName = "com.acas.bulkLoadSampleTransfer.src.server.BulkLoadSampleTransfers.runBulkLoadSampleMult", reset=TRUE)
+    loadResult <- tryCatchLogM(runMain(csvFile, dryRun, testMode, developmentMode, recordedBy), blstMessenger)
+    textErrors <- getErrorText(loadResult$errorList)
+    if (length(textErrors) > 0) {
+      textErrors <- paste0(basename(csvFile), ": ", textErrors)
+    }
+    textWarnings <- getWarningText(loadResult$warningList)
+    if (length(textWarnings) > 0) {
+      textWarnings <- paste0(basename(csvFile), ": ", textWarnings)
+    }
+    allTextErrors <- c(allTextErrors, textErrors)
+    allTextWarnings <- c(allTextWarnings, textWarnings)
+    if (!is.null(loadResult$value$info)) {
+      info <- loadResult$value$info
+      names(info) <- paste0(basename(csvFile), ": ", names(info))
+      allSummaryInfo <- c(allSummaryInfo, info)
+    }
+  }
+  if(length(allSummaryInfo) == 0) {
+    allSummaryInfo <- NULL #Expected format, despite being weird
+  }
+  return(list(info = allSummaryInfo, allTextErrors=allTextErrors, allTextWarnings=allTextWarnings))
+}
+
+tryCatchLogM <- function(expr, MyMessenger = messenger()) {
+  # Used to get a new messenger to not interfere with tryCatchLog, could later just be an edit to tryCatchLog
+  output <- NULL
+  MyMessenger$capture_output({output <- expr})
+  return(list(value=output, 
+              errorList = MyMessenger$errors, 
+              warningList = MyMessenger$warnings))
 }

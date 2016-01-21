@@ -1,4 +1,4 @@
-performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrumentData=instrumentData) {
+performCalculationsStat1Stat2Seq <- function(resultTable, parameters, experimentCodeName, dryRun) {
   
   # This assumes that there is only one normalization rule passed through the GUI
   resultTable <- normalizeData(resultTable, parameters$normalizationRule)
@@ -12,7 +12,7 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, instrument
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
     if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters)]
+      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
     }
   }
   

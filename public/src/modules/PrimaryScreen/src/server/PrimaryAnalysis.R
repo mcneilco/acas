@@ -1677,25 +1677,6 @@ autoFlagWells <- function(resultTable, parameters) {
   
 }
 
-getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
-  if(is.null(numRows) && is.null(numCols)) {
-    stopUser("Internal error: unknown plate dimensions")
-  }
-  
-  if(is.null(numRows)) {
-    colDim <- ceiling((numCols / 12)) * 12
-    rowDim <- (colDim / 12) * 8
-  } else if (is.null(numCols)) {
-    rowDim <- ceiling((numRows / 8)) * 8
-    colDim <- (rowDim / 8) * 12
-  } else {
-    baseSize <- max(ceiling((numCols / 12)), ceiling((numRows / 8)))
-    colDim <- baseSize * 12
-    rowDim <- baseSize * 8
-  }
-  return(list(colDim=colDim, rowDim=rowDim))
-  
-}
 removeNonCurves <- function(analysisData) {
   # Removes non-curve analysis group data, leaving only enough information to create the 
   # analysis groups without states and values so treatment groups can be created
@@ -1954,9 +1935,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
   if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
-    resultTable <- performCalculations(resultTable, parameters)
+    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun)
   } else {
-    resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, instrumentData)
+    resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, experiment$codeName, dryRun)
   }
   
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
@@ -2004,16 +1985,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     analysisGroupBy <- groupBy
   }
   treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
-  save(treatmentGroupData, file="public/treatmentGroupData.Rda")
   analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
   if (agonistComparisonScreen) {
-    save(analysisGroupData, file="public/agonistCombineAGD.Rda")
     analysisGroupData <- analysisGroupData[, combineTwoAgonist(.SD), by=tempId]
   }
   analysisGroupData[, secondConc := NULL]
   treatmentGroupData[, secondConc := NULL]
-  
-
   
   
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
@@ -2203,8 +2180,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     analysisGroupDataLong[, parentId:=experimentId]
     
     # Removes blank rows
-    treatmentGroupDataLong <- treatmentGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
-    analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue))]
+    treatmentGroupDataLong <- treatmentGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue) & is.na(fileValue))]
+    analysisGroupDataLong <- analysisGroupDataLong[!(is.na(stringValue) & is.na(numericValue) & is.na(codeValue) & is.na(fileValue))]
     if (parameters$htsFormat) {
       analysisGroupDataLong <- removeNonCurves(analysisGroupDataLong)
     }
@@ -2239,9 +2216,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 combineTwoAgonist <- function(agData) {
   if(nrow(agData) == 1) {
     return(agData)
-    outputTable <- copy(agData)
-    # outputTable[, transformed_noAgonist := agData[agonistConc == 0, normalizedActivity]]
-    return(outputTable)
   } else if (nrow(agData) > 2) { # This should not happen, these should be curves
     stop(paste("Too many rows for combineTwoAgonist:", nrow(agData)))
   } else if (sum(agData$agonistConc == 0) != 1) {
@@ -2507,27 +2481,26 @@ formatColumnNameChangeDT <- function(colDataTable) {
   return(list(computerToHuman=computerToHuman, humanToComputer=humanToComputer))
 }
 getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
-  # Parameters will be used later, not sure which ones yet
-  ##### TODO: Sam allow parameters for 1.5.1
-  #
   # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
   # parameters: list, currently only used for aggregationMethod
   # groupBy: character vector of grouping columns for which subjects belong to one treatment group
-  
   groupBy <- c(groupBy, "tempParentId")
   
   # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                   "activity", "normalizedActivity",
-                  grep("^transformed_", names(batchDataTable), value=TRUE)
+                  grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "numeric"], value=TRUE)
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
+  uniqueTarget <- grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "character"], value=TRUE)
   # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
-                grep("^transformed_", names(batchDataTable), value=TRUE)
+                grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "numeric"], value=TRUE)
   )
+  
+  uniqueResults <- batchDataTable[ , lapply(.SD, unique), by = groupBy, .SDcols = uniqueTarget]
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x, na.rm = T))},
@@ -2547,7 +2520,9 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   setkeyv(sds, groupBy)
   setkeyv(numRep, groupBy)
   setkeyv(aggregationResults, groupBy)
-  treatmentData <- sds[aggregationResults][numRep]
+  setkeyv(uniqueResults, groupBy)
+  treatmentData <- sds[aggregationResults][numRep][uniqueResults]
+  
   setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
@@ -2611,7 +2586,6 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   # resultTable is a Data Table, tempId is a required column, tempParentId is optional
   # resultTypes is a data table with information about each valueKind/columnHeader
   # forceBatchCodeAdd boolean to decide if batch code state kind is changed to match others
-  
   library(reshape2)
   
   idVars <- "tempId"
@@ -2634,6 +2608,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   numRepColumns <- intersect(numRepColumns, names(resultTable))
   codeResultColumns <- resultTypes[valueType=="codeValue" & usedCol, columnName]
   stringResultColumns <- resultTypes[valueType=="stringValue" & usedCol, columnName]
+  inlineFileResultColumns <- resultTypes[valueType=="inlineFileValue" & usedCol, columnName]
   
   ### Melt each group
   numericResults <- melt(resultTable, id.vars=idVars, measure.vars=numericResultColumns, 
@@ -2647,6 +2622,14 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   stringResults <- melt(resultTable, id.vars=idVars, measure.vars=stringResultColumns, 
                         variable.name="columnName", value.name="stringValue", 
                         variable.factor = FALSE)
+  inlineFileResults <- melt(resultTable, id.vars=idVars, measure.vars=inlineFileResultColumns, 
+                            variable.name="columnName", value.name="fileValue", 
+                            variable.factor = FALSE)
+  
+  if (!"fileValue" %in% names(inlineFileResults)) {
+    inlineFileResults[, fileValue := NA_character_]
+  }
+  inlineFileResults[, comments := basename(fileValue)]
   
   ### Combine numericValues with their standard deviations and number of replicates
   keyCols <- c(idVars, "columnName")
@@ -2677,7 +2660,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   codeResults <- merge(codeResults, codeConcDT, all.x = TRUE)
   
   # Combines all tables, filling with NA
-  longResults <- as.data.table(rbind.fill(numericResults, codeResults, stringResults))
+  longResults <- rbindlist(list(numericResults, codeResults, stringResults, inlineFileResults), fill = TRUE)
   
   # Get publicData, stateType, stateKind, etc.
   resultTypesCopy <- copy(resultTypes)
@@ -2685,7 +2668,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   fullTable <- merge(longResults, resultTypesCopy, by = "columnName")
   
   if (forceBatchCodeAdd) {
-    fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
+    fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue) & is.na(fileValue))]
     fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     # If the only value in the tempId is a batch code, there was a missing value input, so we just remove it
     fullTable[, removeMe := (valueKind=="batch code" && .N==1), by=tempId]
@@ -2728,7 +2711,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   # Highest level function, runs everything else 
   #   externalFlagging should be TRUE when flagging is coming from a service,
   #   e.g. when called by spotfire
-  #save(request, file="public/request.Rda")
+  
   library('racas')
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE
