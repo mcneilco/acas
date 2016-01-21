@@ -2474,8 +2474,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         dbCommit(conn)
       }
 
-      rm(analysisGroupData, treatmentGroupData, subjectData)
-      gc()
     }
     
     #     if (!useRdap) {
