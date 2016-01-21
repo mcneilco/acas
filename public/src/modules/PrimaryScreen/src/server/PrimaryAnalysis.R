@@ -1607,24 +1607,22 @@ findLatePeakIndex <- function(stringElement, timePoints, latePeakThreshold) {
 
 
 autoFlagWells <- function(resultTable, parameters) {
-  # Load necessary library to run current function
+  # resultTable: a data.table with columns T_sequence, T_timePoints, "transformed_percent efficacy"
+  # parameters: list of parameters
+  # 
+  # returns update resultTable with added columns "autoFlagType", "autoFlagObservation", "autoFlagReason"
   library(data.table)
-
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
   
-  
   # Add fluorescent as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")
   
-  # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
-  
-
-  # Hard-code the start/end of the time window target for fluorescent wells
+  # Get the start/end of the time window target for fluorescent wells
   timeWindowStart <- parameters$fluorescentStart
   timeWindowEnd <- parameters$fluorescentEnd
   
-  # Hardcode the threshold step for determininf fluorescent wells
+  # Get the threshold step for determining fluorescent wells
   fluoroThreshold <- parameters$fluorescentStep
   
   # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
@@ -1637,8 +1635,9 @@ autoFlagWells <- function(resultTable, parameters) {
   wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
   wellsKO <- unname(wellsKO)
   
+  # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
   # Apply the function that determines if a well corresponds to a late peak  
-  wellsLate <- vapply(resultTable[, T_timePoints], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+  wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
   wellsLate <- unname(wellsLate)
 
   # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
