@@ -1859,6 +1859,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   allFlaggedTable <- resultTable[!is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  
+  rm(batchDataTable)
+  gc()
+
   # allFlaggedTable is only for treatment groups mising from treatmentGroupData
   allFlaggedTable <- allFlaggedTable[!(tempParentId %in% treatmentGroupData$tempId)]
   # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
@@ -2158,6 +2162,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
                                        experiment, parameters, user)
+    
+    rm(spotfireResultTable)
+    gc()
+                                       
     # TODO: loop or lapply to get all
     singleReport <- summaryInfo$reports[[1]]
     summaryInfo$info[[singleReport$title]] <- paste0(
@@ -2241,13 +2249,24 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       resultTable[, tempId:=index]
       subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
+      
+      rm(resultTable)
+	  gc()
+
       # Remove empty rows (getting rid of NA flags)
       subjectDataLong <- subjectDataLong[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
       
+      rm(treatmentGroupData)
+      gc()
+		
       analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis", 
                                               forceBatchCodeAdd = TRUE)
+                                              
+      rm(analysisGroupData)
+      gc()
+                                     
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows
@@ -2260,9 +2279,94 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       # Change subject hits to be saved in lowercase
       subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
       subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
-      lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
-                                  subjectData=subjectDataLong,
-                                  recordedBy=user, lsTransaction=lsTransaction)
+#       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
+#                                   subjectData=subjectDataLong,
+#                                   recordedBy=user, lsTransaction=lsTransaction)
+      analysisGroupData <- analysisGroupDataLong
+      rm(analysisGroupDataLong)
+      gc()
+      treatmentGroupData <- treatmentGroupDataLong
+      rm(treatmentGroupDataLong)
+      gc()
+      subjectData <- subjectDataLong
+      rm(subjectDataLong)
+      gc()
+      recordedBy <- user
+      
+      # 
+      # Args:
+      #   lsTransaction:          An id of the transaction
+      #   analysisGroupData:      A data.table of the analysis group data
+      #   treatmentGroupData:     A data.table of the treatment group data
+      #   subjectData:            A data.table of the subject data
+      #   recordedBy:             The username of the current user
+      #
+      #   Returns:
+      #     lsTransaction
+      
+      library('plyr')
+      
+      valueKindDF <- unique(data.frame(
+        valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+        valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+      ))
+      valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
+      validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+      
+      if(is.null(lsTransaction)) {
+        lsTransaction <- createLsTransaction()$id
+      }
+      
+      ### Analysis Group Data
+      # Not all of these will be filled
+      analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
+                                                                   analysisGroupData$stateKind)))
+      analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
+      
+      if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
+        analysisGroupData$publicData <- TRUE
+      }
+      if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
+        analysisGroupData$stateGroupIndex <- 1
+      }
+      
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
+      
+      analysisGroupData$lsTransaction <- lsTransaction
+      analysisGroupData$recordedBy <- recordedBy
+      analysisGroupData$lsType <- "default"
+      analysisGroupData$lsKind <- "default"
+      
+      #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+      
+      if(!is.null(treatmentGroupData)) {
+        ### TreatmentGroup Data
+        treatmentGroupData$lsTransaction <- lsTransaction
+        treatmentGroupData$recordedBy <- recordedBy
+        treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                                                      treatmentGroupData$stateKind)))
+        
+        treatmentGroupData$lsType <- "default"
+        treatmentGroupData$lsKind <- "default"
+        
+      }
+      
+      if(!is.null(subjectData)) {
+        ### subject Data
+        subjectData$lsTransaction <- lsTransaction
+        subjectData$recordedBy <- recordedBy
+        subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-", 
+                                                               subjectData$stateKind)))
+        subjectData$lsType <- "default"
+        subjectData$lsKind <- "default"
+      }
+      
+      saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData, 
+                               appendCodeName = list(analysisGroup = "curve id")) 
+      rm(analysisGroupData, treatmentGroupData, subjectData)
+      gc()
     }
     
     #     if (!useRdap) {
