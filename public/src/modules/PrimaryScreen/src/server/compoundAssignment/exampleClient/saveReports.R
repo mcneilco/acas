@@ -21,6 +21,7 @@ saveTxtReport <- function(inputTable, saveLocation, experiment, parameters, reco
   # Change well type names
   translationList <- list(
     test = "Tested Batch", 
+    VC = "Vehicle Control",
     PC = "Positive Control",
     NC = "Negative Control",
     BLANK = "Blank")
@@ -28,6 +29,15 @@ saveTxtReport <- function(inputTable, saveLocation, experiment, parameters, reco
   
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
   inputTable <- data.table(inputTable)
+  
+  # Add path to inlineFileValues
+  resultTypes <- fread("public/src/modules/PrimaryScreen/src/conf/savingSettings.csv")
+  inlineFileValueColumns <- resultTypes[valueType == "inlineFileValue", columnName]
+  for (ifvc in inlineFileValueColumns) {
+    if (ifvc %in% names(inputTable)) {
+      inputTable[!is.na(get(ifvc)), eval(ifvc) := paste0(racas::applicationSettings$server.nodeapi.path, '/dataFiles/', get(ifvc))]
+    }
+  }
   
   fileLocation <- file.path(saveLocation,"allData-DRAFT.txt")
   write.table(inputTable, file=fileLocation, quote=TRUE, na="", row.names=FALSE, sep="\t")

@@ -4,6 +4,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   # Change well type names
   translationList <- list(
     test = "Compound Discrete (Tested Lot)", 
+    VC = "Vehicle Control",
     PC = "Positive Control",
     NC = "Negative Control",
     BLANK = "Blank")
