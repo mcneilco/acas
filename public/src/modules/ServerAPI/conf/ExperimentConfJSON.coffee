@@ -420,7 +420,7 @@
 				labelSeparator: "-"
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_experiment"
-				latestNumber:1
+				latestNumber:0
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

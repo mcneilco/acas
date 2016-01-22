@@ -24,7 +24,7 @@
     cronConfig = require('../public/javascripts/conf/StartupCronJobsConfJSON.js');
     persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs";
     codeInt = 1;
-    if ((cronConfig != null ? cronConfig.jobsToStart : void 0) != null) {
+    if (cronConfig.jobsToStart != null) {
       ref = cronConfig.jobsToStart;
       for (i = 0, len = ref.length; i < len; i++) {
         spec = ref[i];

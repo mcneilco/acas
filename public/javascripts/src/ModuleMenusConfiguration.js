@@ -34,6 +34,11 @@
       autoLaunchName: "experiment_base"
     }, {
       isHeader: false,
+      menuName: "Project Editor",
+      mainControllerClassName: "ProjectController",
+      autoLaunchName: "project"
+    }, {
+      isHeader: false,
       menuName: "Data Viewer",
       autoLaunchName: "dataViewer"
     }, {
@@ -63,6 +68,10 @@
       isHeader: false,
       menuName: "Experiment Browser",
       mainControllerClassName: "ExperimentBrowserController"
+    }, {
+      isHeader: false,
+      menuName: "Project Browser",
+      mainControllerClassName: "ProjectBrowserController"
     }, {
       isHeader: true,
       menuName: "Admin"

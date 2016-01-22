@@ -72,6 +72,17 @@
 				kindName: "project name"
 			]
 
+		labelsequences:
+			[
+				digits: 8
+				groupDigits: false
+				labelPrefix: "PROJ"
+				labelSeparator: "-"
+				labelTypeAndKind: "id_codeName"
+				thingTypeAndKind: "project_project"
+				latestNumber:0
+			]
+
 		ddicttypes:
 			[
 				typeName: "project"

@@ -113,6 +113,16 @@
               };
             })(this));
           }
+          if (resp.lsTags != null) {
+            if (!(resp.lsTags instanceof TagList)) {
+              resp.lsTags = new TagList(resp.lsTags);
+            }
+            resp.lsTags.on('change', (function(_this) {
+              return function() {
+                return _this.trigger('change');
+              };
+            })(this));
+          }
           this.set(resp);
           this.createDefaultLabels();
           this.createDefaultStates();

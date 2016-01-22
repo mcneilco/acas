@@ -6,8 +6,9 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
-	app.post '/api/validateName/:componentOrAssembly', exports.validateName
+	app.post '/api/validateName', exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies
+	app.get '/api/genericSearch/things/:searchTerm', exports.genericThingSearch
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -17,8 +18,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
-	app.post '/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName
+	app.post '/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies
+	app.get '/api/genericSearch/things/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericThingSearch
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -76,7 +78,7 @@ updateThing = (thing, testMode, callback) ->
 				body: thing
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200 and json.codeName?
+				if !error && response.statusCode == 200 and json.id?
 					callback json
 				else
 					console.log 'got ajax error trying to update lsThing'
@@ -144,6 +146,7 @@ postThing = (isBatch, req, resp) ->
 					console.log error
 					console.log json
 					console.log response
+					resp.end JSON.stringify "update lsThing failed"
 			)
 
 exports.postThingParent = (req, resp) ->
@@ -219,15 +222,23 @@ exports.validateName = (req, resp) ->
 			body: req.body.data
 			json: true
 		, (error, response, json) =>
+			console.log "validate response"
+			console.log response.statusCode
+			console.log response.json
 			if !error && response.statusCode == 202
 				resp.json json
 			else if response.statusCode == 409
-				resp.json "not unique name"
+				console.log "not unique name - 409"
+				console.log error
+				console.log response
+				console.log json
+				resp.json json
 			else
-				console.log 'got ajax error trying to save thing parent'
+				console.log 'got ajax error trying to validate thing name'
 				console.log error
 				console.log json
 				console.log response
+				resp.json "validate name failed"
 		)
 
 exports.getAssemblies = (req, resp) ->
@@ -292,3 +303,33 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 				console.log response
 				callback json
 		)
+
+exports.genericThingSearch = (req, resp) ->
+	console.log "generic thing search"
+	console.log req.query.testMode
+	console.log global.specRunnerTestmode
+	if req.query.testMode is true or global.specRunnerTestmode is true
+		resp.end JSON.stringify "Stubs mode not implemented yet"
+	else
+		config = require '../conf/compiled/conf.js'
+		console.log "search req"
+		console.log req
+		if req.query.lsType?
+			typeFilter = "lsType=" + req.query.lsType
+		if req.query.lsKind?
+			kindFilter = "lsKind=" + req.query.lsKind
+		searchTerm = "q=" + req.params.searchTerm
+
+		searchParams = ""
+		if typeFilter?
+			searchParams += typeFilter + "&"
+		if kindFilter?
+			searchParams += kindFilter + "&"
+		searchParams += searchTerm
+
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?"+searchParams
+		#		baseurl = config.all.client.service.persistence.fullpath+"lsthings/search?lsType=batch&q="+req.params.searchTerm
+		console.log "generic thing search baseurl"
+		console.log baseurl
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)

@@ -73,6 +73,7 @@ exports.applicationScripts = [
 	"/javascripts/src/PrimaryScreenAppController.js",
 	"/javascripts/src/PrimaryScreenProtocol.js",
 	"/javascripts/src/Project.js",
+	"/javascripts/src/ProjectBrowser.js",
 	"/javascripts/src/ProtocolBrowser.js",
 	"/javascripts/src/TagList.js"
 ];
