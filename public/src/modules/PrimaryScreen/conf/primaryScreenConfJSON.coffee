@@ -29,6 +29,9 @@
 			,
 				kindName: "flag file"
 				typeName: "fileValue"
+			,
+				kindName: "dryrun flag file"
+				typeName: "fileValue"
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.genericDataParserConfJSON = window.genericDataParserConfJSON or {} else exports)

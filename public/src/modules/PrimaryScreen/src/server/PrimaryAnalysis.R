@@ -80,8 +80,10 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  # Sort the data
-  setkeyv(resultTable, c("assayBarcode","row","column"))
+  # Sort the data ? Why do this ?
+  if (all(c("row","column") %in% names(resultTable))) {
+    setkeyv(resultTable, c("assayBarcode","row","column"))
+  }
   
   resultTable[ , flag := as.character(NA)]
   
@@ -818,7 +820,6 @@ validateInputFiles <- function(dataDirectory) {
   #lack of protocol
   #no files
   #uneven files (no match or different lengths)
-  #save(dataDirectory, file="dataDirectory.Rda")
   #collect the names of files
   fileList <- list.files(path = dataDirectory, pattern = "\\.stat[^\\.]*", full.names = TRUE)
   seqFileList <- list.files(path = dataDirectory, pattern = "\\.seq\\d$", full.names = TRUE)
@@ -1388,6 +1389,8 @@ getReadOrderTable <- function(readList) {
   # Input:  readList (list of lists)
   # Output: readsTable (data.table)
   
+  library(plyr)
+  
   readsTable <- data.table(ldply(readList, function(item) {
     data.frame(
       userReadOrder = item$readNumber,
@@ -1933,10 +1936,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     lsTransaction <- 1345
   }
+  
+  serverFlagFileLocation <- NULL
   if (dryRun && !testMode) {
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
+    if (!is.null(flaggedWells) && flaggedWells != "") {
+      serverFlagFileLocation <- saveAcasFileToExperiment(
+        flaggedWells, experiment, 
+        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction, deleteOldFile = FALSE)
+    }
   }
   
   if (dryRun) {
@@ -2077,7 +2087,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     # Change subject hits to be saved in lowercase
-    subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
+    subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "hit", codeValue := "hit"]
     subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
     lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                 subjectData=subjectDataLong,
@@ -2097,6 +2107,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   summaryInfo$info$"Original Data File" <- paste0(
     '<a href="', getAcasFileLink(serverFileLocation, login=T), '" target="_blank">Original Data File</a>')
+  if (!is.null(serverFlagFileLocation)) {
+    summaryInfo$info$"Original Flag File" <- paste0(
+      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
+  }
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
@@ -2411,7 +2425,10 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   setkeyv(numRep, groupBy)
   setkeyv(aggregationResults, groupBy)
   setkeyv(uniqueResults, groupBy)
-  treatmentData <- sds[aggregationResults][numRep][uniqueResults]
+  treatmentData <- sds[aggregationResults][numRep]
+  if (nrow(uniqueResults) > 0) {
+    treatmentData <- treatmentData[uniqueResults]
+  }
   
   setnames(treatmentData, "tempParentId", "tempId")
   
