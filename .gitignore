@@ -1,4 +1,5 @@
 .Rproj.user
+*.Rproj
 .Rhistory
 .RData
 !.RData
@@ -8,10 +9,14 @@ acas-host3.Rproj
 Gruntfile.js
 .idea/*
 conf/compiled/*
-r_libs/*
-acas_custom/*
-node_modules/*
+r_libs
+acas_custom
+node_modules
+privateUploads
+privateTempFiles
 acas.log
 racas.log
 public/src/conf/conf.js
-
+bin/*.pid
+bin/mpm-accept.*
+bin/rewrite-map.*

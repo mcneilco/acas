@@ -17,7 +17,7 @@ basicRScriptPreValidation = (payload) ->
 
 	return result
 
-exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preValidationFunction) ->
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	rScriptCommand = config.all.server.rscript
@@ -87,7 +87,7 @@ exports.runRFunction = (request, rScript, rFunction, returnFunction, preValidati
 						catch error
 							console.log error
 
-exports.runRApacheFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -258,6 +258,21 @@ exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 				unless (ignoreSaved and v.id?)
 					fvs.push v
 	fvs
+
+exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
+	fvs = []
+	unless collection.lsStates?
+		collection = JSON.parse collection
+	for state in collection.lsStates
+		vals = state.lsValues
+		for v in vals
+			if (v.lsType == 'fileValue' && !v.ignored && v.fileValue != "" && v.fileValue != undefined)
+				unless (ignoreSaved and v.id?)
+					fvs.push v
+	if fvs.length > 0
+		return fvs
+	else
+		return null
 
 controllerRedirect= require '../conf/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->

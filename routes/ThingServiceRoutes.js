@@ -80,7 +80,7 @@
         return callback(thing);
       } else {
         config = require('../conf/compiled/conf.js');
-        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.code;
+        baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + thing.lsType + "/" + thing.lsKind + "/" + thing.codeName + "?with=nestedfull";
         request = require('request');
         return request({
           method: 'PUT',
@@ -89,12 +89,13 @@
           json: true
         }, (function(_this) {
           return function(error, response, json) {
-            if (!error && response.statusCode === 200) {
+            if (!error && response.statusCode === 200 && (json.codeName != null)) {
               return callback(json);
             } else {
               console.log('got ajax error trying to update lsThing');
               console.log(error);
-              return console.log(response);
+              console.log(response);
+              return callback("update lsThing failed");
             }
           };
         })(this));
@@ -157,6 +158,8 @@
         baseurl = config.all.client.service.persistence.fullpath + "lsthings/" + req.params.lsType + "/" + req.params.lsKind;
         if (isBatch) {
           baseurl += "/?parentIdOrCodeName=" + req.params.parentCode;
+        } else {
+          baseurl += "?with=nestedfull";
         }
         request = require('request');
         return request({
@@ -262,16 +265,11 @@
     } else {
       config = require('../conf/compiled/conf.js');
       baseurl = config.all.client.service.persistence.fullpath + "lsthings/validate";
-      if (req.params.componentOrAssembly === "component") {
-        baseurl += "?uniqueName=true";
-      } else {
-        baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true";
-      }
       request = require('request');
       return request({
         method: 'POST',
         url: baseurl,
-        body: req.body.modelToSave,
+        body: req.body.data,
         json: true
       }, (function(_this) {
         return function(error, response, json) {
@@ -282,7 +280,7 @@
           } else {
             console.log('got ajax error trying to save thing parent');
             console.log(error);
-            console.log(jsonthing);
+            console.log(json);
             return console.log(response);
           }
         };

@@ -168,6 +168,19 @@
       return itx;
     };
 
+    LsThingItxList.prototype.getItxByItxThingTypeAndKind = function(itxType, itxKind, itxThing, itxThingType, itxThingKind) {
+      var itxArray, itxByItxThing;
+      itxArray = this.getItxByTypeAndKind(itxType, itxKind);
+      itxByItxThing = _.filter(itxArray, function(itx) {
+        if (itx.get(itxThing) instanceof Backbone.Model) {
+          return (itx.get(itxThing).get('lsType') === itxThingType) && (itx.get(itxThing).get('lsKind') === itxThingKind);
+        } else {
+          return (itx.get(itxThing).lsType === itxThingType) && (itx.get(itxThing).lsKind === itxThingKind);
+        }
+      });
+      return itxByItxThing;
+    };
+
     LsThingItxList.prototype.getOrderedItxList = function(type, kind) {
       var i, itxs, nextItx, orderedItx;
       itxs = this.getItxByTypeAndKind(type, kind);

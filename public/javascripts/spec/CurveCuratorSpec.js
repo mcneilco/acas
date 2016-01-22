@@ -390,7 +390,7 @@
           return expect(this.kpc.knockoutReasonList).toBeDefined;
         });
         return it("should have a set of pick list models", function() {
-          return expect(this.kpc.knockoutReasonList.models.length) > 1;
+          return expect(this.kpc.knockoutObservationList.models.length) > 1;
         });
       });
       return describe("should trigger event when ok button is clicked and return an observation", function() {

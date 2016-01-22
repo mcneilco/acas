@@ -3,6 +3,8 @@
 
   global.logger = require("./routes/Logger");
 
+  require('./src/ConsoleLogWinstonOverride');
+
   csUtilities = require("./public/src/conf/CustomerSpecificServerFunctions.js");
 
   startApp = function() {
@@ -36,93 +38,114 @@
     loginRoutes = require('./routes/loginRoutes');
     loginRoutes.setupAPIRoutes(app);
 
-  	routeSet_1 = require("./routes/BaseEntityServiceRoutes.js");
+  	routeSet_1 = require("./routes/AdminPanelRoutes.js");
 	if (routeSet_1.setupAPIRoutes) {
 		routeSet_1.setupAPIRoutes(app); }
-	routeSet_2 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
+	routeSet_2 = require("./routes/BaseEntityServiceRoutes.js");
 	if (routeSet_2.setupAPIRoutes) {
 		routeSet_2.setupAPIRoutes(app); }
-	routeSet_3 = require("./routes/BulkLoadSampleTransfersRoutes.js");
+	routeSet_3 = require("./routes/BulkLoadContainersFromSDFRoutes.js");
 	if (routeSet_3.setupAPIRoutes) {
 		routeSet_3.setupAPIRoutes(app); }
-	routeSet_4 = require("./routes/CmpdRegBulkLoaderRoutes.js");
+	routeSet_4 = require("./routes/BulkLoadSampleTransfersRoutes.js");
 	if (routeSet_4.setupAPIRoutes) {
 		routeSet_4.setupAPIRoutes(app); }
-	routeSet_5 = require("./routes/CodeTableServiceRoutes.js");
+	routeSet_5 = require("./routes/CIExcelCompoundPropertiesApp.js");
 	if (routeSet_5.setupAPIRoutes) {
 		routeSet_5.setupAPIRoutes(app); }
-	routeSet_6 = require("./routes/ControllerRedirectRoutes.js");
+	routeSet_6 = require("./routes/CmpdRegBulkLoaderRoutes.js");
 	if (routeSet_6.setupAPIRoutes) {
 		routeSet_6.setupAPIRoutes(app); }
-	routeSet_7 = require("./routes/CurveCuratorRoutes.js");
+	routeSet_7 = require("./routes/CodeTableServiceRoutes.js");
 	if (routeSet_7.setupAPIRoutes) {
 		routeSet_7.setupAPIRoutes(app); }
-	routeSet_8 = require("./routes/DocForBatchesRoutes.js");
+	routeSet_8 = require("./routes/ControllerRedirectRoutes.js");
 	if (routeSet_8.setupAPIRoutes) {
 		routeSet_8.setupAPIRoutes(app); }
-	routeSet_9 = require("./routes/DoseResponseFitRoutes.js");
+	routeSet_9 = require("./routes/CreateLiveDesignLiveReportForACAS.js");
 	if (routeSet_9.setupAPIRoutes) {
 		routeSet_9.setupAPIRoutes(app); }
-	routeSet_10 = require("./routes/ExperimentBrowserRoutes.js");
+	routeSet_10 = require("./routes/CronScriptRunnerRoutes.js");
 	if (routeSet_10.setupAPIRoutes) {
 		routeSet_10.setupAPIRoutes(app); }
-	routeSet_11 = require("./routes/ExperimentServiceRoutes.js");
+	routeSet_11 = require("./routes/CurveCuratorRoutes.js");
 	if (routeSet_11.setupAPIRoutes) {
 		routeSet_11.setupAPIRoutes(app); }
-	routeSet_12 = require("./routes/FileServices.js");
+	routeSet_12 = require("./routes/DataViewerRoutes.js");
 	if (routeSet_12.setupAPIRoutes) {
 		routeSet_12.setupAPIRoutes(app); }
-	routeSet_13 = require("./routes/GeneDataQueriesRoutes.js");
+	routeSet_13 = require("./routes/DocForBatchesRoutes.js");
 	if (routeSet_13.setupAPIRoutes) {
 		routeSet_13.setupAPIRoutes(app); }
-	routeSet_14 = require("./routes/GenericDataParserRoutes.js");
+	routeSet_14 = require("./routes/DoseResponseFitRoutes.js");
 	if (routeSet_14.setupAPIRoutes) {
 		routeSet_14.setupAPIRoutes(app); }
-	routeSet_15 = require("./routes/LabelServiceRoutes.js");
+	routeSet_15 = require("./routes/ExcelCompundInfoAppRoutes.js");
 	if (routeSet_15.setupAPIRoutes) {
 		routeSet_15.setupAPIRoutes(app); }
-	routeSet_16 = require("./routes/Logger.js");
+	routeSet_16 = require("./routes/ExperimentBrowserRoutes.js");
 	if (routeSet_16.setupAPIRoutes) {
 		routeSet_16.setupAPIRoutes(app); }
-	routeSet_17 = require("./routes/LoggingRoutes.js");
+	routeSet_17 = require("./routes/ExperimentServiceRoutes.js");
 	if (routeSet_17.setupAPIRoutes) {
 		routeSet_17.setupAPIRoutes(app); }
-	routeSet_18 = require("./routes/PreferredBatchIdService.js");
+	routeSet_18 = require("./routes/FileServices.js");
 	if (routeSet_18.setupAPIRoutes) {
 		routeSet_18.setupAPIRoutes(app); }
-	routeSet_19 = require("./routes/PreferredEntityCodeService.js");
+	routeSet_19 = require("./routes/GenericDataParserRoutes.js");
 	if (routeSet_19.setupAPIRoutes) {
 		routeSet_19.setupAPIRoutes(app); }
-	routeSet_20 = require("./routes/PrimaryScreenProtocolRoutes.js");
+	routeSet_20 = require("./routes/LabelServiceRoutes.js");
 	if (routeSet_20.setupAPIRoutes) {
 		routeSet_20.setupAPIRoutes(app); }
-	routeSet_21 = require("./routes/PrimaryScreenRoutes.js");
+	routeSet_21 = require("./routes/Logger.js");
 	if (routeSet_21.setupAPIRoutes) {
 		routeSet_21.setupAPIRoutes(app); }
-	routeSet_22 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_22 = require("./routes/LoggingRoutes.js");
 	if (routeSet_22.setupAPIRoutes) {
 		routeSet_22.setupAPIRoutes(app); }
-	routeSet_23 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_23 = require("./routes/OpenExptWithQueryTool.js");
 	if (routeSet_23.setupAPIRoutes) {
 		routeSet_23.setupAPIRoutes(app); }
-	routeSet_24 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_24 = require("./routes/PreferredBatchIdService.js");
 	if (routeSet_24.setupAPIRoutes) {
 		routeSet_24.setupAPIRoutes(app); }
-	routeSet_25 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_25 = require("./routes/PreferredEntityCodeService.js");
 	if (routeSet_25.setupAPIRoutes) {
 		routeSet_25.setupAPIRoutes(app); }
-	routeSet_26 = require("./routes/SetupRoutes.js");
+	routeSet_26 = require("./routes/PrimaryScreenProtocolRoutes.js");
 	if (routeSet_26.setupAPIRoutes) {
 		routeSet_26.setupAPIRoutes(app); }
-	routeSet_27 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_27 = require("./routes/PrimaryScreenRoutes.js");
 	if (routeSet_27.setupAPIRoutes) {
 		routeSet_27.setupAPIRoutes(app); }
-	routeSet_28 = require("./routes/ThingServiceRoutes.js");
+	routeSet_28 = require("./routes/ProjectServiceRoutes.js");
 	if (routeSet_28.setupAPIRoutes) {
 		routeSet_28.setupAPIRoutes(app); }
-	routeSet_29 = require("./routes/ValidateCloneNameService.js");
+	routeSet_29 = require("./routes/ProtocolServiceRoutes.js");
 	if (routeSet_29.setupAPIRoutes) {
 		routeSet_29.setupAPIRoutes(app); }
+	routeSet_30 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	if (routeSet_30.setupAPIRoutes) {
+		routeSet_30.setupAPIRoutes(app); }
+	routeSet_31 = require("./routes/SarRenderingServiceRoutes.js");
+	if (routeSet_31.setupAPIRoutes) {
+		routeSet_31.setupAPIRoutes(app); }
+	routeSet_32 = require("./routes/ServerUtilityFunctions.js");
+	if (routeSet_32.setupAPIRoutes) {
+		routeSet_32.setupAPIRoutes(app); }
+	routeSet_33 = require("./routes/SetupRoutes.js");
+	if (routeSet_33.setupAPIRoutes) {
+		routeSet_33.setupAPIRoutes(app); }
+	routeSet_34 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	if (routeSet_34.setupAPIRoutes) {
+		routeSet_34.setupAPIRoutes(app); }
+	routeSet_35 = require("./routes/ThingServiceRoutes.js");
+	if (routeSet_35.setupAPIRoutes) {
+		routeSet_35.setupAPIRoutes(app); }
+	routeSet_36 = require("./routes/ValidateCloneNameService.js");
+	if (routeSet_36.setupAPIRoutes) {
+		routeSet_36.setupAPIRoutes(app); }
 
     http.createServer(app).listen(app.get('port'), function() {
       return console.log("ACAS API server listening on port " + app.get('port'));

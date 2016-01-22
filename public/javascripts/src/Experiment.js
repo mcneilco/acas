@@ -373,6 +373,7 @@
     extend(ExperimentBaseController, superClass);
 
     function ExperimentBaseController() {
+      this.displayInReadOnlyMode = bind(this.displayInReadOnlyMode, this);
       this.getNextLabelSequence = bind(this.getNextLabelSequence, this);
       this.handleSaveClicked = bind(this.handleSaveClicked, this);
       this.updateEditable = bind(this.updateEditable, this);
@@ -509,6 +510,7 @@
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
       this.setupProjectSelect();
       this.setupAttachFileListController();
+      this.setupCustomExperimentMetadataController();
       this.render();
       this.listenTo(this.model, 'sync', this.modelSyncCallback);
       this.listenTo(this.model, 'change', this.modelChangeCallback);
@@ -532,8 +534,12 @@
       ExperimentBaseController.__super__.render.call(this);
       if (this.model.isNew()) {
         this.$('.bv_experimentName').attr('disabled', 'disabled');
+        this.$('.bv_openInQueryToolWrapper').hide();
       } else {
         this.setupExptNameChkbx();
+        this.$('.bv_openInQueryToolWrapper').show();
+        this.$('.bv_queryToolDisplayName').html(window.conf.service.result.viewer.displayName);
+        this.$('.bv_openInQueryToolLink').attr('href', "/openExptInQueryTool?experiment=" + this.model.get('codeName'));
       }
       return this;
     };
@@ -637,6 +643,19 @@
         collection: this.model.get('lsTags')
       });
       return this.tagListController.render();
+    };
+
+    ExperimentBaseController.prototype.setupCustomExperimentMetadataController = function() {
+      var customExperimentMetaDataState, experimentStates;
+      experimentStates = this.model.get('lsStates');
+      customExperimentMetaDataState = experimentStates.getStatesByTypeAndKind("metadata", "custom experiment metadata");
+      if (customExperimentMetaDataState.length > 0) {
+        this.customerExperimentMetadataListController = new CustomExperimentMetadataListController({
+          el: this.$('.bv_custom_experiment_metadata'),
+          model: this.model
+        });
+        return this.customerExperimentMetadataListController.render();
+      }
     };
 
     ExperimentBaseController.prototype.setUseProtocolParametersDisabledState = function() {
@@ -899,6 +918,11 @@
         }));
       }
       return this.saveEntity();
+    };
+
+    ExperimentBaseController.prototype.displayInReadOnlyMode = function() {
+      ExperimentBaseController.__super__.displayInReadOnlyMode.call(this);
+      return this.$('.bv_openInQueryToolWrapper').hide();
     };
 
     return ExperimentBaseController;

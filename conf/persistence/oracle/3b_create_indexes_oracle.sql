@@ -17,9 +17,6 @@ CREATE INDEX IDX_TG_S_SUBJECT_GROUP_ID ON TREATMENTGROUP_SUBJECT (SUBJECT_ID);
 
 --more indexes for FKs and other
 
-CREATE UNIQUE INDEX EXPT_LABEL_UNIQ ON EXPERIMENT_LABEL (LS_TYPE_AND_KIND, LABEL_TEXT, IGNORED);
-CREATE UNIQUE INDEX PROT_LABEL_UNIQ ON PROTOCOL_LABEL (LS_TYPE_AND_KIND, LABEL_TEXT, IGNORED);
-
 create index expt_label_txt_idx on experiment_label(label_text);
 create index prot_label_txt_idx on protocol_label(label_text);
 create index cont_label_txt_idx on container_label(label_text);

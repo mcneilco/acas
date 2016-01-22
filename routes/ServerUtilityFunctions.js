@@ -23,7 +23,7 @@
     return result;
   };
 
-  exports.runRFunction = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
+  exports.runRFunction_HIDDEN = function(request, rScript, rFunction, returnFunction, preValidationFunction) {
     var Tempfile, config, csUtilities, exec, preValErrors, rCommandFile, rScriptCommand, requestJSONFile, serverUtilityFunctions, stdoutFile;
     config = require('../conf/compiled/conf.js');
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
@@ -110,7 +110,7 @@
     })(this));
   };
 
-  exports.runRApacheFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
+  exports.runRFunction = function(req, rScript, rFunction, returnFunction, preValidationFunction) {
     var config, csUtilities, preValErrors, request, requestBody, runRFunctionServiceTestJSON, serverUtilityFunctions;
     request = require('request');
     config = require('../conf/compiled/conf.js');
@@ -307,6 +307,32 @@
       }
     }
     return fvs;
+  };
+
+  exports.getFileValuesFromCollection = function(collection, ignoreSaved) {
+    var fvs, i, j, len, len1, ref, state, v, vals;
+    fvs = [];
+    if (collection.lsStates == null) {
+      collection = JSON.parse(collection);
+    }
+    ref = collection.lsStates;
+    for (i = 0, len = ref.length; i < len; i++) {
+      state = ref[i];
+      vals = state.lsValues;
+      for (j = 0, len1 = vals.length; j < len1; j++) {
+        v = vals[j];
+        if (v.lsType === 'fileValue' && !v.ignored && v.fileValue !== "" && v.fileValue !== void 0) {
+          if (!(ignoreSaved && (v.id != null))) {
+            fvs.push(v);
+          }
+        }
+      }
+    }
+    if (fvs.length > 0) {
+      return fvs;
+    } else {
+      return null;
+    }
   };
 
   controllerRedirect = require('../conf/ControllerRedirectConf.js');

@@ -311,22 +311,24 @@ validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction
       lsType = lsType,
       lsKind = lsKind
     )
+    uValue <- userValue
     if(lsType == "codeValue") {
+      uValue <- tolower(uValue)
       stateValueList[["codeKind"]] <- lsKind
       stateValueList[["codeType"]] <- customExperimentMetaDataDdictType
       stateValueList[["codeOrigin"]] <- "ACAS DDICT"
     }
 
-    if(is.na(userValue)) {
+    if(is.na(uValue)) {
       stateValueList[[lsType]] <- NULL
     } else {
       stateValueList[[lsType]] <- switch(lsType,
-                                         "numericValue" = validateNumeric(userValue),
-                                         "dateValue" = validateDate(userValue),
-                                         "stringValue" = validateCharacter(userValue),
-                                         "codeValue" = userValue,
-                                         "clobValue" = userValue,
-                                         "urlValue" = userValue
+                                         "numericValue" = validateNumeric(uValue),
+                                         "dateValue" = validateDate(uValue),
+                                         "stringValue" = validateCharacter(uValue),
+                                         "codeValue" = uValue,
+                                         "clobValue" = uValue,
+                                         "urlValue" = uValue
       )
     }
 
@@ -2750,10 +2752,13 @@ getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolN
     if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experimentName)
     }
-    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
+    viewerLink <- paste0("http://", racas::applicationSettings$client.host, ":", 
+                         racas::applicationSettings$client.port, 
+                         "/openExptInQueryTool?experiment=", URLencode(experiment$codeName, reserved=TRUE))
+#     viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
+#                          URLencode(protocolName, reserved=TRUE), 
+#                          racas::applicationSettings$client.service.result.viewer.experimentPrefix,
+#                          URLencode(experimentName, reserved=TRUE))
   } else {
     viewerLink <- NULL
   }

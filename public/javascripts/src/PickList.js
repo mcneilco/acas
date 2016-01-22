@@ -82,34 +82,48 @@
 
     PickListOptionControllerForLsThing.prototype.initialize = function() {
       if (this.options.insertFirstOption != null) {
-        return this.insertFirstOption = this.options.insertFirstOption;
+        this.insertFirstOption = this.options.insertFirstOption;
       } else {
-        return this.insertFirstOption = null;
+        this.insertFirstOption = null;
+      }
+      if (this.options.displayCodeName != null) {
+        return this.displayCodeName = this.options.displayCodeName;
+      } else {
+        return this.displayCodeName = false;
       }
     };
 
     PickListOptionControllerForLsThing.prototype.render = function() {
       var bestName, displayValue, preferredNames;
-      preferredNames = _.filter(this.model.get('lsLabels'), function(lab) {
-        return lab.preferred && (lab.lsType === "name") && !lab.ignored;
-      });
-      bestName = _.max(preferredNames, function(lab) {
-        var rd;
-        rd = lab.recordedDate;
-        if (rd === "") {
-          return Infinity;
+      if (this.displayCodeName === true) {
+        if (this.model.get('codeName') != null) {
+          displayValue = this.model.get("codeName");
         } else {
-          return rd;
+          displayValue = this.insertFirstOption.get('name');
         }
-      });
-      if (bestName != null) {
-        displayValue = bestName.labelText;
-      } else if (this.model.get('codeName') != null) {
-        displayValue = this.model.get('codeName');
+        $(this.el).attr("value", this.model.get("id")).text(displayValue);
       } else {
-        displayValue = this.insertFirstOption.get('name');
+        preferredNames = _.filter(this.model.get('lsLabels'), function(lab) {
+          return lab.preferred && (lab.lsType === "name") && !lab.ignored;
+        });
+        bestName = _.max(preferredNames, function(lab) {
+          var rd;
+          rd = lab.recordedDate;
+          if (rd === "") {
+            return Infinity;
+          } else {
+            return rd;
+          }
+        });
+        if (bestName != null) {
+          displayValue = bestName.labelText;
+        } else if (this.model.get('codeName') != null) {
+          displayValue = this.model.get('codeName');
+        } else {
+          displayValue = this.insertFirstOption.get('name');
+        }
+        $(this.el).attr("value", this.model.get("id")).text(displayValue);
       }
-      $(this.el).attr("value", this.model.get("id")).text(displayValue);
       return this;
     };
 
@@ -255,6 +269,15 @@
       return PickListForLsThingsSelectController.__super__.constructor.apply(this, arguments);
     }
 
+    PickListForLsThingsSelectController.prototype.initialize = function() {
+      PickListForLsThingsSelectController.__super__.initialize.call(this);
+      if (this.options.displayCodeName != null) {
+        return this.displayCodeName = this.options.displayCodeName;
+      } else {
+        return this.displayCodeName = false;
+      }
+    };
+
     PickListForLsThingsSelectController.prototype.handleListReset = function() {
       var newOption;
       if (this.insertFirstOption) {
@@ -292,7 +315,8 @@
       if (shouldRender) {
         return $(this.el).append(new PickListOptionControllerForLsThing({
           model: enm,
-          insertFirstOption: this.insertFirstOption
+          insertFirstOption: this.insertFirstOption,
+          displayCodeName: this.displayCodeName
         }).render().el);
       }
     };
@@ -484,20 +508,25 @@
     };
 
     EditablePickListSelectController.prototype.setupEditingPrivileges = function() {
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+      if (this.options.roles != null) {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+          this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
+          return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
+        } else {
+          this.$('.bv_addOptionBtn').removeAttr('data-toggle');
+          this.$('.bv_addOptionBtn').removeAttr('data-target');
+          this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
+          this.$('.bv_addOptionBtn').css({
+            'color': "#cccccc"
+          });
+          this.$('.bv_tooltipWrapper').tooltip();
+          return this.$("body").tooltip({
+            selector: '.bv_tooltipWrapper'
+          });
+        }
+      } else {
         this.$('.bv_tooltipWrapper').removeAttr('data-toggle');
         return this.$('.bv_tooltipWrapper').removeAttr('data-original-title');
-      } else {
-        this.$('.bv_addOptionBtn').removeAttr('data-toggle');
-        this.$('.bv_addOptionBtn').removeAttr('data-target');
-        this.$('.bv_addOptionBtn').removeAttr('data-backdrop');
-        this.$('.bv_addOptionBtn').css({
-          'color': "#cccccc"
-        });
-        this.$('.bv_tooltipWrapper').tooltip();
-        return this.$("body").tooltip({
-          selector: '.bv_tooltipWrapper'
-        });
       }
     };
 
@@ -510,7 +539,16 @@
     };
 
     EditablePickListSelectController.prototype.handleShowAddPanel = function() {
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+      var showPanel;
+      showPanel = false;
+      if (this.options.roles != null) {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.options.roles)) {
+          showPanel = true;
+        }
+      } else {
+        showPanel = true;
+      }
+      if (showPanel) {
         if (this.addPanelController == null) {
           this.addPanelController = new AddParameterOptionPanelController({
             model: new AddParameterOptionPanel({
@@ -577,6 +615,12 @@
         if (selectedModel.get('id') != null) {
           return callback.call();
         } else {
+          if (selectedModel.get('codeType') == null) {
+            selectedModel.set('codeType', this.options.codeType);
+          }
+          if (selectedModel.get('codeKind') == null) {
+            selectedModel.set('codeKind', this.options.codeKind);
+          }
           return $.ajax({
             type: 'POST',
             url: "/api/codetables",
