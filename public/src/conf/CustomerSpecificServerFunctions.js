@@ -275,7 +275,11 @@
     relEntityFolder = relEntitiesFolder + entityCode + "/";
     absEntitiesFolder = uploadsPath + relEntitiesFolder;
     absEntityFolder = uploadsPath + relEntityFolder;
-    newPath = absEntityFolder + fileValue.fileValue;
+    if (fileValue.comments !== void 0 && fileValue.comments !== null) {
+      newPath = absEntityFolder + fileValue.comments;
+    } else {
+      newPath = absEntityFolder + fileValue.fileValue;
+    }
     entitiesFolder = uploadsPath + "entities/";
     return serverUtilityFunctions.ensureExists(entitiesFolder, 0x1e4, function(err) {
       if (err != null) {
@@ -288,9 +292,23 @@
             return callback(false);
           } else {
             return serverUtilityFunctions.ensureExists(absEntityFolder, 0x1e4, function(err) {
+              var stream;
               if (err != null) {
                 console.log("Can't find or create : " + absEntityFolder);
                 return callback(false);
+              } else if (fileValue.comments !== void 0 && fileValue.comments !== null) {
+                console.log("fileValue has comments");
+                console.log(oldPath);
+                console.log(newPath);
+                stream = fs.createReadStream(oldPath).pipe(fs.createWriteStream(newPath));
+                stream.on('error', function(err) {
+                  console.log("error copying file to new location");
+                  return callback(false);
+                });
+                return stream.on('close', function() {
+                  fileValue.fileValue = relEntityFolder + fileValue.comments;
+                  return callback(true);
+                });
               } else {
                 return fs.rename(oldPath, newPath, function(err) {
                   if (err != null) {

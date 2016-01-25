@@ -31,6 +31,12 @@
 			,
 				typeName: "metadata"
 				kindName: "report locations"
+			,
+				typeName: "metadata"
+				kindName: "custom experiment metadata"
+			,
+				typeName: "metadata"
+				kindName: "custom experiment metadata gui"
 			]
 
 		valuetypes:
@@ -113,6 +119,21 @@
 			,
 				typeName: "clobValue"
 				kindName: "GUI descriptor"
+			,
+				typeName: "numericValue"
+				kindName: "column order"
+			,
+				typeName: "stringValue"
+				kindName: "column name"
+			,
+				typeName: "stringValue"
+				kindName: "column units"
+			,
+				typeName: "stringValue"
+				kindName: "column type"
+			,
+				typeName: "stringValue"
+				kindName: "hide column"	
 			]
 
 		labeltypes:
@@ -399,7 +420,7 @@
 				labelSeparator: "-"
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_experiment"
-				latestNumber:1
+				latestNumber:0
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

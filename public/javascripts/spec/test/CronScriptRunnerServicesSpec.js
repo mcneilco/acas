@@ -62,15 +62,21 @@ Basic requirements:
             _this.serverError = error;
             _this.responseJSON = body;
             _this.serverResponse = response;
-            return request.put({
-              url: baseURL + "/api/cronScriptRunner/" + body.codeName,
-              json: true,
-              body: {
-                active: false,
-                ignored: true
-              }
+            return request({
+              url: baseURL + "/api/cronScriptRunner",
+              json: true
             }, function(error, response, body) {
-              return done();
+              _this.allJSON = body;
+              return request.put({
+                url: baseURL + "/api/cronScriptRunner/" + _this.responseJSON.codeName,
+                json: true,
+                body: {
+                  active: false,
+                  ignored: true
+                }
+              }, function(error, response, body) {
+                return done();
+              });
             });
           };
         })(this));
@@ -78,8 +84,22 @@ Basic requirements:
       it("should return a success status code of 200", function() {
         return assert.equal(this.serverResponse.statusCode, 200);
       });
-      return it("should supply a new code", function() {
+      it("should supply a new code", function() {
         return assert.equal(this.responseJSON.codeName != null, true);
+      });
+      return it("should list the cron in the list of all", function() {
+        var allCodes, spec;
+        allCodes = (function() {
+          var i, len, ref, results;
+          ref = this.allJSON;
+          results = [];
+          for (i = 0, len = ref.length; i < len; i++) {
+            spec = ref[i];
+            results.push(spec.code);
+          }
+          return results;
+        }).call(this);
+        return assert(allCodes.indexOf(this.responseJSON.codeName > 0));
       });
     });
     describe("updating jobs", function() {

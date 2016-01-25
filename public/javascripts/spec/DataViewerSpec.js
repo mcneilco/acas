@@ -9,8 +9,8 @@
     return $("body").append('<div id="fixture"></div>');
   });
 
-  describe("Gene Data Queries Module Testing", function() {
-    describe("Gene ID Query Input Controller", function() {
+  describe("ACAS Data Viewer Module Testing", function() {
+    describe("ACAS Data Viewer Input Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
           this.gidqic = new DataViewerInputController({
@@ -91,7 +91,7 @@
         });
       });
     });
-    describe("Gene ID Query Result Controller", function() {
+    describe("ACAS Data Viewer Result Controller", function() {
       describe('when instantiated', function() {
         beforeEach(function() {
           this.gidqrc = new DataViewerResultController({
@@ -164,7 +164,7 @@
         });
       });
     });
-    describe("Gene ID Query Search Controller", function() {
+    describe("ACAS Data Viewer Search Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
           this.gidqsc = new DataViewerSearchController({
@@ -796,7 +796,7 @@
         });
       });
     });
-    return describe("Gene ID Query App Controller", function() {
+    return describe("ACAS Data Viewer App Controller", function() {
       return describe('when instantiated', function() {
         beforeEach(function() {
           this.gidqac = new DataViewerAppController({

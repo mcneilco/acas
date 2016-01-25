@@ -213,7 +213,10 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 	relEntityFolder = relEntitiesFolder + entityCode + "/"
 	absEntitiesFolder = uploadsPath + relEntitiesFolder
 	absEntityFolder = uploadsPath + relEntityFolder
-	newPath = absEntityFolder + fileValue.fileValue
+	if fileValue.comments != undefined and fileValue.comments != null
+		newPath = absEntityFolder + fileValue.comments
+	else
+		newPath = absEntityFolder + fileValue.fileValue
 
 	entitiesFolder = uploadsPath + "entities/"
 	serverUtilityFunctions.ensureExists entitiesFolder, 0o0744, (err) ->
@@ -230,6 +233,17 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 						if err?
 							console.log "Can't find or create : " + absEntityFolder
 							callback false
+						else if fileValue.comments != undefined and fileValue.comments != null
+							console.log "fileValue has comments"
+							console.log oldPath
+							console.log newPath
+							stream = fs.createReadStream(oldPath).pipe fs.createWriteStream(newPath)
+							stream.on 'error', (err) ->
+								console.log "error copying file to new location"
+								callback false
+							stream.on 'close', ->
+								fileValue.fileValue = relEntityFolder + fileValue.comments
+								callback true
 						else
 							fs.rename oldPath, newPath, (err) ->
 								if err?

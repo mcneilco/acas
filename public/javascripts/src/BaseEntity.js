@@ -330,10 +330,12 @@
         origValues = st.get('lsValues');
         origValues.each(function(sv) {
           var copiedVal;
-          copiedVal = new Value(sv.attributes);
-          copiedVal.unset('id');
-          copiedVal.unset('lsTransaction');
-          return copiedValues.add(copiedVal);
+          if (sv.attributes.lsType !== 'fileValue') {
+            copiedVal = new Value(sv.attributes);
+            copiedVal.unset('id');
+            copiedVal.unset('lsTransaction');
+            return copiedValues.add(copiedVal);
+          }
         });
         copiedState.set({
           lsValues: copiedValues

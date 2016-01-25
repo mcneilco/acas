@@ -9,8 +9,9 @@
     app.post('/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch);
     app.put('/api/things/:lsType/:lsKind/:code', exports.putThing);
     app.get('/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName);
-    app.post('/api/validateName/:componentOrAssembly', exports.validateName);
-    return app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies);
+    app.post('/api/validateName', exports.validateName);
+    app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies);
+    return app.get('/api/genericSearch/things/:searchTerm', exports.genericThingSearch);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -21,8 +22,9 @@
     app.post('/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch);
     app.put('/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing);
     app.get('/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName);
-    app.post('/api/validateName/:componentOrAssembly', loginRoutes.ensureAuthenticated, exports.validateName);
-    return app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies);
+    app.post('/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName);
+    app.get('/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies);
+    return app.get('/api/genericSearch/things/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericThingSearch);
   };
 
   exports.thingsByTypeKind = function(req, resp) {
@@ -89,7 +91,7 @@
           json: true
         }, (function(_this) {
           return function(error, response, json) {
-            if (!error && response.statusCode === 200 && (json.codeName != null)) {
+            if (!error && response.statusCode === 200 && (json.id != null)) {
               return callback(json);
             } else {
               console.log('got ajax error trying to update lsThing');
@@ -175,7 +177,8 @@
               console.log('got ajax error trying to save lsThing');
               console.log(error);
               console.log(json);
-              return console.log(response);
+              console.log(response);
+              return resp.end(JSON.stringify("update lsThing failed"));
             }
           };
         })(this));
@@ -273,15 +276,23 @@
         json: true
       }, (function(_this) {
         return function(error, response, json) {
+          console.log("validate response");
+          console.log(response.statusCode);
+          console.log(response.json);
           if (!error && response.statusCode === 202) {
             return resp.json(json);
           } else if (response.statusCode === 409) {
-            return resp.json("not unique name");
+            console.log("not unique name - 409");
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return resp.json(json);
           } else {
-            console.log('got ajax error trying to save thing parent');
+            console.log('got ajax error trying to validate thing name');
             console.log(error);
             console.log(json);
-            return console.log(response);
+            console.log(response);
+            return resp.json("validate name failed");
           }
         };
       })(this));
@@ -366,6 +377,40 @@
           }
         };
       })(this));
+    }
+  };
+
+  exports.genericThingSearch = function(req, resp) {
+    var baseurl, config, kindFilter, searchParams, searchTerm, typeFilter;
+    console.log("generic thing search");
+    console.log(req.query.testMode);
+    console.log(global.specRunnerTestmode);
+    if (req.query.testMode === true || global.specRunnerTestmode === true) {
+      return resp.end(JSON.stringify("Stubs mode not implemented yet"));
+    } else {
+      config = require('../conf/compiled/conf.js');
+      console.log("search req");
+      console.log(req);
+      if (req.query.lsType != null) {
+        typeFilter = "lsType=" + req.query.lsType;
+      }
+      if (req.query.lsKind != null) {
+        kindFilter = "lsKind=" + req.query.lsKind;
+      }
+      searchTerm = "q=" + req.params.searchTerm;
+      searchParams = "";
+      if (typeFilter != null) {
+        searchParams += typeFilter + "&";
+      }
+      if (kindFilter != null) {
+        searchParams += kindFilter + "&";
+      }
+      searchParams += searchTerm;
+      baseurl = config.all.client.service.persistence.fullpath + "lsthings/search?" + searchParams;
+      console.log("generic thing search baseurl");
+      console.log(baseurl);
+      serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
     }
   };
 

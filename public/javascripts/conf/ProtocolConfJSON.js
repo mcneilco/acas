@@ -387,7 +387,7 @@
           labelSeparator: "-",
           labelTypeAndKind: "id_codeName",
           thingTypeAndKind: "document_protocol",
-          latestNumber: 1
+          latestNumber: 0
         }
       ]
     };
