@@ -23,10 +23,16 @@ tryCatch({
             WHERE e.code_name = '", GET$experiment, "'")
   lsKindDF <- query(qu)
   names(lsKindDF) <- tolower(names(lsKindDF))
+  qu <- paste0("SELECT e.project FROM
+  				api_experiment_ld e
+            	WHERE e.code_name = '", GET$experiment, "'")
+  projectDF <- query(qu)
+  names(projectDF) <- tolower(names(projectDF))
   headerList <- dlply(lsKindDF, .variables = c("label_text", "ls_kind"), .fun = function(x) {list(protocolName=x$label_text, resultType=x$ls_kind)})
   names(headerList) <- NULL
   output <- list(compounds = gsub("([^-]+-[^-]+).*", "\\1", x = testedLotDF$tested_lot), 
-                 assays = headerList)
+                 assays = headerList,
+                 project = projectDF$project[1])
   cat(toJSON(output))
   }, error = function(ex) {
     cat(toJSON(list(error=TRUE, message=ex$message)))
