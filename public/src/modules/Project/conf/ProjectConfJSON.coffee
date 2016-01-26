@@ -57,6 +57,9 @@
 				typeName: "fileValue"
 				kindName: "presentation file"
 			,
+				typeName: "codeValue"
+				kindName: "project leader"
+			,			
 				typeName: "numericValue"
 				kindName: "live design id"
 			]
