@@ -10,6 +10,8 @@ module.exports = (grunt) ->
 			outFile = "#{configFile}.diff"
 			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
 
+	grunt.registerTask("buildwebpack", ["webpack:build"]);
+
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
 		console.log "building to '#{build}'"
@@ -373,6 +375,22 @@ module.exports = (grunt) ->
 					shell = require('shelljs')
 					result = shell.exec("cd #{options.build} %>/src/r && Rscript install.R", {silent:true})
 					return result.output
+
+
+
+		webpack:
+			build:
+				entry:
+					"index": "./modules/PlateRegistration/src/client/index.coffee",
+					"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
+				output:
+					path: "<%= build %>/public/compiled",
+					filename: "[name].bundle.js"
+				module:
+					loaders: [
+						{test: /\.coffee$/, loader: "coffee"}
+					]
+
 		browserify:
 				module_client:
 					src: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
@@ -381,6 +399,12 @@ module.exports = (grunt) ->
 			module_client_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
+			webpack_build:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/src/client/*.coffee"]
+				tasks: ['webpack:build']
+			webpack_spec_build:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/spec/*.coffee"]
+				tasks: ['webpack:build']
 			module_server_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
 				tasks: 'newer:coffee:module_server'
@@ -491,6 +515,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
 	grunt.loadNpmTasks "grunt-browserify"
+	grunt.loadNpmTasks "grunt-webpack"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
