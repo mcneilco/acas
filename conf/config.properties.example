@@ -79,7 +79,7 @@
 #
 # Example: client.host=host5.labsynch.com
 #
-client.host=localhost
+client.host=acas
 
 # Port that the client is running on.
 #
@@ -160,7 +160,7 @@ client.service.rapache.port=1080
 server.rapache.listen=*
 #todo not in codebase 6/2015
 client.service.rapache.use.ssl=${client.use.ssl}
-client.service.rapache.host=${client.host}
+client.service.rapache.host=rservices
 client.service.rapache.path=r-services-api
 client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.service.rapache.port}/${client.service.rapache.path}/
 

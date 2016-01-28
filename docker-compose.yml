@@ -1,60 +1,61 @@
-acas:
-  build: .
-  restart: always
-  ports:
-   - "3000:3000"
-   - "1080:1080"
-   - "8787:8787"
-   - "8081:8080"
-  volumes_from:
-   - filestore
-  links:
-   - db
-   - tomcat
-  environment:
-   - APP_NAME=$TAG
-  volumes:
-   - ./bin/environments/acas:/mnt/environments/acas
-   - /home/runner/build/conf/compiled
-   - .:/home/runner/acas
-  #command: ["bin/acas-docker.sh", "run"]
-  command: ["bin/acas-docker.sh", "run", "all", "dev"]
-dbstore:
-  build: .
-  volumes:
-    - /var/lib/postgresql
-  command: /bin/true
-db:
-  image: mcneilco/acas-postgres:latest
-  restart: always
-  volumes:
-   - ./bin/environments:/mnt/environments
-  volumes_from:
-   - dbstore
-  ports:
-   - "5432:5432"
-filestore:
-  build: .
-  volumes:
-    - /home/runner/build/privateUploads
-  command: /bin/true
-roo:
-  image: mcneilco/acas-roo-server:$TAG
-  volumes:
-   - /usr/local/tomcat/webapps/acas
-  command: /bin/true
-tomcat:
-  image: mcneilco/tomcat-maven
-  restart: always
-  ports:
-   - "8080:8080"
-  volumes_from:
-   - filestore
-   - roo
-  links:
-   - db
-  environment:
-   - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
-  volumes:
-   - ./bin/environments/acas:/mnt/environments/acas
-  command: catalina.sh run
+version: 2
+services:
+  acas:
+    build: .
+    restart: always
+    ports:
+     - "3000:3000"
+     - "3001"
+    environment:
+     - APP_NAME=$TAG
+     - PREPARE_MODULE_CONF_JSON=true
+    volumes:
+     - ./bin/environments/acas:/mnt/environments/acas
+     - /home/runner/build/src/r
+     - /home/runner/build/privateUploads
+     - /home/runner/build/bin
+     - /home/runner/build/conf/compiled
+     - /home/runner/logs
+     # Dev volumes below this line
+     - ./conf/config.properties.example:/home/runner/build/conf/config.properties.example
+    command: ["bin/acas-docker.sh", "run", "acas", "start"]
+  rservices:
+    image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
+    restart: always
+    ports:
+     - "1080:1080"
+     - "8787:8787"
+    environment:
+     - PREPARE_MODULE_CONF_JSON=false
+     - PREPARE_CONFIG_FILES=false
+    volumes_from:
+     - acas
+    command: ["bin/acas-docker.sh", "run", "rservices"]
+  db:
+    image: mcneilco/acas-postgres:latest
+    restart: always
+    volumes:
+     - ./bin/environments:/mnt/environments
+     - dbstore:/var/lib/postgresql
+    ports:
+     - "5432:5432"
+  tomcat:
+    image: mcneilco/tomcat-maven
+    restart: always
+    ports:
+     - "8080:8080"
+    environment:
+     - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+    volumes_from:
+     - roo
+     - acas
+    volumes:
+     - ./bin/environments/acas:/mnt/environments/acas
+    command: catalina.sh run
+  roo:
+    image: mcneilco/acas-roo-server:$TAG
+    volumes:
+     - /usr/local/tomcat/webapps/acas
+    command: /bin/true
+volumes:
+  dbstore:
