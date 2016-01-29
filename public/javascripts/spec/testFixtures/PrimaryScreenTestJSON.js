@@ -41,39 +41,72 @@
     ];
     exports.transformationRules = [
       {
-        transformationRule: "% efficacy"
+        transformationRule: "% efficacy",
+        transformationParameters: {
+          positiveControl: {
+            standardNumber: 1,
+            defaultValue: ""
+          },
+          negativeControl: {
+            standardNumber: "",
+            defaultValue: 5
+          }
+        }
       }, {
-        transformationRule: "sd"
+        transformationRule: "sd",
+        transformationParameters: {
+          positiveControl: {
+            standardNumber: 1,
+            defaultValue: ""
+          },
+          negativeControl: {
+            standardNumber: "",
+            defaultValue: 5
+          }
+        }
       }, {
-        transformationRule: "null"
+        transformationRule: "null",
+        transformationParameters: {}
       }
     ];
     return exports.primaryScreenAnalysisParameters = {
-      positiveControl: {
-        batchCode: "CMPD-12345678-01",
-        concentration: 10,
-        concentrationUnits: "uM"
-      },
-      negativeControl: {
-        batchCode: "CMPD-87654321-01",
-        concentration: 1,
-        concentrationUnits: "uM"
-      },
-      agonistControl: {
-        batchCode: "CMPD-87654399-01",
-        concentration: 250753.77,
-        concentrationUnits: "uM"
-      },
-      vehicleControl: {
-        batchCode: "CMPD-00000001-01",
-        concentration: null,
-        concentrationUnits: null
+      controls: [
+        {
+          standardNumber: 1,
+          batchCode: "CMPD-12345678-01",
+          concentration: 10,
+          concentrationUnits: "uM",
+          controlType: "PC"
+        }, {
+          batchCode: "CMPD-87654321-01",
+          concentration: 1,
+          concentrationUnits: "uM",
+          controlType: "NC"
+        }, {
+          batchCode: "CMPD-00000001-01",
+          concentration: null,
+          concentrationUnits: null,
+          controlType: "VC"
+        }
+      ],
+      agonist: {
+        batchCode: "CMPD-87654399-01"
       },
       instrumentReader: "flipr",
       signalDirectionRule: "increasing",
       aggregateBy: "compound batch concentration",
       aggregationMethod: "median",
-      normalizationRule: "plate order only",
+      normalization: {
+        normalizationRule: "plate order only",
+        positiveControl: {
+          standardNumber: 1,
+          defaultValue: ""
+        },
+        negativeControl: {
+          standardNumber: "",
+          defaultValue: 5
+        }
+      },
       hitEfficacyThreshold: 42,
       hitSDThreshold: 5.0,
       thresholdType: "sd",
