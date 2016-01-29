@@ -80,8 +80,10 @@ getWellFlagging <- function (flaggedWells, resultTable, flaggingStage, experimen
   # In order to merge with a data.table, the columns have to have the same name
   resultTable <- merge(resultTable, flagData, by = c("assayBarcode", "well"), all.x = TRUE, all.y = FALSE)
   
-  # Sort the data
-  setkeyv(resultTable, c("assayBarcode","row","column"))
+  # Sort the data ? Why do this ?
+  if (all(c("row","column") %in% names(resultTable))) {
+    setkeyv(resultTable, c("assayBarcode","row","column"))
+  }
   
   resultTable[ , flag := as.character(NA)]
   
@@ -818,7 +820,6 @@ validateInputFiles <- function(dataDirectory) {
   #lack of protocol
   #no files
   #uneven files (no match or different lengths)
-  #save(dataDirectory, file="dataDirectory.Rda")
   #collect the names of files
   fileList <- list.files(path = dataDirectory, pattern = "\\.stat[^\\.]*", full.names = TRUE)
   seqFileList <- list.files(path = dataDirectory, pattern = "\\.seq\\d$", full.names = TRUE)
@@ -1387,6 +1388,8 @@ getReadOrderTable <- function(readList) {
   #
   # Input:  readList (list of lists)
   # Output: readsTable (data.table)
+  
+  library(plyr)
   
   readsTable <- data.table(ldply(readList, function(item) {
     data.frame(
@@ -1984,17 +1987,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     analysisGroupBy <- groupBy
   }
   treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
-  analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
+  analysisGroupData <- getAnalysisGroupData(treatmentGroupData, analysisGroupBy)
   if (agonistComparisonScreen) {
     analysisGroupData <- analysisGroupData[, combineTwoAgonist(.SD), by=tempId]
   }
   analysisGroupData[, secondConc := NULL]
   treatmentGroupData[, secondConc := NULL]
   
-  
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
-
+  
   library('RCurl')
   protocol <- getProtocolById(experiment$protocol$id)
   protocolName <- getPreferredName(protocol)
@@ -2005,12 +2007,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       "Unique compounds analyzed" = length(unique(resultTable$batchName)),
       "Unique batches analyzed" = length(unique(resultTable$batchCode)),
       "Automatic hits" = nrow(resultTable[autoFlagType == "HIT"]),
+      "User hits" = nrow(resultTable[tolower(flagType) == "hit"]),
       # "Threshold" = signif(efficacyThreshold, 3),
       # "SD Threshold" = ifelse(hitSelection == "sd", parameters$hitSDThreshold, "NA"),
       # "Fluorescent wells" = sum(resultTable$fluorescent),
       "Flagged wells" = sum(!is.na(resultTable$flag)),
       "Number of wells" = nrow(resultTable),
-      "Hit rate" = round((nrow(resultTable[autoFlagType == "HIT"])/nrow(resultTable))*100,2),
+      "Hit rate" = paste(round((nrow(resultTable[autoFlagType == "HIT" | tolower(flagType) == "hit"])/nrow(resultTable))*100,2), "%"),
       "Z Prime" = round(unique(resultTable$zPrime),5),
       # "Z'" = format(computeZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
       # "Robust Z'" = format(computeRobustZPrime(resultTable$transformed[resultTable$wellType=="PC"], resultTable$transformed[resultTable$wellType=="NC"]),digits=3,nsmall=3),
@@ -2042,10 +2045,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     lsTransaction <- 1345
   }
+  
+  serverFlagFileLocation <- NULL
   if (dryRun && !testMode) {
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
       "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
+    if (!is.null(flaggedWells) && flaggedWells != "") {
+      serverFlagFileLocation <- saveAcasFileToExperiment(
+        flaggedWells, experiment, 
+        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction, deleteOldFile = FALSE)
+    }
   }
   
   if (dryRun) {
@@ -2157,7 +2167,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
     #                                 stringsAsFactors=FALSE) 
     #       
-    resultTypes <- fread("public/src/modules/PrimaryScreen/src/conf/savingSettings.csv")
+    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
     
     #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
     #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
@@ -2186,7 +2196,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     # Change subject hits to be saved in lowercase
-    subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
+    subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "hit", codeValue := "hit"]
     subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
     lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
                                 subjectData=subjectDataLong,
@@ -2206,6 +2216,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   summaryInfo$info$"Original Data File" <- paste0(
     '<a href="', getAcasFileLink(serverFileLocation, login=T), '" target="_blank">Original Data File</a>')
+  if (!is.null(serverFlagFileLocation)) {
+    summaryInfo$info$"Original Flag File" <- paste0(
+      '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
+  }
   summaryInfo$lsTransactionId <- lsTransaction
   summaryInfo$experiment <- experiment
   
@@ -2483,7 +2497,12 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
   # parameters: list, currently only used for aggregationMethod
   # groupBy: character vector of grouping columns for which subjects belong to one treatment group
+  #
+  # Averages numeric values, keeps stringValue and codeValue if they are unique
+  
   groupBy <- c(groupBy, "tempParentId")
+  
+  resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
   
   # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
@@ -2492,14 +2511,26 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
-  uniqueTarget <- grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "character"], value=TRUE)
+  # Returns unique or NA if non-unique within the group
+  uniqueTarget <- intersect(resultTypes[valueType %in% c("stringValue", "codeValue") & saveAsTreatment, columnName], 
+                            names(batchDataTable))
+  uniqueTarget <- setdiff(uniqueTarget, groupBy)
+  uniqueTarget <- c(uniqueTarget, grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "character"], value=TRUE))
+                    
   # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "numeric"], value=TRUE)
   )
   
-  uniqueResults <- batchDataTable[ , lapply(.SD, unique), by = groupBy, .SDcols = uniqueTarget]
+  uniqueResults <- batchDataTable[ , lapply(.SD, function(x) {
+    result <- unique(x)
+    if (length(x) == 1) {
+      return(x)
+    } else {
+      return(as(NA, class(x)))
+    }
+  }), by = groupBy, .SDcols = uniqueTarget]
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x, na.rm = T))},
@@ -2520,15 +2551,26 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   setkeyv(numRep, groupBy)
   setkeyv(aggregationResults, groupBy)
   setkeyv(uniqueResults, groupBy)
-  treatmentData <- sds[aggregationResults][numRep][uniqueResults]
+  treatmentData <- sds[aggregationResults][numRep]
+  treatmentData <- merge(treatmentData, uniqueResults, all.x = TRUE)
   
   setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
 }
-getAnalysisGroupData <- function(treatmentGroupData) {
-  # columns to be saved as analysis group data
-  #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
+getAnalysisGroupData <- function(treatmentGroupData, analysisGroupBy) {
+  # Inputs:
+  #   treatmentGroupData: data.table with columns for each kind of data, at least:
+  #     "tempParentId" for marking each analysis group
+  #     "cmpdConc" concentration
+  #     "agonistConc" agonist concentration
+  #     "agonistBatchCode" agonist batch code
+  #     all columns listed in analysisGroupBy
+  #     any other data columns
+  #   analysisGroupBy: character vector of columns used for grouping. Their information will be kept even curves
+  # Returns a data.table where curves have been compressed into a single row, they gain a "curveId"
+  # Note: do not input a column named doseResponse, it would be removed
+  
   library(data.table)
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
@@ -2536,8 +2578,8 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   setkey(preCurveData, tempParentId)
   
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
-
-  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  
+  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId', analysisGroupBy)] := NA, with = FALSE]
   curveData[, curveId := as.character(1:nrow(curveData))]
   otherData <- preCurveData[doseResponse == FALSE]
   analysisData <- rbind(curveData, otherData)
@@ -2668,24 +2710,49 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   
   if (forceBatchCodeAdd) {
     fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue) & is.na(fileValue))]
-    fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
+    # This line seems to do nothing... so removed
+    #fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     # If the only value in the tempId is a batch code, there was a missing value input, so we just remove it
     fullTable[, removeMe := (valueKind=="batch code" && .N==1), by=tempId]
     fullTable <- fullTable[!(removeMe)]
     fullTable[, removeMe := NULL]
-    fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
+    fullTable[, stateKindCount := length(unique(stateKind[valueKind != "batch code"])), by=tempId]
+    if (any(fullTable$stateKindCount) == 0) {
+      stop("at least one tempId had no stateKinds, probably missing stateKinds")
+    }
+    fullTable[stateKindCount == 1, list(stateType, stateKind) := matchBatchCodeStateKind(stateType, stateKind, valueKind), by=tempId]
+    duplicatedRows <- fullTable[stateKindCount > 1, duplicateBatchCodes(.SD), by=tempId]
+    fullTable <- rbind(fullTable[stateKindCount == 1], duplicatedRows)
+    fullTable[, stateKindCount := NULL]
   }
   
   return(fullTable)  
 }
-matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
+duplicateBatchCodes <- function(DT) {
+  # Duplicates rows with batch codes to have one batch code per state kind in the rest of the set
+  # Input: DT, a data.table with at least columns valueKind, stateKind, stateType
+  # Output: a data.table with the same columns as DT, but rows added
+  newBatchCodeStateKinds <- unique(DT[valueKind != "batch code", list(stateType, stateKind)])
+  if (sum(DT$valueKind == "batch code") != 1) {
+    stop("Coding error: not expecting more than one batch code in group")
+  }
+  batchCodeRows <- DT[rep(which(valueKind == "batch code"), nrow(newBatchCodeStateKinds))]
+  batchCodeRows[, stateType := newBatchCodeStateKinds$stateType]
+  batchCodeRows[, stateKind := newBatchCodeStateKinds$stateKind]
+  return(rbindlist(list(DT[valueKind != "batch code"], batchCodeRows)))
+}
+matchBatchCodeStateKind <- function(stateTypeVect, stateKindVect, valueKindVect) {
   # helper for meltKnownTypes
-  newBatchCodeState <- unique(stateKindVect[valueKindVect!="batch code"])
-  if (length(newBatchCodeState) != 1) {
+  # Input: character vectors
+  # output: data.table with columns "stateType" and "stateKind"
+  newState <- data.table(stateType = stateTypeVect, stateKind = stateKindVect)
+  newBatchCodeStateTypeAndKind <- unique(newState[valueKindVect!="batch code"])
+  if (nrow(newBatchCodeState) != 1) {
     stop("Coding Error: unable to find unique stateKind for batch codes")
   }
-  stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
-  return(stateKindVect)
+  newState[valueKindVect=="batch code", stateKind := newBatchCodeStateTypeAndKind$stateKind]
+  newState[valueKindVect=="batch code", stateType := newBatchCodeStateTypeAndKind$stateType]
+  return(newState)
 }
 deleteModelSettings <- function(experiment) {
   # Sets model fit settings back to their original values

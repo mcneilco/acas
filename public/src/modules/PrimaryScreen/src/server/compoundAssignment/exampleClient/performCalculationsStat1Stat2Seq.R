@@ -1,12 +1,8 @@
 performCalculationsStat1Stat2Seq <- function(resultTable, parameters, experimentCodeName, dryRun) {
+  # resultTable: data.table
   
   # This assumes that there is only one normalization rule passed through the GUI
   resultTable <- normalizeData(resultTable, parameters$normalizationRule)
-  
-  flaglessResults <- resultTable[is.na(flag)]
-  meanValue <- mean(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
-  sdValue <- sd(flaglessResults$normalizedActivity[flaglessResults$wellType == "test"])
-  resultTable$transformed_sd <- computeSDScore(resultTable[is.na(flag)]$normalizedActivity, meanValue, sdValue)
   
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
