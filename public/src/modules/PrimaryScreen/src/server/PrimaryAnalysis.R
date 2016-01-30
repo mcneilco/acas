@@ -2363,7 +2363,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       }
 
       # Start replacement of saveAllViaDirectDatabase function
-      appendCodeName = list()
+      appendCodeName = appendCodeName = list(analysisGroup = "curve id")
       sendFiles <- list()
       
       if (!(is.null(appendCodeName$analysisGroup))) {
