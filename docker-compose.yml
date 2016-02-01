@@ -5,26 +5,25 @@ services:
     restart: always
     ports:
      - "3000:3000"
-     - "3001"
+     - "3001:3001"
     environment:
      - APP_NAME=$TAG
      - PREPARE_MODULE_CONF_JSON=true
     volumes:
-     - ./bin/environments/acas:/mnt/environments/acas
      - /home/runner/build/src/r
      - /home/runner/build/privateUploads
      - /home/runner/build/bin
      - /home/runner/build/conf/compiled
      - /home/runner/logs
      # Dev volumes below this line
-     - ./conf/config.properties.example:/home/runner/build/conf/config.properties.example
+    env_file:
+      - ./bin/environments/acas/acas.env
     command: ["bin/acas-docker.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
     restart: always
     ports:
      - "1080:1080"
-     - "8787:8787"
     environment:
      - PREPARE_MODULE_CONF_JSON=false
      - PREPARE_CONFIG_FILES=false
@@ -51,11 +50,11 @@ services:
     volumes_from:
      - roo
      - acas
-    volumes:
-     - ./bin/environments/acas:/mnt/environments/acas
+    env_file:
+      - ./bin/environments/acas/acas.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:$TAG
+    image: test
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
