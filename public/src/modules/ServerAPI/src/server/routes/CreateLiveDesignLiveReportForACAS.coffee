@@ -32,7 +32,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (exptCode, callback) ->
     console.log "About to call python using command: "+command
 
     child = exec command,  (error, stdout, stderr) ->
-      reportURLPos = stdout.indexOf "https://"
+      reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
       reportURL = stdout.substr reportURLPos
       console.log "stderr: " + stderr
       console.log "stdout: " + stdout
