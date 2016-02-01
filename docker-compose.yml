@@ -52,9 +52,10 @@ services:
      - acas
     env_file:
       - ./bin/environments/acas/acas.env
+      - ./bin/environments/roo/roo.env
     command: catalina.sh run
   roo:
-    image: test
+    image: mcneilco/acas-roo-server:cmpd-inventory-feature
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
