@@ -1878,7 +1878,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ## END test structure
   
   # TODO in 1.6: store this in protocol
-  parameters$latePeakTime <- 80
+  # parameters$latePeakTime <- 80
   
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
