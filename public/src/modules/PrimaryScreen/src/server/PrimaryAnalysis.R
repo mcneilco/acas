@@ -1621,33 +1621,71 @@ autoFlagWells <- function(resultTable, parameters) {
   
   # Add fluorescent as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")
   
-  # Get the start/end of the time window target for fluorescent wells
-  timeWindowStart <- parameters$fluorescentStart
-  timeWindowEnd <- parameters$fluorescentEnd
+  # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
   
-  # Get the threshold step for determining fluorescent wells
-  fluoroThreshold <- parameters$fluorescentStep
+  
+  # Determine whether all, none or some of the parameters regarding fluorescent well determination exist
+  if (!(is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+      !(is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") & 
+      !(is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "complete"
+  } else if ((is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+             (is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") &
+             (is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "pass"
+  } else {
+    statusFluorescent <- "incomplete"
+  }
+  
+
+  # If some but not all parameters regarding fluorescent well determination exist, alarm the user
+  if (statusFluorescent=="incomplete") {
+    stopUser("Not all necessary parameters regarding fluorescent wells were defined. Please set values for all three fields: 
+              Fluorescent Start, Fluorescent End and Fluorescent Step Size.")
+  }
+
+  
+  # Only if all parameters regarding fluorescent well determination exist, set up the proper variables
+  if (statusFluorescent=="complete") {
+    # Get the start/end of the time window target for fluorescent wells
+    timeWindowStart <- parameters$fluorescentStart
+    timeWindowEnd <- parameters$fluorescentEnd
+    
+    # Get the threshold step for determining fluorescent wells
+    fluoroThreshold <- parameters$fluorescentStep
+  }
+  
   
   # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
   vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
   
-  # Find the index for elements corresponding to start and end of target time window
-  indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
   
-  # Apply the function that determines if a well is fluorescent to all wells
-  wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
-  wellsKO <- unname(wellsKO)
+  # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Find the index for elements corresponding to start and end of target time window
+    indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
+    
+    # Apply the function that determines if a well is fluorescent to all wells
+    wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
+    wellsKO <- unname(wellsKO)
+  }
+
+  # Perform the following commands only if the user provided a value for the late peak time parameter
+  if (!(is.null(parameters$latePeakTime) | parameters$latePeakTime=="")) {
+    # Apply the function that determines if a well corresponds to a late peak  
+    wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+    wellsLate <- unname(wellsLate)
+    
+    # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
+    resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
+  }
   
-  # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
-  # Apply the function that determines if a well corresponds to a late peak  
-  wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
-  wellsLate <- unname(wellsLate)
-
-  # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
-  resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
-
-  # Then update the appropriate resultTable columns to reflect the wells found to be fluorescent
-  resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
+  
+  # Only if all parameters regarding fluorescent well determination exist, then update resultTable with fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Update the appropriate resultTable columns to reflect the wells found to be fluorescent
+    resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
+  }
   
 
     
