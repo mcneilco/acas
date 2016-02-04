@@ -5,6 +5,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/containers', exports.postContainer
 	app.put '/api/containers/:code', exports.putContainer
 	app.post '/api/validateContainerName', exports.validateContainerName
+	app.post '/api/getContainerCodesFromLabels', exports.getContainerCodesFromLabels
+	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/containers', loginRoutes.ensureAuthenticated, exports.getAllContainers
@@ -13,6 +15,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/containers', loginRoutes.ensureAuthenticated, exports.postContainer
 	app.put '/api/containers/:code', loginRoutes.ensureAuthenticated, exports.putContainer
 	app.post '/api/validateContainerName', loginRoutes.ensureAuthenticated, exports.validateContainerName
+	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
+	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
 
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
@@ -206,3 +210,105 @@ exports.validateContainerName = (req, resp) ->
 				console.log response
 				resp.json "error"
 		)
+
+exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
+	console.log "got to getContainerCodesFormNamesOrCodes"
+	if global.specRunnerTestmode
+		results = []
+		for req in codeRequest.requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("ambiguous") > -1
+				res.referenceName = ""
+				res.preferredName = ""
+			else if req.requestName.indexOf("name") > -1
+				res.referenceName = "CONT1111"
+				res.preferredName = "1111"
+			else if req.requestName.indexOf("1111") > -1
+				res.referenceName = "CONT1111"
+				res.preferredName = "1111"
+			else
+				res.referenceName = req.requestName
+				res.preferredName = req.requestName
+			results.push res
+		response =
+			containerType: codeRequest.containerType
+			containerKind: codeRequest.containerKind
+			results: results
+
+		callback response
+	else
+		config = require '../conf/compiled/conf.js'
+		#TODO: replace with new url
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
+		url = baseurl+"containerType=#{codeRequest.containerType}&containerKind=#{codeRequest.containerKind}"
+		postBody = codeRequest.requests
+		console.log postBody
+		console.log url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: postBody
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			console.log json
+			if !error and !json.error
+				callback
+					containerType: codeRequest.containerType
+					containerKind: codeRequest.containerKind
+					results: json
+			else
+				console.log 'got ajax error trying to lookup lsContainer name'
+				console.log error
+				console.log response
+				callback json
+		)
+
+getContainerCodesFromLabels = (req, callback) ->
+
+	if global.specRunnerTestmode
+		response =
+			codeName: 'CONT-0000001'
+			label: 'test label'
+		callback response
+
+	else
+		config = require '../conf/compiled/conf.js'
+		#TODO: replace with new url
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
+		url = baseurl+"containerType=#{req.body.containerType}&containerKind=#{req.body.containerKind}"
+		postBody = req.body.labels
+		console.log postBody
+		console.log url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: postBody
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			console.log json
+			if !error and !json.error
+				callback json
+			else
+				console.log 'got ajax error trying to lookup lsContainer name'
+				console.log error
+				console.log response
+				callback json
+		)
+
+exports.getContainerCodesFromLabels = (req, resp) ->
+
+	getContainerCodesFromLabels req, (json) ->
+		resp.json json
+
+
+exports.getContainerFromLabel = (req, resp) ->
+	getContainerCodesFromLabels req, (json) ->
+		if json[0]?.codeName?
+			req.params.code = json[0].codeName
+			exports.containerByCodeName req, resp
+		else
+			resp.json {}

@@ -151,6 +151,8 @@ class window.Container extends Backbone.Model
 
 		if @attributes.attributes?
 			delete @attributes.attributes
+		if @attributes.collection?
+			delete @attributes.collection
 		for i of @attributes
 			if _.isFunction(@attributes[i])
 				delete @attributes[i]
