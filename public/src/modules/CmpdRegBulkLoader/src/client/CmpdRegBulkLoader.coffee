@@ -960,9 +960,9 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 		@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
 		@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
 		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-			@$('.bv_adminDropdown').removeClass 'disabled'
+			@$('.bv_adminDropdownWrapper').show()
 		else
-			@$('.bv_adminDropdown').addClass 'disabled'
+			@$('.bv_adminDropdownWrapper').hide()
 		@$('.bv_searchNavOption').hide()
 		@setupBulkRegCmpdsController()
 

@@ -99,12 +99,12 @@ basicReturnExampleError =
 	]
 
 # Here is example usage
-describe 'Gene Data Queries Service testing', ->
+describe 'ACAS Data Viewer Service testing', ->
 	beforeEach ->
 		@waitForServiceReturn = ->
 			typeof @serviceReturn != 'undefined'
 
-	describe "basic gene data query", ->
+	describe "basic data viewer query", ->
 		describe 'when run with valid input data', ->
 			beforeEach ->
 				runs ->
