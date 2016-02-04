@@ -1556,13 +1556,15 @@ findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
 findFluoroTabDelimited <- function(stringElement, startIndex, endIndex, functionThreshold) {
   # This function is used in autoFlagWells() and finds if the well is fluorescent, given the raw measurements as a tab-delimited string,
   # by calculating the difference in magnitude between the start and the end of the predetermined time window and determining 
-  # if that difference is larger than 100 units
+  # if that difference is larger than the number of raw measurement units specified by the user as fluorescent step size
   #
   #
   # Args:
-  #   stringElement:    A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
-  #   startIndex:       Index of the vector element that defines the start of the time window to apply the function
-  #   endIndex:         Index of the vector element that defines the end of the time window to apply the function
+  #   stringElement:     A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   startIndex:        Index of the vector element that defines the start of the time window to apply the function
+  #   endIndex:          Index of the vector element that defines the end of the time window to apply the function
+  #   functionThreshold: Value in measurement units (representing fluorescent step size, specified by the user) - threshold which
+  #                      if exceeded allows the current function to flag the well as fluorescent
   #
   #
   # Returns:
