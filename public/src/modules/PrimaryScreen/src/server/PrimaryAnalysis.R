@@ -1516,6 +1516,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   return(inputDataTable)
 }
+
 unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   if(!grepl("\\.zip$", zipFile)) {
     stopUser("The file provided must be a zip file or a directory")
@@ -1530,17 +1531,166 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
+
+
+findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
+  # This function is used in autoFlagWells() and finds the indices of two elements in a vector containing incrementing timepoints,
+  # one pointing to the start the other to the end of the time window of interest
+  #
+  # Args:
+  #   vectTime:         a vector that contains time points sorted in an incremental fashion
+  #   timeWindowStart:  time in seconds denoting the start of the time window of interest
+  #   timeWindowEnd:    time in seconds denoting the end of the time window of interest
+  # Returns:
+  #   A list containing two values: element index pointing to the start and element index pointing to the end of the time window
+  
+  logicTimeStart <- (vectTime>=timeWindowStart)
+  startReadIndex <- min(which(logicTimeStart == TRUE))
+  logicTimeEnd <- (vectTime<timeWindowEnd)
+  endReadIndex <- max(which(logicTimeEnd == TRUE))
+  components <- list(startReadIndex = startReadIndex, endReadIndex = endReadIndex)
+  return(components)
+}
+
+
+findFluoroTabDelimited <- function(stringElement, startIndex, endIndex, functionThreshold) {
+  # This function is used in autoFlagWells() and finds if the well is fluorescent, given the raw measurements as a tab-delimited string,
+  # by calculating the difference in magnitude between the start and the end of the predetermined time window and determining 
+  # if that difference is larger than the number of raw measurement units specified by the user as fluorescent step size
+  #
+  #
+  # Args:
+  #   stringElement:     A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   startIndex:        Index of the vector element that defines the start of the time window to apply the function
+  #   endIndex:          Index of the vector element that defines the end of the time window to apply the function
+  #   functionThreshold: Value in measurement units (representing fluorescent step size, specified by the user) - threshold which
+  #                      if exceeded allows the current function to flag the well as fluorescent
+  #
+  #
+  # Returns:
+  #   A logical value: TRUE if >100 units otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numeric values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Calculate difference in magnitude between the end and the start of the target time window
+  diffMagnitude <- vectElement[endIndex] - vectElement[startIndex]
+  
+  # If difference equals or exceeds 100 units then set Fluorescent well as True, else as False
+  isFluorescent <- ifelse(diffMagnitude>=functionThreshold, yes=TRUE, no=FALSE)
+  
+  return(isFluorescent)
+}
+
+
+findLatePeakIndex <- function(stringElement, timePoints, latePeakThreshold) {
+  # This function is used in autoFlagWells() and finds if the well icorresponds to a late peak, given the raw measurements as a tab-delimited string,
+  # by calculating what timepoint corresponds to the max value of all measurements acquired and if that timepoint is later than a late peak threshold
+  #
+  #
+  # Args:
+  #   stringElement:        A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   timePoints:           The vector of timepoints based on which the tab-delimited string was acquired
+  #   latePeakThreshold:    A time (in seconds) after which the max value of the tab-delimited measurements is considered a late peak
+  #
+  #
+  # Returns:
+  #   A logical value:      TRUE if the time corresponding to the max value in the tab-delimited string is later than the late peak threshold, otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numerical values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Find the index within the vector that corresponds to the max value of that same vector
+  index <- which.max(vectElement) #(vectElement==max(vectElement))
+  
+  # Determine what time value corresponds to the aforementioned index and compare with late peak threshold
+  latePeakFlag <- timePoints[index]>=latePeakThreshold #ifelse(timePoints[index]>=latePeakThreshold, yes=TRUE, no=FALSE)
+  
+  return(latePeakFlag)
+}
+
+
+
 autoFlagWells <- function(resultTable, parameters) {
+  # resultTable: a data.table with columns T_sequence, T_timePoints, "transformed_percent efficacy"
+  # parameters: list of parameters
+  # 
+  # returns update resultTable with added columns "autoFlagType", "autoFlagObservation", "autoFlagReason"
+  library(data.table)
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
-  
   
   # Add fluorescent as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")
   
   # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
   
   
+  # Determine whether all, none or some of the parameters regarding fluorescent well determination exist
+  if (!(is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+      !(is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") & 
+      !(is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "complete"
+  } else if ((is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+             (is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") &
+             (is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "pass"
+  } else {
+    statusFluorescent <- "incomplete"
+  }
+  
+
+  # If some but not all parameters regarding fluorescent well determination exist, alarm the user
+  if (statusFluorescent=="incomplete") {
+    stopUser("Not all necessary parameters regarding fluorescent wells were defined. Please set values for all three fields: 
+              Fluorescent Start, Fluorescent End and Fluorescent Step Size.")
+  }
+
+  
+  # Only if all parameters regarding fluorescent well determination exist, set up the proper variables
+  if (statusFluorescent=="complete") {
+    # Get the start/end of the time window target for fluorescent wells
+    timeWindowStart <- parameters$fluorescentStart
+    timeWindowEnd <- parameters$fluorescentEnd
+    
+    # Get the threshold step for determining fluorescent wells
+    fluoroThreshold <- parameters$fluorescentStep
+  }
+  
+  
+  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
+  
+  
+  # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Find the index for elements corresponding to start and end of target time window
+    indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
+    
+    # Apply the function that determines if a well is fluorescent to all wells
+    wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
+    wellsKO <- unname(wellsKO)
+  }
+
+  # Perform the following commands only if the user provided a value for the late peak time parameter
+  if (!(is.null(parameters$latePeakTime) | parameters$latePeakTime=="")) {
+    # Apply the function that determines if a well corresponds to a late peak  
+    wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+    wellsLate <- unname(wellsLate)
+    
+    # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
+    resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
+  }
+  
+  
+  # Only if all parameters regarding fluorescent well determination exist, then update resultTable with fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Update the appropriate resultTable columns to reflect the wells found to be fluorescent
+    resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
+  }
+  
+
+    
   # Flag HITs
   if(!parameters$autoHitSelection) {
     return(resultTable)
@@ -1730,7 +1880,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ## END test structure
   
   # TODO in 1.6: store this in protocol
-  parameters$latePeakTime <- 80
+  # parameters$latePeakTime <- 80
   
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
