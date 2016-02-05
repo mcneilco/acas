@@ -1,4 +1,4 @@
-FROM    mcneilco/racas:ACASDEV-409-build-tools-restructuring
+FROM    mcneilco/racas:dns-zaius
 USER    root
 ENV     APP_NAME ACAS
 ENV     BUILD_PATH /home/runner/build
