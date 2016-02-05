@@ -20,7 +20,7 @@ services:
       - ./bin/environments/acas/acas.env
     command: ["bin/acas-docker.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:compound-inventory
+    image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
     restart: always
     ports:
      - "1080:1080"
@@ -60,7 +60,7 @@ services:
       - ./bin/environments/roo/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:cmpd-inventory-feature
+    image: mcneilco/acas-roo-server:ACASDEV-409-build-tools-restructuring
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
