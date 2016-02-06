@@ -387,8 +387,8 @@ processData <- function(postData, exportCSV, onlyPublicData){
 
 	searchParams <- list()
 	if (length(postData.list$queryParams$experimentCodeList) > 1){
-	  searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
-
+	  experimentCodes <- unique(postData.list$queryParams$experimentCodeList)
+	  searchParams$experimentCodeList <- experimentCodes[grepl("^EXPT-", experimentCodes)]
 	} else {
 	  searchParams$experimentCodeList <- list()
 	  searchParams$experimentCodeList[1] <- postData.list$queryParams$experimentCodeList
