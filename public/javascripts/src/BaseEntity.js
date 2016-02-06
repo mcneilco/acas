@@ -330,7 +330,6 @@
         origValues = st.get('lsValues');
         origValues.each(function(sv) {
           var copiedVal;
-          console.log(sv.attributes.lsType);
           if (sv.attributes.lsType !== 'fileValue') {
             copiedVal = new Value(sv.attributes);
             copiedVal.unset('id');
