@@ -53,7 +53,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 								console.log err
 								resp.end "gene query directory could not be saved"
 							else
-								filename = 'GeneQuery.csv';
+								filename = 'DataViewer.csv';
 								fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, (err) ->
 									if err
 										console.log 'there was an error saving a ACAS Data Viewer csv file'
@@ -71,7 +71,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 							return
 						)
 					else
-						console.log 'got ajax error trying to get gene data csv from the server'
+						console.log 'got ajax error trying to get DataViewer csv file from the server'
 						console.log error
 						console.log json
 						console.log response
@@ -94,7 +94,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 				hasError: requestError
 				hasWarning: true
 				errorMessages: [
-					{errorLevel: "warning", message: "some genes not found"},
+					{errorLevel: "warning", message: "some tested lots not found"},
 				]
 			if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
 			resp.end JSON.stringify responseObj
@@ -110,7 +110,7 @@ exports.getExperimentDataForGenes = (req, resp)  ->
 				if !error
 					resp.end JSON.stringify json
 				else
-					console.log 'got ajax error trying to query gene data'
+					console.log 'got ajax error trying to query tested lot data'
 					console.log error
 					console.log resp
 			)
@@ -151,7 +151,7 @@ exports.getExperimentListForGenes = (req, resp)  ->
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to query gene data'
+				console.log 'got ajax error trying to query tested lot data'
 				console.log error.stack
 				console.log response
 		)
@@ -193,7 +193,7 @@ exports.getExperimentSearchAttributes = (req, resp)  ->
 				console.log JSON.stringify json
 				resp.end JSON.stringify json
 			else
-				console.log 'got ajax error trying to query gene data'
+				console.log 'got ajax error trying to query tested lot data'
 				console.log error
 				console.log resp
 		)
@@ -328,7 +328,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 								console.log err
 								resp.end "gene query directory could not be saved"
 							else
-								filename = 'GeneQuery.csv';
+								filename = 'DataViewer.csv';
 								fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, (err) ->
 									if err
 										console.log 'there was an error saving an ACAS Data Viewer csv file'
@@ -346,7 +346,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 							return
 						)
 					else
-						console.log 'got ajax error trying to get gene data csv from the server'
+						console.log 'got ajax error trying to get DataViewer csv file from the server'
 						console.log error
 						console.log json
 						console.log response
@@ -368,7 +368,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 				hasError: requestError
 				hasWarning: true
 				errorMessages: [
-					{errorLevel: "warning", message: "some genes not found"},
+					{errorLevel: "warning", message: "some tested lots not found"},
 				]
 			if requestError then responseObj.errorMessages.push {errorLevel: "error", message: "start offset outside allowed range, please speake to an administrator"}
 			resp.end JSON.stringify responseObj
@@ -386,7 +386,7 @@ exports.getExperimentDataForGenesAdvanced = (req, resp)  ->
 					console.log JSON.stringify json
 					resp.end JSON.stringify json
 				else
-					console.log 'got ajax error trying to query gene data'
+					console.log 'got ajax error trying to get query tested lot data'
 					console.log error
 					console.log resp
 			)
