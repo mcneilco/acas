@@ -291,7 +291,6 @@
       attachFileList = new ExperimentAttachFileList();
       for (i = 0, len = fileTypes.length; i < len; i++) {
         type = fileTypes[i];
-        console.log(type.code + "_" + type.name);
         analyticalFileState = this.get('lsStates').getOrCreateStateByTypeAndKind("metadata", this.get('subclass') + " metadata");
         analyticalFileValues = analyticalFileState.getValuesByTypeAndKind("fileValue", type.code);
         if (analyticalFileValues.length > 0 && type.code !== "unassigned") {
@@ -309,21 +308,13 @@
           }
         }
         if ((type.code === "source file") || type.code === "annotation file") {
-          console.log(type.code);
           if (type.code === "source file") {
             file = this.getSourceFile();
           } else {
             file = this.getSELReportFile();
           }
-          console.log(file);
           if (file != null) {
-            console.log(file.get('comments'));
             displayName = file.get('comments');
-            debugger;
-            if (displayName == null) {
-              displayName = file.get('fileValue').split("/");
-              displayName = displayName[displayName.length - 1];
-            }
             fileModel = new AttachFile({
               fileType: type.code,
               fileValue: file.get('fileValue'),
@@ -338,11 +329,7 @@
     };
 
     Experiment.prototype.getSourceFile = function() {
-      if (this.get('lsKind') === "default") {
-        return this.get('lsStates').getStateValueByTypeAndKind("metadata", "raw results locations", "fileValue", "source file");
-      } else {
-        return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "fileValue", "source file");
-      }
+      return this.get('lsStates').getStateValueByTypeAndKind("metadata", "experiment metadata", "fileValue", "source file");
     };
 
     Experiment.prototype.getSELReportFile = function() {

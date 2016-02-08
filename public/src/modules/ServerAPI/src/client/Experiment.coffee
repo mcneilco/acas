@@ -182,7 +182,6 @@ class window.Experiment extends BaseEntity
 		#get list of possible kinds of analytical files
 		attachFileList = new ExperimentAttachFileList()
 		for type in fileTypes
-			console.log(type.code + "_" + type.name)
 			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
 			if analyticalFileValues.length > 0 and type.code != "unassigned"
@@ -199,20 +198,12 @@ class window.Experiment extends BaseEntity
 
 			# get files not saved in metadata_experiment metadata state
 			if (type.code is "source file") or type.code is "annotation file"
-				console.log(type.code)
-				if type.code is "source file" # TODO: remove this once SEL files are saved in metadata_experiment metadata state
+				if type.code is "source file"
 					file = @getSourceFile()
 				else
 					file = @getSELReportFile()
-				console.log(file)
 				if file?
-					console.log(file.get('comments'))
 					displayName = file.get('comments')
-					debugger
-					unless displayName? #TODO: delete this once SEL saves file names in the comments
-						displayName = file.get('fileValue').split("/")
-
-						displayName = displayName[displayName.length - 1]
 					fileModel = new AttachFile
 						fileType: type.code
 						fileValue: file.get('fileValue')
@@ -222,11 +213,7 @@ class window.Experiment extends BaseEntity
 		attachFileList
 
 	getSourceFile: ->
-		if @get('lsKind') is "default" #TODO: remove this once SEL files are saved to experiment metadata state
-			return @get('lsStates').getStateValueByTypeAndKind "metadata", "raw results locations", "fileValue", "source file"
-
-		else #is "plateAnalysis"
-			return @get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "fileValue", "source file"
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "fileValue", "source file"
 
 	getSELReportFile: -> #for getting report files uploaded through SEL
 		@get('lsStates').getStateValueByTypeAndKind "metadata", "report locations", "fileValue", "annotation file"
@@ -328,8 +315,6 @@ class window.ExperimentBaseController extends BaseEntityController
 								if json.length == 0
 									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-	#								expt = new Experiment json
 									lsKind = json.lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 									if lsKind is "default"
 										expt = new Experiment json
