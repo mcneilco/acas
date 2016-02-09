@@ -274,9 +274,12 @@ formatCSVRequestAsReqArray = (csvReq) ->
 formatReqArrayAsCSV = (prefResp) ->
 	preferreds = prefResp
 	outStr =  "Requested Name,Reference Code\n"
-	for pref in preferreds
-		outStr += pref.requestName + ',' + pref.preferredName + '\n'
-
+	if prefResp?
+		for pref in preferreds
+			outStr += pref.requestName + ',' + pref.preferredName + '\n'
+	else
+		console.log 'no prefResp sent to formatReqArrayAsCSV'
+		outStr += ',\n'
 	return outStr
 
 formatBestLabelsAsCSV = (prefResp) ->
