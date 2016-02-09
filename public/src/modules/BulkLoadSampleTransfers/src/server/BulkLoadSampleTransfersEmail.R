@@ -68,7 +68,8 @@ runBulkLoadAndEmail <- function(request) {
                           port = racas::applicationSettings$server.support.smtp.port, 
                           user.name = racas::applicationSettings$server.support.smtp.username, 
                           passwd = racas::applicationSettings$server.support.smtp.password, 
-                          ssl = as.logical(racas::applicationSettings$server.support.smtp.ssl)),
+                          ssl = as.logical(racas::applicationSettings$server.support.smtp.ssl),
+                          tls = as.logical(racas::applicationSettings$server.support.smtp.tls)),
               authenticate = racas::applicationSettings$server.support.smtp.auth,
               send = TRUE))
   } else {
