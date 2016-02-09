@@ -355,6 +355,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	initialize: ->
 		@fileName = null
+		@project = false
 		$(@el).empty()
 		$(@el).html @template()
 		@getAndFormatTemplateOptions()
@@ -454,6 +455,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
 		project = @projectListController.getSelectedCode()
+		@project = project # set the selected
 		@isValid()
 		@trigger 'projectChanged', project
 
@@ -653,7 +655,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
 		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
 
+	addProjectToMappingsPayLoad: ->
+		if @project?
+			dbProjectProperty = new AssignedProperty
+				dbProperty: "Project"
+				required: true
+				sdfProperty: null
+				defaultVal: @project
+			@assignedPropertiesListController.collection.add dbProjectProperty
+
 	registerCompounds: ->
+		@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
