@@ -100,7 +100,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@numRecords = 100
 		@tempName = "none"
 		@mappings = new AssignedPropertiesList()
-		@project = "unassigned"
 		@fileName = null
 
 	render: ->
@@ -217,9 +216,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@mappings = mappings
 		if @fileName? and @fileName != null
 			@getProperties()
-
-	handleProjectChanged: (projectName) =>
-		@project = projectName
 
 class window.AssignedPropertyController extends AbstractFormController
 	template: _.template($("#AssignedPropertyView").html())
@@ -722,8 +718,6 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@assignSdfPropertiesController.handleFileChanged newFileName
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
-		@assignSdfPropertiesController.on 'projectChanged', (projectName) =>
-			@detectSdfPropertiesController.handleProjectChanged(projectName)
 		@assignSdfPropertiesController.on 'saveComplete', (saveSummary) =>
 			@trigger 'saveComplete', saveSummary
 
