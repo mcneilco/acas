@@ -1,4 +1,4 @@
-version: 2
+version: '2'
 services:
   acas:
     build: .
@@ -18,7 +18,7 @@ services:
      # Dev volumes below this line
     env_file:
       - ./bin/environments/acas/acas.env
-    command: ["bin/acas-docker.sh", "run", "acas", "start"]
+    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
     restart: always
@@ -29,7 +29,7 @@ services:
      - PREPARE_CONFIG_FILES=false
     volumes_from:
      - acas
-    command: ["bin/acas-docker.sh", "run", "rservices"]
+    command: ["bin/acas.sh", "run", "rservices"]
   db:
     image: mcneilco/acas-postgres:ACASDEV-409-build-tools-restructuring
     restart: always
