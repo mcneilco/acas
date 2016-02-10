@@ -190,6 +190,7 @@ exports.getAuthors = (resp) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+	#TODO: need to change if want to filter users by roles
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->

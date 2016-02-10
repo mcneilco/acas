@@ -1,6 +1,7 @@
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
+	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
@@ -19,6 +20,7 @@ exports.setupRoutes = (app, passport) ->
 		exports.changeAuthenticationService,
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
+	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
 
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 config = require '../conf/compiled/conf.js'
@@ -181,3 +183,11 @@ exports.changePage = (req, res) ->
 			scripts: []
 			user: user
 			message: "need login or admin"
+
+exports.getAuthors = (req, resp) ->
+	console.log "getting authors"
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
+		baseEntityServiceTestJSON = require '../src/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
+		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
+	else
+		csUtilities.getAuthors resp
