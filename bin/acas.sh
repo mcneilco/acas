@@ -116,7 +116,7 @@ run_server() {
     if [ $(whoami) != "$ACAS_USER" ]; then
         startCommand="su - $ACAS_USER $suAdd -c \"(cd `dirname $ACAS_HOME/app.js` && $startCommand)\""
     fi
-    eval "($runCommand)"
+    eval "($runCommand)" &
     return $?
 }
 
@@ -293,19 +293,19 @@ do_run() {
         if [ $name == "all" ]; then
             action "Running apache in background" run_apache &
         else
-            action "Running apache" run_apache
+            action "Running apache" run_apache &
         fi
-        RETVAL=$?
     fi
 
     if [ $name == "acas" ] || [ $name == "all" ]; then
         dirname=`basename $ACAS_HOME`
         LOCKFILE=$ACAS_HOME/bin/app.js.LOCKFILE
         action "Running app.js" run_server "${@:2}"
-        RETVAL=$?
+        acaspid=$?
     fi
+    trap 'kill -TERM jobs -p' TERM
+    wait
     return $RETVAL
-
 }
 
 # Stops the server.
@@ -369,6 +369,11 @@ cd $ACAS_HOME
 # get customer specific environment
 [ -f $ACAS_HOME/bin/setenv.sh ] && . $ACAS_HOME/bin/setenv.sh  || echo "$ACAS_HOME/bin/setenv.sh not found"
 
+# Run Prepare config files as the compiled directory should be empty
+if [ $PREPARE_CONFIG_FILES == "true" ]; then
+    grunt --base $ACAS_HOME execute:prepare_config_files
+fi
+
 #Get ACAS config variables
 counter=0
 wait=5
@@ -378,6 +383,29 @@ until [ -f $ACAS_HOME/conf/compiled/conf.properties  ] || [ $counter == $wait ];
     counter=$((counter+1))
 done
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/bin/readproperties.awk)"
+
+#Once tomcat is available then try and run prepare module conf json if in environment
+if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
+    (ping -c 1 ${client_service_persistence_host} > /dev/null
+    cd src/javascripts/BuildUtilities
+    if [ $? -eq 0 ];then
+        counter=0
+        wait=100
+        until $(curl --output /dev/null --silent --head --fail http://${client_service_persistence_host}:${client_service_persistence_port}) || [ $counter == $wait ]; do
+            sleep 1
+            counter=$((counter+1))
+        done
+        if [ $counter == $wait ]; then
+            echo "waited $wait seconds for acas to start, giving up on prepare module conf json"
+        else
+            node PrepareModuleConfJSON.js
+        fi
+    else
+        echo "${client_service_persistence_host} not available, not waiting for roo to start and not running prepare module conf json"
+    fi
+    cd ../../..
+    ) &
+fi
 
 # Export these variables so that the apache config can pick them up
 export ACAS_USER=${server_run_user}
