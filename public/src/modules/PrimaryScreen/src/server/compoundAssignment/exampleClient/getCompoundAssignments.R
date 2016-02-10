@@ -139,10 +139,10 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   # Add the extra column that pertains to the agonist concentration extracted from the template above
   wellTable <- merge(wellTable, extraColumn[c('WELL_NAME','agonistConc')], all=TRUE)
   
-  # De-activate the getAgonist and removeVehicle functions
+  # De-activate the getAgonist and removeVehicle functions, added removeAgonist for backwards compatability
   #wellTable <- getAgonist(parameters$agonistControl, wellTable)
-  
   #wellTable <- removeVehicle(parameters$vehicleControl, wellTable)
+  wellTable <- removeAgonist(parameters$agonistControl, wellTable)
   
   if(anyDuplicated(paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":"))) {
     wellTable$plateAndWell <- paste(wellTable$BARCODE, wellTable$WELL_NAME, sep=":")
@@ -214,6 +214,20 @@ removeVehicle <- function(vehicle, wellTable) {
   hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
   vehicleIds <- wellTable$ID[vehicleRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
   wellTable <- wellTable[!(wellTable$ID %in% vehicleIds), ]
+  return(wellTable)
+}
+
+removeAgonist <- function(agonist, wellTable) {
+  #Removes rows with a agonist that are part of another well
+  # If the agonist is the only compound in a well, it is kept
+  library(plyr)
+  
+  agonistRows <- wellTable$BATCH_CODE == agonist$batchCode
+  #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
+  compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
+  hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
+  agonistIds <- wellTable$ID[agonistRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
+  wellTable <- wellTable[!(wellTable$ID %in% agonistIds), ]
   return(wellTable)
 }
 
