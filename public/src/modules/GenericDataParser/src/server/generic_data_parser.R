@@ -2662,6 +2662,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
   }
   summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
+  if(!is.null(validatedMetaData$Project)) {
+    summaryInfo$info$"Project" <- as.character(validatedMetaData$Project)
+  }
   if(!is.null(customExperimentMetaDataValues)) {
     summaryInfo$info <- c(summaryInfo$info,customExperimentMetaDataValues)
   }
