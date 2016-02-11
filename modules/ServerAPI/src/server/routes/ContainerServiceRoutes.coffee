@@ -239,9 +239,10 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		#TODO: replace with new url
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getCodeNameFromNameRequest?"
+#		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{codeRequest.containerType}&containerKind=#{codeRequest.containerKind}"
-		postBody = codeRequest.requests
+		postBody = requests: codeRequest.requests
 		console.log postBody
 		console.log url
 		request = require 'request'
@@ -257,7 +258,7 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 				callback
 					containerType: codeRequest.containerType
 					containerKind: codeRequest.containerKind
-					results: json
+					results: json.results
 			else
 				console.log 'got ajax error trying to lookup lsContainer name'
 				console.log error
@@ -275,7 +276,6 @@ getContainerCodesFromLabels = (req, callback) ->
 
 	else
 		config = require '../conf/compiled/conf.js'
-		#TODO: replace with new url
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{req.body.containerType}&containerKind=#{req.body.containerKind}"
 		postBody = req.body.labels
@@ -305,9 +305,9 @@ exports.getContainerCodesFromLabels = (req, resp) ->
 		resp.json json
 
 
-exports.getContainerFromLabel = (req, resp) ->
+exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and expecting to get 1 container back
 	getContainerCodesFromLabels req, (json) ->
-		if json[0]?.codeName?
+		if json[0]?.codeName? #assumes that labels are unique
 			req.params.code = json[0].codeName
 			exports.containerByCodeName req, resp
 		else
