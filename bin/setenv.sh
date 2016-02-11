@@ -1,1 +1,2 @@
-export LD_LIBRARY_PATH=/usr/lib64/R/lib:/usr/local/lib64:/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.45.x86_64/jre/lib/amd64/server:/usr/pgsql-9.3/lib:@JAVA_LD@
+# Example:
+#export LD_LIBRARY_PATH=/usr/lib/oracle/11.2/client64/lib:$LD_LIBRARY_PATH
