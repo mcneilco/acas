@@ -1524,9 +1524,9 @@
       this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
       this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-        this.$('.bv_adminDropdown').removeClass('disabled');
+        this.$('.bv_adminDropdownWrapper').show();
       } else {
-        this.$('.bv_adminDropdown').addClass('disabled');
+        this.$('.bv_adminDropdownWrapper').hide();
       }
       this.$('.bv_searchNavOption').hide();
       return this.setupBulkRegCmpdsController();

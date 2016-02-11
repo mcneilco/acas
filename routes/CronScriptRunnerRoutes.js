@@ -24,19 +24,21 @@
     cronConfig = require('../public/javascripts/conf/StartupCronJobsConfJSON.js');
     persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs";
     codeInt = 1;
-    ref = cronConfig.jobsToStart;
-    for (i = 0, len = ref.length; i < len; i++) {
-      spec = ref[i];
-      newCode = CRON_CONFIG_PREFIX + codeInt++;
-      newCron = {
-        spec: spec
-      };
-      newCron.spec.codeName = newCode;
-      newCron.spec.numberOfExcutions = 0;
-      newCron.spec.ignored = false;
-      global.cronJobs[newCode] = newCron;
-      if (newCron.spec.active) {
-        setupNewCron(newCron);
+    if (cronConfig.jobsToStart != null) {
+      ref = cronConfig.jobsToStart;
+      for (i = 0, len = ref.length; i < len; i++) {
+        spec = ref[i];
+        newCode = CRON_CONFIG_PREFIX + codeInt++;
+        newCron = {
+          spec: spec
+        };
+        newCron.spec.codeName = newCode;
+        newCron.spec.numberOfExcutions = 0;
+        newCron.spec.ignored = false;
+        global.cronJobs[newCode] = newCron;
+        if (newCron.spec.active) {
+          setupNewCron(newCron);
+        }
       }
     }
     if (!global.specRunnerTestmode) {

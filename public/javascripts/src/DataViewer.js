@@ -161,13 +161,16 @@
 
     DataViewerResultController.prototype.modifyTableEntities = function() {
       return this.$('td.referenceCode').each(function() {
+        var referenceCode;
+        referenceCode = $(this).html();
+        $(this).html("Loading...");
         return $.ajax({
           type: 'POST',
           url: "/api/sarRender/render",
           dataType: 'json',
           data: {
             displayName: this.displayName,
-            referenceCode: $(this).html()
+            referenceCode: referenceCode
           },
           success: (function(_this) {
             return function(json) {

@@ -1600,7 +1600,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
 }
 getPreferredProtocolName <- function(protocol, protocolName = NULL) {
   # gets the preferred protocol name from the protocol and checks that it is the same as the current protocol name
-  preferredName <- protocol$lsLabels[vapply(protocol$lsLabels, getElement, c(TRUE), "preferred")][[1]]$labelText
+  preferredName <- pickBestName(protocol)$labelText
   if (!is.null(protocolName) && preferredName != protocolName) {
     warnUser(paste0("The protocol name that you entered, '", protocolName, 
                    "', was replaced by the preferred name '", preferredName, "'"))
@@ -1960,7 +1960,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(subjectData$batchCode)
+    batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {
@@ -2415,7 +2415,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
     fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
-    batchNameList <- unique(analysisGroupData$batchCode)
+    batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
     if (configList$server.service.external.report.registration.url != "") {
       registerReportFile(reportFilePath, batchNameList, reportFileSummary, recordedBy, configList, experiment, lsTransaction, annotationType)
     } else {

@@ -1,8 +1,7 @@
 ## getSELColOrder.R
 
-
 #.libPaths('/opt/acas_homes/acas-t/acas/r_libs')
-
+#options(java.parameters = "-Xmx1536m" )
 options(scipen=99)
 require('RCurl')
 require('rjson')
@@ -449,34 +448,72 @@ getExperimentColumns <- function(experimentCode){
 	  customrequest='GET',
 	  httpheader=c('Content-Type'='application/json'))
 
-	errorFileFlag <- TRUE
+	errorFileFlag <- FALSE
+	fileFound <- FALSE
 
+	
 	if (length(fromJSON(sourceFileValueJSON)) > 0){
 		fileName <- fromJSON(sourceFileValueJSON)[[1]]$fileValue
-
         if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
-            sampleDataFile <- paste0(fileName, ".xlsx")
+				dnsFileFinfo <- getURL(
+					paste0(racas::applicationSettings$server.service.external.file.service.url, fileName, "/metadata.json"),
+					  customrequest='GET',
+					  httpheader=c('Content-Type'='application/json'))
+				sampleDataFile <- fromJSON(dnsFileFinfo)[[1]]$dnsFile$name	
+
             f = CFILE(sampleDataFile, mode="wb")
             curlPerform(url = paste0(racas::applicationSettings$server.service.external.file.service.url, fileName), writedata = f@ref)
             close(f)
         } else {
-		sampleDataFile <- paste0(filePath, "/", fileName)
+		      sampleDataFile <- paste0(filePath, "/", fileName)
         }
-		
-		#	sampleDataFile <- "/Users/goshiro2014/Documents/McNeilco_2012/clients/Chanda_Lab/development/sampleData/upload RNAseq-140724_6_50rows.xlsx"
-		sheet <- 1 
-		header <- FALSE
-		numberOfRows <- 250
 
-		errorFileFlag <- FALSE
+		if (file.exists(sampleDataFile)){
+			fileFound <- TRUE
+			#print(paste0("found the file: ", sampleDataFile))
+		} else {
+			if (file.exists(paste0(sampleDataFile, 'x'))){
+			   #print(paste0("found the file: ", sampleDataFile, 'x'))
+			   sampleDataFile <- paste0(sampleDataFile, 'x')
+				fileFound <- TRUE
+			} else {
+				fileNameSplit <- strsplit(fileName, '/')[[1]]
+				rootFileName <- fileNameSplit[length(fileNameSplit)]
+				if (file.exists(paste0(filePath, '/', rootFileName))){
+			   	#print(paste0("found the file: ", rootFileName))
+					sampleDataFile <- paste0(filePath, '/', rootFileName)
+					fileFound <- TRUE
+				} else {
+					if (file.exists(paste0(filePath, '/', rootFileName, 'x'))){
+			   		#print(paste0("found the file: ", filePath, '/', rootFileName, 'x'))
+						sampleDataFile <- paste0(filePath, '/', rootFileName, 'x')
+						fileFound <- TRUE
+					} 
+				} 
+			}
+		} 
+					
+		if (fileFound){
+		  sheet <- 1 
+	  	  header <- FALSE
+		  numberOfRows <- 250
+		  csvFile <- FALSE
+
 		tryCatch({
-			wb <- XLConnect::loadWorkbook(sampleDataFile)
-			genericDataFileDataFrame <- XLConnect::readWorksheet(wb, sheet = sheet, header = header, endRow=numberOfRows, dateTimeFormat="%Y-%m-%d")
 
-		  #genericDataFileDataFrame <- read.xls(sampleDataFile, sheet = sheet, header = header, nrows=numberOfRows)
-		          if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
-                        file.remove(sampleDataFile)
-                    }
+			if(grepl(".csv", sampleDataFile)){
+				genericDataFileDataFrame <- read.csv(sampleDataFile, header=FALSE, sep=",", stringsAsFactors = FALSE, nrows = numberOfRows )
+				csvFile <- TRUE
+			} else {
+				#wb <- XLConnect::loadWorkbook(sampleDataFile)
+				#genericDataFileDataFrame <- XLConnect::readWorksheet(wb, sheet = sheet, header = header, endRow=numberOfRows, dateTimeFormat="%Y-%m-%d")
+				genericDataFileDataFrame <- readExcelOrCsv(sampleDataFile)
+			}
+
+		   if (grepl("DNS", racas::applicationSettings$server.service.external.file.service.url)) {
+		          file.remove(sampleDataFile)
+		   }
+
 		  },
 		    warning = function(w) {
 		    warningFlag <- TRUE
@@ -485,19 +522,27 @@ getExperimentColumns <- function(experimentCode){
 		    errorFileFlag <- TRUE
 		  }
 		)
-
+			
+		} else {
+			errorFileFlag <- TRUE
+		}
+		
 	} 
 	
 	if (!errorFileFlag){
-		
-
 		# Grab the Calculated Results Section
 		calculatedResults <- racas::getSection(genericDataFileDataFrame, lookFor = "Calculated Results", transpose = FALSE)
 		errorEnv <- globalenv()
 
 		genericDataFileDataFrame$index <- seq(1:nrow(genericDataFileDataFrame))
-		inputFormatRow <- subset(genericDataFileDataFrame, Col1 == 'Format', index)$index
-		inputFormat <- genericDataFileDataFrame$Col2[inputFormatRow]
+		if (csvFile){
+			inputFormatRow <- subset(genericDataFileDataFrame, V1 == 'Format', index)$index
+			inputFormat <- genericDataFileDataFrame$V2[inputFormatRow]
+
+		} else {
+			inputFormatRow <- subset(genericDataFileDataFrame, Col1 == 'Format', index)$index
+			inputFormat <- genericDataFileDataFrame$Col2[inputFormatRow]
+		}
 		
 		if (inputFormat %in% c("Gene ID Data", "Generic", "Dose Response")) {
     		mainCode <- calculatedResults[2, 1] #Getting this from its standard position
@@ -506,7 +551,6 @@ getExperimentColumns <- function(experimentCode){
   		}
 
 		link <- NULL
-
 
 		# Check the Datatype row and get information from it
 		hiddenColumns <- getHiddenColumns_DV(as.character(unlist(calculatedResults[1,])), errorEnv)
@@ -546,11 +590,8 @@ getExperimentColumns <- function(experimentCode){
 	    } else {
 	      notMainCode <- (is.null(link) | (calculatedResultsValueKindRow != "link"))
 	    }
- 
 	    valueKinds$dataClass <- classRow[notMainCode]
 	    valueKinds$valueType <- translateClassToValueType_DV(valueKinds$dataClass)
-
-
 	    hideColumn <- hiddenColumns[2:length(hiddenColumns)]
 	    valueKinds <- cbind(valueKinds, hideColumn)
 	    valueKinds$order <- seq(1:nrow(valueKinds))
