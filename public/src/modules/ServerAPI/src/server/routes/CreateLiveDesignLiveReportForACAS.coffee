@@ -25,14 +25,14 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (exptCode, callback) ->
 
 
     command = "./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
-    command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -i '"
+    command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -d '"+config.all.client.service.result.viewer.liveDesign.database+"' -i '"
     #		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
     #		command += (JSON.stringify data)+"'"
     command += (JSON.stringify exptInfo)+"'"
     console.log "About to call python using command: "+command
 
     child = exec command,  (error, stdout, stderr) ->
-      reportURLPos = stdout.indexOf "https://"
+      reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
       reportURL = stdout.substr reportURLPos
       console.log "stderr: " + stderr
       console.log "stdout: " + stdout
