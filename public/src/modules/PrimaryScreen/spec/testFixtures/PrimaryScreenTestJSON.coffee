@@ -59,26 +59,43 @@
 		transformationParameters: {}
 	]
 
+	exports.standards = [
+		standardNumber: 1
+		batchCode: "CMPD-12345678-01"
+		concentration: 10
+		concentrationUnits: "uM"
+		standardType: "PC"
+	,
+		standardNumber: 2
+		batchCode: "CMPD-87654321-01"
+		concentration: 1
+		concentrationUnits: "uM"
+		standardType: "NC"
+	,
+		standardNumber: 3
+		batchCode: "CMPD-00000001-01"
+		concentration: 0
+		concentrationUnits: "uM"
+		standardType: "VC"
+	]
+
+	exports.additives = [
+		additiveNumber: 1
+		batchCode: "CMPD-87654399-01"
+		concentration: 10
+		concentrationUnits: "uM"
+		additiveType: "agonist"
+	,
+		additiveNumber: 2
+		batchCode: "CMPD-92345698-01"
+		concentration: 15
+		concentrationUnits: "uM"
+		additiveType: "antagonist"
+	]
+
 	exports.primaryScreenAnalysisParameters =
-		controls: [
-			standardNumber: 1
-			batchCode: "CMPD-12345678-01"
-			concentration: 10
-			concentrationUnits: "uM"
-			controlType: "PC"
-		,
-			batchCode: "CMPD-87654321-01"
-			concentration: 1
-			concentrationUnits: "uM"
-			controlType: "NC"
-		,
-			batchCode: "CMPD-00000001-01"
-			concentration: null
-			concentrationUnits: null
-			controlType: "VC"
-		]
-		agonist:
-			batchCode: "CMPD-87654399-01"
+		standardCompoundList: exports.standards
+		additiveList: exports.additives
 		instrumentReader: "flipr"
 		signalDirectionRule: "increasing"
 		aggregateBy: "compound batch concentration"
