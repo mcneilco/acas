@@ -370,7 +370,7 @@ cd $ACAS_HOME
 [ -f $ACAS_HOME/bin/setenv.sh ] && . $ACAS_HOME/bin/setenv.sh  || echo "$ACAS_HOME/bin/setenv.sh not found"
 
 # Run Prepare config files as the compiled directory should be empty
-if [ $PREPARE_CONFIG_FILES == "true" ]; then
+if [ "$PREPARE_CONFIG_FILES" = "true" ]; then
     grunt --base $ACAS_HOME execute:prepare_config_files
 fi
 
@@ -385,7 +385,7 @@ done
 source /dev/stdin <<< "$(cat $ACAS_HOME/conf/compiled/conf.properties | awk -f $ACAS_HOME/bin/readproperties.awk)"
 
 #Once tomcat is available then try and run prepare module conf json if in environment
-if [ $PREPARE_MODULE_CONF_JSON == "true" ]; then
+if [ "$PREPARE_MODULE_CONF_JSON" = "true" ]; then
     (ping -c 1 ${client_service_persistence_host} > /dev/null
     cd src/javascripts/BuildUtilities
     if [ $? -eq 0 ];then
