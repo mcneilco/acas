@@ -1865,8 +1865,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   flaggedTreatmentGroupData <- getTreatmentGroupData(allFlaggedTable, list(aggregationMethod = "returnNA"), treatmentGroupBy)
   treatmentGroupData <- rbind(treatmentGroupData, flaggedTreatmentGroupData)
   # If one concentration, no problem, if three or more, it's a curve, with two... split them
-  treatmentGroupData[, concIndex := seq(1, .N), by = groupBy]
-  treatmentGroupData[, secondConc := (.N == 2 && concIndex == 2), by = groupBy]
+  treatmentGroupData[, concIndex := as.integer(as.factor(cmpdConc)), by = groupBy]
+  treatmentGroupData[, secondConc := (length(unique(cmpdConc)) == 2 & concIndex == 2), by = groupBy]
   treatmentGroupData[, concIndex := NULL]
   analysisGroupBy <- c(groupBy, "secondConc")
   treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]

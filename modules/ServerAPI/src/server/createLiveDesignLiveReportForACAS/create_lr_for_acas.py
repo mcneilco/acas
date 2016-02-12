@@ -17,14 +17,14 @@ try:
 except ImportError:
     # Python 2
     import httplib as http_client
-http_client.HTTPConnection.debuglevel = 2
+http_client.HTTPConnection.debuglevel = 0
 
 
 from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
 from ldclient.models import ViewSelection
 
-def make_acas_live_report(api, compound_ids, assays_to_add):
+def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId):
 
    
     lr = LiveReport("Live Report of ACAS Registered data", 
@@ -32,7 +32,8 @@ def make_acas_live_report(api, compound_ids, assays_to_add):
                     "BY_CACHEBUILDER",
                     False,
                     False,
-                    view_selection=ViewSelection("=", "Assay Display"))
+                    view_selection=ViewSelection("=", "Assay Display"),
+                    project_id = projectId)
 
     lr = api.create_live_report(lr)
 
@@ -73,10 +74,12 @@ def make_acas_live_report(api, compound_ids, assays_to_add):
     #compound search by id
     search_results = []
     if isinstance(compound_ids, (str,unicode)):
-    	search_results.extend(api.compound_search_by_id(compound_ids, database_names=["ACAS"]))
+    	search_results.extend(api.compound_search_by_id(compound_ids, database_names=[database], project_id = projectId))
     else:
+    	search_string = ""
     	for compound_id in compound_ids:
-    		search_results.extend(api.compound_search_by_id(compound_id, database_names=["ACAS"]))
+    		search_string += compound_id +"\n"
+    	search_results.extend(api.compound_search_by_id(search_string, database_names=[database], project_id = projectId))
     # Now add the rows for the compound ids for which we want data
     #compound_ids = ["V51411","V51412","V51413","V51414"]
     api.add_rows(lr_id, search_results)
@@ -96,22 +99,34 @@ def main():
     parser.add_argument('-e', '--endpoint', type=str)
     parser.add_argument('-u', '--username', type=str)
     parser.add_argument('-p', '--password', type=str)
+    parser.add_argument('-d', '--database', type=str)
     args = parser.parse_args()
     args = vars(args)
     endpoint = args['endpoint']
     username = args['username']
     password = args['password']
+    database = args['database']
     
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
+    try:
+		project=args['input']['project']
+    except:
+		project="Global"
     
     apiSuffix = "/api"
     apiEndpoint = endpoint + apiSuffix;
     api = Api(apiEndpoint, username, password)
-    api.reload_db_constants()
-    lr_id = make_acas_live_report(api, compound_ids, assays_to_add)
+#    api.reload_db_constants()
+    try:
+    	projectId = api.get_project_id_by_name(project)
+    except:
+    	projectId = 0
+    if type(projectId) is not int:
+		projectId = 0
+    lr_id = make_acas_live_report(api, compound_ids, assays_to_add, database, projectId)
     
-    liveReportSuffix = "/#/projects/0/livereports/";
+    liveReportSuffix = "/#/projects/"+str(projectId)+"/livereports/";
     print endpoint + liveReportSuffix + str(lr_id)
     #return endpoint + liveReportSuffix + str(lr_id)
 
@@ -119,4 +134,4 @@ if __name__ == '__main__':
     main()
 
     
-    
+ 
