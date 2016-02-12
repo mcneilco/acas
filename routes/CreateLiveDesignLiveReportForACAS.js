@@ -31,7 +31,7 @@
         console.log("About to call python using command: " + command);
         return child = exec(command, function(error, stdout, stderr) {
           var reportURL, reportURLPos;
-          reportURLPos = stdout.indexOf("https://");
+          reportURLPos = stdout.indexOf(config.all.client.service.result.viewer.liveDesign.baseUrl);
           reportURL = stdout.substr(reportURLPos);
           console.log("stderr: " + stderr);
           console.log("stdout: " + stdout);
