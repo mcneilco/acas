@@ -28,9 +28,10 @@ experimentFilters <- getURL(
 	postfields=postData.Json)
 	
 if (length(fromJSON(experimentFilters)) > 0){
-
+	experimentList <- fromJSON(experimentFilters)
+	experimentList <- experimentList[order(sapply(experimentList, `[[`, i=1))]
 	responseJson <- list()
-	responseJson$results$experiments <- fromJSON(experimentFilters)
+	responseJson$results$experiments <- experimentList
 	responseJson$results$htmlSummary <- "OK"
 	responseJson$hasError <- FALSE
 	responseJson$hasWarning <- FALSE
