@@ -8,6 +8,7 @@ require('rjson')
 require('data.table')
 require('racas')
 require('reshape2')
+require('gtools')
 
 
 source(file.path(racas::applicationSettings$appHome,"public/src/modules/DataViewer/src/server/getSELColOrder.R"))
@@ -180,6 +181,7 @@ fun.aggregate <- function(dataVector,type, exportCSV=exportCSV){
 	if (exportCSV){
   		agData.values = dataVector		
 	} else {
+		dataVector <- dataVector[mixedorder(sapply(dataVector,'[[', i=1), decreasing=FALSE)]
   		agData.values = sapply(dataVector,function(a) a[1])
   		agData.ids = paste(sapply(dataVector,function(a) a[2]),collapse=",")		
 	}
