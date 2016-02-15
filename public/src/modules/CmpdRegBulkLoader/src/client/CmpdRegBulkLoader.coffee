@@ -100,7 +100,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@numRecords = 100
 		@tempName = "none"
 		@mappings = new AssignedPropertiesList()
-		@project = "unassigned"
 		@fileName = null
 
 	render: ->
@@ -217,9 +216,6 @@ class window.DetectSdfPropertiesController extends Backbone.View
 		@mappings = mappings
 		if @fileName? and @fileName != null
 			@getProperties()
-
-	handleProjectChanged: (projectName) =>
-		@project = projectName
 
 class window.AssignedPropertyController extends AbstractFormController
 	template: _.template($("#AssignedPropertyView").html())
@@ -355,6 +351,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	initialize: ->
 		@fileName = null
+		@project = false
 		$(@el).empty()
 		$(@el).html @template()
 		@getAndFormatTemplateOptions()
@@ -454,6 +451,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 	handleDbProjectChanged: ->
 		#this function only gets called if project select is shown in the configuration part of the GUI
 		project = @projectListController.getSelectedCode()
+		@project = project # set the selected
 		@isValid()
 		@trigger 'projectChanged', project
 
@@ -653,7 +651,17 @@ class window.AssignSdfPropertiesController extends Backbone.View
 		@$('.bv_saveErrorTitle').html "Error: Template Not Saved"
 		@$('.bv_errorMessage').html "An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator."
 
+	addProjectToMappingsPayLoad: ->
+		if @project?
+			dbProjectProperty = new AssignedProperty
+				dbProperty: "Project"
+				required: true
+				sdfProperty: null
+				defaultVal: @project
+			@assignedPropertiesListController.collection.add dbProjectProperty
+
 	registerCompounds: ->
+		@addProjectToMappingsPayLoad()
 		dataToPost =
 			fileName: @fileName
 			mappings: JSON.parse(JSON.stringify(@assignedPropertiesListController.collection.models))
@@ -710,8 +718,6 @@ class window.BulkRegCmpdsController extends Backbone.View
 			@assignSdfPropertiesController.handleFileChanged newFileName
 		@assignSdfPropertiesController.on 'templateChanged', (templateName, mappings) =>
 			@detectSdfPropertiesController.handleTemplateChanged(templateName, mappings)
-		@assignSdfPropertiesController.on 'projectChanged', (projectName) =>
-			@detectSdfPropertiesController.handleProjectChanged(projectName)
 		@assignSdfPropertiesController.on 'saveComplete', (saveSummary) =>
 			@trigger 'saveComplete', saveSummary
 
