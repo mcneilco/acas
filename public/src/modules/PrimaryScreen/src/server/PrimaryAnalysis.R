@@ -1793,6 +1793,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # this also performs any calculations from the GUI
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
     
+    rm(instrumentData)
+    gc()
+    
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit, hasAgonist=resultTable$hasAgonist, 
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
@@ -1859,6 +1862,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   allFlaggedTable <- resultTable[!is.na(flag)]
   
   treatmentGroupData <- getTreatmentGroupData(batchDataTable, parameters, treatmentGroupBy)
+  
+  rm(batchDataTable)
+  gc()
+
   # allFlaggedTable is only for treatment groups mising from treatmentGroupData
   allFlaggedTable <- allFlaggedTable[!(tempParentId %in% treatmentGroupData$tempId)]
   # TODO 1.6: clean this up, maybe make it not return standardDeviation and numberOfReplicates
@@ -2158,10 +2165,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     ## TODO: decide if "resultTable" is the correct object to write
     summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
                                        experiment, parameters, user)
+    
+    rm(spotfireResultTable)
+    gc()
+                                       
     # TODO: loop or lapply to get all
     singleReport <- summaryInfo$reports[[1]]
     summaryInfo$info[[singleReport$title]] <- paste0(
       '<a href="', singleReport$link, '" target="_blank">', singleReport$title, '</a>')
+    
+    rm(singleReport)
+    gc()
     
     if (!is.null(zipFile)) {
       file.rename(zipFile, 
@@ -2241,13 +2255,24 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       
       resultTable[, tempId:=index]
       subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
+      
+      rm(resultTable)
+	    gc()
+
       # Remove empty rows (getting rid of NA flags)
       subjectDataLong <- subjectDataLong[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
       
       treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
       
+      rm(treatmentGroupData)
+      gc()
+		
       analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis", 
                                               forceBatchCodeAdd = TRUE)
+                                              
+      rm(analysisGroupData)
+      gc()
+                                     
       analysisGroupDataLong[, parentId:=experimentId]
       
       # Removes blank rows
@@ -2260,9 +2285,195 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       # Change subject hits to be saved in lowercase
       subjectDataLong[valueKind == "flag status" & codeValue == "HIT", codeValue := "hit"]
       subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
-      lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
-                                  subjectData=subjectDataLong,
-                                  recordedBy=user, lsTransaction=lsTransaction)
+#       lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
+#                                   subjectData=subjectDataLong,
+#                                   recordedBy=user, lsTransaction=lsTransaction)
+      
+      # TODO: Replacing uploadData to possibly save memory here
+      # This area needs cleanup and testing to see if it actually saves memory
+      analysisGroupData <- analysisGroupDataLong
+      rm(analysisGroupDataLong)
+      gc()
+      treatmentGroupData <- treatmentGroupDataLong
+      rm(treatmentGroupDataLong)
+      gc()
+      subjectData <- subjectDataLong
+      rm(subjectDataLong)
+      gc()
+      recordedBy <- user
+      
+      # Start replacement of uploadData function
+      library('plyr')
+      
+      valueKindDF <- unique(data.frame(
+        valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+        valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+      ))
+      valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
+      validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+      
+      if(is.null(lsTransaction)) {
+        lsTransaction <- createLsTransaction()$id
+      }
+      
+      ### Analysis Group Data
+      # Not all of these will be filled
+      analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
+                                                                   analysisGroupData$stateKind)))
+      analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
+      
+      if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
+        analysisGroupData$publicData <- TRUE
+      }
+      if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
+        analysisGroupData$stateGroupIndex <- 1
+      }
+      
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+      #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
+      
+      analysisGroupData$lsTransaction <- lsTransaction
+      analysisGroupData$recordedBy <- recordedBy
+      analysisGroupData$lsType <- "default"
+      analysisGroupData$lsKind <- "default"
+      
+      #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+      
+      if(!is.null(treatmentGroupData)) {
+        ### TreatmentGroup Data
+        treatmentGroupData$lsTransaction <- lsTransaction
+        treatmentGroupData$recordedBy <- recordedBy
+        treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-", 
+                                                                      treatmentGroupData$stateKind)))
+        
+        treatmentGroupData$lsType <- "default"
+        treatmentGroupData$lsKind <- "default"
+        
+      }
+      
+      if(!is.null(subjectData)) {
+        ### subject Data
+        subjectData$lsTransaction <- lsTransaction
+        subjectData$recordedBy <- recordedBy
+        subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-", 
+                                                               subjectData$stateKind)))
+        subjectData$lsType <- "default"
+        subjectData$lsKind <- "default"
+      }
+
+      # Start replacement of saveAllViaDirectDatabase function
+      appendCodeName <- list(analysisGroup = "curve id")
+      sendFiles <- list()
+      
+      if (!(is.null(appendCodeName$analysisGroup))) {
+        analysisGroupData <- appendCodeNames(analysisGroupData, appendCodeName$analysisGroup, "analysis group")
+      }
+      if (!(is.null(appendCodeName$treatmentGroup))) {
+        treatmentGroupData <- appendCodeNames(treatmentGroupData, appendCodeName$treatmentGroup, "treatment group")
+      }
+      if (!(is.null(appendCodeName$subject))) {
+        subjectData <- appendCodeNames(subjectData, appendCodeName$subject, "subject")
+      }
+      setkey(analysisGroupData, NULL)
+      setkey(treatmentGroupData, NULL)
+      setkey(subjectData, NULL)
+#       response <- saveDataDirectDatabase(analysisGroupData, 
+#                                          treatmentGroupData, 
+#                                          subjectData)
+      # Start replacement of saveDataDirectDatabase function
+      lsTransactionId <- NA
+      agData <- analysisGroupData
+      rm(analysisGroupData)
+      gc()
+      tgData <- treatmentGroupData
+      rm(treatmentGroupData)
+      gc()
+      
+      
+      if (is.na(lsTransactionId)) {
+        if (is.null(agData$lsTransaction)) {
+          stop("If lsTransactionId is NA, lsTransaction must be defined in input data tables")
+        } else {
+          lsTransactionId <- unique(agData$lsTransaction)
+          if (length(lsTransactionId) > 1) {
+            stop("multiple lsTransaction's found in agData")
+          }
+          if (is.na(lsTransactionId)) {
+            stop("lsTransactionId cannot be NA when all lsTransaction in agData are NA")
+          }
+        }
+      }
+      
+      conn <- getDatabaseConnection(racas::applicationSettings)
+      on.exit(dbDisconnect(conn))
+      result <- tryCatchLog({
+        if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+          sqlDeferConstraints <- "SET CONSTRAINTS ALL DEFERRED"
+          rs1 <- dbSendQuery(conn, sqlDeferConstraints)
+          Sys.setenv(ORA_SDTZ = "PST8PDT")
+          Sys.setenv(TZ = "PST8PDT")  
+          recordedDate <- Sys.time()
+        } else { 
+          dbSendQuery(conn, "BEGIN TRANSACTION")	
+          recordedDate <- as.character(format(Sys.time(), "%Y-%m-%d %H:%M:%OS"))
+        }
+        
+        # Saving each set. The garbage collection may be unnecessary, but won't hurt
+        if (!is.null(agData)) {
+          agData <- prepareTableForDD(agData)
+          outputAgDT <- saveAgDataDD(conn, agData, experimentId, lsTransactionId, recordedDate)
+          rm(agData)
+          gc()
+        }
+        
+        if (!is.null(tgData)) {
+          tgData <- prepareTableForDD(tgData)
+          outputTgDT <- saveTgDataDD(conn, tgData, outputAgDT, lsTransactionId, recordedDate)
+          rm(tgData)
+          rm(outputAgDT)
+          gc()
+        }
+        
+        if (!is.null(subjectData)) {
+          subjectData <- prepareTableForDD(subjectData)
+          outputSubjectDT <- saveSubjectDataDD(conn, subjectData, outputTgDT, lsTransactionId, recordedDate)
+          rm(subjectData)
+          rm(outputTgDT)
+          rm(outputSubjectDT)
+          gc()
+        }
+        TRUE
+      })
+      
+      # If anything fails, roll the transaction back
+      if (is.null(result) || is.null(result$value)){
+        dbRollback(conn)
+        if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+          # On Oracle, delete everything saved in this transaction
+          limitQuery <-  paste("where ls_transaction =", lsTransactionId)
+          dbSendQuery(conn, paste("delete from subject_value", limitQuery))
+          dbSendQuery(conn, paste("delete from subject_state", limitQuery))
+          dbSendQuery(conn, paste("delete from treatment_group_value", limitQuery))
+          dbSendQuery(conn, paste("delete from treatment_group_state", limitQuery))
+          dbSendQuery(conn, paste("delete from analysis_group_value", limitQuery))
+          dbSendQuery(conn, paste("delete from analysis_group_state", limitQuery))
+          dbSendQuery(conn, paste("delete from treatmentgroup_subject where treatment_group_id in ", 
+                                  "(select id from treatment_group", limitQuery, ")"))
+          dbSendQuery(conn, paste("delete from analysisgroup_treatmentgroup where analysis_group_id in ", 
+                                  "(select id from analysis_group", limitQuery, ")"))
+          dbSendQuery(conn, paste("delete from subject", limitQuery))
+          dbSendQuery(conn, paste("delete from treatment_group", limitQuery))
+          dbSendQuery(conn, paste("delete from experiment_analysisgroup where analysis_group_id in ", 
+                                  "(select id from analysis_group", limitQuery, ")"))
+          dbSendQuery(conn, paste("delete from analysis_group", limitQuery))
+          dbCommit(conn)
+        }
+        stop("direct database save failed")
+      } else {
+        dbCommit(conn)
+      }
+
     }
     
     #     if (!useRdap) {
@@ -2309,6 +2520,112 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   return(summaryInfo)
 }
 
+saveAllViaDirectDatabase <- function(analysisGroupData, treatmentGroupData, subjectData, appendCodeName = list()) {
+  
+  sendFiles <- list()
+  
+  if (!(is.null(appendCodeName$analysisGroup))) {
+    analysisGroupData <- appendCodeNames(analysisGroupData, appendCodeName$analysisGroup, "analysis group")
+  }
+  if (!(is.null(appendCodeName$treatmentGroup))) {
+    treatmentGroupData <- appendCodeNames(treatmentGroupData, appendCodeName$treatmentGroup, "treatment group")
+  }
+  if (!(is.null(appendCodeName$subject))) {
+    subjectData <- appendCodeNames(subjectData, appendCodeName$subject, "subject")
+  }
+  setkey(analysisGroupData, NULL)
+  setkey(treatmentGroupData, NULL)
+  setkey(subjectData, NULL)
+  response <- saveDataDirectDatabase(analysisGroupData, 
+                                     treatmentGroupData, 
+                                     subjectData)
+  return(response)
+}
+
+saveDataDirectDatabase <- function(agData, tgData, subjectData, lsTransactionId = NA, experimentId = NULL) {
+  if (is.na(lsTransactionId)) {
+    if (is.null(agData$lsTransaction)) {
+      stop("If lsTransactionId is NA, lsTransaction must be defined in input data tables")
+    } else {
+      lsTransactionId <- unique(agData$lsTransaction)
+      if (length(lsTransactionId) > 1) {
+        stop("multiple lsTransaction's found in agData")
+      }
+      if (is.na(lsTransactionId)) {
+        stop("lsTransactionId cannot be NA when all lsTransaction in agData are NA")
+      }
+    }
+  }
+  
+  conn <- getDatabaseConnection(racas::applicationSettings)
+  on.exit(dbDisconnect(conn))
+  result <- tryCatchLog({
+    if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+      sqlDeferConstraints <- "SET CONSTRAINTS ALL DEFERRED"
+      rs1 <- dbSendQuery(conn, sqlDeferConstraints)
+      Sys.setenv(ORA_SDTZ = "PST8PDT")
+      Sys.setenv(TZ = "PST8PDT")  
+      recordedDate <- Sys.time()
+    } else { 
+      dbSendQuery(conn, "BEGIN TRANSACTION")	
+      recordedDate <- as.character(format(Sys.time(), "%Y-%m-%d %H:%M:%OS"))
+    }
+    
+    # Saving each set. The garbage collection may be unnecessary, but won't hurt
+    if (!is.null(agData)) {
+      agData <- prepareTableForDD(agData)
+      outputAgDT <- saveAgDataDD(conn, agData, experimentId, lsTransactionId, recordedDate)
+      rm(agData)
+      gc()
+    }
+    
+    if (!is.null(tgData)) {
+      tgData <- prepareTableForDD(tgData)
+      outputTgDT <- saveTgDataDD(conn, tgData, outputAgDT, lsTransactionId, recordedDate)
+      rm(tgData)
+      rm(outputAgDT)
+      gc()
+    }
+    
+    if (!is.null(subjectData)) {
+      subjectData <- prepareTableForDD(subjectData)
+      outputSubjectDT <- saveSubjectDataDD(conn, subjectData, outputTgDT, lsTransactionId, recordedDate)
+      rm(subjectData)
+      rm(outputTgDT)
+      rm(outputSubjectDT)
+      gc()
+    }
+    TRUE
+  })
+  
+  # If anything fails, roll the transaction back
+  if (is.null(result) || is.null(result$value)){
+    dbRollback(conn)
+    if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+      # On Oracle, delete everything saved in this transaction
+      limitQuery <-  paste("where ls_transaction =", lsTransactionId)
+      dbSendQuery(conn, paste("delete from subject_value", limitQuery))
+      dbSendQuery(conn, paste("delete from subject_state", limitQuery))
+      dbSendQuery(conn, paste("delete from treatment_group_value", limitQuery))
+      dbSendQuery(conn, paste("delete from treatment_group_state", limitQuery))
+      dbSendQuery(conn, paste("delete from analysis_group_value", limitQuery))
+      dbSendQuery(conn, paste("delete from analysis_group_state", limitQuery))
+      dbSendQuery(conn, paste("delete from treatmentgroup_subject where treatment_group_id in ", 
+                              "(select id from treatment_group", limitQuery, ")"))
+      dbSendQuery(conn, paste("delete from analysisgroup_treatmentgroup where analysis_group_id in ", 
+                              "(select id from analysis_group", limitQuery, ")"))
+      dbSendQuery(conn, paste("delete from subject", limitQuery))
+      dbSendQuery(conn, paste("delete from treatment_group", limitQuery))
+      dbSendQuery(conn, paste("delete from experiment_analysisgroup where analysis_group_id in ", 
+                              "(select id from analysis_group", limitQuery, ")"))
+      dbSendQuery(conn, paste("delete from analysis_group", limitQuery))
+      dbCommit(conn)
+    }
+    stop("direct database save failed")
+  } else {
+    dbCommit(conn)
+  }
+}
 
 validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
   # valueKinds a vector of valueKinds
@@ -2349,84 +2666,84 @@ validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
 
 
 
-uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
-                       recordedBy) {
-  # Uploads all the data to the server
-  # 
-  # Args:
-  #   lsTransaction:          An id of the transaction
-  #   analysisGroupData:      A data.table of the analysis group data
-  #   treatmentGroupData:     A data.table of the treatment group data
-  #   subjectData:            A data.table of the subject data
-  #   recordedBy:             The username of the current user
-  #
-  #   Returns:
-  #     lsTransaction
-  
-  library('plyr')
-  
-  valueKindDF <- unique(data.frame(
-    valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
-    valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
-  ))
-  valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
-  validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
-  
-  if(is.null(lsTransaction)) {
-    lsTransaction <- createLsTransaction()$id
-  }
-  
-  ### Analysis Group Data
-  # Not all of these will be filled
-  analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
-                                      analysisGroupData$stateKind)))
-  analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
-  
-  if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
-    analysisGroupData$publicData <- TRUE
-  }
-  if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
-    analysisGroupData$stateGroupIndex <- 1
-  }
-  
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
-  
-  analysisGroupData$lsTransaction <- lsTransaction
-  analysisGroupData$recordedBy <- recordedBy
-  analysisGroupData$lsType <- "default"
-  analysisGroupData$lsKind <- "default"
-  
-  #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
-  
-  if(!is.null(treatmentGroupData)) {
-    ### TreatmentGroup Data
-    treatmentGroupData$lsTransaction <- lsTransaction
-    treatmentGroupData$recordedBy <- recordedBy
-    treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-", 
-                                         treatmentGroupData$stateKind)))
-    
-    treatmentGroupData$lsType <- "default"
-    treatmentGroupData$lsKind <- "default"
-    
-  }
-  
-  if(!is.null(subjectData)) {
-    ### subject Data
-    subjectData$lsTransaction <- lsTransaction
-    subjectData$recordedBy <- recordedBy
-    subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-", 
-                                  subjectData$stateKind)))
-    subjectData$lsType <- "default"
-    subjectData$lsKind <- "default"
-  }
-  
-  saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData, 
-                appendCodeName = list(analysisGroup = "curve id"))  
-  
-  return (lsTransaction)
-}
+# uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
+#                        recordedBy) {
+#   # Uploads all the data to the server
+#   # 
+#   # Args:
+#   #   lsTransaction:          An id of the transaction
+#   #   analysisGroupData:      A data.table of the analysis group data
+#   #   treatmentGroupData:     A data.table of the treatment group data
+#   #   subjectData:            A data.table of the subject data
+#   #   recordedBy:             The username of the current user
+#   #
+#   #   Returns:
+#   #     lsTransaction
+#   
+#   library('plyr')
+#   
+#   valueKindDF <- unique(data.frame(
+#     valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+#     valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+#   ))
+#   valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
+#   validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+#   
+#   if(is.null(lsTransaction)) {
+#     lsTransaction <- createLsTransaction()$id
+#   }
+#   
+#   ### Analysis Group Data
+#   # Not all of these will be filled
+#   analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
+#                                       analysisGroupData$stateKind)))
+#   analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
+#   
+#   if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
+#     analysisGroupData$publicData <- TRUE
+#   }
+#   if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
+#     analysisGroupData$stateGroupIndex <- 1
+#   }
+#   
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
+#   
+#   analysisGroupData$lsTransaction <- lsTransaction
+#   analysisGroupData$recordedBy <- recordedBy
+#   analysisGroupData$lsType <- "default"
+#   analysisGroupData$lsKind <- "default"
+#   
+#   #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+#   
+#   if(!is.null(treatmentGroupData)) {
+#     ### TreatmentGroup Data
+#     treatmentGroupData$lsTransaction <- lsTransaction
+#     treatmentGroupData$recordedBy <- recordedBy
+#     treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-", 
+#                                          treatmentGroupData$stateKind)))
+#     
+#     treatmentGroupData$lsType <- "default"
+#     treatmentGroupData$lsKind <- "default"
+#     
+#   }
+#   
+#   if(!is.null(subjectData)) {
+#     ### subject Data
+#     subjectData$lsTransaction <- lsTransaction
+#     subjectData$recordedBy <- recordedBy
+#     subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-", 
+#                                   subjectData$stateKind)))
+#     subjectData$lsType <- "default"
+#     subjectData$lsKind <- "default"
+#   }
+#   
+#   saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData, 
+#                 appendCodeName = list(analysisGroup = "curve id"))  
+#   
+#   return (lsTransaction)
+# }
 
 changeColNameReadability <- function(inputTable, readabilityChange, parameters) {
   # Changes column names of inputTable human-readable to non-spaced computer-readable
