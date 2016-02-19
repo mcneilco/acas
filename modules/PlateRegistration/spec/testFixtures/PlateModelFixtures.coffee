@@ -2,9 +2,9 @@ validPlateInfoModel =
   plateBarcode: "plateBarcode"
   description: "description"
   plateSize: 1536
-  type: "type"
+  type: "plate"
   status: "complete"
-  createdDate: new Date()
+  createdDate: new Date().toString()
   supplier: "supplier"
 
 module.exports =

@@ -384,11 +384,16 @@ module.exports = (grunt) ->
 					"index": "./modules/PlateRegistration/src/client/index.coffee",
 					"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
 				output:
-					path: "<%= build %>/public/compiled",
+					#path: "<%= build %>/public/compiled",
+					path: "./public/compiled",
 					filename: "[name].bundle.js"
 				module:
 					loaders: [
-						{test: /\.coffee$/, loader: "coffee"}
+						{test: /\.coffee$/, loader: "coffee"},
+						{test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff'},
+						{test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/octet-stream'},
+						{test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file'},
+						{test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml'}
 					]
 
 		browserify:

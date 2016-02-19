@@ -1,0 +1,72 @@
+Backbone = require('backbone')
+BackboneValidation = require('backbone-validation')
+_ = require('lodash')
+#$ = require('jquery')
+require('expose?$!expose?jQuery!jquery');
+require("bootstrap-webpack!./bootstrap.config.js");
+
+NewPlateDesignController = require('./NewPlateDesignController.coffee').NewPlateDesignController
+NEW_PLATE_DESIGN_CONTROLLER_EVENTS = require('./NewPlateDesignController.coffee').NEW_PLATE_DESIGN_CONTROLLER_EVENTS
+
+CreatePlateController = require('./CreatePlateController.coffee').CreatePlateController
+CREATE_PLATE_CONTROLLER_EVENTS = require('./CreatePlateController.coffee').CREATE_PLATE_CONTROLLER_EVENTS
+PlateModel = require('./PlateModel.coffee').PlateModel
+
+DataServiceController = require('./DataServiceController.coffee').DataServiceController
+IdentifierValidationController = require('./IdentifierValidationController.coffee').IdentifierValidationController
+
+APP_CONTROLLER_EVENTS = {}
+
+class AppController extends Backbone.View
+  template: _.template(require('html!./AppView.tmpl'))
+
+  initialize: ->
+    @newPlateDesignController = new NewPlateDesignController()
+    @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
+    @createPlateController = new CreatePlateController({model: new PlateModel()})
+    @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
+    @dataServiceController = new DataServiceController()
+
+  completeInitialization: =>
+    #@newPlateDesignController.completeInitialization()
+
+  handleCreatePlate: (plateModel) =>
+    console.log "plateModel"
+    console.log plateModel
+
+    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: plateModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
+    @dataServiceController.doServiceCall(@handleAddContentSuccess)
+
+#alert "add content..."
+
+  handleAddContent: (addContentModel) =>
+    console.log "identifiers"
+    console.log addContentModel
+
+    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
+    @dataServiceController.doServiceCall(@handleAddContentSuccess)
+
+    #alert "add content..."
+
+  handleAddContentSuccess: () =>
+    @newPlateDesignController.handleAddContentSuccessCallback()
+    @newPlateDesignController.completeInitialization()
+
+
+  displayCreatePlateForm: =>
+    @$("div[name='formContainer']").html @createPlateController.render().el
+
+  displayPlateDesignForm: =>
+    @$("div[name='formContainer']").html @newPlateDesignController.render().el
+
+  render: =>
+    $(@el).html @template()
+
+    @$("div[name='dataServiceControllerContainer']").html @dataServiceController.render().el
+
+    @
+
+
+
+module.exports =
+  AppController: AppController

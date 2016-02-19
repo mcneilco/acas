@@ -4,26 +4,27 @@ PlateTypeCollection = require('../src/client/PlateTypeCollection.coffee').PlateT
 PlateStatusCollection = require('../src/client/PlateStatusCollection.coffee').PlateStatusCollection
 PlateInfoModel = require('../src/client/PlateInfoModel.coffee').PlateInfoModel
 PLATE_INFO_MODEL_FIELDS = require('../src/client/PlateInfoModel.coffee').PLATE_INFO_MODEL_FIELDS
+plateModelFixtures = require('./testFixtures/PlateModelFixtures.coffee')
 
 $ = require('jquery')
 _ = require('lodash')
 
-beforeEach ->
-  fixture = '<div id="fixture"></div>';
-
-  document.body.insertAdjacentHTML('afterbegin', fixture);
-
-afterEach ->
-  #$("#fixture").remove()
 
 describe "PlateInfoController", ->
+  beforeEach ->
+    fixture = '<div id="fixture"></div>';
+    document.body.insertAdjacentHTML('afterbegin', fixture)
+    @startUpParams =
+      plateTypes: new PlateTypeCollection([{value: '', displayValue: ''}, {value: 'plate', displayValue: 'Plate'}])
+      plateStatuses: new PlateStatusCollection([{value: '', displayValue: ''}, {value: 'complete', displayValue: 'Complete'}])
+      model: new PlateInfoModel(plateModelFixtures.validPlateInfoModel)
   it "should exist", ->
-    plateInfo = new PlateInfoController({plateTypes: {}, plateStatuses: {}})
+    plateInfo = new PlateInfoController(@startUpParams)
     expect(plateInfo).toBeTruthy()
 
   describe "template content", ->
     beforeEach ->
-      @plateInfo = new PlateInfoController({plateTypes: {}, plateStatuses: {}})
+      @plateInfo = new PlateInfoController(@startUpParams)
       $("#fixture").html @plateInfo.render().el
 
     it "should have a template property", ->
@@ -59,7 +60,7 @@ describe "PlateInfoController", ->
   describe "fields", ->
     beforeEach ->
       @model = new PlateInfoModel()
-      @plateInfo = new PlateInfoController({plateTypes: new PlateTypeCollection(), plateStatuses: new PlateStatusCollection(), model: @model})
+      @plateInfo = new PlateInfoController(@startUpParams)
       $("#fixture").html @plateInfo.render().el
     it "should have a PlateTypeCollection ", ->
       expect(@plateInfo.plateTypes).toBeTruthy()
@@ -76,7 +77,8 @@ describe "PlateInfoController", ->
   describe "input events", ->
     beforeEach ->
       @model = new PlateInfoModel()
-      @plateInfo = new PlateInfoController({plateTypes: new PlateTypeCollection(), plateStatuses: new PlateStatusCollection(), model: @model})
+      @startUpParams.model = @model
+      @plateInfo = new PlateInfoController(@startUpParams)
       $("#fixture").html @plateInfo.render().el
 
     it "should update the plateBarcode field of the model when text is entered in the Plate Barcode input field", ->
@@ -112,7 +114,7 @@ describe "PlateInfoController", ->
   describe "UI event handlers", ->
     beforeEach ->
       @model = new PlateInfoModel()
-      @plateInfo = new PlateInfoController({plateTypes: new PlateTypeCollection(), plateStatuses: new PlateStatusCollection(), model: @model})
+      @plateInfo = new PlateInfoController(@startUpParams)
       $("#fixture").html @plateInfo.render().el
 
     it "should call handleDeleteClick when the 'Delete' button is clicked", (done) ->
@@ -136,7 +138,8 @@ describe "PlateInfoController", ->
   describe "emitted events", ->
     beforeEach ->
       @model = new PlateInfoModel()
-      @plateInfo = new PlateInfoController({plateTypes: new PlateTypeCollection(), plateStatuses: new PlateStatusCollection(), model: @model})
+      @startUpParams.model = @model
+      @plateInfo = new PlateInfoController(@startUpParams)
       $("#fixture").html @plateInfo.render().el
 
     it "should emit a DELETE_PLATE event when the 'Delete' button is clicked", (done) ->
@@ -154,5 +157,45 @@ describe "PlateInfoController", ->
 
       @plateInfo.handleCreateQuadPinnedPlateClick()
 
-    describe "model validation events", ->
-      it "should trigger a model:invalid event when the form model is updated to an invalid state", ->
+    describe "model events", ->
+      it "should trigger a PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID event when the form model is updated to an valid state", (done) ->
+        @plateInfo.on PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID, ->
+          expect(true).toBeTruthy()
+          done()
+        @plateInfo.updateModel(plateModelFixtures.validPlateInfoModel)
+
+      it "should trigger a PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID event when the form model is updated to an invalid state", (done) ->
+        @plateInfo.on PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID, ->
+          expect(true).toBeTruthy()
+          done()
+
+        @plateInfo.updateModel({})
+
+    describe "form input fields and model attributes should be bound", ->
+      it "when the model is empty, the input fields should be empty", ->
+        expect($("#fixture").find("[name='plateBarcode']").val()).toEqual ""
+        expect($("#fixture").find("[name='description']").val()).toEqual ""
+        expect($("#fixture").find("[name='plateSize']").val()).toEqual ""
+        expect($("#fixture").find("[name='type']").val()).toEqual ""
+        expect($("#fixture").find("[name='status']").val()).toEqual ""
+        expect($("#fixture").find("[name='createdDate']").val()).toEqual ""
+        expect($("#fixture").find("[name='supplier']").val()).toEqual ""
+
+      it "when the model has values set, the input fields should display those values", ->
+        #@plateInfo.model.set(plateModelFixtures.validPlateInfoModel)
+        @model = new PlateInfoModel(plateModelFixtures.validPlateInfoModel)
+        @startUpParams.model = @model
+        plateInfo = new PlateInfoController(@startUpParams)
+        $("#fixture").html plateInfo.render().el
+        expect($("#fixture").find("[name='plateBarcode']").val()).toEqual plateModelFixtures.validPlateInfoModel.plateBarcode
+        expect($("#fixture").find("[name='description']").val()).toEqual plateModelFixtures.validPlateInfoModel.description
+        expect(parseInt($("#fixture").find("[name='plateSize']").val())).toEqual plateModelFixtures.validPlateInfoModel.plateSize
+        expect($("#fixture").find("[name='type']").val()).toEqual plateModelFixtures.validPlateInfoModel.type
+        expect($("#fixture").find("[name='status']").val()).toEqual plateModelFixtures.validPlateInfoModel.status
+        expect($("#fixture").find("[name='createdDate']").val()).toEqual plateModelFixtures.validPlateInfoModel.createdDate
+        expect($("#fixture").find("[name='supplier']").val()).toEqual plateModelFixtures.validPlateInfoModel.supplier
+
+
+
+
+
