@@ -406,6 +406,7 @@
       this.handleShortDescriptionChanged = bind(this.handleShortDescriptionChanged, this);
       this.handleScientistChanged = bind(this.handleScientistChanged, this);
       this.setupAttachFileListController = bind(this.setupAttachFileListController, this);
+      this.editStatusOptions = bind(this.editStatusOptions, this);
       this.modelChangeCallback = bind(this.modelChangeCallback, this);
       this.modelSyncCallback = bind(this.modelSyncCallback, this);
       this.render = bind(this.render, this);
@@ -513,11 +514,22 @@
       statusState = this.model.getStatus();
       this.statusList = new PickListList();
       this.statusList.url = "/api/codetables/" + statusState.get('codeType') + "/" + statusState.get('codeKind');
-      return this.statusListController = new PickListSelectController({
+      this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
         selectedCode: statusState.get('codeValue')
       });
+      return this.listenTo(this.statusList, 'sync', this.editStatusOptions);
+    };
+
+    BaseEntityController.prototype.editStatusOptions = function() {
+      var ref;
+      if (((ref = window.conf.entity) != null ? ref.approvalRole : void 0) != null) {
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, window.conf.entity.approvalRole)) {
+          this.$(".bv_status option[value='approved']").attr('disabled', 'disabled');
+          return this.$(".bv_status option[value='rejected']").attr('disabled', 'disabled');
+        }
+      }
     };
 
     BaseEntityController.prototype.setupScientistSelect = function() {

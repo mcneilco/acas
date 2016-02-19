@@ -308,6 +308,13 @@ class window.BaseEntityController extends AbstractFormController
 			el: @$('.bv_status')
 			collection: @statusList
 			selectedCode: statusState.get 'codeValue'
+		@listenTo @statusList, 'sync', @editStatusOptions
+
+	editStatusOptions: =>
+		if window.conf.entity?.approvalRole?
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, window.conf.entity.approvalRole
+				@$(".bv_status option[value='approved']").attr 'disabled', 'disabled'
+				@$(".bv_status option[value='rejected']").attr 'disabled', 'disabled'
 
 	setupScientistSelect: ->
 		@scientistList = new PickListList()

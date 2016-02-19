@@ -416,14 +416,6 @@ class window.ExperimentBaseController extends BaseEntityController
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
 
-	setupStatusSelect: ->
-		@statusList = new PickListList()
-		@statusList.url = "/api/codetables/experiment/status"
-		@statusListController = new PickListSelectController
-			el: @$('.bv_status')
-			collection: @statusList
-			selectedCode: @model.getStatus().get 'codeValue'
-
 	setupTagList: ->
 		@$('.bv_tags').val ""
 		@tagListController = new TagListController
