@@ -81,36 +81,59 @@ getApacheCompileOptions = ->
 		if shell.which(possibleCommand)
 			apacheCommand = possibleCommand
 			break;
-	if not apacheCommand?
+	if not apacheCommand? and not sysEnv.APACHE
 		console.log 'Could not find apache command in list: ' + posssibleCommands.join(', ') + 'skipping apache config'
 		return 'skip'
-
-	compileString = shell.exec(apacheCommand + ' -V', {silent:true})
-	compileOptionStrings =  compileString.output.split("\n");
-	compileOptions = []
-	apacheVersion = ''
-	for option in compileOptionStrings
-		if option.match('Server version')
-			if option.match('Ubuntu')
-				apacheVersion = 'Ubuntu'
-			else
-				if option.match('SUSE')
-					apacheVersion = 'SUSE'
-				else
-					if os.type() == "Darwin"
-						apacheVersion = 'Darwin'
-					else
-						apacheVersion = 'Redhat'
+	else
+		if sysEnv.APACHE
+			apacheVersion = sysEnv.APACHE
+			switch apacheVersion
+				when 'Redhat'
+					compileOptions = [ { option: 'ApacheVersion', value: 'Redhat' },
+						{ option: 'APACHE_MPM_DIR', value: '"server/mpm/prefork"' },
+						{ option: 'APR_HAS_SENDFILE', value: undefined },
+						{ option: 'APR_HAS_MMAP', value: undefined },
+						{ option: 'APR_HAVE_IPV6 (IPv4-mapped addresses enabled)'},
+						{ option: 'SINGLE_LISTEN_UNSERIALIZED_ACCEPT'},
+						{ option: 'DYNAMIC_MODULE_LIMIT', value: '128' },
+						{ option: 'HTTPD_ROOT', value: '"/etc/httpd"' },
+						{ option: 'SUEXEC_BIN', value: '"/usr/sbin/suexec"' },
+						{ option: 'DEFAULT_PIDLOG', value: '"run/httpd.pid"' },
+						{ option: 'DEFAULT_SCOREBOARD', value: '"logs/apache_runtime_status"' },
+						{ option: 'DEFAULT_LOCKFILE', value: '"logs/accept.lock"' },
+						{ option: 'DEFAULT_ERRORLOG', value: '"logs/error_log"' },
+						{ option: 'AP_TYPES_CONFIG_FILE', value: '"conf/mime.types"' },
+						{ option: 'SERVER_CONFIG_FILE', value: '"conf/httpd.conf"' } ]
+				when 'Ubuntu'
+					console.log 'no defaults for ubuntu apache, run without APACHE environment variable if Apache is installed'
 		else
-			option = option.match(/^ -D .*/)
-			if option?
-				option = option[0].replace(' -D ','')
-				option = option.split('=')
-				option = {option: option[0], value: option[1]}
-				compileOptions.push(option)
-	console.log apacheVersion
-	compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
-	compileOptions
+			compileString = shell.exec(apacheCommand + ' -V', {silent:true})
+			compileOptionStrings =  compileString.output.split("\n");
+			compileOptions = []
+			apacheVersion = ''
+			for option in compileOptionStrings
+				if option.match('Server version')
+					if option.match('Ubuntu')
+						apacheVersion = 'Ubuntu'
+					else
+						if option.match('SUSE')
+							apacheVersion = 'SUSE'
+						else
+							if os.type() == "Darwin"
+								apacheVersion = 'Darwin'
+							else
+								apacheVersion = 'Redhat'
+				else
+					option = option.match(/^ -D .*/)
+					if option?
+						option = option[0].replace(' -D ','')
+						option = option.split('=')
+						option = {option: option[0], value: option[1]}
+						compileOptions.push(option)
+
+		console.log apacheVersion
+		compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
+		compileOptions
 
 getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
 	confs = []

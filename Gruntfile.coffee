@@ -22,11 +22,11 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_base',"$$$$$$$$$$$$")
 		if grunt.option('baseonly') ||  false
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
-		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'copy'
+		grunt.task.run 'execute:npm_install'
+		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
-		grunt.task.run 'execute:npm_install'
 		grunt.task.run 'execute:prepare_module_includes'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
@@ -505,10 +505,13 @@ module.exports = (grunt) ->
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."
+	console.log "setting build to: #{build}"
 	acas_base =  path.relative '.', grunt.option('acasBase') || process.env.ACAS_BASE || '.'
 	if acas_base == ""
 		acas_base = "."
+	console.log "setting acas_base to: #{acas_base}"
 	acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || 'acas_custom'
+	console.log "setting acas_custom to: #{acas_custom}"
 	grunt.config.set('build', "#{build}")
 	grunt.config.set('acas_base', "#{acas_base}")
 	grunt.config.set('acas_custom', "#{acas_custom}")
