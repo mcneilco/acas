@@ -1,8 +1,10 @@
 _ = require('lodash')
+#searchForWellsBy = require('../PlateSearches.coffee').searchForWellsBy
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/compoundInventory', loginRoutes.ensureAuthenticated, exports.compoundInventoryIndex
 	app.get '/compoundInventorySpecRunner', loginRoutes.ensureAuthenticated, exports.compoundInventorySpecRunner
+	app.get '/api/getWellsWithCompoundBatch/:compoundBatch', exports.compoundInventorySpecRunner
 	app.post '/api/validateIdentifiers', loginRoutes.ensureAuthenticated, exports.validateIdentifiers
 
 exports.compoundInventoryIndex = (req, resp) ->
@@ -10,7 +12,7 @@ exports.compoundInventoryIndex = (req, resp) ->
 		title: 'Plate Registration'
 
 exports.compoundInventorySpecRunner = (req, resp) ->
-	return resp.render 'PlateRegistrationSpecRunner',
+	return resp.render ' PlateRegistrationSpecRunner',
 		title: 'Plate Registration SpecRunner'
 
 exports.validateIdentifiers = (req, resp) ->
@@ -44,3 +46,11 @@ exports.validateIdentifiers = (req, resp) ->
 		else
 			resp.setHeader 'Content-Type', 'application/json'
 			resp.end JSON.stringify validatedIdentifiers
+
+
+exports.getWellsWithCompoundBatch = (req, res) ->
+	console.log "req.params"
+	console.log req.params
+	searchForWellsBy(compoundBatch, (docs) ->
+		res.send
+	)

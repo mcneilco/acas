@@ -15,6 +15,7 @@ acas:
    - APP_NAME=$TAG
   volumes:
    - ./bin/environments/acas:/mnt/environments/acas
+   - ./build/public/compiled:/home/runner/build/public/compiled
    - /home/runner/build/conf/compiled
    - .:/home/runner/acas
   #command: ["bin/acas-docker.sh", "run"]
