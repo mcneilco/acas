@@ -103,11 +103,11 @@
 		normalization:
 			normalizationRule: "plate order only"
 			positiveControl:
-				standardNumber: 1
+				standardNumber: "1"
 				defaultValue: ""
 			negativeControl:
-				standardNumber: ""
-				defaultValue: 5
+				standardNumber: "input value"
+				defaultValue: 23
 		hitEfficacyThreshold: 42
 		hitSDThreshold: 5.0
 		thresholdType: "sd" #or "efficacy"

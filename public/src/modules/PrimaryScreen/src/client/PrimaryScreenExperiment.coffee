@@ -88,12 +88,37 @@ class window.Additive extends Backbone.Model
 		additiveType: ""
 	validate: (attrs) =>
 		errors = []
-		# TODO: batch code validation
+		# Add later: batch code validation? or not?
 		addType = attrs.additiveType
 		if addType is "" or addType is null or addType is undefined
 			errors.push
 				attribute: 'additiveType'
 				message: "Additive Type must be selected"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+
+class window.ControlSetting extends Backbone.Model
+	defaults:
+		standardNumber: "1"
+		defaultValue: ""
+
+	validate: (attrs) =>
+		errors = []
+		if attrs.standardNumber is "unassigned" or attrs.standardNumber is null
+			errors.push
+				attribute: 'standardNumber'
+				message: "Standard must be assigned"
+		if _.isNaN(attrs.defaultValue)
+			errors.push
+				attribute: 'defaultValue'
+				message: 'Default value must be a number'
+		if attrs.defaultValue is "" and attrs.standardNumber is 'input value'
+			errors.push
+				attribute: 'defaultValue'
+				message: 'Default value must be defined'
 		if errors.length > 0
 			return errors
 		else
@@ -118,12 +143,38 @@ class window.TransformationRule extends Backbone.Model
 class window.Normalization extends Backbone.Model
 	defaults:
 		normalizationRule: "unassigned"
-		positiveControl:
-			standardNumber: 1
-			defaultValue: ""
-		negativeControl:
-			standardNumber: 2
-			defaultValue: ""
+		positiveControl: new ControlSetting()
+		negativeControl: new ControlSetting()
+
+	initialize: ->
+		@.set @parse(@.attributes)
+
+	parse: (resp) =>
+		if resp.positiveControl?
+			if resp.positiveControl not instanceof ControlSetting
+				resp.positiveControl = new ControlSetting(resp.positiveControl)
+			resp.positiveControl.on 'change', =>
+				@trigger 'change'
+			resp.positiveControl.on 'amDirty', =>
+				@trigger 'amDirty'
+		if resp.negativeControl?
+			if resp.negativeControl not instanceof ControlSetting
+				resp.negativeControl = new ControlSetting(resp.negativeControl)
+			resp.negativeControl.on 'change', =>
+				@trigger 'change'
+			resp.negativeControl.on 'amDirty', =>
+				@trigger 'amDirty'
+
+	validate: (attrs) =>
+		errors = []
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
+			errors.push
+				attribute: 'normalizationRule'
+				message: "Normalization Rule must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
@@ -759,6 +810,125 @@ class window.TransformationRuleController extends AbstractFormController
 		@model.destroy()
 		@attributeChanged()
 
+class window.ControlSettingController extends AbstractFormController
+	# Must be initialized with the option standardsList
+	template: _.template($("#ControlSettingView").html())
+	events:
+		"change .bv_standardNumber": "attributeChanged"
+		"keyup .bv_defaultValue": "attributeChanged"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setupStandardsListSelect(@standardsList)
+		@$('.control-label').html @controlLabel
+		@
+
+	initialize: (options) ->
+		@errorOwnerName = 'ControlSettingController'
+		@setBindings()
+		@standardNumberList = null # is a PickListList
+		if not options.standardsList?
+			throw "ControlSettingController missing standardsList in options"
+		@standardsList = options.standardsList
+		if not options.controlLabel?
+			throw "ControlSettingController missing controlLabel in options"
+		@controlLabel = options.controlLabel
+		@standardsList.on 'change reset add remove', =>
+			@setupStandardsListSelect @standardsList
+
+	updateModel: =>
+		defaultValue = UtilityFunctions::getTrimmedInput @$('.bv_defaultValue')
+		if defaultValue isnt ""
+			defaultValue = parseFloat(defaultValue)
+		selectedStandard = @standardsListSelectController.getSelectedCode()
+		@model.set
+			defaultValue: defaultValue
+			standardNumber: selectedStandard
+		if selectedStandard is 'input value'
+			@$('.bv_defaultValue').removeClass('hide')
+		else
+			@$('.bv_defaultValue').addClass('hide')
+		@trigger 'updateState'
+
+	setupStandardsListSelect: (standardsList) =>
+		standardsSelectArray = standardsList.map (model) =>
+			code: model.get('standardNumber').toString()
+			name: "S#{model.get('standardNumber')} #{model.get('batchCode')} @ #{model.get('concentration')} uM"
+		standardsSelectArray.push
+			code: "input value"
+			name: "Input Value"
+		if @standardNumberList?
+			@standardNumberList.reset standardsSelectArray
+		else
+			@standardNumberList = new PickListList standardsSelectArray
+		if not @standardsListSelectController?
+			@standardsListSelectController = new PickListSelectController
+				el: @$('.bv_standardNumber')
+				collection: @standardNumberList
+				insertFirstOption: new PickList
+					code: "unassigned"
+					name: "Select Standard"
+				selectedCode: @model.get('standardNumber')
+				autoFetch: false
+
+class window.NormalizationController extends AbstractFormController
+	# Must be initialized with the option standardsList
+	template: _.template($("#NormalizationView").html())
+	events:
+		"change .bv_normalizationRule": "attributeChanged"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setupNormalizationSelect()
+		@setupPositiveControlSettingController()
+		@setupNegativeControlSettingController()
+		@
+
+	initialize: (options) ->
+		@errorOwnerName = 'NormalizationController'
+		@setBindings()
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "NormalizationController missing standardsList in options"
+
+	updateModel: =>
+		@model.set normalizationRule: @normalizationListController.getSelectedCode()
+		@trigger 'updateState'
+
+	setupNormalizationSelect: ->
+		@normalizationList = new PickListList()
+		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
+		@normalizationListController = new PickListSelectController
+			el: @$('.bv_normalizationRule')
+			collection: @normalizationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Normalization Rule"
+			selectedCode: @model.get('normalizationRule')
+
+	setupPositiveControlSettingController: ->
+		@positiveControlController = new ControlSettingController
+			el: @$('.bv_normalizationPositiveControl')
+			model: @model.get('positiveControl')
+			standardsList: @standardsList
+			controlLabel: '*Positive Control'
+		@positiveControlController.render()
+		@positiveControlController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupNegativeControlSettingController: ->
+		@negativeControlController = new ControlSettingController
+			el: @$('.bv_normalizationNegativeControl')
+			model: @model.get('negativeControl')
+			standardsList:	@standardsList
+			controlLabel: '*Negative Control'
+		@negativeControlController.render()
+		@negativeControlController.on 'updateState', =>
+			@trigger 'updateState'
+
 
 class window.PrimaryAnalysisTimeWindowListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisTimeWindowListView").html())
@@ -1028,7 +1198,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_signalDirectionRule": "attributeChanged"
 		"change .bv_aggregateBy": "attributeChanged"
 		"change .bv_aggregationMethod": "attributeChanged"
-		"change .bv_normalizationRule": "attributeChanged"
 		"keyup .bv_assayVolume": "handleAssayVolumeChanged"
 		"keyup .bv_dilutionFactor": "handleDilutionFactorChanged"
 		"keyup .bv_transferVolume": "handleTransferVolumeChanged"
@@ -1057,7 +1226,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
-		@setupNormalizationSelect()
 
 
 
@@ -1072,12 +1240,12 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
-		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
 		@setupTimeWindowListController()
 		@setupStandardCompoundListController()
 		@setupAdditiveListController()
+		@setupNormalizationController()
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged(true)
 
@@ -1128,17 +1296,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				name: "Select Aggregation Method"
 			selectedCode: @model.get('aggregationMethod')
 
-	setupNormalizationSelect: ->
-		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
-		@normalizationListController = new PickListSelectController
-			el: @$('.bv_normalizationRule')
-			collection: @normalizationList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Normalization Rule"
-			selectedCode: @model.get('normalization').get('normalizationRule')
-
 	setupReadListController: ->
 		@readListController= new PrimaryAnalysisReadListController
 			el: @$('.bv_readList')
@@ -1171,6 +1328,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@additiveListController.on 'updateState', =>
 			@trigger 'updateState'
 
+	setupNormalizationController: ->
+		@normalizationController = new NormalizationController
+			el: @$('.bv_normalization')
+			model: @model.get('normalization')
+			standardsList: @model.get('standardCompoundList')
+		@normalizationController.render()
+		@normalizationController.on 'updateState', =>
+			@trigger 'updateState'
+
 	setupTransformationRuleListController: ->
 		@transformationRuleListController= new TransformationRuleListController
 			el: @$('.bv_transformationList')
@@ -1198,8 +1364,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			fluorescentStep: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep')
 			latePeakTime: UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime')
 			htsFormat: htsFormat
-		@model.get('normalization').set
-			normalizationRule: @normalizationListController.getSelectedCode()
 		if @model.get('assayVolume') != ""
 			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
 		if @model.get('transferVolume') != ""
