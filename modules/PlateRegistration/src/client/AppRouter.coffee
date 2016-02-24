@@ -9,9 +9,11 @@ appController.completeInitialization()
 class AppRouter extends Backbone.Router
   routes:
     "createPlate": "createPlateRoute"
-    "plateDesign": "plateDesignRoute"
+    "plateDesign/:plateCodeName": "plateDesignRoute"
 
-  plateDesignRoute: ->
+  plateDesignRoute: (plateCodeName) ->
+    console.log "plateCodeName"
+    console.log plateCodeName
     appController.displayPlateDesignForm()
 
   createPlateRoute: ->

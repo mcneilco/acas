@@ -16,6 +16,8 @@ PLATE_MODEL_FIELDS =
 
 
 class PlateModel extends Backbone.Model
+  url: "/api/v1/containers/createPlate"
+
   defaults:
     "barcode": ""
     "definition": ""

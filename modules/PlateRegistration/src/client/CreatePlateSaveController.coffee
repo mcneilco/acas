@@ -12,114 +12,35 @@ DATA_SERVICE_CONTROLLER_EVENTS =
   ERROR: "Error"
 
 class CreatePlateSaveController extends Backbone.View
-  template: _.template(require('html!./IdentifierValidationView.tmpl'))
+  template: _.template(require('html!./CreatePlate.tmpl'))
 
   initialize: (options)->
-    @serviceCallProgressText = "Validating Identifiers"
-    @url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.URL
-    @addContentModel = options.addContentModel
+    @serviceCallProgressText = "Creating Plate"
+    @url = CREATE_PLATE_SAVE_CONTROLLER_PROPERTIES.URL
+    @plateModel = options.plateModel
     @data =
-      identifiers: @addContentModel.formatIdentifiersForValidationService()
+      identifiers: {foo: 'bar'}
     @successCallback = options.successCallback
     @ajaxMethod = 'POST'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
-    @aliasedRequestNames = @getAliasedRequestNames data
-    @invalidRequestNames = @getInvalidRequestNames data
-    @validRequestNames = @getValidRequestNames data
+    console.log "handleSuccessCallback"
+    console.log data
+    @plateModel.set data
+    @successCallback @plateModel
+    @$("a[name='linkToPlate']").prop("href", "#plateDesign/#{data.codeName}")
+    @$("div[name='plateCreatedSuccessfully']").removeClass "hide"
 
-    aliasedIdentifiers = []
-    _.each(@aliasedRequestNames, (aliasedName) ->
-      aliasedIdentifiers.push aliasedName.requestName
-    )
-    validIdentifier = []
-    _.each(@validRequestNames, (validName) ->
-      validIdentifier.push validName.requestName
-    )
-    @validIdentifiers = _.union(aliasedIdentifiers, validIdentifier)
-
-    console.log "@aliasedRequestNames"
-    console.log @aliasedRequestNames
-
-    if _.size(@invalidRequestNames) is 0 and _.size(@aliasedRequestNames) is 0
-      validNames = _.union(@aliasedRequestNames, @validRequestNames)
-
-      valuesToAdd = []
-      _.each(validNames, (v) ->
-        valuesToAdd.push v.preferredName
-      )
-      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS, valuesToAdd
-      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS, @validIdentifiers
-
-      @successCallback @addContentModel
-      @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
-    else if _.size(@aliasedRequestNames) > 0
-      @trigger DATA_SERVICE_CONTROLLER_EVENTS.WARNING
-      @handleWarning(@aliasedRequestNames)
-    else if _.size(@invalidRequestNames) > 0
-      @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
-      @handleError(@invalidRequestNames)
-
-  getAliasedRequestNames: (requestNames) ->
-    aliasedRequestNames = []
-    _.each(requestNames, (requestName) ->
-      unless requestName.preferredName is ""
-        unless requestName.requestName is requestName.preferredName
-          aliasedRequestNames.push requestName
-    )
-
-    aliasedRequestNames
-
-  getInvalidRequestNames: (requestNames) ->
-    invalidRequestNames = []
-    _.each(requestNames, (requestName) ->
-      if requestName.preferredName is ""
-        invalidRequestNames.push requestName
-    )
-
-    invalidRequestNames
-
-  getValidRequestNames: (requestNames) ->
-    validRequestNames = []
-    _.each(requestNames, (requestName) ->
-      if requestName.requestName is requestName.preferredName
-        console.log "request name is valid"
-        validRequestNames.push requestName
-    )
-
-    validRequestNames
-
+    #@trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
 
   handleError: (errors) =>
-    listOfErrorIdentifiers = "<ul>"
-    _.each(errors, (arn) ->
-      listOfErrorIdentifiers += "<li>" + arn.requestName + "</li>"
-    )
-    listOfErrorIdentifiers += "</ul>"
-    @$("div[name='errorIdentifiers']").html listOfErrorIdentifiers
-    @$("div[name='errorMessages']").removeClass "hide"
+    console.log "handleError"
 
   handleWarning: (warnings) =>
-    listOfAliasedIdentifiers = "<ul>"
-    _.each(warnings, (arn) ->
-      listOfAliasedIdentifiers += "<li>" + arn.requestName + " ---> " + arn.preferredName + "</li>"
-    )
-    listOfAliasedIdentifiers += "</ul>"
-    @$("div[name='aliasedIdentifiers']").html listOfAliasedIdentifiers
-    @$("div[name='warningMessages']").removeClass "hide"
+    console.log "handleWarning"
 
   handWarningContinueClick: =>
-    validNames = _.union(@aliasedRequestNames, @validRequestNames)
-
-    valuesToAdd = []
-    _.each(validNames, (v) ->
-      valuesToAdd.push v.preferredName
-    )
-    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS, valuesToAdd
-    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS, @validIdentifiers
-
-    @successCallback @addContentModel
-    @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
+    console.log "handWarningContinueClick"
 
 
   render: =>

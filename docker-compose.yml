@@ -15,10 +15,13 @@ services:
      - /home/runner/build/bin
      - /home/runner/build/conf/compiled
      - /home/runner/logs
+     - ./:/home/runner/acas
+     - ./public/compiled:/home/runner/build/public/compiled
      # Dev volumes below this line
     env_file:
       - ./bin/environments/acas/acas.env
-    command: ["bin/acas.sh", "run", "acas", "start"]
+    # command: ["bin/acas.sh", "run", "acas", "dev"]
+    command: ["bin/acas.sh", "run", "acas", "dev"]
   rservices:
     image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
     restart: always
@@ -60,7 +63,7 @@ services:
       - ./bin/environments/roo/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:ACASDEV-409-build-tools-restructuring
+    image: mcneilco/acas-roo-server:cmpd-inventory-feature
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true

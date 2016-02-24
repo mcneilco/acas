@@ -10,6 +10,7 @@ NEW_PLATE_DESIGN_CONTROLLER_EVENTS = require('./NewPlateDesignController.coffee'
 
 CreatePlateController = require('./CreatePlateController.coffee').CreatePlateController
 CREATE_PLATE_CONTROLLER_EVENTS = require('./CreatePlateController.coffee').CREATE_PLATE_CONTROLLER_EVENTS
+CreatePlateSaveController = require('./CreatePlateSaveController.coffee').CreatePlateSaveController
 PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
@@ -34,8 +35,11 @@ class AppController extends Backbone.View
     console.log "plateModel"
     console.log plateModel
 
-    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: plateModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
-    @dataServiceController.doServiceCall(@handleAddContentSuccess)
+    @dataServiceController.setupService(new CreatePlateSaveController({plateModel: plateModel, successCallback: @createPlateController.handleSuccessfulSave}))
+    @dataServiceController.doServiceCall((resp) ->
+      console.log "save callback"
+      console.log resp
+    )
 
 #alert "add content..."
 

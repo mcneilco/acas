@@ -382,7 +382,7 @@ module.exports = (grunt) ->
 			build:
 				entry:
 					"index": "./modules/PlateRegistration/src/client/index.coffee",
-					"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
+					#"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
 				output:
 					#path: "<%= build %>/public/compiled",
 					path: "./public/compiled",

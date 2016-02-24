@@ -1,11 +1,11 @@
 _ = require('lodash')
-#searchForWellsBy = require('../PlateSearches.coffee').searchForWellsBy
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/compoundInventory', loginRoutes.ensureAuthenticated, exports.compoundInventoryIndex
 	app.get '/compoundInventorySpecRunner', loginRoutes.ensureAuthenticated, exports.compoundInventorySpecRunner
 	app.get '/api/getWellsWithCompoundBatch/:compoundBatch', exports.compoundInventorySpecRunner
 	app.post '/api/validateIdentifiers', loginRoutes.ensureAuthenticated, exports.validateIdentifiers
+	app.post '/api/createPlate', loginRoutes.ensureAuthenticated, exports.createPlate
 
 exports.compoundInventoryIndex = (req, resp) ->
 	return resp.render 'PlateRegistration',
@@ -41,7 +41,7 @@ exports.validateIdentifiers = (req, resp) ->
 		)
 
 		if throwServerError
-			resp.status(500).send('Something broke!')
+			resp.status(500).send('Something  broke!')
 
 		else
 			resp.setHeader 'Content-Type', 'application/json'
@@ -54,3 +54,8 @@ exports.getWellsWithCompoundBatch = (req, res) ->
 	searchForWellsBy(compoundBatch, (docs) ->
 		res.send
 	)
+
+exports.createPlate = (req, res) ->
+	fixtures = require '../public/javascripts/spec/TestJSON/CreatePlateFixtures.json'
+	res.setHeader 'Content-Type', 'application/json'
+	res.end JSON.stringify fixtures.createNewPlateResponse

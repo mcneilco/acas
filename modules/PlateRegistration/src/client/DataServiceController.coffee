@@ -33,6 +33,9 @@ class DataServiceController extends Backbone.View
       url: @serviceController.url
     )
     .done((data, textStatus, jqXHR) =>
+      @$("div[name='serviceCallProgressFeedback']").addClass "hide"
+      @$("div[name='serviceControllerContainer']").removeClass "hide"
+      @$("div[name='closeButtons']").removeClass "hide"
       @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
     )
     .fail((jqXHR, textStatus, errorThrown) =>

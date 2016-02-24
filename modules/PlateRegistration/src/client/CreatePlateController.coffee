@@ -60,6 +60,10 @@ class CreatePlateController extends Backbone.View
   handleClickStart: =>
     @trigger CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @model
 
+  handleSuccessfulSave: (updatedModel) =>
+    console.log "saved and got"
+    console.log updatedModel
+
 
 
 module.exports =
