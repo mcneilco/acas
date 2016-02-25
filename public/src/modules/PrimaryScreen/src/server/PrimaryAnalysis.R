@@ -2760,7 +2760,7 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
     if (any(fullTable$stateKindCount) == 0) {
       stop("at least one tempId had no stateKinds, probably missing stateKinds")
     }
-    fullTable[stateKindCount == 1, list(stateType, stateKind) := matchBatchCodeStateKind(stateType, stateKind, valueKind), by=tempId]
+    fullTable[stateKindCount == 1, c("stateType", "stateKind") := matchBatchCodeStateKind(stateType, stateKind, valueKind), by=tempId]
     duplicatedRows <- fullTable[stateKindCount > 1, duplicateBatchCodes(.SD), by=tempId]
     fullTable <- rbind(fullTable[stateKindCount == 1], duplicatedRows)
     fullTable[, stateKindCount := NULL]
@@ -2787,7 +2787,7 @@ matchBatchCodeStateKind <- function(stateTypeVect, stateKindVect, valueKindVect)
   # output: data.table with columns "stateType" and "stateKind"
   newState <- data.table(stateType = stateTypeVect, stateKind = stateKindVect)
   newBatchCodeStateTypeAndKind <- unique(newState[valueKindVect!="batch code"])
-  if (nrow(newBatchCodeState) != 1) {
+  if (nrow(newBatchCodeStateTypeAndKind) != 1) {
     stop("Coding Error: unable to find unique stateKind for batch codes")
   }
   newState[valueKindVect=="batch code", stateKind := newBatchCodeStateTypeAndKind$stateKind]

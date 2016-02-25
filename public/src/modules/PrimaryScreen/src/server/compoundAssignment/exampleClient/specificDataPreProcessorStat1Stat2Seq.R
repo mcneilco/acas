@@ -444,14 +444,18 @@ combineFilesNoStatFiles <- function(fileSet, timeWindowList) {
     currentStatWindow <- findTimeWindowBrackets(vectTime, timeWindow$windowStart, timeWindow$windowEnd)
     
     if (timeWindow$statistic=="max") {
-      functionToApply=max
+      functionToApply <- max
     } else if (timeWindow$statistic=="min") {
-      functionToApply=min
+      functionToApply <- min
+    } else if (timeWindow$statistic=="mean") {
+      functionToApply <- mean
+    } else if (timeWindow$statistic=="median") {
+      functionToApply <- median
     }
     
     calculatedStatistic <- vapply(allStatFrame$sequence, applyFunctionTabDelimited, 1,
                                   startIndex=currentStatWindow$startReadIndex, 
-                                  endIndex=currentStatWindow$startReadIndex, 
+                                  endIndex=currentStatWindow$endReadIndex, 
                                   functionApply=functionToApply)
     
 
