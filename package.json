@@ -5,8 +5,8 @@
   "scripts": {
     "start": "node app.js",
     "startstubs": "node app.js stubsMode",
-    "dev": "grunt build && (grunt &) && nodemon --debug app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devstubs": "grunt build && (grunt &) && nodemon --debug app.js stubsMode -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "dev": "grunt build && (grunt &) && nodemon app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "devstubs": "grunt build && (grunt &) && nodemon app.js stubsMode -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
     "postinstall": "grunt build",
     "clean": "grunt clean"
   },
