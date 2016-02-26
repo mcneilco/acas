@@ -142,6 +142,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@tr).toBeDefined()
 				it "should have defaults", ->
 					expect(@tr.get('transformationRule')).toEqual "unassigned"
+					expect(@tr.get('transformationParameters') instanceof TransformationParameters).toBeTruthy()
 		describe "model validation tests", ->
 			beforeEach ->
 				@tr = new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
@@ -153,6 +154,14 @@ describe "Primary Screen Experiment module testing", ->
 				filtErrors = _.filter @tr.validationError, (err) ->
 					err.attribute=='transformationRule'
 				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "TransformationParameters model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@tp = new TransformationParameters()
+				describe "Existence", ->
+					it "should be defined", ->
+						expect(@tp).toBeDefined()
 
 	describe "Normalization model testing", ->
 		describe "When loaded from new", ->
@@ -289,7 +298,7 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@trl.length).toEqual 3
 			it "should have the correct rule info for the first rule", ->
 				ruleone = @trl.at(0)
-				expect(ruleone.get('transformationRule')).toEqual "% efficacy"
+				expect(ruleone.get('transformationRule')).toEqual "percent efficacy"
 			it "should have the correct read info for the second rule", ->
 				ruletwo = @trl.at(1)
 				expect(ruletwo.get('transformationRule')).toEqual "sd"
@@ -804,6 +813,7 @@ describe "Primary Screen Experiment module testing", ->
 				@trc = new TransformationRuleController
 					model: new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
 					el: $('#fixture')
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
@@ -816,7 +826,8 @@ describe "Primary Screen Experiment module testing", ->
 						@trc.$('.bv_transformationRule option').length > 0
 					, 1000
 					runs ->
-						expect(@trc.$('.bv_transformationRule').val()).toEqual "% efficacy"
+						expect(@trc.$('.bv_transformationRule').val()).toEqual "percent efficacy"
+						expect(@trc.$('.bv_standardNumber').length).toEqual 2
 			describe "model updates", ->
 				it "should update the transformation rule", ->
 					waitsFor ->
@@ -826,6 +837,26 @@ describe "Primary Screen Experiment module testing", ->
 						@trc.$('.bv_transformationRule').val('sd')
 						@trc.$('.bv_transformationRule').change()
 						expect(@trc.model.get('transformationRule')).toEqual "sd"
+				it "should show positive and negative controls for percent efficacy", ->
+					waitsFor ->
+						@trc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@trc.$('.bv_transformationRule').val('percent efficacy')
+						@trc.$('.bv_transformationRule').change()
+						expect(@trc.$('.bv_standardNumber').length).toEqual 2
+				it "should not have controls for unassigned", ->
+					waitsFor ->
+						@trc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@trc.$('.bv_transformationRule').val('percent efficacy')
+						@trc.$('.bv_transformationRule').change()
+						@trc.$('.bv_transformationRule').val('unassigned')
+						@trc.$('.bv_transformationRule').change()
+						console.log("changed")
+						expect(@trc.model.get('transformationRule')).toEqual "unassigned"
+						expect(@trc.$('.bv_standardNumber').length).toEqual 0
 
 	describe "Primary Analysis Read List Controller testing", ->
 		describe "when instantiated with no data", ->
@@ -1114,6 +1145,7 @@ describe "Primary Screen Experiment module testing", ->
 				@trlc= new TransformationRuleListController
 					el: $('#fixture')
 					collection: new TransformationRuleList()
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
@@ -1146,6 +1178,7 @@ describe "Primary Screen Experiment module testing", ->
 				@trlc= new TransformationRuleListController
 					el: $('#fixture')
 					collection: new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			it "should have three rules", ->
 				expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 3
@@ -1155,13 +1188,17 @@ describe "Primary Screen Experiment module testing", ->
 					@trlc.$('.bv_transformationRule option').length > 0
 				, 1000
 				runs ->
-					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "percent efficacy"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(0)').val()).toEqual "1"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(1)').val()).toEqual "input value"
+					expect(@trlc.$('.bv_transformationInfo .bv_defaultValue:eq(1)').val()).toEqual "5"
 			it "should have the correct rule info for the second rule", ->
 				waitsFor ->
 					@trlc.$('.bv_transformationRule option').length > 0
 				, 1000
 				runs ->
 					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(1)').val()).toEqual "sd"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(2)').val()).toEqual "3"
 			it "should have the correct rule info for the third rule", ->
 				# note: this test sometimes breaks for no reason. If run the specific test, it will pass.
 				waitsFor ->
