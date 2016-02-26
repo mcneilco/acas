@@ -33,7 +33,7 @@ ENV     BUILD_PATH /home/runner/build
 ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     APACHE Redhat
-RUN     npm install -g grunt grunt-cli forever nodemon mocha node-gyp
+RUN     npm install -g grunt grunt-cli forever nodemon mocha node-gyp coffee-script
 COPY    . $ACAS_BASE
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
