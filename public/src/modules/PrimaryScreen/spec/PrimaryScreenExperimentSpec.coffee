@@ -170,8 +170,8 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@nm).toBeDefined()
-				xit "should have defaults", ->
-					expect(@sc.get('batchCode')).toEqual ""
+				it "should have defaults", ->
+					expect(@nm.get('normalizationRule')).toEqual "unassigned"
 		describe "model validation tests", ->
 			beforeEach ->
 				@nm = new Normalization window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
@@ -191,8 +191,9 @@ describe "Primary Screen Experiment module testing", ->
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@nm).toBeDefined()
-				xit "should have defaults", ->
-					expect(@sc.get('batchCode')).toEqual ""
+				it "should have defaults", ->
+					expect(@nm.get('standardNumber')).toEqual "1"
+					expect(@nm.get('defaultValue')).toEqual ""
 		describe "model validation tests", ->
 			beforeEach ->
 				@nm = new ControlSetting window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization.positiveControl
