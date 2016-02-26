@@ -46,8 +46,6 @@ class DataServiceController extends Backbone.View
     @hideSuccessFields()
     @openModal()
     numberOfServiceCalls = _.size(@serviceController.url)
-#    console.log "numberOfServiceCalls"
-#    console.log numberOfServiceCalls
     numberOfCompletedServiceCalls = 0
     _.each(@serviceController.url, (url) =>
       $.ajax(
@@ -57,11 +55,7 @@ class DataServiceController extends Backbone.View
         url: url
       )
       .done((data, textStatus, jqXHR) =>
-#        console.log "jqXHR"
-#        console.log jqXHR
         numberOfCompletedServiceCalls++
-#        console.log "numberOfCompletedServiceCalls"
-#        console.log numberOfCompletedServiceCalls
         if numberOfCompletedServiceCalls is numberOfServiceCalls
           @displaySuccessFields()
           @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
@@ -102,15 +96,12 @@ class DataServiceController extends Backbone.View
     @serviceController.handWarningContinueClick()
 
   openModal: =>
-    console.log "openModal"
-
     @$("div[name='serviceCallModal']").modal(
       keyboard: false
       backdrop: 'static'
     )
 
   closeModal: =>
-    console.log "close modal"
     @$("div[name='serviceCallModal']").modal('hide')
 
   render: =>

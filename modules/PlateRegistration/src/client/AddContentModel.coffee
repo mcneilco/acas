@@ -4,7 +4,7 @@ BackboneValidation = require('backbone-validation')
 
 _.extend(Backbone.Model.prototype, BackboneValidation.mixin);
 
-IDENTIFIER_LIST_DELIMETER = ","
+IDENTIFIER_LIST_DELIMETER = ";"
 
 ADD_CONTENT_MODEL_FIELDS =
   IDENTIFIER_TYPE: 'identifierType'
@@ -35,24 +35,26 @@ class AddContentModel extends Backbone.Model
     numberOfCellsSelected: 0
 
   validation:
-    identifierType:
-      required: true
-      msg: "Please select an identifier type"
-    identifiers:
-      required: true
-      msg: "Please enter at least one identifier"
-    volume:
-      required: true
-      msg: "Please enter the volume"
-    concentration:
-      required: true
-      msg: "Please enter the concentration"
+#    identifierType:
+#      required: true
+#      msg: "Please select an identifier type"
+#    identifiers:
+#      required: true
+#      msg: "Please enter at least one identifier"
+#    volume:
+#      required: true
+#      msg: "Please enter the volume"
+#    concentration:
+#      required: true
+#      msg: "Please enter the concentration"
     fillStrategy:
       required: true
       msg: "Please select a fill strategy"
-    fillDirection:
-      required: true
-      msg: "Please select a fill direction"
+    numberOfCellsSelected:
+      min: 1
+#    fillDirection:
+#      required: true
+#      msg: "Please select a fill direction"
 
   formatIdentifiersForValidationService: ->
     identifiers = _.reduce(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (memo, identifier) ->
@@ -68,6 +70,13 @@ class AddContentModel extends Backbone.Model
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS_DISPLAY_STRING] =  @formatListOfIdentifiersForDisplay(remainingIdentifiers)
     updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] =  _.size(remainingIdentifiers)
     @model.set updatedValues
+
+  reset: ->
+    @set "amount", ""
+    @set "fillStrategy", ""
+    @set "fillDirection", ""
+    @set "batchConcentration", ""
+
 
 
 

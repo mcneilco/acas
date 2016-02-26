@@ -25,9 +25,6 @@ class LoadPlateController extends Backbone.View
     @ajaxMethod = 'GET'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
-    #console.log "handleSuccessCallback"
-    #console.log data
-    #@plateModel.set data
     @successCallback data
 
     @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL

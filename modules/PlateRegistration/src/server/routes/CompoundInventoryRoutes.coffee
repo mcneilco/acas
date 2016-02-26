@@ -24,7 +24,7 @@ exports.validateIdentifiers = (req, resp) ->
 	if global.specRunnerTestmode
 		resp.end JSON.stringify {}
 	else
-		identifiers = req.body.identifiers.split(",")
+		identifiers = req.body.identifiers.split(";")
 		validatedIdentifiers = []
 		throwServerError = false
 		_.each(identifiers, (identifier) ->
@@ -123,16 +123,7 @@ exports.getWellContentByPlateBarcode = (req, resp) ->
 	)
 
 exports.updateWellStatus = (req, resp) ->
-
 	config = require '../conf/compiled/conf.js'
-
-	wells = req.body.wells
-	_.each(wells, (well) ->
-		well.recordedDate = Number.parseInt(well.recordedDate)
-	)
-	console.log "req.body - using post syntax"
-	console.log req.body
-
 	baseurl = config.all.client.service.persistence.fullpath + "containers/updateWellStatus"
 	console.log "baseurl"
 	console.log baseurl

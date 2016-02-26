@@ -33,25 +33,30 @@ class EditorFormTabViewController extends Backbone.View
 
     @
 
-  handleInfoTabClick: =>
+  handleInfoTabClick: (e)=>
+    if e?
+      e.preventDefault()
     @clearPreviouslySelectedTab()
     @hidePreviouslyDisplayedFormContainer()
     @$(".editorTabInfo").addClass("tabSelected")
     @$("div[name='info_form']").removeClass("hide")
 
-  handleAddContentTabClick: =>
+  handleAddContentTabClick: (e)=>
+    e.preventDefault()
     @clearPreviouslySelectedTab()
     @hidePreviouslyDisplayedFormContainer()
     @$(".editorTabAddContent").addClass("tabSelected")
     @$("div[name='add_content_form']").removeClass("hide")
 
-  handleTemplateTabClick: =>
+  handleTemplateTabClick: (e)=>
+    e.preventDefault()
     @clearPreviouslySelectedTab()
     @hidePreviouslyDisplayedFormContainer()
     @$(".editorTabTemplate").addClass("tabSelected")
     @$("div[name='template_form']").removeClass("hide")
 
-  handleSerialDilutionTabClick: =>
+  handleSerialDilutionTabClick: (e)=>
+    e.preventDefault()
     @clearPreviouslySelectedTab()
     @hidePreviouslyDisplayedFormContainer()
     @$(".editorTabSerialDilution").addClass("tabSelected")

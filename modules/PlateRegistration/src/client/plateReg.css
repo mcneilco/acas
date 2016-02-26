@@ -6,7 +6,7 @@
 
 .editorNavWell {
   width: 50px;
-  height: 661px;
+  height: 690px;
   padding: 0;
   background-color: #E9E9E9;
 }
@@ -17,7 +17,7 @@
 
 .editorCollapseButton {
   /*margin-top: 191px;*/
-  margin-top: 216px;
+  margin-top: 245px;
   padding-top: 6px;
   padding-bottom: 6px;
   width: 40px;
@@ -108,7 +108,7 @@
 }
 
 .editorPanelWell {
-  height: 661px;
+  height: 690px;
 }
 
 .editorPanel h5 {
