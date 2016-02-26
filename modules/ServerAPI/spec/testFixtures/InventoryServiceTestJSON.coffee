@@ -7714,7 +7714,18 @@
 		volumeUnits: null
 		wellCodeName: "CONT-3074"
 	]
-
+	exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse = [
+		barcode: "12"
+		codeName: "CONT-00000002"
+		description: null
+		plateSize: 1536
+		numberOfRows: 32
+		numberOfColumns: 48
+		type: null
+		status: null
+		createdDate: null
+		supplier: null
+	]
 
 
 ) (if (typeof process is "undefined" or not process.versions) then window.inventoryServiceTestJSON = window.inventoryServiceTestJSON or {} else exports)

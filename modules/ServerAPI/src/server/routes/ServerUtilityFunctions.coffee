@@ -338,3 +338,24 @@ exports.insertTransactionIntoEntity = (transactionid, entity) ->
 	entity
 
 
+exports.getStatesByTypeAndKind = (acasEntity, type, kind) ->
+	_ = require 'underscore'
+	_.filter acasEntity.lsStates, (state) ->
+		(not state.ignored == true) and (state.lsType == type) and (state.lsKind == kind)
+
+exports.getValuesByTypeAndKind = (state, type, kind) ->
+	_ = require 'underscore'
+	_.filter state.lsValues, (value) ->
+		(not value.ignored == true) and (value.lsType == type) and (value.lsKind == kind)
+
+exports.getStateValueByTypeAndKind = (acasEntity, stype, skind, vtype, vkind) ->
+	value = null
+	states = exports.getStatesByTypeAndKind acasEntity, stype, skind
+	if states.length > 0
+#TODO get most recent state and value if more than 1 or throw error
+		values = exports.getValuesByTypeAndKind states[0], vtype, vkind
+		if values.length > 0
+			value = values[0]
+	value
+
+
