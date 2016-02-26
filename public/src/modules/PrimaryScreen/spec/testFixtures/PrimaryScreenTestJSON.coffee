@@ -95,6 +95,7 @@
 
 	exports.primaryScreenAnalysisParameters =
 		standardCompoundList: exports.standards
+		hasAdditives: false
 		additiveList: exports.additives
 		instrumentReader: "flipr"
 		signalDirectionRule: "increasing"

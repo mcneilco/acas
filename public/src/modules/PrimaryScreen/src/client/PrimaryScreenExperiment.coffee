@@ -353,6 +353,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		transformationRuleList: new TransformationRuleList()
 		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
 		standardCompoundList: new StandardCompoundList()
+		hasAdditives: false
 		additiveList: new AdditiveList()
 
 
@@ -414,8 +415,9 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		errors.push transformationErrors...
 		standardCompoundErrors = @get('standardCompoundList').validateCollection()
 		errors.push standardCompoundErrors...
-		additiveErrors = @get('additiveList').validateCollection()
-		errors.push additiveErrors...
+		if attrs.hasAdditives
+			additiveErrors = @get('additiveList').validateCollection()
+			errors.push additiveErrors...
 		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is null
 			errors.push
 				attribute: 'instrumentReader'
@@ -1302,6 +1304,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
 		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
+		"change .bv_hasAdditives": "handleHasAdditivesChanged"
 		"change .bv_htsFormat": "attributeChanged"
 		"click .bv_matchReadName": "handleMatchReadNameChanged"
 		"keyup .bv_fluorescentStart": "attributeChanged"
@@ -1335,6 +1338,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
 		@handleAutoHitSelectionChanged(true)
+		@handleHasAdditivesChanged(true)
 		@setupReadListController()
 		@setupTimeWindowListController()
 		@setupStandardCompoundListController()
@@ -1519,6 +1523,16 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_thresholdControls').show()
 		else
 			@$('.bv_thresholdControls').hide()
+		unless skipUpdate is true
+			@attributeChanged()
+
+	handleHasAdditivesChanged: (skipUpdate) =>
+		hasAdditives = @$('.bv_hasAdditives').is(":checked")
+		@model.set hasAdditives: hasAdditives
+		if hasAdditives
+			@$('.additives').show()
+		else
+			@$('.additives').hide()
 		unless skipUpdate is true
 			@attributeChanged()
 
