@@ -4,7 +4,7 @@ RUN \
   useradd -ms /bin/bash builder && \
   yum update -y && \
   yum upgrade -y && \
-  yum install -y initscripts tar gcc-c++ make krb5-devel && \
+  yum install -y git initscripts tar gcc-c++ make krb5-devel && \
   yum clean all
 
 # node
@@ -33,7 +33,7 @@ ENV     BUILD_PATH /home/runner/build
 ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     APACHE Redhat
-RUN     npm install -g grunt grunt-cli forever node-inspector nodemon mocha node-gyp
+RUN     npm install -g grunt grunt-cli forever nodemon mocha node-gyp
 COPY    . $ACAS_BASE
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner

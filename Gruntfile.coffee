@@ -2,13 +2,13 @@ module.exports = (grunt) ->
 	"use strict"
 
   # upgrade config files tas
-	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
-		upgrade = require "#{acas_base}/modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee"
-		glob = require 'glob'
-		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
-		for configFile in configFiles
-			outFile = "#{configFile}.diff"
-			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
+#	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
+#		upgrade = require "#{acas_base}/modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee"
+#		glob = require 'glob'
+#		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
+#		for configFile in configFiles
+#			outFile = "#{configFile}.diff"
+#			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
 
 	grunt.registerTask("buildwebpack", ["webpack:build"]);
 
@@ -24,7 +24,7 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
 		grunt.task.run 'copy'
 		grunt.task.run 'execute:npm_install'
-		grunt.task.run 'upgrade_config_files'
+#		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
@@ -200,7 +200,6 @@ module.exports = (grunt) ->
 					process: (content, srcpath) ->
 						packageJSON =  JSON.parse(content)
 						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd process.env.BUILD_PATH  && ", ""
-						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd process.env.BUILD_PATH  && ", ""
 						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd process.env.BUILD_PATH && ", ""
 						delete packageJSON.scripts.postinstall
 						delete packageJSON.scripts.clean
