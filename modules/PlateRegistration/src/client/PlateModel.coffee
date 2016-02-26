@@ -23,20 +23,30 @@ class PlateModel extends Backbone.Model
     "definition": ""
     "description": ""
     "template": null
-    "recordedBy": ""
+    "recordedBy": "acas"
     "supplier": ""
-    "wells": ""
+    "wells": []
 
   validation:
-    template:
-      required: true
-      msg: "Please Plate or Barcode"
+#    template:
+#      required: true
+#      msg: "Please Plate or Barcode"
     barcode:
       required: true
       msg: "Please the Plate ID"
     definition:
       required: true
       msg: "Please select the plate size"
+
+  reset: ->
+    @.set
+      "barcode": ""
+      "definition": ""
+      "description": ""
+      "template": null
+      "recordedBy": "acas"
+      "supplier": ""
+      "wells": []
 
 
 

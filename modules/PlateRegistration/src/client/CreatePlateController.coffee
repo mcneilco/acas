@@ -28,6 +28,7 @@ class CreatePlateController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
+    #@listenTo @model, "change", @render
 
   events:
     "change input": "handleFormFieldUpdate"
@@ -35,7 +36,9 @@ class CreatePlateController extends Backbone.View
     "click button[name='submit']": "handleClickStart"
 
   render: =>
-    $(@el).html @template()
+    console.log "@model.toJSON()"
+    console.log @model.toJSON()
+    $(@el).html @template() #@model.toJSON())
 
     @
 
@@ -63,6 +66,8 @@ class CreatePlateController extends Backbone.View
   handleSuccessfulSave: (updatedModel) =>
     console.log "saved and got"
     console.log updatedModel
+    @model.reset()
+    @render()
 
 
 

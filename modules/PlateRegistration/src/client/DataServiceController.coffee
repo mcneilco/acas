@@ -25,7 +25,9 @@ class DataServiceController extends Backbone.View
     @$(".bv_serviceCallProgressText").html @serviceController.serviceCallProgressText
 
   doServiceCall: =>
+    @hideSuccessFields()
     @openModal()
+
     $.ajax(
       data: @serviceController.data
       dataType: "json"
@@ -33,19 +35,57 @@ class DataServiceController extends Backbone.View
       url: @serviceController.url
     )
     .done((data, textStatus, jqXHR) =>
-      @$("div[name='serviceCallProgressFeedback']").addClass "hide"
-      @$("div[name='serviceControllerContainer']").removeClass "hide"
-      @$("div[name='closeButtons']").removeClass "hide"
+      @displaySuccessFields()
       @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
     )
     .fail((jqXHR, textStatus, errorThrown) =>
       @displayServerErrorMessage()
     )
 
+  doServiceCalls: =>
+    @hideSuccessFields()
+    @openModal()
+    numberOfServiceCalls = _.size(@serviceController.url)
+#    console.log "numberOfServiceCalls"
+#    console.log numberOfServiceCalls
+    numberOfCompletedServiceCalls = 0
+    _.each(@serviceController.url, (url) =>
+      $.ajax(
+        data: @serviceController.data
+        dataType: "json"
+        method: @serviceController.ajaxMethod
+        url: url
+      )
+      .done((data, textStatus, jqXHR) =>
+#        console.log "jqXHR"
+#        console.log jqXHR
+        numberOfCompletedServiceCalls++
+#        console.log "numberOfCompletedServiceCalls"
+#        console.log numberOfCompletedServiceCalls
+        if numberOfCompletedServiceCalls is numberOfServiceCalls
+          @displaySuccessFields()
+          @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
+      )
+      .fail((jqXHR, textStatus, errorThrown) =>
+        @displayServerErrorMessage()
+      )
+    )
+
+
   displayServerErrorMessage: =>
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serverErrorMessage']").removeClass "hide"
     @$("div[name='serverErrorButtons']").removeClass "hide"
+
+  displaySuccessFields: =>
+    @$("div[name='serviceCallProgressFeedback']").addClass "hide"
+    @$("div[name='serviceControllerContainer']").removeClass "hide"
+    @$("div[name='closeButtons']").removeClass "hide"
+
+  hideSuccessFields: =>
+    @$("div[name='serviceCallProgressFeedback']").removeClass "hide"
+    @$("div[name='serviceControllerContainer']").addClass "hide"
+    @$("div[name='closeButtons']").addClass "hide"
 
   handleWarning: =>
     @$("div[name='warningButtons']").removeClass "hide"
@@ -62,7 +102,12 @@ class DataServiceController extends Backbone.View
     @serviceController.handWarningContinueClick()
 
   openModal: =>
-    @$("div[name='serviceCallModal']").modal()
+    console.log "openModal"
+
+    @$("div[name='serviceCallModal']").modal(
+      keyboard: false
+      backdrop: 'static'
+    )
 
   closeModal: =>
     console.log "close modal"

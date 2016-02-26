@@ -10,8 +10,8 @@ ADD_CONTENT_MODEL_FIELDS =
   IDENTIFIER_TYPE: 'identifierType'
   IDENTIFIERS: 'identifiers'
   IDENTIFIERS_DISPLAY_STRING: 'identifiersDisplayString'
-  VOLUME: 'volume'
-  CONCENTRATION: 'concentration'
+  AMOUNT: 'amount'
+  BATCH_CONCENTRATION: 'batchConcentration'
   FILL_STRATEGY: 'fillStrategy'
   FILL_DIRECTION: 'fillDirection'
   WELLS: 'wells'
@@ -26,8 +26,8 @@ class AddContentModel extends Backbone.Model
     identifierType: ""
     identifiers: ""
     identifiersDisplayString: ""
-    volume: ""
-    concentration: ""
+    amount: ""
+    batchConcentration: ""
     fillStrategy: ""
     fillDirection: ""
     wells: ""

@@ -29,7 +29,10 @@ class RandomPlateFillerStrategy extends PlateFillerStrategy
 
 
 class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
-  getWells: ->
+
+
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = []
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -39,9 +42,42 @@ class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
       _.each(columnIndexes, (colIdx) =>
         plateWells.push [rowIdx, colIdx, @identifiers[0]]
         identifiersToRemove.push @identifiers[0]
+        well = _.find(wells, (w) ->
+          if w.columnIndex is colIdx and w.rowIndex is rowIdx
+            return true
+          else
+            return false
+        )
+        console.log "well"
+        console.log well
+        well.amount = amount
+        well.amountUnits = "uL"
+        well.batchCode = @identifiers[0]
+        well.batchConcentration = batchConcentration
+        recordedDate = new Date()
+        well.recordedDate = recordedDate.getTime()
+        wellsToUpdate.push well
         valueIdx++
       )
     )
+    console.log "wellsToUpdate"
+    console.log wellsToUpdate
+    $.ajax(
+      data: JSON.stringify({wells: wellsToUpdate})
+      dataType: "json"
+      method: "POST"
+      url: '/api/updateWellStatus '
+    )
+    .done((data, textStatus, jqXHR) =>
+      console.log "saved / updated wells... ?"
+    )
+    .fail((jqXHR, textStatus, errorThrown) =>
+      console.error("error")
+    )
+
+    console.log "updated wells?"
+    console.log wells
+    window.FOOWELLS = wells
 
     [plateWells, identifiersToRemove]
 

@@ -15,6 +15,7 @@ PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
 IdentifierValidationController = require('./IdentifierValidationController.coffee').IdentifierValidationController
+LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
 
 APP_CONTROLLER_EVENTS = {}
 
@@ -60,8 +61,20 @@ class AppController extends Backbone.View
   displayCreatePlateForm: =>
     @$("div[name='formContainer']").html @createPlateController.render().el
 
-  displayPlateDesignForm: =>
+  displayPlateDesignForm: (plateBarcode) =>
+    #@dataServiceController = new DataServiceController()
+    @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))
+    @dataServiceController.doServiceCall()
+#    (resp) ->
+#      console.log "plate load callback"
+#      console.log resp
+#    )
+
+  handleAllDataLoadedForPlateDesignForm: (data) =>
+    console.log "handleAllDataLoadedForPlateDesignForm"
+    #console.log data
     @$("div[name='formContainer']").html @newPlateDesignController.render().el
+    @newPlateDesignController.completeInitialization(data)
 
   render: =>
     $(@el).html @template()

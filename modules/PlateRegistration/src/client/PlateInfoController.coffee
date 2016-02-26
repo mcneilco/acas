@@ -83,6 +83,9 @@ class PlateInfoController extends Backbone.View
     else
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID
 
+  updatePlate: (plate) =>
+    @$("input[name='plateBarcode']").val plate.barcode
+
 
 
 module.exports =

@@ -1,5 +1,7 @@
 Backbone = require('backbone')
 
+#DataServiceController = require('./DataServiceController.coffee').DataServiceController
+
 AppController = require('./AppController.coffee').AppController
 appController = new AppController()
 
@@ -11,10 +13,12 @@ class AppRouter extends Backbone.Router
     "createPlate": "createPlateRoute"
     "plateDesign/:plateCodeName": "plateDesignRoute"
 
-  plateDesignRoute: (plateCodeName) ->
-    console.log "plateCodeName"
-    console.log plateCodeName
-    appController.displayPlateDesignForm()
+  plateDesignRoute: (plateBarcode) ->
+    console.log "plateBarcode"
+    console.log plateBarcode
+    appController.displayPlateDesignForm(plateBarcode)
+
+    #
 
   createPlateRoute: ->
     appController.displayCreatePlateForm()

@@ -40,8 +40,9 @@ class NewPlateDesignController extends Backbone.View
 
     @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController})
 
-  completeInitialization: =>
-    @plateViewController.completeInitialization()
+  completeInitialization: (plate) =>
+    @plateInfoController.updatePlate plate
+    @plateViewController.completeInitialization(plate)
 
   render: =>
     $(@el).html @template
@@ -61,6 +62,8 @@ class NewPlateDesignController extends Backbone.View
     @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, addContentModel
 
   handleAddContentSuccessCallback: (addContentModel) =>
+    console.log "addContentModel"
+    console.log addContentModel
     @plateViewController.addContent addContentModel
     @addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
 

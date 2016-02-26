@@ -3,9 +3,14 @@ _ = require('lodash')
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/compoundInventory', loginRoutes.ensureAuthenticated, exports.compoundInventoryIndex
 	app.get '/compoundInventorySpecRunner', loginRoutes.ensureAuthenticated, exports.compoundInventorySpecRunner
-	app.get '/api/getWellsWithCompoundBatch/:compoundBatch', exports.compoundInventorySpecRunner
+	app.get '/api/getWellsWithCompoundBatch/:compoundBatch', exports.getWellsWithCompoundBatch
+	app.get '/api/getPlateByBarcode/:plateBarcode', exports.getPlateByBarcode
+	app.get '/api/getWellContentByPlateBarcode/:plateBarcode', exports.getWellContentByPlateBarcode
+
 	app.post '/api/validateIdentifiers', loginRoutes.ensureAuthenticated, exports.validateIdentifiers
 	app.post '/api/createPlate', loginRoutes.ensureAuthenticated, exports.createPlate
+	app.post '/api/updateWellStatus', loginRoutes.ensureAuthenticated, exports.updateWellStatus
+
 
 exports.compoundInventoryIndex = (req, resp) ->
 	return resp.render 'PlateRegistration',
@@ -55,7 +60,99 @@ exports.getWellsWithCompoundBatch = (req, res) ->
 		res.send
 	)
 
-exports.createPlate = (req, res) ->
-	fixtures = require '../public/javascripts/spec/TestJSON/CreatePlateFixtures.json'
-	res.setHeader 'Content-Type', 'application/json'
-	res.end JSON.stringify fixtures.createNewPlateResponse
+exports.createPlate = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	console.log "req.body - using post syntax"
+	console.log req.body
+
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createPlate"
+	console.log "baseurl"
+	console.log baseurl
+
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to save new experiment'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.getPlateByBarcode = (req, resp) ->
+	console.log "getPlateByBarcode"
+	console.log req.params['plateBarcode']
+	resp.setHeader('Content-Type', 'application/json')
+	resp.end JSON.stringify {barcode: "test plate"}
+
+exports.getWellContentByPlateBarcode = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	console.log "getWellContentByPlateBarcode"
+	plateBarcode = req.params['plateBarcode']
+	baseurl = config.all.client.service.persistence.fullpath + "containers/getWellContentByPlateBarcode/#{plateBarcode}"
+	console.log "baseurl"
+	console.log baseurl
+
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to get well content for plate'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.updateWellStatus = (req, resp) ->
+
+	config = require '../conf/compiled/conf.js'
+
+	wells = req.body.wells
+	_.each(wells, (well) ->
+		well.recordedDate = Number.parseInt(well.recordedDate)
+	)
+	console.log "req.body - using post syntax"
+	console.log req.body
+
+	baseurl = config.all.client.service.persistence.fullpath + "containers/updateWellStatus"
+	console.log "baseurl"
+	console.log baseurl
+
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify req.body.wells
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to update well statuses'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)

@@ -19,14 +19,14 @@ class CreatePlateSaveController extends Backbone.View
     @url = CREATE_PLATE_SAVE_CONTROLLER_PROPERTIES.URL
     @plateModel = options.plateModel
     @data =
-      identifiers: {foo: 'bar'}
+      @plateModel.toJSON()
     @successCallback = options.successCallback
     @ajaxMethod = 'POST'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
     console.log "handleSuccessCallback"
     console.log data
-    @plateModel.set data
+    #@plateModel.set data
     @successCallback @plateModel
     @$("a[name='linkToPlate']").prop("href", "#plateDesign/#{data.codeName}")
     @$("div[name='plateCreatedSuccessfully']").removeClass "hide"

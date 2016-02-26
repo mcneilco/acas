@@ -42,6 +42,7 @@ class AddContentController extends Backbone.View
     "change textarea[name='identifiers']": "handleIdentifiersChanged"
     "paste textarea[name='identifiers']": "handleIdentifiersPaste"
     "change input[name='fillStrategy']": "handleFillStrategyChanged"
+    "change input[type='text']": "handleFormFieldUpdate"
     "click button[name='add']": "handleAddClick"
 
   render: =>
@@ -64,6 +65,12 @@ class AddContentController extends Backbone.View
     updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] =  _.size(remainingIdentifiers)
     @model.set updatedValues
 
+  handleFormFieldUpdate: (evt) ->
+    target = $(evt.currentTarget)
+    data = {}
+    data[target.attr('name')] = $.trim(target.val())
+    #@updateModel data
+    @model.set data
 
   handleIdentifiersPaste: =>
     console.log "handleIdentifiersPaste"

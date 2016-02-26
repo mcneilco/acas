@@ -24,7 +24,10 @@ class PlateTableController extends Backbone.View
 
     @
 
-  completeInitialization: =>
+  completeInitialization: (wells) =>
+    console.log "PlateTableController?!?!?!?"
+    @wells = wells
+
     container = document.getElementsByName("handsontablecontainer")[0]
     @handsOnTable = new Handsontable(container, {
       rowHeaders: true
@@ -36,20 +39,38 @@ class PlateTableController extends Backbone.View
       afterChange: @handleContentUpdated
       afterSelection: @handleRegionSelected
     })
+    hotData = @convertWellsDataToHandsonTableData("batchCode")
+    @addContent(hotData)
+
+  updateDataDisplayed: (dataFieldToDisplay) =>
+    hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
+    @addContent(hotData)
+
+  convertWellsDataToHandsonTableData: (dataField) =>
+    console.log "convertWellsDataToHandsonTableData"
+    hotData = []
+    _.each(@wells, (well) ->
+      hotData.push [well.rowIndex, well.columnIndex, well[dataField]]
+    )
+    console.log "hotData "
+    console.log hotData
+    return hotData
 
   handleContentAdded: (addContentModel) =>
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
     console.log addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)
-
+    console.log "console.log addContentModel"
+    console.log addContentModel
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), validatedIdentifiers, @selectedRegionBoundries)
-    [@plateWells, identifiersToRemove] = plateFiller.getWells()
+    [@plateWells, identifiersToRemove] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
     console.log "@plateWells"
     console.log @plateWells
+
     @addContent @plateWells
 
   addContent: (data) =>
     @handsOnTable.setDataAtCell data
-    window.FOOHANDSONTABLE = @handsOnTable
+    #window.FOOHANDSONTABLE = @handsOnTable
     @handsOnTable.init() # force re-render so tooltip content is updated
 
   handleRegionSelected: (rowStart, colStart, rowStop, colStop) =>
@@ -85,11 +106,24 @@ class PlateTableController extends Backbone.View
 
     wellData
 
+  lookupWellByRowCol: (row, col) =>
+
+    _.each(@wells, (well) ->
+    )
+
   cellRenderer: (instance, td, row, col, prop, value, cellProperties) =>
     Handsontable.renderers.TextRenderer.apply(@, arguments)
     wellData = @getWellDataAtRowCol(row, col)
 
-    t = '<div class="popover left"> <div class="arrow"></div> <h3 class="popover-title">Well Details</h3> <div class="popover-content"><p>' + wellData + '</p> </div> </div>'
+    well = _.find(@wells, (w) ->
+      if w.columnIndex is col and w.rowIndex is row
+        return true
+      else
+        return false
+    )
+
+
+    t = '<div class="popover left"> <div class="arrow"></div> <h3 class="popover-title">Well Details</h3> <div class="popover-content"><p>Batch Code: ' + well.batchCode + '</p><p>Volume: ' + well.amount + '</p><p>Concentration: ' + well.batchConcentration + '</p></div> </div>'
 
 
     $(td).tooltip({

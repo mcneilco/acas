@@ -6,7 +6,8 @@ module.exports = {
         // add every bootstrap script you need
         'transition': true,
         'modal': true,
-        'tooltip': true
+        'tooltip': true,
+        'dropdown': true
     },
     styles: {
         // add every bootstrap style you need
