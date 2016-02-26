@@ -141,6 +141,9 @@
 			[
 				typeName: "name"
 				kindName: "model"
+			,
+				typeName: "name"
+				kindName: "common"
 			]
 
 		ddicttypes:
