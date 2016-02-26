@@ -22,6 +22,7 @@ class PlateViewController extends Backbone.View
     "click a[name='volumeView']": "handleVolumeViewClick"
     "click a[name='concentrationView']": "handleConcentrationViewClick"
     "click a[name='masterView']": "handleMasterViewClick"
+    "click button[name='displayToolTips']": "handleDisplayToolTipsToggled"
 
   handleCompoundViewClick: (e) =>
     e.preventDefault()
@@ -47,6 +48,12 @@ class PlateViewController extends Backbone.View
 
   updateSelectedView: (selectedView) =>
     @$("button[name='selectedView']").html selectedView
+
+  handleDisplayToolTipsToggled: =>
+    console.log "handleDisplayToolTipsToggled"
+    $("button[name='displayToolTips']").toggleClass("active")
+    @plateTableController.displayToolTips = !@plateTableController.displayToolTips
+    @plateTableController.renderHandsOnTable()
 
   initialize: ->
     @plateTableController = new PlateTableController()

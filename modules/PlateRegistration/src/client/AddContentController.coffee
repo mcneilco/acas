@@ -2,14 +2,13 @@ Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
 _ = require('lodash')
 $ = require('jquery')
-
 PlateFillerFactory = require('./PlateFillerFactory.coffee').PlateFillerFactory
-
 ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL_FIELDS
 
 ADD_CONTENT_CONTROLLER_EVENTS =
   ADD_CONTENT: "AddContent"
 
+LIST_OF_IDENTIFIER_DELIMITERS = [';', '\t', '\n']
 
 _.extend(Backbone.Validation.callbacks, {
   valid: (view, attr, selector) ->
@@ -47,14 +46,34 @@ class AddContentController extends Backbone.View
 
   render: =>
     $(@el).html @template(@model.toJSON())
-
+    if @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY) is ""
+      $("input[name='fillStrategy']").prop('checked', false)
+    else
+      fillStrategy = _.find(@$("input[name='fillStrategy']"), (opt) =>
+        opt.value == @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)
+      )
+      $(fillStrategy).prop("checked", true)
+    window.FOOMODEL = @model
+    if @model.isValid(true)
+      @enableAddButton()
+    else
+      @disableAddButton()
     @
+
+  enableAddButton: =>
+    @$("button[name='add']").prop('disabled', false)
+    @$("button[name='add']").removeClass('disabled')
+
+  disableAddButton: =>
+    @$("button[name='add']").prop('disabled', true)
+    @$("button[name='add']").addClass('disabled')
 
   handleAddClick: =>
 
     @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @model
 
   handleIdentifiersAdded: (validatedIdentifiers) =>
+    @model.reset()
     @removeInsertedIdentifiers validatedIdentifiers
 
   removeInsertedIdentifiers: (insertedIdentifiers) =>
@@ -89,8 +108,6 @@ class AddContentController extends Backbone.View
     @model.set ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, e.currentTarget.value
 
   formatListOfIdentifiersForDisplay: (identifiers) =>
-    #_.difference(@model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), identifiersToRemove)
-    #identifiers = @model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)
     identifiersDisplayString = _.reduce(identifiers, (memo, identifier) ->
       memo += identifier + "\n"
     , "")
@@ -113,9 +130,19 @@ class AddContentController extends Backbone.View
     numberOfCells
 
   parseIdentifiers: (identifiers) ->
-    listOfIdentifiers = _.map(identifiers.split(','), (identifier) ->
-      $.trim(identifier)
+    listOfIdentifiers = []
+    _.each(LIST_OF_IDENTIFIER_DELIMITERS, (delimiter) ->
+      ids = _.map(identifiers.split(delimiter), (identifier) ->
+        $.trim(identifier)
+      )
+      unless _.size(ids) is 1
+        listOfIdentifiers = listOfIdentifiers.concat ids
     )
+    if _.size(listOfIdentifiers) is 0
+      listOfIdentifiers = [identifiers]
+    console.log "listOfIdentifiers"
+    console.log listOfIdentifiers
+
 
     listOfIdentifiers
 

@@ -36,8 +36,6 @@ class CreatePlateController extends Backbone.View
     "click button[name='submit']": "handleClickStart"
 
   render: =>
-    console.log "@model.toJSON()"
-    console.log @model.toJSON()
     $(@el).html @template() #@model.toJSON())
 
     @

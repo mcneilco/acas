@@ -5,6 +5,7 @@ require('expose?$!expose?jQuery!jquery')
 
 CREATE_PLATE_SAVE_CONTROLLER_PROPERTIES =
   URL: '/api/createPlate'
+  PLATE_BARCODE_ALREADY_EXISTS: 'Barcode already exists'
 
 DATA_SERVICE_CONTROLLER_EVENTS =
   CLOSE_MODAL: "CloseModal"
@@ -24,17 +25,17 @@ class CreatePlateSaveController extends Backbone.View
     @ajaxMethod = 'POST'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
-    console.log "handleSuccessCallback"
-    console.log data
-    #@plateModel.set data
-    @successCallback @plateModel
-    @$("a[name='linkToPlate']").prop("href", "#plateDesign/#{data.codeName}")
-    @$("div[name='plateCreatedSuccessfully']").removeClass "hide"
-
-    #@trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
+    if data is CREATE_PLATE_SAVE_CONTROLLER_PROPERTIES.PLATE_BARCODE_ALREADY_EXISTS
+      @handleError()
+    else
+      @successCallback @plateModel
+      @$("a[name='linkToPlate']").prop("href", "#plateDesign/#{data.barcode}")
+      @$("div[name='plateCreatedSuccessfully']").removeClass "hide"
 
   handleError: (errors) =>
-    console.log "handleError"
+    @$("div[name='errorMessages']").removeClass "hide"
+    @$("a[name='barcode']").prop("href", "#plateDesign/#{@plateModel.get('barcode')}")
+    @$("a[name='barcode']").html @plateModel.get("barcode")
 
   handleWarning: (warnings) =>
     console.log "handleWarning"

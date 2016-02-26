@@ -27,12 +27,34 @@ class RandomPlateFillerStrategy extends PlateFillerStrategy
   getWells: ->
     return {}
 
+class WellsModel extends Backbone.Model
+  url: '/api/updateWellStatus'
+  initialize: (options) ->
+    @allWells = options.allWells
+  defaults:
+    'wells': []
+
+  fillWell: (rowIndex, columnIndex, amount, batchCode, batchConcentration) ->
+    well = _.find(@allWells, (w) ->
+      if w.columnIndex is columnIndex and w.rowIndex is rowIndex
+        return true
+      else
+        return false
+    )
+    well.amount = amount
+    well.amountUnits = "uL"
+    well.batchCode = batchCode
+    well.batchConcentration = batchConcentration
+    recordedDate = new Date()
+    well.recordedDate = recordedDate.getTime()
+    @get("wells").push well
+
 
 class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
 
 
   getWells: (wells, batchConcentration, amount) ->
-    wellsToUpdate = []
+    wellsToUpdate = new WellsModel({allWells: wells})
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -42,48 +64,19 @@ class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
       _.each(columnIndexes, (colIdx) =>
         plateWells.push [rowIdx, colIdx, @identifiers[0]]
         identifiersToRemove.push @identifiers[0]
-        well = _.find(wells, (w) ->
-          if w.columnIndex is colIdx and w.rowIndex is rowIdx
-            return true
-          else
-            return false
-        )
-        console.log "well"
-        console.log well
-        well.amount = amount
-        well.amountUnits = "uL"
-        well.batchCode = @identifiers[0]
-        well.batchConcentration = batchConcentration
-        recordedDate = new Date()
-        well.recordedDate = recordedDate.getTime()
-        wellsToUpdate.push well
+        wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[0], batchConcentration)
+
         valueIdx++
       )
     )
-    console.log "wellsToUpdate"
-    console.log wellsToUpdate
-    $.ajax(
-      data: JSON.stringify({wells: wellsToUpdate})
-      dataType: "json"
-      method: "POST"
-      url: '/api/updateWellStatus '
-    )
-    .done((data, textStatus, jqXHR) =>
-      console.log "saved / updated wells... ?"
-    )
-    .fail((jqXHR, textStatus, errorThrown) =>
-      console.error("error")
-    )
-
-    console.log "updated wells?"
-    console.log wells
-    window.FOOWELLS = wells
+    wellsToUpdate.save()
 
     [plateWells, identifiersToRemove]
 
 
 class InOrderPlateFillerStrategy extends PlateFillerStrategy
-  getWells: ->
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = new WellsModel({allWells: wells})
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -93,11 +86,14 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
       _.each(columnIndexes, (colIdx) =>
         plateWells.push [rowIdx, colIdx, @identifiers[valueIdx]]
         identifiersToRemove.push @identifiers[valueIdx]
+        wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[valueIdx], batchConcentration)
         valueIdx++
       )
     )
+    wellsToUpdate.save()
 
     [plateWells, identifiersToRemove]
+
 
 module.exports =
   PlateFillerFactory: PlateFillerFactory

@@ -12,6 +12,7 @@ class AppRouter extends Backbone.Router
   routes:
     "createPlate": "createPlateRoute"
     "plateDesign/:plateCodeName": "plateDesignRoute"
+    "": "createPlateRoute"
 
   plateDesignRoute: (plateBarcode) ->
     console.log "plateBarcode"
