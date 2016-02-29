@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
+	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 
