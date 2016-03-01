@@ -253,7 +253,7 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
 	model: PrimaryAnalysisTimeWindow
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) ->
 			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -270,7 +270,7 @@ class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
 class window.StandardCompoundList extends Backbone.Collection
 	model: StandardCompound
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) =>
 			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -286,7 +286,7 @@ class window.StandardCompoundList extends Backbone.Collection
 class window.AdditiveList extends Backbone.Collection
 	model: Additive
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) =>
 # note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -1023,14 +1023,16 @@ class window.NormalizationController extends AbstractFormController
 
 class window.PrimaryAnalysisTimeWindowListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisTimeWindowListView").html())
-	nextPositionNumber: 1
 	events:
 		"click .bv_addTimeWindowButton": "addNewWindow"
 
 	initialize: =>
-		@collection.on 'remove', @renumberTimeWindows
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
+		@nextPositionNumber = 1
 
+	handleModelRemoved: =>
+		@renumberTimeWindows
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
@@ -1072,10 +1074,12 @@ class window.StandardCompoundListController extends AbstractFormController
 		"click .bv_addStandardCompoundButton": "addNewStandard"
 
 	initialize: =>
-		@collection.on 'remove', @renumberStandards
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
 		@nextPositionNumber = 1
 
+	handleModelRemoved: =>
+		@renumberStandards
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
@@ -1115,14 +1119,16 @@ class window.StandardCompoundListController extends AbstractFormController
 
 class window.AdditiveListController extends AbstractFormController
 	template: _.template($("#AdditiveListView").html())
-	nextPositionNumber: 1
 	events:
 		"click .bv_addAdditiveButton": "addNewAdditive"
 
 	initialize: =>
-		@collection.on 'remove', @renumberAdditives
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
+		@nextPositionNumber = 1
 
+	handleModelRemoved: =>
+		@renumberAdditives
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
