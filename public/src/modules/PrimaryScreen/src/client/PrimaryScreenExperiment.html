@@ -44,50 +44,20 @@
 
     <div class="span12">
         <h5>Standards</h5>
-        <div class="">
-            <div class="pull-left">
-                <div>*Positive Control</div>
-                <form class="bv_group_positiveControlBatch control-group pull-left">
-                    <input class="input-medium bv_positiveControlBatch" value="<%=positiveControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-                </form>
-                <form class="bv_group_positiveControlConc control-group pull-right" style="padding-left:10px;">
-                    <input class="input-mini bv_positiveControlConc" value="<%=positiveControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                    &micro;M
-                </form>
-            </div>
+        <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
+        <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
+        <span style="margin-left:62px;margin-bottom:5px;">Standard Type</span>
+        <div class="bv_standardCompoundList"></div>
 
-            <div class="pull-left" style="">
-                <div style="padding-left:40px;">*Negative Control</div>
-                <form class="bv_group_negativeControlBatch control-group pull-left" style="padding-left:40px;">
-                    <input class="input-medium bv_negativeControlBatch" value="<%=negativeControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-                </form>
-                <form class="bv_group_negativeControlConc control-group pull-right" style="padding-left:10px;">
-                    <input class="input-mini bv_negativeControlConc" value="<%=negativeControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                    &micro;M
-                </form>
-            </div>
+    </div>
 
-        </div>
+    <div class="span12">
+        <h5>Additives</h5>
+        <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
+        <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
+        <span style="margin-left:62px;margin-bottom:5px;">Additive Type</span>
+        <div class="bv_additiveList"></div>
 
-        <div class="">
-            <div class="pull-left">
-                <div>Agonist</div>
-                <form class="bv_group_agonistControlBatch control-group pull-left">
-                    <input class="input-medium bv_agonistControlBatch" value="<%=agonistControl.get('batchCode')%>" type="text" placeholder="enter batch number" value="">
-                </form>
-                <form class="bv_group_agonistControlConc control-group pull-right" style="padding-left:10px;">
-                    <input class="input-mini bv_agonistControlConc" value="<%=agonistControl.get('concentration')%>" type="text" placeholder="Conc uM:" value="">
-                    &micro;M
-                </form>
-            </div>
-
-            <div class="pull-left">
-                <div style="padding-left:40px;">Vehicle Control</div>
-                <form class="bv_group_vehicleControlBatch control-group pull-left" style="padding-left:40px;">
-                    <input class="input-medium pull-left bv_vehicleControlBatch" style="width:258px;" value="<%=vehicleControl.get('batchCode')%>" type="text" placeholder="enter batch number">
-                </form>
-            </div>
-        </div>
     </div>
 
     <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
@@ -224,14 +194,9 @@
                 <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregation Method" data-content="Text to explain different options for aggregation method."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
             </div>
         </div>
-        <div class="control-group bv_group_normalizationRule">
-            <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
-            <div class="controls">
-                <select class="bv_normalizationRule" style="width:349px;">
-                </select>
-            </div>
-        </div>
-
+    </div>
+    <div class="bv_normalization"></div>
+    <div class="form-horizontal">
         <div class="control-group">
             <label class="control-label" style="width:100px;margin-left:40px;">*Transformation</label>
             <div class="controls">
@@ -343,6 +308,46 @@
     </div>
 </script>
 
+<script type="text/template" id="StandardCompoundView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_standardNumber">
+            <span class="bv_standardNumber" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_batchCode">
+            <input class="span6 bv_batchCode" style="margin-right:15px;width:180px;" value="<%=batchCode%>" type="text">
+        </span>
+        <span class="control-group bv_group_concentration">
+            <input class="span6 bv_concentration" style="width:60px;" value="<%=concentration%>" type="text">
+        </span>
+        &micro;M
+        <span class="control-group bv_group_standardType">
+            <select class="span6 bv_standardType" style="margin-left:10px;width:200px;"></select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="AdditiveView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_additiveNumber">
+            <span class="bv_additiveNumber" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_batchCode">
+            <input class="span6 bv_batchCode" style="margin-right:15px;width:180px;" value="<%=batchCode%>" type="text">
+        </span>
+        <span class="control-group bv_group_concentration">
+            <input class="span6 bv_concentration" style="width:60px;" value="<%=concentration%>" type="text">
+        </span>
+        &micro;M
+        <span class="control-group bv_group_additiveType">
+            <select class="span6 bv_additiveType" style="margin-left:10px;width:200px;"></select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
 <script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
     <div class="bv_readInfo"></div>
     <button class="btn bv_addReadButton" style="margin-left:465px;">Add Read</button>
@@ -353,12 +358,50 @@
     <button class="btn bv_addTimeWindowButton" style="margin-left:465px;">Add Window</button>
 </script>
 
+<script type="text/template" id="StandardCompoundListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_standardCompoundInfo"></div>
+    <button class="btn bv_addStandardCompoundButton" style="margin-left:465px;">Add Standard</button>
+</script>
+
+<script type="text/template" id="AdditiveListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_additiveInfo"></div>
+    <button class="btn bv_addAdditiveButton" style="margin-left:465px;">Add Additive</button>
+</script>
+
 <script type="text/template" id="TransformationRuleView" xmlns="http://www.w3.org/1999/html">
     <div class="span5" style="width:510px;">
         <span class="control-group bv_group_transformationRule">
             <select class="bv_transformationRule" style="margin-right:10px;margin-bottom:9px;width:347px;display: inline-block;"></select>
             <button class="close bv_deleteRule" style="margin-right:130px;margin-top:3px;">&times;</button>
         </span>
+    </div>
+</script>
+
+<script type="text/template" id="ControlSettingView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-inline" style="margin-bottom:20px">
+        <label class="control-label" style="width:130px;margin-left:80px;">*Control</label>
+        <span class="control-group bv_group_standardNumber" style="width:250px">
+            <select class="bv_standardNumber"></select>
+        </span>
+        <span class="control-group bv_group_defaultValue">
+            <input class="bv_defaultValue hide" value="<%=defaultValue%>" type="text" style="width:40px">
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="NormalizationView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-horizontal">
+        <div class="control-group bv_group_normalizationRule">
+            <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
+            <div class="controls">
+                <select class="bv_normalizationRule" style="width:349px;">
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="form-inline">
+        <div class="bv_normalizationPositiveControl"></div>
+        <div class="bv_normalizationNegativeControl"></div>
     </div>
 </script>
 

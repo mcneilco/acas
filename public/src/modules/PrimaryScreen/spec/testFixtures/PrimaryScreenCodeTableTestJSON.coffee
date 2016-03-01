@@ -125,5 +125,35 @@
 						name: "Minimum"
 						ignored: false
 					]
+		,
+			type: "analysis parameter"
+			kind: "standard type"
+			codes:
+				[
+					code: "PC"
+					name: "Positive Control"
+					ignored: false
+				,
+					code: "NC"
+					name: "Negative Control"
+					ignored: false
+				,
+					code: "VC"
+					name: "Vehicle Control"
+					ignored: false
+				]
+		,
+			type: "analysis parameter"
+			kind: "additive type"
+			codes:
+				[
+					code: "agonist"
+					name: "Agonist"
+					ignored: false
+				,
+					code: "antagonist"
+					name: "Antagonist"
+					ignored: false
+				]
 		]
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenCodeTableTestJSON = window.primaryScreenCodeTableTestJSON or {} else exports)

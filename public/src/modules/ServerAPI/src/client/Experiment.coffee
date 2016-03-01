@@ -50,13 +50,16 @@ class window.Experiment extends BaseEntity
 		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
 		if pExptMeta.length > 0
 			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
-			dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
-			if dapVal.length > 0
-				#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
-				if dapVal[0].isNew()
-					eExptMeta[0].get('lsValues').remove dapVal[0]
-				else
-					dapVal[0].set ignored: true
+			if eExptMeta.length > 0
+				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
+				if dapVal.length > 0
+					#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					if dapVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove dapVal[0]
+					else
+						dapVal[0].set ignored: true
+			else
+				eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
 			dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters").attributes)
 			dap.unset 'id'
 			dap.unset 'lsTransaction'
