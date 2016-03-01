@@ -1033,9 +1033,11 @@ class window.AdditiveListController extends AbstractFormController
 		"click .bv_addAdditiveButton": "addNewAdditive"
 
 	initialize: =>
-		@collection.on 'remove', @renumberAdditives
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
 
+	handleModelRemoved: =>
+		@renumberAdditives
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
