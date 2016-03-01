@@ -156,7 +156,7 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
 	model: PrimaryAnalysisTimeWindow
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) ->
 			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -173,7 +173,7 @@ class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
 class window.StandardCompoundList extends Backbone.Collection
 	model: StandardCompound
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) =>
 			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -189,7 +189,7 @@ class window.StandardCompoundList extends Backbone.Collection
 class window.AdditiveList extends Backbone.Collection
 	model: Additive
 
-	validateCollection: () =>
+	validateCollection: =>
 		modelErrors = []
 		@each (model, index) =>
 # note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -767,9 +767,11 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 		"click .bv_addTimeWindowButton": "addNewWindow"
 
 	initialize: =>
-		@collection.on 'remove', @renumberTimeWindows
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
 
+	handleModelRemoved: =>
+		@renumberTimeWindows
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
@@ -812,9 +814,11 @@ class window.StandardCompoundListController extends AbstractFormController
 		"click .bv_addStandardCompoundButton": "addNewStandard"
 
 	initialize: =>
-		@collection.on 'remove', @renumberStandards
-		@collection.on 'remove', => @collection.trigger 'change'
+		@collection.on 'remove', @handleModelRemoved
 
+	handleModelRemoved: =>
+		@renumberStandards
+		@collection.trigger 'change'
 
 	render: =>
 		$(@el).empty()
