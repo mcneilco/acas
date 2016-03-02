@@ -451,6 +451,8 @@ combineFilesNoStatFiles <- function(fileSet, timeWindowList) {
       functionToApply <- mean
     } else if (timeWindow$statistic=="median") {
       functionToApply <- median
+    } else {
+      stopUser(paste(timeWindow$statistic, "is not a valid statistic."))
     }
     
     calculatedStatistic <- vapply(allStatFrame$sequence, applyFunctionTabDelimited, 1,

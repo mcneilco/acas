@@ -559,7 +559,8 @@ bulkLoadSampleTransfers <- function(request) {
       t2 <- tempfile(fileext = ".json")
       write(toJSON(list(fileName=fileName, dryRun=dryRun, testMode=testMode, 
                         developmentMode=developmentMode, recordedBy=recordedBy)), t2)
-      cmd <- 'out <- capture.output(source(file.path(racas::applicationSettings$appHome, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersEmail.R"), local=T))\n'
+      cmd <- '.libPaths("r_libs");library(racas)\n'
+      cmd <- paste0(cmd, 'out <- capture.output(source(file.path(racas::applicationSettings$appHome, "public/src/modules/BulkLoadSampleTransfers/src/server/BulkLoadSampleTransfersEmail.R"), local=T))\n')
       cmd <- paste0(cmd, 'out <- capture.output(runBulkLoadAndEmail(fromJSON(file="', t2, '")))')
       write(cmd, t1)
       system(paste0('Rscript ', t1), wait = FALSE)

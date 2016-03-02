@@ -48,7 +48,10 @@ runBulkLoadAndEmail <- function(request) {
            "authors?find=ByUserName&userName=", URLencode(recordedBy, reserved = TRUE)), requireJSON = TRUE))
   
   userEmail <- userObject$emailAddress
-  from <- sprintf("<ACAS@%s>", Sys.info()[4]) #nodename 
+  from <- racas::applicationSettings$server.support.smtp.from
+  if (is.null(from) || from == "") {
+    from <- sprintf("<ACAS@%s>", Sys.info()[4]) #nodename 
+  }
   to <- paste0(gsub(" ", "", recordedBy)," <", userEmail ,">")
   
   subject <- paste0("Sample transfer notification")
@@ -58,7 +61,7 @@ runBulkLoadAndEmail <- function(request) {
   globalMessenger$logger$debug(paste0("from: ", from))
   globalMessenger$logger$debug(paste0("to: ", to))
   # Send with appropriate package
-  if(racas::applicationSettings$server.support.smtp.auth) {
+  if(as.logical(racas::applicationSettings$server.support.smtp.auth)) {
     tryCatchLog(send.mail(from = from,
               to = to,
               subject = subject,
