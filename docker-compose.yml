@@ -1,13 +1,14 @@
 version: '2'
 services:
   acas:
-    build: .
+#    build: .
+    image: mcneilco/acas:development
     restart: always
     ports:
      - "3000:3000"
      - "3001:3001"
     environment:
-     - APP_NAME=$TAG
+     - APP_NAME=development
      - PREPARE_MODULE_CONF_JSON=true
     volumes:
      - /home/runner/build/src/r
@@ -16,9 +17,12 @@ services:
      - /home/runner/build/conf/compiled
      - /home/runner/logs
      # Dev volumes below this line
-#     - ./:/home/runner/acas
+#     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
     env_file:
       - ./bin/environments/acas/acas.env
+# Dev Command
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
+# Start command
     command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:development
