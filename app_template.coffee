@@ -1,7 +1,6 @@
 global.logger = require "./routes/Logger"
-require './src/ConsoleLogWinstonOverride'
-
-csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
+require './src/javascripts/Logging/ConsoleLogWinstonOverride'
+csUtilities = require "./src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup
@@ -119,7 +118,7 @@ startApp = ->
 	child.start()
 
 	child.on 'exit:code', (code) ->
-		console.error 'stopping child process with code '
+		console.log 'stopping child process with code '
 		process.exit 0
 		return
 	process.once 'SIGTERM', ->
@@ -132,11 +131,9 @@ startApp = ->
 		console.log 'clean exit of app'
 		return
 	process.on 'uncaughtException', (err) ->
-		console.log 'Caught exception: ' + err
+		console.error 'Caught exception: ' + err.stack
 		return
 
 	csUtilities.logUsage("ACAS Node server started", "started", "")
 
 startApp()
-
-
