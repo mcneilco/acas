@@ -15,15 +15,13 @@ services:
      - /home/runner/build/bin
      - /home/runner/build/conf/compiled
      - /home/runner/logs
-     - ./:/home/runner/acas
-     - ./public/compiled:/home/runner/build/public/compiled
      # Dev volumes below this line
+#     - ./:/home/runner/acas
     env_file:
       - ./bin/environments/acas/acas.env
-    # command: ["bin/acas.sh", "run", "acas", "dev"]
-    command: ["bin/acas.sh", "run", "acas", "dev"]
+    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
+    image: mcneilco/racas:development
     restart: always
     ports:
      - "1080:1080"
@@ -34,7 +32,7 @@ services:
      - acas
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:ACASDEV-409-build-tools-restructuring
+    image: mcneilco/acas-postgres:development
     restart: always
     volumes:
      - dbstore:/var/lib/postgresql
@@ -63,7 +61,7 @@ services:
       - ./bin/environments/roo/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:cmpd-inventory-feature
+    image: mcneilco/acas-roo-server:development
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
