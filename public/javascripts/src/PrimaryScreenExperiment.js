@@ -2190,11 +2190,7 @@
       if ((sourceFile != null) && this.dataAnalysisController.parseFileNameOnServer === "") {
         sourceFileValue = sourceFile.get('fileValue');
         displayName = sourceFile.get('comments');
-        if (displayName == null) {
-          displayName = sourceFile.get('fileValue').split("/");
-          displayName = displayName[displayName.length - 1];
-        }
-        this.dataAnalysisController.$('.bv_fileChooserContainer').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        this.dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
         this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
         return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
           return function() {

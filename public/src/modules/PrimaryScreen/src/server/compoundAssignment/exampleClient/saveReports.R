@@ -1,15 +1,17 @@
 saveReports <- function(resultTable, spotfireResultTable, saveLocation, experiment, parameters, recordedBy) {
   # Runs all of the reports needed for a successfully dry run
   #output: a list of links to files
+  library(gdata)
+  
   reportList <- list()
   
   spotfireHost <- racas::applicationSettings$client.service.spotfire.host
-  if (is.null(spotfireHost) || spotfireHost == "") {
+  if (is.null(spotfireHost) || gdata::trim(spotfireHost) == "") {
+    reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
+                                        experiment, parameters, recordedBy)
+  } else {
     reportList$spotfireFile <- saveSpotfireFile(inputTable=spotfireResultTable, saveLocation, 
                                                 experiment, parameters, recordedBy)
-  } else {
-    reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
-                                          experiment, parameters, recordedBy)
   }
   
   return(reportList)

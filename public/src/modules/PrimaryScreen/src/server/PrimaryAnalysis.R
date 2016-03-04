@@ -1516,6 +1516,7 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   
   return(inputDataTable)
 }
+
 unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   if(!grepl("\\.zip$", zipFile)) {
     stopUser("The file provided must be a zip file or a directory")
@@ -1530,17 +1531,166 @@ unzipDataFolder <- function (zipFile, targetFolder, experiment) {
   return(targetFolder)
 }
 
+
+
+findTimeWindowBrackets <- function(vectTime, timeWindowStart, timeWindowEnd) {
+  # This function is used in autoFlagWells() and finds the indices of two elements in a vector containing incrementing timepoints,
+  # one pointing to the start the other to the end of the time window of interest
+  #
+  # Args:
+  #   vectTime:         a vector that contains time points sorted in an incremental fashion
+  #   timeWindowStart:  time in seconds denoting the start of the time window of interest
+  #   timeWindowEnd:    time in seconds denoting the end of the time window of interest
+  # Returns:
+  #   A list containing two values: element index pointing to the start and element index pointing to the end of the time window
+  
+  logicTimeStart <- (vectTime>=timeWindowStart)
+  startReadIndex <- min(which(logicTimeStart == TRUE))
+  logicTimeEnd <- (vectTime<timeWindowEnd)
+  endReadIndex <- max(which(logicTimeEnd == TRUE))
+  components <- list(startReadIndex = startReadIndex, endReadIndex = endReadIndex)
+  return(components)
+}
+
+
+findFluoroTabDelimited <- function(stringElement, startIndex, endIndex, functionThreshold) {
+  # This function is used in autoFlagWells() and finds if the well is fluorescent, given the raw measurements as a tab-delimited string,
+  # by calculating the difference in magnitude between the start and the end of the predetermined time window and determining 
+  # if that difference is larger than the number of raw measurement units specified by the user as fluorescent step size
+  #
+  #
+  # Args:
+  #   stringElement:     A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   startIndex:        Index of the vector element that defines the start of the time window to apply the function
+  #   endIndex:          Index of the vector element that defines the end of the time window to apply the function
+  #   functionThreshold: Value in measurement units (representing fluorescent step size, specified by the user) - threshold which
+  #                      if exceeded allows the current function to flag the well as fluorescent
+  #
+  #
+  # Returns:
+  #   A logical value: TRUE if >100 units otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numeric values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Calculate difference in magnitude between the end and the start of the target time window
+  diffMagnitude <- vectElement[endIndex] - vectElement[startIndex]
+  
+  # If difference equals or exceeds 100 units then set Fluorescent well as True, else as False
+  isFluorescent <- ifelse(diffMagnitude>=functionThreshold, yes=TRUE, no=FALSE)
+  
+  return(isFluorescent)
+}
+
+
+findLatePeakIndex <- function(stringElement, timePoints, latePeakThreshold) {
+  # This function is used in autoFlagWells() and finds if the well icorresponds to a late peak, given the raw measurements as a tab-delimited string,
+  # by calculating what timepoint corresponds to the max value of all measurements acquired and if that timepoint is later than a late peak threshold
+  #
+  #
+  # Args:
+  #   stringElement:        A string containing all tab-delimited measurements as a sequence (T_sequence corresponding to T_timePoints)
+  #   timePoints:           The vector of timepoints based on which the tab-delimited string was acquired
+  #   latePeakThreshold:    A time (in seconds) after which the max value of the tab-delimited measurements is considered a late peak
+  #
+  #
+  # Returns:
+  #   A logical value:      TRUE if the time corresponding to the max value in the tab-delimited string is later than the late peak threshold, otherwise FALSE
+  
+  # Vectorize the tab-delimited string as numerical values
+  vectElement <- as.numeric(unlist(strsplit(stringElement, "\t")))
+  
+  # Find the index within the vector that corresponds to the max value of that same vector
+  index <- which.max(vectElement) #(vectElement==max(vectElement))
+  
+  # Determine what time value corresponds to the aforementioned index and compare with late peak threshold
+  latePeakFlag <- timePoints[index]>=latePeakThreshold #ifelse(timePoints[index]>=latePeakThreshold, yes=TRUE, no=FALSE)
+  
+  return(latePeakFlag)
+}
+
+
+
 autoFlagWells <- function(resultTable, parameters) {
+  # resultTable: a data.table with columns T_sequence, T_timePoints, "transformed_percent efficacy"
+  # parameters: list of parameters
+  # 
+  # returns update resultTable with added columns "autoFlagType", "autoFlagObservation", "autoFlagReason"
+  library(data.table)
   resultTable[, autoFlagType:=NA_character_]
   resultTable[, autoFlagObservation:=NA_character_]
   resultTable[, autoFlagReason:=NA_character_]
-  
   
   # Add fluorescent as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")
   
   # Add late peak as algorithm  c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")
   
   
+  # Determine whether all, none or some of the parameters regarding fluorescent well determination exist
+  if (!(is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+      !(is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") & 
+      !(is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "complete"
+  } else if ((is.null(parameters$fluorescentStart) | parameters$fluorescentStart=="") &
+             (is.null(parameters$fluorescentEnd) | parameters$fluorescentEnd=="") &
+             (is.null(parameters$fluorescentStep) | parameters$fluorescentStep=="")) {
+    statusFluorescent <- "pass"
+  } else {
+    statusFluorescent <- "incomplete"
+  }
+  
+
+  # If some but not all parameters regarding fluorescent well determination exist, alarm the user
+  if (statusFluorescent=="incomplete") {
+    stopUser("Not all necessary parameters regarding fluorescent wells were defined. Please set values for all three fields: 
+              Fluorescent Start, Fluorescent End and Fluorescent Step Size.")
+  }
+
+  
+  # Only if all parameters regarding fluorescent well determination exist, set up the proper variables
+  if (statusFluorescent=="complete") {
+    # Get the start/end of the time window target for fluorescent wells
+    timeWindowStart <- parameters$fluorescentStart
+    timeWindowEnd <- parameters$fluorescentEnd
+    
+    # Get the threshold step for determining fluorescent wells
+    fluoroThreshold <- parameters$fluorescentStep
+  }
+  
+  
+  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
+  
+  
+  # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Find the index for elements corresponding to start and end of target time window
+    indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
+    
+    # Apply the function that determines if a well is fluorescent to all wells
+    wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
+    wellsKO <- unname(wellsKO)
+  }
+
+  # Perform the following commands only if the user provided a value for the late peak time parameter
+  if (!(is.null(parameters$latePeakTime) | parameters$latePeakTime=="")) {
+    # Apply the function that determines if a well corresponds to a late peak  
+    wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+    wellsLate <- unname(wellsLate)
+    
+    # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks  
+    resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
+  }
+  
+  
+  # Only if all parameters regarding fluorescent well determination exist, then update resultTable with fluorescent wells
+  if (statusFluorescent=="complete") {
+    # Update the appropriate resultTable columns to reflect the wells found to be fluorescent
+    resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
+  }
+  
+
+    
   # Flag HITs
   if(!parameters$autoHitSelection) {
     return(resultTable)
@@ -1730,7 +1880,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   ## END test structure
   
   # TODO in 1.6: store this in protocol
-  parameters$latePeakTime <- 80
+  # parameters$latePeakTime <- 80
   
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
@@ -1877,17 +2027,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     analysisGroupBy <- groupBy
   }
   treatmentGroupData[, tempParentId:=.GRP, by=analysisGroupBy]
-  analysisGroupData <- getAnalysisGroupData(treatmentGroupData)
+  analysisGroupData <- getAnalysisGroupData(treatmentGroupData, analysisGroupBy)
   if (agonistComparisonScreen) {
     analysisGroupData <- analysisGroupData[, combineTwoAgonist(.SD), by=tempId]
   }
   analysisGroupData[, secondConc := NULL]
   treatmentGroupData[, secondConc := NULL]
   
-  
   ### TODO: write a function to decide what stays in analysis group data, plus any renaming like 'has agonist' or 'without agonist'     
   # e.g.      analysisGroupData <- treatmentGroupData[hasAgonist == T & wellType=="test"]
-
+  
   library('RCurl')
   protocol <- getProtocolById(experiment$protocol$id)
   protocolName <- getPreferredName(protocol)
@@ -2058,7 +2207,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"), 
     #                                 stringsAsFactors=FALSE) 
     #       
-    resultTypes <- fread("public/src/modules/PrimaryScreen/src/conf/savingSettings.csv")
+    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
     
     #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"), 
     #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"), 
@@ -2388,7 +2537,12 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   # batchDataTable: data.table with columns listed in groupBy plus "tempParentId"
   # parameters: list, currently only used for aggregationMethod
   # groupBy: character vector of grouping columns for which subjects belong to one treatment group
+  #
+  # Averages numeric values, keeps stringValue and codeValue if they are unique
+  
   groupBy <- c(groupBy, "tempParentId")
+  
+  resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
   
   # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
@@ -2397,14 +2551,26 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   )
   yesNoSometimesTarget <- c("") # Text transformations... should these be in meanTarget, and key on class?
   allRequiredTarget <- c("") # Same problem # Used when all booleans must be true for aggregate to be true
-  uniqueTarget <- grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "character"], value=TRUE)
+  # Returns unique or NA if non-unique within the group
+  uniqueTarget <- intersect(resultTypes[valueType %in% c("stringValue", "codeValue") & saveAsTreatment, columnName], 
+                            names(batchDataTable))
+  uniqueTarget <- setdiff(uniqueTarget, groupBy)
+  uniqueTarget <- c(uniqueTarget, grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "character"], value=TRUE))
+                    
   # get SD of sdTarget columns... they happen to be the same as meanTarget, but aren't required to be
   sdTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),
                 "activity", "normalizedActivity",
                 grep("^transformed_", names(batchDataTable)[vapply(batchDataTable, class, "") == "numeric"], value=TRUE)
   )
   
-  uniqueResults <- batchDataTable[ , lapply(.SD, unique), by = groupBy, .SDcols = uniqueTarget]
+  uniqueResults <- batchDataTable[ , lapply(.SD, function(x) {
+    result <- unique(x)
+    if (length(x) == 1) {
+      return(x)
+    } else {
+      return(as(NA, class(x)))
+    }
+  }), by = groupBy, .SDcols = uniqueTarget]
   
   aggregationFunction <- switch(parameters$aggregationMethod,
                                 "mean" = function(x) {as.numeric(mean(x, na.rm = T))},
@@ -2426,17 +2592,25 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
   setkeyv(aggregationResults, groupBy)
   setkeyv(uniqueResults, groupBy)
   treatmentData <- sds[aggregationResults][numRep]
-  if (nrow(uniqueResults) > 0) {
-    treatmentData <- treatmentData[uniqueResults]
-  }
+  treatmentData <- merge(treatmentData, uniqueResults, all.x = TRUE)
   
   setnames(treatmentData, "tempParentId", "tempId")
   
   return(treatmentData)
 }
-getAnalysisGroupData <- function(treatmentGroupData) {
-  # columns to be saved as analysis group data
-  #analysisGroupTarget <- grep("^transformed_", names(treatmentGroupData), value=TRUE)
+getAnalysisGroupData <- function(treatmentGroupData, analysisGroupBy) {
+  # Inputs:
+  #   treatmentGroupData: data.table with columns for each kind of data, at least:
+  #     "tempParentId" for marking each analysis group
+  #     "cmpdConc" concentration
+  #     "agonistConc" agonist concentration
+  #     "agonistBatchCode" agonist batch code
+  #     all columns listed in analysisGroupBy
+  #     any other data columns
+  #   analysisGroupBy: character vector of columns used for grouping. Their information will be kept even curves
+  # Returns a data.table where curves have been compressed into a single row, they gain a "curveId"
+  # Note: do not input a column named doseResponse, it would be removed
+  
   library(data.table)
   preCurveData <- copy(treatmentGroupData)
   preCurveData[, curveId:=NA_character_]
@@ -2444,8 +2618,8 @@ getAnalysisGroupData <- function(treatmentGroupData) {
   setkey(preCurveData, tempParentId)
   
   curveData <- preCurveData[doseResponse == TRUE][J(unique(tempParentId)), mult = "first"]
-
-  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId','batchCode')] := NA,  with = FALSE]
+  
+  curveData[, names(preCurveData)[!names(preCurveData) %in% c('tempParentId', analysisGroupBy)] := NA, with = FALSE]
   curveData[, curveId := as.character(1:nrow(curveData))]
   otherData <- preCurveData[doseResponse == FALSE]
   analysisData <- rbind(curveData, otherData)
@@ -2576,24 +2750,49 @@ meltKnownTypes <- function(resultTable, resultTypes, includedColumn, forceBatchC
   
   if (forceBatchCodeAdd) {
     fullTable <- fullTable[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue) & is.na(fileValue))]
-    fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
+    # This line seems to do nothing... so removed
+    #fullTable[valueKind=="batch code", stateKind:=unique(stateKind[valueKind!="batch code"]), by=tempId]
     # If the only value in the tempId is a batch code, there was a missing value input, so we just remove it
     fullTable[, removeMe := (valueKind=="batch code" && .N==1), by=tempId]
     fullTable <- fullTable[!(removeMe)]
     fullTable[, removeMe := NULL]
-    fullTable[, stateKind:=matchBatchCodeStateKind(stateKind, valueKind), by=tempId]
+    fullTable[, stateKindCount := length(unique(stateKind[valueKind != "batch code"])), by=tempId]
+    if (any(fullTable$stateKindCount) == 0) {
+      stop("at least one tempId had no stateKinds, probably missing stateKinds")
+    }
+    fullTable[stateKindCount == 1, c("stateType", "stateKind") := matchBatchCodeStateKind(stateType, stateKind, valueKind), by=tempId]
+    duplicatedRows <- fullTable[stateKindCount > 1, duplicateBatchCodes(.SD), by=tempId]
+    fullTable <- rbind(fullTable[stateKindCount == 1], duplicatedRows)
+    fullTable[, stateKindCount := NULL]
   }
   
   return(fullTable)  
 }
-matchBatchCodeStateKind <- function(stateKindVect, valueKindVect) {
+duplicateBatchCodes <- function(DT) {
+  # Duplicates rows with batch codes to have one batch code per state kind in the rest of the set
+  # Input: DT, a data.table with at least columns valueKind, stateKind, stateType
+  # Output: a data.table with the same columns as DT, but rows added
+  newBatchCodeStateKinds <- unique(DT[valueKind != "batch code", list(stateType, stateKind)])
+  if (sum(DT$valueKind == "batch code") != 1) {
+    stop("Coding error: not expecting more than one batch code in group")
+  }
+  batchCodeRows <- DT[rep(which(valueKind == "batch code"), nrow(newBatchCodeStateKinds))]
+  batchCodeRows[, stateType := newBatchCodeStateKinds$stateType]
+  batchCodeRows[, stateKind := newBatchCodeStateKinds$stateKind]
+  return(rbindlist(list(DT[valueKind != "batch code"], batchCodeRows)))
+}
+matchBatchCodeStateKind <- function(stateTypeVect, stateKindVect, valueKindVect) {
   # helper for meltKnownTypes
-  newBatchCodeState <- unique(stateKindVect[valueKindVect!="batch code"])
-  if (length(newBatchCodeState) != 1) {
+  # Input: character vectors
+  # output: data.table with columns "stateType" and "stateKind"
+  newState <- data.table(stateType = stateTypeVect, stateKind = stateKindVect)
+  newBatchCodeStateTypeAndKind <- unique(newState[valueKindVect!="batch code"])
+  if (nrow(newBatchCodeStateTypeAndKind) != 1) {
     stop("Coding Error: unable to find unique stateKind for batch codes")
   }
-  stateKindVect[valueKindVect=="batch code"] <- newBatchCodeState
-  return(stateKindVect)
+  newState[valueKindVect=="batch code", stateKind := newBatchCodeStateTypeAndKind$stateKind]
+  newState[valueKindVect=="batch code", stateType := newBatchCodeStateTypeAndKind$stateType]
+  return(newState)
 }
 deleteModelSettings <- function(experiment) {
   # Sets model fit settings back to their original values

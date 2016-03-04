@@ -591,6 +591,15 @@ class window.CurveSummaryController extends Backbone.View
 		'click .bv_userNA': 'userNA'
 
 	initialize: ->
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curveAttributes').renderingHint})
+		renderCurvePath =  curveFitClasses.get 'renderCurvePath'
+		console.log renderCurvePath
+		if renderCurvePath?
+			console.log renderCurvePath
+			@renderCurvePath = renderCurvePath
+		else
+			@renderCurvePath = 'dr'
 		@model.on 'change', @render
 		if @options.locked
 			@locked = @options.locked
@@ -603,7 +612,7 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl = "/api/curve/render/#{@renderCurvePath}/?legend=false&showGrid=true&height=120&width=250&curveIds="
 			curveUrl += @model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl

@@ -29,6 +29,9 @@
         }, {
           kindName: "flag file",
           typeName: "fileValue"
+        }, {
+          kindName: "dryrun flag file",
+          typeName: "fileValue"
         }
       ]
     };

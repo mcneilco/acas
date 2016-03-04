@@ -1813,11 +1813,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		if sourceFile? and @dataAnalysisController.parseFileNameOnServer is ""
 			sourceFileValue = sourceFile.get('fileValue')
 			displayName = sourceFile.get('comments')
-			unless displayName? #TODO: delete this once SEL saves file names in the comments
-				displayName = sourceFile.get('fileValue').split("/")
-				displayName = displayName[displayName.length-1]
-			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
-			#TODO: should find file name in comments
+			@dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
 			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
 			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
 				@dataAnalysisController.parseFileController.render()

@@ -503,6 +503,20 @@
 				code: "min"
 				name: "Min"
 				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "mean"
+				name: "Mean"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "median"
+				name: "Median"
+				ignored: false
 			]
 
 		labelsequences:
