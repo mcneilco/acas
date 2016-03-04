@@ -1,23 +1,27 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
+	app.post '/api/getContainersByLabels', exports.getContainersByLabels
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
 	app.get '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.post '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcodes', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes
+	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
+	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
+	app.post '/api/getContainersByLabels', loginRoutes.ensureAuthenticated, exports.getContainersByLabels
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', loginRoutes.ensureAuthenticated, exports.getWellContent
 	app.get '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
 	app.post '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes
+	app.post '/api/getWellCodesByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByContainerCodes
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getContainersInLocation
+		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersInLocation"
@@ -38,25 +42,77 @@ exports.getContainersInLocation = (req, resp) ->
 				resp.end JSON.stringify "getContainersInLocation failed"
   		)
 
-exports.getContainerCodesByLabels = (req, resp) ->
-	exports.getContainerCodesByLabelsInternal req.body, (json) ->
+exports.getContainersByLabels = (req, resp) ->
+	exports.getContainersByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
 		else
 			resp.json json
 
-exports.getContainerCodesByLabelsInternal = (plateBarcodesJSON, callback) ->
+exports.getContainersByLabelsInternal = (containerLabels, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainersByLabelsInternalResponse
+	else
+		exports.getContainerCodesByLabelsInternal containerLabels, containerType, containerKind, labelType, labelKind, (containerCodes) =>
+			if containerCodes.indexOf('failed') > -1
+				callback JSON.stringify "getContainersByLabels failed"
+			else
+				_ = require 'underscore'
+				codeNames = _.map containerCodes, (code) ->
+					if code.foundCodeNames[0]?
+						code.foundCodeNames[0]
+					else
+						""
+				codeNamesJSON = JSON.stringify codeNames
+				exports.getContainersByCodeNamesInternal codeNamesJSON, (containers) =>
+					if containers.indexOf('failed') > -1
+						callback JSON.stringify "getContainersByLabels failed"
+					else
+						response = []
+						for label, index in containerLabels
+							resp =
+								label: label
+								codeName: null
+								container: null
+							codeName =  _.findWhere containerCodes, {requestLabel: label}
+							if codeName?.foundCodeNames[0]?
+								resp.codeName = codeName.foundCodeNames[0]
+								container =  _.findWhere containers, {containerCodeName: codeName.foundCodeNames[0]}
+								if container?.container?
+									resp.container = container.container
+							response.push resp
+						callback response
+
+exports.getContainerCodesByLabels = (req, resp) ->
+	exports.getContainerCodesByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, containerKind, labelType, labelKind, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels"
+		queryParams = []
+		if containerType?
+			queryParams.push "containerType="+containerType
+		if containerKind?
+			queryParams.push "containerKind="+containerKind
+		if labelType?
+			queryParams.push "labelType="+labelType
+		if labelKind?
+			queryParams.push "labelKind="+labelKind
+		queryString = queryParams.join "&"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
 		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
-			body: plateBarcodesJSON
+			body: JSON.stringify containerCodesJSON
 			json: true
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
@@ -69,6 +125,13 @@ exports.getContainerCodesByLabelsInternal = (plateBarcodesJSON, callback) ->
 				console.log response
 				callback JSON.stringify "getContainerCodesByLabels failed"
 		)
+
+exports.getWellCodesByPlateBarcodes = (req, resp) ->
+	exports.getWellCodesByPlateBarcodesInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
 
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
@@ -96,9 +159,16 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
   		)
 
 exports.getWellContent = (req, resp) ->
+	exports.getWellContentInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getWellContentInternal = (wellCodeNames, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getWellContent
+		callback inventoryServiceTestJSON.getWellContentResponse
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellContent"
@@ -106,17 +176,18 @@ exports.getWellContent = (req, resp) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body
+			body: JSON.stringify wellCodeNames
 			json: true
+			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				resp.json json
+				callback json
 			else
 				console.log 'got ajax error trying to get getWellContent'
 				console.log error
 				console.log json
 				console.log response
-				resp.end JSON.stringify "getWellContent failed"
+				callback JSON.stringify "getWellContent failed"
   		)
 
 exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes = (req, resp) ->
@@ -143,7 +214,7 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 				callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
 			else
 				_ = require 'underscore'
-				codeNames = _.pluck containerCodes, "codeName"
+				codeNames = _.pluck containerCodes, "foundCodeNames"[0]
 				codeNamesJSON = JSON.stringify codeNames
 				exports.getContainersByCodeNamesInternal codeNamesJSON, (containers) =>
 					if containers.indexOf('failed') > -1
@@ -221,7 +292,7 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			json: true
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			if !error && response.statusCode == 200
+			if !error && response.statusCode in [200,400]
 				callback json
 			else
 				console.log 'got ajax error trying to get getContainersByCodeNames'
@@ -255,3 +326,89 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 				console.log response
 				callback JSON.stringify "getDefinitionContainersByContainerCodeNames failed"
 		)
+
+exports.getBreadCrumbByContainerCode = (req, resp) ->
+	exports.getBreadCrumbByContainerCodeInternal req.body, req.query.delimeter, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+delimeter
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: codeNamesJSON
+			json: true
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to get getBreadCrumbByContainerCode'
+				console.log error
+				console.log json
+				console.log response
+				callback JSON.stringify "getBreadCrumbByContainerCode failed"
+		)
+
+exports.getWellCodesByContainerCodes = (req, resp) ->
+	exports.getWellCodesByContainerCodesInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getWellCodesByContainerCodesResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByContainerCodes"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: codeNamesJSON
+			json: true
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to get getWellCodesByContainerCodes'
+				console.log error
+				console.log json
+				console.log response
+				callback JSON.stringify "getWellCodesByContainerCodes failed"
+		)
+
+exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) ->
+	_ = require 'underscore'
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getWellContentByContainerCodesResponse
+	else
+		exports.getWellCodesByContainerCodesInternal containerCodeNames, (wellCodesResponse) ->
+			wellCodes = _.map wellCodesResponse, (wellCode) ->
+				_.map wellCode.wellCodeNames, (codeName) ->
+					{containerCode: wellCode.requestCodeName, wellCode: codeName}
+			wellCodes = _.flatten wellCodes
+			wellContentRequest = _.pluck wellCodes, 'wellCode'
+			exports.getWellContentInternal wellContentRequest, (wellContentResponse) ->
+				response = []
+				for containerCodeName in containerCodeNames
+					containerWellCodes = _.pluck(_.where(wellCodes, {containerCode: containerCodeName}), "wellCode")
+					containerWellContent = _.filter wellContentResponse, (wellContent) ->
+						return wellContent.containerCodeName in containerWellCodes
+					containerWellContent = _.sortBy containerWellContent, 'wellName'
+					response.push {containerCodeName: containerCodeName, wellContent: containerWellContent}
+				callback response
