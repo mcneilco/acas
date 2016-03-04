@@ -60,6 +60,10 @@ class window.SecondThingItx extends ThingItx
 		@set secondLsThing: thing
 
 class window.LsThingItxList extends Backbone.Collection
+	getAllItxByTypeAndKind: (type, kind) -> #returns all itxs of given type/kind, including ignored itxs
+		@filter (itx) ->
+			(itx.get('lsType')==type) and (itx.get('lsKind')==kind)
+
 	getItxByTypeAndKind: (type, kind) ->
 		@filter (itx) ->
 			(not itx.get('ignored')) and (itx.get('lsType')==type) and (itx.get('lsKind')==kind)

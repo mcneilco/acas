@@ -200,7 +200,6 @@
     extend(DetectSdfPropertiesController, superClass);
 
     function DetectSdfPropertiesController() {
-      this.handleProjectChanged = bind(this.handleProjectChanged, this);
       this.handleTemplateChanged = bind(this.handleTemplateChanged, this);
       this.handleFileRemoved = bind(this.handleFileRemoved, this);
       this.getProperties = bind(this.getProperties, this);
@@ -222,7 +221,6 @@
       this.numRecords = 100;
       this.tempName = "none";
       this.mappings = new AssignedPropertiesList();
-      this.project = "unassigned";
       return this.fileName = null;
     };
 
@@ -374,10 +372,6 @@
       if ((this.fileName != null) && this.fileName !== null) {
         return this.getProperties();
       }
-    };
-
-    DetectSdfPropertiesController.prototype.handleProjectChanged = function(projectName) {
-      return this.project = projectName;
     };
 
     return DetectSdfPropertiesController;
@@ -605,6 +599,7 @@
 
     AssignSdfPropertiesController.prototype.initialize = function() {
       this.fileName = null;
+      this.project = false;
       $(this.el).empty();
       $(this.el).html(this.template());
       this.getAndFormatTemplateOptions();
@@ -747,6 +742,7 @@
     AssignSdfPropertiesController.prototype.handleDbProjectChanged = function() {
       var project;
       project = this.projectListController.getSelectedCode();
+      this.project = project;
       this.isValid();
       return this.trigger('projectChanged', project);
     };
@@ -1044,8 +1040,22 @@
       return this.$('.bv_errorMessage').html("An error occurred while trying to save the template. The compounds have not been registered yet. Please try again or contact an administrator.");
     };
 
+    AssignSdfPropertiesController.prototype.addProjectToMappingsPayLoad = function() {
+      var dbProjectProperty;
+      if (this.project != null) {
+        dbProjectProperty = new AssignedProperty({
+          dbProperty: "Project",
+          required: true,
+          sdfProperty: null,
+          defaultVal: this.project
+        });
+        return this.assignedPropertiesListController.collection.add(dbProjectProperty);
+      }
+    };
+
     AssignSdfPropertiesController.prototype.registerCompounds = function() {
       var dataToPost;
+      this.addProjectToMappingsPayLoad();
       dataToPost = {
         fileName: this.fileName,
         mappings: JSON.parse(JSON.stringify(this.assignedPropertiesListController.collection.models)),
@@ -1141,11 +1151,6 @@
       this.assignSdfPropertiesController.on('templateChanged', (function(_this) {
         return function(templateName, mappings) {
           return _this.detectSdfPropertiesController.handleTemplateChanged(templateName, mappings);
-        };
-      })(this));
-      this.assignSdfPropertiesController.on('projectChanged', (function(_this) {
-        return function(projectName) {
-          return _this.detectSdfPropertiesController.handleProjectChanged(projectName);
         };
       })(this));
       return this.assignSdfPropertiesController.on('saveComplete', (function(_this) {
@@ -1524,9 +1529,9 @@
       this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
       this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
       if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
-        this.$('.bv_adminDropdown').removeClass('disabled');
+        this.$('.bv_adminDropdownWrapper').show();
       } else {
-        this.$('.bv_adminDropdown').addClass('disabled');
+        this.$('.bv_adminDropdownWrapper').hide();
       }
       this.$('.bv_searchNavOption').hide();
       return this.setupBulkRegCmpdsController();

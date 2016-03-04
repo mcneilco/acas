@@ -18,7 +18,19 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         if (operator == ">" || operator == "<") {
             return operator + parseFloat(a.slice(1) );
         }
-        return (parseFloat( a ) || a.toLowerCase());
+        //console.log(parseFloat( a ) || a.toLowerCase());
+        console.log(a);
+        //console.log(parseFloat( a ));
+        //console.log(a.toLowerCase());
+        if(isNaN(parseFloat(a))) {
+            console.log("return lowercase - nan")
+            return a.toLowerCase();
+        }
+        else {
+            console.log("return parseFloat");
+            return (parseFloat( a ));
+        }
+        //return (parseFloat( a ) || a.toLowerCase());
     },
 
     "includeOperators-asc": function ( a, b ) {
@@ -45,7 +57,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         }
         if (a[0] == "<"){
             if (b[0] == "<"){
-                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? -1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? 1 : 0));
+                return ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? -1 : ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? 1 : 0));
             }else{return -1;}
         }if (a[0] == ">"){
             if (b[0] == ">"){
@@ -86,7 +98,7 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
         }
         if (a[0] == "<"){
             if (b[0] == "<"){
-                return ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? 1 : ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? -1 : 0));
+                return ((parseFloat(a.slice(1)) > parseFloat(b.slice(1))) ? 1 : ((parseFloat(a.slice(1)) < parseFloat(b.slice(1))) ? -1 : 0));
             }else{return 1;}
         }if (a[0] == ">"){
             if (b[0] == ">"){

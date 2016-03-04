@@ -18,13 +18,14 @@ exports.requiredScripts = [
 	'/src/lib/lightbox-for-bootstrap/bootstrap.lightbox.js',
 	'/src/lib/dataTables/js/jquery.dataTables.js',
 	'/src/lib/dataTables/js/lsThingSorting.js',
-  '/src/lib/bootstrap/bootstrap-datatable.js',
-  '/src/lib/bootstrap-combobox/js/bootstrap-combobox.js',
-  '/src/lib/jsxgraph/jsxgraphcore.js',
+	'/src/lib/bootstrap/bootstrap-datatable.js',
+	'/src/lib/bootstrap-combobox/js/bootstrap-combobox.js',
+	'/src/lib/jsxgraph/jsxgraphcore.js',
 	'/src/lib/jstree/jstree.min.js',
 	'/src/lib/moment.min.js',
 	'/src/lib/spin/js/spin.js',
-	'/src/lib/spin/js/jquery-spin.js'
+	'/src/lib/spin/js/jquery-spin.js',
+	'/src/lib/handsontable/dist/handsontable.full.js'
 ];
 
 exports.applicationScripts = [
