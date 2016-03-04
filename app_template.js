@@ -119,7 +119,7 @@
       console.log('clean exit of app');
     });
     process.on('uncaughtException', function(err) {
-      console.log('Caught exception: ' + err);
+      console.error('Caught exception: ' + err.stack);
     });
     return csUtilities.logUsage("ACAS Node server started", "started", "");
   };

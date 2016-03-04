@@ -1,15 +1,1 @@
-.Rproj.user
-.Rhistory
-.RData
-!.RData
-ACAS.Rproj
-acas-host3.Rproj
-.Rapp.history
-Gruntfile.js
-.idea/*
-conf/compiled/*
-r_libs/*
-acas_custom/*
-acas.log
-racas.log
-node_modules
+.gitignore
