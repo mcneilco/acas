@@ -11,11 +11,11 @@ services:
      - APP_NAME=development
      - PREPARE_MODULE_CONF_JSON=true
     volumes:
-     - /home/runner/build/src/r
-     - /home/runner/build/privateUploads
+     - filestore:/home/runner/build/privateUploads
+     - logs:/home/runner/logs
      - /home/runner/build/bin
+     - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
-     - /home/runner/logs
      # Dev volumes below this line
 #     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
     env_file:
@@ -34,12 +34,15 @@ services:
      - PREPARE_CONFIG_FILES=false
     volumes_from:
      - acas
+    volumes:
+      - filestore:/home/runner/build/privateUploads
+      - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
     image: mcneilco/acas-postgres:development
     restart: always
     volumes:
-     - dbstore:/var/lib/postgresql
+     - dbstore:/var/lib/postgresql/data
     env_file:
       - ./bin/environments/postgres/postgres.env
       - ./bin/environments/db/db.env
@@ -71,3 +74,5 @@ services:
     command: /bin/true
 volumes:
   dbstore:
+  filestore:
+  logs:
