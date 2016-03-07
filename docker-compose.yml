@@ -10,16 +10,18 @@ services:
     environment:
      - APP_NAME=development
      - PREPARE_MODULE_CONF_JSON=true
+     - DOCKER_HOST_IP=${DOCKER_HOST_IP}
     volumes:
      - filestore:/home/runner/build/privateUploads
      - logs:/home/runner/logs
      - /home/runner/build/bin
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
-     # Dev volumes below this line
-#     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
+     # Please add any dev volumes below this line
+#     - ./conf/docker/cmpdreg/conf/cmpdreg.conf:/home/runner/build/conf/cmpdreg.properties
+     - ./conf/config.properties.example:/home/runner/build/conf/config.properties.example
     env_file:
-      - ./bin/environments/acas/acas.env
+      - ./conf/docker/acas/environment/acas.env
 # Dev Command
 #    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
@@ -44,11 +46,11 @@ services:
     volumes:
      - dbstore:/var/lib/postgresql/data
     env_file:
-      - ./bin/environments/postgres/postgres.env
-      - ./bin/environments/db/db.env
-      - ./bin/environments/acas/acas.env
-      - ./bin/environments/cmpdreg/cmpdreg.env
-      - ./bin/environments/seurat/seurat.env
+      - ./conf/docker/postgres/environment/postgres.env
+      - ./conf/docker/db/environment/db.env
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/cmpdreg/environment/cmpdreg.env
+      - ./conf/docker/seurat/environment/seurat.env
     ports:
      - "5432:5432"
   tomcat:
@@ -64,8 +66,8 @@ services:
      - roo
      - acas
     env_file:
-      - ./bin/environments/acas/acas.env
-      - ./bin/environments/roo/roo.env
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/roo/environment/roo.env
     command: catalina.sh run
   roo:
     image: mcneilco/acas-roo-server:development
