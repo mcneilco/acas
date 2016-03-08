@@ -45,7 +45,7 @@
 			kind: "transformation"
 			codes:
 				[
-					code: "% efficacy"
+					code: "percent efficacy"
 					name: "% Efficacy"
 					ignored: false
 				,
