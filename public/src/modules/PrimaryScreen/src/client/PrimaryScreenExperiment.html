@@ -52,12 +52,17 @@
     </div>
 
     <div class="span12">
-        <h5>Additives</h5>
-        <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
-        <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
-        <span style="margin-left:62px;margin-bottom:5px;">Additive Type</span>
-        <div class="bv_additiveList"></div>
-
+        <div class="control-group bv_group_hasAdditives" style="margin-left:20px;margin-bottom:20px;">
+            <label class="control-label checkbox" style="width:200px;padding-left:0;">
+                <input type="checkbox" name="bv_hasAdditives" class="bv_hasAdditives" <% if (hasAdditives) { %> checked="checked"<% }%> /><h5>Additives</h5>
+            </label>
+        </div>
+        <div class="additives">
+            <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
+            <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
+            <span style="margin-left:62px;margin-bottom:5px;">Additive Type</span>
+            <div class="bv_additiveList"></div>
+        </div>
     </div>
 
     <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
@@ -375,6 +380,7 @@
             <button class="close bv_deleteRule" style="margin-right:130px;margin-top:3px;">&times;</button>
         </span>
     </div>
+    <div class="bv_transformationParameters" style="margin-left: -155px;"></div>
 </script>
 
 <script type="text/template" id="ControlSettingView" xmlns="http://www.w3.org/1999/html">

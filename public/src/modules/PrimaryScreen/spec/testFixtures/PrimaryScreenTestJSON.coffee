@@ -37,23 +37,23 @@
 	]
 
 	exports.transformationRules = [
-		transformationRule: "% efficacy"
+		transformationRule: "percent efficacy"
 		transformationParameters:
 			positiveControl:
-				standardNumber: 1
+				standardNumber: "1"
 				defaultValue: ""
 			negativeControl:
-				standardNumber: ""
+				standardNumber: "input value"
 				defaultValue: 5
 	,
 		transformationRule: "sd"
 		transformationParameters:
 			positiveControl:
-				standardNumber: 1
+				standardNumber: "3"
 				defaultValue: ""
 			negativeControl:
-				standardNumber: ""
-				defaultValue: 5
+				standardNumber: "2"
+				defaultValue: ""
 	,
 		transformationRule: "null"
 		transformationParameters: {}
@@ -95,6 +95,7 @@
 
 	exports.primaryScreenAnalysisParameters =
 		standardCompoundList: exports.standards
+		hasAdditives: false
 		additiveList: exports.additives
 		instrumentReader: "flipr"
 		signalDirectionRule: "increasing"
