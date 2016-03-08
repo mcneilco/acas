@@ -1924,7 +1924,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			sourceFileValue = sourceFile.get('fileValue')
 			displayName = sourceFile.get('comments')
 			@dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
- 			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
+			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
 			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
 				@dataAnalysisController.parseFileController.render()
 				@dataAnalysisController.handleParseFileRemoved()
