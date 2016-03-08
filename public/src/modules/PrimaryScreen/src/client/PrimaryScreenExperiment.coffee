@@ -843,7 +843,6 @@ class window.TransformationRuleController extends AbstractFormController
 
 	ruleChanged: =>
 		@updateModel()
-		@trigger 'attributeChanged'
 		@render
 
 	updateModel: =>
@@ -864,6 +863,8 @@ class window.TransformationRuleController extends AbstractFormController
 			@setUpNegativeControlSettingController()
 
 	setUpPositiveControlSettingController: =>
+		if @positiveControlController?
+			@positiveControlController.undelegateEvents()
 		@positiveControlController = new ControlSettingController
 			className: 'bv_transformationPositiveControl'
 			model: @model.get('transformationParameters').get('positiveControl')
