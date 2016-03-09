@@ -335,12 +335,14 @@ exports.getBreadCrumbByContainerCode = (req, resp) ->
 			resp.json json
 
 exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callback) ->
+	if !delimeter?
+		delimeter = ">"
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getBreadCrumbByContainerCodeResponse
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+delimeter
+		baseurl = config.all.client.service.rapache.fullpath+"/getBreadCrumbByContainerCode?delimeter="+encodeURIComponent(delimeter)
 		request = require 'request'
 		request(
 			method: 'POST'
