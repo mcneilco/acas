@@ -78,6 +78,13 @@ exports.ensureAuthenticated = (req, res, next) ->
 		req.session.returnTo = req.url
 	res.redirect '/login'
 
+exports.ensureAuthenticatedAPI = (req, res, next) ->
+	console.log "checking for login for path: "+req.url
+	if req.isAuthenticated()
+		return next()
+	if req.session?
+		req.session.returnTo = req.url
+	res.redirect 401, '/login'
 
 exports.getUsers = (req, resp) ->
 	console.log "get users in route file"
