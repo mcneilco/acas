@@ -18,7 +18,6 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
-     - ../racas:/home/runner/racas
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
