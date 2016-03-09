@@ -35,10 +35,10 @@ exports.getContainersInLocation = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.json json
 			else
-				console.log 'got ajax error trying to get getContainersInLocation'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getContainersInLocation'
+				console.error error
+				console.error json
+				console.error response
 				resp.end JSON.stringify "getContainersInLocation failed"
   		)
 
@@ -119,10 +119,10 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 			if !error && response.statusCode == 200
 				callback json
 			else
-				console.log 'got ajax error trying to get getContainerCodesByLabels'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getContainerCodesByLabels'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getContainerCodesByLabels failed"
 		)
 
@@ -151,10 +151,10 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 			if !error && response.statusCode == 200
 				resp.json json
 			else
-				console.log 'got ajax error trying to get getWellCodesByPlateBarcodes'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getWellCodesByPlateBarcodes'
+				console.error error
+				console.error json
+				console.error response
 				resp.end JSON.stringify "getWellCodesByPlateBarcodes failed"
   		)
 
@@ -173,6 +173,7 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellContent"
 		request = require 'request'
+		console.debug 'calling service', baseurl
 		request(
 			method: 'POST'
 			url: baseurl
@@ -181,12 +182,13 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
+				console.debug 'returned success from service', baseurl
 				callback json
 			else
-				console.log 'got ajax error trying to get getWellContent'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getWellContent'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getWellContent failed"
   		)
 
@@ -295,10 +297,10 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			if !error && response.statusCode in [200,400]
 				callback json
 			else
-				console.log 'got ajax error trying to get getContainersByCodeNames'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getContainersByCodeNames'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getContainersByCodeNames failed"
 		)
 
@@ -320,10 +322,10 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 			if !error && response.statusCode == 200
 				callback json
 			else
-				console.log 'got ajax error trying to get getDefinitionContainersByContainerCodeNames'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getDefinitionContainersByContainerCodeNames'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getDefinitionContainersByContainerCodeNames failed"
 		)
 
@@ -354,10 +356,10 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 			if !error && response.statusCode == 200
 				callback json
 			else
-				console.log 'got ajax error trying to get getBreadCrumbByContainerCode'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getBreadCrumbByContainerCode'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getBreadCrumbByContainerCode failed"
 		)
 
@@ -386,10 +388,10 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 			if !error && response.statusCode == 200
 				callback json
 			else
-				console.log 'got ajax error trying to get getWellCodesByContainerCodes'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to get getWellCodesByContainerCodes'
+				console.error error
+				console.error json
+				console.error response
 				callback JSON.stringify "getWellCodesByContainerCodes failed"
 		)
 
@@ -399,12 +401,14 @@ exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) 
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellContentByContainerCodesResponse
 	else
+		console.debug 'requesting well codes from container codes'
 		exports.getWellCodesByContainerCodesInternal containerCodeNames, (wellCodesResponse) ->
 			wellCodes = _.map wellCodesResponse, (wellCode) ->
 				_.map wellCode.wellCodeNames, (codeName) ->
 					{containerCode: wellCode.requestCodeName, wellCode: codeName}
 			wellCodes = _.flatten wellCodes
 			wellContentRequest = _.pluck wellCodes, 'wellCode'
+			console.debug 'requesting well content from well container codes'
 			exports.getWellContentInternal wellContentRequest, (wellContentResponse) ->
 				response = []
 				for containerCodeName in containerCodeNames
