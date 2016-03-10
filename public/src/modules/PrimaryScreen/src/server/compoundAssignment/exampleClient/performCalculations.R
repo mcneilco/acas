@@ -266,7 +266,9 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       file.path(filePath, paste0(mainData$assayBarcode, "_", mainData$batchCode, ".png")),
       NA_character_)
     return(filePaths)
-  } else if (transformation == "null" || transformation == "" || transformation =="none") {
+  } else if (transformation == "none") {
+    return(mainData$normalizedActivity)
+  } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
     return(mainData$normalizedActivity)
   } else {
