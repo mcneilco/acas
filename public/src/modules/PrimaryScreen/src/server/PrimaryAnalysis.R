@@ -188,23 +188,36 @@ removeControls <- function(validatedFlagData) {
   
   return(testOnly)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F, standardsDataFrame) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
   wellTypes <- rep.int("test", length(batchNames))
+ 
+  # Use information from the standardsDataFrame (defined in the GUI) passed as an argument to the current function to identify PC, NC, and VC
+  positiveStandards <- standardsDataFrame[standardsDataFrame$standardType=="PC", ]
+  negativeStandards <- standardsDataFrame[standardsDataFrame$standardType=="NC", ]
+  vehicleStandards <- standardsDataFrame[standardsDataFrame$standardType=="VC", ]
   
+  # Throw errors if no positive or negative controls are defined in the GUI
+  if (is.null(nrow(positiveStandards)) | nrow(positiveStandards)==0) {
+    stopUser("No Positive Controls were defined")
+  }
+  if (is.null(nrow(negativeStandards)) | nrow(negativeStandards)==0) {
+    stopUser("Negative controls are missing")
+  }
   
-  if (positiveControl$concentration == "infinite") {
-    positiveControl$concentration <- Inf
-  }
-  if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
-    negativeControl$concentration <- Inf
-  }
-  
-  if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
-    wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
-  }
+
+#   if (positiveControl$concentration == "infinite") {
+#     positiveControl$concentration <- Inf
+#   }
+#   if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
+#     negativeControl$concentration <- Inf
+#   }
+#   
+#   if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
+#     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
+#   }
   
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
   if (is.null(toleranceRange)) {
@@ -212,17 +225,38 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
     toleranceRange <- 0
   }
   #   toleranceRange <- 0.01
+
+#   posBatchFilter <- batchNames==positiveControl$batchCode & 
+#     abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
+#   negBatchFilter <- batchNames==negativeControl$batchCode & 
+#     (abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100 ||
+#        (concentrations==Inf && negativeControl$concentration==Inf))
+
+
+  # Flag wells as PC if they are within some tolerance from the concentrations defined in the GUI for all PC standards 
+  concPositiveFilter <- 0
+  for (currentStandard in positiveStandards$concentration) {
+    concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
+    concPositiveFilter <- concPositiveFilter + as.numeric(concentrationFilter) 
+  }
   
-  posBatchFilter <- batchNames==positiveControl$batchCode & 
-    abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
-  negBatchFilter <- batchNames==negativeControl$batchCode & 
-    (abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100 ||
-       (concentrations==Inf && negativeControl$concentration==Inf))
+  # Flag wells as NC if they are within some tolerance from the concentrations defined in the GUI for all NC standards
+  concNegativeFilter <- 0
+  for (currentStandard in negativeStandards$concentration) {
+    concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
+    concNegativeFilter <- concNegativeFilter + as.numeric(concentrationFilter) 
+  }
   
-  if(!is.null(concentrationUnits)) {
-    posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
-    negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
-  } 
+  # Update the PC, NC filters with wells that are designated as PC, NC AND they are within tolerance from the corresponding
+  # PC, NC concentrations (as defined in the standards section of the GUI)
+  posBatchFilter <- (batchNames %in% positiveStandards$batchCode) & as.logical(concPositiveFilter)
+  negBatchFilter <- (batchNames %in% negativeStandards$batchCode) & as.logical(concNegativeFilter)
+
+
+#   if(!is.null(concentrationUnits)) {
+#     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
+#     negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
+#   } 
   
   wellTypes[posBatchFilter] <- "PC"
   wellTypes[negBatchFilter] <- "NC"
@@ -1721,7 +1755,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       }
     }
   }
+
+  # Define the data frame that holds information about multiple standards, as defined in the GUI
+  standardsDataFrame <- rbindlist(parameters$standardCompoundList)
+
+  # Validate all the batchcodes entered for multiple standards in the GUI
+  standardsDataFrame$batchCode <- validateBatchCodes(standardsDataFrame$batchCode)
+
+  # Throw an error if there is a standard defined in the GUI that is not a PC, NC, or VC, or if its concentration was not defined 
+  if (any(standardsDataFrame$standardType=="null")) {
+    stopUser("Please check Data Analysis entries - At least one of the standards was defined beyond the allowable options of Positive, Negative, and Vehicle Control.")
+  }
+  if (any(standardsDataFrame$concentration=="")) {
+    stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
+  }
   
+print(standardsDataFrame)
+
   parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
   parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
   
@@ -1792,17 +1842,21 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                             testMode, parameters, 
                                             tempFilePath=specDataPrepFileLocation)
     }
-    
+
     # this also performs any calculations from the GUI
     source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE) 
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
+
+    # The data frame containing information about multiple standards (as defined in the GUI) was added as an argument to getWellType
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit, 
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                         vehicleControl=parameters$vehicleControl, testMode=testMode)
+                                         vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame)
     
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
+
+
     checkControls(resultTable)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
@@ -1967,8 +2021,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       hitThreshold <- ""
     }
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
-    
-    pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo, 
+
+    pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo,  
                                threshold = hitThreshold, experiment, dryRun, activityName) 
     
     summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
@@ -2621,9 +2675,9 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   
   library('racas')
   globalMessenger <- messenger()$reset()
-  globalMessenger$devMode <- FALSE
+  globalMessenger$devMode <- TRUE
   options("scipen"=15)
-  #save(request, file="request.Rda")
+  save(request, file="request.Rda")
   
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
