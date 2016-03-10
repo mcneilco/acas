@@ -87,7 +87,7 @@ class window.Container extends Backbone.Model
 					newValue.set dValue.type, dValue.value
 				#setting top level model attribute's value to equal valueType's value
 				# (ie set "value" to equal value in "stringValue")
-				@get(dValue.kind).set("value", newValue.get(dValue.type))
+				@get(dValue.key).set("value", newValue.get(dValue.type))
 
 	createNewValue: (vKind, newVal) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
