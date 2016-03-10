@@ -2,7 +2,7 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas:development
+    image: mcneilco/acas:ACASDEV-591-multiple-controls
     restart: always
     ports:
      - "3000:3000"
