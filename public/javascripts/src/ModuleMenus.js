@@ -18,7 +18,7 @@
       if (window.conf.leaveACASMessage === "WARNING: There are unsaved changes.") {
         return window.conf.leaveACASMessage;
       } else {
-        return null;
+
       }
     };
 

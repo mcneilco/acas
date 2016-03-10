@@ -60,7 +60,7 @@
                     console.log(err);
                     resp.end("gene query directory could not be saved");
                   } else {
-                    filename = 'GeneQuery.csv';
+                    filename = 'DataViewer.csv';
                     fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
                       if (err) {
                         console.log('there was an error saving a ACAS Data Viewer csv file');
@@ -80,7 +80,7 @@
                   }
                 });
               } else {
-                console.log('got ajax error trying to get gene data csv from the server');
+                console.log('got ajax error trying to get DataViewer csv file from the server');
                 console.log(error);
                 console.log(json);
                 return console.log(response);
@@ -111,7 +111,7 @@
           errorMessages: [
             {
               errorLevel: "warning",
-              message: "some genes not found"
+              message: "some tested lots not found"
             }
           ]
         };
@@ -135,7 +135,7 @@
             if (!error) {
               return resp.end(JSON.stringify(json));
             } else {
-              console.log('got ajax error trying to query gene data');
+              console.log('got ajax error trying to query tested lot data');
               console.log(error);
               return console.log(resp);
             }
@@ -194,7 +194,7 @@
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to query gene data');
+            console.log('got ajax error trying to query tested lot data');
             console.log(error.stack);
             return console.log(response);
           }
@@ -253,7 +253,7 @@
             console.log(JSON.stringify(json));
             return resp.end(JSON.stringify(json));
           } else {
-            console.log('got ajax error trying to query gene data');
+            console.log('got ajax error trying to query tested lot data');
             console.log(error);
             return console.log(resp);
           }
@@ -410,7 +410,7 @@
                     console.log(err);
                     resp.end("gene query directory could not be saved");
                   } else {
-                    filename = 'GeneQuery.csv';
+                    filename = 'DataViewer.csv';
                     fs.writeFile('./privateTempFiles/' + dirName + "/" + filename, json, function(err) {
                       if (err) {
                         console.log('there was an error saving an ACAS Data Viewer csv file');
@@ -430,7 +430,7 @@
                   }
                 });
               } else {
-                console.log('got ajax error trying to get gene data csv from the server');
+                console.log('got ajax error trying to get DataViewer csv file from the server');
                 console.log(error);
                 console.log(json);
                 return console.log(response);
@@ -461,7 +461,7 @@
           errorMessages: [
             {
               errorLevel: "warning",
-              message: "some genes not found"
+              message: "some tested lots not found"
             }
           ]
         };
@@ -487,7 +487,7 @@
               console.log(JSON.stringify(json));
               return resp.end(JSON.stringify(json));
             } else {
-              console.log('got ajax error trying to query gene data');
+              console.log('got ajax error trying to get query tested lot data');
               console.log(error);
               return console.log(resp);
             }

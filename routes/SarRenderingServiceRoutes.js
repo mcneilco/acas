@@ -4,6 +4,7 @@
   exports.setupAPIRoutes = function(app) {
     app.get('/api/sarRender/geneId/:referenceCode', exports.getGeneRenderRoute);
     app.get('/api/sarRender/cmpdRegBatch/:referenceCode', exports.getBatchRenderRoute);
+    app.get('/api/sarRender/acasLsThingCorpName/:displayName/:referenceCode', exports.getACASLsThingCorpNameRoute);
     app.post('/api/sarRender/render', exports.renderAnyRoute);
     return app.get('/api/sarRender/title/:displayName', exports.getTitleRoute);
   };
@@ -11,6 +12,7 @@
   exports.setupRoutes = function(app, loginRoutes) {
     app.get('/api/sarRender/geneId/:referenceCode', loginRoutes.ensureAuthenticated, exports.getGeneRenderRoute);
     app.get('/api/sarRender/cmpdRegBatch/:referenceCode', loginRoutes.ensureAuthenticated, exports.getBatchRenderRoute);
+    app.get('/api/sarRender/acasLsThingCorpName/:displayName/:referenceCode', loginRoutes.ensureAuthenticated, exports.getACASLsThingCorpNameRoute);
     app.post('/api/sarRender/render', loginRoutes.ensureAuthenticated, exports.renderAnyRoute);
     return app.get('/api/sarRender/title/:displayName', loginRoutes.ensureAuthenticated, exports.getTitleRoute);
   };
@@ -70,11 +72,43 @@
 
   exports.getBatchRender = function(referenceCode, callback) {
     var htmlReturn;
-    htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '"><br />';
+    htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '" alt="Could not load entity image" ><br />';
     htmlReturn += '<a href="' + config.all.client.service.external.lotDetails.url + referenceCode + '" target="_blank" align="center">' + referenceCode + '</a>';
     return callback({
       html: htmlReturn
     });
+  };
+
+  exports.getACASLsThingCorpNameRoute = function(req, resp) {
+    var displayName, referenceCode;
+    console.log("in get ACAS LsThing corpName route");
+    referenceCode = req.params.referenceCode;
+    displayName = req.params.displayName;
+    return exports.getACASLsThingRender(referenceCode, displayName, function(json) {
+      return resp.json(json);
+    });
+  };
+
+  exports.getACASLsThingRender = function(referenceCode, displayName, callback) {
+    var csv, requestData;
+    requestData = {
+      displayName: displayName,
+      requests: [
+        {
+          requestName: referenceCode
+        }
+      ]
+    };
+    csv = false;
+    return codeService.pickBestLabels(requestData, csv, (function(_this) {
+      return function(response) {
+        var bestLabel;
+        bestLabel = response.results[0].bestLabel;
+        return callback({
+          html: '<a href="http://' + config.all.client.host + ":" + config.all.client.port + "/entity/edit/codeName/" + referenceCode + '" target="_blank" align="center">' + bestLabel + '</a>'
+        });
+      };
+    })(this));
   };
 
   exports.getTitleRoute = function(req, resp) {

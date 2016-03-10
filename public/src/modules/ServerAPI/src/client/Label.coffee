@@ -28,6 +28,11 @@ class window.LabelList extends Backbone.Collection
 		_.filter @getCurrent(), (lab) ->
 			lab.get 'preferred'
 
+	getACASLsThingCorpName: ->
+		corpName = _.filter @getCurrent(), (lab) ->
+			lab.get('lsType') == "corpName" and lab.get('lsKind') == 'ACAS LsThing'
+		corpName[0]
+
 	pickBestLabel: ->
 		preferred = @getPreferred()
 		if preferred.length > 0
