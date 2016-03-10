@@ -1702,12 +1702,12 @@ autoFlagWells <- function(resultTable, parameters) {
     thresholdType <- "percent efficacy"
     
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
-    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
+    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out") & (wellType == "test"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
   } else if(parameters$thresholdType == "sd") {
     hitThreshold <- parameters$hitSDThreshold
     thresholdType <- "standard deviation"
-    resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+    resultTable[(transformed_sd > hitThreshold) & (is.na(flagType) | flagType != "knocked out") & (wellType == "test"), autoFlagType := "HIT"]
   } else {
     stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
@@ -2098,6 +2098,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
   }
   
+  resultTable[tolower(flagType) == "hit" | tolower(autoFlagType) == "hit", flag := "HIT"]
+  resultTable[tolower(flagType) == "knocked out" | tolower(autoFlagType) == "knocked out", flag := "KO"]
   if (dryRun) {
     lsTransaction <- NULL
     dryRunLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "draft"))

@@ -10,7 +10,7 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   colCompare <- FALSE
   
   allResultTable <- resultTable
-  resultTable <- resultTable[is.na(resultTable$flag),]
+  resultTable <- resultTable[is.na(resultTable$flag) | resultTable$flag != "KO",]
   resultTable <- resultTable[!is.na(resultTable$activity),]
   
   if(dryRun) {
