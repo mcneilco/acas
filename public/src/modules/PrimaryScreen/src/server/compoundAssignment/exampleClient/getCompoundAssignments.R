@@ -164,6 +164,9 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   
   setnames(resultTable,c("batchName", "concentration"),c("batchCode", "cmpdConc"))  #previously batchName was barcode
+  
+  resultTable$batchName <- gsub("(.*)-", "\\1", resultTable$batchCode) # Get parent code (called batchName for historical reasons)
+  
   resultTable[, agonistBatchCode := parameters$agonistControl$batchCode]
   # save(resultTable, file="public/cmpdAssignmentsOutput.Rda")  
   return(resultTable)
