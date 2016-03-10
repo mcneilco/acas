@@ -223,6 +223,11 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     } else {
       stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
     }
+  } else if (transformation == "normalize by R3") {
+    R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
+    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
+    aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
+    return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
   } else if (transformation == "noAgonist") {
     return(getNoAgonist(parameters, mainData))
   } else if (transformation == "enhancement") {
