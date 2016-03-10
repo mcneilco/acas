@@ -7,9 +7,7 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, experiment
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
-    if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
-    }
+    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
   }
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range

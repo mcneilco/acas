@@ -6,9 +6,7 @@ performCalculations <- function(resultTable, parameters, experimentCodeName, dry
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
-    if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
-    }
+    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
   }
   
   # compute Z' and Z' by plate
@@ -272,10 +270,10 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       NA_character_)
     return(filePaths)
   } else if (transformation == "none") {
-    return(mainData$normalizedActivity)
+    return(mainData$activity)
   } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
-    return(mainData$normalizedActivity)
+    return(mainData$activity)
   } else {
     stopUser("Transformation not defined in system.")
   }  
