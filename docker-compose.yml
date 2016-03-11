@@ -8,7 +8,7 @@ services:
      - "3000:3000"
      - "3001:3001"
     environment:
-     - APP_NAME=development
+     - APP_NAME=compound-inventory
      - PREPARE_MODULE_CONF_JSON=true
      - DOCKER_HOST_IP=${DOCKER_HOST_IP}
     volumes:
@@ -25,7 +25,7 @@ services:
 # Start command
     command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:development
+    image: mcneilco/racas:compound-inventory
     restart: always
     ports:
      - "1080:1080"
@@ -68,7 +68,7 @@ services:
       - ./conf/docker/roo/environment/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:development
+    image: mcneilco/acas-roo-server:cmpd-inventory-feature
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
