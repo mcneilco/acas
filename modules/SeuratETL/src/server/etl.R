@@ -123,7 +123,7 @@ runSeuratExportToSELFiles <- function() {
   dir.create(etlFolder, showWarnings = FALSE)
   for(p in 1:length(protocolsToSearch)) {
     protocolName <- protocolsToSearch[[p]]
-    protocolFolder <- file.path(etlFolder, protocolName)
+    protocolFolder <- file.path(etlFolder, gsub("/","-",protocolName))
     dir.create(protocolFolder, showWarnings = FALSE)
     logger$info(paste("...creating SEL files for protocol:", protocolName))
     experiments <- getSeuratResultsForProtocol(replacementName=protocolName, replaceString="<PROTOCOL_TO_SEARCH>", applicationSettings = seuratDatabaseSettings)
