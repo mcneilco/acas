@@ -47,18 +47,19 @@ class DataServiceController extends Backbone.View
     @openModal()
     numberOfServiceCalls = _.size(@serviceController.url)
     numberOfCompletedServiceCalls = 0
-    _.each(@serviceController.url, (url) =>
+    _.each(@serviceController.url, (serviceCall) =>
       $.ajax(
-        data: @serviceController.data
+        data: serviceCall.data
         dataType: "json"
-        method: @serviceController.ajaxMethod
-        url: url
+        method: serviceCall.ajaxMethod
+        url: serviceCall.url
       )
       .done((data, textStatus, jqXHR) =>
+        serviceCall.callback(data)
         numberOfCompletedServiceCalls++
         if numberOfCompletedServiceCalls is numberOfServiceCalls
           @displaySuccessFields()
-          @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
+          @serviceController.handleSuccessCallback()
       )
       .fail((jqXHR, textStatus, errorThrown) =>
         @displayServerErrorMessage()

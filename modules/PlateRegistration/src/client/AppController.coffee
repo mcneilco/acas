@@ -33,16 +33,12 @@ class AppController extends Backbone.View
     #@newPlateDesignController.completeInitialization()
 
   handleCreatePlate: (plateModel) =>
-    console.log "plateModel"
-    console.log plateModel
-
     @dataServiceController.setupService(new CreatePlateSaveController({plateModel: plateModel, successCallback: @createPlateController.handleSuccessfulSave}))
-    @dataServiceController.doServiceCall((resp) ->
-      console.log "save callback"
-      console.log resp
-    )
-
-#alert "add content..."
+    @dataServiceController.doServiceCall()
+#    @dataServiceController.doServiceCall((resp) ->
+#      console.log "save callback"
+#      console.log resp
+#    )
 
   handleAddContent: (addContentModel) =>
     console.log "identifiers"
@@ -62,19 +58,14 @@ class AppController extends Backbone.View
     @$("div[name='formContainer']").html @createPlateController.render().el
 
   displayPlateDesignForm: (plateBarcode) =>
-    #@dataServiceController = new DataServiceController()
     @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))
-    @dataServiceController.doServiceCall()
-#    (resp) ->
-#      console.log "plate load callback"
-#      console.log resp
-#    )
+    @dataServiceController.doServiceCalls()
 
-  handleAllDataLoadedForPlateDesignForm: (data) =>
+  handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
     console.log "handleAllDataLoadedForPlateDesignForm"
-    #console.log data
+    console.log plateAndWellData
     @$("div[name='formContainer']").html @newPlateDesignController.render().el
-    @newPlateDesignController.completeInitialization(data)
+    @newPlateDesignController.completeInitialization(plateAndWellData)
 
   render: =>
     $(@el).html @template()

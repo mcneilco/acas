@@ -11,22 +11,25 @@ _ = require('lodash')
 
 describe "AddContentController", ->
   beforeEach ->
-    fixture = '<div id="fixture"></div>';
+    fixture = '<div id="fixture"></div>'
     document.body.insertAdjacentHTML('afterbegin', fixture)
     @startUpParams = {}
+    @model = new AddContentModel()
+    @startUpParams.model = @model
+    @addContent = new AddContentController(@startUpParams)
+
   it "should exist", ->
-    addContent = new AddContentController(@startUpParams)
-    expect(addContent).toBeTruthy()
+    expect(@addContent).toBeTruthy()
 
   describe "template content", ->
     beforeEach ->
-      @addContent = new AddContentController(@startUpParams)
       $("#fixture").html @addContent.render().el
 
     it "should have a template property", ->
       expect(@addContent.template).toBeTruthy()
 
     it "should have an 'identifiers' textarea input field", ->
+      #$("#fixture").html @addContent.render().el
       expect(_.size($("#fixture").find("[name='identifiers']"))).toEqual 1
 
   describe "utility methods", ->
@@ -80,29 +83,20 @@ describe "AddContentController", ->
           numberOfSelectedCells = @addContent.calculateNumberOfSelectedCells selectedRegionBoundries
           expect(numberOfSelectedCells).toEqual 8
 
+    describe "parseIdentifiers", ->
+      describe "should return an array containing an element for each identifier entered", ->
+        it "should return an array with one element when the input contains no delimiters", ->
+          expect(@addContent.parseIdentifiers(identifiersFixture.singleIdentifierInput)).toEqual(identifiersFixture.singleIdentifierOutput)
+          expect(_.size(@addContent.parseIdentifiers(identifiersFixture.singleIdentifierInput))).toEqual(1)
 
-#    it "should have a plateBarcode text input field", ->
-#      expect(_.size($("#fixture").find("[name='plateBarcode']"))).toEqual 1
-#
-#
-#
-#  describe "fields", ->
-#    beforeEach ->
-#      @model = new PlateInfoModel()
-#      @plateInfo = new PlateInfoController(@startUpParams)
-#      $("#fixture").html @plateInfo.render().el
-#    it "should have a PlateTypeCollection ", ->
-#      expect(@plateInfo.plateTypes).toBeTruthy()
-#      expect(@plateInfo.plateTypes instanceof PlateTypeCollection).toBeTruthy()
-#
-#    it "should have a PlateStatusCollection ", ->
-#      expect(@plateInfo.plateStatuses).toBeTruthy()
-#      expect(@plateInfo.plateStatuses instanceof PlateStatusCollection).toBeTruthy()
-#
-#    it "should have a PlateInfoModel model attribute ", ->
-#      expect(@plateInfo.model).toBeTruthy()
-#      expect(@plateInfo.model instanceof PlateInfoModel).toBeTruthy()
-#
+        it "should return an array with three elements when the input contains 2 semicolons", ->
+          expect(@addContent.parseIdentifiers(identifiersFixture.semicolonSeparatedInput)).toEqual(identifiersFixture.semicolonSeparatedOutput)
+          expect(_.size(@addContent.parseIdentifiers(identifiersFixture.semicolonSeparatedInput))).toEqual(3)
+
+        it "should return an array with three elements when the input contains 2 tab characters", ->
+          expect(@addContent.parseIdentifiers(identifiersFixture.tabSeparatedInput)).toEqual(identifiersFixture.tabSeparatedOutput)
+          expect(_.size(@addContent.parseIdentifiers(identifiersFixture.tabSeparatedInput))).toEqual(3)
+
   describe "input events", ->
     beforeEach ->
       @model = new AddContentModel()
@@ -112,15 +106,15 @@ describe "AddContentController", ->
 
     it "should update the identifiers field of the model when text is entered in the Plate Barcode input field", ->
       updatedValue = "updated barcode value"
-      $("#fixture").find("[name='identifiers']").val identifiersFixture.inputCommaSeparated
+      $("#fixture").find("[name='identifiers']").val identifiersFixture.semicolonSeparatedInput
       $("#fixture").find("[name='identifiers']").trigger "change"
-      expect(@model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)).toEqual identifiersFixture.expectedOutput
+      expect(@model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)).toEqual identifiersFixture.semicolonSeparatedOutput
 
     it "should update the number of compounds field when identifiers are added", ->
       updatedValue = "updated barcode value"
-      $("#fixture").find("[name='identifiers']").val identifiersFixture.inputCommaSeparated
+      $("#fixture").find("[name='identifiers']").val identifiersFixture.semicolonSeparatedInput
       $("#fixture").find("[name='identifiers']").trigger "change"
-      expect(parseInt($("#fixture").find(".addContentTotal").html())).toEqual identifiersFixture.expectedOutput.length
+      expect(parseInt($("#fixture").find(".addContentTotal").html())).toEqual _.size(identifiersFixture.semicolonSeparatedOutput)
 
 
   describe "UI event handlers", ->
@@ -130,7 +124,8 @@ describe "AddContentController", ->
       @addContent = new AddContentController(@startUpParams)
       $("#fixture").html @addContent.render().el
 
-    it "should call handleAddClick when the 'Delete' button is clicked", (done) ->
+    # the "should eimit an ADD_CONTENT event when the 'Add button is clicked" spec already exercises this, remove in the future
+    xit "should call handleAddClick when the 'Add' button is clicked", (done) ->
       spyOn(@addContent, 'handleAddClick')
       @addContent.delegateEvents()
       $("#fixture").find("[name='add']").click()
@@ -153,14 +148,6 @@ describe "AddContentController", ->
         done()
 
       @addContent.handleAddClick()
-#
-#
-#    it "should emit a PLATE_INFO_CONTROLLER_EVENTS.CREATE_QUAD_PINNED_PLATE event when 'handleCreateQuadPinnedClick' is called", (done)->
-#      @plateInfo.on PLATE_INFO_CONTROLLER_EVENTS.CREATE_QUAD_PINNED_PLATE, ->
-#        expect(true).toBeTruthy()
-#        done()
-#
-#      @plateInfo.handleCreateQuadPinnedPlateClick()
 #
 #    describe "model events", ->
 #      it "should trigger a PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID event when the form model is updated to an valid state", (done) ->
@@ -187,7 +174,7 @@ describe "AddContentController", ->
 #        expect($("#fixture").find("[name='supplier']").val()).toEqual ""
 #
 #      it "when the model has values set, the input fields should display those values", ->
-##@plateInfo.model.set(plateModelFixtures.validPlateInfoModel)
+#@plateInfo.model.set(plateModelFixtures.validPlateInfoModel)
 #        @model = new PlateInfoModel(plateModelFixtures.validPlateInfoModel)
 #        @startUpParams.model = @model
 #        plateInfo = new PlateInfoController(@startUpParams)

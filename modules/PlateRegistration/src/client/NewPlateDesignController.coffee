@@ -9,6 +9,8 @@ PlateViewController = require('./PlateViewController.coffee').PlateViewControlle
 PLATE_TABLE_CONTROLLER_EVENTS = require('./PlateTableController.coffee').PLATE_TABLE_CONTROLLER_EVENTS
 TemplateController = require('./TemplateController.coffee').TemplateController
 SerialDilutionController = require('./SerialDilutionController.coffee').SerialDilutionController
+SERIAL_DILUTION_CONTROLLER_EVENTS = require('./SerialDilutionController.coffee').SERIAL_DILUTION_CONTROLLER_EVENTS
+SerialDilutionModel = require('./SerialDilutionModel.coffee').SerialDilutionModel
 EditorFormTabViewController = require('./EditorFormTabViewController.coffee').EditorFormTabViewController
 PlateInfoModel = require('./PlateInfoModel.coffee').PlateInfoModel
 
@@ -36,13 +38,16 @@ class NewPlateDesignController extends Backbone.View
     @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handleContentUpdated
 
     @templateController = new TemplateController()
-    @serialDilutionController = new SerialDilutionController()
-
+    @serialDilutionController = new SerialDilutionController({model: new SerialDilutionModel()})
+    @listenTo @serialDilutionController, SERIAL_DILUTION_CONTROLLER_EVENTS.APPLY_DILUTION, @handleApplyDilution
     @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController})
 
-  completeInitialization: (plate) =>
-    @plateInfoController.updatePlate plate
-    @plateViewController.completeInitialization(plate)
+  completeInitialization: (plateAndWellData) =>
+    console.log "completeInitialization - plateAndWellData"
+    console.log plateAndWellData
+    @plateInfoController.updatePlate plateAndWellData.plateMetadata
+    @plateViewController.completeInitialization(plateAndWellData.wellContent, plateAndWellData.plateMetadata)
+    @serialDilutionController.completeInitialization(plateAndWellData.plateMetadata)
 
   render: =>
     $(@el).html @template
@@ -52,6 +57,7 @@ class NewPlateDesignController extends Backbone.View
     @
 
   handleRegionSelected: (regionSelectedBoundries) =>
+    @serialDilutionController.updateSelectedRegion regionSelectedBoundries
     @addContentController.updateSelectedRegion regionSelectedBoundries
 
   handleContentUpdated: (regionSelectedBoundries) =>
@@ -67,6 +73,9 @@ class NewPlateDesignController extends Backbone.View
     @plateViewController.addContent addContentModel
     @addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
 
+  handleApplyDilution: (dilutionModel) =>
+    console.log "dilutionModel"
+    @plateViewController.applyDilution dilutionModel
 
 
 

@@ -59,8 +59,10 @@ class PlateViewController extends Backbone.View
     @plateTableController = new PlateTableController()
     @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @handleRegionSelected
 
-  completeInitialization: (plateWells) =>
-    @plateTableController.completeInitialization(plateWells)
+  completeInitialization: (plateWells, plateMetaData) =>
+    @wells = plateWells
+    @plateMetaData = plateMetaData
+    @plateTableController.completeInitialization(@wells, @plateMetaData)
 
   render: =>
     $(@el).html @template()
@@ -76,6 +78,9 @@ class PlateViewController extends Backbone.View
 
   addContent: (data) =>
     @plateTableController.handleContentAdded data
+
+  applyDilution: (dilutionModel) =>
+    @plateTableController.applyDilution dilutionModel
 
 
 module.exports =

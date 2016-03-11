@@ -78,13 +78,23 @@ class PlateInfoController extends Backbone.View
 
   updateModel: (data) =>
     @model.set data
+    console.log "@model"
+    console.log @model
+    @model.save()
     if @model.isValid(true)
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID
     else
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID
 
+
+
   updatePlate: (plate) =>
-    @$("input[name='plateBarcode']").val plate.barcode
+    console.log "plate"
+    console.log plate
+    @model.set plate
+
+    #@$("input[name='plateBarcode']").val plate.barcode
+    @render()
 
 
 

@@ -76,12 +76,15 @@ describe "PlateViewController", ->
       @plateView.completeInitialization()
 
     describe "REGION_SELECTED", ->
-      it "should call 'handleRegionSelected' when plateTableController triggers 'REGION_SELECTED' event", (done) ->
-        spyOn(@plateView, 'handleRegionSelected')
-        @plateView.delegateEvents()
-        @plateView.plateTableController.trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED
-
-        _.defer( =>
-          expect(@plateView.handleRegionSelected).toHaveBeenCalled()
+      it "should call bubble up / trigger REGION_SELECTED event when plateTableController triggers 'REGION_SELECTED' event", (done) ->
+        #spyOn(@plateView, 'handleRegionSelected')
+        #@plateView.delegateEvents()
+        @plateView.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, ->
+          expect(true).toBeTruthy()
           done()
-        )
+
+        @plateView.plateTableController.trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED
+#        _.defer( =>
+#          expect(@plateView.handleRegionSelected).toHaveBeenCalled()
+#          done()
+#        )

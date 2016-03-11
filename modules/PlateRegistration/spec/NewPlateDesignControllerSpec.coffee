@@ -1,7 +1,9 @@
 NewPlateDesignController = require('../src/client/NewPlateDesignController.coffee').NewPlateDesignController
+NEW_PLATE_DESIGN_CONTROLLER_EVENTS = require('../src/client/NewPlateDesignController.coffee').NEW_PLATE_DESIGN_CONTROLLER_EVENTS
 
 PlateViewController = require('../src/client/PlateViewController.coffee').PlateViewController
 PlateInfoController = require('../src/client/PlateInfoController.coffee').PlateInfoController
+PlateInfoModel = require('../src/client/PlateInfoModel.coffee').PlateInfoModel
 EditorFormTabViewController = require('../src/client/EditorFormTabViewController.coffee').EditorFormTabViewController
 
 ADD_CONTENT_CONTROLLER_EVENTS = require('../src/client/AddContentController.coffee').ADD_CONTENT_CONTROLLER_EVENTS
@@ -74,17 +76,21 @@ describe "NewPlateDesignController", ->
     beforeEach ->
       @newPlateDesign = new NewPlateDesignController(@startUpParams)
       $("#fixture").html @newPlateDesign.render().el
-      @newPlateDesign.completeInitialization()
+      @newPlateDesign.plateViewController.completeInitialization = (plate) ->
+        console.log "plateViewController::completeInitialization"
+      @newPlateDesign.completeInitialization(new PlateInfoModel())
 
-    it "should call 'handleAddContent' when ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT is triggered on 'addContentController'", ->
-      spyOn(@newPlateDesign, 'handleAddContent')
-      @newPlateDesign.delegateEvents()
-      @newPlateDesign.addContentController.trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, [[0, 1, 2]]
+    it "should emit NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT when 'handleAddContent' is called", (done) ->
 
-      _.defer(=>
-        expect(@newPlateDesign.handleAddContent).toHaveBeenCalled()
+      @newPlateDesign.on NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, ->
+        expect(true).toBeTruthy()
         done()
-      )
+
+      @newPlateDesign.handleAddContent([[1,2,3]])
+#      _.defer(=>
+#        expect(@newPlateDesign.handleAddContent).toHaveBeenCalled()
+#        done()
+#      )
 #
 #  describe "UI event handlers", ->
 #    beforeEach ->

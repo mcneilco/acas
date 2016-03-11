@@ -50,9 +50,48 @@ class WellModel extends Backbone.Model
       required: true
       msg: "Please select the plate size"
 
+class WellsModel extends Backbone.Model
+  url: '/api/updateWellStatus'
+  initialize: (options) ->
+    @allWells = options.allWells
 
+  defaults:
+    'wells': []
+
+  getWellAtRowIdxColIdx: (rowIdx, colIdx) ->
+    well = _.find(@allWells, (w) ->
+      if w.columnIndex is colIdx and w.rowIndex is rowIdx
+        return true
+      else
+        return false
+    )
+    return well
+
+  fillWell: (rowIndex, columnIndex, amount, batchCode, batchConcentration) ->
+    well = @getWellAtRowIdxColIdx rowIndex, columnIndex
+    well.amount = amount
+    well.amountUnits = "uL"
+    well.batchCode = batchCode
+    well.batchConcentration = batchConcentration
+    recordedDate = new Date()
+    well.recordedDate = recordedDate.getTime()
+    @get("wells").push well
+
+  fillWellWithWellObject: (rowIndex, columnIndex, wellObject) ->
+    well = @getWellAtRowIdxColIdx rowIndex, columnIndex
+    well.amount = wellObject.amount
+    well.amountUnits = "uL"
+    well.batchCode = wellObject.batchCode
+    well.batchConcentration = wellObject.batchConcentration
+    recordedDate = new Date()
+    well.recordedDate = recordedDate.getTime()
+    @get("wells").push well
+
+  resetWells: =>
+    @set("wells", [])
 
 
 module.exports =
   WellModel: WellModel
+  WellsModel: WellsModel
   WELL_MODEL_FIELDS: WELL_MODEL_FIELDS

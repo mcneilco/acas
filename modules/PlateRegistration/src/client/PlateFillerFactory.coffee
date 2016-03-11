@@ -1,3 +1,4 @@
+WellsModel = require('./WellModel.coffee').WellsModel
 
 PLATE_FILLER_STRATEGY_TYPES =
   RANDOM: 'random'
@@ -27,27 +28,7 @@ class RandomPlateFillerStrategy extends PlateFillerStrategy
   getWells: ->
     return {}
 
-class WellsModel extends Backbone.Model
-  url: '/api/updateWellStatus'
-  initialize: (options) ->
-    @allWells = options.allWells
-  defaults:
-    'wells': []
 
-  fillWell: (rowIndex, columnIndex, amount, batchCode, batchConcentration) ->
-    well = _.find(@allWells, (w) ->
-      if w.columnIndex is columnIndex and w.rowIndex is rowIndex
-        return true
-      else
-        return false
-    )
-    well.amount = amount
-    well.amountUnits = "uL"
-    well.batchCode = batchCode
-    well.batchConcentration = batchConcentration
-    recordedDate = new Date()
-    well.recordedDate = recordedDate.getTime()
-    @get("wells").push well
 
 
 class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
@@ -62,9 +43,16 @@ class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
     identifiersToRemove = []
     _.each(rowIndexes, (rowIdx) =>
       _.each(columnIndexes, (colIdx) =>
-        plateWells.push [rowIdx, colIdx, @identifiers[0]]
+        well =
+          amount: amount
+          batchCode: @identifiers[0]
+          batchConcentration: batchConcentration
+        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
+
+        #plateWells.push [rowIdx, colIdx, @identifiers[0]]
+        plateWells.push [rowIdx, colIdx, well]
         identifiersToRemove.push @identifiers[0]
-        wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[0], batchConcentration)
+        #wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[0], batchConcentration)
 
         valueIdx++
       )
@@ -84,9 +72,15 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
     identifiersToRemove = []
     _.each(rowIndexes, (rowIdx) =>
       _.each(columnIndexes, (colIdx) =>
-        plateWells.push [rowIdx, colIdx, @identifiers[valueIdx]]
+        well =
+          amount: amount
+          batchCode: @identifiers[valueIdx]
+          batchConcentration: batchConcentration
+        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
+        plateWells.push [rowIdx, colIdx, well]
+        #plateWells.push [rowIdx, colIdx, @identifiers[valueIdx]]
         identifiersToRemove.push @identifiers[valueIdx]
-        wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[valueIdx], batchConcentration)
+        #wellsToUpdate.fillWell(rowIdx, colIdx, amount, @identifiers[valueIdx], batchConcentration)
         valueIdx++
       )
     )

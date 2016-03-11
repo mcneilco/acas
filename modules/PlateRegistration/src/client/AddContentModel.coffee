@@ -47,9 +47,9 @@ class AddContentModel extends Backbone.Model
 #    concentration:
 #      required: true
 #      msg: "Please enter the concentration"
-    fillStrategy:
-      required: true
-      msg: "Please select a fill strategy"
+#    fillStrategy:
+#      required: true
+#      msg: "Please select a fill strategy"
     numberOfCellsSelected:
       min: 1
 #    fillDirection:

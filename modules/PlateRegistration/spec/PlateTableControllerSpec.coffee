@@ -1,6 +1,6 @@
 PlateTableController = require('../src/client/PlateTableController.coffee').PlateTableController
 PLATE_TABLE_CONTROLLER_EVENTS = require('../src/client/PlateTableController.coffee').PLATE_TABLE_CONTROLLER_EVENTS
-
+plateWellContent = require('./testFixtures/PlateTableControllerFixtures.coffee').plateWellContent
 
 $ = require('jquery')
 _ = require('lodash')
@@ -19,7 +19,7 @@ describe "PlateTableController", ->
     beforeEach ->
       @plateTable = new PlateTableController(@startUpParams)
       $("#fixture").html @plateTable.render().el
-      @plateTable.completeInitialization()
+      @plateTable.completeInitialization(plateWellContent)
 
     it "should have a handsonetable instance variable 1", ->
       expect(@plateTable.handsOnTable).toBeTruthy()
@@ -28,7 +28,7 @@ describe "PlateTableController", ->
     beforeEach ->
       @plateTable = new PlateTableController(@startUpParams)
       $("#fixture").html @plateTable.render().el
-      @plateTable.completeInitialization()
+      @plateTable.completeInitialization(plateWellContent)
 
     xit "should call handleDeleteClick when the 'Delete' button is clicked", (done) ->
       spyOn(@plateTable, 'handleDeleteClick')
@@ -58,7 +58,7 @@ describe "PlateTableController", ->
     beforeEach ->
       @plateTable = new PlateTableController(@startUpParams)
       $("#fixture").html @plateTable.render().el
-      @plateTable.completeInitialization()
+      @plateTable.completeInitialization(plateWellContent)
 
     it "should emit a REGION_SELECTED event when 'handleRegionSelected' is called", (done) ->
       @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, ->
@@ -72,7 +72,7 @@ describe "PlateTableController", ->
         expect(true).toBeTruthy()
         done()
 
-      @plateTable.handleContentUpdated()
+      @plateTable.handleContentUpdated([[0, 0, null, "test2"]], "paste")
 
     it "should send the selected region boundries when the PLATE_CONTENT_UPDATED event is triggered", (done) ->
       @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, (selectedRegionBoundries) ->
@@ -84,12 +84,82 @@ describe "PlateTableController", ->
 
       @plateTable.handleRegionSelected(1, 2, 3, 4)
 
+  describe "handleContentUpdated", ->
+    beforeEach ->
+      @plateTable = new PlateTableController(@startUpParams)
+      $("#fixture").html @plateTable.render().el
+      @plateTable.completeInitialization(plateWellContent)
+
+    describe "update sources", ->
+      it "should only emit a PLATE_CONTENT_UPDATED event if the update source is 'edit'", (done) ->
+        @plateTable.updateDataDisplayed 'batchCode'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) ->
+          expect(updatedValues[0].colIdx).toEqual 0
+          expect(updatedValues[0].rowIdx).toEqual 0
+          expect(updatedValues[0].value).toEqual "test2"
+          done()
+
+        @plateTable.handleContentUpdated( [[0, 0, null, "test2"]], "edit")
+
+      it "should only emit a PLATE_CONTENT_UPDATED event if the update source is 'autofill'", (done) ->
+        @plateTable.updateDataDisplayed 'batchCode'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) ->
+          expect(updatedValues[0].colIdx).toEqual 0
+          expect(updatedValues[0].rowIdx).toEqual 0
+          expect(updatedValues[0].value).toEqual "test2"
+          done()
+
+        @plateTable.handleContentUpdated( [[0, 0, null, "test2"]], "autofill")
+
+      it "should only emit a PLATE_CONTENT_UPDATED event if the update source is 'paste'", (done) ->
+        @plateTable.updateDataDisplayed 'batchCode'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) ->
+          expect(updatedValues[0].colIdx).toEqual 0
+          expect(updatedValues[0].rowIdx).toEqual 0
+          expect(updatedValues[0].value).toEqual "test2"
+          done()
+
+        @plateTable.handleContentUpdated( [[0, 0, null, "test2"]], "paste")
+
+    describe "update wellsToUpdate object", ->
+      it "should update the batchCode field when the batchCode field is the selected view", (done) ->
+        @plateTable.updateDataDisplayed 'batchCode'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) =>
+          console.log "@plateTable.wellsToUpdate!!!"
+          console.log @plateTable.wellsToUpdate
+          expect(@plateTable.wellsToUpdate.get('wells')[0].batchCode).toEqual "test2"
+          done()
+        console.log '@plateTable.wellsToUpdate'
+        console.log @plateTable.wellsToUpdate
+        @plateTable.handleContentUpdated( [[0, 0, null, "test2"]], "edit")
+
+      it "should update the batchCode field when the batchCode field is the selected view", (done) ->
+        @plateTable.updateDataDisplayed 'batchCode'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) =>
+          expect(@plateTable.wellsToUpdate.get('wells')[0].batchCode).toEqual "test2"
+          done()
+        @plateTable.handleContentUpdated( [[0, 0, null, "test2"]], "edit")
+
+      it "should update the batchConcentration field when the batchConcentration field is the selected view", (done) ->
+        @plateTable.updateDataDisplayed 'batchConcentration'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) =>
+          expect(@plateTable.wellsToUpdate.get('wells')[0].batchConcentration).toEqual "3"
+          done()
+        @plateTable.handleContentUpdated( [[0, 0, null, "3"]], "edit")
+
+      it "should update the amount field when the amount field is the selected view", (done) ->
+        @plateTable.updateDataDisplayed 'amount'
+        @plateTable.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, (updatedValues) =>
+          expect(@plateTable.wellsToUpdate.get('wellsToUpdate').amount).toEqual "3"
+          done()
+        @plateTable.handleContentUpdated( [[0, 0, null, "30"]], "edit")
+
 
   describe "helper methods", ->
     beforeEach ->
       @plateTable = new PlateTableController(@startUpParams)
       $("#fixture").html @plateTable.render().el
-      @plateTable.completeInitialization()
+      @plateTable.completeInitialization(plateWellContent)
 
     describe "reformatUpdatedValues", ->
       it "should properly format the updated value object when a single cell is updated", ->

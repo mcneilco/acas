@@ -13,6 +13,9 @@ PLATE_MODEL_FIELDS =
   RECORDED_BY: "recordedBy"
   SUPPLIER: "supplier"
   WELLS: "wells"
+  NUMBER_OF_COLUMNS: "numberOfColumns"
+  NUMBER_OF_ROWS: "numberOfRows"
+  PLATE_SIZE: "plateSize"
 
 
 class PlateModel extends Backbone.Model

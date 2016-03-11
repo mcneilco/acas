@@ -69,7 +69,6 @@ class AddContentController extends Backbone.View
     @$("button[name='add']").addClass('disabled')
 
   handleAddClick: =>
-
     @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @model
 
   handleIdentifiersAdded: (validatedIdentifiers) =>
@@ -140,9 +139,6 @@ class AddContentController extends Backbone.View
     )
     if _.size(listOfIdentifiers) is 0
       listOfIdentifiers = [identifiers]
-    console.log "listOfIdentifiers"
-    console.log listOfIdentifiers
-
 
     listOfIdentifiers
 

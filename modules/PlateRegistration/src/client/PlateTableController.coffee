@@ -3,9 +3,12 @@ Backbone = require('backbone')
 _ = require('lodash')
 $ = require('jquery')
 Handsontable = require('imports?this=>window!../../../../public/lib/handsontable/dist/handsontable.full.js') #Handsontable || () ->
-require("bootstrap-webpack!./bootstrap.config.js");
+require("bootstrap-webpack!./bootstrap.config.js")
 
 PlateFillerFactory = require('./PlateFillerFactory.coffee').PlateFillerFactory
+SerialDilutionFactory = require('./SerialDilutionFactory.coffee').SerialDilutionFactory
+WellsModel = require('./WellModel.coffee').WellsModel
+
 ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL_FIELDS
 
 PLATE_TABLE_CONTROLLER_EVENTS =
@@ -18,76 +21,94 @@ class PlateTableController extends Backbone.View
 
   initialize: ->
     @plateFillerFactory = new PlateFillerFactory()
+    @serialDilutionFactory = new SerialDilutionFactory()
     @displayToolTips = false
+    @dataFieldToDisplay = "batchCode"
 
   render: =>
     $(@el).html @template()
 
     @
 
-  completeInitialization: (wells) =>
-    console.log "PlateTableController?!?!?!?"
+  completeInitialization: (wells, plateMetaData) =>
     @wells = wells
+    @plateMetaData = plateMetaData
+    @wellsToUpdate = new WellsModel({allWells: @wells})
     @renderHandsOnTable()
 
 
   renderHandsOnTable: =>
     container = document.getElementsByName("handsontablecontainer")[0]
-    columnHeaders = [1..48]
+
+    columnHeaders = [1..@plateMetaData.numberOfColumns]
     rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'W', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
     if @displayToolTips
       @handsOnTable = new Handsontable(container, {
-        rowHeaders: rowHeaders #true
-        colHeaders: columnHeaders #true
+        rowHeaders: rowHeaders
+        colHeaders: columnHeaders
         outsideClickDeselects: false
-        startCols: 48
-        startRows: 32
+        startCols: @plateMetaData.numberOfColumns
+        startRows: @plateMetaData.numberOfRows
         renderer: @cellRenderer
         afterChange: @handleContentUpdated
         afterSelection: @handleRegionSelected
       })
     else
       @handsOnTable = new Handsontable(container, {
-        rowHeaders: rowHeaders #true
+        rowHeaders: rowHeaders.slice(0, @plateMetaData.numberOfRows) #true
         colHeaders: columnHeaders #true
         outsideClickDeselects: false
-        startCols: 48
-        startRows: 32
+        startCols: @plateMetaData.numberOfColumns
+        startRows: @plateMetaData.numberOfRows
         afterChange: @handleContentUpdated
         afterSelection: @handleRegionSelected
       })
-
+    window.fooHOT = @handsOnTable
     hotData = @convertWellsDataToHandsonTableData("batchCode")
     @addContent(hotData)
 
   updateDataDisplayed: (dataFieldToDisplay) =>
+    @dataFieldToDisplay = dataFieldToDisplay
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
 
   convertWellsDataToHandsonTableData: (dataField) =>
-    console.log "convertWellsDataToHandsonTableData"
     hotData = []
     _.each(@wells, (well) ->
       hotData.push [well.rowIndex, well.columnIndex, well[dataField]]
     )
-    console.log "hotData "
-    console.log hotData
     return hotData
 
   handleContentAdded: (addContentModel) =>
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-    console.log addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)
-    console.log "console.log addContentModel"
-    console.log addContentModel
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), validatedIdentifiers, @selectedRegionBoundries)
     [@plateWells, identifiersToRemove] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
     console.log "@plateWells"
     console.log @plateWells
 
-    @addContent @plateWells
+    @addContent1 @plateWells
+
+  applyDilution: (dilutionModel) =>
+    dilutionStrategy = @serialDilutionFactory.getSerialDilutionStrategy(dilutionModel, @selectedRegionBoundries)
+    @plateWells = dilutionStrategy.getWells(@wells)
+
+    @addContent1 @plateWells
 
   addContent: (data) =>
-    @handsOnTable.setDataAtCell data
+    @handsOnTable.setDataAtCell data, 'programaticEdit'
+    #window.FOOHANDSONTABLE = @handsOnTable
+    @handsOnTable.init() # force re-render so tooltip content is updated
+
+  addContent1: (data) =>
+    hotData = []
+    console.log "@dataFieldToDisplay"
+    console.log @dataFieldToDisplay
+    _.each(data, (d) =>
+      hotData.push([d[0], d[1], d[2][@dataFieldToDisplay]])
+    )
+    console.log "hotData"
+    console.log hotData
+    @handsOnTable.setDataAtCell hotData
     #window.FOOHANDSONTABLE = @handsOnTable
     @handsOnTable.init() # force re-render so tooltip content is updated
 
@@ -101,8 +122,21 @@ class PlateTableController extends Backbone.View
     @trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @selectedRegionBoundries
 
   handleContentUpdated: (changes, source) =>
-    updatedValues = @reformatUpdatedValues changes
-    @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, updatedValues
+    console.log "changes"
+    console.log changes
+    if source in ["edit", "autofill", "paste"]
+      updatedValues = @reformatUpdatedValues changes
+      @wellsToUpdate.resetWells()
+      _.each(updatedValues, (updatedValue) =>
+        well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
+        well[@dataFieldToDisplay] = updatedValue.value
+        @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+      )
+      @wellsToUpdate.save()
+      window.FOOWELLS = @wellsToUpdate
+      console.log "updatedValues"
+      console.log updatedValues
+      @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, updatedValues
 
   reformatUpdatedValues: (changes) ->
     updateValue = []

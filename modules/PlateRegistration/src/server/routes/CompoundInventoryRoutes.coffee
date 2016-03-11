@@ -7,6 +7,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getPlateByBarcode/:plateBarcode', exports.getPlateByBarcode
 	app.get '/api/getWellContentByPlateBarcode/:plateBarcode', exports.getWellContentByPlateBarcode
 
+	app.post '/api/updatePlate', loginRoutes.ensureAuthenticated, exports.updatePlate
+
 	app.post '/api/validateIdentifiers', loginRoutes.ensureAuthenticated, exports.validateIdentifiers
 	app.post '/api/createPlate', loginRoutes.ensureAuthenticated, exports.createPlate
 	app.post '/api/updateWellStatus', loginRoutes.ensureAuthenticated, exports.updateWellStatus
@@ -72,6 +74,36 @@ exports.createPlate = (req, resp) ->
 	request = require 'request'
 	request(
 		method: 'POST'
+		url: baseurl
+		body: JSON.stringify req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to save new experiment'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
+
+exports.updatePlate = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	console.log "req.body - using post syntax"
+	console.log req.body
+
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createPlate"
+	console.log "baseurl"
+	console.log baseurl
+
+	request = require 'request'
+	request(
+		method: 'PUT'
 		url: baseurl
 		body: JSON.stringify req.body
 		json: true
