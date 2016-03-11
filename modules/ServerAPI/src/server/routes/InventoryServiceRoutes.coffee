@@ -5,6 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
 	app.get '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.post '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcodes', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes
 	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
 
@@ -211,7 +212,7 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse
 	else
-		exports.getContainerCodesByLabelsInternal plateBarcodes, (containerCodes) =>
+		exports.getContainerCodesByLabelsInternal plateBarcodes, "container", "plate", "barcode", "barcode", (containerCodes) =>
 			if containerCodes.indexOf('failed') > -1
 				callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
 			else
