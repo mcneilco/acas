@@ -469,9 +469,9 @@ module.exports = (grunt) ->
 				files: "<%= acas_custom %>/public_conf/*.coffee"
 				tasks: "newer:coffee:custom_compilePublicConf"
 			copy_custom_public_conf:
-				files: "<%= acas_custom %>/public_conf/**"
-				tasks: "newer:copy:custom_public_conf"
-			prepare_module_includes:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.R"]
+				tasks: "newer:copy:public_conf_r"
+		prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
 					#app_template
