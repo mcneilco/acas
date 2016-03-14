@@ -173,8 +173,9 @@ server.sar.defaultTitle ="Tested Entity Information"
 server.sar.csvLabel = bestLabel
 #options are ignoreOperators or includeOperators
 client.sar.sorting = includeOperators
-client.service.external.structure.url=http://${client.host}:8080/cmpdreg/structureimage/lot/
-client.service.external.lotDetails.url=http://${client.host}:8080/cmpdreg/#lot/
+client.cmpdreg.host=host5.labsynch.com
+client.service.external.structure.url=http://${client.cmpdreg.host}:8080/cmpdreg/structureimage/lot/
+client.service.external.lotDetails.url=http://${client.cmpdreg.host}:8080/cmpdreg/#lot/
 
 ################################
 # Uncategorized
@@ -283,7 +284,7 @@ server.service.external.file.service.url=
 
 # options for preferred batchid type are: SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.url=http://${client.cmpdreg.host}:8080/cmpdreg/api/v1/getPreferredName
 server.service.external.project.url=
 server.service.external.report.registration.url=
 server.service.external.user.authentication.url=
@@ -313,9 +314,9 @@ client.moduleMenus.homePageMessage=Welcome to ACAS
 client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2015
 # If summary statistics is an included feature, set the following to true
 client.moduleMenus.summaryStats=false
-client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://localhost:8080/cmpdreg"},\
+client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://${client.cmpdreg.host}:8080/cmpdreg"},\
                                      {"displayName": "Seurat", "href": "http://localhost:9080/seurat"}, \
-                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://localhost:3000/CmpdRegBulkLoader"}, \
+                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://${client.cmpdreg.host}:3000/CmpdRegBulkLoader"}, \
                                      {"displayName": "Data Viewer", "href": "http://localhost:3000/dataViewer"}]
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
@@ -324,7 +325,7 @@ client.roles.htsAdmin=admin
 client.browser.enableSearchAll=true
 
 ## Cmpd Reg Bulk Loader Options
-client.service.cmpdReg.persistence.host=tomcat
+client.service.cmpdReg.persistence.host=${client.cmpdreg.host}
 client.service.cmpdReg.persistence.path=cmpdreg/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
 
@@ -340,8 +341,9 @@ client.cmpdReg.showFileDate=true
 # Module Menu configuration
 #
 # Navigation to external ACAS modules from ACAS homepage
-# Example: client.moduleMenus.modules.external=[{"displayName": "Data Viewer", "href": "/dataViewer"},\
-                                     {"displayName": "Test module", "href": "http://www.yahoo.com"}]
+# Example: client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://demo.labsynch.com:8081/cmpdreg"},\
+                                     {"displayName": "Seurat", "href": "http://demo.labsynch.com:9080/seurat"}, \
+                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://demo.labsynch.com:3000/CmpdRegBulkLoader"}]
 #
 # Curve fit model configuration
 #

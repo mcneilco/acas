@@ -17,6 +17,7 @@ startApp = ->
 	LocalStrategy = require('passport-local').Strategy
 	global.deployMode = config.all.client.deployMode
 
+	console.log "log level set to '#{console.level}'"
 	global.stubsMode = false
 	testModeOverRide = process.argv[2]
 	unless typeof testModeOverRide == "undefined"

@@ -3,7 +3,6 @@ marked = require 'marked'
 window.onload = ->
 	window.excelAppController = new ExcelAppController
 		el: $('.bv_excelAppView')
-	console.log 'new'
 	excelAppController.render()
 
 class window.ExcelAppController extends Backbone.View
@@ -11,7 +10,6 @@ class window.ExcelAppController extends Backbone.View
 		@template = _.template($("#ExcelAppView").html())
 
 	render: =>
-		console.log 'rendering'
 		@$el.empty()
 		@$el.html @template()
 		$.ajax

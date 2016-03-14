@@ -1,29 +1,31 @@
 version: '2'
 services:
   acas:
-    build: .
+#    build: .
+    image: mcneilco/acas:development
     restart: always
     ports:
      - "3000:3000"
      - "3001:3001"
     environment:
-     - APP_NAME=$TAG
+     - APP_NAME=compound-inventory
      - PREPARE_MODULE_CONF_JSON=true
+     - DOCKER_HOST_IP=${DOCKER_HOST_IP}
     volumes:
-     - /home/runner/build/src/r
-     - /home/runner/build/privateUploads
+     - filestore:/home/runner/build/privateUploads
+     - logs:/home/runner/logs
      - /home/runner/build/bin
+     - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
-     - /home/runner/logs
-     - ./:/home/runner/acas
-     - ./public/compiled:/home/runner/build/public/compiled
-     # Dev volumes below this line
+     # Please add any dev volumes below this line
     env_file:
-      - ./bin/environments/acas/acas.env
-    # command: ["bin/acas.sh", "run", "acas", "dev"]
-    command: ["bin/acas.sh", "run", "acas", "dev"]
+      - ./conf/docker/acas/environment/acas.env
+# Dev Command
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
+# Start command
+    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:ACASDEV-409-build-tools-restructuring
+    image: mcneilco/racas:compound-inventory
     restart: always
     ports:
      - "1080:1080"
@@ -32,18 +34,21 @@ services:
      - PREPARE_CONFIG_FILES=false
     volumes_from:
      - acas
+    volumes:
+      - filestore:/home/runner/build/privateUploads
+      - logs:/home/runner/logs
     command: ["bin/acas.sh", "run", "rservices"]
   db:
-    image: mcneilco/acas-postgres:ACASDEV-409-build-tools-restructuring
+    image: mcneilco/acas-postgres:development
     restart: always
     volumes:
-     - dbstore:/var/lib/postgresql
+     - dbstore:/var/lib/postgresql/data
     env_file:
-      - ./bin/environments/postgres/postgres.env
-      - ./bin/environments/db/db.env
-      - ./bin/environments/acas/acas.env
-      - ./bin/environments/cmpdreg/cmpdreg.env
-      - ./bin/environments/seurat/seurat.env
+      - ./conf/docker/postgres/environment/postgres.env
+      - ./conf/docker/db/environment/db.env
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/cmpdreg/environment/cmpdreg.env
+      - ./conf/docker/seurat/environment/seurat.env
     ports:
      - "5432:5432"
   tomcat:
@@ -59,8 +64,8 @@ services:
      - roo
      - acas
     env_file:
-      - ./bin/environments/acas/acas.env
-      - ./bin/environments/roo/roo.env
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/roo/environment/roo.env
     command: catalina.sh run
   roo:
     image: mcneilco/acas-roo-server:cmpd-inventory-feature
@@ -69,3 +74,5 @@ services:
     command: /bin/true
 volumes:
   dbstore:
+  filestore:
+  logs:
