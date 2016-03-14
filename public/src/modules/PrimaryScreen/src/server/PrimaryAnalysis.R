@@ -1948,9 +1948,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
-    rm(instrumentData)
-    gc()
-
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit,
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
@@ -1960,6 +1957,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     checkControls(resultTable)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
+    
+    # instrumentData is still needed, but pulling out assayData could let us clean it up
+    #rm(instrumentData)
+    #gc()
   }
   
   ## User Well Flagging Here
