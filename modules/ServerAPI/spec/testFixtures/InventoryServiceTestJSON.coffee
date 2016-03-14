@@ -7974,4 +7974,18 @@
 		wellCodeNames: [ "CONT-6074144", "CONT-6074145", "CONT-6074146", "CONT-6074147"]
 	]
 
+	exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodeResponse = [
+		barcode: "C1138792999999999"
+		codeName: "CONT-17307711"
+		description: "test"
+		plateSize: 1536
+		numberOfRows: 32
+		numberOfColumns: 48
+		type: "test2"
+		status: "at step"
+		createdDate: 1457975001000
+		supplier: "brianss"
+		recordedBy: "bbolts"
+	]
+
 ) (if (typeof process is "undefined" or not process.versions) then window.inventoryServiceTestJSON = window.inventoryServiceTestJSON or {} else exports)

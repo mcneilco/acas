@@ -74,6 +74,7 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersByLabelsInternalResponse
 	else
+		console.debug 'incoming getContainersByLabelsInternal request: ', containerLabels, containerType, containerKind, labelType, labelKind
 		exports.getContainerCodesByLabelsInternal containerLabels, containerType, containerKind, labelType, labelKind, (containerCodes) =>
 			if containerCodes.indexOf('failed') > -1
 				callback JSON.stringify "getContainersByLabels failed"
@@ -116,6 +117,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
+		console.debug 'incoming getContainerCodesByLabelsInternal request: ', containerCodesJSON, containerType, containerKind, labelType, labelKind
 		config = require '../conf/compiled/conf.js'
 		queryParams = []
 		if containerType?
@@ -128,6 +130,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 			queryParams.push "labelKind="+labelKind
 		queryString = queryParams.join "&"
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"+queryString
+		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -252,7 +255,7 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 							containerCode =  _.findWhere containers, {label: barcode}
 							if containerCode?
 								response.codeName = containerCode.codeName
-								container =  _.findWhere containers, {containerCodeName: containerCode.codeName}
+								container =  _.findWhere containers, {codeName: containerCode.codeName}
 								if container?
 									state = serverUtilityFunctions.getStatesByTypeAndKind container.container, 'metadata', 'information'
 									if state.length > 0
@@ -310,58 +313,53 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 				containerArray = []
 				recordedDate = new Date().getTime()
 				for containerMeta, index in containerMetadataAndDefinitionMetadata
-					container = new serverUtilityFunctions.Thing(containers[index].container)
+					container = new serverUtilityFunctions.Container(containers[index].container)
 					metaDataState = container.get('lsStates').getStatesByTypeAndKind('metadata', 'information')[0]
-					metaDataValues = metaDataState.get('lsValues')
-					if containerMeta.barcode?
-						barcode = container.get('lsLabels').getLabelByTypeAndKind('barcode', 'barcode')[0]
-						barcode.set 'ignored', containerMeta.barcode
-					if containerMeta.description?
-						description = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'stringValue', 'description'
-						description.set 'stringValue', containerMeta.description
-						description.set 'recordedBy', containerMeta.recordedBy
-						description.set 'recordedDate', recordedDate
-					else
-						description = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
-						if description?
-							description.set 'ignored', true
-					if containerMeta.type?
-						type = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'plate type'
-						type.set 'codeValue', containerMeta.type
-						type.set 'recordedBy', containerMeta.recordedBy
-						type.set 'recordedDate', recordedDate
-					else
-						type = metaDataState.getValuesByTypeAndKind('codeValue', 'plate type')[0]
-						if type?
-							type.set 'ignored', true
-					if containerMeta.status?
-						status = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'status'
-						status.set 'codeValue', containerMeta.status
-						status.set 'recordedBy', containerMeta.recordedBy
-						status.set 'recordedDate', recordedDate
-					else
-						status = metaDataState.getValuesByTypeAndKind('codeValue', 'status')[0]
-						if status?
-							status.set 'ignored', true
-					if containerMeta.createdDate?
-						console.log 'yes'
-						createdDate = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'dateValue', 'created date'
-						createdDate.set 'dateValue', containerMeta.createdDate
-						createdDate.set 'recordedBy', containerMeta.recordedBy
-						createdDate.set 'recordedDate', recordedDate
-					else
-						createdDate = metaDataState.getValuesByTypeAndKind('dateValue', 'created date')[0]
-						if createdDate?
-							createdDate.set 'ignored', true
-					if containerMeta.supplier?
-						supplier = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'supplier code'
-						supplier.set 'codeValue', containerMeta.supplier
-						supplier.set 'recordedBy', containerMeta.recordedBy
-						supplier.set 'recordedDate', recordedDate
-					else
-						supplier = metaDataState.getValuesByTypeAndKind('codeValue', 'supplier code')[0]
-						if supplier?
-							supplier.set 'ignored', true
+					if typeof(containerMeta.description) != "undefined"
+						oldDescription = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
+						if oldDescription? && (containerMeta.description == null || oldDescription.get('stringValue') != containerMeta.description)
+							oldDescription.set 'ignored', true
+						if !oldDescription? || (containerMeta.description != null && oldDescription.get('stringValue') != containerMeta.description)
+							newDescription = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'stringValue', 'description'
+							newDescription.set 'stringValue', containerMeta.description
+							newDescription.set 'recordedBy', containerMeta.recordedBy
+							newDescription.set 'recordedDate', recordedDate
+					if typeof(containerMeta.type) != "undefined"
+						oldType = metaDataState.getValuesByTypeAndKind('codeValue', 'plate type')[0]
+						if oldType? && (containerMeta.type == null || oldType.get('codeValue') != containerMeta.type)
+							oldType.set 'ignored', true
+						if !oldType? || (containerMeta.type != null && oldType.get('codeValue') != containerMeta.type)
+							newType = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'plate type'
+							newType.set 'codeValue', containerMeta.type
+							newType.set 'recordedBy', containerMeta.recordedBy
+							newType.set 'recordedDate', recordedDate
+					if typeof(containerMeta.status) != "undefined"
+						oldStatus = metaDataState.getValuesByTypeAndKind('codeValue', 'status')[0]
+						if oldStatus? && (containerMeta.status == null || oldStatus.get('codeValue') != containerMeta.status)
+							oldStatus.set 'ignored', true
+						if !oldStatus? || (containerMeta.status != null && oldStatus.get('codeValue') != containerMeta.status)
+							newStatus = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'status'
+							newStatus.set 'codeValue', containerMeta.status
+							newStatus.set 'recordedBy', containerMeta.recordedBy
+							newStatus.set 'recordedDate', recordedDate
+					if typeof(containerMeta.createdDate) != "undefined"
+						oldCreatedDate = metaDataState.getValuesByTypeAndKind('dateValue', 'created date')[0]
+						if oldCreatedDate? && (containerMeta.createdDate == null || oldCreatedDate.get('dateValue') != containerMeta.createdDate)
+							oldCreatedDate.set 'ignored', true
+						if !oldCreatedDate? || (containerMeta.createdDate != null && oldCreatedDate.get('dateValue') != containerMeta.createdDate)
+							newCreatedDate = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'dateValue', 'created date'
+							newCreatedDate.set 'dateValue', containerMeta.createdDate
+							newCreatedDate.set 'recordedBy', containerMeta.recordedBy
+							newCreatedDate.set 'recordedDate', recordedDate
+					if typeof(containerMeta.createdDate) != "undefined"
+						oldSupplier = metaDataState.getValuesByTypeAndKind('codeValue', 'supplier code')[0]
+						if oldSupplier? && (containerMeta.supplier == null || oldSupplier.get('codeValue') != containerMeta.createdDate)
+							oldSupplier.set 'ignored', true
+						if !oldSupplier? || (containerMeta.supplier != null && oldSupplier.get('codeValue') != containerMeta.createdDate)
+							newSupplier = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'supplier code'
+							newSupplier.set 'codeValue', containerMeta.supplier
+							newSupplier.set 'recordedBy', containerMeta.recordedBy
+							newSupplier.set 'recordedDate', recordedDate
 					container.reformatBeforeSaving()
 					containerArray.push container.attributes
 					containerJSONArray = JSON.stringify(containerArray)
@@ -386,8 +384,10 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersByCodeNames
 	else
+		console.debug 'incoming getContainersByCodeNamesInternal request: ', codeNamesJSON
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersByCodeNames"
+		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
 			method: 'POST'
