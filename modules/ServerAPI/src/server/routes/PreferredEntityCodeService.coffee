@@ -124,7 +124,7 @@ exports.referenceCodes = (requestData, csv, callback) ->
 			console.log reqList
 			console.log reqList
 #			reqList = [reqList[0].requestName]
-			preferredContainerService = require "./ContainerServiceRoutes.js"
+			preferredContainerService = require "./InventoryServiceRoutes.js"
 			reqHashes =
 				containerType: entityType.type
 				containerKind: entityType.kind
