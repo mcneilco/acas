@@ -2,10 +2,12 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', exports.getContainersByLabels
+	app.post '/api/getContainersByCodeNames', exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
-	app.get '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.post '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcodes', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes
+	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/containers/jsonArray', exports.updateContainers
 	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
 
@@ -13,10 +15,11 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
 	app.post '/api/getContainersByLabels', loginRoutes.ensureAuthenticated, exports.getContainersByLabels
+	app.post '/api/getContainersByCodeNames', loginRoutes.ensureAuthenticated, exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', loginRoutes.ensureAuthenticated, exports.getWellContent
-	app.get '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.post '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes
+	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
 	app.post '/api/getWellCodesByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByContainerCodes
 
 exports.getContainersInLocation = (req, resp) ->
@@ -193,13 +196,6 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 				callback JSON.stringify "getWellContent failed"
   		)
 
-exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodes = (req, resp) ->
-	exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal req.body, (json) ->
-		if json.indexOf('failed') > -1
-			resp.statusCode = 500
-		else
-			resp.json json
-
 exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode = (req, resp) ->
 	exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal [req.params.plateBarcode], (json) ->
 		if json.indexOf('failed') > -1
@@ -212,73 +208,162 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse
 	else
-		exports.getContainerCodesByLabelsInternal plateBarcodes, "container", "plate", "barcode", "barcode", (containerCodes) =>
-			if containerCodes.indexOf('failed') > -1
+		exports.getContainersByLabelsInternal plateBarcodes, "container", "plate", "barcode", "barcode", (containers) =>
+			if containers.indexOf('failed') > -1
 				callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
 			else
 				_ = require 'underscore'
-				codeNames = _.pluck containerCodes, "foundCodeNames"[0]
+				codeNames = _.pluck containers, "codeName"
 				codeNamesJSON = JSON.stringify codeNames
-				exports.getContainersByCodeNamesInternal codeNamesJSON, (containers) =>
-					if containers.indexOf('failed') > -1
+				serverUtilityFunctions = require './ServerUtilityFunctions.js'
+				exports.getDefinitionContainersByContainerCodeNamesInternal codeNamesJSON, (definitions) =>
+					if definitions.indexOf('failed') > -1
 						callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
 					else
-						serverUtilityFunctions = require './ServerUtilityFunctions.js'
-						exports.getDefinitionContainersByContainerCodeNamesInternal codeNamesJSON, (definitions) =>
-							if definitions.indexOf('failed') > -1
-								callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
-							else
-								responseArray = []
-								for barcode, index in plateBarcodes
-									response =
-										barcode: barcode
-										codeName: null
-										description: null
-										plateSize: null
-										numberOfRows: null
-										numberOfColumns: null
-										type: null
-										status: null
-										createdDate: null
-										supplier: null
-									containerCode =  _.findWhere containerCodes, {label: barcode}
-									if containerCode?
-										response.codeName = containerCode.codeName
-										container =  _.findWhere containers, {containerCodeName: containerCode.codeName}
-										if container?
-											state = serverUtilityFunctions.getStatesByTypeAndKind container.container, 'metadata', 'information'
-											if state.length > 0
-												description = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'stringValue', 'description')
-												if description.length > 0
-													response.description = description[0].stringValue
-												type = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'stringValue', 'plate type')
-												if type.length > 0
-													response.type = type[0].stringValue
-												status = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'stringValue', 'status')
-												if status.length > 0
-													response.status = status[0].stringValue
-												createdDate = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'dateValue', 'created date')
-												if createdDate.length > 0
-													response.createdDate = createdDate[0].dateValue
-												supplier = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'stringValue', 'supplier code')
-												if supplier.length > 0
-													response.supplier = supplier[0].stringValue
+						responseArray = []
+						for barcode, index in plateBarcodes
+							response =
+								barcode: barcode
+								codeName: null
+								description: null
+								plateSize: null
+								numberOfRows: null
+								numberOfColumns: null
+								type: null
+								status: null
+								createdDate: null
+								supplier: null
+							containerCode =  _.findWhere containers, {label: barcode}
+							if containerCode?
+								response.codeName = containerCode.codeName
+								container =  _.findWhere containers, {containerCodeName: containerCode.codeName}
+								if container?
+									state = serverUtilityFunctions.getStatesByTypeAndKind container.container, 'metadata', 'information'
+									if state.length > 0
+										description = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'stringValue', 'description')
+										if description.length > 0
+											response.description = description[0].stringValue
+										type = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'codeValue', 'plate type')
+										if type.length > 0
+											response.type = type[0].codeValue
+										status = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'codeValue', 'status')
+										if status.length > 0
+											response.status = status[0].codeValue
+										createdDate = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'dateValue', 'created date')
+										if createdDate.length > 0
+											response.createdDate = createdDate[0].dateValue
+										supplier = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'codeValue', 'supplier code')
+										if supplier.length > 0
+											response.supplier = supplier[0].codeValue
 
-										definition =  _.findWhere definitions, {containerCodeName: containerCode.codeName}
-										if definition?
-												state = serverUtilityFunctions.getStatesByTypeAndKind definition.definition, 'constants', 'format'
-												if state.length > 0
-													plateSize = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'wells')
-													if plateSize.length > 0
-														response.plateSize = plateSize[0].numericValue
-													numberOfRows = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'rows')
-													if numberOfRows.length > 0
-														response.numberOfRows = numberOfRows[0].numericValue
-													numberOfColumns = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'columns')
-													if numberOfColumns.length > 0
-														response.numberOfColumns = numberOfColumns[0].numericValue
-								responseArray.push response
-								callback responseArray
+								definition =  _.findWhere definitions, {containerCodeName: containerCode.codeName}
+								if definition?
+										state = serverUtilityFunctions.getStatesByTypeAndKind definition.definition, 'constants', 'format'
+										if state.length > 0
+											plateSize = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'wells')
+											if plateSize.length > 0
+												response.plateSize = plateSize[0].numericValue
+											numberOfRows = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'rows')
+											if numberOfRows.length > 0
+												response.numberOfRows = numberOfRows[0].numericValue
+											numberOfColumns = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'columns')
+											if numberOfColumns.length > 0
+												response.numberOfColumns = numberOfColumns[0].numericValue
+						responseArray.push response
+						callback responseArray
+
+exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode = (req, resp) ->
+	exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal [req.body], (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (containerMetadataAndDefinitionMetadata, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.updatePlateMetadataAndDefinitionMetadataByPlateBarcodeResponse
+	else
+		_ = require 'underscore'
+		codeNames = _.pluck containerMetadataAndDefinitionMetadata, "codeName"
+		exports.getContainersByCodeNamesInternal codeNames, (containers) =>
+			if containers.indexOf('failed') > -1
+				callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
+			else
+				serverUtilityFunctions = require './ServerUtilityFunctions.js'
+				containerArray = []
+				recordedDate = new Date().getTime()
+				for containerMeta, index in containerMetadataAndDefinitionMetadata
+					container = new serverUtilityFunctions.Thing(containers[index].container)
+					metaDataState = container.get('lsStates').getStatesByTypeAndKind('metadata', 'information')[0]
+					metaDataValues = metaDataState.get('lsValues')
+					if containerMeta.barcode?
+						barcode = container.get('lsLabels').getLabelByTypeAndKind('barcode', 'barcode')[0]
+						barcode.set 'ignored', containerMeta.barcode
+					if containerMeta.description?
+						description = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'stringValue', 'description'
+						description.set 'stringValue', containerMeta.description
+						description.set 'recordedBy', containerMeta.recordedBy
+						description.set 'recordedDate', recordedDate
+					else
+						description = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
+						if description?
+							description.set 'ignored', true
+					if containerMeta.type?
+						type = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'plate type'
+						type.set 'codeValue', containerMeta.type
+						type.set 'recordedBy', containerMeta.recordedBy
+						type.set 'recordedDate', recordedDate
+					else
+						type = metaDataState.getValuesByTypeAndKind('codeValue', 'plate type')[0]
+						if type?
+							type.set 'ignored', true
+					if containerMeta.status?
+						status = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'status'
+						status.set 'codeValue', containerMeta.status
+						status.set 'recordedBy', containerMeta.recordedBy
+						status.set 'recordedDate', recordedDate
+					else
+						status = metaDataState.getValuesByTypeAndKind('codeValue', 'status')[0]
+						if status?
+							status.set 'ignored', true
+					if containerMeta.createdDate?
+						console.log 'yes'
+						createdDate = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'dateValue', 'created date'
+						createdDate.set 'dateValue', containerMeta.createdDate
+						createdDate.set 'recordedBy', containerMeta.recordedBy
+						createdDate.set 'recordedDate', recordedDate
+					else
+						createdDate = metaDataState.getValuesByTypeAndKind('dateValue', 'created date')[0]
+						if createdDate?
+							createdDate.set 'ignored', true
+					if containerMeta.supplier?
+						supplier = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'supplier code'
+						supplier.set 'codeValue', containerMeta.supplier
+						supplier.set 'recordedBy', containerMeta.recordedBy
+						supplier.set 'recordedDate', recordedDate
+					else
+						supplier = metaDataState.getValuesByTypeAndKind('codeValue', 'supplier code')[0]
+						if supplier?
+							supplier.set 'ignored', true
+					container.reformatBeforeSaving()
+					containerArray.push container.attributes
+					containerJSONArray = JSON.stringify(containerArray)
+					exports.updateContainersInternal containerJSONArray, (savedContainers) =>
+						for containerMeta, index in containerMetadataAndDefinitionMetadata
+							savedContainer = new serverUtilityFunctions.Thing(savedContainers[index])
+							containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
+							containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
+							containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
+							containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
+						callback containerMetadataAndDefinitionMetadata
+
+exports.getContainersByCodeNames = (req, resp) ->
+	exports.getContainersByCodeNamesInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
 
 exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 	if global.specRunnerTestmode
@@ -419,3 +504,36 @@ exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) 
 					containerWellContent = _.sortBy containerWellContent, 'wellName'
 					response.push {containerCodeName: containerCodeName, wellContent: containerWellContent}
 				callback response
+
+exports.updateContainers = (req, resp) ->
+	exports.updateContainersInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.updateContainersInternal = (containers, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.updateContainersResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
+		request = require 'request'
+		console.log 'sending this', containers
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: containers
+			json: true
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.error 'got ajax error trying to get updateContainers'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify "updateContainers failed"
+		)
