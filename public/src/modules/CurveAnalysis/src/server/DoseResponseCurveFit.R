@@ -10,7 +10,11 @@ fitDoseResponse <- function(request){
   myMessenger$logger$debug("dose response fit experiment initiated")
   request <- as.list(request)
   myMessenger$logger$debug(toJSON(request))
-
+  
+  # Hack for Suse png issues
+  png(tempfile())
+  dev.off()
+  
   simpleFitSettings <- fromJSON(request$inputParameters)
   experimentCode <- request$experimentCode
   user <- request$user

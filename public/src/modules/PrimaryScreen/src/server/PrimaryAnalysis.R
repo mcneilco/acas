@@ -46,6 +46,10 @@ source("public/src/conf/customFunctions.R", local=TRUE)
 clientName <- "exampleClient"
 # END: Test structure
 
+# Hack for Suse png issues
+png(tempfile())
+dev.off()
+
 # Source the client specific compound assignment functions
 compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment",
                                         clientName)
