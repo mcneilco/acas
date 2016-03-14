@@ -536,7 +536,6 @@ exports.updateContainersInternal = (containers, callback) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
 		request = require 'request'
-		console.log 'sending this', containers
 		request(
 			method: 'PUT'
 			url: baseurl
