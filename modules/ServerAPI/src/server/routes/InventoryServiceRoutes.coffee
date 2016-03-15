@@ -6,7 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
 	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
 	app.put '/api/containers/jsonArray', exports.updateContainers
 	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
@@ -27,7 +27,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', loginRoutes.ensureAuthenticated, exports.getWellContent
 	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', loginRoutes.ensureAuthenticated, exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
 	app.post '/api/getWellCodesByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByContainerCodes
 	app.get '/api/containers', loginRoutes.ensureAuthenticated, exports.getAllContainers
 	app.get '/api/containers/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.containersByTypeKind
@@ -295,8 +295,9 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode = (req, resp) ->
 	exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal [req.body], (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
-		else
-			resp.json json
+		else if json.indexOf('conflict') > -1
+			resp.statusCode = 409
+		resp.json json
 
 exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (containerMetadataAndDefinitionMetadata, callback) ->
 	if global.specRunnerTestmode
@@ -305,72 +306,97 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 	else
 		_ = require 'underscore'
 		codeNames = _.pluck containerMetadataAndDefinitionMetadata, "codeName"
+		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers) =>
+			console.debug "return from getContainersByCodeNamesInternal with #{JSON.stringify(containers)}"
 			if containers.indexOf('failed') > -1
 				callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
 			else
-				serverUtilityFunctions = require './ServerUtilityFunctions.js'
-				containerArray = []
-				recordedDate = new Date().getTime()
-				for containerMeta, index in containerMetadataAndDefinitionMetadata
-					container = new serverUtilityFunctions.Container(containers[index].container)
-					metaDataState = container.get('lsStates').getStatesByTypeAndKind('metadata', 'information')[0]
-					if typeof(containerMeta.description) != "undefined"
-						oldDescription = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
-						if oldDescription? && (containerMeta.description == null || oldDescription.get('stringValue') != containerMeta.description)
-							oldDescription.set 'ignored', true
-						if !oldDescription? || (containerMeta.description != null && oldDescription.get('stringValue') != containerMeta.description)
-							newDescription = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'stringValue', 'description'
-							newDescription.set 'stringValue', containerMeta.description
-							newDescription.set 'recordedBy', containerMeta.recordedBy
-							newDescription.set 'recordedDate', recordedDate
-					if typeof(containerMeta.type) != "undefined"
-						oldType = metaDataState.getValuesByTypeAndKind('codeValue', 'plate type')[0]
-						if oldType? && (containerMeta.type == null || oldType.get('codeValue') != containerMeta.type)
-							oldType.set 'ignored', true
-						if !oldType? || (containerMeta.type != null && oldType.get('codeValue') != containerMeta.type)
-							newType = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'plate type'
-							newType.set 'codeValue', containerMeta.type
-							newType.set 'recordedBy', containerMeta.recordedBy
-							newType.set 'recordedDate', recordedDate
-					if typeof(containerMeta.status) != "undefined"
-						oldStatus = metaDataState.getValuesByTypeAndKind('codeValue', 'status')[0]
-						if oldStatus? && (containerMeta.status == null || oldStatus.get('codeValue') != containerMeta.status)
-							oldStatus.set 'ignored', true
-						if !oldStatus? || (containerMeta.status != null && oldStatus.get('codeValue') != containerMeta.status)
-							newStatus = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'status'
-							newStatus.set 'codeValue', containerMeta.status
-							newStatus.set 'recordedBy', containerMeta.recordedBy
-							newStatus.set 'recordedDate', recordedDate
-					if typeof(containerMeta.createdDate) != "undefined"
-						oldCreatedDate = metaDataState.getValuesByTypeAndKind('dateValue', 'created date')[0]
-						if oldCreatedDate? && (containerMeta.createdDate == null || oldCreatedDate.get('dateValue') != containerMeta.createdDate)
-							oldCreatedDate.set 'ignored', true
-						if !oldCreatedDate? || (containerMeta.createdDate != null && oldCreatedDate.get('dateValue') != containerMeta.createdDate)
-							newCreatedDate = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'dateValue', 'created date'
-							newCreatedDate.set 'dateValue', containerMeta.createdDate
-							newCreatedDate.set 'recordedBy', containerMeta.recordedBy
-							newCreatedDate.set 'recordedDate', recordedDate
-					if typeof(containerMeta.createdDate) != "undefined"
-						oldSupplier = metaDataState.getValuesByTypeAndKind('codeValue', 'supplier code')[0]
-						if oldSupplier? && (containerMeta.supplier == null || oldSupplier.get('codeValue') != containerMeta.createdDate)
-							oldSupplier.set 'ignored', true
-						if !oldSupplier? || (containerMeta.supplier != null && oldSupplier.get('codeValue') != containerMeta.createdDate)
-							newSupplier = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'supplier code'
-							newSupplier.set 'codeValue', containerMeta.supplier
-							newSupplier.set 'recordedBy', containerMeta.recordedBy
-							newSupplier.set 'recordedDate', recordedDate
-					container.reformatBeforeSaving()
-					containerArray.push container.attributes
-					containerJSONArray = JSON.stringify(containerArray)
-					exports.updateContainersInternal containerJSONArray, (savedContainers) =>
-						for containerMeta, index in containerMetadataAndDefinitionMetadata
-							savedContainer = new serverUtilityFunctions.Thing(savedContainers[index])
-							containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
-							containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
-							containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
-							containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
-						callback containerMetadataAndDefinitionMetadata
+				barcodes = _.pluck containerMetadataAndDefinitionMetadata, "barcode"
+				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes) =>
+					serverUtilityFunctions = require './ServerUtilityFunctions.js'
+					containerArray = []
+					recordedDate = new Date().getTime()
+					for containerMeta, index in containerMetadataAndDefinitionMetadata
+						container = new serverUtilityFunctions.Container(containers[index].container)
+						metaDataState = container.get('lsStates').getStatesByTypeAndKind('metadata', 'information')[0]
+						if typeof(containerMeta.barcode) != "undefined"
+							if containerCodes[index].foundCodeNames.length > 1
+								message = "conflict: found more than 1 container plate barcode for label #{containerCodes[index].requestLabel}: #{containerCodes[index].foundCodeNames.join(",")}"
+								console.error message
+								callback message
+								return
+							else
+								if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == containerMeta.barcode
+									oldLabel = container.get('lsLabels').getLabelByTypeAndKind('barcode', 'barcode')[0]
+									if oldLabel? && (containerMeta.barcode == null || oldLabel.get('labelText') != containerMeta.barcode)
+										oldLabel.set 'ignored', true
+									if !oldLabel? || (containerMeta.barcode != null && oldLabel.get('labelText') != containerMeta.barcode)
+										newBarcode = container.get('lsLabels').getOrCreateLabelByTypeAndKind 'barcode', 'barcode'
+										newBarcode.set 'labelText', containerMeta.barcode
+										newBarcode.set 'recordedBy', containerMeta.recordedBy
+										newBarcode.set 'recordedDate', recordedDate
+								else
+									message = "conflict: barcode '#{containerMeta.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
+									console.error message
+									callback message
+									return
+						if typeof(containerMeta.description) != "undefined"
+							oldDescription = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
+							if oldDescription? && (containerMeta.description == null || oldDescription.get('stringValue') != containerMeta.description)
+								oldDescription.set 'ignored', true
+							if !oldDescription? || (containerMeta.description != null && oldDescription.get('stringValue') != containerMeta.description)
+								newDescription = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'stringValue', 'description'
+								newDescription.set 'stringValue', containerMeta.description
+								newDescription.set 'recordedBy', containerMeta.recordedBy
+								newDescription.set 'recordedDate', recordedDate
+						if typeof(containerMeta.type) != "undefined"
+							oldType = metaDataState.getValuesByTypeAndKind('codeValue', 'plate type')[0]
+							if oldType? && (containerMeta.type == null || oldType.get('codeValue') != containerMeta.type)
+								oldType.set 'ignored', true
+							if !oldType? || (containerMeta.type != null && oldType.get('codeValue') != containerMeta.type)
+								newType = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'plate type'
+								newType.set 'codeValue', containerMeta.type
+								newType.set 'recordedBy', containerMeta.recordedBy
+								newType.set 'recordedDate', recordedDate
+						if typeof(containerMeta.status) != "undefined"
+							oldStatus = metaDataState.getValuesByTypeAndKind('codeValue', 'status')[0]
+							if oldStatus? && (containerMeta.status == null || oldStatus.get('codeValue') != containerMeta.status)
+								oldStatus.set 'ignored', true
+							if !oldStatus? || (containerMeta.status != null && oldStatus.get('codeValue') != containerMeta.status)
+								newStatus = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'status'
+								newStatus.set 'codeValue', containerMeta.status
+								newStatus.set 'recordedBy', containerMeta.recordedBy
+								newStatus.set 'recordedDate', recordedDate
+						if typeof(containerMeta.createdDate) != "undefined"
+							oldCreatedDate = metaDataState.getValuesByTypeAndKind('dateValue', 'created date')[0]
+							if oldCreatedDate? && (containerMeta.createdDate == null || oldCreatedDate.get('dateValue') != containerMeta.createdDate)
+								oldCreatedDate.set 'ignored', true
+							if !oldCreatedDate? || (containerMeta.createdDate != null && oldCreatedDate.get('dateValue') != containerMeta.createdDate)
+								newCreatedDate = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'dateValue', 'created date'
+								newCreatedDate.set 'dateValue', containerMeta.createdDate
+								newCreatedDate.set 'recordedBy', containerMeta.recordedBy
+								newCreatedDate.set 'recordedDate', recordedDate
+						if typeof(containerMeta.createdDate) != "undefined"
+							oldSupplier = metaDataState.getValuesByTypeAndKind('codeValue', 'supplier code')[0]
+							if oldSupplier? && (containerMeta.supplier == null || oldSupplier.get('codeValue') != containerMeta.createdDate)
+								oldSupplier.set 'ignored', true
+							if !oldSupplier? || (containerMeta.supplier != null && oldSupplier.get('codeValue') != containerMeta.createdDate)
+								newSupplier = container.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'information', 'codeValue', 'supplier code'
+								newSupplier.set 'codeValue', containerMeta.supplier
+								newSupplier.set 'recordedBy', containerMeta.recordedBy
+								newSupplier.set 'recordedDate', recordedDate
+						container.reformatBeforeSaving()
+						containerArray.push container.attributes
+						containerJSONArray = JSON.stringify(containerArray)
+						exports.updateContainersInternal containerJSONArray, (savedContainers) =>
+							for containerMeta, index in containerMetadataAndDefinitionMetadata
+								savedContainer = new serverUtilityFunctions.Thing(savedContainers[index])
+								containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
+								containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
+								containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
+								containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
+							callback containerMetadataAndDefinitionMetadata
 
 exports.getContainersByCodeNames = (req, resp) ->
 	exports.getContainersByCodeNamesInternal req.body, (json) ->
@@ -585,8 +611,6 @@ exports.containersByTypeKind = (req, resp) ->
 			resp.end JSON.stringify thingServiceTestJSON.batchList
 		else
 			baseurl = config.all.client.service.persistence.fullpath+"containers?lsType="+req.params.lsType+"&lsKind="+req.params.lsKind
-			console.log "containers by type and kind"
-			console.log baseurl
 			stubFlag = "with=stub"
 			if req.query.stub
 				baseurl += "?#{stubFlag}"
@@ -621,14 +645,14 @@ updateContainer = (container, testMode, callback) ->
 				if !error && response.statusCode == 200
 					callback json
 				else
-					console.log 'got ajax error trying to update lsContainer'
-					console.log error
-					console.log response
+					console.error 'got ajax error trying to update lsContainer'
+					console.error error
+					console.error response
 			)
 
 
 postContainer = (req, resp) ->
-	console.log "post container"
+	console.debug "post container"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	containerToSave = req.body
 	serverUtilityFunctions.createLSTransaction containerToSave.recordedDate, "new experiment", (transaction) ->
@@ -654,7 +678,7 @@ postContainer = (req, resp) ->
 			if filesToSave > 0
 				prefix = serverUtilityFunctions.getPrefixFromEntityCode container.codeName
 				for fv in fileVals
-					console.log "updating file"
+					console.debug "updating file"
 					csUtilities.relocateEntityFile fv, prefix, container.codeName, fileSaveCompleted
 			else
 				resp.json container
@@ -674,10 +698,10 @@ postContainer = (req, resp) ->
 				if !error && response.statusCode == 201
 					checkFilesAndUpdate json
 				else
-					console.log 'got ajax error trying to save lsContainer'
-					console.log error
-					console.log json
-					console.log response
+					console.error 'got ajax error trying to save lsContainer'
+					console.error error
+					console.error json
+					console.error response
 			)
 
 exports.postContainer = (req, resp) ->
@@ -710,6 +734,32 @@ exports.putContainer = (req, resp) ->
 	else
 		completeContainerUpdate()
 
+exports.validateContainerNameInternal = (container, callback) ->
+	if req.query.testMode or global.specRunnerTestmode
+		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
+		resp.json true
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/validate"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: container
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 202
+				resp.json true
+			else if response.statusCode == 409
+				resp.json json
+			else
+				console.error 'got ajax error trying to validate container name'
+				console.error error
+				console.error json
+				console.error response
+				resp.json "error"
+		)
+
 exports.validateContainerName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
@@ -722,32 +772,32 @@ exports.validateContainerName = (req, resp) ->
 		#		else #is assembly
 		#			baseurl += "?uniqueName=true&uniqueInteractions=true&orderMatters=true&forwardAndReverseAreSame=true"
 		request = require 'request'
-		console.log "validate container name body"
-		console.log req.body
-		console.log req.body.container
+		console.debug "validate container name body"
+		console.debug req.body
+		console.debug req.body.container
 		request(
 			method: 'POST'
 			url: baseurl
 			body: req.body.container
 			json: true
 		, (error, response, json) =>
-			console.log "response"
-			console.log json
-			console.log response.statusCode
+			console.debug "response"
+			console.debug json
+			console.debug response.statusCode
 			if !error && response.statusCode == 202
 				resp.json true
 			else if response.statusCode == 409
 				resp.json json
 			else
-				console.log 'got ajax error trying to validate container name'
-				console.log error
-				console.log json
-				console.log response
+				console.error 'got ajax error trying to validate container name'
+				console.error error
+				console.error json
+				console.error response
 				resp.json "error"
 		)
 
 exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
-	console.log "got to getContainerCodesFormNamesOrCodes"
+	console.debug "got to getContainerCodesFormNamesOrCodes"
 	if global.specRunnerTestmode
 		results = []
 		for req in codeRequest.requests
@@ -778,8 +828,8 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 		#		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{codeRequest.containerType}&containerKind=#{codeRequest.containerKind}"
 		postBody = requests: codeRequest.requests
-		console.log postBody
-		console.log url
+		console.debug postBody
+		console.debug url
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -787,17 +837,17 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 			body: postBody
 			json: true
 		, (error, response, json) =>
-			console.log response.statusCode
-			console.log json
+			console.debug response.statusCode
+			console.debug json
 			if !error and !json.error
 				callback
 					containerType: codeRequest.containerType
 					containerKind: codeRequest.containerKind
 					results: json.results
 			else
-				console.log 'got ajax error trying to lookup lsContainer name'
-				console.log error
-				console.log response
+				console.error 'got ajax error trying to lookup lsContainer name'
+				console.error error
+				console.error response
 				callback json
 		)
 
@@ -814,8 +864,8 @@ getContainerCodesFromLabels = (req, callback) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodesByLabels?"
 		url = baseurl+"containerType=#{req.body.containerType}&containerKind=#{req.body.containerKind}"
 		postBody = req.body.labels
-		console.log postBody
-		console.log url
+		console.debug postBody
+		console.debug url
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -823,14 +873,14 @@ getContainerCodesFromLabels = (req, callback) ->
 			body: postBody
 			json: true
 		, (error, response, json) =>
-			console.log response.statusCode
-			console.log json
+			console.debug response.statusCode
+			console.debug json
 			if !error and !json.error
 				callback json
 			else
-				console.log 'got ajax error trying to lookup lsContainer name'
-				console.log error
-				console.log response
+				console.error 'got ajax error trying to lookup lsContainer name'
+				console.error error
+				console.error response
 				callback json
 		)
 
