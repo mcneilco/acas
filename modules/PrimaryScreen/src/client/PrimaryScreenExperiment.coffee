@@ -54,7 +54,7 @@ class window.StandardCompound extends Backbone.Model
 		batchCode: ""
 		concentration: ""
 		concentrationUnits: "uM"
-		standardType: ""
+		standardType: "unassigned"
 
 	validate: (attrs) =>
 		errors = []
@@ -70,7 +70,7 @@ class window.StandardCompound extends Backbone.Model
 				attribute: 'concentration'
 				message: "Concentration must be a number"
 		st = attrs.standardType
-		if st is "" or st is null or st is undefined
+		if st is "" or st is null or st is undefined or st is "unassigned"
 			errors.push
 				attribute: 'standardType'
 				message: "Standard Type must be selected"
