@@ -405,7 +405,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
 			webpack_build:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/src/client/*.coffee"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/src/client/*"]
 				tasks: ['webpack:build']
 			webpack_spec_build:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/spec/*.coffee"]

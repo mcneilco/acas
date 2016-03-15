@@ -315,7 +315,9 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 				callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
 			else
 				barcodes = _.pluck containerMetadataAndDefinitionMetadata, "barcode"
+				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes) =>
+					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
 					serverUtilityFunctions = require './ServerUtilityFunctions.js'
 					containerArray = []
 					recordedDate = new Date().getTime()
@@ -329,7 +331,7 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 								callback message
 								return
 							else
-								if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == containerMeta.barcode
+								if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == containerMeta.codeName
 									oldLabel = container.get('lsLabels').getLabelByTypeAndKind('barcode', 'barcode')[0]
 									if oldLabel? && (containerMeta.barcode == null || oldLabel.get('labelText') != containerMeta.barcode)
 										oldLabel.set 'ignored', true
@@ -345,6 +347,7 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 									return
 						if typeof(containerMeta.description) != "undefined"
 							oldDescription = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
+							console.debug oldDescription
 							if oldDescription? && (containerMeta.description == null || oldDescription.get('stringValue') != containerMeta.description)
 								oldDescription.set 'ignored', true
 							if !oldDescription? || (containerMeta.description != null && oldDescription.get('stringValue') != containerMeta.description)
@@ -392,13 +395,17 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 						containerArray.push container.attributes
 						containerJSONArray = JSON.stringify(containerArray)
 						exports.updateContainersInternal containerJSONArray, (savedContainers) =>
-							for containerMeta, index in containerMetadataAndDefinitionMetadata
-								savedContainer = new serverUtilityFunctions.Thing(savedContainers[index])
-								containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
-								containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
-								containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
-								containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
-							callback containerMetadataAndDefinitionMetadata
+							if savedContainers[0] == "<"
+								callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
+							else
+								for containerMeta, index in containerMetadataAndDefinitionMetadata
+									savedContainer = new serverUtilityFunctions.Container(savedContainers[index])
+
+									containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
+									containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
+									containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
+									containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
+								callback containerMetadataAndDefinitionMetadata
 
 exports.getContainersByCodeNames = (req, resp) ->
 	exports.getContainersByCodeNamesInternal req.body, (json) ->
@@ -571,12 +578,13 @@ exports.updateContainersInternal = (containers, callback) ->
 			json: true
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			if !error && response.statusCode == 200
+			if !error && response.statusCode == 200 && json[0] != "<"
 				callback json
 			else
 				console.error 'got ajax error trying to get updateContainers'
 				console.error error
 				console.error json
+				console.error "request #{containers}"
 				console.error response
 				callback JSON.stringify "updateContainers failed"
 		)
