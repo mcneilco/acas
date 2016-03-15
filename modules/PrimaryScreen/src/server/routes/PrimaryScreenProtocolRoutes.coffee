@@ -8,7 +8,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getCustomerMolecularTargetCodes = (req, resp) ->
 	if global.specRunnerTestmode
-		molecTargetTestJSON = require '../public/javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+		molecTargetTestJSON = require '../public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
 		resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 	else
 		csUtilities.getCustomerMolecularTargetCodes resp

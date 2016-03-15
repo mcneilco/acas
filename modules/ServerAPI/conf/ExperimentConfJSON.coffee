@@ -201,6 +201,9 @@
 				kindName: "signal direction"
 			,
 				typeName: "analysis parameter"
+				kindName: "standard type"
+			,
+				typeName: "analysis parameter"
 				kindName: "aggregate by"
 			,
 				typeName: "analysis parameter"
@@ -397,6 +400,27 @@
 				codeOrigin: "ACAS DDICT"
 				code: "assay plate"
 				name: "Assay Plate"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "PC"
+				name: "PositiveControl"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "NC"
+				name: "Negative Control"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "VC"
+				name: "Vehicle Control"
 				ignored: false
 			,
 				codeType: "analysis parameter"

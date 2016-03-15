@@ -89,7 +89,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@sc.get('batchCode')).toEqual ""
 					expect(@sc.get('concentration')).toEqual ""
 					expect(@sc.get('concentrationUnits')).toEqual "uM"
-					expect(@sc.get('standardType')).toEqual ""
+					expect(@sc.get('standardType')).toEqual "unassigned"
 		describe "model validation tests", ->
 			beforeEach ->
 				@sc = new StandardCompound window.primaryScreenTestJSON.standards[0]
