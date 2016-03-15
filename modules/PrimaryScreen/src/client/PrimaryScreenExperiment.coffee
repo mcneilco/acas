@@ -354,6 +354,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
 		standardCompoundList: new StandardCompoundList()
 		hasAdditives: false
+		hasTimeWindows: false
 		additiveList: new AdditiveList()
 
 
@@ -1312,6 +1313,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 		"change .bv_hasAdditives": "handleHasAdditivesChanged"
+		"change .bv_hasTimeWindows": "handleHasTimeWindowsChanged"
 		"change .bv_htsFormat": "attributeChanged"
 		"click .bv_matchReadName": "handleMatchReadNameChanged"
 		"keyup .bv_fluorescentStart": "attributeChanged"
@@ -1346,6 +1348,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupAggregationMethodSelect()
 		@handleAutoHitSelectionChanged(true)
 		@handleHasAdditivesChanged(true)
+		@handleHasTimeWindowsChanged(true)
 		@setupReadListController()
 		@setupTimeWindowListController()
 		@setupStandardCompoundListController()
@@ -1540,6 +1543,16 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.additives').show()
 		else
 			@$('.additives').hide()
+		unless skipUpdate is true
+			@attributeChanged()
+
+	handleHasTimeWindowsChanged: (skipUpdate) =>
+		hasTimeWindows = @$('.bv_hasTimeWindows').is(":checked")
+		@model.set hasTimeWindows: hasTimeWindows
+		if hasTimeWindows
+			@$('.timeSettings').show()
+		else
+			@$('.timeSettings').hide()
 		unless skipUpdate is true
 			@attributeChanged()
 

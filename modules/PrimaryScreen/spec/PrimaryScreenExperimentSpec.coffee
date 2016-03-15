@@ -338,6 +338,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
 					expect(@psap.get('hasAdditives')).toBeFalsy()
+					expect(@psap.get('hasTimeWindows')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeTruthy()
 					expect(@psap.get('matchReadName')).toBeFalsy()
 					expect(@psap.get('fluorescentStart')).toBeNull()
@@ -1271,6 +1272,8 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_autoHitSelection').attr("checked")).toBeUndefined()
 				it 'should start with hasAdditives unchecked', ->
 					expect(@psapc.$('.bv_hasAdditives').attr("checked")).toBeUndefined()
+				it 'should start with hasTimeWindows unchecked', ->
+					expect(@psapc.$('.bv_hasTimeWindows').attr("checked")).toBeUndefined()
 				it 'should show the hitSDThreshold', ->
 					expect(@psapc.$('.bv_hitSDThreshold').val()).toEqual '5'
 				it 'should show the hitEfficacyThreshold', ->
@@ -1363,6 +1366,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the hasAdditives ", ->
 					@psapc.$('.bv_hasAdditives').click()
 					expect(@psapc.model.get('hasAdditives')).toBeTruthy()
+				it "should update the hasTimeWindows ", ->
+					@psapc.$('.bv_hasTimeWindows').click()
+					expect(@psapc.model.get('hasTimeWindows')).toBeTruthy()
 				it "should update the htsFormat checkbox ", ->
 					@psapc.$('.bv_htsFormat').click()
 					expect(@psapc.model.get('htsFormat')).toBeTruthy()
