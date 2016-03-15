@@ -2,7 +2,7 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas:development
+    image: mcneilco/acas:compound-inventory
     restart: always
     ports:
      - "3000:3000"
