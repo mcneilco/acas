@@ -227,6 +227,7 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse
 	else
+		console.debug "incoming getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal request: '#{plateBarcodes}'"
 		exports.getContainersByLabelsInternal plateBarcodes, "container", "plate", "barcode", "barcode", (containers) =>
 			if containers.indexOf('failed') > -1
 				callback JSON.stringify "getPlateMetadataAndDefinitionMetadataByPlateBarcodes failed"
@@ -252,8 +253,9 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 								status: null
 								createdDate: null
 								supplier: null
+
 							containerCode =  _.findWhere containers, {label: barcode}
-							if containerCode?
+							if containerCode.codeName?
 								response.codeName = containerCode.codeName
 								container =  _.findWhere containers, {codeName: containerCode.codeName}
 								if container?
@@ -276,7 +278,7 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 											response.supplier = supplier[0].codeValue
 
 								definition =  _.findWhere definitions, {containerCodeName: containerCode.codeName}
-								if definition?
+								if definition.codeName?
 										state = serverUtilityFunctions.getStatesByTypeAndKind definition.definition, 'constants', 'format'
 										if state.length > 0
 											plateSize = serverUtilityFunctions.getValuesByTypeAndKind(state[0], 'numericValue', 'wells')
