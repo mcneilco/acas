@@ -18,6 +18,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/validateContainerName', exports.validateContainerName
 	app.post '/api/getContainerCodesFromLabels', exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
+	app.post '/api/updateWellContent', exports.updateWellContent
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -37,6 +38,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateContainerName', loginRoutes.ensureAuthenticated, exports.validateContainerName
 	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
+	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -508,12 +510,14 @@ exports.getWellCodesByContainerCodes = (req, resp) ->
 			resp.json json
 
 exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
+	console.debug 'incoming getWellCodesByPlateBarcodes request: ', codeNamesJSON
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellCodesByContainerCodesResponse
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getWellCodesByContainerCodes"
+		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -523,6 +527,7 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
+				console.debug "returned successfully from #{baseurl}"
 				callback json
 			else
 				console.error 'got ajax error trying to get getWellCodesByContainerCodes'
@@ -907,3 +912,38 @@ exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and 
 			exports.containerByCodeName req, resp
 		else
 			resp.json {}
+
+exports.updateWellContent = (req, resp) ->
+	exports.updateWellContentInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.statusCode = 204
+			resp.json json
+
+exports.updateWellContentInternal = (wellContent, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.debug 'incoming updateWellContentInternal request: ', wellContent
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateAmountInWell"
+		console.debug 'base url: ', baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: wellContent
+			json: true
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 204
+				callback "success"
+			else
+				console.error 'got ajax error trying to get updateWellContent'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify "updateWellContent failed"
+		)
