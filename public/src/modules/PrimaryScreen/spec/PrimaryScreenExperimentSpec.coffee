@@ -142,6 +142,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@tr).toBeDefined()
 				it "should have defaults", ->
 					expect(@tr.get('transformationRule')).toEqual "unassigned"
+					expect(@tr.get('transformationParameters') instanceof TransformationParameters).toBeTruthy()
 		describe "model validation tests", ->
 			beforeEach ->
 				@tr = new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
@@ -153,6 +154,71 @@ describe "Primary Screen Experiment module testing", ->
 				filtErrors = _.filter @tr.validationError, (err) ->
 					err.attribute=='transformationRule'
 				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "TransformationParameters model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@tp = new TransformationParameters()
+				describe "Existence", ->
+					it "should be defined", ->
+						expect(@tp).toBeDefined()
+
+	describe "Normalization model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@nm = new Normalization()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@nm).toBeDefined()
+				it "should have defaults", ->
+					expect(@nm.get('normalizationRule')).toEqual "unassigned"
+		describe "model validation tests", ->
+			beforeEach ->
+				@nm = new Normalization window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
+			it "should be valid as initialized", ->
+				expect(@nm.isValid()).toBeTruthy()
+			it "should be invalid when normalization rule is unassigned", ->
+				@nm.set normalizationRule: "unassigned"
+				expect(@nm.isValid()).toBeFalsy()
+				filtErrors = _.filter @nm.validationError, (err) ->
+					err.attribute=='normalizationRule'
+				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Control Setting model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@nm = new ControlSetting()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@nm).toBeDefined()
+				it "should have defaults", ->
+					expect(@nm.get('standardNumber')).toEqual "1"
+					expect(@nm.get('defaultValue')).toEqual ""
+		describe "model validation tests", ->
+			beforeEach ->
+				@nm = new ControlSetting window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization.positiveControl
+			it "should be valid as initialized", ->
+				expect(@nm.isValid()).toBeTruthy()
+			it "should be invalid when default is not a number", ->
+				@nm.set defaultValue: NaN
+				expect(@nm.isValid()).toBeFalsy()
+				filterErrors = _.where @nm.validationError,
+					attribute: "defaultValue"
+				expect(filterErrors.length).toBeGreaterThan 0
+			it "should be invalid when standardNumber is unassigned", ->
+				@nm.set standardNumber: "unassigned"
+				expect(@nm.isValid()).toBeFalsy()
+				filterErrors = _.where @nm.validationError,
+					attribute: "standardNumber"
+				expect(filterErrors.length).toBeGreaterThan 0
+			it "should be invalid when standardNumber is 'input value' and defaultValue is empty", ->
+				@nm.set
+					standardNumber: 'input value'
+					defaultValue: ''
+				expect(@nm.isValid()).toBeFalsy()
+				filterErrors = _.where @nm.validationError,
+					attribute: "defaultValue"
+				expect(filterErrors.length).toBeGreaterThan 0
 
 	describe "Primary Analysis Read List testing", ->
 		describe "When loaded from new", ->
@@ -219,8 +285,6 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@par.get('windowEnd')).toEqual 50
 				expect(@par.get('unit')).toEqual "s"
 
-
-
 	describe "Transformation Rule List testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -235,7 +299,7 @@ describe "Primary Screen Experiment module testing", ->
 				expect(@trl.length).toEqual 3
 			it "should have the correct rule info for the first rule", ->
 				ruleone = @trl.at(0)
-				expect(ruleone.get('transformationRule')).toEqual "% efficacy"
+				expect(ruleone.get('transformationRule')).toEqual "percent efficacy"
 			it "should have the correct read info for the second rule", ->
 				ruletwo = @trl.at(1)
 				expect(ruletwo.get('transformationRule')).toEqual "sd"
@@ -266,13 +330,14 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('signalDirectionRule')).toEqual "unassigned"
 					expect(@psap.get('aggregateBy')).toEqual "unassigned"
 					expect(@psap.get('aggregationMethod')).toEqual "unassigned"
-					expect(@psap.get('normalization').get('normalizationRule')).toEqual "unassigned"
+					expect(@psap.get('normalization') instanceof Normalization).toBeTruthy()
 					expect(@psap.get('hitEfficacyThreshold')).toBeNull()
 					expect(@psap.get('hitSDThreshold')).toBeNull()
 					expect(@psap.get('standardCompoundList') instanceof StandardCompoundList).toBeTruthy()
 					expect(@psap.get('additiveList') instanceof AdditiveList).toBeTruthy()
 					expect(@psap.get('thresholdType')).toEqual null
 					expect(@psap.get('autoHitSelection')).toBeFalsy()
+					expect(@psap.get('hasAdditives')).toBeFalsy()
 					expect(@psap.get('htsFormat')).toBeTruthy()
 					expect(@psap.get('matchReadName')).toBeFalsy()
 					expect(@psap.get('fluorescentStart')).toBeNull()
@@ -345,12 +410,6 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.isValid()).toBeFalsy()
 					filtErrors = _.filter @psap.validationError, (err) ->
 						err.attribute=='signalDirectionRule'
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when normalization rule is unassigned", ->
-					@psap.get('normalization').set normalizationRule: "unassigned"
-					expect(@psap.isValid()).toBeFalsy()
-					filtErrors = _.filter @psap.validationError, (err) ->
-						err.attribute=='normalizationRule'
 					expect(filtErrors.length).toBeGreaterThan 0
 				it "should be invalid when fluorescentStart is NaN (but can be empty)", ->
 					@psap.set fluorescentStart: NaN
@@ -655,14 +714,110 @@ describe "Primary Screen Experiment module testing", ->
 						expect(@scc.$('.bv_group_batchCode').hasClass("error")).toBeTruthy()
 						expect(@scc.$('.bv_group_batchCode').attr('data-toggle')).toEqual "tooltip"
 
+	describe "ControlSettingController", ->
+		describe "when instantiated", ->
+			beforeEach ->
+				@scl = new StandardCompoundList window.primaryScreenTestJSON.standards
+				@csc = new ControlSettingController
+					model: new ControlSetting window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization.positiveControl
+					el: $('#fixture')
+					standardsList: @scl
+					controlLabel: "*Positive Control"
+				@csc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@csc).toBeDefined()
+				it "should have a template", ->
+					expect(@csc.$('.bv_standardNumber').length).toEqual 1
+			describe "render existing parameters", ->
+				it "should show the standard number", ->
+					waitsFor ->
+						@csc.$('.bv_standardNumber option').length > 0
+					, 1000
+					runs ->
+						expect(@csc.$('.bv_standardNumber').val()).toEqual "1"
+				it "should show the default value", ->
+					expect(@csc.$('.bv_defaultValue').html()).toEqual ""
+				it "should show the three standards, plus unassigned, plus input value", ->
+					expect(@csc.$('.bv_standardNumber option').length).toEqual 5
+			describe "update on standardsList change", ->
+				it "should update the list when standards change", ->
+					standard3 = @scl.find (model) ->
+						model.get('standardNumber') == 3
+					@scl.remove(standard3)
+					expect(@csc.$('.bv_standardNumber option').length).toEqual 4
+			describe "validation", ->
+				it "should show error if default is not a number", ->
+					@csc.$('.bv_defaultValue').val "more text"
+					@csc.$('.bv_defaultValue').keyup()
+					expect(@csc.$('.bv_group_defaultValue').hasClass('error')).toBeTruthy()
+				it "should show error if standardNumber is unassigned", ->
+					waitsFor ->
+						@csc.$('.bv_standardNumber option').length > 0
+					, 1000
+					runs ->
+						@csc.$('.bv_standardNumber').val('unassigned')
+						@csc.$('.bv_standardNumber').change()
+						expect(@csc.$('.bv_group_standardNumber').hasClass("error")).toBeTruthy()
+				it "should show error if standardNumber is 'input value' and defaultValue is empty", ->
+					waitsFor ->
+						@csc.$('.bv_standardNumber option').length > 0
+					, 1000
+					runs ->
+						@csc.$('.bv_standardNumber').val('input value')
+						@csc.$('.bv_standardNumber').change()
+						@csc.$('.bv_defaultValue').val ""
+						expect(@csc.$('.bv_group_defaultValue').hasClass("error")).toBeTruthy()
+
+	describe "NormalizationController", ->
+		describe "when instantiated", ->
+			beforeEach ->
+				@nc = new NormalizationController
+					model: new Normalization window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
+					el: $('#fixture')
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
+				@nc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@nc).toBeDefined()
+				it "should have a template", ->
+					expect(@nc.$('.bv_normalizationRule').length).toEqual 1
+			describe "render existing parameters", ->
+				it "should show the normalization rule", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						expect(@nc.$('.bv_normalizationRule').val()).toEqual "plate order only"
+			describe "model updates", ->
+				it "should update the normalization rule", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@nc.$('.bv_normalizationRule').val('plate order and row')
+						@nc.$('.bv_normalizationRule').change()
+						expect(@nc.model.get('normalizationRule')).toEqual "plate order and row"
+			describe "validation", ->
+				it "should show error if normalizationRule is unassigned", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@nc.$('.bv_normalizationRule').val "unassigned"
+						@nc.$('.bv_normalizationRule').change()
+						expect(@nc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
+
+
 	describe "TransformationRuleController", ->
 		describe "when instantiated", ->
 			beforeEach ->
 				@trc = new TransformationRuleController
 					model: new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
 					el: $('#fixture')
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trc.render()
-			describe "basic existance tests", ->
+			describe "basic existence tests", ->
 				it "should exist", ->
 					expect(@trc).toBeDefined()
 				it "should load a template", ->
@@ -673,7 +828,8 @@ describe "Primary Screen Experiment module testing", ->
 						@trc.$('.bv_transformationRule option').length > 0
 					, 1000
 					runs ->
-						expect(@trc.$('.bv_transformationRule').val()).toEqual "% efficacy"
+						expect(@trc.$('.bv_transformationRule').val()).toEqual "percent efficacy"
+						expect(@trc.$('.bv_standardNumber').length).toEqual 2
 			describe "model updates", ->
 				it "should update the transformation rule", ->
 					waitsFor ->
@@ -683,6 +839,26 @@ describe "Primary Screen Experiment module testing", ->
 						@trc.$('.bv_transformationRule').val('sd')
 						@trc.$('.bv_transformationRule').change()
 						expect(@trc.model.get('transformationRule')).toEqual "sd"
+				it "should show positive and negative controls for percent efficacy", ->
+					waitsFor ->
+						@trc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@trc.$('.bv_transformationRule').val('percent efficacy')
+						@trc.$('.bv_transformationRule').change()
+						expect(@trc.$('.bv_standardNumber').length).toEqual 2
+				it "should not have controls for unassigned", ->
+					waitsFor ->
+						@trc.$('.bv_transformationRule option').length > 0
+					, 1000
+					runs ->
+						@trc.$('.bv_transformationRule').val('percent efficacy')
+						@trc.$('.bv_transformationRule').change()
+						@trc.$('.bv_transformationRule').val('unassigned')
+						@trc.$('.bv_transformationRule').change()
+						console.log("changed")
+						expect(@trc.model.get('transformationRule')).toEqual "unassigned"
+						expect(@trc.$('.bv_standardNumber').length).toEqual 0
 
 	describe "Primary Analysis Read List Controller testing", ->
 		describe "when instantiated with no data", ->
@@ -971,6 +1147,7 @@ describe "Primary Screen Experiment module testing", ->
 				@trlc= new TransformationRuleListController
 					el: $('#fixture')
 					collection: new TransformationRuleList()
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			describe "basic existence tests", ->
 				it "should exist", ->
@@ -1003,6 +1180,7 @@ describe "Primary Screen Experiment module testing", ->
 				@trlc= new TransformationRuleListController
 					el: $('#fixture')
 					collection: new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			it "should have three rules", ->
 				expect(@trlc.$('.bv_transformationInfo .bv_transformationRule').length).toEqual 3
@@ -1012,13 +1190,17 @@ describe "Primary Screen Experiment module testing", ->
 					@trlc.$('.bv_transformationRule option').length > 0
 				, 1000
 				runs ->
-					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "% efficacy"
+					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(0)').val()).toEqual "percent efficacy"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(0)').val()).toEqual "1"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(1)').val()).toEqual "input value"
+					expect(@trlc.$('.bv_transformationInfo .bv_defaultValue:eq(1)').val()).toEqual "5"
 			it "should have the correct rule info for the second rule", ->
 				waitsFor ->
 					@trlc.$('.bv_transformationRule option').length > 0
 				, 1000
 				runs ->
 					expect(@trlc.$('.bv_transformationInfo .bv_transformationRule:eq(1)').val()).toEqual "sd"
+					expect(@trlc.$('.bv_transformationInfo .bv_standardNumber:eq(2)').val()).toEqual "3"
 			it "should have the correct rule info for the third rule", ->
 				# note: this test sometimes breaks for no reason. If run the specific test, it will pass.
 				waitsFor ->
@@ -1087,6 +1269,8 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psapc.$('.bv_additiveInfo .bv_batchCode').length).toEqual 2
 				it 'should start with autoHitSelection unchecked', ->
 					expect(@psapc.$('.bv_autoHitSelection').attr("checked")).toBeUndefined()
+				it 'should start with hasAdditives unchecked', ->
+					expect(@psapc.$('.bv_hasAdditives').attr("checked")).toBeUndefined()
 				it 'should show the hitSDThreshold', ->
 					expect(@psapc.$('.bv_hitSDThreshold').val()).toEqual '5'
 				it 'should show the hitEfficacyThreshold', ->
@@ -1135,14 +1319,6 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_aggregationMethod').val('unassigned')
 						@psapc.$('.bv_aggregationMethod').change()
 						expect(@psapc.model.get('aggregationMethod')).toEqual "unassigned"
-				it "should update the normalizationRule rule", ->
-					waitsFor ->
-						@psapc.$('.bv_normalizationRule option').length > 0
-					, 1000
-					runs ->
-						@psapc.$('.bv_normalizationRule').val('unassigned')
-						@psapc.$('.bv_normalizationRule').change()
-						expect(@psapc.model.get('normalization').get('normalizationRule')).toEqual "unassigned"
 				it "should update the assayVolume and recalculate the transfer volume if the dilution factor is set ", ->
 					@psapc.$('.bv_volumeTypeDilution').click()
 					@psapc.$('.bv_dilutionFactor').val(' 3 ')
@@ -1184,6 +1360,9 @@ describe "Primary Screen Experiment module testing", ->
 				it "should update the autoHitSelection ", ->
 					@psapc.$('.bv_autoHitSelection').click()
 					expect(@psapc.model.get('autoHitSelection')).toBeTruthy()
+				it "should update the hasAdditives ", ->
+					@psapc.$('.bv_hasAdditives').click()
+					expect(@psapc.model.get('hasAdditives')).toBeTruthy()
 				it "should update the htsFormat checkbox ", ->
 					@psapc.$('.bv_htsFormat').click()
 					expect(@psapc.model.get('htsFormat')).toBeTruthy()
@@ -1256,14 +1435,6 @@ describe "Primary Screen Experiment module testing", ->
 						@psapc.$('.bv_aggregationMethod').val "unassigned"
 						@psapc.$('.bv_aggregationMethod').change()
 						expect(@psapc.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy()
-				it "should show error if normalizationRule is unassigned", ->
-					waitsFor ->
-						@psapc.$('.bv_normalizationRule option').length > 0
-					, 1000
-					runs ->
-						@psapc.$('.bv_normalizationRule').val "unassigned"
-						@psapc.$('.bv_normalizationRule').change()
-						expect(@psapc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
 				it "should show error if threshold type is efficacy and efficacy threshold not a number", ->
 					@psapc.$('.bv_autoHitSelection').click()
 					@psapc.$('.bv_thresholdTypeEfficacy').click()
