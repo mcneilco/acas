@@ -2,14 +2,15 @@ saveReports <- function(resultTable, spotfireResultTable, saveLocation, experime
   # Runs all of the reports needed for a successfully dry run
   #output: a list of links to files
   reportList <- list()
-  
+
+  # Reversed the two scenarios immediately below. Currently: if spotfireHost is not defined then report as txt (not spotfire)
   spotfireHost <- racas::applicationSettings$client.service.spotfire.host
   if (is.null(spotfireHost) || spotfireHost == "") {
+    reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
+                                        experiment, parameters, recordedBy)
+  } else {
     reportList$spotfireFile <- saveSpotfireFile(inputTable=spotfireResultTable, saveLocation, 
                                                 experiment, parameters, recordedBy)
-  } else {
-    reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
-                                          experiment, parameters, recordedBy)
   }
   
   return(reportList)

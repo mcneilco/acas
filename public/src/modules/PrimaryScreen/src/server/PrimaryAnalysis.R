@@ -188,24 +188,25 @@ removeControls <- function(validatedFlagData) {
   
   return(testOnly)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F, standardsDataFrame) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F,
+                         standardsDataFrame, normalizationDataFrame) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
   wellTypes <- rep.int("test", length(batchNames))
  
-  # Use information from the standardsDataFrame (defined in the GUI) passed as an argument to the current function to identify PC, NC, and VC
-  positiveStandards <- standardsDataFrame[standardsDataFrame$standardType=="PC", ]
-  negativeStandards <- standardsDataFrame[standardsDataFrame$standardType=="NC", ]
-  vehicleStandards <- standardsDataFrame[standardsDataFrame$standardType=="VC", ]
+  ### Use information from the standardsDataFrame (defined in the GUI) passed as an argument to the current function to identify PC, NC, and VC
+  ##positiveStandards <- standardsDataFrame[standardsDataFrame$standardType=="PC", ]
+  ##negativeStandards <- standardsDataFrame[standardsDataFrame$standardType=="NC", ]
+  ##vehicleStandards <- standardsDataFrame[standardsDataFrame$standardType=="VC", ]
   
-  # Throw errors if no positive or negative controls are defined in the GUI
-  if (is.null(nrow(positiveStandards)) | nrow(positiveStandards)==0) {
-    stopUser("No Positive Controls were defined")
-  }
-  if (is.null(nrow(negativeStandards)) | nrow(negativeStandards)==0) {
-    stopUser("Negative controls are missing")
-  }
+  ### Throw errors if no positive or negative controls are defined in the GUI
+  ##if (is.null(nrow(positiveStandards)) | nrow(positiveStandards)==0) {
+  ##  stopUser("No Positive Controls were defined")
+  ##}
+  ##if (is.null(nrow(negativeStandards)) | nrow(negativeStandards)==0) {
+  ##  stopUser("Negative controls are missing")
+  ##}
   
 
 #   if (positiveControl$concentration == "infinite") {
@@ -233,24 +234,24 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
 #        (concentrations==Inf && negativeControl$concentration==Inf))
 
 
-  # Flag wells as PC if they are within some tolerance from the concentrations defined in the GUI for all PC standards 
-  concPositiveFilter <- 0
-  for (currentStandard in positiveStandards$concentration) {
-    concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
-    concPositiveFilter <- concPositiveFilter + as.numeric(concentrationFilter) 
-  }
+  ### Flag wells as PC if they are within some tolerance from the concentrations defined in the GUI for all PC standards 
+  ##concPositiveFilter <- 0
+  ##for (currentStandard in positiveStandards$concentration) {
+  ##  concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
+  ##  concPositiveFilter <- concPositiveFilter + as.numeric(concentrationFilter) 
+  ##}
   
-  # Flag wells as NC if they are within some tolerance from the concentrations defined in the GUI for all NC standards
-  concNegativeFilter <- 0
-  for (currentStandard in negativeStandards$concentration) {
-    concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
-    concNegativeFilter <- concNegativeFilter + as.numeric(concentrationFilter) 
-  }
+  ### Flag wells as NC if they are within some tolerance from the concentrations defined in the GUI for all NC standards
+  ##concNegativeFilter <- 0
+  ##for (currentStandard in negativeStandards$concentration) {
+  ##  concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
+  ##  concNegativeFilter <- concNegativeFilter + as.numeric(concentrationFilter) 
+  ##}
   
-  # Update the PC, NC filters with wells that are designated as PC, NC AND they are within tolerance from the corresponding
-  # PC, NC concentrations (as defined in the standards section of the GUI)
-  posBatchFilter <- (batchNames %in% positiveStandards$batchCode) & as.logical(concPositiveFilter)
-  negBatchFilter <- (batchNames %in% negativeStandards$batchCode) & as.logical(concNegativeFilter)
+  ### Update the PC, NC filters with wells that are designated as PC, NC AND they are within tolerance from the corresponding
+  ### PC, NC concentrations (as defined in the standards section of the GUI)
+  ##posBatchFilter <- (batchNames %in% positiveStandards$batchCode) & as.logical(concPositiveFilter)
+  ##negBatchFilter <- (batchNames %in% negativeStandards$batchCode) & as.logical(concNegativeFilter)
 
 
 #   if(!is.null(concentrationUnits)) {
@@ -258,8 +259,8 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
 #     negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
 #   } 
   
-  wellTypes[posBatchFilter] <- "PC"
-  wellTypes[negBatchFilter] <- "NC"
+  ##wellTypes[posBatchFilter] <- "PC"
+  ##wellTypes[negBatchFilter] <- "NC"
   #   wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
   #               concentrationUnits==positiveControl$concentrationUnits & hasAgonistFilter] <- "PC"
   #   wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
@@ -268,7 +269,34 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
 #   if(!is.null(hasAgonist)) {
 #     wellTypes[!hasAgonist] <- "no agonist"
 #   } 
+
+  # Throw an error if absolutely no standards are defined in the GUI
+  if (is.null(length(standardsDataFrame$standardTypeEnumerated)) | length(standardsDataFrame$standardTypeEnumerated)==0) {
+    stopUser("No Standards were defined whatsoever.")
+  }
+  # Throw an error if no negative controls are defined in the GUI
+  if (is.null(length(grep("NC", standardsDataFrame$standardTypeEnumerated))) | length(grep("NC", standardsDataFrame$standardTypeEnumerated))==0) {
+    stopUser("No Negative Control Standards were defined.")
+  }
+  # Throw an error if no positive controls are defined in the GUI
+  if (is.null(length(grep("PC", standardsDataFrame$standardTypeEnumerated))) | length(grep("PC", standardsDataFrame$standardTypeEnumerated))==0) {
+    stopUser("No Positive Control Standards were defined.")
+  }  
+  # Throw an error if any of the standards was left unassigned in the GUI
+  if (any(standardsDataFrame$standardType=="unassigned")) {
+    stopUser("The standard type for at least one Standard was not defined. Please select a type: Positive Control, Negative Control, or Vehicle Control")
+  }
   
+  # Cycling through all the standards (PC, NC, VC) and update well types accordingly, also confirming that each standard is within tolerance 
+  #from the corresponding concentrations (as defined in the standards section of the GUI)
+  for (targetStandard in standardsDataFrame$standardTypeEnumerated) {
+    targetConc <- (standardsDataFrame$concentration[standardsDataFrame$standardTypeEnumerated==targetStandard])
+    currentStandardFilter <- batchNames==standardsDataFrame$batchCode[standardsDataFrame$standardTypeEnumerated==targetStandard]
+    currentStandardFilterConcConfirmed <- currentStandardFilter & (abs(concentrations-targetConc) <= (targetConc * toleranceRange)/100)
+    wellTypes[currentStandardFilterConcConfirmed] <- targetStandard
+  }  
+
+  ##print(wellTypes)  
   return(wellTypes)
 }
 getAnalysisGroupColumns <- function(replicateType) {
@@ -1759,6 +1787,79 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Define the data frame that holds information about multiple standards, as defined in the GUI
   standardsDataFrame <- rbindlist(parameters$standardCompoundList)
 
+    
+  # Define the data frame that holds information about normalization
+  normalizationDataFrame <- as.data.frame(rbind(as.numeric(parameters$normalization$positiveControl),as.numeric(parameters$normalization$negativeControl)))
+  setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
+  normalizationDataFrame$standardType <- c('PC', 'NC')
+  
+ # Throw an error if only PC or ony NC standard associated to normalization is defined in the GUI
+  scenarioOnlyNC <- (is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
+                    !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+  scenarioOnlyPC <- (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
+                    is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+     
+  if (scenarioOnlyNC | scenarioOnlyPC) {
+    stopUser("Either only a Positive Control or only a Negative Control was defined. Both are required for normalization calculations.")
+  }
+  
+  # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
+  # regarding normalization when defined in the GUI
+  if (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
+      !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'])) {
+    if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] ==
+        normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']) {
+      stopUser("The same standard was defined for both Positive Control and Negative Control in the normalization section. 
+                Different standards for Positive and Negative Controls are required for normalization calculations.")
+    }
+  }
+  
+
+
+  formStandardNumbering <- function(controlType, controlsVector) {
+    # Create list of enumerated standards of a single type of standard
+    # Arg:
+    #   controlType:    type of control (PC, NC, or VC) specified as a string
+    #   controlsVector: character vector containing any or all types of controls encountered (PC, NC, or VC)
+    #
+    # Returns:
+    #   standardNumber: vector enumerating all specified controls in their sequence of appearance
+    
+    # Identify which controls within the controlsVector are of controlType of interest and enumerate them
+    vector <- as.numeric(controlsVector==controlType)
+    counter <- cumsum(vector)
+    # Ignore the other types of controls by replacing them by zeros 
+    index <- as.character(counter*vector)
+    # Collate the controls to their number of appearance
+    standardNumber <- paste0(controlType, "-S", index)
+    # Replace the zeros by NA within the vector
+    standardNumber <- ifelse((standardNumber==paste0(controlType, "-S0")), yes=NA, no=standardNumber)
+    
+    return(standardNumber)
+  }
+  
+  
+  # Create the vectors enumeating all PC, NC, VC controls
+  pcNumber <- formStandardNumbering("PC",standardsDataFrame$standardType)
+  ncNumber <- formStandardNumbering("NC",standardsDataFrame$standardType)
+  vcNumber <- formStandardNumbering("VC",standardsDataFrame$standardType)
+  # Merge the PC, NC controls into the final vector of enumerated controls
+  pcncNumber <- ifelse((is.na(pcNumber)), yes=ncNumber, no=pcNumber)
+  # Merge the VC controls with the vector of PC, NC and store the updated vector into the standards dataframe
+  standardsDataFrame$standardTypeEnumerated <- ifelse((is.na(pcncNumber)), yes=vcNumber, no=pcncNumber)
+  
+  # If a normalization-related PC is defined then mark it separately in the standards database
+  normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
+  if (!is.na(normalizationPC)) {
+    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationPC] <- 'PC'
+  }
+  
+  # If a normalization-related NC is defined then mark it separately in the standards database
+  normalizationNC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']
+  if (!is.na(normalizationNC)) {
+    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationNC] <- 'NC'
+  }
+  
   # Validate all the batchcodes entered for multiple standards in the GUI
   standardsDataFrame$batchCode <- validateBatchCodes(standardsDataFrame$batchCode)
 
@@ -1770,10 +1871,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
   }
   
-print(standardsDataFrame)
+  ########print(standardsDataFrame)
+  ########print(normalizationDataFrame)
 
-  parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
-  parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
+  ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
+  ##parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
   
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
@@ -1852,10 +1954,15 @@ print(standardsDataFrame)
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit, 
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                         vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame)
+                                         vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame, normalizationDataFrame)
     
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
 
+    ####### uncomment L 1576
+    ####### comment L 2787
+    ####### saveReports.R, L 7 changed    
+    ####### saveSpotfireFile.R, L 4 changed
+    ####### createPDF.R, L 141 changed
 
     checkControls(resultTable)
     resultTable[, well:= instrumentData$assayData$wellReference]
@@ -1874,7 +1981,7 @@ print(standardsDataFrame)
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
-  
+
   # knock out the controls with NA values
   # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
   # but those aren't created until later in the code
@@ -2677,7 +2784,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- TRUE
   options("scipen"=15)
-  save(request, file="request.Rda")
+  #save(request, file="request.Rda")
   
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
