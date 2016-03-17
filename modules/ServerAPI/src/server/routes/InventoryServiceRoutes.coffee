@@ -919,7 +919,7 @@ exports.updateWellContent = (req, resp) ->
 			resp.statusCode = 500
 		else
 			resp.statusCode = 204
-			resp.json json
+		resp.json json
 
 exports.updateWellContentInternal = (wellContent, callback) ->
 	if global.specRunnerTestmode
@@ -928,7 +928,7 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 	else
 		console.debug 'incoming updateWellContentInternal request: ', wellContent
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/updateAmountInWell"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellStatus"
 		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
@@ -938,6 +938,7 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 			json: true
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
+			console.debug "response statusCode: #{response.statusCode}"
 			if !error && response.statusCode == 204
 				callback "success"
 			else
