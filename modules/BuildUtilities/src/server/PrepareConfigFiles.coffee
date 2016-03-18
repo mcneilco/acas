@@ -135,19 +135,20 @@ getApacheCompileOptions = ->
 		compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
 		compileOptions
 
-getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs = []
 	runUser = config.server.run.user
 	confs.push('User ' + runUser)
 	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
 	confs.push('Listen ' + config.server.rapache.listen + ':' + config.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
-	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
-	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
+	confs.push('StartServers ' + config.server.rapache.conf.startservers)
+	confs.push('ServerLimit ' + config.server.rapache.conf.serverlimit)
+	confs.push('ServerSignature ' + config.server.rapache.conf.serversignature)
 	confs.push('ServerName ' + config.client.host)
-	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
-	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
-	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
+	confs.push('HostnameLookups ' + config.server.rapache.conf.hostnamelookups)
+	confs.push('ServerAdmin ' + config.server.rapache.conf.serveradmin)
+	confs.push('LogFormat ' + config.server.rapache.conf.logformat)
 	confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
 	if Boolean(config.client.use.ssl)
@@ -166,7 +167,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedCon
 	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	return confs.join('\n')
 
-getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs = []
 	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
 	switch apacheVersion
@@ -208,22 +209,14 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	apacheSpecificConfs.join('\n')
 
-apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
-	{directive: 'ServerSignature', value: 'On'},
-	{directive: 'HostnameLookups', value: 'On'},
-	{directive: 'ServerAdmin', value: 'root@localhost'},
-	{directive: 'ServerSignature', value: 'On'},
-	{directive: 'LogFormat', value: '"%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined'},
-	{directive: 'RewriteEngine', value: 'On'}]
-
 writeApacheConfFile = (config)->
 	acasHome = path.resolve(__dirname,ACAS_HOME)
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
-		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	else
 		apacheSpecificConfString = ''
-	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
 	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
