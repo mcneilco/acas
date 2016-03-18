@@ -258,7 +258,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     } else {
       filePath <- paste0("experiments/", experimentCodeName, "/images")
     }
-    source(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R"), local = TRUE)
+    source(file.path(racas::applicationSettings$appHome, "src/r/PrimaryScreen/saveComparisonTraces.R"), local = TRUE)
     saveComparisonTraces(mainData, filePath)
     # Filenames: any rows with wellType other than 'test' are given an entry of NA
     filePaths <- ifelse(

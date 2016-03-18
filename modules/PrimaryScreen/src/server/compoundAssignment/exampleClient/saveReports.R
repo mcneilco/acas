@@ -33,7 +33,7 @@ saveTxtReport <- function(inputTable, saveLocation, experiment, parameters, reco
   inputTable <- data.table(inputTable)
   
   # Add path to inlineFileValues
-  resultTypes <- fread("public/src/modules/PrimaryScreen/src/conf/savingSettings.csv")
+  resultTypes <- fread("src/r/PrimaryScreen/conf/savingSettings.csv")
   inlineFileValueColumns <- resultTypes[valueType == "inlineFileValue", columnName]
   for (ifvc in inlineFileValueColumns) {
     if (ifvc %in% names(inputTable)) {

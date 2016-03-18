@@ -4,7 +4,7 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   require('reshape')
   require('gplots')
   require('gridExtra')
-  source("public/src/modules/PrimaryScreen/src/server/primaryAnalysisPlots.R")
+  source("src/r/PrimaryScreen/primaryAnalysisPlots.R", local = TRUE)
   
   #change this accordingly
   colCompare <- FALSE
