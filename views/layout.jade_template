@@ -6,7 +6,7 @@ html
         link(rel='stylesheet', href='/stylesheets/bootstrap.css')
         link(rel='stylesheet', href='/stylesheets/bootstrap-responsive.min.css')
         link(rel='stylesheet', href='/stylesheets/bootstrap-image-gallery.min.css')
-        link(rel='stylesheet', href='/src/lib/jqueryFileUpload/css/jquery.fileupload-ui.css')
+        link(rel='stylesheet', href='/lib/jqueryFileUpload/css/jquery.fileupload-ui.css')
         link(rel='stylesheet', href='/stylesheets/base.css')
         link(rel='stylesheet', href='/src/lib/jquery-ui-1.10.2.custom/css/smoothness/jquery-ui-1.10.2.custom.min.css')
         link(rel='stylesheet', href='/src/lib/bootstrap-tagsinput/bootstrap-tagsinput.css')
@@ -15,6 +15,7 @@ html
         link(rel='stylesheet', href='/src/lib/bootstrap-combobox/css/bootstrap-combobox.css')
         link(rel='stylesheet', href='/src/lib/jsxgraph/jsxgraph.css')
         link(rel='stylesheet', href='/src/lib/jstree/themes/default/style.min.css')
+        link(rel='stylesheet', href='/src/lib/handsontable/dist/handsontable.full.css')
         // inserted by PrepareModuleIncludes
 TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES
         // end inserted by PrepareModuleIncludes

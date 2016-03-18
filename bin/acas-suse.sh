@@ -35,7 +35,7 @@ case $1 in
         echo "$ACAS_HOME/app.js started"
 
         echo "starting apache instance $ACAS_HOME/conf/compiled/apache.conf"
-        /usr/sbin/httpd2 -f $ACAS_HOME/conf/compiled/apache.conf -k start
+        /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k start
         echo "apache instance $ACAS_HOME/conf/compiled/apache.conf started"
     ;;
     stop)
@@ -53,12 +53,12 @@ case $1 in
         echo "$ACAS_HOME/app.js stopped"
 
         echo "stoppping apache instance $ACAS_HOME/conf/compiled/apache.conf"
-        /usr/sbin/httpd2 -f $ACAS_HOME/conf/compiled/apache.conf -k stop
+        /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k stop
         echo "apache instance $ACAS_HOME/conf/compiled/apache.conf stopped"
     ;;
     reload)
         echo "reloading apache config $ACAS_HOME/conf/compiled/apache.conf"
-        /usr/sbin/httpd2 -f $ACAS_HOME/conf/compiled/apache.conf -k graceful
+        /usr/sbin/httpd -f $ACAS_HOME/conf/compiled/apache.conf -k graceful
         echo "apache config $ACAS_HOME/conf/compiled/apache.conf reloaded"
     ;;
 esac

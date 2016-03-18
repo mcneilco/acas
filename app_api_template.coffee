@@ -1,6 +1,6 @@
 global.logger = require "./routes/Logger"
-require './src/ConsoleLogWinstonOverride'
-csUtilities = require "./public/src/conf/CustomerSpecificServerFunctions.js"
+require './src/javascripts/Logging/ConsoleLogWinstonOverride'
+csUtilities = require "./src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 
 startApp = ->
 # Regular system startup
@@ -38,6 +38,10 @@ startApp = ->
 	#We just need the get user service
 	loginRoutes = require './routes/loginRoutes'
 	loginRoutes.setupAPIRoutes(app)
+
+	process.on 'uncaughtException', (err) ->
+		console.error 'Caught api exception: ' + err.stack
+		return
 
 	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 

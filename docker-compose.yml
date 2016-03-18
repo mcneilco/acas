@@ -1,0 +1,73 @@
+version: '2'
+services:
+  acas:
+#    build: .
+    image: mcneilco/acas:ACASDEV-591-multiple-controls
+    restart: always
+    ports:
+     - "3000:3000"
+     - "3001:3001"
+    environment:
+     - APP_NAME=development
+     - PREPARE_MODULE_CONF_JSON=true
+    volumes:
+     - /home/runner/build/src/r
+     - /home/runner/build/privateUploads
+     - /home/runner/build/bin
+     - /home/runner/build/conf/compiled
+     - /home/runner/logs
+     # Dev volumes below this line
+#     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
+    env_file:
+      - ./bin/environments/acas/acas.env
+# Dev Command
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
+# Start command
+    command: ["bin/acas.sh", "run", "acas", "start"]
+  rservices:
+    image: mcneilco/racas:development
+    restart: always
+    ports:
+     - "1080:1080"
+    environment:
+     - PREPARE_MODULE_CONF_JSON=false
+     - PREPARE_CONFIG_FILES=false
+    volumes_from:
+     - acas
+    command: ["bin/acas.sh", "run", "rservices"]
+  db:
+    image: mcneilco/acas-postgres:development
+    restart: always
+    volumes:
+     - dbstore:/var/lib/postgresql
+    env_file:
+      - ./bin/environments/postgres/postgres.env
+      - ./bin/environments/db/db.env
+      - ./bin/environments/acas/acas.env
+      - ./bin/environments/cmpdreg/cmpdreg.env
+      - ./bin/environments/seurat/seurat.env
+    ports:
+     - "5432:5432"
+  tomcat:
+    image: mcneilco/tomcat-maven
+    restart: always
+    depends_on: 
+     - db
+    ports:
+     - "8080:8080"
+    environment:
+     - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+    volumes_from:
+     - roo
+     - acas
+    env_file:
+      - ./bin/environments/acas/acas.env
+      - ./bin/environments/roo/roo.env
+    command: catalina.sh run
+  roo:
+    image: mcneilco/acas-roo-server:development
+    volumes:
+     - /usr/local/tomcat/webapps/acas
+    command: /bin/true
+volumes:
+  dbstore:
