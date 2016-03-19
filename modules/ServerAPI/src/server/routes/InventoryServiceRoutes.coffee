@@ -6,7 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
 	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', exports.updateContainerMetadataByContainerCode
 	app.put '/api/containers/jsonArray', exports.updateContainers
 	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
@@ -19,6 +19,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerCodesFromLabels', exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 	app.post '/api/updateWellContent', exports.updateWellContent
+	app.post '/api/moveToLocation', exports.moveToLocation
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -28,7 +29,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', loginRoutes.ensureAuthenticated, exports.getWellContent
 	app.get '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/:plateBarcode', loginRoutes.ensureAuthenticated, exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode
-	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', loginRoutes.ensureAuthenticated, exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode
+	app.put '/api/plateMetadataAndDefinitionMetadataByPlateBarcode', loginRoutes.ensureAuthenticated, exports.updateContainerMetadataByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByContainerCodes
 	app.get '/api/containers', loginRoutes.ensureAuthenticated, exports.getAllContainers
 	app.get '/api/containers/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.containersByTypeKind
@@ -38,7 +39,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateContainerName', loginRoutes.ensureAuthenticated, exports.validateContainerName
 	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
-	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
+	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -88,7 +89,10 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 					else
 						""
 				codeNamesJSON = JSON.stringify codeNames
-				exports.getContainersByCodeNamesInternal codeNamesJSON, (containers) =>
+				exports.getContainersByCodeNamesInternal codeNamesJSON, (containers, statusCode) =>
+					console.log "statusCode #{statusCode}"
+					if statusCode == 400
+						console.error "got errors requesting code names: #{JSON.stringify containers}"
 					if containers.indexOf('failed') > -1
 						callback JSON.stringify "getContainersByLabels failed"
 					else
@@ -295,35 +299,38 @@ exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (plateBar
 						responseArray.push response
 						callback responseArray
 
-exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcode = (req, resp) ->
-	exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal [req.body], (json) ->
+exports.updateContainerMetadataByContainerCode = (req, resp) ->
+	exports.updateContainerMetadataByContainerCodeInternal [req.body], (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
 		else if json.indexOf('conflict') > -1
 			resp.statusCode = 409
 		resp.json json
 
-exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (containerMetadataAndDefinitionMetadata, callback) ->
+exports.updateContainerMetadataByContainerCodeInternal = (containerMetadata, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updatePlateMetadataAndDefinitionMetadataByPlateBarcodeResponse
 	else
 		_ = require 'underscore'
-		codeNames = _.pluck containerMetadataAndDefinitionMetadata, "codeName"
+		codeNames = _.pluck containerMetadata, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
-		exports.getContainersByCodeNamesInternal codeNames, (containers) =>
-			console.debug "return from getContainersByCodeNamesInternal with #{JSON.stringify(containers)}"
+		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+			console.log "statusCode #{statusCode}"
+			if statusCode == 400
+				console.error "got errors requesting code names: #{JSON.stringify containers}"
+				callback containers, 400
 			if containers.indexOf('failed') > -1
-				callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
+				callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed"
 			else
-				barcodes = _.pluck containerMetadataAndDefinitionMetadata, "barcode"
+				barcodes = _.pluck containerMetadata, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes) =>
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
 					serverUtilityFunctions = require './ServerUtilityFunctions.js'
 					containerArray = []
 					recordedDate = new Date().getTime()
-					for containerMeta, index in containerMetadataAndDefinitionMetadata
+					for containerMeta, index in containerMetadata
 						container = new serverUtilityFunctions.Container(containers[index].container)
 						metaDataState = container.get('lsStates').getStatesByTypeAndKind('metadata', 'information')[0]
 						if typeof(containerMeta.barcode) != "undefined"
@@ -349,7 +356,6 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 									return
 						if typeof(containerMeta.description) != "undefined"
 							oldDescription = metaDataState.getValuesByTypeAndKind('stringValue', 'description')[0]
-							console.debug oldDescription
 							if oldDescription? && (containerMeta.description == null || oldDescription.get('stringValue') != containerMeta.description)
 								oldDescription.set 'ignored', true
 							if !oldDescription? || (containerMeta.description != null && oldDescription.get('stringValue') != containerMeta.description)
@@ -398,23 +404,20 @@ exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodesInternal = (conta
 						containerJSONArray = JSON.stringify(containerArray)
 						exports.updateContainersInternal containerJSONArray, (savedContainers) =>
 							if savedContainers[0] == "<"
-								callback JSON.stringify "updateContainerMetadataAndDefinitionMetadataByPlateBarcodesInternal failed"
+								callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed"
 							else
-								for containerMeta, index in containerMetadataAndDefinitionMetadata
+								for containerMeta, index in containerMetadata
 									savedContainer = new serverUtilityFunctions.Container(savedContainers[index])
-
-									containerMetadataAndDefinitionMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
-									containerMetadataAndDefinitionMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
-									containerMetadataAndDefinitionMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
-									containerMetadataAndDefinitionMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
-								callback containerMetadataAndDefinitionMetadata
+									containerMetadata[index].description = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'stringValue', 'description')?.get('stringValue') || null
+									containerMetadata[index].type = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'plate type')?.get('codeValue')|| null
+									containerMetadata[index].status = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'status')?.get('codeValue')|| null
+									containerMetadata[index].supplier = savedContainer.get('lsStates').getStateValueByTypeAndKind('metadata', 'information', 'codeValue', 'supplier code')?.get('codeValue') || null
+								callback containerMetadata
 
 exports.getContainersByCodeNames = (req, resp) ->
-	exports.getContainersByCodeNamesInternal req.body, (json) ->
-		if json.indexOf('failed') > -1
-			resp.statusCode = 500
-		else
-			resp.json json
+	exports.getContainersByCodeNamesInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
 
 exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 	if global.specRunnerTestmode
@@ -433,14 +436,15 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			json: true
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			if !error && response.statusCode in [200,400]
-				callback json
+			console.debug "response statusCode: #{response.statusCode}"
+			if !error
+				callback json, response.statusCode
 			else
 				console.error 'got ajax error trying to get getContainersByCodeNames'
 				console.error error
 				console.error json
 				console.error response
-				callback JSON.stringify "getContainersByCodeNames failed"
+				callback JSON.stringify("getContainersByCodeNames failed"), 500
 		)
 
 exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, callback) ->
@@ -947,4 +951,37 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 				console.error json
 				console.error response
 				callback JSON.stringify "updateWellContent failed"
+		)
+
+exports.moveToLocation = (req, resp) ->
+	exports.moveToLocationInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.moveToLocationInternal = (input, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.moveToLocationResponse
+	else
+		console.debug 'incoming moveToLocationJSON request: ', JSON.stringify input
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
+		console.debug 'base url: ', baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: input
+			json: true
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			console.debug "response statusCode: #{response.statusCode}"
+			if !error
+				callback json, response.statusCode
+			else
+				console.error 'got ajax error trying to get updateWellContent'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("updateWellContent failed"), 500
 		)
