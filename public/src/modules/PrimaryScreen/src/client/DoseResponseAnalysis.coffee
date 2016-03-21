@@ -10,7 +10,18 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		min: new Backbone.Model limitType: 'none'
 		slope: new Backbone.Model limitType: 'none'
 
-	initialize: ->
+	initialize: (options) ->
+		if options?
+			if(typeof(options.inactiveThreshold) == "undefined")
+				@set 'inactiveThreshold', null
+			else
+				@set 'inactiveThreshold', options.inactiveThreshold
+
+			if(typeof(options.theoreticalMax) == "undefined")
+				@set 'theoreticalMax', null
+			else
+				@set 'theoreticalMax', options.theoreticalMax
+
 		@fixCompositeClasses()
 		@on 'change:inactiveThreshold', @handleInactiveThresholdChanged
 		@on 'change:theoreticalMax', @handleTheoreticalMaxChanged
@@ -53,11 +64,11 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
-		if  _.isNaN(attrs.inactiveThreshold)
+		if  attrs.inactiveThresholdMode &&_.isNaN(attrs.inactiveThreshold)
 			errors.push
 				attribute: 'inactiveThreshold'
 				message: "Inactive threshold value must be set to a number"
-		if  _.isNaN(attrs.theoreticalMax)
+		if  attrs.theoreticalMaxMode && _.isNaN(attrs.theoreticalMax)
 			errors.push
 				attribute: 'theoreticalMax'
 				message: "Theoretical max value must be set to a number"
