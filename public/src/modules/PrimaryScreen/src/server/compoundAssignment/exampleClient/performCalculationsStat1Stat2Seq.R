@@ -2,7 +2,7 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, experiment
   # resultTable: data.table
   
   # This assumes that there is only one normalization rule passed through the GUI
-  resultTable <- normalizeData(resultTable, parameters$normalizationRule)
+  resultTable <- normalizeData(resultTable, parameters)
   
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
@@ -88,19 +88,6 @@ computeActivity <- function(mainData, transformation) {
   } else {
     return(mainData$activity)
   }	
-}
-
-normalizeData <- function(resultTable, normalization) {
-  if (normalization=="plate order") {
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= assayBarcode]
-  } else if (normalization=="row order") {
-    resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(assayBarcode,plateRow)]
-  } else {
-    resultTable[,normalizedActivity:=resultTable$activity]
-  }
-  
-  return(resultTable)
 }
 
 # computeNormalized  <- function(values, wellType, flag) {
