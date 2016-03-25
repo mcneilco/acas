@@ -266,7 +266,6 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 	else
 		console.debug "incoming getContainerAndDefinitionContainerByContainerCodeNames request: '#{containerCodes}'"
 		exports.getContainersByCodeNamesInternal containerCodes, (containers, statusCode) =>
-			console.log JSON.stringify(containers)
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback containers, 400
@@ -283,11 +282,13 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						outArray = []
 						for containerCode, index in containerCodes
 							containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
+#							console.log containerPreferredEntity
+#							console.log preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+#								console.log types
 							container = new containerPreferredEntity.model(containers[index].container)
 							definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
 							definition = new definitionPreferredEntity.model(definitions[index].definition)
 							containerValues =  container.getValues()
-							console.log containerValues
 							definitionValues =  definition.getValues()
 							out = _.extend containerValues, definitionValues
 							out.barcode = container.get('barcode').get("labelText")
