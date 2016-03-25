@@ -12,7 +12,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 
-configuredEntityTypes = require '../src/javascripts/ServerAPI/ConfiguredEntityTypes.js'
+configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
 
 

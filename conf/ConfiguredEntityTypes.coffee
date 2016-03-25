@@ -46,7 +46,7 @@ exports.entityTypes =
     displayName: 'Plate'
     sourceExternal: false
     parent: false
-    model: require("../../../routes/ServerUtilityFunctions.js").ContainerPlate
+    model: require("../routes/ServerUtilityFunctions.js").ContainerPlate
 
   'Container Tube':
     type: 'container'
@@ -55,7 +55,7 @@ exports.entityTypes =
     displayName: 'Tube'
     sourceExternal: false
     parent: false
-	  model: require("../../../routes/ServerUtilityFunctions.js").ContainerTube
+	  model: require("../routes/ServerUtilityFunctions.js").ContainerTube
 
   'Definition Container Plate':
     type: 'definition container'
@@ -64,4 +64,4 @@ exports.entityTypes =
     displayName: 'Definition Plate'
     sourceExternal: false
     parent: false
-    model: require("../../../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
+    model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
