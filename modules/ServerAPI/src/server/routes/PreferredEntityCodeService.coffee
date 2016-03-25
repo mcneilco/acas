@@ -51,6 +51,12 @@ exports.getSpecificEntityType = (displayName, callback) ->
 	else
 		callback {}
 
+exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
+	if entityType?
+		return entityType
+	else
+		return {}
 
 ####################################################################
 #   REFERENCE CODES

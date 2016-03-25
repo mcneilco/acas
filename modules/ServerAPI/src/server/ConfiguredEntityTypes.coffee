@@ -38,3 +38,30 @@ exports.entityTypes =
     displayName: 'Gene ID'
     sourceExternal: false
     parent: false
+
+  'Container Plate':
+    type: 'container'
+    kind: 'plate'
+    codeOrigin: 'ACAS Container'
+    displayName: 'Plate'
+    sourceExternal: false
+    parent: false
+    model: require("../../../routes/ServerUtilityFunctions.js").ContainerPlate
+
+  'Container Tube':
+    type: 'container'
+    kind: 'tube'
+    codeOrigin: 'ACAS Container'
+    displayName: 'Tube'
+    sourceExternal: false
+    parent: false
+	  model: require("../../../routes/ServerUtilityFunctions.js").ContainerTube
+
+  'Definition Container Plate':
+    type: 'definition container'
+    kind: 'plate'
+    codeOrigin: 'ACAS Container'
+    displayName: 'Definition Plate'
+    sourceExternal: false
+    parent: false
+    model: require("../../../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
