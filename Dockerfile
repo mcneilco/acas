@@ -1,4 +1,4 @@
-FROM 	mcneilco/racas:reintegration
+FROM 	mcneilco/racas:1.8.0-release
 USER 	root
 RUN 	npm install -g grunt grunt-cli forever
 COPY 	package.json /home/runner/package.json
