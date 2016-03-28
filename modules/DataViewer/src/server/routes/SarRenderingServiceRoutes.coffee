@@ -13,7 +13,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 _ = require 'underscore'
 request = require 'request'
-configuredEntityTypes = require '../src/javascripts/ServerAPI/ConfiguredEntityTypes.js'
+configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 sarRenderConf = require '../public/javascripts/conf/DataViewer/SarRenderConf.js'
 codeService = require '../routes/PreferredEntityCodeService.js'
 config = require '../conf/compiled/conf.js'
