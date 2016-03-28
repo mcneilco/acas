@@ -19,7 +19,7 @@ PLATE_INFO_MODEL_FIELDS =
 
 
 class PlateInfoModel extends Backbone.Model
-  url: "/api/updatePlate"
+  url: "/api/plateMetadataAndDefinitionMetadataByPlateBarcode"
 
   defaults:
     barcode: ""
@@ -33,9 +33,9 @@ class PlateInfoModel extends Backbone.Model
     numberOfRows: ""
 
   validation:
-    barcode:
-      required: true
-      msg: "Please enter a valid Plate Barcode"
+#    barcode:
+#      required: true
+#      msg: "Please enter a valid Plate Barcode"
     plateSize: [
       required: true
       msg: "Please enter the plate size"

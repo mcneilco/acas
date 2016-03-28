@@ -49,24 +49,16 @@ class CreatePlateController extends Backbone.View
   updateModel: (data) =>
     @model.set data
     if @model.isValid(true)
-      console.log "model is valid"
       @$("button[name='submit']").prop("disabled", false)
     else
-      console.log "model is not valid"
       @$("button[name='submit']").prop("disabled", true)
-
-    console.log "@model"
-    console.log @model
 
   handleClickStart: =>
     @trigger CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @model
 
   handleSuccessfulSave: (updatedModel) =>
-    console.log "saved and got"
-    console.log updatedModel
     @model.reset()
     @render()
-
 
 
 module.exports =

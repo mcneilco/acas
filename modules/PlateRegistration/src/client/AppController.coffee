@@ -25,6 +25,8 @@ class AppController extends Backbone.View
   initialize: ->
     @newPlateDesignController = new NewPlateDesignController()
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
+    @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT_FROM_TABLE, @handleAddContentFromTable
+
     @createPlateController = new CreatePlateController({model: new PlateModel()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
     @dataServiceController = new DataServiceController()
@@ -48,6 +50,13 @@ class AppController extends Backbone.View
     @dataServiceController.doServiceCall(@handleAddContentSuccess)
 
     #alert "add content..."
+
+  handleAddContentFromTable: (addContentModel) =>
+    console.log "identifiers"
+    console.log addContentModel
+
+    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback}))
+    @dataServiceController.doServiceCall()
 
   handleAddContentSuccess: () =>
     @newPlateDesignController.handleAddContentSuccessCallback()

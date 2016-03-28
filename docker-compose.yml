@@ -19,12 +19,17 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
+     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
+     - ./modules/DataViewer:/home/runner/acas/modules/DataViewer
+     - ./modules/PlateRegistration:/home/runner/acas/modules/PlateRegistration
+     - ./bin/acas.sh:/home/runner/build/bin/acas.sh
+     - ./conf:/home/runner/build/conf
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
-#    command: ["bin/acas.sh", "run", "acas", "dev"]
+    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-    command: ["bin/acas.sh", "run", "acas", "start"]
+#    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:compound-inventory
     restart: always

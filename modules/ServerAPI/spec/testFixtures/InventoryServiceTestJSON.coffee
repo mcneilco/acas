@@ -7917,7 +7917,7 @@
 		wellName: "AC030"
 	]
 
-	exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse = [
+	exports.getContainerAndDefinitionContainerByContainerByLabelResponse = [
 		barcode: "12"
 		codeName: "CONT-00000002"
 		description: null

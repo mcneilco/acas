@@ -371,7 +371,7 @@ cd $ACAS_HOME
 
 # Run Prepare config files as the compiled directory should be empty
 if [ "$PREPARE_CONFIG_FILES" = "true" ]; then
-    grunt execute:prepare_config_files
+    grunt --base $ACAS_HOME execute:prepare_config_files
 fi
 
 #Get ACAS config variables

@@ -1,11 +1,13 @@
 validAddContentModel =
   identifierType: "identifierType"
   identifiers: "identifiers"
-  volume: 'volume'
-  concentration: "concentration"
+  volume: 100
+  concentration: 5
   fillStrategy: "fillStrategy"
   fillDirection: "fillDirection"
   wells: "wells"
+  numberOfIdentifiers: 5
+  numberOfCellsSelected: 5
 
 listOfIdentifiers =
   singleIdentifierInput: "Only one identifier here"

@@ -222,11 +222,6 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 				callback JSON.stringify "getWellContent failed"
   		)
 
-exports.getPlateMetadataAndDefinitionMetadataByPlateBarcode = (req, resp) ->
-	exports.getContainerMetadataAndDefinitionMetadataByContainerBarcodesInternal [req.params.plateBarcode], "container", "plate", "barcode", "barcode", (json, statusCode) ->
-		resp.statusCode = statusCode
-		resp.json json[0]
-
 exports.getContainerAndDefinitionContainerByContainerByLabel = (req, resp) ->
 	exports.getContainerAndDefinitionContainerByContainerByLabelInternal [req.params.label], (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -235,7 +230,7 @@ exports.getContainerAndDefinitionContainerByContainerByLabel = (req, resp) ->
 exports.getContainerAndDefinitionContainerByContainerByLabelInternal = (labels, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
-		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerByLabelInternalResponse
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerByLabelResponse
 	else
 		console.debug "incoming getContainerAndDefinitionContainerByContainerByLabel request: '#{labels}'"
 		exports.getContainerCodesByLabelsInternal labels, null, null, null, null, (containerCodes, statusCode) =>

@@ -39,6 +39,9 @@ class IdentifierValidationController extends Backbone.View
     )
     @validIdentifiers = _.union(aliasedIdentifiers, validIdentifier)
 
+    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS, @aliasedRequestNames
+    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS, @invalidRequestNames
+
     console.log "@aliasedRequestNames"
     console.log @aliasedRequestNames
 
@@ -59,6 +62,11 @@ class IdentifierValidationController extends Backbone.View
       @handleWarning(@aliasedRequestNames)
     else if _.size(@invalidRequestNames) > 0
       @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
+      @handleError(@invalidRequestNames)
+      #@successCallback @addContentModel
+
+
+    if _.size(@invalidRequestNames) > 0
       @handleError(@invalidRequestNames)
 
   getAliasedRequestNames: (requestNames) ->

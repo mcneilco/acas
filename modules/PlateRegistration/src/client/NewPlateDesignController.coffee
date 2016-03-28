@@ -18,6 +18,8 @@ $ = require('jquery')
 
 NEW_PLATE_DESIGN_CONTROLLER_EVENTS =
   ADD_CONTENT: "AddContent"
+  ADD_CONTENT_FROM_TABLE: "AddContentFromTable"
+
 
 class NewPlateDesignController extends Backbone.View
   template: require('html!./NewPlateDesignTemplate.tmpl')
@@ -43,8 +45,6 @@ class NewPlateDesignController extends Backbone.View
     @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController})
 
   completeInitialization: (plateAndWellData) =>
-    console.log "completeInitialization - plateAndWellData"
-    console.log plateAndWellData
     @plateInfoController.updatePlate plateAndWellData.plateMetadata
     @plateViewController.completeInitialization(plateAndWellData.wellContent, plateAndWellData.plateMetadata)
     @serialDilutionController.completeInitialization(plateAndWellData.plateMetadata)
@@ -60,9 +60,10 @@ class NewPlateDesignController extends Backbone.View
     @serialDilutionController.updateSelectedRegion regionSelectedBoundries
     @addContentController.updateSelectedRegion regionSelectedBoundries
 
-  handleContentUpdated: (regionSelectedBoundries) =>
-    console.log "NewPlateDesignController - handleRegionSelected"
-    console.log regionSelectedBoundries
+  handleContentUpdated: (addContentModel) =>
+    console.log "NewPlateDesignController - handleContentUpdated"
+    console.log addContentModel
+    @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT_FROM_TABLE, addContentModel
 
   handleAddContent: (addContentModel) =>
     @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, addContentModel
@@ -72,6 +73,13 @@ class NewPlateDesignController extends Backbone.View
     console.log addContentModel
     @plateViewController.addContent addContentModel
     @addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
+
+  handleAddContentFromTableSuccessCallback: (addContentModel) =>
+    console.log "handleAddContentFromTableSuccessCallback "
+    console.log "addContentModel"
+    console.log addContentModel
+    @plateViewController.plateTableController.identifiersValidated addContentModel
+
 
   handleApplyDilution: (dilutionModel) =>
     console.log "dilutionModel"
