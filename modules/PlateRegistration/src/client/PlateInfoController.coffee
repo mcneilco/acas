@@ -79,9 +79,29 @@ class PlateInfoController extends Backbone.View
   updateModel: (data) =>
     @model.set data
     console.log "@model"
-    console.log @model
-    @model.save()
+    #date = new Date()
+    @model.set("recordedBy", "acas")
+    @model.set "createdDate", null
+    $.ajax(
+      data: @model.toJSON()
+      dataType: "json"
+      method: "PUT"
+      url: @model.url
+    )
+    .done((data, textStatus, jqXHR) =>
+      console.log "data"
+      console.log data
+    )
+    .fail((jqXHR, textStatus, errorThrown) =>
+      console.error("something went wrong updating plate meta data")
+      console.log errorThrown
+    )
+
+    #$.ajax()
+    console.log @model.toJSON()
+    #@model.save()
     if @model.isValid(true)
+
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID
     else
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID

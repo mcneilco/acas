@@ -21,10 +21,12 @@ class DataServiceController extends Backbone.View
     @listenTo @serviceController, "Warning", @handleWarning
     @listenTo @serviceController, "Error", @handleError
     @listenTo @serviceController, "CloseModal", @closeModal
+    @listenTo @serviceController, "SaveSuccess", @displaySuccessFields
     @$("div[name='serviceControllerContainer']").html @serviceController.render().el
     @$(".bv_serviceCallProgressText").html @serviceController.serviceCallProgressText
 
   doServiceCall: =>
+    @setupMessageFields()
     @hideSuccessFields()
     @openModal()
 
@@ -35,7 +37,7 @@ class DataServiceController extends Backbone.View
       url: @serviceController.url
     )
     .done((data, textStatus, jqXHR) =>
-      @displaySuccessFields()
+      #@displaySuccessFields()
       @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
     )
     .fail((jqXHR, textStatus, errorThrown) =>
@@ -43,6 +45,7 @@ class DataServiceController extends Backbone.View
     )
 
   doServiceCalls: =>
+    @setupMessageFields()
     @hideSuccessFields()
     @openModal()
     numberOfServiceCalls = _.size(@serviceController.url)
@@ -58,7 +61,7 @@ class DataServiceController extends Backbone.View
         serviceCall.callback(data)
         numberOfCompletedServiceCalls++
         if numberOfCompletedServiceCalls is numberOfServiceCalls
-          @displaySuccessFields()
+          #@displaySuccessFields()
           @serviceController.handleSuccessCallback()
       )
       .fail((jqXHR, textStatus, errorThrown) =>
@@ -77,12 +80,19 @@ class DataServiceController extends Backbone.View
     @$("div[name='serviceControllerContainer']").removeClass "hide"
     @$("div[name='closeButtons']").removeClass "hide"
 
+  setupMessageFields: =>
+    @$("div[name='warningButtons']").addClass "hide"
+    @$("div[name='errorButtons']").addClass "hide"
+    @$("div[name='serverErrorButtons']").addClass "hide"
+    @$("div[name='closeButtons']").addClass "hide"
+
   hideSuccessFields: =>
     @$("div[name='serviceCallProgressFeedback']").removeClass "hide"
     @$("div[name='serviceControllerContainer']").addClass "hide"
     @$("div[name='closeButtons']").addClass "hide"
 
   handleWarning: =>
+    console.log "handleWarning"
     @$("div[name='warningButtons']").removeClass "hide"
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serviceControllerContainer']").removeClass "hide"

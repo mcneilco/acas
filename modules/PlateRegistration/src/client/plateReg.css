@@ -17,7 +17,7 @@
 
 .editorCollapseButton {
   /*margin-top: 191px;*/
-  margin-top: 245px;
+  margin-top: 335px;
   padding-top: 6px;
   padding-bottom: 6px;
   width: 40px;
@@ -216,7 +216,7 @@
 
 .toolbarWell {
   background-color: #E9E9E9;
-  width: 850px;
+  width: 950px;
   padding: 10px;
 }
 
@@ -225,7 +225,7 @@
 }
 
 .toolbarViewButton {
-  width: 125px;
+  width: 175px;
 }
 
 .toolbarViewButtonSmall {
@@ -250,4 +250,14 @@
 
 .tabSelected {
   background-color: #fafafa !important;
+}
+
+.aliasedIdentifierCell {
+  background-color: #fcf8e3 !important;
+  border: solid 1px yellow;
+}
+
+.invalidIdentifierCell {
+  background-color: #a94442 !important;
+  border: solid 1px red;
 }

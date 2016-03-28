@@ -4,7 +4,7 @@ _ = require('lodash')
 require('expose?$!expose?jQuery!jquery')
 
 LOAD_PLATE_CONTROLLER_PROPERTIES =
-  PLATE_META_INFO_URL: '/api/getPlateMetadataAndDefinitionMetadataByPlateBarcode/'
+  PLATE_META_INFO_URL: '/api/plateMetadataAndDefinitionMetadataByPlateBarcode/'
   WELL_CONTENT_URL: '/api/getWellContentByPlateBarcode/'
 
 DATA_SERVICE_CONTROLLER_EVENTS =

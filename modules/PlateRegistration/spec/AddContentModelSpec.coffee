@@ -37,7 +37,7 @@ describe "AddContentModel", ->
       @addContent = new AddContentModel()
     it "should have an empty 'identifierType' field", ->
       expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE)).toBeDefined()
-      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE)).toEqual('')
+      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE)).toEqual('compoundBatchId')
 
     it "should have an empty 'identifiers' field", ->
       expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)).toBeDefined()
@@ -53,11 +53,11 @@ describe "AddContentModel", ->
 
     it "should have an empty 'fillStrategy' field", ->
       expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)).toBeDefined()
-      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)).toEqual('')
+      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)).toEqual('inOrder')
 
     it "should have an empty 'fillDirection' field", ->
       expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION)).toBeDefined()
-      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION)).toEqual('')
+      expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION)).toEqual('rowMajor')
 
     it "should have an empty 'wells' field", ->
       expect(@addContent.get(ADD_CONTENT_MODEL_FIELDS.WELLS)).toBeDefined()
@@ -67,43 +67,85 @@ describe "AddContentModel", ->
     beforeEach ->
       @addContent = new AddContentModel(fixtures.validAddContentModel)
 
-    xit "should require 'identifierType' to be set and non-empty", ->
+    it "should require 'identifierType' to be set and non-empty", ->
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE, "")
       expect(@addContent.isValid(true)).toBeFalsy()
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE, "identifierType")
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    xit "should require 'identifiers' to be set and non-empty", ->
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, "")
+    it "should require at least one of the following fields to be set and non-empty: 'batchConcentration', 'identifiers', 'amount'", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, "")
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, "")
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, [])
       expect(@addContent.isValid(true)).toBeFalsy()
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, "identifiers")
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, 10)
+      expect(@addContent.isValid(true)).toBeTruthy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, "")
+      expect(@addContent.isValid(true)).toBeFalsy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, 100)
+      expect(@addContent.isValid(true)).toBeTruthy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, "")
+      expect(@addContent.isValid(true)).toBeFalsy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, ["DNS1"])
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    xit "should require 'volume' to be set and non-empty", ->
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.VOLUME, "")
+    it "should require the 'amount' field to be a number", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, 10)
+      expect(@addContent.isValid(true)).toBeTruthy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, "five hundred")
       expect(@addContent.isValid(true)).toBeFalsy()
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.VOLUME, "volume")
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, 500)
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    xit "should require 'concentration' to be set and non-empty", ->
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.CONCENTRATION, "")
+    it "should require the 'batchConcentration' field to be a number", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.AMOUNT, 10)
+      expect(@addContent.isValid(true)).toBeTruthy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, "five hundred")
       expect(@addContent.isValid(true)).toBeFalsy()
-      @addContent.set(ADD_CONTENT_MODEL_FIELDS.CONCENTRATION, "concentration")
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.BATCH_CONCENTRATION, 500)
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    xit "should require 'fillStrategy' to be set and non-empty", ->
+    it "should require 'fillStrategy' to be set and non-empty", ->
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "")
       expect(@addContent.isValid(true)).toBeFalsy()
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "fillStrategy")
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    xit "should require 'fillDirection' to be set and non-empty", ->
+    it "should require 'fillDirection' to be set and non-empty", ->
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION, "")
       expect(@addContent.isValid(true)).toBeFalsy()
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION, "fillDirection")
       expect(@addContent.isValid(true)).toBeTruthy()
 
+    it "should require that at least one cell is selected in the plate layout table", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 0)
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, 0)
+      expect(@addContent.isValid(true)).toBeFalsy()
 
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, 1)
+      expect(@addContent.isValid(true)).toBeTruthy()
+
+    it "if the user enters any identifiers and selects either 'Fill region in order' or 'Fill region in random order', it should require the number of entered identifiers to equal the number of selected wells", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, 5)
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 3)
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "inOrder")
+      expect(@addContent.isValid(true)).toBeFalsy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 5)
+      expect(@addContent.isValid(true)).toBeTruthy()
+
+    it "should require that the user enter only 1 identifier if the 'Fill Region with Same Batch ID' option is selected", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 3)
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "sameIdentifier")
+      expect(@addContent.isValid(true)).toBeFalsy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 1)
+      expect(@addContent.isValid(true)).toBeTruthy()
+
+    it "should require that the user enter 1 identifier if the 'Fill Region with Same Batch ID' option is selected", ->
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 0)
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "sameIdentifier")
+      expect(@addContent.isValid(true)).toBeFalsy()
+      @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 1)
+      expect(@addContent.isValid(true)).toBeTruthy()
 
   xdescribe "error messages", ->
     beforeEach ->

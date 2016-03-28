@@ -22,12 +22,12 @@
             </ul>
         </div>
         <div class="btn-group">
-            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown">Color By Conc.</button>
+            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="selectedColorBy">No Color</button>
             <ul class="dropdown-menu" role="menu">
-                <li><a href="#">Color By Compound</a></li>
-                <li><a href="#">Color By Volume</a></li>
-                <li><a href="#">Color By Concentration</a></li>
-                <li><a href="#">No Color</a></li>
+                <li><a href="#" name="colorByCompound">Color By Compound</a></li>
+                <li><a href="#" name="colorByVolume">Color By Volume</a></li>
+                <li><a href="#" name="colorByConcentration">Color By Concentration</a></li>
+                <li><a href="#" name="colorByNone">No Color</a></li>
             </ul>
         </div>
         <button class="btn btn-default toolbarViewButtonSmall toolbarSmallText">AA</button>
@@ -37,14 +37,15 @@
         <button class="btn btn-default toolbarViewButtonSmall" name="displayToolTips"><i class="fa fa-search-plus"></i></button>
     </div>
 
-    <button class="btn btn-default">Save</button>
+    <!--<button class="btn btn-default">Save</button>-->
     <button class="btn btn-primary">Complete</button>
 
 </div>
 
 <!-- TABLE -->
 <div style="width: 800px; height: 600px;">
-<div class="well acasWell editorHandsontable" name="plateTableContainer" style="width: 100%; height: 100%; overflow: hidden;">
+<!--<div class="well acasWell editorHandsontable" name="plateTableContainer" style="width: 100%; height: 100%; overflow: hidden;">-->
+    <div class="editorHandsontable" name="plateTableContainer" style="width: 100%; height: 100%; overflow: hidden;">
     Handsontable goes here.
 </div>
 </div>

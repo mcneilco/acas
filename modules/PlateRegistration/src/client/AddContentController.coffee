@@ -33,7 +33,7 @@ class AddContentController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
-    @listenTo @model, "change", @render
+    #@listenTo @model, "change", @render
     @selectedRegionBoundries = {}
     @plateFillerFactory = new PlateFillerFactory()
 
@@ -41,6 +41,7 @@ class AddContentController extends Backbone.View
     "change textarea[name='identifiers']": "handleIdentifiersChanged"
     "paste textarea[name='identifiers']": "handleIdentifiersPaste"
     "change input[name='fillStrategy']": "handleFillStrategyChanged"
+    "change input[name='fillDirection']": "handleFillDirectionChanged"
     "change input[type='text']": "handleFormFieldUpdate"
     "click button[name='add']": "handleAddClick"
 
@@ -53,7 +54,15 @@ class AddContentController extends Backbone.View
         opt.value == @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY)
       )
       $(fillStrategy).prop("checked", true)
-    window.FOOMODEL = @model
+
+    if @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION) is ""
+      $("input[name='fillDirection']").prop('checked', false)
+    else
+      fillDirection = _.find(@$("input[name='fillDirection']"), (opt) =>
+        opt.value == @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION)
+      )
+      $(fillDirection).prop("checked", true)
+
     if @model.isValid(true)
       @enableAddButton()
     else
@@ -74,6 +83,7 @@ class AddContentController extends Backbone.View
   handleIdentifiersAdded: (validatedIdentifiers) =>
     @model.reset()
     @removeInsertedIdentifiers validatedIdentifiers
+    @render()
 
   removeInsertedIdentifiers: (insertedIdentifiers) =>
     remainingIdentifiers = _.difference(@model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), insertedIdentifiers)
@@ -89,22 +99,33 @@ class AddContentController extends Backbone.View
     data[target.attr('name')] = $.trim(target.val())
     #@updateModel data
     @model.set data
+    @render()
 
   handleIdentifiersPaste: =>
     console.log "handleIdentifiersPaste"
 
   handleIdentifiersChanged: =>
-    listOfIdentifiers = @parseIdentifiers @$("textarea[name='identifiers']").val()
+    console.log "handleIdentifiersChanged"
+    listOfIdentifiers = @parseIdentifiers $.trim(@$("textarea[name='identifiers']").val())
+    console.log "listOfIdentifiers"
+    console.log listOfIdentifiers
     updatedValues = {}
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS] =  listOfIdentifiers
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS_DISPLAY_STRING] =  @formatListOfIdentifiersForDisplay(listOfIdentifiers)
     updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] =  _.size(listOfIdentifiers)
+    console.log "updatedValues"
+    console.log updatedValues
     @model.set updatedValues
 
-    #@render()
+    @render()
 
   handleFillStrategyChanged: (e) =>
     @model.set ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, e.currentTarget.value
+    @render()
+
+  handleFillDirectionChanged: (e) =>
+    @model.set ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION, e.currentTarget.value
+    @render()
 
   formatListOfIdentifiersForDisplay: (identifiers) =>
     identifiersDisplayString = _.reduce(identifiers, (memo, identifier) ->
@@ -137,7 +158,7 @@ class AddContentController extends Backbone.View
       unless _.size(ids) is 1
         listOfIdentifiers = listOfIdentifiers.concat ids
     )
-    if _.size(listOfIdentifiers) is 0
+    if _.size(listOfIdentifiers) is 0 and identifiers isnt ""
       listOfIdentifiers = [identifiers]
 
     listOfIdentifiers

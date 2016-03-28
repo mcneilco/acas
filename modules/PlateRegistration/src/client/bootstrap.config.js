@@ -7,7 +7,8 @@ module.exports = {
         'transition': true,
         'modal': true,
         'tooltip': true,
-        'dropdown': true
+        'dropdown': true,
+        'collapse': true
     },
     styles: {
         // add every bootstrap style you need
