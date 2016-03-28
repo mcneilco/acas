@@ -377,3 +377,14 @@ client.service.users.path=/api/users
 server.file.server.path=privateUploads
 server.temp.file.server.path=privateTempFiles
 server.service.persistence.jdbc.validation.query=select version()
+
+
+#Rapache conf file configs
+server.rapache.conf.startservers=1
+server.rapache.conf.serverlimit=5
+server.rapache.conf.serversignature=On
+server.rapache.conf.hostnamelookups=On
+server.rapache.conf.serveradmin=root@localhost
+server.rapache.conf.serversignature=On
+server.rapache.conf.logformat='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
+server.rapache.conf.rewriteengine=On

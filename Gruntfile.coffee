@@ -450,7 +450,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 				tasks: "newer:copy:module_jade"
 			copy_conf:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
 				tasks: "newer:copy:conf"
 			module_legacy_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
@@ -471,7 +471,7 @@ module.exports = (grunt) ->
 			copy_custom_public_conf:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.R"]
 				tasks: "newer:copy:public_conf_r"
-		prepare_module_includes:
+			prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
 					#app_template
@@ -491,7 +491,8 @@ module.exports = (grunt) ->
 			prepare_config_files:
 				files: [
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareConfigFiles.js"
-					"<%= build %>/conf/conf*.properties"
+					"<%= build %>/conf/*.properties"
+					"<%= build %>/conf/*.properties.example"
 					"<%= build %>/src/r/*"
 				]
 				tasks: ["execute:prepare_config_files"]
@@ -505,6 +506,7 @@ module.exports = (grunt) ->
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."
+	console.log "working directory '#{__dirname}'"
 	console.log "setting build to: #{build}"
 	acas_base =  path.relative '.', grunt.option('acasBase') || process.env.ACAS_BASE || '.'
 	if acas_base == ""

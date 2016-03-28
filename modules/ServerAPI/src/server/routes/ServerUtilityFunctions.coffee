@@ -1,6 +1,5 @@
 _ = require 'underscore'
 Backbone = require 'backbone'
-_ = require 'lodash'
 $ = require 'jquery'
 
 basicRScriptPreValidation = (payload) ->
@@ -521,7 +520,7 @@ class Value extends Backbone.Model
 				@.set @get('lsType'), @get('value')
 			else
 				@set ignored: true
-				@trigger 'createNewValue', @get('lsKind'), newVal
+				@trigger 'createNewValue', @get('key'), newVal
 
 class ValueList extends Backbone.Collection
 	model: Value
@@ -716,7 +715,6 @@ class Thing extends Backbone.Model
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
 
-
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
 			for dValue in @lsProperties.defaultValues
@@ -742,7 +740,7 @@ class Thing extends Backbone.Model
 					newValue.set dValue.type, dValue.value
 				#setting top level model attribute's value to equal valueType's value
 				# (ie set "value" to equal value in "stringValue")
-				@get(dValue.kind).set("value", newValue.get(dValue.type))
+				@get(dValue.key).set("value", newValue.get(dValue.type))
 
 	createNewValue: (vKind, newVal) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
@@ -999,6 +997,7 @@ class FirstLsThingItxList extends LsThingItxList
 class SecondLsThingItxList extends LsThingItxList
 	model: SecondThingItx
 
+
 #TODO: This was copied and pasted from client Container.coffee and then window was changed to export
 class Container extends Backbone.Model
 	lsProperties: {}
@@ -1090,10 +1089,41 @@ class Container extends Backbone.Model
 				#setting top level model attribute's value to equal valueType's value
 				# (ie set "value" to equal value in "stringValue")
 				@get(dValue.key).set("value", newValue.get(dValue.type))
+				newValue.set("key", dValue.key)
 
-	createNewValue: (vKind, newVal) =>
-		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
-		@unset(vKind)
+	updateValuesByKeyValue: (keyValues) =>
+		if @lsProperties.defaultValues?
+			defaultKeys =  _.pluck(@lsProperties.defaultValues, "key")
+			matchedKeyValues = _.pick keyValues, defaultKeys
+			for key of matchedKeyValues
+				type = @.get(key).get("lsType")
+				value = matchedKeyValues[key]
+				if type == "dateValue"
+					value = parseInt value
+				else if type == "numericValue"
+					value = number value
+				@.get(key).set "value", value
+
+	getValues: =>
+		response = {}
+		if @lsProperties.defaultValues?
+			defaultKeys = _.pluck(@lsProperties.defaultValues, "key")
+			for key in defaultKeys
+				response[key] = @.get(key).get("value")
+		response
+
+	getValuesByKey: (keys) =>
+		if @lsProperties.defaultValues?
+			defaultKeys =  _.pluck(@lsProperties.defaultValues, "key")
+			matchedKeyValues = _.intersection(keys, defaultKeys)
+			outObject = {}
+			for key in matchedKeyValues
+				outObject[key] = @.get(key).get("value")
+			outObject
+
+	createNewValue: (key, newVal) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: key})[0]
+		@unset(key)
 		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 		newValue.set valInfo['type'], newVal
 		newValue.set
@@ -1103,7 +1133,7 @@ class Container extends Backbone.Model
 			codeType: valInfo['codeType']
 			codeOrigin: valInfo['codeOrigin']
 			value: newVal
-		@set vKind, newValue
+		@set key, newValue
 
 	createDefaultFirstLsThingItx: =>
 # loop over defaultFirstLsThingItx
@@ -1214,8 +1244,165 @@ class Container extends Backbone.Model
 	getStateValueHistory: (vKind) =>
 		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
 		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+
+	prepareToSave: (recordedBy)->
+		if !recordedBy?
+			recordedBy = @get('recordedBy')
+		rBy = recordedBy
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@get('lsLabels').each (lab) ->
+			unless lab.get('recordedBy') != ""
+				lab.set recordedBy: rBy
+			unless lab.get('recordedDate') != null
+				lab.set recordedDate: rDate
+		@get('lsStates').each (state) ->
+			unless state.get('recordedBy') != ""
+				state.set recordedBy: rBy
+			unless state.get('recordedDate') != null
+				state.set recordedDate: rDate
+			state.get('lsValues').each (val) ->
+				unless val.get('recordedBy') != ""
+					val.set recordedBy: rBy
+				unless val.get('recordedDate') != null
+					val.set recordedDate: rDate
+
 ##END COPY PASTE
 
+
+class ContainerPlate extends Container
+	urlRoot: "/api/containers"
+
+	initialize: ->
+		@.set
+			lsType: "container"
+			lsKind: "plate"
+		super()
+
+	lsProperties:
+		defaultLabels: [
+			key: 'barcode'
+			type: 'barcode'
+			kind: 'barcode'
+			preferred: true
+#			labelText: "" #gets created when createDefaultLabels is called
+		]
+		defaultValues: [
+			key: 'description'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'description'
+		,
+			key: 'status'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'status'
+			value: "active"
+		,
+			key: 'createdUser'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'created user'
+		,
+			key: 'createdDate'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'dateValue'
+			kind: 'created date'
+		,
+			key: 'supplier'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'supplier'
+		,
+			key: 'type'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'type'
+		,
+			key: 'registeredDate'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'dateValue'
+			kind: 'registered date'
+		]
+
+	defaultFirstLsThingItx: []
+
+	defaultSecondLsThingItx: []
+
+class DefinitionContainerPlate extends Container
+	urlRoot: "/api/containers"
+
+	initialize: ->
+		@.set
+			lsType: "definition container"
+			lsKind: "plate"
+		super()
+
+	lsProperties:
+		defaultLabels: [
+			key: 'name'
+			type: 'name'
+			kind: 'model'
+			preferred: true
+#			labelText: "" #gets created when createDefaultLabels is called
+		]
+		defaultValues: [
+			key: 'plateSize'
+			stateType: 'constants'
+			stateKind: 'format'
+			type: 'numericValue'
+			kind: 'wells'
+		,
+			key: 'numberOfRows'
+			stateType: 'constants'
+			stateKind: 'format'
+			type: 'numericValue'
+			kind: 'rows'
+		,
+			key: 'numberOfColumns'
+			stateType: 'constants'
+			stateKind: 'format'
+			type: 'numericValue'
+			kind: 'columns'
+		,
+			key: 'subContainerNamingConvention'
+			stateType: 'constants'
+			stateKind: 'format'
+			type: 'codeValue'
+			kind: 'A1'
+		,
+			key: 'maxWellVolume'
+			stateType: 'constants'
+			stateKind: 'format'
+			type: 'numericValue'
+			kind: 'max well volume'
+		]
+
+	defaultFirstLsThingItx: []
+
+	defaultSecondLsThingItx: []
+
+class ContainerTube extends Container
+	urlRoot: "/api/containers"
+
+	initialize: ->
+		@.set
+			lsType: "container"
+			lsKind: "tube"
+		@lsProperties.defaultValues.push
+			key: 'tare weight'
+			stateType: 'constants'
+			stateKind: 'information'
+			type: 'numericValue'
+			kind: 'tare weight'
+		super()
 
 exports.Label = Label
 exports.LabelList = LabelList
@@ -1233,4 +1420,9 @@ exports.LsThingItxList = LsThingItxList
 exports.FirstLsThingItxList = FirstLsThingItxList
 exports.SecondLsThingItxList = SecondLsThingItxList
 exports.Container = Container
+exports.DefinitionContainerPlate = DefinitionContainerPlate
+exports.ContainerPlate = ContainerPlate
+exports.ContainerTube = ContainerTube
+
+
 AppLaunchParams = loginUser:username:"acas"

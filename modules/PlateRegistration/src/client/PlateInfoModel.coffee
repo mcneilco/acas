@@ -19,7 +19,7 @@ PLATE_INFO_MODEL_FIELDS =
 
 
 class PlateInfoModel extends Backbone.Model
-  url: "/api/plateMetadataAndDefinitionMetadataByPlateBarcode"
+  url: "/api/containerByContainerCode"
 
   defaults:
     barcode: ""

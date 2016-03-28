@@ -12,7 +12,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 
-configuredEntityTypes = require '../src/javascripts/ServerAPI/ConfiguredEntityTypes.js'
+configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
 
 
@@ -51,6 +51,12 @@ exports.getSpecificEntityType = (displayName, callback) ->
 	else
 		callback {}
 
+exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
+	if entityType?
+		return entityType
+	else
+		return {}
 
 ####################################################################
 #   REFERENCE CODES
