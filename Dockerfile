@@ -48,4 +48,4 @@ ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
 ENV     ACAS_HOME=$BUILD_PATH
 
-CMD     ["/bin/sh","bin/acas-docker.sh", "run"]
+CMD     ["/bin/sh","bin/acas.sh", "run"]
