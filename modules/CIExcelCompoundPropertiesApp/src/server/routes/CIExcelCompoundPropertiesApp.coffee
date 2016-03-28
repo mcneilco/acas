@@ -1,6 +1,6 @@
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/excelApps/compoundInfo', loginRoutes.ensureAuthenticated, exports.compoundInfoIndex
-	app.post '/excelApps/getPreferredIDAndProperties', loginRoutes.ensureAuthenticated, exports.getPreferredIDAndProperties
+	app.post '/excelApps/getPreferredIDAndProperties', loginRoutes.ensureAuthenticatedAPI, exports.getPreferredIDAndProperties
 
 exports.compoundInfoIndex = (req, resp) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'

@@ -1,8 +1,8 @@
 version: '2'
 services:
   acas:
-    #build: .
-    image: mcneilco/acas:plate-registration
+#    build: .
+    image: mcneilco/acas:compound-inventory
     restart: always
     ports:
      - "3000:3000"
@@ -19,18 +19,12 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
-     - ./public/compiled:/home/runner/build/public/compiled
-     - ./modules/PlateRegistration:/home/runner/acas/modules/PlateRegistration
-     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
-     - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
-     - ./modules/Login:/home/runner/acas/modules/Login
-
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
-    command: ["bin/acas.sh", "run", "acas", "dev"]
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-#    command: ["bin/acas.sh", "run", "acas", "start"]
+    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:compound-inventory
     restart: always

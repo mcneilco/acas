@@ -1,0 +1,263 @@
+.editorNav {
+  padding-right: 0;
+  padding-bottom: 0;
+  width: 65px;
+}
+
+.editorNavWell {
+  width: 50px;
+  height: 690px;
+  padding: 0;
+  background-color: #E9E9E9;
+}
+
+.editorNavCollapse {
+  margin-left: 5px;
+}
+
+.editorCollapseButton {
+  /*margin-top: 191px;*/
+  margin-top: 335px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  width: 40px;
+  background-color: #E9E9E9;
+}
+
+.editorCollapseButton:hover, .editorCollapseButton:focus {
+  background-color: #DFDFDF;
+}
+
+.editorTab {
+  /*height: 100px;*/
+}
+
+.editorTab:hover, .editorTab:focus {
+  background-color: #DFDFDF;
+}
+
+.editorTab:active, .editorTab.active {
+  background-color: #DFDFDF;
+}
+
+.editorNavWell a {
+  text-decoration: none;
+}
+
+.rotate {
+  -webkit-transform: rotate(-90deg) !important;
+  -moz-transform: rotate(-90deg) !important;
+  -ms-transform: rotate(-90deg) !important;
+  filter: progid: DXImageTransform.Microsoft.BasicImage(rotation=1) !important;
+}
+
+.editorTabInfo {
+  height: 64px;
+  padding-top: 10px;
+}
+
+.editorTabAddContent {
+  height: 122px;
+  /*padding-top: 50px;*/
+  padding-top: 30px;
+}
+
+.editorTabTemplate {
+  height: 96px;
+  padding-top: 42px;
+}
+
+.editorTabSerialDilution {
+  height: 124px;
+  /*padding-top: 48px;*/
+  padding-top: 32px;
+}
+
+.editorTabInfoLink {
+  /*width: 50px;
+  padding-bottom: 50px;*/
+}
+
+.editorTabAddContentLink {
+  width: 85px;
+  padding-bottom: 35px;
+  /*
+  z-index: -1;
+  */
+}
+
+.editorTabTemplateLink {
+  /*width: 100px;
+  padding-bottom: 100px;*/
+  /*
+  z-index: -1;
+  */
+}
+
+.editorTabSerialDilutionLink {
+  width: 90px;
+  padding-bottom: 35px;
+  /*
+  z-index: -1;
+  */
+}
+
+.editorPanel {
+  padding: 0;
+  width: 250px;
+}
+
+.editorPanelWell {
+  height: 690px;
+}
+
+.editorPanel h5 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.editorTabHelpIcon {
+  color: #CFCFCF;
+  font-size: 16px !important;
+}
+
+.quadPinButton {
+  width: 220px;
+}
+
+.quadPinIcon {
+  margin-left: 2px;
+}
+
+.downloadCSVButton {
+  margin-right: 5px;
+  width: 149px;
+}
+
+.editorTabTextarea {
+  resize: none;
+}
+
+.editorTabRadio {
+  margin-top: 3px !important;
+}
+
+.editorTabLabelSpecial {
+  margin-bottom: 10px;
+}
+
+.editorTabLabelDirection {
+  margin-bottom: 0;
+}
+
+.addContentTotal {
+  font-weight: bold;
+}
+
+.cellsSelected {
+  font-weight: bold;
+}
+
+.templateHeader {
+  width: 100px;
+}
+
+.editorTabSeq {
+  width: 222px;
+  height: 34px;
+  margin-bottom: 10px;
+}
+
+.editorTabSeqIDs {
+  width: 94px;
+}
+
+.editorTabSeqIDsTo {
+  margin-top: 7px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+.editorTabFillSuboption {
+  margin-left: 15px;
+}
+
+.editorTabNumOfDoses {
+  width: 59px;
+  margin-right: 10px;
+}
+
+.editorTabVolRadio {
+  margin-top: 57px;
+}
+
+.editorTabTransferVol {
+  width: 195px;
+  margin-left: 5px;
+}
+
+.editorTabDestinationWellVol {
+  width: 195px;
+  margin-left: 5px;
+}
+
+.editorTabOr {
+  margin-bottom: 10px;
+}
+
+.editorTabDilutionFactor {
+  width: 195px;
+  margin-left: 5px;
+}
+
+.editorMain {
+  padding-left: 0;
+}
+
+.toolbarWell {
+  background-color: #E9E9E9;
+  width: 950px;
+  padding: 10px;
+}
+
+.toolbarButtons {
+  /*margin-right: 10px;*/
+}
+
+.toolbarViewButton {
+  width: 175px;
+}
+
+.toolbarViewButtonSmall {
+  width: 62px;
+}
+
+.toolbarSmallText {
+  font-size: 10px;
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.editorHandsontable {
+  margin-left: 0px;
+  padding: 0;
+  background-color: #ffffff;
+  overflow: hidden;
+  width: 800px;
+  height: 600px;
+}
+
+
+.tabSelected {
+  background-color: #fafafa !important;
+}
+
+.aliasedIdentifierCell {
+  background-color: #fcf8e3 !important;
+  border: solid 1px yellow;
+}
+
+.invalidIdentifierCell {
+  background-color: #a94442 !important;
+  border: solid 1px red;
+}

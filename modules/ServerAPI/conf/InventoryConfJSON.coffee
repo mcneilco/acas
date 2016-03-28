@@ -135,12 +135,20 @@
 		labeltypes:
 			[
 				typeName: "name"
+			,
+				typeName: "barcode"
 			]
 
 		labelkinds:
 			[
 				typeName: "name"
 				kindName: "model"
+			,
+				typeName: "name"
+				kindName: "common"
+			,
+				typeName: "barcode"
+				kindName: "barcode"
 			]
 
 		ddicttypes:

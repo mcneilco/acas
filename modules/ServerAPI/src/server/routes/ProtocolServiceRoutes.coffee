@@ -6,6 +6,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/protocollabels', exports.lsLabels
 	app.get '/api/protocolCodes', exports.protocolCodeList
 	app.get '/api/protocolKindCodes', exports.protocolKindCodeList
+	app.get '/api/protocols/genericSearch/:searchTerm', exports.genericProtocolSearch
 	app.delete '/api/protocols/browser/:id', exports.deleteProtocol
 
 

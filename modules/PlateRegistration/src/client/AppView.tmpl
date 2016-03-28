@@ -1,0 +1,47 @@
+<!-- Navbar and Module Menus -->
+<nav class="navbar navbar-default navBarACAS navbar-fixed-top">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="plateReg_base.html">ACAS</a>
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#acas-navbar-collapse" aria-expanded="false">
+                <span class="sr-only">Navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+        </div>
+        <div class="collapse navbar-collapse" id="acas-navbar-collapse">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Plate Registration <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#createPlate">Design New Plate</a></li>
+                        <li><a href="sel.html">Search for Plates</a></li>
+                        <li><a href="sel.html">Merge or Split Plates</a></li>
+                        <!--<li><a href="sel.html">Fill Template</a></li>-->
+                    </ul>
+                </li>
+            </ul>
+            <!-- TODO: fix username and logout button collapse behavior -->
+            <a class="btn btn-warning navbar-btn navbar-right acasLogout" href="login.html">Logout</a>
+            <p class="navbar-text navbar-right">
+                Signed in as <a href="#" class="navbar-link">Bob Roberts</a>
+            </p>
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle dropdown-menu-left" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Admin <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="admin.html">Admin Panel</a></li>
+                        <li><a href="logs.html">Logs</a></li>
+                        <li><a href="change_pass.html">Change Password</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+<!-- End Navbar and Module Menus -->
+
+<div class="container-fluid acasContent" name="formContainer"></div>
+
+<div name="dataServiceControllerContainer"></div>

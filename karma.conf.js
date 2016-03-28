@@ -17,7 +17,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'build/public/compiled/spec.bundle.js'
+      'public/compiled/spec.bundle.js'
     ],
 
     plugins: [ 'karma-chrome-launcher', 'karma-firefox-launcher', 'karma-jasmine-jquery', 'karma-jasmine', 'karma-sourcemap-loader', 'karma-webpack', 'karma-coverage'],
@@ -35,7 +35,7 @@ module.exports = function(config) {
     //  'public/compiled/spec.bundle.js': ['coverage']
     //},
     preprocessors: {
-      'build/public/compiled/spec.bundle.js': ['webpack', 'coverage']
+      'public/compiled/spec.bundle.js': ['webpack', 'coverage']
     },
 
     // test results reporter to use

@@ -6,7 +6,7 @@ if true
 		$(document).ready ->
 			window.logger = new ExcelAppLogger
 				el: $('.bv_log')
-			logger.render()
+#			logger.render()
 			window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
 				el: $('.bv_excelInsertCompoundPropertiesView')
 			insertCompoundPropertiesController.render()
@@ -352,9 +352,12 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			success: (csv) =>
 				@fetchCompoundPropertiesReturn csv
 			error: (jqXHR, textStatus)=>
-				@setPropertyLookUpStatus "Error fetching data"
 				logger.log textStatus
 				logger.log JSON.stringify(jqXHR)
+				if jqXHR.status == 401
+					@setPropertyLookUpStatus "Unauthorized please login"
+				else
+					@setPropertyLookUpStatus ("Error fetching data: " + jqXHR.statusText)
 				@$('.bv_insertProperties').removeAttr 'disabled'
 				@$('.bv_getProperties').removeAttr 'disabled'
 

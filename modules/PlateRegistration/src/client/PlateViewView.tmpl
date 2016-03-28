@@ -1,0 +1,51 @@
+<!-- TOOLBAR -->
+
+<div class="well acasWell toolbarWell">
+
+    <div class="btn-group toolbarButtons" role="group">
+        <div class="btn-group">
+            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="cellZoom">Show All</button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Show All Cell Contents</a></li>
+                <li><a href="#">Fit to Contents</a></li>
+                <li><a href="#">Fit to Screen</a></li>
+            </ul>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="selectedView" >Compound View</button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li><a href="#" name="compoundView">Compound View</a></li>
+                <li><a href="#" name="volumeView">Volume View</a></li>
+                <li><a href="#" name="concentrationView">Concentration View</a></li>
+                <li><a href="#" name="masterView">Master View</a></li>
+            </ul>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="selectedColorBy">No Color</button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#" name="colorByCompound">Color By Compound</a></li>
+                <li><a href="#" name="colorByVolume">Color By Volume</a></li>
+                <li><a href="#" name="colorByConcentration">Color By Concentration</a></li>
+                <li><a href="#" name="colorByNone">No Color</a></li>
+            </ul>
+        </div>
+        <button class="btn btn-default toolbarViewButtonSmall toolbarSmallText">AA</button>
+        <button class="btn btn-default toolbarViewButtonSmall">AA</button>
+        <button class="btn btn-default toolbarViewButtonSmall"><i class="fa fa-undo"></i></button>
+        <button class="btn btn-default toolbarViewButtonSmall"><i class="fa fa-repeat"></i></button>
+        <button class="btn btn-default toolbarViewButtonSmall" name="displayToolTips"><i class="fa fa-search-plus"></i></button>
+    </div>
+
+    <!--<button class="btn btn-default">Save</button>-->
+    <button class="btn btn-primary">Complete</button>
+
+</div>
+
+<!-- TABLE -->
+<div style="width: 800px; height: 600px;">
+<!--<div class="well acasWell editorHandsontable" name="plateTableContainer" style="width: 100%; height: 100%; overflow: hidden;">-->
+    <div class="editorHandsontable" name="plateTableContainer" style="width: 100%; height: 100%; overflow: hidden;">
+    Handsontable goes here.
+</div>
+</div>

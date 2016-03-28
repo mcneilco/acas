@@ -2,13 +2,15 @@ module.exports = (grunt) ->
 	"use strict"
 
   # upgrade config files tas
-	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
-		upgrade = require "#{acas_base}/modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee"
-		glob = require 'glob'
-		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
-		for configFile in configFiles
-			outFile = "#{configFile}.diff"
-			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
+#	grunt.registerTask 'upgrade_config_files', 'upgrade_config_files task', () ->
+#		upgrade = require "#{acas_base}/modules/BuildUtilities/src/server/UpgradeConfigFiles.coffee"
+#		glob = require 'glob'
+#		configFiles = glob.sync("#{grunt.config.get('acas_custom')}/conf/*.properties")
+#		for configFile in configFiles
+#			outFile = "#{configFile}.diff"
+#			upgrade.upgradeConfigFiles "#{acas_base}/conf/config.properties.example", configFile, outFile
+
+	grunt.registerTask("buildwebpack", ["webpack:build"]);
 
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
@@ -22,10 +24,12 @@ module.exports = (grunt) ->
 			grunt.config.set('acas_custom',"$$$$$$$$$$$$")
 		grunt.task.run 'copy'
 		grunt.task.run 'execute:npm_install'
-		grunt.task.run 'upgrade_config_files'
+#		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
+		if !grunt.option('customonly')
+			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
 		grunt.task.run 'execute:prepare_test_JSON'
@@ -198,7 +202,6 @@ module.exports = (grunt) ->
 					process: (content, srcpath) ->
 						packageJSON =  JSON.parse(content)
 						packageJSON.scripts.start = packageJSON.scripts.start.replace "cd process.env.BUILD_PATH  && ", ""
-						packageJSON.scripts.debug = packageJSON.scripts.debug.replace "cd process.env.BUILD_PATH  && ", ""
 						packageJSON.scripts.dev = packageJSON.scripts.dev.replace "cd process.env.BUILD_PATH && ", ""
 						delete packageJSON.scripts.postinstall
 						delete packageJSON.scripts.clean
@@ -373,6 +376,26 @@ module.exports = (grunt) ->
 					shell = require('shelljs')
 					result = shell.exec("cd #{options.build} %>/src/r && Rscript install.R", {silent:true})
 					return result.output
+
+
+
+		webpack:
+			build:
+				entry:
+					"index": "<%= acas_base %>/modules/PlateRegistration/src/client/index.coffee",
+					#"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
+				output:
+					path: "<%= build %>/public/compiled",
+					filename: "[name].bundle.js"
+				module:
+					loaders: [
+						{test: /\.coffee$/, loader: "coffee"},
+						{test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff'},
+						{test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/octet-stream'},
+						{test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file'},
+						{test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml'}
+					]
+
 		browserify:
 				module_client:
 					src: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
@@ -381,6 +404,12 @@ module.exports = (grunt) ->
 			module_client_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
+			webpack_build:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/src/client/*"]
+				tasks: ['webpack:build']
+			webpack_spec_build:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/spec/*.coffee"]
+				tasks: ['webpack:build']
 			module_server_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
 				tasks: 'newer:coffee:module_server'
@@ -421,7 +450,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 				tasks: "newer:copy:module_jade"
 			copy_conf:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
 				tasks: "newer:copy:conf"
 			module_legacy_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
@@ -440,8 +469,8 @@ module.exports = (grunt) ->
 				files: "<%= acas_custom %>/public_conf/*.coffee"
 				tasks: "newer:coffee:custom_compilePublicConf"
 			copy_custom_public_conf:
-				files: "<%= acas_custom %>/public_conf/**"
-				tasks: "newer:copy:custom_public_conf"
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/public/conf/*.R"]
+				tasks: "newer:copy:public_conf_r"
 			prepare_module_includes:
 				files:[
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
@@ -462,7 +491,8 @@ module.exports = (grunt) ->
 			prepare_config_files:
 				files: [
 					"<%= build %>/src/javascripts/BuildUtilities/PrepareConfigFiles.js"
-					"<%= build %>/conf/conf*.properties"
+					"<%= build %>/conf/*.properties"
+					"<%= build %>/conf/*.properties.example"
 					"<%= build %>/src/r/*"
 				]
 				tasks: ["execute:prepare_config_files"]
@@ -476,6 +506,7 @@ module.exports = (grunt) ->
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."
+	console.log "working directory '#{__dirname}'"
 	console.log "setting build to: #{build}"
 	acas_base =  path.relative '.', grunt.option('acasBase') || process.env.ACAS_BASE || '.'
 	if acas_base == ""
@@ -494,6 +525,7 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
 	grunt.loadNpmTasks "grunt-browserify"
+	grunt.loadNpmTasks "grunt-webpack"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
