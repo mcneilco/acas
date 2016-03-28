@@ -5,6 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersByCodeNames', exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', exports.getWellContent
+	app.put '/api/containersByContainerCodes', exports.updateContainersByContainerCodes
 	app.put '/api/containerByContainerCode', exports.updateContainerByContainerCode
 	app.get '/api/getContainerAndDefinitionContainerByContainerByLabel/:label', exports.getContainerAndDefinitionContainerByContainerByLabel
 	app.post '/api/getContainerAndDefinitionContainerByContainerCodeNames', exports.getContainerAndDefinitionContainerByContainerCodeNames
@@ -29,6 +30,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersByCodeNames', loginRoutes.ensureAuthenticated, exports.getContainersByCodeNames
 	app.post '/api/getWellCodesByPlateBarcodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByPlateBarcodes
 	app.post '/api/getWellContent', loginRoutes.ensureAuthenticated, exports.getWellContent
+	app.put '/api/containersByContainerCodes', loginRoutes.ensureAuthenticated, exports.updateContainersByContainerCodes
 	app.put '/api/containerByContainerCode', loginRoutes.ensureAuthenticated, exports.updateContainerByContainerCode
 	app.get '/api/getContainerAndDefinitionContainerByContainerByLabel/:label', loginRoutes.ensureAuthenticated, exports.getContainerAndDefinitionContainerByContainerByLabel
 	app.post '/api/getContainerAndDefinitionContainerByContainerCodeNames', loginRoutes.ensureAuthenticated, exports.getContainerAndDefinitionContainerByContainerCodeNames
@@ -276,31 +278,41 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 						outArray = []
 						for containerCode, index in containerCodes
-							containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
-#							console.log containerPreferredEntity
-#							console.log preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-#								console.log types
-							container = new containerPreferredEntity.model(containers[index].container)
-							definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
-							definition = new definitionPreferredEntity.model(definitions[index].definition)
-							containerValues =  container.getValues()
-							definitionValues =  definition.getValues()
-							out = _.extend containerValues, definitionValues
-							out.barcode = container.get('barcode').get("labelText")
-							outArray.push out
+							if containers[index].container?
+								console.debug "found container type: #{containers[index].container.lsType}"
+								console.debug "found container kind: #{containers[index].container.lsKind}"
+								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
+								if containerPreferredEntity?
+									console.debug "found preferred entity: #{containerPreferredEntity}"
+								else
+									console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
+									console.debug preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+									console.debug types
+								console.log containerPreferredEntity
+								container = new containerPreferredEntity.model(containers[index].container)
+								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
+								definition = new definitionPreferredEntity.model(definitions[index].definition)
+								containerValues =  container.getValues()
+								console.debug containerValues
+								definitionValues =  definition.getValues()
+								out = _.extend containerValues, definitionValues
+								out.barcode = container.get('barcode').get("labelText")
+								outArray.push out
+							else
+								console.error "could not find container #{containers[index]}"
 						callback outArray, 200
 
-exports.updatePlateMetadataAndDefinitionMetadataByPlateContainerCode = (req, resp) ->
-	exports.updateContainerMetadataByContainerCodeInternal [req.body], "container", "plate", "barcode", "barcode", (json, statusCode) ->
+exports.updateContainerByContainerCode = (req, resp) ->
+	exports.updateContainersByContainerCodesInternal [req.body], (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
 
-exports.updateContainerByContainerCode = (req, resp) ->
-	exports.updateContainerByContainerCodeInternal req.body, (json, statusCode) ->
+exports.updateContainersByContainerCodes = (req, resp) ->
+	exports.updateContainersByContainerCodeInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.updateContainerByContainerCodeInternal = (updateInformation, callback) ->
+exports.updateContainersByContainerCodesInternal = (updateInformation, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updateContainerMetadataByContainerCodeResponse
@@ -320,37 +332,48 @@ exports.updateContainerByContainerCodeInternal = (updateInformation, callback) -
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
-						callback "updateContainerByContainerCodeInternal failed", 500
+						callback "updateContainersByContainerCodesInternal failed", 500
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
 					containerArray = []
 					preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 					for updateInfo, index in updateInformation
-						preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
-						container = new preferredEntity.model(containers[index].container)
-						if updateInfo.barcode?
-							if containerCodes[index].foundCodeNames.length > 1
-								message = "conflict: found more than 1 container plate barcode for label #{containerCodes[index].requestLabel}: #{containerCodes[index].foundCodeNames.join(",")}"
-								console.error message
-								callback message, 409
-								return
+						if containers[index].container?
+							console.debug "found container type: #{containers[index].container.lsType}"
+							console.debug "found container kind: #{containers[index].container.lsKind}"
+							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
+							if preferredEntity?
+								console.debug "found preferred entity: #{preferredEntity}"
 							else
-								if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == updateInfo.codeName
-									console.debug "updating barcode"
-									container.get('barcode').set("labelText", updateInfo.barcode)
-								else
-									message = "conflict: barcode '#{updateInfo.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
+								console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
+								console.debug preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+								console.debug types
+							container = new preferredEntity.model(containers[index].container)
+							if updateInfo.barcode?
+								if containerCodes[index].foundCodeNames.length > 1
+									message = "conflict: found more than 1 container plate barcode for label #{containerCodes[index].requestLabel}: #{containerCodes[index].foundCodeNames.join(",")}"
 									console.error message
 									callback message, 409
 									return
-						container.updateValuesByKeyValue updateInfo
-						container.prepareToSave updateInformation[0].recordedBy
-						container.reformatBeforeSaving()
+								else
+									if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == updateInfo.codeName
+										console.debug "updating barcode"
+										container.get('barcode').set("labelText", updateInfo.barcode)
+									else
+										message = "conflict: barcode '#{updateInfo.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
+										console.error message
+										callback message, 409
+										return
+							container.updateValuesByKeyValue updateInfo
+							container.prepareToSave updateInformation[0].recordedBy
+							container.reformatBeforeSaving()
+						else
+							console.error "could not find container #{containers[index]}"
 					containerArray.push container.attributes
 					containerJSONArray = JSON.stringify(containerArray)
 					exports.updateContainersInternal containerJSONArray, (savedContainers, statusCode) =>
 						if statusCode == 500
-							callback JSON.stringify("updateContainerByContainerCodeInternal failed"), 500
+							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
 							return
 						else
 							for updateInfo, index in updateInformation
@@ -385,7 +408,7 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			console.debug "response statusCode: #{response.statusCode}"
-			if !error
+			if !error && json[0] != "<"
 				callback json, response.statusCode
 			else
 				console.error 'got ajax error trying to get getContainersByCodeNames'
@@ -525,6 +548,7 @@ exports.updateContainersInternal = (containers, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
+		console.debug "base url: #{baseurl}"
 		request = require 'request'
 		request(
 			method: 'PUT'
