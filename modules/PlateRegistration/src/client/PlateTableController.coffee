@@ -285,7 +285,8 @@ class PlateTableController extends Backbone.View
     aliasedIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS), 'requestName')
     invalidIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS), 'requestName')
     validIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-
+    console.log "validIdentifiers"
+    console.log validIdentifiers
     aliasedWells = _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
       return well.value in aliasedIdentifiers
     )
@@ -293,10 +294,12 @@ class PlateTableController extends Backbone.View
     invalidWells = _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
       return well.value in invalidIdentifiers
     )
-
-    validWells =  _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
-      return well.value in validIdentifiers
-    )
+    if validIdentifiers?
+      validWells =  _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
+        return well.value in validIdentifiers
+      )
+    else
+      validWells = []
     @wellsToUpdate.resetWells()
     _.each(aliasedWells, (aw) =>
       console.log "aw"

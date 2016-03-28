@@ -15,6 +15,7 @@ class DataServiceController extends Backbone.View
 
   events:
     "click button[name='warningContinue']": "handWarningContinueClick"
+    "click button[name='errorGoBack']": "handleErrorGoBackClick"
 
   setupService: (serviceController) =>
     @serviceController = serviceController
@@ -105,6 +106,12 @@ class DataServiceController extends Backbone.View
   handWarningContinueClick: =>
     #@closeModal()
     @serviceController.handWarningContinueClick()
+
+  handleErrorGoBackClick: =>
+    console.log "PlateTableIdentifierValidationController.handleErrorGoBackClick"
+    if @serviceController.handleErrorGoBackClick?
+      @serviceController.handleErrorGoBackClick()
+    @closeModal()
 
   openModal: =>
     @$("div[name='serviceCallModal']").modal(

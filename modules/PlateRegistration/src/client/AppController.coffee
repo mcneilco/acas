@@ -14,7 +14,8 @@ CreatePlateSaveController = require('./CreatePlateSaveController.coffee').Create
 PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
-IdentifierValidationController = require('./IdentifierValidationController.coffee').IdentifierValidationController
+AddContentIdentifierValidationController = require('./IdentifierValidationController.coffee').AddContentIdentifierValidationController
+PlateTableIdentifierValidationController = require('./IdentifierValidationController.coffee').PlateTableIdentifierValidationController
 LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
 
 APP_CONTROLLER_EVENTS = {}
@@ -46,7 +47,7 @@ class AppController extends Backbone.View
     console.log "identifiers"
     console.log addContentModel
 
-    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
+    @dataServiceController.setupService(new AddContentIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
     @dataServiceController.doServiceCall(@handleAddContentSuccess)
 
     #alert "add content..."
@@ -55,7 +56,7 @@ class AppController extends Backbone.View
     console.log "identifiers"
     console.log addContentModel
 
-    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback}))
+    @dataServiceController.setupService(new PlateTableIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback, mode: "plateTable"}))
     @dataServiceController.doServiceCall()
 
   handleAddContentSuccess: () =>
