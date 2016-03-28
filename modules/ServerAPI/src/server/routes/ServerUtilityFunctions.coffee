@@ -1096,7 +1096,13 @@ class Container extends Backbone.Model
 			defaultKeys =  _.pluck(@lsProperties.defaultValues, "key")
 			matchedKeyValues = _.pick keyValues, defaultKeys
 			for key of matchedKeyValues
-				@.get(key).set "value", matchedKeyValues[key]
+				type = @.get(key).get("lsType")
+				value = matchedKeyValues[key]
+				if type == "dateValue"
+					value = parseInt value
+				else if type == "numericValue"
+					value = number value
+				@.get(key).set "value", value
 
 	getValues: =>
 		response = {}
