@@ -9,7 +9,7 @@ fs = require 'fs'
 
 
 exports.logUsage = (action, data, username) ->
-	# no ACAS logging service yet
+# no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
 	# logger = require "../../../routes/Logger"
 	global.logger.writeToLog("info", "logUsage", action, data, username, null)
@@ -20,29 +20,30 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	request = require 'request'
-	request(
-		headers:
-			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-		method: 'POST'
-		url: config.all.server.roologin.loginLink
-		form:
-			j_username: user
-			j_password: pass
-		json: false
-	, (error, response, json) =>
-		if !error && response.statusCode == 200
-			retFun JSON.stringify json
-		else if !error && response.statusCode == 302
-			retFun JSON.stringify response.headers.location
-		else
-			console.log 'got connection error trying authenticate a user'
-			console.log error
-			console.log json
-			console.log response
-			retFun "connection_error "+error
-	)
+	retFun "Success"
+#	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+#	request = require 'request'
+#	request(
+#		headers:
+#			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+#		method: 'POST'
+#		url: config.all.server.roologin.loginLink
+#		form:
+#			j_username: user
+#			j_password: pass
+#		json: false
+#	, (error, response, json) =>
+#		if !error && response.statusCode == 200
+#			retFun JSON.stringify json
+#		else if !error && response.statusCode == 302
+#			retFun JSON.stringify response.headers.location
+#		else
+#			console.log 'got connection error trying authenticate a user'
+#			console.log error
+#			console.log json
+#			console.log response
+#			retFun "connection_error "+error
+#	)
 
 exports.resetAuth = (email, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
@@ -92,7 +93,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	)
 exports.getUser = (username, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
+	if false
 		request = require 'request'
 		request(
 			headers:
@@ -236,7 +237,7 @@ exports.getDownloadUrl = (fileValue) ->
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
 
 exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
-	# This is a stub implementation that returns empty results
+# This is a stub implementation that returns empty results
 
 	if propertyList.indexOf('ERROR') > -1
 		callback null
