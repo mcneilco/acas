@@ -1299,7 +1299,6 @@ class ContainerPlate extends Container
 			stateKind: 'information'
 			type: 'codeValue'
 			kind: 'status'
-			value: "active"
 		,
 			key: 'createdUser'
 			stateType: 'metadata'
@@ -1389,7 +1388,7 @@ class DefinitionContainerPlate extends Container
 
 	defaultSecondLsThingItx: []
 
-class ContainerTube extends Container
+class ContainerTube extends ContainerPlate
 	urlRoot: "/api/containers"
 
 	initialize: ->
