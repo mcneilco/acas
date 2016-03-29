@@ -301,7 +301,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								outArray.push out
 							else
 								console.error "could not find container #{containers[index]}"
-						console.debug "output of getContainerAndDefinitionContainerByContainerCodeNames: #{outArray}"
+						console.debug "output of getContainerAndDefinitionContainerByContainerCodeNames: #{JSON.stringify(outArray,null, '  ')}"
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
