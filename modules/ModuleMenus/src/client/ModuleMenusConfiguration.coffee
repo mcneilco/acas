@@ -41,6 +41,10 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"cationic_block"
 	,
+		isHeader: false, menuName: "Screening Campaign"
+		mainControllerClassName: "ScreeningCampaignModuleController"
+		autoLaunchName:"screening_campaign"
+	,
 		isHeader: true
 		menuName: "Inventory"
 	,

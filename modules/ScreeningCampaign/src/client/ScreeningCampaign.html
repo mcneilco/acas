@@ -1,0 +1,90 @@
+<script type="text/template" id="ScreeningCampaignModuleView" xmlns="http://www.w3.org/1999/html">
+    <div class="container">
+        <div class="tabbable span8">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#screeningCampaignGeneralInfo" data-toggle="tab">General</a></li>
+                <li><a href="#screeningCampaignLinkedExperiments" data-toggle="tab">Linked Experiments</a></li>
+                <li><a href="#screeningCampaignDataAnalysis" data-toggle="tab">Data Analysis</a></li>
+            </ul>
+
+            <div class="tab-content span12">
+
+                <div class="tab-pane active bv_screeningCampaignGeneralInfo" id="screeningCampaignGeneralInfo"></div>
+
+                <div class="tab-pane bv_screeningCampaignLinkedExperiments" id="screeningCampaignLinkedExperiments" style="overflow:hidden; width:670px;"></div>
+
+                <div class="tab-pane bv_screeningCampaignDataAnalysis" id="screeningCampaignDataAnalysis"></div>
+            </div>
+        </div>
+    </div>
+    <!--<hr class="span12" style="margin-left:0px;width:705px;margin-top:28px;margin-bottom:0px;" />-->
+    <!--<div class="span9" style="margin-left:0px;">-->
+        <!--<div class="bv_saveInstructions" style="margin-bottom:25px;"> Please fill in the required fields (in the first and second tab) to save or update this protocol. </div>-->
+        <!--<button type="button" class="btn btn-success bv_saveModule pull-right" style="margin-right:0px;">Save</button>-->
+        <!--<button type="button" class="btn bv_newModule pull-right" style="margin-right:5px;">Clear Form</button>-->
+        <!--<button type="button" class="btn btn-danger bv_cancelModule pull-right" style="margin-right:5px;margin-left:5px;">Cancel</button>-->
+        <!--<div class="bv_saveModuleFailed hide pull-right" style="padding-top:5px;color:red;margin-right:10px;">Save Failed</div>-->
+        <!--<div class="bv_updateModuleComplete hide pull-right" style="padding-top:5px;color:#62c462;margin-right:10px;"></div>-->
+        <!--<div class="bv_savingModule pull-right hide" style="padding-top:5px;color:red;margin-right:10px;">Saving...</div>-->
+        <!--<div class="bv_cancelingModule pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>-->
+        <!--<div class="bv_cancelModuleComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>-->
+
+    <!--</div>-->
+
+
+</script>
+
+<script type="text/template" id="LinkedExperimentsView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_primaryExperimentSearchController" style="padding-bottom: 0px;"></div>
+
+    <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+        <div class="bv_searchExperimentsStatusIndicatorPrimaryExpt" style="height: 280px;">
+            <table width="100%">
+                <thead>
+                <tr><td style="display: none;">placeholder</td></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                        <h5 class="bv_noMatchingExperimentsFoundMessagePrimaryExpt hide">No Matching Experiments Found</h5>
+                        <h5 class="bv_moreSpecificExperimentSearchNeededPrimaryExpt hide">A more specific search term is required.</h5>
+                        <h5 class="bv_errorOccurredPerformingSearchPrimaryExpt hide">An error occurred while searching for the experiment.</h5>
+
+                        <div class="bv_experimentBrowserSearchInstructionsPrimaryExpt">
+                            <i class="icon-search bv_doSearchIcon"></i>
+                            Experiment Browser
+                        </div>
+                        <div class="hide bv_searchingExperimentsMessagePrimaryExpt" style="margin: auto;">
+                            <h5>Searching for Experiments containing text "<i class="bv_exptSearchTermPrimaryExpt"></i>"</h5>
+                            <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bv_experimentTableControllerPrimaryExpt hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+    </div>
+
+    <div class="bv_addedPrimaryExperimentsTableController" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+
+</script>
+
+<script type="text/template" id="LinkedExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_experimentCode'>
+        <a class='bv_experimentCodeLink' target="_blank"><%=experimentCode%></a>
+    </td>
+    <td class='bv_experimentName'><%=experimentName%></td>
+    <td class='bv_protocolCode'><%=protocolCode%></td>
+    <td class='bv_protocolName'><%=protocolName%></td>
+    <td class='bv_scientist'><%=scientist%></td>
+    <td class='bv_completionDate'><%=moment(completionDate).format("YYYY-MM-DD")%></td>
+    <td class='bv_status'><%=status%></td>
+    <td class='bv_analysisStatus'><%=analysisStatus%></td>
+</script>
