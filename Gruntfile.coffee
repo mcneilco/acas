@@ -184,7 +184,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example", "#{i}/conf/*.R"]
 					rename: (dest, matchedSrcPath, options) ->
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
