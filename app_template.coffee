@@ -28,6 +28,7 @@ startApp = ->
 	# login setup
 	passport.serializeUser (user, done) ->
 		#make sure to save only required attributes and not the password
+		if user.codeName? then uCodeName=user.codeName else uCodeName=null
 		userToSerialize =
 			id: user.id
 			username: user.username
@@ -35,6 +36,7 @@ startApp = ->
 			firstName: user.firstName
 			lastName: user.lastName
 			roles: user.roles
+			codeName: uCodeName
 		done null, userToSerialize
 
 	passport.deserializeUser (user, done) ->
