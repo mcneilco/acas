@@ -444,7 +444,7 @@ getExperimentColumns <- function(experimentCode){
 
 	## get source file name
 	sourceFileValueJSON <- getURL(
-	paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/", experimentCode, "/exptvalues/bystate/metadata/raw%20results%20locations/byvalue/fileValue/source%20file/json"),
+	paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/", experimentCode, "/exptvalues/bystate/metadata/experiment%20metadata/byvalue/fileValue/source%20file/json"),
 	  customrequest='GET',
 	  httpheader=c('Content-Type'='application/json'))
 
