@@ -183,7 +183,7 @@ apache_reload() {
 ################################################################################
 ################################################################################
 
-DIETIME=10              # Time to wait for the server to die, in seconds
+DIETIME=1              # Time to wait for the server to die, in seconds
 # If this value is set too low you might not
 # let some servers to die gracefully and
 # 'restart' will not work
