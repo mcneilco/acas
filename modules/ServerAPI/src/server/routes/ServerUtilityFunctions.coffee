@@ -1098,11 +1098,14 @@ class Container extends Backbone.Model
 			for key of matchedKeyValues
 				type = @.get(key).get("lsType")
 				value = matchedKeyValues[key]
+				unit = matchedKeyValues["#{key}Unit"]
 				if type == "dateValue"
 					value = parseInt value
 				else if type == "numericValue"
-					value = number value
+					value = Number value
 				@.get(key).set "value", value
+				if unit?
+					@.get(key).set "unitKind", String(unit)
 
 	getValues: =>
 		response = {}
@@ -1110,6 +1113,8 @@ class Container extends Backbone.Model
 			defaultKeys = _.pluck(@lsProperties.defaultValues, "key")
 			for key in defaultKeys
 				response[key] = @.get(key).get("value")
+				if @.get(key).get("unitKind")?
+					response["#{key}Unit"] = @.get(key).get("unitKind")
 		response
 
 	getValuesByKey: (keys) =>
@@ -1323,12 +1328,6 @@ class ContainerPlate extends Container
 			stateKind: 'information'
 			type: 'codeValue'
 			kind: 'type'
-		,
-			key: 'registeredDate'
-			stateType: 'metadata'
-			stateKind: 'information'
-			type: 'dateValue'
-			kind: 'registered date'
 		]
 
 	defaultFirstLsThingItx: []
@@ -1395,13 +1394,53 @@ class ContainerTube extends ContainerPlate
 		@.set
 			lsType: "container"
 			lsKind: "tube"
-		@lsProperties.defaultValues.push
-			key: 'tare weight'
-			stateType: 'constants'
+		@.set @parse(@.attributes)
+
+	lsProperties:
+		defaultLabels: [
+			key: 'barcode'
+			type: 'barcode'
+			kind: 'barcode'
+			preferred: true
+#			labelText: "" #gets created when createDefaultLabels is called
+		]
+		defaultValues: [
+			key: 'description'
+			stateType: 'metadata'
 			stateKind: 'information'
-			type: 'numericValue'
-			kind: 'tare weight'
-		super()
+			type: 'stringValue'
+			kind: 'description'
+		,
+			key: 'status'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'status'
+		,
+			key: 'createdUser'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'created user'
+		,
+			key: 'createdDate'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'dateValue'
+			kind: 'created date'
+		,
+			key: 'supplier'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'supplier'
+		,
+			key: 'type'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'type'
+		]
 
 exports.Label = Label
 exports.LabelList = LabelList

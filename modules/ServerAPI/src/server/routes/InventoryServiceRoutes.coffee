@@ -319,10 +319,13 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updateContainerMetadataByContainerCodeResponse
 	else
+		console.debug "incoming updateContainersByContainerCodesInternal request: #{JSON.stringify(updateInformation)}"
 		_ = require 'underscore'
 		codeNames = _.pluck updateInformation, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+			console.log "containers from service"
+			console.log JSON.stringify(containers, null, '  ')
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback containers, 400
@@ -345,12 +348,14 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 							console.debug "found container kind: #{containers[index].container.lsKind}"
 							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
 							if preferredEntity?
-								console.debug "found preferred entity: #{preferredEntity}"
+								console.debug "found preferred entity: #{JSON.stringify(preferredEntity)}"
 							else
 								console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
-								console.debug preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-								console.debug types
+								preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+									console.debug types
 							container = new preferredEntity.model(containers[index].container)
+							console.debug 'here is the newed up container'
+							console.debug container
 							if updateInfo.barcode?
 								if containerCodes[index].foundCodeNames.length > 1
 									message = "conflict: found more than 1 container plate barcode for label #{containerCodes[index].requestLabel}: #{containerCodes[index].foundCodeNames.join(",")}"
@@ -359,7 +364,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 									return
 								else
 									if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == updateInfo.codeName
-										console.debug "updating barcode"
 										container.get('barcode').set("labelText", updateInfo.barcode)
 									else
 										message = "conflict: barcode '#{updateInfo.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
@@ -373,6 +377,8 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 							console.error "could not find container #{containers[index]}"
 					containerArray.push container.attributes
 					containerJSONArray = JSON.stringify(containerArray)
+					console.log "here is the json array"
+					console.log JSON.stringify(containerArray, null, '  ')
 					exports.updateContainersInternal containerJSONArray, (savedContainers, statusCode) =>
 						if statusCode == 500
 							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
