@@ -296,7 +296,6 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
     wellTypes[currentStandardFilterConcConfirmed] <- targetStandard
   }  
 
-  ##print(wellTypes)  
   return(wellTypes)
 }
 getAnalysisGroupColumns <- function(replicateType) {
@@ -1903,7 +1902,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-
+  
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
   }
@@ -1922,7 +1921,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   parameters <- getExperimentParameters(inputParameters)
-  
+
   if(parameters$autoHitSelection) {
     if(is.null(parameters$thresholdType)) {
       stopUser("No hit selection parameter was calculated because no threshold was selected.")
@@ -1943,16 +1942,25 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
   normalizationDataFrame$standardType <- c('PC', 'NC')
   
- # Throw an error if only PC or ony NC standard associated to normalization is defined in the GUI
+  # Throw an error if only normalization-associated NC standards are defined (i.e. absence of positive AND default values for positive)
+  # or only normalization-associated PC standards are defined (i.e. absence of negative) in the GUI
   scenarioOnlyNC <- (is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
+                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
                     !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
   scenarioOnlyPC <- (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
                     is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
      
-  if (scenarioOnlyNC | scenarioOnlyPC) {
-    stopUser("Either only a Positive Control or only a Negative Control was defined. Both are required for normalization calculations.")
+  if (scenarioOnlyNC) {
+    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or default value in lieu of a Positive Control 
+              were detected. Selecting a Positive Control standard or setting a default value for Positive Control is required 
+              for normalization calculations.")
+  }
+
+  if (scenarioOnlyPC) {
+    stopUser("In the normalization section, only a Positive Control was defined but no Negative. A Negative Control is required for normalization calculations.")
   }
   
+    
   # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
   # regarding normalization when defined in the GUI
   if (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
@@ -1997,6 +2005,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   pcncNumber <- ifelse((is.na(pcNumber)), yes=ncNumber, no=pcNumber)
   # Merge the VC controls with the vector of PC, NC and store the updated vector into the standards dataframe
   standardsDataFrame$standardTypeEnumerated <- ifelse((is.na(pcncNumber)), yes=vcNumber, no=pcncNumber)
+  # Correct the enumeration pattern (common and incremental amongst all types of controls)
+  standardsDataFrame$standardTypeEnumerated <- paste0(substr(standardsDataFrame$standardTypeEnumerated,1,4), rep(1:nrow(standardsDataFrame)))
   
   # If a normalization-related PC is defined then mark it separately in the standards database
   normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
@@ -2021,8 +2031,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
   }
   
-  ########print(standardsDataFrame)
-  ########print(normalizationDataFrame)
+  #V#######print(standardsDataFrame)
+  #V#######print(normalizationDataFrame)
 
   ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
   ##parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
@@ -2108,7 +2118,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                          vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame, normalizationDataFrame)
 
+
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
+    #V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
     checkControls(resultTable)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
@@ -3095,8 +3107,8 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE
   options("scipen"=15)
-  #save(request, file="request.Rda")
-  
+#save(request, file="request.Rda")
+ 
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -3112,7 +3124,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
   developmentMode <- globalMessenger$devMode
-  
+ 
   if (developmentMode) {
     loadResult <- list(value = runMain(folderToParse = folderToParse, 
                                        user = user, 
