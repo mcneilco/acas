@@ -1501,7 +1501,7 @@ checkFlags <- function(resultTable) {
   }
 }
 
-checkControls <- function(resultTable) {
+checkControls <- function(resultTable, normalizationDataFrame) {
   # Checks to see if the controls are present in the plate.
   # 
   # Input:  resultTable (data.table)
@@ -1515,17 +1515,36 @@ checkControls <- function(resultTable) {
   if (!any(resultTable$wellType == "NC")) {
     controlsExist$negExists <- FALSE
   }
-  
-  if(!controlsExist$posExists && !controlsExist$negExists) {
-    stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
-             and your controls and dilution factor are defined correctly.")
-  } else if (!controlsExist$posExists) {
-    stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control (or dilution factor) is defined correctly.")
-  } else if (!controlsExist$negExists) {
-    stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-             and your negative control (or dilution factor) is defined correctly.")
+
+  # Modify the cases where both PC standard AND default value for PC are missing AND/OR the same applies to NC
+  if(!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) && 
+     !controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+    stopUser("Either (1) the positive and negative controls at the stated concentrations were not found in the plates, or (2) no standards were
+              selected while no Input Values were defined for positive and negative control. Make sure all transfers have been loaded 
+              and your controls and dilution factor are defined correctly, and either standards are selected or input values are defined.")
+  } else if (!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC'])) {
+    stopUser("Either (1) the Positive Control at the stated concentration was not found in the plates, or (2) no Standard was
+              selected while no Input Value was defined for Positive Control. Make sure all transfers have been loaded 
+              and your Positive Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
+              is defined for the Positive Control.")
+  } else if (!controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+    stopUser("Either (1) the Negative Control at the stated concentration was not found in the plates, or (2) no Standard was
+              selected while no Input Value was defined for Negative Control. Make sure all transfers have been loaded 
+              and your Negative Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
+              is defined for the Negative Control.")
   }
+    
+  #if(!controlsExist$posExists && !controlsExist$negExists) {
+  #  stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
+  #           and your controls and dilution factor are defined correctly.")
+  #} else if (!controlsExist$posExists) {
+  #  stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+  #           and your positive control (or dilution factor) is defined correctly.")
+  #} else if (!controlsExist$negExists) {
+  #  stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+  #           and your negative control (or dilution factor) is defined correctly.")
+  #}
+  
 }
 
 removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
@@ -1936,28 +1955,32 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Define the data frame that holds information about multiple standards, as defined in the GUI
   standardsDataFrame <- rbindlist(parameters$standardCompoundList)
 
-    
-  # Define the data frame that holds information about normalization
-  normalizationDataFrame <- as.data.frame(rbind(as.numeric(parameters$normalization$positiveControl),as.numeric(parameters$normalization$negativeControl)))
+  normalizationDataFrame <- as.data.frame(rbind(as.numeric(parameters$normalization$positiveControl),
+                                                as.numeric(parameters$normalization$negativeControl)))
+  
   setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
   normalizationDataFrame$standardType <- c('PC', 'NC')
   
   # Throw an error if only normalization-associated NC standards are defined (i.e. absence of positive AND default values for positive)
-  # or only normalization-associated PC standards are defined (i.e. absence of negative) in the GUI
+  # or if only normalization-associated PC standards are defined (i.e. absence of negative AND default values for negative) in the GUI
   scenarioOnlyNC <- (is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
                      is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
-                    !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+                     !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+  
   scenarioOnlyPC <- (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
-                    is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC']) &
+                     is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
      
   if (scenarioOnlyNC) {
-    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or default value in lieu of a Positive Control 
-              were detected. Selecting a Positive Control standard or setting a default value for Positive Control is required 
+    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or input value in lieu of a Positive Control 
+              were detected. Selecting a Positive Control standard or setting an input value for Positive Control is required 
               for normalization calculations.")
   }
 
   if (scenarioOnlyPC) {
-    stopUser("In the normalization section, only a Positive Control was defined but no Negative. A Negative Control is required for normalization calculations.")
+    stopUser("In the normalization section, only a Positive Control was defined -- no Negative Control or input value in lieu of a Negative Control 
+              were detected. Selecting a Negative Control standard or setting an input value for Negative Control is required
+              for normalization calculations.")
   }
   
     
@@ -2110,8 +2133,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
-    rm(instrumentData)
-    gc()
+    #rm(instrumentData)
+    #gc()
 
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit,
@@ -2120,8 +2143,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
-    #V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
-    checkControls(resultTable)
+#V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
+    checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
   }
@@ -2325,6 +2348,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo,
                              threshold = hitThreshold, experiment, dryRun, activityName) 
+    
+    rm(instrumentData)
+    gc()
+    
     summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                          racas::applicationSettings$client.port,
                                          '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
