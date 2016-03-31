@@ -1098,7 +1098,7 @@ class Container extends Backbone.Model
 			for key of matchedKeyValues
 				type = @.get(key).get("lsType")
 				value = matchedKeyValues[key]
-				unit = matchedKeyValues["#{key}Unit"]
+				unit = keyValues["#{key}Unit"]
 				if type == "dateValue"
 					value = parseInt value
 				else if type == "numericValue"
