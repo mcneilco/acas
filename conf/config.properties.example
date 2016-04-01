@@ -164,7 +164,7 @@ server.sar.defaultTitle ="Tested Entity Information"
 server.sar.csvLabel = bestLabel
 #options are ignoreOperators or includeOperators
 client.sar.sorting = includeOperators
-client.cmpdreg.host=host5.labsynch.com
+client.cmpdreg.host=host4.labsynch.com
 client.service.external.structure.url=http://${client.cmpdreg.host}:8080/cmpdreg/structureimage/lot/
 client.service.external.lotDetails.url=http://${client.cmpdreg.host}:8080/cmpdreg/#lot/
 
