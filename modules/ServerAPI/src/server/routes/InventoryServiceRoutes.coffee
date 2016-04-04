@@ -43,6 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateContainerName', loginRoutes.ensureAuthenticated, exports.validateContainerName
 	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
+	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 
 exports.getContainersInLocation = (req, resp) ->
