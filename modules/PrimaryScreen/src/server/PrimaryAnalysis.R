@@ -194,32 +194,7 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
   wellTypes <- rep.int("test", length(batchNames))
- 
-  ### Use information from the standardsDataFrame (defined in the GUI) passed as an argument to the current function to identify PC, NC, and VC
-  ##positiveStandards <- standardsDataFrame[standardsDataFrame$standardType=="PC", ]
-  ##negativeStandards <- standardsDataFrame[standardsDataFrame$standardType=="NC", ]
-  ##vehicleStandards <- standardsDataFrame[standardsDataFrame$standardType=="VC", ]
-  
-  ### Throw errors if no positive or negative controls are defined in the GUI
-  ##if (is.null(nrow(positiveStandards)) | nrow(positiveStandards)==0) {
-  ##  stopUser("No Positive Controls were defined")
-  ##}
-  ##if (is.null(nrow(negativeStandards)) | nrow(negativeStandards)==0) {
-  ##  stopUser("Negative controls are missing")
-  ##}
-  
 
-#   if (positiveControl$concentration == "infinite") {
-#     positiveControl$concentration <- Inf
-#   }
-#   if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
-#     negativeControl$concentration <- Inf
-#   }
-#   
-#   if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
-#     wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
-#   }
-  
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
   if (is.null(toleranceRange)) {
     warnUser("Config issue: control tolerance client.service.control.tolerance.percentage not set")
@@ -227,48 +202,6 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   }
   #   toleranceRange <- 0.01
 
-#   posBatchFilter <- batchNames==positiveControl$batchCode & 
-#     abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
-#   negBatchFilter <- batchNames==negativeControl$batchCode & 
-#     (abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100 ||
-#        (concentrations==Inf && negativeControl$concentration==Inf))
-
-
-  ### Flag wells as PC if they are within some tolerance from the concentrations defined in the GUI for all PC standards 
-  ##concPositiveFilter <- 0
-  ##for (currentStandard in positiveStandards$concentration) {
-  ##  concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
-  ##  concPositiveFilter <- concPositiveFilter + as.numeric(concentrationFilter) 
-  ##}
-  
-  ### Flag wells as NC if they are within some tolerance from the concentrations defined in the GUI for all NC standards
-  ##concNegativeFilter <- 0
-  ##for (currentStandard in negativeStandards$concentration) {
-  ##  concentrationFilter <- abs(concentrations-currentStandard) <= (currentStandard* toleranceRange)/100
-  ##  concNegativeFilter <- concNegativeFilter + as.numeric(concentrationFilter) 
-  ##}
-  
-  ### Update the PC, NC filters with wells that are designated as PC, NC AND they are within tolerance from the corresponding
-  ### PC, NC concentrations (as defined in the standards section of the GUI)
-  ##posBatchFilter <- (batchNames %in% positiveStandards$batchCode) & as.logical(concPositiveFilter)
-  ##negBatchFilter <- (batchNames %in% negativeStandards$batchCode) & as.logical(concNegativeFilter)
-
-
-#   if(!is.null(concentrationUnits)) {
-#     posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
-#     negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
-#   } 
-  
-  ##wellTypes[posBatchFilter] <- "PC"
-  ##wellTypes[negBatchFilter] <- "NC"
-  #   wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
-  #               concentrationUnits==positiveControl$concentrationUnits & hasAgonistFilter] <- "PC"
-  #   wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
-  #               concentrationUnits==negativeControl$concentrationUnits & hasAgonist] <- "NC"
-  
-#   if(!is.null(hasAgonist)) {
-#     wellTypes[!hasAgonist] <- "no agonist"
-#   } 
 
   # Throw an error if absolutely no standards are defined in the GUI
   if (is.null(length(standardsDataFrame$standardTypeEnumerated)) | length(standardsDataFrame$standardTypeEnumerated)==0) {
@@ -1738,9 +1671,14 @@ autoFlagWells <- function(resultTable, parameters) {
   }
 
 
-  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
-  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
-
+  if (any(is.na(resultTable$T_timePoints))) {
+    # Skip the step of parsing the (first) string representing every element of column T_timePoints
+  } else {
+    # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+    vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
+  }
+    
+  
 
   # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
   if (statusFluorescent=="complete") {
@@ -2143,7 +2081,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
-#V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
+#V####save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
     checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
@@ -2153,7 +2091,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # user well flagging
   resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment, parameters)
-  
+ 
   ## End User Well Flagging
   
   ## RED SECTION - Client Specific
@@ -2161,14 +2099,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
-  
+   
   # knock out the controls with NA values
   # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
   # but those aren't created until later in the code
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
+  
   if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
-    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun)
+    # added normalizationDataFrame into the arguments to pass the default values in the case when no standards are defined for normalization
+    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame)
   } else {
     resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, experiment$codeName, dryRun)
   }
