@@ -11,7 +11,7 @@ exports.runPrimaryAnalysis = (request, response)  ->
 	if global.specRunnerTestmode
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysisStub.R",
+			"src/r/PrimaryScreen/PrimaryAnalysisStub.R",
 			"runPrimaryAnalysis",
 			(rReturn) ->
 				response.end rReturn
@@ -19,7 +19,7 @@ exports.runPrimaryAnalysis = (request, response)  ->
 	else
 		serverUtilityFunctions.runRFunction(
 			request,
-			"public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R",
+			"src/r/PrimaryScreen/PrimaryAnalysis.R",
 			"runPrimaryAnalysis",
 			(rReturn) ->
 				response.end rReturn

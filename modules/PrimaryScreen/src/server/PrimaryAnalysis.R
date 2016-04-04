@@ -41,13 +41,13 @@
 # request <- structure(list(fileToParse = "ArchiveNonTest.zip", reportFile = "", imagesFile = "", dryRunMode = "true", user = "bob", inputParameters = "{\"instrumentReader\":\"flipr\",\"signalDirectionRule\":\"increasing signal (highest = 100%)\",\"aggregateBy\":\"compound batch concentration\",\"aggregationMethod\":\"median\",\"normalizationRule\":\"plate order only\",\"assayVolume\":24,\"transferVolume\":1.1428571428571428,\"dilutionFactor\":21,\"hitEfficacyThreshold\":null,\"hitSDThreshold\":5,\"positiveControl\":{\"batchCode\":\"XXX001315929\",\"concentration\":0.1},\"negativeControl\":{\"batchCode\":\"XXX000000001\",\"concentration\":0},\"vehicleControl\":{\"batchCode\":\"\",\"concentration\":null},\"agonistControl\":{\"batchCode\":\"\",\"concentration\":\"\"},\"thresholdType\":\"sd\",\"volumeType\":\"dilution\",\"htsFormat\":false,\"autoHitSelection\":false,\"matchReadName\":false,\"primaryAnalysisReadList\":[{\"readPosition\":1,\"readName\":\"test\",\"activity\":true}],\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"},{\"transformationRule\":\"sd\"}]}", primaryAnalysisExperimentId = "1086654", testMode = "false"), .Names = c("fileToParse", "reportFile", "imagesFile", "dryRunMode", "user", "inputParameters", "primaryAnalysisExperimentId", "testMode"))
 
 
-source("public/src/conf/customFunctions.R", local=TRUE)
+source("src/r/ServerAPI/customFunctions.R", local=TRUE)
 # TODO: Test structure, probably removing this folder eventually
 clientName <- "exampleClient"
 # END: Test structure
 
 # Source the client specific compound assignment functions
-compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment",
+compoundAssignmentFilePath <- file.path("src/r/PrimaryScreen/compoundAssignment",
                                         clientName)
 compoundAssignmentFileList <- list.files(compoundAssignmentFilePath, full.names=TRUE, pattern = "*.R$")
 for (sourceFile in compoundAssignmentFileList) { # Cannot use lapply because then "local" is inside lapply
@@ -1356,22 +1356,22 @@ loadInstrumentReadParameters <- function(instrumentType) {
   
   # Checks to make sure that all of the required files have been loaded in to the correct folder
   if (is.null(instrumentType) || 
-      !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType)) ||
-      !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"instrumentType.json")) ||
-      !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"detectionLine.json")) ||
-      !file.exists(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",instrumentType,"paramList.json")))
+      !file.exists(file.path("src/r/PrimaryScreen/conf/instruments",instrumentType)) ||
+      !file.exists(file.path("src/r/PrimaryScreen/conf/instruments",instrumentType,"instrumentType.json")) ||
+      !file.exists(file.path("src/r/PrimaryScreen/conf/instruments",instrumentType,"detectionLine.json")) ||
+      !file.exists(file.path("src/r/PrimaryScreen/conf/instruments",instrumentType,"paramList.json")))
   {
     stopUser("Configuration error: Instrument not loaded in system.")
   } 
   
   # Doublechecks to make sure that the instrument type matches 
-  instrument <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
+  instrument <- fromJSON(readLines(file.path("src/r/PrimaryScreen/conf/instruments",
                                              instrumentType,"instrumentType.json")))$instrumentType
   if(instrumentType != instrument) {
     stopUser("Configuration error: Instrument data loaded incorrectly.")
   }
   
-  paramList <- fromJSON(readLines(file.path("public/src/modules/PrimaryScreen/src/conf/instruments",
+  paramList <- fromJSON(readLines(file.path("src/r/PrimaryScreen/conf/instruments",
                                             instrumentType,"paramList.json")))$paramList
   if(paramList$dataTitleIdentifier == "NA") {
     paramList$dataTitleIdentifier <- NA
@@ -1944,7 +1944,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     # this also performs any calculations from the GUI
-    source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE)
+    source("src/r/PrimaryScreen/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE)
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
@@ -2111,7 +2111,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     dryRunLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "draft"))
     dir.create(dryRunLocation, showWarnings = FALSE)
     
-    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+    source(file.path("src/r/PrimaryScreen/createReports/",
                      clientName,"createPDF.R"), local = TRUE)
     
     if(!parameters$autoHitSelection) {
@@ -2145,7 +2145,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
     dir.create(reportLocation, showWarnings = FALSE)
     
-    source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
+    source(file.path("src/r/PrimaryScreen/createReports/",
                      clientName,"createPDF.R"), local = TRUE)
     
     # Create the actual PDF
@@ -2221,7 +2221,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"),
     #                                 stringsAsFactors=FALSE)
     #
-    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
+    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "src/r/PrimaryScreen/conf/savingSettings.csv"))
 
     #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"),
     #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"),
@@ -2663,7 +2663,7 @@ getTreatmentGroupData <- function(batchDataTable, parameters, groupBy) {
 
   groupBy <- c(groupBy, "tempParentId")
   
-  resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
+  resultTypes <- fread(file.path(racas::applicationSettings$appHome, "src/r/PrimaryScreen/conf/savingSettings.csv"))
 
   # get means of meanTarget columns
   meanTarget <- c(grep("^R\\d+ ", names(batchDataTable), value=TRUE),

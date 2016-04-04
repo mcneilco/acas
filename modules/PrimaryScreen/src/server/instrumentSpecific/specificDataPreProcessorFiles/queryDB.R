@@ -22,6 +22,7 @@ sqlQuery <- function(queryString='sql query', host, port, sid, userName, userPas
   }, error = function(e) {
     # This section for local development when it may be easier to use JDBC rather than other drivers
     library(RJDBC)
+    stop("Main db package missing, and JDBC path is old")
     connectionInfo$server.database.r.driver <- "JDBC('oracle.jdbc.driver.OracleDriver', file.path('public/src/modules/PrimaryScreen/spec/RTestSet/docs', 'ojdbc6.jar') )"
     getDatabaseConnection(connectionInfo)
   })

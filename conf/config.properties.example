@@ -142,9 +142,6 @@ server.service.persistence.fileUrl=${client.host}:${server.nodeapi.port}/uploads
 ###########################################################################
 
 server.r.installation.path=
-server.r=R
-server.rscript=Rscript
-
 
 ###########################################################################
 # E. Communication with rApache

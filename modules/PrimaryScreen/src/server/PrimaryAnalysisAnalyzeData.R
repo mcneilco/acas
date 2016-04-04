@@ -69,7 +69,7 @@ normalizeDataOriginal <- function() {
 
 normalizeData <- function() {
   setwd(racas::applicationSettings$appHome)
-  source("public/src/modules/PrimaryScreen/src/server/PrimaryAnalysis.R")
+  source("src/r/PrimaryScreen/PrimaryAnalysis.R")
   experimentCode <- POST$experimentCode
   flagFile <- getUploadedFilePath(FILES$file$name)
   file.copy(FILES$file$tmp_name, flagFile, overwrite = T)

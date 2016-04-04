@@ -15,11 +15,13 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv,
   #         tempFilePath (where log files and ini files are saved)
   # Output: instrumentData (list of two data tables: plateAssociationDT, assayData)
   
-  instrumentSpecificFolder <- "public/src/modules/PrimaryScreen/src/server/instrumentSpecific/"
+  instrumentSpecificFolder <- "src/r/PrimaryScreen/instrumentSpecific/"
   
   fileList <- c(list.files(file.path(instrumentSpecificFolder, "/specificDataPreProcessorFiles/"), full.names=TRUE),
                 list.files(file.path(instrumentSpecificFolder, instrumentClass), full.names=TRUE))
-  lapply(fileList, source)
+  for (sourceFile in fileList) { # Cannot use lapply because then "local" is inside lapply
+    source(sourceFile, local=TRUE)
+  }
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
   
