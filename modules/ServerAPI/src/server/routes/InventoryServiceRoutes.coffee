@@ -80,7 +80,7 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersByLabelsInternalResponse
 	else
-		console.debug 'incoming getContainersByLabelsInternal request: ', containerLabels, containerType, containerKind, labelType, labelKind
+		console.debug 'incoming getContainersByLabelsInternal request: ', JSON.stringify(containerLabels), containerType, containerKind, labelType, labelKind
 		exports.getContainerCodesByLabelsInternal containerLabels, containerType, containerKind, labelType, labelKind, (containerCodes, statusCode) =>
 			if statusCode == 500
 				callback JSON.stringify("getContainersByLabels failed"), 500
@@ -128,7 +128,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming getContainerCodesByLabelsInternal request: ', containerCodesJSON, containerType, containerKind, labelType, labelKind
+		console.debug 'incoming getContainerCodesByLabelsInternal request: ', JSON.stringify(containerCodesJSON), containerType, containerKind, labelType, labelKind
 		config = require '../conf/compiled/conf.js'
 		queryParams = []
 		if containerType?
@@ -236,7 +236,7 @@ exports.getContainerAndDefinitionContainerByContainerLabelInternal = (labels, ca
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
 	else
-		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{labels}'"
+		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{JSON.stringify(labels)}'"
 		exports.getContainerCodesByLabelsInternal labels, null, null, null, null, (containerCodes, statusCode) =>
 			if statusCode == 500
 				callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
@@ -263,7 +263,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerCodeNamesInternalResponse
 	else
-		console.debug "incoming getContainerAndDefinitionContainerByContainerCodeNames request: '#{containerCodes}'"
+		console.debug "incoming getContainerAndDefinitionContainerByContainerCodeNames request: '#{JSON.stringify(containerCodes)}'"
 		exports.getContainersByCodeNamesInternal containerCodes, (containers, statusCode) =>
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
@@ -361,8 +361,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 								preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 									console.debug types
 							container = new preferredEntity.model(container)
-							console.debug 'here is the newed up container'
-							console.debug container
 							if updateInfo.barcode?
 								if containerCodes[index].foundCodeNames.length > 1
 									message = "conflict: found more than 1 container plate barcode for label #{containerCodes[index].requestLabel}: #{containerCodes[index].foundCodeNames.join(",")}"
@@ -413,7 +411,7 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersByCodeNames
 	else
-		console.debug 'incoming getContainersByCodeNamesInternal request: ', codeNamesJSON
+		console.debug 'incoming getContainersByCodeNamesInternal request: ', JSON.stringify(codeNamesJSON)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainersByCodeNames"
 		console.debug 'base url: ', baseurl
@@ -503,7 +501,7 @@ exports.getWellCodesByContainerCodes = (req, resp) ->
 			resp.json json
 
 exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
-	console.debug 'incoming getWellCodesByContainerCodes request: ', codeNamesJSON
+	console.debug 'incoming getWellCodesByContainerCodes request: ', JSON.stringify(codeNamesJSON)
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellCodesByContainerCodesResponse
@@ -914,7 +912,7 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming updateWellContentInternal request: ', wellContent
+		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent"
 		console.debug 'base url: ', baseurl
@@ -947,7 +945,7 @@ exports.moveToLocationInternal = (input, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.moveToLocationResponse
 	else
-		console.debug 'incoming moveToLocationJSON request: ', JSON.stringify input
+		console.debug 'incoming moveToLocationJSON request: ', JSON.stringify(input)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/moveToLocation"
 		console.debug 'base url: ', baseurl
