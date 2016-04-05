@@ -283,23 +283,25 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								console.debug "found container kind: #{containers[index].container.lsKind}"
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
 								if containerPreferredEntity?
-									console.debug "found preferred entity: #{containerPreferredEntity}"
+									console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
 								else
-									console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
-									console.debug preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-									console.debug types
-								console.log containerPreferredEntity
+									console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+									preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+										console.error types
+								console.debug "here is the container as returned by tomcat: #{JSON.stringify(containers[index].container, null, '  ')}"
 								container = new containerPreferredEntity.model(containers[index].container)
 								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
 								definition = new definitionPreferredEntity.model(definitions[index].definition)
 								containerValues =  container.getValues()
-								console.debug containerValues
+								console.debug "here are the values of the container: #{JSON.stringify(containerValues,null, '  ')}"
 								definitionValues =  definition.getValues()
+								console.debug "here are the values of the definition container: #{JSON.stringify(definitionValues,null, '  ')}"
 								out = _.extend containerValues, definitionValues
 								out.barcode = container.get('barcode').get("labelText")
 								outArray.push out
 							else
 								console.error "could not find container #{containers[index]}"
+						console.debug "output of getContainerAndDefinitionContainerByContainerCodeNames: #{JSON.stringify(outArray,null, '  ')}"
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
@@ -308,7 +310,7 @@ exports.updateContainerByContainerCode = (req, resp) ->
 		resp.json json[0]
 
 exports.updateContainersByContainerCodes = (req, resp) ->
-	exports.updateContainersByContainerCodeInternal req.body, (json, statusCode) ->
+	exports.updateContainersByContainerCodesInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
