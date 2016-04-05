@@ -1,17 +1,6 @@
 saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
   # Saves spotfire file with correct column names
 
-  # Multiple standards may present well types labeled as "PC-S*", "NC-S*", "VC-S*" that need to be replaced with 
-  # their simpler counterparts ("PC", "NC", "VC") before creating SpotFire file
-  # Define the indices of inputTable$wellType that contain standards besides the ones labeled "PC", "NC", "VC"
-  indexPC <- grep("^PC-S", inputTable$wellType)
-  indexNC <- grep("^NC-S", inputTable$wellType)
-  indexVC <- grep("^VC-S", inputTable$wellType)
-  # Replace well types "PC-S*", "NC-S*", "VC-S*" with "PC", "NC", "VC", respectively
-  inputTable$wellType[indexPC] <- "PC"
-  inputTable$wellType[indexNC] <- "NC"
-  inputTable$wellType[indexVC] <- "VC"
-
   # Change well type names
   translationList <- list(
     test = "Compound Discrete (Tested Lot)", 

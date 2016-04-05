@@ -1670,10 +1670,9 @@ autoFlagWells <- function(resultTable, parameters) {
     fluoroThreshold <- parameters$fluorescentStep
   }
 
-
-  if (any(is.na(resultTable$T_timePoints))) {
-    # Skip the step of parsing the (first) string representing every element of column T_timePoints
-  } else {
+  # Skip the step of parsing the (first) string representing every element of column T_timePoints only if at least one NA entry is found
+  # in T_timepoints
+  if (!any(is.na(resultTable$T_timePoints))) {
     # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
     vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
   }
@@ -1893,21 +1892,51 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Define the data frame that holds information about multiple standards, as defined in the GUI
   standardsDataFrame <- rbindlist(parameters$standardCompoundList)
 
-  normalizationDataFrame <- as.data.frame(rbind(as.numeric(parameters$normalization$positiveControl),
-                                                as.numeric(parameters$normalization$negativeControl)))
+  # Define the data frame that holds information about normalization controls, as defined in the GUI
+  normalizationDataFrame <- as.data.frame(rbind(parameters$normalization$positiveControl,
+                                                parameters$normalization$negativeControl))
+  
   
   setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
   normalizationDataFrame$standardType <- c('PC', 'NC')
   
-  # Throw an error if only normalization-associated NC standards are defined (i.e. absence of positive AND default values for positive)
-  # or if only normalization-associated PC standards are defined (i.e. absence of negative AND default values for negative) in the GUI
-  scenarioOnlyNC <- (is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
-                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
-                     !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+  normalizationDataFrame$defaultValue[normalizationDataFrame$defaultValue==""] <- NA
+  normalizationDataFrame$defaultValue <- as.numeric(normalizationDataFrame$defaultValue)
+  #normalizationDataFrame$standardNumber <- paste0("S",normalizationDataFrame$standardNumber)
+
+
   
-  scenarioOnlyPC <- (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
+  # Throw an error if no PC and no NC were defined for normalization (absence of standards and default values)
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'unassigned') {
+    stopUser("No Standards were defined for Positive Control and Negative Control in the normalization section. 
+                Standards, or alteratively Input Values, for Positive and Negative Controls are required for normalization calculations.")
+  }
+  
+  # Throw an error either PC or NC were defined as unassigned
+  if ((normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' | #&
+       #normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'unassigned') |
+      #(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] != 'unassigned' &
+       normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'unassigned')) {
+    stopUser("No Standard and no Input Value was defined for either the Positive Control or Negative Control
+              in the normalization section. Standards, or alternatively Input Values, for Positive and Negative Controls
+              are required for normalization calculations.")
+  }
+    
+  
+  # Throw an error if only normalization-associated NC standards are defined via default value in the GUI 
+  # (i.e. absence of positive control standard AND default value for positive control)
+  scenarioOnlyNC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
+                     normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value' &
+                     !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])  )
+
+  # Throw an error if only normalization-associated PC standards are defined via default value in the GUI 
+  # (i.e. absence of negative control standard AND default value for negative control) 
+  scenarioOnlyPC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+                     !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
                      is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC']) &
-                     is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']))
+                     normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value')
      
   if (scenarioOnlyNC) {
     stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or input value in lieu of a Positive Control 
@@ -1921,63 +1950,43 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
               for normalization calculations.")
   }
   
-    
-  # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
-  # regarding normalization when defined in the GUI
-  if (!is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']) &
-      !is.na(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'])) {
-    if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] ==
-        normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']) {
-      stopUser("The same standard was defined for both Positive Control and Negative Control in the normalization section. 
-                Different standards for Positive and Negative Controls are required for normalization calculations.")
+  
+  # Throw an error if input values were selected for both PC and NC were defined for normalization but no numerical values were provided
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value') {
+    # If both PC and NC input values are NA then display the error
+    if (is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
+        is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+      stopUser("Although Input Values were selected for both Positive Control and Negative Control, no numeric values were defined.
+                Numeric Input Values in lieu of Standards for Positive and Negative Controls are required for normalization calculations.")
     }
   }
   
-
-
-  formStandardNumbering <- function(controlType, controlsVector) {
-    # Create list of enumerated standards of a single type of standard
-    # Arg:
-    #   controlType:    type of control (PC, NC, or VC) specified as a string
-    #   controlsVector: character vector containing any or all types of controls encountered (PC, NC, or VC)
-    #
-    # Returns:
-    #   standardNumber: vector enumerating all specified controls in their sequence of appearance
     
-    # Identify which controls within the controlsVector are of controlType of interest and enumerate them
-    vector <- as.numeric(controlsVector==controlType)
-    counter <- cumsum(vector)
-    # Ignore the other types of controls by replacing them by zeros 
-    index <- as.character(counter*vector)
-    # Collate the controls to their number of appearance
-    standardNumber <- paste0(controlType, "-S", index)
-    # Replace the zeros by NA within the vector
-    standardNumber <- ifelse((standardNumber==paste0(controlType, "-S0")), yes=NA, no=standardNumber)
-    
-    return(standardNumber)
+  # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
+  # regarding normalization when defined in the GUI
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] != 'input value' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'input value') {
+    if (identical(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'],
+                  normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'])) {
+      stopUser("The same Standard was defined for both Positive Control and Negative Control in the normalization section. 
+                Different Standards for Positive and Negative Controls are required for normalization calculations.")
+    }
   }
+
+  # Add a column to the data frame that holds information about multiple standards, enumerating all available standards
+  standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType,"-S",rep(1:nrow(standardsDataFrame)))
   
-  
-  # Create the vectors enumeating all PC, NC, VC controls
-  pcNumber <- formStandardNumbering("PC",standardsDataFrame$standardType)
-  ncNumber <- formStandardNumbering("NC",standardsDataFrame$standardType)
-  vcNumber <- formStandardNumbering("VC",standardsDataFrame$standardType)
-  # Merge the PC, NC controls into the final vector of enumerated controls
-  pcncNumber <- ifelse((is.na(pcNumber)), yes=ncNumber, no=pcNumber)
-  # Merge the VC controls with the vector of PC, NC and store the updated vector into the standards dataframe
-  standardsDataFrame$standardTypeEnumerated <- ifelse((is.na(pcncNumber)), yes=vcNumber, no=pcncNumber)
-  # Correct the enumeration pattern (common and incremental amongst all types of controls)
-  standardsDataFrame$standardTypeEnumerated <- paste0(substr(standardsDataFrame$standardTypeEnumerated,1,4), rep(1:nrow(standardsDataFrame)))
   
   # If a normalization-related PC is defined then mark it separately in the standards database
   normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
-  if (!is.na(normalizationPC)) {
+  if (normalizationPC != 'input value') {
     standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationPC] <- 'PC'
   }
   
   # If a normalization-related NC is defined then mark it separately in the standards database
   normalizationNC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']
-  if (!is.na(normalizationNC)) {
+  if (normalizationNC != 'input value') {
     standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationNC] <- 'NC'
   }
   
@@ -1991,9 +2000,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (any(standardsDataFrame$concentration=="")) {
     stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
   }
-  
-  #V#######print(standardsDataFrame)
-  #V#######print(normalizationDataFrame)
+  #V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")  
+
 
   ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
   ##parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
@@ -2081,7 +2089,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
-#V####save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")
     checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
