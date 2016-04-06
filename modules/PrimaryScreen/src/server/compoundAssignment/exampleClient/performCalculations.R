@@ -1,6 +1,10 @@
-performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun) {
+performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun, normalizationDataFrame) {
+  # Load stats to avoid issues with recognizing 'sd' in Line 13 below
+  library(stats)
+  
+  # Expand the set of arguments and pass normalizationDataFrame as an argument within normalizeData()
   # exampleClient
-  resultTable <- normalizeData(resultTable, parameters)
+  resultTable <- normalizeData(resultTable, parameters, normalizationDataFrame)
   
   # get transformed columns
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
@@ -60,21 +64,39 @@ computeRawZPrimeByPlate <- function(mainData) {
   return(computeZPrime(positiveControls, negativeControls))
 }
 
-normalizeData <- function(resultTable, parameters) {
+normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
   normalization <- parameters$normalizationRule
   
-  if ((length((resultTable[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stopUser("All of the negative controls were flagged, so normalization cannot proceed.")
+  if (nrow(resultTable[(wellType == 'NC' & is.na(flag))]) == 0) {
+    # execute the error prompt about lack of NC only if no default value was defined in lieu of a negative control
+    if (is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="NC"])) {
+      stopUser("All of the negative controls were flagged, so normalization cannot proceed.")
+    }
   }
-  if ((length((resultTable[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stopUser("All of the positive controls were flagged, so normalization cannot proceed.")
+  if (nrow(resultTable[(wellType == 'PC' & is.na(flag))]) == 0) {
+    # execute the error prompt about lack of PC only if no default value was defined in lieu of a positive control
+    if (is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="PC"])) {
+      stopUser("All of the positive controls were flagged, so normalization cannot proceed.")
+    }
   }
   
   #find min of dataset (aggregationMethod of unflagged Negative Controls)
-  overallMinLevel <- useAggregationMethod(resultTable[(wellType=='NC' & is.na(flag))]$activity, parameters)
-  #find max of dataset (aggregationMethod of unflagged Positive Controls)
-  overallMaxLevel <- useAggregationMethod(resultTable[(wellType=='PC' & is.na(flag))]$activity, parameters)
+  # otherwise if no NC exists use the default value selected in lieu of NC standard
+  if (nrow(resultTable[(wellType == 'NC' & is.na(flag))]) != 0) {
+    overallMinLevel <- useAggregationMethod(resultTable[(wellType=='NC' & is.na(flag))]$activity, parameters)
+  } else {
+    overallMinLevel <- normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="NC"]
+  }
   
+  #find max of dataset (aggregationMethod of unflagged Positive Controls)
+  # otherwise if no PC exists use the default value selected in lieu of PC standard
+  if (nrow(resultTable[(wellType == 'PC' & is.na(flag))]) != 0) {
+    overallMaxLevel <- useAggregationMethod(resultTable[(wellType=='PC' & is.na(flag))]$activity, parameters)
+  } else {
+    overallMaxLevel <- normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="PC"]
+  }
+    
+    
   if (normalization == "plate order only") {
     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
                                                        overallMinLevel=overallMinLevel,
