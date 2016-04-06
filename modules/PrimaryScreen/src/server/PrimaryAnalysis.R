@@ -1975,8 +1975,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
 
   # Add a column to the data frame that holds information about multiple standards, enumerating all available standards
-  standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType,"-S",rep(1:nrow(standardsDataFrame)))
-  
+  standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType, "-S", standardsDataFrame$standardNumber)
+
   
   # If a normalization-related PC is defined then mark it separately in the standards database
   normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
