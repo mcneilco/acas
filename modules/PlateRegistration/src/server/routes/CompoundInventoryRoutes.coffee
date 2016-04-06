@@ -1,4 +1,5 @@
 _ = require('lodash')
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/compoundInventory', loginRoutes.ensureAuthenticated, exports.compoundInventoryIndex
@@ -80,6 +81,16 @@ exports.createPlate = (req, resp) ->
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error
+			if !req.params.callCustom?
+				callCustom = true
+			else
+				callCustom = req.params.callCustom
+			if callCustom
+				if csUtilities.createPlate?
+					console.log "running customer specific server function createPlate"
+					csUtilities.createPlate req.body
+				else
+					console.warn "could not find customer specific server function createPlate so not running it"
 			console.log JSON.stringify json
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json

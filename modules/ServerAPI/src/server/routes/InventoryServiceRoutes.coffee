@@ -1,3 +1,6 @@
+serverUtilityFunctions = require './ServerUtilityFunctions.js'
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', exports.getContainerCodesByLabels
@@ -310,16 +313,18 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
-	exports.updateContainersByContainerCodesInternal [req.body], (json, statusCode) ->
+	exports.updateContainersByContainerCodesInternal [req.body], req.params.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
 
 exports.updateContainersByContainerCodes = (req, resp) ->
-	exports.updateContainersByContainerCodesInternal req.body, (json, statusCode) ->
+	exports.updateContainersByContainerCodesInternal req.body, req.params.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.updateContainersByContainerCodesInternal = (updateInformation, callback) ->
+exports.updateContainersByContainerCodesInternal = (updateInformation, callCustom, callback) ->
+	if !callCustom?
+		callCustom = true
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updateContainerMetadataByContainerCodeResponse
@@ -399,6 +404,12 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callback)
 								values =  savedContainer.getValuesByKey(Object.keys(updateInfo))
 								for key of values
 									updateInformation[index][key] = values[key]
+							if callCustom
+								if csUtilities.updateContainersByContainerCodes?
+									console.log "running customer specific server function updateContainersByContainerCodes"
+									csUtilities.updateContainersByContainerCodes updateInformation
+								else
+									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
 							callback updateInformation, 200
 #
 exports.getContainersByCodeNames = (req, resp) ->
@@ -584,11 +595,6 @@ exports.updateContainersInternal = (containers, callback) ->
 				callback JSON.stringify("updateContainers failed"), 500
 		)
 
-
-serverUtilityFunctions = require './ServerUtilityFunctions.js'
-csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-
-
 exports.getAllContainers = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
@@ -632,7 +638,6 @@ exports.containerByCodeName = (req, resp) ->
 
 
 updateContainer = (container, testMode, callback) ->
-	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serverUtilityFunctions.createLSTransaction container.recordedDate, "updated experiment", (transaction) ->
 		container = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, container
 		if testMode or global.specRunnerTestmode
@@ -903,11 +908,13 @@ exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and 
 
 exports.updateWellContent = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body, (json, statusCode) ->
+	exports.updateWellContentInternal req.body, req.body.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.updateWellContentInternal = (wellContent, callback) ->
+exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
+	if !callCustom?
+		callCustom = true
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
@@ -925,7 +932,13 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			if !error
+			if !error & response.statusCode in [200,204]
+				if callCustom
+					if csUtilities.updateWellContent?
+						console.log "running customer specific server function updateWellContent"
+						csUtilities.updateWellContent wellContent
+					else
+						console.warn "could not find customer specific server function updateWellContent so not running it"
 				callback "success", response.statusCode
 			else
 				console.error 'got ajax error trying to get updateWellContent'

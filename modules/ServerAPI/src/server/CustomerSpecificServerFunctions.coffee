@@ -433,3 +433,12 @@ checkBatch_TestMode = (requestName) ->
 		when  "alias" then respId = "norm_"+idComps[1]+"A"
 		else respId = requestName
 	return respId
+
+exports.createPlate = (request) ->
+	console.debug "inside base customer specific server function createPlate"
+
+exports.updateWellContent = (request) ->
+	console.debug "inside base customer specific server function updateWellContent"
+
+exports.updateContainersByContainerCodes = (request) ->
+	console.debug "inside base customer specific server function updateContainersByContainerCodes"
