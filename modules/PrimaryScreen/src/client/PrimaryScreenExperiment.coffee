@@ -955,7 +955,9 @@ class window.ControlSettingController extends AbstractFormController
 			@standardNumberList.reset standardsSelectArray
 		else
 			@standardNumberList = new PickListList standardsSelectArray
-		if not @standardsListSelectController?
+		if @standardsListSelectController?
+			@standardsListSelectController.setSelectedCode @model.get('standardNumber')
+		else
 			@standardsListSelectController = new PickListSelectController
 				el: @$('.bv_standardNumber')
 				collection: @standardNumberList

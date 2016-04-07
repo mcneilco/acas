@@ -1,6 +1,6 @@
 saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
   # Saves spotfire file with correct column names
-  
+
   # Change well type names
   translationList <- list(
     test = "Compound Discrete (Tested Lot)", 
@@ -9,7 +9,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
     NC = "Negative Control",
     BLANK = "Blank")
   inputTable[, wellType := unlist(translationList[wellType])]
-
+ 
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
 
   newColNames <- colnames(inputTable)

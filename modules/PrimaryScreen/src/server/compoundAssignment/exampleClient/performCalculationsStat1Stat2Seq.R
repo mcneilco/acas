@@ -92,18 +92,23 @@ computeActivity <- function(mainData, transformation) {
   }	
 }
 
-normalizeData <- function(resultTable, normalization) {
-  if (normalization=="plate order") {
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= assayBarcode]
-  } else if (normalization=="row order") {
-    resultTable[,plateRow:=gsub("\\d", "",well)]
-    resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(assayBarcode,plateRow)]
-  } else {
-    resultTable[,normalizedActivity:=resultTable$activity]
-  }
-  
-  return(resultTable)
-}
+############# Commenting out normalizeData() immediately below since the same function is sourced within performCalculations.R
+# normalizeData <- function(resultTable, normalization) {
+#   #if (normalization=="plate order") {
+#   # Separated the first element of the list which has the normalization rule
+#   normalization <- normalization["normalizationRule"]
+#   if (normalization=="plate order only") {
+#     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= assayBarcode]
+#   } else if (normalization=="row order") {
+#     resultTable[,plateRow:=gsub("\\d", "",well)]
+#     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(assayBarcode,plateRow)]
+#   } else {
+#     resultTable[,normalizedActivity:=resultTable$activity]
+#   }
+#   
+#   return(resultTable)
+# }
+#############
 
 # computeNormalized  <- function(values, wellType, flag) {
 #   # Computes normalized version of the given values based on the unflagged positive and 

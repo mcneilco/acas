@@ -188,53 +188,47 @@ removeControls <- function(validatedFlagData) {
   
   return(testOnly)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F,
+                         standardsDataFrame, normalizationDataFrame) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
   # TODO: get client to send "infinite" as text for the negative control
   wellTypes <- rep.int("test", length(batchNames))
-  
 
-  if (positiveControl$concentration == "infinite") {
-    positiveControl$concentration <- Inf
-  }
-  if (is.null(negativeControl$concentration) || negativeControl$concentration == "infinite") {
-    negativeControl$concentration <- Inf
-  }
-  
-  if(!is.null(vehicleControl$batchCode) && vehicleControl$batchCode != "null") {
-    wellTypes[batchNames==vehicleControl$batchCode] <- "VC"
-  }
-  
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
   if (is.null(toleranceRange)) {
     warnUser("Config issue: control tolerance client.service.control.tolerance.percentage not set")
     toleranceRange <- 0
   }
   #   toleranceRange <- 0.01
-  
-  posBatchFilter <- batchNames==positiveControl$batchCode & 
-    abs(concentrations-positiveControl$concentration) <= (positiveControl$concentration * toleranceRange)/100
-  negBatchFilter <- batchNames==negativeControl$batchCode & 
-    (abs(concentrations-negativeControl$concentration) <= (negativeControl$concentration * toleranceRange)/100 ||
-       (concentrations==Inf && negativeControl$concentration==Inf))
 
-  if(!is.null(concentrationUnits)) {
-    posBatchFilter <- posBatchFilter & concentrations==positiveControl$concentration
-    negBatchFilter <- negBatchFilter & concentrations==negativeControl$concentration
+
+  # Throw an error if absolutely no standards are defined in the GUI
+  if (is.null(length(standardsDataFrame$standardTypeEnumerated)) | length(standardsDataFrame$standardTypeEnumerated)==0) {
+    stopUser("No Standards were defined whatsoever.")
+  }
+  # Throw an error if no negative controls are defined in the GUI
+  if (is.null(length(grep("NC", standardsDataFrame$standardTypeEnumerated))) | length(grep("NC", standardsDataFrame$standardTypeEnumerated))==0) {
+    stopUser("No Negative Control Standards were defined.")
+  }
+  # Throw an error if no positive controls are defined in the GUI
+  if (is.null(length(grep("PC", standardsDataFrame$standardTypeEnumerated))) | length(grep("PC", standardsDataFrame$standardTypeEnumerated))==0) {
+    stopUser("No Positive Control Standards were defined.")
+  }  
+  # Throw an error if any of the standards was left unassigned in the GUI
+  if (any(standardsDataFrame$standardType=="unassigned")) {
+    stopUser("The standard type for at least one Standard was not defined. Please select a type: Positive Control, Negative Control, or Vehicle Control")
   }
   
-  wellTypes[posBatchFilter] <- "PC"
-  wellTypes[negBatchFilter] <- "NC"
-  #   wellTypes[batchNames==positiveControl$batchCode & concentrations==positiveControl$concentration & 
-  #               concentrationUnits==positiveControl$concentrationUnits & hasAgonistFilter] <- "PC"
-  #   wellTypes[batchNames==negativeControl$batchCode & concentrations==negativeControl$concentration & 
-  #               concentrationUnits==negativeControl$concentrationUnits & hasAgonist] <- "NC"
-  
-#   if(!is.null(hasAgonist)) {
-#     wellTypes[!hasAgonist] <- "no agonist"
-#   }
-  
+  # Cycling through all the standards (PC, NC, VC) and update well types accordingly, also confirming that each standard is within tolerance 
+  #from the corresponding concentrations (as defined in the standards section of the GUI)
+  for (targetStandard in standardsDataFrame$standardTypeEnumerated) {
+    targetConc <- (standardsDataFrame$concentration[standardsDataFrame$standardTypeEnumerated==targetStandard])
+    currentStandardFilter <- batchNames==standardsDataFrame$batchCode[standardsDataFrame$standardTypeEnumerated==targetStandard]
+    currentStandardFilterConcConfirmed <- currentStandardFilter & (abs(concentrations-targetConc) <= (targetConc * toleranceRange)/100)
+    wellTypes[currentStandardFilterConcConfirmed] <- targetStandard
+  }  
+
   return(wellTypes)
 }
 getAnalysisGroupColumns <- function(replicateType) {
@@ -1440,7 +1434,7 @@ checkFlags <- function(resultTable) {
   }
 }
 
-checkControls <- function(resultTable) {
+checkControls <- function(resultTable, normalizationDataFrame) {
   # Checks to see if the controls are present in the plate.
   # 
   # Input:  resultTable (data.table)
@@ -1454,17 +1448,36 @@ checkControls <- function(resultTable) {
   if (!any(resultTable$wellType == "NC")) {
     controlsExist$negExists <- FALSE
   }
-  
-  if(!controlsExist$posExists && !controlsExist$negExists) {
-    stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
-             and your controls and dilution factor are defined correctly.")
-  } else if (!controlsExist$posExists) {
-    stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-             and your postive control (or dilution factor) is defined correctly.")
-  } else if (!controlsExist$negExists) {
-    stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-             and your negative control (or dilution factor) is defined correctly.")
+
+  # Modify the cases where both PC standard AND default value for PC are missing AND/OR the same applies to NC
+  if(!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) && 
+     !controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+    stopUser("Either (1) the positive and negative controls at the stated concentrations were not found in the plates, or (2) no standards were
+              selected while no Input Values were defined for positive and negative control. Make sure all transfers have been loaded 
+              and your controls and dilution factor are defined correctly, and either standards are selected or input values are defined.")
+  } else if (!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC'])) {
+    stopUser("Either (1) the Positive Control at the stated concentration was not found in the plates, or (2) no Standard was
+              selected while no Input Value was defined for Positive Control. Make sure all transfers have been loaded 
+              and your Positive Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
+              is defined for the Positive Control.")
+  } else if (!controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+    stopUser("Either (1) the Negative Control at the stated concentration was not found in the plates, or (2) no Standard was
+              selected while no Input Value was defined for Negative Control. Make sure all transfers have been loaded 
+              and your Negative Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
+              is defined for the Negative Control.")
   }
+    
+  #if(!controlsExist$posExists && !controlsExist$negExists) {
+  #  stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
+  #           and your controls and dilution factor are defined correctly.")
+  #} else if (!controlsExist$posExists) {
+  #  stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+  #           and your positive control (or dilution factor) is defined correctly.")
+  #} else if (!controlsExist$negExists) {
+  #  stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
+  #           and your negative control (or dilution factor) is defined correctly.")
+  #}
+  
 }
 
 removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
@@ -1657,10 +1670,14 @@ autoFlagWells <- function(resultTable, parameters) {
     fluoroThreshold <- parameters$fluorescentStep
   }
 
-
-  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
-  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
-
+  # Skip the step of parsing the (first) string representing every element of column T_timePoints only if at least one NA entry is found
+  # in T_timepoints
+  if (!any(is.na(resultTable$T_timePoints))) {
+    # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+    vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
+  }
+    
+  
 
   # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
   if (statusFluorescent=="complete") {
@@ -1841,7 +1858,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-
+  
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
   }
@@ -1860,7 +1877,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
   
   parameters <- getExperimentParameters(inputParameters)
-  
+
   if(parameters$autoHitSelection) {
     if(is.null(parameters$thresholdType)) {
       stopUser("No hit selection parameter was calculated because no threshold was selected.")
@@ -1871,9 +1888,123 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
       }
     }
   }
+
+  # Define the data frame that holds information about multiple standards, as defined in the GUI
+  standardsDataFrame <- rbindlist(parameters$standardCompoundList)
+
+  # Define the data frame that holds information about normalization controls, as defined in the GUI
+  normalizationDataFrame <- as.data.frame(rbind(parameters$normalization$positiveControl,
+                                                parameters$normalization$negativeControl))
   
-  parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
-  parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
+  
+  setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
+  normalizationDataFrame$standardType <- c('PC', 'NC')
+  
+  normalizationDataFrame$defaultValue[normalizationDataFrame$defaultValue==""] <- NA
+  normalizationDataFrame$defaultValue <- as.numeric(normalizationDataFrame$defaultValue)
+  #normalizationDataFrame$standardNumber <- paste0("S",normalizationDataFrame$standardNumber)
+
+
+  
+  # Throw an error if no PC and no NC were defined for normalization (absence of standards and default values)
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'unassigned') {
+    stopUser("No Standards were defined for Positive Control and Negative Control in the normalization section. 
+                Standards, or alteratively Input Values, for Positive and Negative Controls are required for normalization calculations.")
+  }
+  
+  # Throw an error either PC or NC were defined as unassigned
+  if ((normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' | #&
+       #normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'unassigned') |
+      #(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] != 'unassigned' &
+       normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'unassigned')) {
+    stopUser("No Standard and no Input Value was defined for either the Positive Control or Negative Control
+              in the normalization section. Standards, or alternatively Input Values, for Positive and Negative Controls
+              are required for normalization calculations.")
+  }
+    
+  
+  # Throw an error if only normalization-associated NC standards are defined via default value in the GUI 
+  # (i.e. absence of positive control standard AND default value for positive control)
+  scenarioOnlyNC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
+                     normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value' &
+                     !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])  )
+
+  # Throw an error if only normalization-associated PC standards are defined via default value in the GUI 
+  # (i.e. absence of negative control standard AND default value for negative control) 
+  scenarioOnlyPC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+                     !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
+                     is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC']) &
+                     normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value')
+     
+  if (scenarioOnlyNC) {
+    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or input value in lieu of a Positive Control 
+              were detected. Selecting a Positive Control standard or setting an input value for Positive Control is required 
+              for normalization calculations.")
+  }
+
+  if (scenarioOnlyPC) {
+    stopUser("In the normalization section, only a Positive Control was defined -- no Negative Control or input value in lieu of a Negative Control 
+              were detected. Selecting a Negative Control standard or setting an input value for Negative Control is required
+              for normalization calculations.")
+  }
+  
+  
+  # Throw an error if input values were selected for both PC and NC were defined for normalization but no numerical values were provided
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value') {
+    # If both PC and NC input values are NA then display the error
+    if (is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
+        is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
+      stopUser("Although Input Values were selected for both Positive Control and Negative Control, no numeric values were defined.
+                Numeric Input Values in lieu of Standards for Positive and Negative Controls are required for normalization calculations.")
+    }
+  }
+  
+    
+  # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
+  # regarding normalization when defined in the GUI
+  if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] != 'input value' &
+      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'input value') {
+    if (identical(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'],
+                  normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'])) {
+      stopUser("The same Standard was defined for both Positive Control and Negative Control in the normalization section. 
+                Different Standards for Positive and Negative Controls are required for normalization calculations.")
+    }
+  }
+
+  # Add a column to the data frame that holds information about multiple standards, enumerating all available standards
+  standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType, "-S", standardsDataFrame$standardNumber)
+
+  
+  # If a normalization-related PC is defined then mark it separately in the standards database
+  normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
+  if (normalizationPC != 'input value') {
+    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationPC] <- 'PC'
+  }
+  
+  # If a normalization-related NC is defined then mark it separately in the standards database
+  normalizationNC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']
+  if (normalizationNC != 'input value') {
+    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationNC] <- 'NC'
+  }
+  
+  # Validate all the batchcodes entered for multiple standards in the GUI
+  standardsDataFrame$batchCode <- validateBatchCodes(standardsDataFrame$batchCode)
+
+  # Throw an error if there is a standard defined in the GUI that is not a PC, NC, or VC, or if its concentration was not defined 
+  if (any(standardsDataFrame$standardType=="null")) {
+    stopUser("Please check Data Analysis entries - At least one of the standards was defined beyond the allowable options of Positive, Negative, and Vehicle Control.")
+  }
+  if (any(standardsDataFrame$concentration=="")) {
+    stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
+  }
+  #V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")  
+
+
+  ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
+  ##parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
   
   ## TODO: test structure for integration 2014-10-06 kcarr
   # parameters <- parameters$primaryScreenAnalysisParameters
@@ -1948,16 +2079,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
-    rm(instrumentData)
-    gc()
+    #rm(instrumentData)
+    #gc()
 
     resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
                                          concentrationUnits=resultTable$concUnit,
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                         vehicleControl=parameters$vehicleControl, testMode=testMode)
+                                         vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame, normalizationDataFrame)
+
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
-    checkControls(resultTable)
+    checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
   }
@@ -1966,7 +2098,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   # user well flagging
   resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment, parameters)
-  
+ 
   ## End User Well Flagging
   
   ## RED SECTION - Client Specific
@@ -1974,14 +2106,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
-  
+   
   # knock out the controls with NA values
   # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
   # but those aren't created until later in the code
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
+  
   if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
-    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun)
+    # added normalizationDataFrame into the arguments to pass the default values in the case when no standards are defined for normalization
+    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame)
   } else {
     resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, experiment$codeName, dryRun)
   }
@@ -2161,6 +2295,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo,
                              threshold = hitThreshold, experiment, dryRun, activityName) 
+    
+    rm(instrumentData)
+    gc()
+    
     summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
                                          racas::applicationSettings$client.port,
                                          '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
@@ -2943,8 +3081,8 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE
   options("scipen"=15)
-  #save(request, file="request.Rda")
-  
+#save(request, file="request.Rda")
+ 
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -2960,7 +3098,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
   developmentMode <- globalMessenger$devMode
-  
+ 
   if (developmentMode) {
     loadResult <- list(value = runMain(folderToParse = folderToParse, 
                                        user = user, 

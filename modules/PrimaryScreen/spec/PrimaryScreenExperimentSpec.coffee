@@ -747,6 +747,14 @@ describe "Primary Screen Experiment module testing", ->
 						model.get('standardNumber') == 3
 					@scl.remove(standard3)
 					expect(@csc.$('.bv_standardNumber option').length).toEqual 4
+				it "should update the label text when standards change", ->
+					@scl.first().set "concentration", "5674.323"
+					expect(@csc.$('.bv_standardNumber option:eq(1)').html()).toMatch /5674\.323/
+				it "should maintain selected state when standards updated", ->
+					@csc.$('.bv_standardNumber').val('2')
+					@csc.$('.bv_standardNumber').change()
+					@scl.first().set "concentration", "5674.323"
+					expect(@csc.$('.bv_standardNumber').val()).toEqual '2'
 			describe "validation", ->
 				it "should show error if default is not a number", ->
 					@csc.$('.bv_defaultValue').val "more text"
@@ -769,6 +777,7 @@ describe "Primary Screen Experiment module testing", ->
 						@csc.$('.bv_standardNumber').change()
 						@csc.$('.bv_defaultValue').val ""
 						expect(@csc.$('.bv_group_defaultValue').hasClass("error")).toBeTruthy()
+
 
 	describe "NormalizationController", ->
 		describe "when instantiated", ->
