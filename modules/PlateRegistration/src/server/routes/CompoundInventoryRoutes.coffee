@@ -84,10 +84,8 @@ exports.createPlate = (req, resp) ->
 			console.log JSON.stringify json
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
-			if !req.params.payload?
-				callCustom = true
-			else
-				callCustom = req.params.callCustom
+			# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
 			if callCustom
 				if csUtilities.createPlate?
 					console.log "running customer specific server function createPlate"

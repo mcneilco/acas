@@ -321,18 +321,18 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
-	exports.updateContainersByContainerCodesInternal [req.body], req.params.callCustom, (json, statusCode) ->
+	exports.updateContainersByContainerCodesInternal [req.body], req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
 
 exports.updateContainersByContainerCodes = (req, resp) ->
-	exports.updateContainersByContainerCodesInternal req.body, req.params.callCustom, (json, statusCode) ->
+	exports.updateContainersByContainerCodesInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
 exports.updateContainersByContainerCodesInternal = (updateInformation, callCustom, callback) ->
-	if !callCustom?
-		callCustom = true
+	# If call custom doesn't equal 0 then call custom
+	callCustom  = callCustom != "0"
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.updateContainerMetadataByContainerCodeResponse
@@ -922,13 +922,14 @@ exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and 
 
 exports.updateWellContent = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body, req.body.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
 exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
-	if !callCustom?
-		callCustom = true
+	# If call custom doesn't equal 0 then call custom
+	callCustom  = callCustom != "0"
+
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
