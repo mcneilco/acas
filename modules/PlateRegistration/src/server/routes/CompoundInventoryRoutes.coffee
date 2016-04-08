@@ -81,19 +81,20 @@ exports.createPlate = (req, resp) ->
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error
-			if !req.params.callCustom?
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+			if !req.params.payload?
 				callCustom = true
 			else
 				callCustom = req.params.callCustom
 			if callCustom
 				if csUtilities.createPlate?
 					console.log "running customer specific server function createPlate"
-					csUtilities.createPlate req.body
+					csUtilities.createPlate req.body, (response) ->
+						console.log response
 				else
 					console.warn "could not find customer specific server function createPlate so not running it"
-			console.log JSON.stringify json
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
 		else
 			console.log 'got ajax error trying to save new experiment'
 			console.log error

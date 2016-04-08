@@ -12,6 +12,7 @@ exports.setupAPIRoutes = (app) ->
 	app.put '/api/containerByContainerCode', exports.updateContainerByContainerCode
 	app.get '/api/getContainerAndDefinitionContainerByContainerLabel/:label', exports.getContainerAndDefinitionContainerByContainerLabel
 	app.post '/api/getContainerAndDefinitionContainerByContainerCodeNames', exports.getContainerAndDefinitionContainerByContainerCodeNames
+	app.post '/api/getDefinitionContainersByContainerCodeNames', exports.getDefinitionContainersByContainerCodeNames
 	app.put '/api/containers/jsonArray', exports.updateContainers
 	app.post '/api/getBreadCrumbByContainerCode', exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', exports.getWellCodesByContainerCodes
@@ -25,6 +26,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 	app.post '/api/updateWellContent', exports.updateWellContent
 	app.post '/api/moveToLocation', exports.moveToLocation
+	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
+	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -37,6 +40,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.put '/api/containerByContainerCode', loginRoutes.ensureAuthenticated, exports.updateContainerByContainerCode
 	app.get '/api/getContainerAndDefinitionContainerByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getContainerAndDefinitionContainerByContainerLabel
 	app.post '/api/getContainerAndDefinitionContainerByContainerCodeNames', loginRoutes.ensureAuthenticated, exports.getContainerAndDefinitionContainerByContainerCodeNames
+	app.post '/api/getDefinitionContainersByContainerCodeNames', loginRoutes.ensureAuthenticated, exports.getDefinitionContainersByContainerCodeNames
+	app.put '/api/containers/jsonArray', loginRoutes.ensureAuthenticated, exports.updateContainers
+	app.post '/api/getBreadCrumbByContainerCode', loginRoutes.ensureAuthenticated, exports.getBreadCrumbByContainerCode
 	app.post '/api/getWellCodesByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellCodesByContainerCodes
 	app.get '/api/containers', loginRoutes.ensureAuthenticated, exports.getAllContainers
 	app.get '/api/containers/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.containersByTypeKind
@@ -48,6 +54,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
 	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
+	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
+	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -404,13 +412,14 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 								values =  savedContainer.getValuesByKey(Object.keys(updateInfo))
 								for key of values
 									updateInformation[index][key] = values[key]
+							callback updateInformation, 200
 							if callCustom
 								if csUtilities.updateContainersByContainerCodes?
 									console.log "running customer specific server function updateContainersByContainerCodes"
-									csUtilities.updateContainersByContainerCodes updateInformation
+									csUtilities.updateContainersByContainerCodes updateInfo, (response) ->
+										console.log response
 								else
 									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
-							callback updateInformation, 200
 #
 exports.getContainersByCodeNames = (req, resp) ->
 	exports.getContainersByCodeNamesInternal req.body, (json, statusCode) ->
@@ -444,6 +453,11 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 				console.error response
 				callback JSON.stringify("getContainersByCodeNames failed"), 500
 		)
+
+exports.getDefinitionContainersByContainerCodeNames = (req, resp) ->
+	exports.getDefinitionContainersByContainerCodeNamesInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
 
 exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, callback) ->
 	if global.specRunnerTestmode
@@ -933,13 +947,14 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error & response.statusCode in [200,204]
+				callback "success", response.statusCode
 				if callCustom
 					if csUtilities.updateWellContent?
 						console.log "running customer specific server function updateWellContent"
-						csUtilities.updateWellContent wellContent
+						csUtilities.updateWellContent wellContent, (response) ->
+							console.log response
 					else
 						console.warn "could not find customer specific server function updateWellContent so not running it"
-				callback "success", response.statusCode
 			else
 				console.error 'got ajax error trying to get updateWellContent'
 				console.error error
@@ -980,3 +995,37 @@ exports.moveToLocationInternal = (input, callback) ->
 				console.error response
 				callback JSON.stringify("updateWellContent failed"), 500
 		)
+
+exports.getWellContentByContainerLabel = (req, resp) ->
+	exports.getWellContentByContainerLabelsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json[0]
+
+exports.getWellContentByContainerLabels = (req, resp) ->
+	exports.getWellContentByContainerLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+
+exports.getWellContentByContainerLabelsInternal = (containerLabels, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.moveToLocationResponse
+	else
+		console.debug 'incoming getContainersByLabelsInternal request: ', JSON.stringify(containerLabels, containerType, containerKind, labelType, labelKind)
+		exports.getContainerCodesByLabelsInternal containerLabels, containerType, containerKind, labelType, labelKind, (containerCodes, statusCode) =>
+			if statusCode == 500
+				callback JSON.stringify("getContainersByLabels failed"), 500
+			else
+				console.log containerCodes
+				_ = require 'underscore'
+				codeNames = _.map containerCodes, (code) ->
+					if code.foundCodeNames[0]?
+						code.foundCodeNames[0]
+					else
+						""
+				exports.getWellContentByContainerCodesInternal codeNames, (wellContent) =>
+					for label, index in containerLabels
+						wellContent[index].label = label
+					callback wellContent, 200
+
