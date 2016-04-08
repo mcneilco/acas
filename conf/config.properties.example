@@ -369,10 +369,13 @@ server.file.server.path=privateUploads
 server.temp.file.server.path=privateTempFiles
 server.service.persistence.jdbc.validation.query=select version()
 
-
 #Rapache conf file configs
 server.rapache.conf.startservers=1
+server.rapache.conf.minspareservers=5
+server.rapache.conf.maxspareservers=5
 server.rapache.conf.serverlimit=5
+server.rapache.conf.maxclients=256
+server.rapache.conf.maxrequestsperchild=200
 server.rapache.conf.serversignature=On
 server.rapache.conf.hostnamelookups=On
 server.rapache.conf.serveradmin=root@localhost
