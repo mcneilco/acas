@@ -20,30 +20,31 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	retFun "Success"
-#	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-#	request = require 'request'
-#	request(
-#		headers:
-#			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
-#		method: 'POST'
-#		url: config.all.server.roologin.loginLink
-#		form:
-#			j_username: user
-#			j_password: pass
-#		json: false
-#	, (error, response, json) =>
-#		if !error && response.statusCode == 200
-#			retFun JSON.stringify json
-#		else if !error && response.statusCode == 302
-#			retFun JSON.stringify response.headers.location
-#		else
-#			console.log 'got connection error trying authenticate a user'
-#			console.log error
-#			console.log json
-#			console.log response
-#			retFun "connection_error "+error
-#	)
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	request = require 'request'
+	request(
+		headers:
+			accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+		method: 'POST'
+		url: config.all.server.roologin.loginLink
+		form:
+			j_username: user
+			j_password: pass
+		json: false
+	, (error, response, json) =>
+		console.log response.statusCode
+		console.log response.headers.location
+		if !error && response.statusCode == 200
+			retFun JSON.stringify json
+		else if !error && response.statusCode == 302
+			retFun JSON.stringify response.headers.location
+		else
+			console.log 'got connection error trying authenticate a user'
+			console.log error
+			console.log json
+			console.log response
+			retFun "connection_error "+error
+	)
 
 exports.resetAuth = (email, retFun) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
