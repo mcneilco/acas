@@ -40,8 +40,8 @@ USER    runner
 WORKDIR $ACAS_BASE
 # npm install needs 'LINK=g++ make install' because of the kerbos install of the mongodb-core dependency of winston-mongodb in acas
 RUN     export LINK=g++ make install && npm install && cp -r node_modules $BUILD_PATH && mkdir $BUILD_PATH/privateUploads
-RUN     mkdir /home/runner/logs
-RUN     npm --loglevel info install && mkdir -p $BUILD_PATH/conf/compiled
+RUN     mkdir /home/runner/logs && mkdir -p $BUILD_PATH/conf/compiled
+RUN     rm -rf $ACAS_BASE
 WORKDIR $BUILD_PATH
 RUN     chmod u+x bin/*.sh
 ENV     PREPARE_MODULE_CONF_JSON=true

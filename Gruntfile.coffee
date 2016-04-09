@@ -14,6 +14,7 @@ module.exports = (grunt) ->
 
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
+		fs = require 'fs'
 		console.log "building to '#{build}'"
 		console.log "building from '#{acas_base}'"
 		grunt.config.set('build', "#{build}")
@@ -28,7 +29,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly')
+		if !grunt.option('customonly') && fs.existsSync(acas_base)
 			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
@@ -367,7 +368,7 @@ module.exports = (grunt) ->
 					build: "<%= build %>"
 				call: (grunt, options) ->
 					shell = require('shelljs')
-					result = shell.exec("cd #{options.build} && npm install --production", {silent:true})
+					result = shell.exec("cd #{options.build} && npm install", {silent:true})
 					return result.output
 			install_racas:
 				options:
