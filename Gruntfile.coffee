@@ -29,7 +29,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly') && fs.existsSync(acas_base)
+		if !grunt.option('customonly') && fs.existsSync("#{acas_base}/modules/PlateRegistration")
 			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
