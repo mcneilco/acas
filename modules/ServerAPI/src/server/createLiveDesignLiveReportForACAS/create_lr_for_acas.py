@@ -19,12 +19,12 @@ except ImportError:
     import httplib as http_client
 http_client.HTTPConnection.debuglevel = 0
 
-
+import ldclient
 from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
 from ldclient.models import ViewSelection
 
-def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId):
+def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId, ldClientVersion):
 
    
     lr = LiveReport("Live Report of ACAS Registered data", 
@@ -43,17 +43,25 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId)
     lr_id = int(lr.id)
     print "Live Report ID is:" + str(lr_id)
     #get the list of assay addable columns
-    assays = api.assays()
-
-    assay_hash = {}
-    
-    for assay in assays:
-        assay_hash[assay.name] = {}
-        for assay_type in assay.types:
-            assay_hash[assay.name][assay_type.name] = assay_type.addable_column_id
-    assay_column_ids = []
-    for assay_to_add in assays_to_add:
-    	assay_column_ids.append(assay_hash[assay_to_add['protocolName']][assay_to_add['resultType']])
+    if ldClientVersion >= 7.6:
+        assay_column_ids = []
+        for assay_to_add in assays_to_add:
+            assay_tree=api.get_folder_tree_data(projectId, assay_to_add['protocolName'])
+            while assay_tree['name'] != assay_to_add['protocolName']:
+    	        assay_tree=assay_tree['children'][0]
+            for assay in assay_tree['children']:
+                assay_column_ids.extend(assay['addable_column_ids'])
+    else:
+        assays = api.assays()
+        assay_hash = {}
+        for assay in assays:
+            if assay.name not in assay_hash:
+                assay_hash[assay.name] = {}
+            for assay_type in assay.types:
+                assay_hash[assay.name][assay_type.name] = assay_type.addable_column_id
+        assay_column_ids = []
+        for assay_to_add in assays_to_add:
+    	    assay_column_ids.append(assay_hash[assay_to_add['protocolName']][assay_to_add['resultType']])
     #assay_column_id1 = assay_hash["Peroxisome proliferator-activated receptor delta"]["EC50"]
     #assay_column_id2 = assay_hash["DRC TEST ASSAY"]["IC50%"]
 
@@ -119,12 +127,17 @@ def main():
     api = Api(apiEndpoint, username, password)
 #    api.reload_db_constants()
     try:
+        ld_client_version=float(ldclient.client.SUPPORTED_SERVER_VERSION)
+    except:
+        ld_client_version=float(7.3)
+    print "LDClient version is:"+str(ld_client_version)
+    try:
     	projectId = api.get_project_id_by_name(project)
     except:
     	projectId = 0
     if type(projectId) is not int:
 		projectId = 0
-    lr_id = make_acas_live_report(api, compound_ids, assays_to_add, database, projectId)
+    lr_id = make_acas_live_report(api, compound_ids, assays_to_add, database, projectId, ld_client_version)
     
     liveReportSuffix = "/#/projects/"+str(projectId)+"/livereports/";
     print endpoint + liveReportSuffix + str(lr_id)

@@ -16,7 +16,9 @@ describe "Dose Response Analysis Module Testing", ->
 				it "should have defaults", ->
 					expect(@drap.get('smartMode')).toBeTruthy()
 					expect(@drap.get('inactiveThreshold')).toEqual 20
+					expect(@drap.get('theoreticalMax')).toEqual ""
 					expect(@drap.get('inactiveThresholdMode')).toBeTruthy()
+					expect(@drap.get('theoreticalMaxMode')).toBeFalsy()
 					expect(@drap.get('inverseAgonistMode')).toBeFalsy()
 					expect(@drap.get('max') instanceof Backbone.Model).toBeTruthy()
 					expect(@drap.get('min') instanceof Backbone.Model).toBeTruthy()
@@ -24,6 +26,21 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drap.get('max').get('limitType')).toEqual "none"
 					expect(@drap.get('min').get('limitType')).toEqual "none"
 					expect(@drap.get('slope').get('limitType')).toEqual "none"
+			describe "variable logic", ->
+				it "should set inactiveThresholdMode true if inactiveThreshold is set to a number and false otherwise", ->
+					@drap.set 'inactiveThreshold': null
+					expect(@drap.get 'inactiveThresholdMode').toBeFalsy()
+					@drap.set 'inactiveThreshold': 22
+					expect(@drap.get 'inactiveThresholdMode').toBeTruthy()
+					@drap.set 'inactiveThreshold': NaN
+					expect(@drap.get 'inactiveThresholdMode').toBeFalsy()
+				it "should set theoreticalMaxMode true if theoreticalMax is set to a number and false otherwise", ->
+					@drap.set 'theoreticalMax': null
+					expect(@drap.get 'theoreticalMaxMode').toBeFalsy()
+					@drap.set 'theoreticalMax': 22
+					expect(@drap.get 'theoreticalMaxMode').toBeTruthy()
+					@drap.set 'theoreticalMax': NaN
+					expect(@drap.get 'theoreticalMaxMode').toBeFalsy()
 		describe "model composite class tests", ->
 			beforeEach ->
 				@drap = new DoseResponseAnalysisParameters window.CurveFitTestJSON.doseResponseSimpleBulkFitOptions
@@ -91,6 +108,19 @@ describe "Dose Response Analysis Module Testing", ->
 					err.attribute=='inactiveThreshold'
 				)
 				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be valid when inactiveThreshold null", ->
+				@drap.set inactiveThreshold: null
+				expect(@drap.isValid()).toBeTruthy()
+			it "should be invalid when theoreticalMax is not a number", ->
+				@drap.set theoreticalMax: NaN
+				expect(@drap.isValid()).toBeFalsy()
+				filtErrors = _.filter(@drap.validationError, (err) ->
+					err.attribute=='theoreticalMax'
+				)
+				expect(filtErrors.length).toBeGreaterThan 0
+			it "should be valid when theoreticalMax null", ->
+				@drap.set theoreticalMax: null
+				expect(@drap.isValid()).toBeTruthy()
 
 	describe 'DoseResponseAnalysisParameters Controller', ->
 		describe 'when instantiated from new parameters', ->
@@ -106,15 +136,11 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$('.bv_autofillSection').length).toEqual 1
 				it 'should load a template', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').length).toEqual 1
-				it 'should load a template', ->
-					expect(@drapc.$('.bv_inactiveThresholdMode').length).toEqual 1
-#			describe "render default parameters", ->
+			describe "render default parameters", ->
 				it 'should show smart mode mode', ->
 					expect(@drapc.$('.bv_smartMode').attr('checked')).toBeTruthy()
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toBeFalsy()
-				it 'should show the inactive threshold mode', ->
-					expect(@drapc.$('.bv_inactiveThresholdMode').attr('checked')).toBeTruthy()
 				it 'should start with max_limitType radio set', ->
 					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'none'
 				it 'should start with min_limitType radio set', ->
@@ -122,7 +148,7 @@ describe "Dose Response Analysis Module Testing", ->
 				it 'should start with slope_limitType radio set', ->
 					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'none'
 				it 'should show the default inactive threshold', ->
-					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "20"
+					expect(@drapc.$(".bv_inactiveThreshold").val()).toEqual "20"
 			describe "form title change", ->
 				it "should allow the form title to be changed", ->
 					@drapc.setFormTitle "kilroy fits curves"
@@ -142,8 +168,6 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$('.bv_smartMode').attr('checked')).toEqual 'checked'
 				it 'should show the inverse agonist mode', ->
 					expect(@drapc.$('.bv_inverseAgonistMode').attr('checked')).toEqual 'checked'
-				it 'should show the inactive threshold mode', ->
-					expect(@drapc.$('.bv_inactiveThresholdMode').attr('checked')).toEqual 'checked'
 				it 'should start with max_limitType radio set', ->
 					expect(@drapc.$("input[name='bv_max_limitType']:checked").val()).toEqual 'pin'
 				it 'should start with min_limitType radio set', ->
@@ -166,7 +190,9 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.$("input[name='bv_slope_limitType']:checked").val()).toEqual 'limit'
 					expect(@drapc.$(".bv_slope_value").attr("disabled")).toBeUndefined()
 				it 'should show the inactive threshold', ->
-					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "20"
+					expect(@drapc.$(".bv_inactiveThreshold").val()).toEqual "20"
+				it 'should show the theoreticalMax', ->
+					expect(@drapc.$(".bv_theoreticalMax").val()).toEqual "120"
 			describe "model update", ->
 				it 'should update the inverse agonist mode', ->
 					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
@@ -174,12 +200,6 @@ describe "Dose Response Analysis Module Testing", ->
 					expect(@drapc.model.get('inverseAgonistMode')).toBeFalsy()
 					@drapc.$('.bv_inverseAgonistMode').click()
 					expect(@drapc.model.get('inverseAgonistMode')).toBeTruthy()
-				it 'should update the inactive threshold mode', ->
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-					@drapc.$('.bv_inactiveThresholdMode').click()
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
-					@drapc.$('.bv_inactiveThresholdMode').click()
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
 				it 'should update the max_limitType radio to none', ->
 					@drapc.$(".bv_max_limitType_pin").click()
 					@drapc.$(".bv_max_limitType_none").click()
@@ -297,36 +317,41 @@ describe "Dose Response Analysis Module Testing", ->
 					@drapc.$('.bv_slope_value').val(" 16.5 ")
 					@drapc.$('.bv_slope_value').change()
 					expect(@drapc.model.get('slope').get('value')).toEqual 16.5
-#				it 'should update the inactiveThreshold', ->
-#					@drapc.$('.bv_inactiveThreshold').slider( "option", "values", [ 30 ] )
-#					expect(@drapc.model.get('inactiveThreshold')).toEqual 30
-#					expect(@drapc.$(".bv_inactiveThresholdDisplay").html()).toEqual "30"
+				it 'should update the inactiveThreshold', ->
+					@drapc.$('.bv_inactiveThreshold').val 44
+					@drapc.$('.bv_inactiveThreshold').change()
+					expect(@drapc.model.get('inactiveThreshold')).toEqual 44
+				it 'should update the theoreticalMax', ->
+					@drapc.$('.bv_theoreticalMax').val 43
+					@drapc.$('.bv_theoreticalMax').change()
+					expect(@drapc.model.get('theoreticalMax')).toEqual 43
 			describe "behavior and validation", ->
 				it "should enable inactive threshold if smart mode is selected", ->
 					@drapc.$('.bv_smartMode').click()
 					@drapc.$('.bv_smartMode').trigger('change')
-					waitsFor =>
-						@drapc.$('.bv_inactiveThresholdMode').attr('disabled')?
-					, 100
-					runs ->
-						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toEqual('disabled')
-						expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
-				it "should disable inactive threshold if smart mode is not selected", ->
 					@drapc.$('.bv_smartMode').click()
 					@drapc.$('.bv_smartMode').trigger('change')
-					waitsFor =>
-						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled'))?
-					, 100
-					runs ->
-						expect(@drapc.$('.bv_inactiveThresholdMode').attr('disabled')).toBeDefined()
-						expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
-				it "should disable the inactive threshold slider if inactive threshold is deselected", ->
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-					@drapc.$('.bv_inactiveThresholdMode').click()
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeFalsy()
-					@drapc.$('.bv_inactiveThresholdMode').click()
-					expect(@drapc.model.get('inactiveThresholdMode')).toBeTruthy()
-					expect(@drapc.$('.bv_inactiveThreshold').slider( "option", "disabled" )).toBeTruthy()
+					expect(@drapc.$('.bv_inactiveThreshold').attr('disabled')).toBeUndefined()
+				it "should disable inactive threshold and clear value if smart mode is not selected", ->
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					expect(@drapc.$('.bv_inactiveThreshold').attr('disabled')).toEqual 'disabled'
+					console.log @drapc.$('.bv_inactiveThreshold').val()
+					console.log @drapc.model.get('inactiveThreshold')
+					expect(_.isNaN(@drapc.model.get('inactiveThreshold'))).toBeTruthy()
+				it "should enable theoretical max if smart mode is selected", ->
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					expect(@drapc.$('.bv_theoreticalMax').attr('disabled')).toBeUndefined()
+				it "should disable inactive threshold and clear value if smart mode is not selected", ->
+					@drapc.$('.bv_smartMode').click()
+					@drapc.$('.bv_smartMode').trigger('change')
+					expect(@drapc.$('.bv_theoreticalMax').attr('disabled')).toEqual 'disabled'
+					console.log @drapc.$('.bv_theoreticalMax').val()
+					console.log @drapc.model.get('theoreticalMax')
+					expect(_.isNaN(@drapc.model.get('theoreticalMax'))).toBeTruthy()
 			describe "validation testing", ->
 				describe "error notification", ->
 					it "should show error if max_limitType is set to pin and max_value is not set", ->
@@ -343,6 +368,7 @@ describe "Dose Response Analysis Module Testing", ->
 						@drapc.model.get('min').set limitType: 'pin'
 						@drapc.$('.bv_min_value').val ""
 						@drapc.$('.bv_min_value').change()
+						console.log @drapc.model.get('min').get 'limitType'
 						expect(@drapc.$('.bv_group_min_value').hasClass("error")).toBeTruthy()
 					it "should show error if min_limitType is set to limit and min_value is not set", ->
 						@drapc.model.get('min').set limitType: 'limit'
