@@ -51,7 +51,7 @@ class WellModel extends Backbone.Model
       msg: "Please select the plate size"
 
 class WellsModel extends Backbone.Model
-  url: '/api/updateWellStatus'
+  url: '/api/updateWellContent'
   initialize: (options) ->
     @allWells = options.allWells
 

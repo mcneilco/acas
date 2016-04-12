@@ -31,9 +31,6 @@ class PlateModel extends Backbone.Model
     "wells": []
 
   validation:
-#    template:
-#      required: true
-#      msg: "Please Plate or Barcode"
     barcode:
       required: true
       msg: "Please the Plate ID"

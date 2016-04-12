@@ -42,11 +42,6 @@ class IdentifierValidationController extends Backbone.View
     @addContentModel.set ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS, @aliasedRequestNames
     @addContentModel.set ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS, @invalidRequestNames
 
-    console.log "@aliasedRequestNames"
-    console.log @aliasedRequestNames
-    console.log "@invalidRequestNames"
-    console.log @invalidRequestNames
-
     if _.size(@invalidRequestNames) is 0 and _.size(@aliasedRequestNames) is 0
       validNames = _.union(@aliasedRequestNames, @validRequestNames)
 
@@ -99,7 +94,6 @@ class IdentifierValidationController extends Backbone.View
 
     validRequestNames
 
-
   handleError: (errors) =>
     listOfErrorIdentifiers = "<ul>"
     _.each(errors, (arn) ->
@@ -138,56 +132,21 @@ class IdentifierValidationController extends Backbone.View
     @
 
 class AddContentIdentifierValidationController extends IdentifierValidationController
-#  handleSuccessCallback: (data, textStatus, jqXHR) =>
-#    super(data, textStatus, jqXHR)
-#
-#    if _.size(@invalidRequestNames) is 0 and _.size(@aliasedRequestNames) is 0
-#      validNames = _.union(@aliasedRequestNames, @validRequestNames)
-#
-#      valuesToAdd = []
-#      _.each(validNames, (v) ->
-#        valuesToAdd.push v.preferredName
-#      )
-#      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS, valuesToAdd
-#      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS, @validIdentifiers
-#      @successCallback @addContentModel
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
-#    else if _.size(@aliasedRequestNames) > 0
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.WARNING
-#      @handleWarning(@aliasedRequestNames)
-#    else if _.size(@invalidRequestNames) > 0
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
-#      @handleError(@invalidRequestNames)
 
 
 class PlateTableIdentifierValidationController extends IdentifierValidationController
   handleErrorGoBackClick: =>
-    console.log "PlateTableIdentifierValidationController.handleErrorGoBackClick"
-    @successCallback @addContentModel
+    validNames = _.union(@aliasedRequestNames, @validRequestNames)
 
-#  handleSuccessCallback: (data, textStatus, jqXHR) =>
-#    super(data, textStatus, jqXHR)
-#
-#    if _.size(@invalidRequestNames) is 0 and _.size(@aliasedRequestNames) is 0
-#      validNames = _.union(@aliasedRequestNames, @validRequestNames)
-#
-#      valuesToAdd = []
-#      _.each(validNames, (v) ->
-#        valuesToAdd.push v.preferredName
-#      )
-#      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS, valuesToAdd
-#      @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS, @validIdentifiers
-#      @successCallback @addContentModel
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
-#    else if _.size(@aliasedRequestNames) > 0
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.WARNING
-#      @handleWarning(@aliasedRequestNames)
-#    else if _.size(@invalidRequestNames) > 0
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
-#      @handleError(@invalidRequestNames)
+    valuesToAdd = []
+    _.each(validNames, (v) ->
+      valuesToAdd.push v.preferredName
+    )
+    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS, valuesToAdd
+    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS, @validIdentifiers
+    @successCallback @addContentModel
 
 
 module.exports =
-  #IdentifierValidationController: IdentifierValidationController
   AddContentIdentifierValidationController: AddContentIdentifierValidationController
   PlateTableIdentifierValidationController: PlateTableIdentifierValidationController

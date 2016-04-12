@@ -82,6 +82,7 @@ class AddContentController extends Backbone.View
 
   handleIdentifiersAdded: (validatedIdentifiers) =>
     @model.reset()
+    @model.set ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, 0
     @removeInsertedIdentifiers validatedIdentifiers
     @render()
 
@@ -105,16 +106,11 @@ class AddContentController extends Backbone.View
     console.log "handleIdentifiersPaste"
 
   handleIdentifiersChanged: =>
-    console.log "handleIdentifiersChanged"
     listOfIdentifiers = @parseIdentifiers $.trim(@$("textarea[name='identifiers']").val())
-    console.log "listOfIdentifiers"
-    console.log listOfIdentifiers
     updatedValues = {}
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS] =  listOfIdentifiers
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS_DISPLAY_STRING] =  @formatListOfIdentifiersForDisplay(listOfIdentifiers)
     updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] =  _.size(listOfIdentifiers)
-    console.log "updatedValues"
-    console.log updatedValues
     @model.set updatedValues
 
     @render()

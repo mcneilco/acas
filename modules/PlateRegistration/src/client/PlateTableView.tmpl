@@ -1,5 +1,9 @@
 
-<div name="handsontablecontainer" class="editorHandsontable"></div>
+<div style="overflow: auto; width: 100%; height: 100%">
+    <div name="" class="editorHandsontable" style="position: absolute; top: 115px; left: 320px; bottom: 0px; right: 0px; padding-right: 0px; padding-bottom: 0px;">
+        <div name="handsontablecontainer"></div>
+    </div>
+</div>
 <div class="modal fade" tabindex="-1" role="dialog" name="handsontablePasteError">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -8,13 +12,50 @@
                 <h4 class="modal-title">Error</h4>
             </div>
             <div class="modal-body">
-                <p>Not enough room on the plate to enter the data.</p>
-                <p>The data you are pasting in has <span name="numberOfRowsBeingPasted"></span> rows, but there are only <span name="numberOfRowsAvailable"></span> available.</p>
-                <p>The data you are pasting in has <span name="numberOfColsBeingPasted"></span> columns, but there are only <span name="numberOfColumnsAvailable"></span> available.</p>
+                <p>Not enough room on the plate to enter the data that is being pasted.  You may choose to paste any way, and the data that fits will appear in the table, while the remaining data will be ignored.</p>
+                <span class="hide">
+                    <p>The data you are pasting in has <span name="numberOfRowsBeingPasted"></span> rows, but there are only <span name="numberOfRowsAvailable"></span> available.</p>
+                    <p>The data you are pasting in has <span name="numberOfColsBeingPasted"></span> columns, but there are only <span name="numberOfColumnsAvailable"></span> available.</p>
+                </span>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" name="pasteTruncatedIdentifiersAnyway" data-dismiss="modal">Paste any way</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" name="updatingWellContents">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Saving</h4>
+            </div>
+            <div class="modal-body">
+                Saving plate content....
+            </div>
+            <div class="modal-footer">
+
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div class="modal fade" tabindex="-1" role="dialog" name="overwrittingWellContentsWarning">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Warning</h4>
+            </div>
+            <div class="modal-body">
+                Overwrite content?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" name="insertOverwrittenWellsAnyway" data-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->

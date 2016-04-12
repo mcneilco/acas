@@ -36,6 +36,9 @@ class SerialDilutionModel extends Backbone.Model
       required: true
       msg: "Please Plate or Barcode"
 
+  initialize: ->
+    @errorMessages = []
+
   aRowIsSelected: ->
     aRowIsSelected = false
     if @get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED) > 1
@@ -47,6 +50,12 @@ class SerialDilutionModel extends Backbone.Model
     if @get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED) > 1
       aColumnIsSelected = true
     aColumnIsSelected
+
+  aSingleCellIsSelected: ->
+    aSingleCellIsSelected = false
+    if (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED) is 1) and (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED) is 1)
+      aSingleCellIsSelected = true
+    aSingleCellIsSelected
 
   enoughSpaceForNumberOfDoses: ->
     enoughSpaceForNumberOfDoses = false
@@ -71,26 +80,29 @@ class SerialDilutionModel extends Backbone.Model
 
   validRegionSelected: ->
     validRegionSelected = false
-    if not @aColumnIsSelected() and not @aRowIsSelected()
-      @errorMessages.push "Please select a plate region to perform a dilution"
-      validRegionSelected = false
+    if @aSingleCellIsSelected()
+      validRegionSelected = true
     else
-      if (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED) is 1) and (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED) is 1)
-        validRegionSelected = true
+      if not @aColumnIsSelected() and not @aRowIsSelected()
+        @errorMessages.push "Please select a plate region to perform a dilution"
+        validRegionSelected = false
       else
-        if @aRowIsSelected() and @aColumnIsSelected()
-          @errorMessages.push "Please select either a single row or a single column"
+        if (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED) is 1) and (@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED) is 1)
+          validRegionSelected = true
         else
-          if ((@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteUp") or (@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteDown"))
-            if @aRowIsSelected() and not @aColumnIsSelected()
-              validRegionSelected = true
-            else
-              @errorMessages.push "Please select a single row to perform a vertical dilution"
-          else if ((@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteRight") or (@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteLeft"))
-            if @aColumnIsSelected() and not @aRowIsSelected()
-              validRegionSelected = true
-            else
-              @errorMessages.push "Please select a single column to perform a horizontal dilution"
+          if @aRowIsSelected() and @aColumnIsSelected()
+            @errorMessages.push "Please select either a single row or a single column"
+          else
+            if ((@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteUp") or (@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteDown"))
+              if @aRowIsSelected() and not @aColumnIsSelected()
+                validRegionSelected = true
+              else
+                @errorMessages.push "Please select a single row to perform a vertical dilution"
+            else if ((@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteRight") or (@get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteLeft"))
+              if @aColumnIsSelected() and not @aRowIsSelected()
+                validRegionSelected = true
+              else
+                @errorMessages.push "Please select a single column to perform a horizontal dilution"
 
     validRegionSelected
 
@@ -102,7 +114,7 @@ class SerialDilutionModel extends Backbone.Model
     else if $.trim(@get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_DOSES)) is ""
       @errorMessages.push "Please enter the number of doses"
       validNumberOfDoses = false
-    else if @get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_DOSES) < 0
+    else if @get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_DOSES) <= 0
       @errorMessages.push "The number of doses must be greater than 0"
       validNumberOfDoses = false
 
@@ -117,7 +129,7 @@ class SerialDilutionModel extends Backbone.Model
       else if $.trim(@get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME)) is ""
         @errorMessages.push "Please enter the transfer volume"
         valid = false
-      else if @get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME) < 0
+      else if @get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME) <= 0
         @errorMessages.push "The transfer volume must be greater than 0"
         valid = false
 
@@ -132,7 +144,7 @@ class SerialDilutionModel extends Backbone.Model
       else if $.trim(@get(SERIAL_DILUTION_MODEL_FIELDS.DESTINATION_WELL_VOLUME)) is ""
         @errorMessages.push "Please enter the destination volume"
         valid = false
-      else if @get(SERIAL_DILUTION_MODEL_FIELDS.DESTINATION_WELL_VOLUME) < 0
+      else if @get(SERIAL_DILUTION_MODEL_FIELDS.DESTINATION_WELL_VOLUME) <= 0
         @errorMessages.push "The destination volume must be greater than 0"
         valid = false
 
@@ -175,8 +187,6 @@ class SerialDilutionModel extends Backbone.Model
       "numberOfDoses": ""
       "template": ""
       "transferVolume": ""
-
-
 
 
 module.exports =

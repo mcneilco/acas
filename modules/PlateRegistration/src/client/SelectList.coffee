@@ -8,7 +8,7 @@ class SelectListCollection extends Backbone.Collection
     _.each(@models, (model) ->
       options.push
         value: model.get 'value'
-        displayValue: model.get 'displayValue'
+        displayValue: model.get('lsLabels')[0].labelText
     )
 
     options
@@ -20,10 +20,10 @@ class OptionController extends Backbone.View
     @selected = options.selected
 
   render: =>
-    $(@el).attr('value', @model.get('value'))
+    $(@el).attr('value', @model.get('codeName'))
     $(@el).attr('selected', @selected)
-    $(@el).html(@model.get('displayValue'))
-
+    #$(@el).html(@model.get('displayValue'))
+    $(@el).html(@model.get('lsLabels')[0].labelText)
     @
 
 

@@ -212,6 +212,7 @@
 
 .editorMain {
   padding-left: 0;
+  margin-left: 320px;
 }
 
 .toolbarWell {
@@ -243,8 +244,8 @@
   padding: 0;
   background-color: #ffffff;
   overflow: hidden;
-  width: 800px;
-  height: 600px;
+  /*width: 800px;*/
+  /*height: 600px;*/
 }
 
 

@@ -60,9 +60,9 @@ class PlateInfoController extends Backbone.View
     @
 
   initializeSelectLists: =>
-    _.each(@selectLists, (selectList) =>
-      $(@el).find(selectList.containerSelector).html selectList.controller.render().el.childNodes
-    )
+#    _.each(@selectLists, (selectList) =>
+#      $(@el).find(selectList.containerSelector).html selectList.controller.render().el.childNodes
+#    )
 
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)
@@ -77,8 +77,10 @@ class PlateInfoController extends Backbone.View
     @trigger PLATE_INFO_CONTROLLER_EVENTS.CREATE_QUAD_PINNED_PLATE
 
   updateModel: (data) =>
+    originalBarcode = @model.get("barcode")
+
+
     @model.set data
-    console.log "@model"
     #date = new Date()
     @model.set("recordedBy", "acas")
     @model.set "createdDate", null
@@ -91,15 +93,18 @@ class PlateInfoController extends Backbone.View
     .done((data, textStatus, jqXHR) =>
       console.log "data"
       console.log data
+      if originalBarcode isnt @model.get("barcode")
+        appRouter.navigate("/plateDesign/#{@model.get('barcode')}")
     )
     .fail((jqXHR, textStatus, errorThrown) =>
       console.error("something went wrong updating plate meta data")
       console.log errorThrown
+      if errorThrown is "Conflict"
+        $("div[name='barcodeConflictErrorMessage']").modal('show')
+        @$("a[name='barcode']").prop("href", "#plateDesign/#{@model.get('barcode')}")
+        @$("a[name='barcode']").html @model.get("barcode")
     )
 
-    #$.ajax()
-    console.log @model.toJSON()
-    #@model.save()
     if @model.isValid(true)
 
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID
@@ -109,11 +114,7 @@ class PlateInfoController extends Backbone.View
 
 
   updatePlate: (plate) =>
-    console.log "plate"
-    console.log plate
     @model.set plate
-
-    #@$("input[name='plateBarcode']").val plate.barcode
     @render()
 
 

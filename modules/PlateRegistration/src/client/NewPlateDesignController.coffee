@@ -19,6 +19,7 @@ $ = require('jquery')
 NEW_PLATE_DESIGN_CONTROLLER_EVENTS =
   ADD_CONTENT: "AddContent"
   ADD_CONTENT_FROM_TABLE: "AddContentFromTable"
+  ADD_IDENTIFIER_CONTENT_FROM_TABLE: "AddIdentifierContentFromTable"
 
 
 class NewPlateDesignController extends Backbone.View
@@ -37,7 +38,8 @@ class NewPlateDesignController extends Backbone.View
 
     @plateViewController = new PlateViewController()
     @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @handleRegionSelected
-    @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handleContentUpdated
+    @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleContentUpdated
+    @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handPlateContentUpdated
 
     @templateController = new TemplateController()
     @serialDilutionController = new SerialDilutionController({model: new SerialDilutionModel()})
@@ -61,28 +63,23 @@ class NewPlateDesignController extends Backbone.View
     @addContentController.updateSelectedRegion regionSelectedBoundries
 
   handleContentUpdated: (addContentModel) =>
-    console.log "NewPlateDesignController - handleContentUpdated"
-    console.log addContentModel
-    @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT_FROM_TABLE, addContentModel
+    @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
   handleAddContent: (addContentModel) =>
     @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, addContentModel
 
   handleAddContentSuccessCallback: (addContentModel) =>
-    console.log "addContentModel"
-    console.log addContentModel
     @plateViewController.addContent addContentModel
-    @addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
+    #@addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
+
+  handPlateContentUpdated: (identifiersToRemove) =>
+    @addContentController.handleIdentifiersAdded identifiersToRemove
 
   handleAddContentFromTableSuccessCallback: (addContentModel) =>
-    console.log "handleAddContentFromTableSuccessCallback "
-    console.log "addContentModel"
-    console.log addContentModel
     @plateViewController.plateTableController.identifiersValidated addContentModel
 
 
   handleApplyDilution: (dilutionModel) =>
-    console.log "dilutionModel"
     @plateViewController.applyDilution dilutionModel
 
 

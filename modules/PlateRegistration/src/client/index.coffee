@@ -5,5 +5,5 @@ $ ->
 
   AppRouter = require('./AppRouter.coffee').AppRouter
 
-  new AppRouter
+  window.appRouter = new AppRouter
   Backbone.history.start()

@@ -70,7 +70,6 @@ class DataServiceController extends Backbone.View
       )
     )
 
-
   displayServerErrorMessage: =>
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serverErrorMessage']").removeClass "hide"
@@ -93,7 +92,6 @@ class DataServiceController extends Backbone.View
     @$("div[name='closeButtons']").addClass "hide"
 
   handleWarning: =>
-    console.log "handleWarning"
     @$("div[name='warningButtons']").removeClass "hide"
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serviceControllerContainer']").removeClass "hide"
@@ -108,7 +106,6 @@ class DataServiceController extends Backbone.View
     @serviceController.handWarningContinueClick()
 
   handleErrorGoBackClick: =>
-    console.log "PlateTableIdentifierValidationController.handleErrorGoBackClick"
     if @serviceController.handleErrorGoBackClick?
       @serviceController.handleErrorGoBackClick()
     @closeModal()

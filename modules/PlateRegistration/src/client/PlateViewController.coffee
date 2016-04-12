@@ -26,6 +26,11 @@ class PlateViewController extends Backbone.View
     "click a[name='colorByVolume']": "handleColorByVolumeClick"
     "click a[name='colorByConcentration']": "handleColorByConcentrationClick"
     "click a[name='colorByNone']": "handleColorByNoneClick"
+    "click a[name='showAll']": "handleShowAll"
+    "click a[name='fitToContents']": "handleFitToContents"
+    "click a[name='fitToScreen']": "fitToScreen"
+    "click button[name='increaseFontSize']": "handleIncreaseFontSizeClick"
+    "click button[name='decreaseFontSize']": "handleDecreaseFontSizeClick"
     "click button[name='displayToolTips']": "handleDisplayToolTipsToggled"
 
   handleCompoundViewClick: (e) =>
@@ -77,6 +82,30 @@ class PlateViewController extends Backbone.View
     @plateTableController.updateColorBy "noColor"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
+  handleIncreaseFontSizeClick: =>
+    @plateTableController.increaseFontSize()
+
+  handleDecreaseFontSizeClick: =>
+    @plateTableController.decreaseFontSize()
+
+  handleShowAll: (e) =>
+    e.preventDefault()
+    @updateSelectedTableFitMode "Show All"
+    @plateTableController.showAll()
+
+  handleFitToContents: (e) =>
+    e.preventDefault()
+    @updateSelectedTableFitMode "Fit to Contents"
+    @plateTableController.fitToContents()
+
+  fitToScreen: (e) =>
+    e.preventDefault()
+    @updateSelectedTableFitMode "Fit to Screen"
+    @plateTableController.fitToScreen()
+
+  updateSelectedTableFitMode: (displayMode) =>
+    @$("button[name='cellZoom']").html displayMode
+
   updateSelectedView: (selectedView) =>
     @$("button[name='selectedView']").html selectedView
 
@@ -92,7 +121,8 @@ class PlateViewController extends Backbone.View
   initialize: ->
     @plateTableController = new PlateTableController()
     @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @handleRegionSelected
-    @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handleContentUpdated
+    @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleContentUpdated
+    @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handlePlateContentUpdated
 
   completeInitialization: (plateWells, plateMetaData) =>
     @wells = plateWells
@@ -109,7 +139,10 @@ class PlateViewController extends Backbone.View
     @trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, selectedRegionBoundries
 
   handleContentUpdated: (addContentModel) =>
-    @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+    @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
+
+  handlePlateContentUpdated: (identifiersToRemove) =>
+    @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, identifiersToRemove
 
   addContent: (data) =>
     @plateTableController.handleContentAdded data
