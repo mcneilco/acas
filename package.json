@@ -40,15 +40,15 @@
 		"marked": "*"
 	},
 	"devDependencies": {
-		"grunt": "*",
+    	"grunt": ">=1.0.1",
 		"grunt-contrib-coffee": "*",
 		"gitignore-to-glob": "*",
 		"grunt-contrib-copy": "*",
 		"grunt-contrib-watch": "*",
 		"grunt-contrib-clean": "*",
-		"grunt-newer": "*",
+    	"grunt-execute": "https://codeload.github.com/Bartvds/grunt-execute/legacy.tar.gz/a828fc41e070759df038d1126b9bf842db34004c",
 		"grunt-browserify": "*",
-		"grunt-execute": "*",
+    	"grunt-execute": "https://codeload.github.com/Bartvds/grunt-execute/legacy.tar.gz/a828fc41e070759df038d1126b9bf842db34004c",
 		"node-inspector": "*",
 		"nodemon": "*"
 	}
