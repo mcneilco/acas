@@ -1,7 +1,14 @@
 _ = require('lodash')
 Backbone = require('backbone')
+SelectListCollection = require('./SelectList.coffee').SelectListCollection
 
-class PlateTypeCollection extends Backbone.Collection
+PLATE_TYPE_COLLECTION_CONST =
+  URL: "/api/containers/definition%20container/plate"
+
+class PlateTypeCollection extends SelectListCollection
+  url: ->
+    PLATE_TYPE_COLLECTION_CONST.URL
 
 module.exports =
   PlateTypeCollection: PlateTypeCollection
+  PLATE_TYPE_COLLECTION_CONST: PLATE_TYPE_COLLECTION_CONST

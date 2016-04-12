@@ -1,7 +1,10 @@
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
+
 _ = require('lodash')
 $ = require('jquery')
+
+SelectList = require('./SelectList.coffee').SelectController
 
 CREATE_PLATE_CONTROLLER_EVENTS =
   CREATE_PLATE: "CreatePlate"
@@ -28,7 +31,12 @@ class CreatePlateController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
-    #@listenTo @model, "change", @render
+    @plateTypes = options.plateTypes
+    @plateTypesSelectList = new SelectList({collection: @plateTypes, selectedValue: @model.get('type')})
+    @selectLists = [
+      controller: @plateTypesSelectList
+      containerSelector: "select[name='definition']"
+    ]
 
   events:
     "change input": "handleFormFieldUpdate"
@@ -37,8 +45,13 @@ class CreatePlateController extends Backbone.View
 
   render: =>
     $(@el).html @template() #@model.toJSON())
-
+    @initializeSelectLists()
     @
+
+  initializeSelectLists: =>
+    _.each(@selectLists, (selectList) =>
+      $(@el).find(selectList.containerSelector).html selectList.controller.render().el.childNodes
+    )
 
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)

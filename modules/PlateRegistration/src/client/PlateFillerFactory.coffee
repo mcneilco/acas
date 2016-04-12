@@ -24,9 +24,84 @@ class PlateFillerStrategy
   getWells: ->
     throw "Method 'getWells' not implemented"
 
+  populateWell: (wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode) ->
+    existingWell = wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx)
+    wellContentBeingOverwrittern = []
+    if amount
+      if amount is ""
+        amount = existingWell.amount
+      else if existingWell.amount
+        if existingWell.amount isnt ""
+          wellContentBeingOverwrittern.push
+            rowIdx: rowIdx
+            colIdx: colIdx
+            existingValue: existingWell.amount
+            newValue: amount
+            fieldName: "amount"
+    else
+      amount = existingWell.amount
+
+    if batchConcentration
+      if batchConcentration is ""
+        batchConcentration = existingWell.batchConcentration
+      else if existingWell.batchConcentration
+        if existingWell.batchConcentration isnt ""
+          wellContentBeingOverwrittern.push
+            rowIdx: rowIdx
+            colIdx: colIdx
+            existingValue: existingWell.batchConcentration
+            newValue: batchConcentration
+            fieldName: "batchConcentration"
+    else
+      batchConcentration = existingWell.batchConcentration
+
+    if batchCode
+      if batchCode is ""
+        batchCode = existingWell.batchCode
+      else if existingWell.batchCode
+        if existingWell.batchCode isnt ""
+          wellContentBeingOverwrittern.push
+            rowIdx: rowIdx
+            colIdx: colIdx
+            existingValue: existingWell.batchCode
+            newValue: batchCode
+            fieldName: "batchCode"
+    else
+      batchCode = existingWell.batchCode
+
+    well =
+      amount: amount
+      batchCode: batchCode
+      batchConcentration: batchConcentration
+
+    if _.size(wellContentBeingOverwrittern) is 0
+      return [null, well]
+    else
+      return [wellContentBeingOverwrittern, well]
+
 class RandomPlateFillerStrategy extends PlateFillerStrategy
-  getWells: ->
-    return {}
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = new WellsModel({allWells: wells})
+    rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
+    columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
+    plateWells = []
+    wellContentOverwritten = []
+    valueIdx = 0
+    identifiersToRemove = []
+    _.each(rowIndexes, (rowIdx) =>
+      _.each(columnIndexes, (colIdx) =>
+
+        identifierIdx = parseInt(Math.random() * _.size(@identifiers))
+        identifier = @identifiers.splice(identifierIdx, (identifierIdx + 1))
+        batchCode = identifier[0]
+        [wellContentOverwritten, well] = @populateWell(wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode)
+        plateWells.push [rowIdx, colIdx, well]
+        identifiersToRemove.push batchCode
+        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
+      )
+    )
+
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 
 class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
@@ -35,39 +110,22 @@ class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
+    wellContentOverwritten = []
     valueIdx = 0
     identifiersToRemove = []
     _.each(rowIndexes, (rowIdx) =>
       _.each(columnIndexes, (colIdx) =>
-#        well =
-#          amount: amount
-#          batchCode: @identifiers[0]
-#          batchConcentration: batchConcentration
-#        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
         existingWell = wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx)
-        am = amount
-        bConc = batchConcentration
-        bCode = @identifiers[0]
-        if amount is ""
-          am = existingWell.amount
-        if batchConcentration is ""
-          bConc = existingWell.batchConcentration
-        if bCode is ""
-          bCode = existingWell.batchCode
-        well =
-          amount: am
-          batchCode: bCode
-          batchConcentration: bConc
-
+        batchCode = @identifiers[0]
+        [wellContentOverwritten, well] = @populateWell(wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode)
         plateWells.push [rowIdx, colIdx, well]
         identifiersToRemove.push @identifiers[0]
-
+        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
         valueIdx++
       )
     )
-    wellsToUpdate.save()
 
-    [plateWells, identifiersToRemove]
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 
 class InOrderPlateFillerStrategy extends PlateFillerStrategy
@@ -81,70 +139,26 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
     else if @fillDirection is "rowMajor"
       return @getWellsRowMajor(wells, batchConcentration, amount)
 
-#    wellsToUpdate = new WellsModel({allWells: wells})
-#    rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
-#    columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
-#    plateWells = []
-#    valueIdx = 0
-#    identifiersToRemove = []
-#    _.each(rowIndexes, (rowIdx) =>
-#      _.each(columnIndexes, (colIdx) =>
-#        existingWell = wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx)
-#        am = amount
-#        bConc = batchConcentration
-#        bCode = @identifiers[valueIdx]
-#        if amount is ""
-#          am = existingWell.amount
-#        if batchConcentration is ""
-#          bConc = existingWell.batchConcentration
-#        if bCode is ""
-#          bCode = existingWell.batchCode
-#        well =
-#          amount: am
-#          batchCode: bCode
-#          batchConcentration: bConc
-#        wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
-#        plateWells.push [rowIdx, colIdx, well]
-#        identifiersToRemove.push @identifiers[valueIdx]
-#        valueIdx++
-#      )
-#    )
-#    wellsToUpdate.save()
-#
-#    [plateWells, identifiersToRemove]
-
   getWellsColumnMajor: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
+    wellContentOverwritten = []
     valueIdx = 0
     identifiersToRemove = []
     _.each(rowIndexes, (rowIdx) =>
       _.each(columnIndexes, (colIdx) =>
-        existingWell = wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx)
-        am = amount
-        bConc = batchConcentration
-        bCode = @identifiers[valueIdx]
-        if amount is ""
-          am = existingWell.amount
-        if batchConcentration is ""
-          bConc = existingWell.batchConcentration
-        if bCode is ""
-          bCode = existingWell.batchCode
-        well =
-          amount: am
-          batchCode: bCode
-          batchConcentration: bConc
+        batchCode = @identifiers[valueIdx]
+        [wellContentOverwritten, well] = @populateWell(wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode)
         wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
         plateWells.push [rowIdx, colIdx, well]
         identifiersToRemove.push @identifiers[valueIdx]
         valueIdx++
       )
     )
-    wellsToUpdate.save()
 
-    [plateWells, identifiersToRemove]
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 
   getWellsRowMajor: (wells, batchConcentration, amount) ->
@@ -152,33 +166,21 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
+    wellContentOverwritten = []
     valueIdx = 0
     identifiersToRemove = []
     _.each(columnIndexes, (colIdx) =>
       _.each(rowIndexes, (rowIdx) =>
-        existingWell = wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx)
-        am = amount
-        bConc = batchConcentration
-        bCode = @identifiers[valueIdx]
-        if amount is ""
-          am = existingWell.amount
-        if batchConcentration is ""
-          bConc = existingWell.batchConcentration
-        if bCode is ""
-          bCode = existingWell.batchCode
-        well =
-          amount: am
-          batchCode: bCode
-          batchConcentration: bConc
+        batchCode = @identifiers[valueIdx]
+        [wellContentOverwritten, well] = @populateWell(wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode)
         wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
         plateWells.push [rowIdx, colIdx, well]
         identifiersToRemove.push @identifiers[valueIdx]
         valueIdx++
       )
     )
-    wellsToUpdate.save()
 
-    [plateWells, identifiersToRemove]
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 
 module.exports =

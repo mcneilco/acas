@@ -15,6 +15,7 @@ class DataServiceController extends Backbone.View
 
   events:
     "click button[name='warningContinue']": "handWarningContinueClick"
+    "click button[name='errorGoBack']": "handleErrorGoBackClick"
 
   setupService: (serviceController) =>
     @serviceController = serviceController
@@ -69,7 +70,6 @@ class DataServiceController extends Backbone.View
       )
     )
 
-
   displayServerErrorMessage: =>
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serverErrorMessage']").removeClass "hide"
@@ -92,7 +92,6 @@ class DataServiceController extends Backbone.View
     @$("div[name='closeButtons']").addClass "hide"
 
   handleWarning: =>
-    console.log "handleWarning"
     @$("div[name='warningButtons']").removeClass "hide"
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serviceControllerContainer']").removeClass "hide"
@@ -105,6 +104,11 @@ class DataServiceController extends Backbone.View
   handWarningContinueClick: =>
     #@closeModal()
     @serviceController.handWarningContinueClick()
+
+  handleErrorGoBackClick: =>
+    if @serviceController.handleErrorGoBackClick?
+      @serviceController.handleErrorGoBackClick()
+    @closeModal()
 
   openModal: =>
     @$("div[name='serviceCallModal']").modal(

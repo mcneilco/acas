@@ -21,6 +21,8 @@ HANDS_ON_TABLE_EVENTS =
 PLATE_TABLE_CONTROLLER_EVENTS =
   REGION_SELECTED: "RegionSelected"
   PLATE_CONTENT_UPADATED: "PlateContentUpdated"
+  ADD_IDENTIFIER_CONTENT_FROM_TABLE: "AddIdentifierContentFromTable"
+
 
 
 class PlateTableController extends Backbone.View
@@ -28,6 +30,8 @@ class PlateTableController extends Backbone.View
 
   events:
     "click button[name='pasteTruncatedIdentifiersAnyway']": "handleAcceptTruncatedPaste"
+    "click button[name='insertOverwrittenWellsAnyway']": "handleInsertOverwrittenWellsAnyway"
+
   initialize: ->
     @plateFillerFactory = new PlateFillerFactory()
     @serialDilutionFactory = new SerialDilutionFactory()
@@ -35,6 +39,10 @@ class PlateTableController extends Backbone.View
     @dataFieldToDisplay = "batchCode"
     @dataFieldToColorBy = "noColor"
     @listOfBatchCodes = {}
+    @fontSize = 14;
+    window.FOOTABLECONTROLLER = @
+    $(window).resize(_.debounce(@calculateLayout, 100))
+    @shouldFitToScreen = false
 
   render: =>
     $(@el).html @template()
@@ -47,12 +55,8 @@ class PlateTableController extends Backbone.View
     @wellsToUpdate = new WellsModel({allWells: @wells})
     @renderHandsOnTable()
 
-
   renderHandsOnTable: =>
-    console.log "renderHandsOnTable"
-
     container = document.getElementsByName("handsontablecontainer")[0]
-
     columnHeaders = [1..@plateMetaData.numberOfColumns]
     rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'W', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
     if @displayToolTips
@@ -79,14 +83,27 @@ class PlateTableController extends Backbone.View
         beforeChange: @handleTableChangeRangeValidation
         afterSelection: @handleRegionSelected
       })
-
+    window.FOOHOT = @handsOnTable
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
     @addContent(hotData)
+    @fitToScreen()
+
+  increaseFontSize: =>
+    @fontSize = @fontSize + 2
+    #@renderHandsOnTable()
+    @handsOnTable.init()
+
+  decreaseFontSize: =>
+    if @fontSize > 2
+      @fontSize = @fontSize - 2
+    #@renderHandsOnTable()
+    @handsOnTable.render()
 
   updateDataDisplayed: (dataFieldToDisplay) =>
     @dataFieldToDisplay = dataFieldToDisplay
     if @dataFieldToDisplay is "masterView"
       @displayToolTips = true
+      @fitToScreen()
       @renderHandsOnTable()
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
@@ -103,12 +120,7 @@ class PlateTableController extends Backbone.View
         _.each(@wells, (well) =>
           if well["batchCode"]?
             unless @listOfBatchCodes[well["batchCode"]]?
-
               color = "rgb(#{rComponent},#{gComponent},#{bComponent})"
-              console.log "well"
-              console.log well
-              console.log "color"
-              console.log color
               @listOfBatchCodes[well["batchCode"]] = color
               bComponent += 80
               if bComponent > 255
@@ -124,24 +136,33 @@ class PlateTableController extends Backbone.View
         _.each(@wells, (well) =>
           unless isNaN(parseFloat(well[@dataFieldToColorBy]))
             if well[@dataFieldToColorBy] < minValue
-              minValue = well[@dataFieldToColorBy]
-            else if well[@dataFieldToColorBy] > maxValue
+              if well[@dataFieldToColorBy] is 0
+                minValue = 0.000001
+              else
+                minValue = well[@dataFieldToColorBy]
+            if well[@dataFieldToColorBy] > maxValue
               maxValue = well[@dataFieldToColorBy]
         )
 
-        if minValue < 0
-          minValue = 0
+#        if minValue < 0
+#          minValue = 0
         if minValue is 0
           @minValue = minValue
         else
-          @minValue = Math.log(minValue)
+          if @dataFieldToColorBy is "batchConcentration"
+            @minValue = Math.log(minValue)
+          else
+            @minValue = minValue
         if maxValue < 0
           maxValue = 0
 
         if maxValue is 0
           @maxValue = maxValue
         else
-          @maxValue = Math.log(maxValue)
+          if @dataFieldToColorBy is "batchConcentration"
+            @maxValue = Math.log(maxValue)
+          else
+            @maxValue = maxValue
 
     @renderHandsOnTable()
 
@@ -158,8 +179,20 @@ class PlateTableController extends Backbone.View
   handleContentAdded: (addContentModel) =>
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries)
-    [@plateWells, identifiersToRemove] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
+    wellContentOverwritten = []
+    @identifiersToRemove = []
+    [@plateWells, @identifiersToRemove, @wellsToUpdate, wellContentOverwritten] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
+    if wellContentOverwritten
+      $("div[name='overwrittingWellContentsWarning']").modal('show')
+    else
+      @saveUpdatedWellContent()
 
+  handleInsertOverwrittenWellsAnyway: =>
+    @saveUpdatedWellContent()
+
+  saveUpdatedWellContent: =>
+    @wellsToUpdate.save()
+    @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @identifiersToRemove
     @addContent1 @plateWells
 
   applyDilution: (dilutionModel) =>
@@ -169,15 +202,10 @@ class PlateTableController extends Backbone.View
     @addContent1 @plateWells
 
   addContent: (data) =>
-    console.log "addContent"
-    console.log data
     @handsOnTable.setDataAtCell data, 'programaticEdit'
-    #window.FOOHANDSONTABLE = @handsOnTable
     @handsOnTable.init() # force re-render so tooltip content is updated
 
   addContent1: (data) =>
-    console.log "addContent1"
-    console.log data
     hotData = []
     _.each(data, (d) =>
       hotData.push([d[0], d[1], d[2][@dataFieldToDisplay]])
@@ -209,44 +237,18 @@ class PlateTableController extends Backbone.View
   handleTableChangeRangeValidation: (changes, source) =>
     if source is HANDS_ON_TABLE_EVENTS.PASTE
       @pendingChanges = []
-      pastingMoreRowsThanAvailable = false
-      lowestRowNumber = Infinity
-      highestRowNumber = -Infinity
-      rowIdx = 0
-      counter = 0
-      numberOfInvalidRows = @validatePasteContentRowRange changes, @plateMetaData.numberOfRows
-      numberOfInvalidCols = @validatePasteContentColumnRange changes, @plateMetaData.numberOfCols
-#      for change in changes
-#        console.log "change"
-#        console.log change
-#        @pendingChanges.push change
-#        if change[0] < lowestRowNumber
-#          lowestRowNumber = change[0]
-#        if change[0] > highestRowNumber
-#          highestRowNumber = change[0]
-#        if change[0] >= @plateMetaData.numberOfRows and pastingMoreRowsThanAvailable is false
-#          pastingMoreRowsThanAvailable = true
-#          counter = rowIdx
-#        rowIdx++
-
-      if _.size(numberOfInvalidRows) > 0
-        console.log "counter"
-        console.log counter
-        @pendingChanges = @pendingChanges.slice(0, _.size(numberOfInvalidRows))
-        numberOfExtraRowsNeeded = highestRowNumber - @plateMetaData.numberOfRows
-        numberOfAvailableRows = @plateMetaData.numberOfRows - lowestRowNumber
-        totalNumbrOfRowsBeingPasted = highestRowNumber - lowestRowNumber
+      invalidRows = @validatePasteContentRowRange changes, @plateMetaData.numberOfRows
+      invalidCols = @validatePasteContentColumnRange changes, @plateMetaData.numberOfColumns
+      invalidEntries = _.union(invalidRows, invalidCols)
+      validEntries = _.difference(changes, invalidEntries)
+      if _.size(invalidEntries) > 0
+        @pendingChanges = validEntries
         $("div[name='handsontablePasteError']").modal('show')
-        $("span[name='numberOfRowsBeingPasted']").html _.size(changes)
-        $("span[name='numberOfRowsAvailable']").html numberOfAvailableRows
-        $("span[name='numberOfColumnsAvailable']").html numberOfAvailableRows
 
         return false
 
   handleContentUpdated: (changes, source) =>
     if source in ["edit", "autofill", "paste"]
-      console.log "changes"
-      console.log changes
       listOfIdentifiers = []
       wellsToUpdate = @reformatUpdatedValues changes
       _.each(changes, (change) ->
@@ -264,24 +266,22 @@ class PlateTableController extends Backbone.View
           well[@dataFieldToDisplay] = updatedValue.value
           @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
         )
+
         @wellsToUpdate.save()
-      else
         @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+      else
+        #@trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+        @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
   handleAcceptTruncatedPaste: =>
-    console.log "handleAcceptTruncatedPaste"
     _.each(@pendingChanges, (pc) ->
       pc[2] = pc[3]
       #delete pc[3]
     )
     @addContent @pendingChanges
     @handleContentUpdated @pendingChanges, "paste"
-    #$("div[name='handsontablePasteError']").modal('hide')
 
   identifiersValidated: (addContentModel) =>
-    console.log "identifiersValidated"
-    console.log "addContentModel"
-    console.log addContentModel
     aliasedIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS), 'requestName')
     invalidIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS), 'requestName')
     validIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
@@ -293,24 +293,20 @@ class PlateTableController extends Backbone.View
     invalidWells = _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
       return well.value in invalidIdentifiers
     )
-
-    validWells =  _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
-      return well.value in validIdentifiers
-    )
+    if validIdentifiers?
+      validWells =  _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
+        return well.value in validIdentifiers
+      )
+    else
+      validWells = []
     @wellsToUpdate.resetWells()
     _.each(aliasedWells, (aw) =>
-      console.log "aw"
-      console.log aw
-      console.log "aliasedIdentifiers"
-      console.log aliasedIdentifiers
       aliasedValue = _.each(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS), (ai) ->
         if ai.requestName is aw.value
           return true
         else
           return false
       )
-      console.log "aliasedValue"
-      console.log aliasedValue[0].preferredName
       cell = @handsOnTable.getCell(aw.rowIdx, aw.colIdx)
       well = @wellsToUpdate.getWellAtRowIdxColIdx(aw.rowIdx, aw.colIdx)
       well.status = "aliased"
@@ -319,8 +315,6 @@ class PlateTableController extends Backbone.View
       $(cell).addClass "aliasedIdentifierCell"
       $(cell).html aliasedValue[0].preferredName
     )
-    console.log "invalidIdentifiers"
-    console.log invalidIdentifiers
     _.each(invalidWells, (aw) =>
       cell = @handsOnTable.getCell(aw.rowIdx, aw.colIdx)
       well = @wellsToUpdate.getWellAtRowIdxColIdx(aw.rowIdx, aw.colIdx)
@@ -338,15 +332,11 @@ class PlateTableController extends Backbone.View
         @wellsToUpdate.fillWellWithWellObject(aw.rowIdx, aw.colIdx, well)
         $(cell).removeClass "invalidIdentifierCell"
         $(cell).removeClass "aliasedIdentifierCell"
-        console.log "removing higlighting for cell", aw.rowIdx, aw.colIdx
     )
+    $("div[name='updatingWellContents']").modal("show")
 
-#    @wellsToUpdate.resetWells()
-#    _.each(updatedValues, (updatedValue) =>
-#      well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
-#      well[@dataFieldToDisplay] = updatedValue.value
-#      @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
-#    )
+    @listenTo @wellsToUpdate, "sync", =>
+      $("div[name='updatingWellContents']").modal('hide')
     @wellsToUpdate.save()
 
   reformatUpdatedValues: (changes) ->
@@ -375,7 +365,6 @@ class PlateTableController extends Backbone.View
     )
 
   toolTipCellRenderer: (instance, td, row, col, prop, value, cellProperties) =>
-    console.log "toolTipCellRenderer"
     Handsontable.renderers.TextRenderer.apply(@, arguments)
     wellData = @getWellDataAtRowCol(row, col)
     well = _.find(@wells, (w) ->
@@ -402,9 +391,6 @@ class PlateTableController extends Backbone.View
     })
     if well?
       if well.status?
-        console.log "well with status"
-        console.log well
-
         if well.status is "valid"
           $(td).removeClass "invalidIdentifierCell"
           $(td).removeClass "aliasedIdentifierCell"
@@ -415,11 +401,10 @@ class PlateTableController extends Backbone.View
 
       unless @dataFieldToColorBy is "noColor"
         td = @applyBackgroundColorToCell(td, well)
-
+    td.style.fontSize = "#{@fontSize}px"
     return td
 
   defaultCellRenderer: (instance, td, row, col, prop, value, cellProperties) =>
-    console.log "defaultCellRenderer"
     Handsontable.renderers.TextRenderer.apply(@, arguments)
     wellData = @getWellDataAtRowCol(row, col)
     well = _.find(@wells, (w) ->
@@ -430,9 +415,6 @@ class PlateTableController extends Backbone.View
     )
     if well?
       if well.status?
-        console.log "well with status"
-        console.log well
-
         if well.status is "valid"
           $(td).removeClass "invalidIdentifierCell"
           $(td).removeClass "aliasedIdentifierCell"
@@ -443,22 +425,118 @@ class PlateTableController extends Backbone.View
       unless @dataFieldToColorBy is "noColor"
         td = @applyBackgroundColorToCell(td, well)
 
-    return td
+    td.style.fontSize = "#{@fontSize}px"
 
+    return td
+  console.log "@dataFieldToColorBy"
+  console.log @dataFieldToColorBy
   applyBackgroundColorToCell: (td, well) =>
     if @dataFieldToColorBy is "batchCode"
       unless well.batchCode is ""
         td.style.background = @listOfBatchCodes[well.batchCode]
+    else if @dataFieldToColorBy is "batchConcentration"
+      backgroundColor = @calculateBackgroundColorForConcentration(well)
+      td.style.background = backgroundColor
     else
-      minRange = 1
-      maxRange = 255
-      unless isNaN(parseFloat(well[@dataFieldToColorBy]))
-        conc = parseFloat(well[@dataFieldToColorBy])
-        normVal = maxRange - parseInt(minRange + (Math.log(well[@dataFieldToColorBy]) - @minValue) * (maxRange - minRange) / (@maxValue - @minValue))
-
-        td.style.background = "rgb(#{normVal},#{normVal},#{normVal})"
+      backgroundColor = @calculateBackgroundColorForVolume(well)
+      td.style.background = backgroundColor
 
     td
+
+  calculateBackgroundColorForConcentration: (well) =>
+    minRange = 1
+    maxRange = 255
+    backgroundColor = ""
+    unless isNaN(parseFloat(well[@dataFieldToColorBy]))
+      conc = parseFloat(well[@dataFieldToColorBy])
+
+      normVal = 255
+      if Math.log(well[@dataFieldToColorBy]) is -Infinity
+        backgroundColor = "rgb(0,255,0)"
+        #td.style.background = backgroundColor
+
+      else
+        if @dataFieldToColorBy is "batchConcentration"
+          logVal = Math.log(well[@dataFieldToColorBy])
+        else
+          logVal = well[@dataFieldToColorBy]
+        midValue = (@minValue + @maxValue) / 2
+
+
+        if logVal > midValue
+          normVal = ((maxRange - parseInt(minRange + (logVal - midValue) * (maxRange - minRange) / (@maxValue - midValue))))
+          backgroundColor = "rgb(255,#{normVal},0)"
+        else
+          normVal = 255 - ((parseInt(minRange + (midValue - logVal) * (maxRange - minRange) / (midValue - @minValue))))
+          backgroundColor = "rgb(#{normVal},255,0)"
+    backgroundColor
+
+  calculateBackgroundColorForVolume: (well) =>
+    minRange = 1
+    maxRange = 255
+    backgroundColor = ""
+    unless isNaN(parseFloat(well[@dataFieldToColorBy]))
+      conc = parseFloat(well[@dataFieldToColorBy])
+
+      normVal = 255
+      if Math.log(well[@dataFieldToColorBy]) is -Infinity
+        backgroundColor = "rgb(255,0,0)"
+
+      else
+        if @dataFieldToColorBy is "batchConcentration"
+          logVal = Math.log(well[@dataFieldToColorBy])
+        else
+          logVal = well[@dataFieldToColorBy]
+        midValue = (@minValue + @maxValue) / 2
+
+
+        if logVal < midValue
+          normVal = ((parseInt(minRange + (logVal - midValue) * (maxRange - minRange) / (@maxValue - midValue))))
+          backgroundColor = "rgb(255,#{normVal},0)"
+        else
+          normVal = 255 - ((maxRange - parseInt(minRange + (midValue - logVal) * (maxRange - minRange) / (midValue - @minValue))))
+          backgroundColor = "rgb(#{normVal},255,0)"
+    backgroundColor
+
+  showAll: =>
+    @handsOnTable.updateSettings({
+      colWidths: null,
+      rowHeights: null
+    })
+    @handsOnTable.render()
+
+  fitToContents: =>
+    @shouldFitToScreen = false
+
+    @handsOnTable.updateSettings({
+      colWidths: null,
+      rowHeights: null
+    })
+    @handsOnTable.init()
+    #@handsOnTable.render()
+
+  fitToScreen: =>
+    @shouldFitToScreen = true
+    @calculateLayout()
+
+  calculateLayout: =>
+    if @shouldFitToScreen
+      width = $(".editorHandsontable").width()
+      height = $(".editorHandsontable").height()
+      columnWidth = (width - 60) / @plateMetaData.numberOfColumns
+      rowHeight = (height - 50) / @plateMetaData.numberOfRows
+      @handsOnTable.updateSettings({
+        colWidths: columnWidth,
+        rowHeights: rowHeight
+      })
+    else
+      @handsOnTable.updateSettings({
+        colWidths: null,
+        rowHeights: null
+      })
+
+    @handsOnTable.render()
+
 
 module.exports =
   PlateTableController: PlateTableController

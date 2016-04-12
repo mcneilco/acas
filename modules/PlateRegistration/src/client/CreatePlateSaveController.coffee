@@ -25,8 +25,6 @@ class CreatePlateSaveController extends Backbone.View
     @ajaxMethod = 'POST'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
-    console.log "data"
-    console.log data
     if data is "Barcode already exists" # CREATE_PLATE_SAVE_CONTROLLER_PROPERTIES.PLATE_BARCODE_ALREADY_EXISTS
       @trigger "SaveSuccess"
       @handleError()
@@ -46,7 +44,6 @@ class CreatePlateSaveController extends Backbone.View
 
   handWarningContinueClick: =>
     console.log "handWarningContinueClick"
-
 
   render: =>
     $(@el).html @template()

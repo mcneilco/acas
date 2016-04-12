@@ -29,24 +29,18 @@ class LoadPlateController extends Backbone.View
       ajaxMethod: 'GET'
       data: ''
     ]
-    #@url = LOAD_PLATE_CONTROLLER_PROPERTIES.WELL_CONTENT_URL + plateBarcode
 
     @successCallback = options.successCallback
     @ajaxMethod = 'GET'
 
   handlePlateMetaDataInfoCallback: (data) =>
-    console.log "handlePlateMetaDataInfoCallback - data"
-    console.log data
     @plateMetadata = data
 
   handleWellContentCallback: (data) =>
-    console.log "handleWellContentCallback - data"
-    console.log data
     @wellContent = data
 
   handleSuccessCallback: () =>
     @successCallback {wellContent: @wellContent, plateMetadata: @plateMetadata}
-
     @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
 
   handleError: (errors) =>
@@ -57,7 +51,6 @@ class LoadPlateController extends Backbone.View
 
   handWarningContinueClick: =>
     console.log "handWarningContinueClick"
-
 
   render: =>
     $(@el).html @template()

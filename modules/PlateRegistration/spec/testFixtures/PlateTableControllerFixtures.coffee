@@ -31,6 +31,16 @@ plateWellContent = [
   "solventCode":null
   "wellName":"A002"
 ]
-
+plateMetaData =
+  "barcode": "Test 96-well plate"
+  "codeName": "CONT-00000004"
+  "description": "this plate  has 961"
+  "numberOfColumns": 12
+  "numberOfRows": 8
+  "plateSize": 96
+  "status": "active"
+  "supplier": "testsupplier123"
+  "type": ""
 module.exports =
   plateWellContent: plateWellContent
+  plateMetaData: plateMetaData

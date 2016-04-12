@@ -65,13 +65,10 @@ class AddContentModel extends Backbone.Model
       return "An identifier, concentration value, or amount must be specified"
 
   validateIdentifiers: (value, attr, computedState) ->
-    #console.log "computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]"
-    #console.log computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
     if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 0
       unless computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "sameIdentifier"
-        if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] isnt computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
-          console.log "num selected wells and num identifiers mismatch"
-          return "The number of selected wells must be the same as the number of identifiers entered"
+        if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] > computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
+          return "The number of selected wells must be the same or less than the number of identifiers entered"
 
   formatIdentifiersForValidationService: ->
     identifiers = _.reduce(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (memo, identifier) ->

@@ -166,7 +166,8 @@ exports.getWellContentByPlateBarcode = (req, resp) ->
 
 exports.updateWellStatus = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
-	baseurl = config.all.client.service.persistence.fullpath + "containers/updateWellStatus"
+	#baseurl = config.all.client.service.persistence.fullpath + "containers/updateWellStatus"
+	baseurl = config.all.client.service.persistence.fullpath + "containers/updateWellContent"
 	console.log "baseurl"
 	console.log baseurl
 
@@ -176,8 +177,15 @@ exports.updateWellStatus = (req, resp) ->
 		url: baseurl
 		body: JSON.stringify req.body.wells
 		json: true
-		timeout: 6000000
+		timeout: 24000000
 	, (error, response, json) =>
+		console.log "error"
+		console.log error
+		console.log "response"
+		console.log response
+		console.log "json"
+		console.log json
+
 		if !error
 			console.log JSON.stringify json
 			resp.setHeader('Content-Type', 'application/json')

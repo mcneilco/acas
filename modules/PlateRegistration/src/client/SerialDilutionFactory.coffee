@@ -4,8 +4,6 @@ WellsModel = require('./WellModel.coffee').WellsModel
 
 class SerialDilutionFactory
   getSerialDilutionStrategy: (serialDilutionModel, selectedRegion) ->
-    console.log "SerialDilutionFactory serialDilutionModel"
-    console.log serialDilutionModel
     if serialDilutionModel.get(SERIAL_DILUTION_MODEL_FIELDS.IS_DILUTION_BY_VOLUME)
       if serialDilutionModel.get(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION) is "diluteRight"
         return new DiluteByVolumeRight(serialDilutionModel.get(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_DOSES), serialDilutionModel.get(SERIAL_DILUTION_MODEL_FIELDS.DESTINATION_WELL_VOLUME), serialDilutionModel.get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME), selectedRegion)
@@ -45,7 +43,6 @@ class SerialDilutionByVolume extends DilutionStrategy
 
 class DiluteByVolumeRight extends SerialDilutionByVolume
   constructor: (numberOfDoses, destinationWellVolume, transferVolume, selectedRegion) ->
-    console.log "DiluteByVolumeRight"
     super(numberOfDoses, destinationWellVolume, transferVolume, selectedRegion)
     @startingRowIdexes = [selectedRegion.rowStart..selectedRegion.rowStop]
     @secondColIdx = selectedRegion.colStart + 1
@@ -90,7 +87,6 @@ class DiluteByVolumeRight extends SerialDilutionByVolume
 
 class DiluteByVolumeLeft extends SerialDilutionByVolume
   constructor: (numberOfDoses, destinationWellVolume, transferVolume, selectedRegion) ->
-    console.log "DiluteByVolumeLeft"
     super(numberOfDoses, destinationWellVolume, transferVolume, selectedRegion)
     @startingRowIdexes = [selectedRegion.rowStart..selectedRegion.rowStop]
     @secondColIdx = selectedRegion.colStart - 1
@@ -135,7 +131,6 @@ class DiluteByVolumeLeft extends SerialDilutionByVolume
 
 class DiluteByVolumeUp extends SerialDilutionByVolume
   constructor: (numberOfDoses, destinationWellVolume, transferVolume, selectedRegion) ->
-    console.log "DiluteByVolumeUp"
     super(numberOfDoses, destinationWellVolume, transferVolume, selectedRegion)
     @startingColIdexes = [selectedRegion.colStart..selectedRegion.colStop]
     @secondRowIdx = selectedRegion.rowStart - 1
@@ -181,7 +176,6 @@ class DiluteByVolumeUp extends SerialDilutionByVolume
 
 class DiluteByVolumeDown extends SerialDilutionByVolume
   constructor: (numberOfDoses, destinationWellVolume, transferVolume, selectedRegion) ->
-    console.log "DiluteByVolumeUp"
     super(numberOfDoses, destinationWellVolume, transferVolume, selectedRegion)
     @startingColIdexes = [selectedRegion.colStart..selectedRegion.colStop]
     @secondRowIdx = selectedRegion.rowStart + 1
@@ -240,7 +234,6 @@ class SerialDilutionByDilutionFactor extends DilutionStrategy
 
 class DiluteByDilutionFactorRight extends SerialDilutionByDilutionFactor
   constructor: (numberOfDoses, dilutionFactor, selectedRegion) ->
-    console.log "DiluteByDilutionFactorRight"
     super(numberOfDoses, dilutionFactor, selectedRegion)
     @startingRowIdexes = [selectedRegion.rowStart..selectedRegion.rowStop]
     @secondColIdx = selectedRegion.colStart + 1
@@ -287,7 +280,6 @@ class DiluteByDilutionFactorRight extends SerialDilutionByDilutionFactor
 
 class DiluteByDilutionFactorLeft extends SerialDilutionByDilutionFactor
   constructor: (numberOfDoses, dilutionFactor, selectedRegion) ->
-    console.log "DiluteByDilutionFactorRight"
     super(numberOfDoses, dilutionFactor, selectedRegion)
     @startingRowIdexes = [selectedRegion.rowStart..selectedRegion.rowStop]
     @secondColIdx = selectedRegion.colStart - 1
@@ -333,7 +325,6 @@ class DiluteByDilutionFactorLeft extends SerialDilutionByDilutionFactor
 
 class DiluteByDilutionFactorDown extends SerialDilutionByDilutionFactor
   constructor: (numberOfDoses, dilutionFactor, selectedRegion) ->
-    console.log "DiluteByDilutionFactorDown"
     super(numberOfDoses, dilutionFactor, selectedRegion)
     @startingColIdexes = [selectedRegion.colStart..selectedRegion.colStop]
     @secondRowIdx = selectedRegion.rowStart + 1

@@ -1,7 +1,6 @@
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
 _ = require('lodash')
-#$ = require('jquery')
 require('expose?$!expose?jQuery!jquery');
 require("bootstrap-webpack!./bootstrap.config.js");
 
@@ -11,10 +10,12 @@ NEW_PLATE_DESIGN_CONTROLLER_EVENTS = require('./NewPlateDesignController.coffee'
 CreatePlateController = require('./CreatePlateController.coffee').CreatePlateController
 CREATE_PLATE_CONTROLLER_EVENTS = require('./CreatePlateController.coffee').CREATE_PLATE_CONTROLLER_EVENTS
 CreatePlateSaveController = require('./CreatePlateSaveController.coffee').CreatePlateSaveController
+PlateTypeCollection = require('./PlateTypeCollection.coffee').PlateTypeCollection
 PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
-IdentifierValidationController = require('./IdentifierValidationController.coffee').IdentifierValidationController
+AddContentIdentifierValidationController = require('./IdentifierValidationController.coffee').AddContentIdentifierValidationController
+PlateTableIdentifierValidationController = require('./IdentifierValidationController.coffee').PlateTableIdentifierValidationController
 LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
 
 APP_CONTROLLER_EVENTS = {}
@@ -25,9 +26,9 @@ class AppController extends Backbone.View
   initialize: ->
     @newPlateDesignController = new NewPlateDesignController()
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
-    @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT_FROM_TABLE, @handleAddContentFromTable
+    @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleAddIdentifierContentFromTable
 
-    @createPlateController = new CreatePlateController({model: new PlateModel()})
+    @createPlateController = new CreatePlateController({model: new PlateModel(), plateTypes: new PlateTypeCollection()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
     @dataServiceController = new DataServiceController()
 
@@ -37,48 +38,35 @@ class AppController extends Backbone.View
   handleCreatePlate: (plateModel) =>
     @dataServiceController.setupService(new CreatePlateSaveController({plateModel: plateModel, successCallback: @createPlateController.handleSuccessfulSave}))
     @dataServiceController.doServiceCall()
-#    @dataServiceController.doServiceCall((resp) ->
-#      console.log "save callback"
-#      console.log resp
-#    )
 
   handleAddContent: (addContentModel) =>
-    console.log "identifiers"
-    console.log addContentModel
-
-    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
+    @dataServiceController.setupService(new AddContentIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
     @dataServiceController.doServiceCall(@handleAddContentSuccess)
 
-    #alert "add content..."
-
-  handleAddContentFromTable: (addContentModel) =>
-    console.log "identifiers"
-    console.log addContentModel
-
-    @dataServiceController.setupService(new IdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback}))
+  handleAddIdentifierContentFromTable: (addContentModel) =>
+    @dataServiceController.setupService(new PlateTableIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback, mode: "plateTable"}))
     @dataServiceController.doServiceCall()
 
   handleAddContentSuccess: () =>
     @newPlateDesignController.handleAddContentSuccessCallback()
     @newPlateDesignController.completeInitialization()
 
-
   displayCreatePlateForm: =>
-    @$("div[name='formContainer']").html @createPlateController.render().el
+    plateTypeFetchPromise = @createPlateController.plateTypes.fetch()
+    plateTypeFetchPromise.complete(() =>
+      @$("div[name='formContainer']").html @createPlateController.render().el
+    )
 
   displayPlateDesignForm: (plateBarcode) =>
     @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))
     @dataServiceController.doServiceCalls()
 
   handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
-    console.log "handleAllDataLoadedForPlateDesignForm"
-    console.log plateAndWellData
     @$("div[name='formContainer']").html @newPlateDesignController.render().el
     @newPlateDesignController.completeInitialization(plateAndWellData)
 
   render: =>
     $(@el).html @template()
-
     @$("div[name='dataServiceControllerContainer']").html @dataServiceController.render().el
 
     @
