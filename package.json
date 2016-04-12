@@ -57,7 +57,14 @@
     "underscore-deep-extend": ">= 0.0.0",
     "webpack": "^1.12.11",
     "winston": "*",
-    "winston-mongodb": "*"
+    "winston-mongodb": "*",
+    "style-loader": "*",
+    "bootstrap": "*",
+    "exports-loader": "*",
+    "extract-text-webpack-plugin": "*",
+    "grunt": ">=1.0.1",
+    "url-loader": "*",
+    "file-loader": "*"
   },
   "devDependencies": {
     "gitignore-to-glob": "*",
