@@ -1,3 +1,4 @@
+path = require 'path'
 module.exports = (grunt) ->
 	"use strict"
 
@@ -381,6 +382,11 @@ module.exports = (grunt) ->
 
 
 		webpack:
+			options:
+				resolve:
+					modulesDirectories: [path.resolve("<%= build %>/node_modules")]
+				resolveLoader:
+					root: [path.resolve("<%= build %>/node_modules")]
 			build:
 				entry:
 					"index": "<%= acas_base %>/modules/PlateRegistration/src/client/index.coffee",
@@ -503,7 +509,6 @@ module.exports = (grunt) ->
 				]
 				tasks: "execute:prepare_test_JSON"
 
-	path = require 'path'
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."
