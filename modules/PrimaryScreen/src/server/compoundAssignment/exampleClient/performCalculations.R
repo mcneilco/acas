@@ -251,6 +251,18 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
                   Different Standards for Positive and Negative Controls are required for tranformation calculations.")
       }
     }
+    
+    # If tranformation-related PC OR NC are defined as input value but have the exact same numeric value, prompt the user with an error
+    if ((transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'input value' &
+         !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'])) &
+        (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value' &
+         !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) &
+        identical(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'], 
+              transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) {
+      stopUser("In the transformation section, Input Values were selected for both Positive and Negative Controls
+                which appear to be exactly identical for both controls. Selecting different Input Values for
+                Positive and Negative Control is required for proper transformation calculations.")
+    }
   }
 
 
