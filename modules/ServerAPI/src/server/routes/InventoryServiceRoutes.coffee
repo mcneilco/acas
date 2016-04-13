@@ -28,6 +28,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/moveToLocation', exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
+	app.post '/api/cloneContainers', exports.cloneContainers
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -56,6 +57,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
+	app.post '/api/cloneContainers', loginRoutes.ensureAuthenticated, exports.cloneContainers
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -314,6 +316,8 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								out = _.extend containerValues, definitionValues
 								out.barcode = container.get('barcode').get("labelText")
 								out.codeName = containerCode
+								out.definitionCodeName = definition.get('codeName')
+								out.recordedBy = container.get('recordedBy')
 								outArray.push out
 							else
 								console.error "could not find container #{containerCode}"
@@ -1007,7 +1011,6 @@ exports.getWellContentByContainerLabels = (req, resp) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-
 exports.getWellContentByContainerLabelsInternal = (containerLabels, containerType, containerKind, labelType, labelKind, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
@@ -1030,3 +1033,66 @@ exports.getWellContentByContainerLabelsInternal = (containerLabels, containerTyp
 						wellContent[index].label = label
 					callback wellContent, 200
 
+exports.cloneContainers = (req, resp) ->
+	exports.cloneContainersInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.cloneContainersInternal = (input, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.cloneContainerResponse
+	else
+		console.debug "incoming cloneContainerInternal request: #{JSON.stringify(input)}"
+		_ = require 'underscore'
+		codeNames = _.pluck input, "codeName"
+		console.debug "calling getContainersByCodeNamesInternal"
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNames, (containers, statusCode) =>
+			exports.getWellContentByContainerCodesInternal codeNames, (wellContent) =>
+				outArray = []
+				for updateInfo, index in input
+					container = _.findWhere(containers, {'codeName': updateInfo.codeName})
+					container = _.extend container,updateInfo
+					container = _.omit container, "codeName"
+					container.definition = container.definitionCodeName
+					wellContent = _.findWhere(wellContent, {'containerCodeName': updateInfo.codeName})
+					if wellContent?.wellContent?
+						wellContent = _.map wellContent.wellContent, (wellCont) ->
+							_.omit wellCont, "containerCodeName"
+						container.wells = wellContent
+					outArray.push container
+					compoundInventorRoutes = require '../routes/CompoundInventoryRoutes.js'
+					console.log 'containerReady', container
+					compoundInventorRoutes.createPlateInternal container, true, (json, statusCode) ->
+						console.log 'statusCode', statusCode
+						console.log 'json', json
+
+
+
+#		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+#			preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
+#			console.debug "containers from service"
+#			console.log JSON.stringify(containers, null, '  ')
+#			if statusCode == 400
+#				console.error "got errors requesting code names: #{JSON.stringify containers}"
+#				callback containers, 400
+#			if statusCode == 500
+#				callback JSON.stringify "cloneContainerInternal failed", 500
+#				return
+#			for updateInfo, index in input
+#				container = _.findWhere(containers, {'containerCodeName': updateInfo.codeName})
+#				if container.container?
+#					container = container.container
+#					console.debug "found container type: #{container.lsType}"
+#					console.debug "found container kind: #{container.lsKind}"
+#					containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
+#					if containerPreferredEntity?
+#						console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
+#					else
+#						console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+#						preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+#							console.error types
+#					console.debug "here is the container as returned by tomcat: #{JSON.stringify(container, null, '  ')}"
+#					container = new containerPreferredEntity.model(container)
+#					containerValues = container.getValues()
+#					containerValues.barcode = updateInfo.barcode
