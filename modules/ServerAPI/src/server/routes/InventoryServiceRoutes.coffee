@@ -43,6 +43,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateContainerName', loginRoutes.ensureAuthenticated, exports.validateContainerName
 	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
+	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 
 exports.getContainersInLocation = (req, resp) ->
@@ -283,12 +284,12 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								console.debug "found container kind: #{containers[index].container.lsKind}"
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin containers[index].container.lsType, containers[index].container.lsKind, "ACAS Container"
 								if containerPreferredEntity?
-									console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
+									console.debug "found preferred entity: #{containerPreferredEntity}"
 								else
-									console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
-									preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-										console.error types
-								console.debug "here is the container as returned by tomcat: #{JSON.stringify(containers[index].container, null, '  ')}"
+									console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
+									console.debug preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+									console.debug types
+								console.log containerPreferredEntity
 								container = new containerPreferredEntity.model(containers[index].container)
 								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
 								definition = new definitionPreferredEntity.model(definitions[index].definition)
@@ -298,6 +299,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								console.debug "here are the values of the definition container: #{JSON.stringify(definitionValues,null, '  ')}"
 								out = _.extend containerValues, definitionValues
 								out.barcode = container.get('barcode').get("labelText")
+								out.codeName = container.get('codeName')
 								outArray.push out
 							else
 								console.error "could not find container #{containers[index]}"
@@ -310,7 +312,7 @@ exports.updateContainerByContainerCode = (req, resp) ->
 		resp.json json[0]
 
 exports.updateContainersByContainerCodes = (req, resp) ->
-	exports.updateContainersByContainerCodesInternal req.body, (json, statusCode) ->
+	exports.updateContainersByContainerCodeInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
@@ -906,7 +908,7 @@ exports.updateWellContentInternal = (wellContent, callback) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: wellContent
+			body: wellContent.wells
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
