@@ -1,0 +1,19 @@
+- vendor is new code object in lot. service is called vendors from a code table
+- solutionAmount is a new number in lot table
+- solutionAmountUnits is a new code object in the lot table. units picklist from a new solutionUnits code table
+- synthesisDate is not required
+- need molFormula returned as part of parent return
+
+I did not end up having to send molWeight and molFormula in lot save
+
+
+options for corp batch name
+
+corpBatchFormat := 
+	corp_saltcode_batch
+	corp_batch_saltcode
+	corp_batch
+
+
+
+        

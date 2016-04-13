@@ -3,12 +3,13 @@
 
   All functions are required with unchanged signatures
 ###
-serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+ACAS_HOME="../../.."
+serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 fs = require 'fs'
-
+_ = require 'underscore'
 
 exports.logUsage = (action, data, username) ->
-	# no ACAS logging service yet
+# no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
 	# logger = require "../../../routes/Logger"
 	global.logger.writeToLog("info", "logUsage", action, data, username, null)
@@ -19,7 +20,8 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+#	retFun "Success"
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -34,7 +36,10 @@ exports.authCheck = (user, pass, retFun) ->
 		if !error && response.statusCode == 200
 			retFun JSON.stringify json
 		else if !error && response.statusCode == 302
-			retFun JSON.stringify response.headers.location
+			console.log 'Auth Successful - checking roles'
+			exports.checkRoles user , (checkRoleResponse) ->
+				retFun checkRoleResponse
+#			retFun JSON.stringify response.headers.location
 		else
 			console.log 'got connection error trying authenticate a user'
 			console.log error
@@ -44,7 +49,7 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -66,7 +71,7 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -90,8 +95,8 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
-	config = require '../../../conf/compiled/conf.js'
-	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	if config.all.client.require.login
 		request = require 'request'
 		request(
 			headers:
@@ -178,24 +183,22 @@ exports.makeServiceRequestHeaders = (user) ->
 		"From": username
 
 exports.getCustomerMolecularTargetCodes = (resp) ->
-	molecTargetTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	molecTargetTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
 exports.validateCloneAndGetTarget = (req, resp) ->
-	psProtocolServiceTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	psProtocolServiceTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
-exports.getAuthors = (resp) ->
-	config = require '../../../conf/compiled/conf.js'
-	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter users by roles
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+	#TODO: need to change if want to filter users by roles
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-
-
-
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
 
@@ -234,11 +237,11 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 									callback true
 
 exports.getDownloadUrl = (fileValue) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
 
 exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
-	# This is a stub implementation that returns empty results
+# This is a stub implementation that returns empty results
 
 	if propertyList.indexOf('ERROR') > -1
 		callback null
@@ -306,9 +309,8 @@ exports.getPreferredBatchIds = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
-		console.log("search term: " +requests[0])
 		request
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url
@@ -341,7 +343,7 @@ exports.getPreferredParentIds = (requests, callback) ->
 
 		callback response
 	else
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -374,7 +376,7 @@ exports.getBatchBestLabels = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -408,7 +410,7 @@ exports.getParentBestLabels = (requests, callback) ->
 
 		callback response
 	else
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -434,3 +436,23 @@ checkBatch_TestMode = (requestName) ->
 		when  "alias" then respId = "norm_"+idComps[1]+"A"
 		else respId = requestName
 	return respId
+
+exports.checkRoles = (user, retFun) ->
+	exports.getUser user, (expectnull, author)->
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+		if author?.roles? and config.all.client.roles?.loginRole?
+			roles = _.map author.roles, (role) ->
+				role.roleEntry.roleName
+			loginRoles = config.all.client.roles.loginRole.split ","
+			console.log loginRoles
+			console.log _.intersection loginRoles, roles
+			if _.intersection(loginRoles, roles).length > 0
+				console.log 'Role check successful'
+				retFun 'success'
+			else
+				console.log 'Role check failed'
+				retFun 'login_error'
+		else if config.all.client.roles?.loginRole?
+			retFun 'login_error'
+		else
+			retFun 'success'
