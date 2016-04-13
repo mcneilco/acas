@@ -354,6 +354,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback containers, 400
 			if statusCode == 500
+				console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
 				callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed", 500
 				return
 			else
@@ -361,6 +362,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
+						console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
@@ -1064,7 +1066,7 @@ exports.cloneContainersInternal = (input, callback) ->
 					if statusCode == 500
 						callback "updateContainersByContainerCodesInternal failed", 500
 						return
-					outArray = []
+					outputArray = []
 					for updateInfo, index in input
 						if containerCodes[index].foundCodeNames.length > 0
 							message = "conflict: barcode '#{containerCodes[index].requestLabel}' already being used by #{containerCodes[index].foundCodeNames.join(",")}"
@@ -1080,7 +1082,11 @@ exports.cloneContainersInternal = (input, callback) ->
 							wellContent = _.map wellContent.wellContent, (wellCont) ->
 								_.omit wellCont, "containerCodeName"
 							container.wells = wellContent
-						outArray.push container
-						compoundInventorRoutes = require '../routes/CompoundInventoryRoutes.js'
-						compoundInventorRoutes.createPlateInternal container, true, (json, statusCode) ->
-							callback json, 200
+						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
+						compoundInventoryRoutes.createPlateInternal container, "1", (newContainer, statusCode) ->
+							container.codeName = newContainer.codeName
+							exports.updateContainersByContainerCodesInternal [container], "1", (updatedContainer, statusCode) ->
+								outContainer = _.extend updatedContainer[0], newContainer
+								outputArray[index-1] = outContainer
+								if index == (input.length)
+									callback outputArray, 200
