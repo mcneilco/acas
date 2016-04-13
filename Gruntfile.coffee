@@ -14,6 +14,7 @@ module.exports = (grunt) ->
 
 		# configure build tasks
 	grunt.registerTask 'build', 'build task', () ->
+		fs = require 'fs'
 		console.log "building to '#{build}'"
 		console.log "building from '#{acas_base}'"
 		grunt.config.set('build', "#{build}")
@@ -28,7 +29,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly')
+		if !grunt.option('customonly') && fs.existsSync("#{acas_base}/modules/PlateRegistration")
 			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
@@ -184,7 +185,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example", "#{i}/conf/*.R"]
 					rename: (dest, matchedSrcPath, options) ->
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/", "").replace(grunt.config.get('acas_base')+"/", "")}"
 					dest: "<%= build %>"
@@ -367,7 +368,7 @@ module.exports = (grunt) ->
 					build: "<%= build %>"
 				call: (grunt, options) ->
 					shell = require('shelljs')
-					result = shell.exec("cd #{options.build} && npm install --production", {silent:true})
+					result = shell.exec("cd #{options.build} && npm install", {silent:true})
 					return result.output
 			install_racas:
 				options:
@@ -380,10 +381,15 @@ module.exports = (grunt) ->
 
 
 		webpack:
+			options:
+				resolve:
+					modulesDirectories: [path.resolve("<%= build %>/node_modules")]
+				resolveLoader:
+					root: [path.resolve("<%= build %>/node_modules")]
 			build:
 				entry:
 					"index": "<%= acas_base %>/modules/PlateRegistration/src/client/index.coffee",
-					#"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
+					"spec": "<%= acas_base %>/modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
 				output:
 					path: "<%= build %>/public/compiled",
 					filename: "[name].bundle.js"
@@ -450,7 +456,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 				tasks: "newer:copy:module_jade"
 			copy_conf:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example", "#{i}/conf/*.R"]
 				tasks: "newer:copy:conf"
 			module_legacy_r:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/**/*.R", "#{i}/modules/**/src/server/**/*.r", "!#{i}/modules/**/src/server/r/**", "!#{i}/modules/**/src/server/r/**"]
@@ -502,7 +508,6 @@ module.exports = (grunt) ->
 				]
 				tasks: "execute:prepare_test_JSON"
 
-	path = require 'path'
 	build =  path.relative '.', grunt.option('buildPath') || process.env.BUILD_PATH || 'build'
 	if build == ""
 		build = "."

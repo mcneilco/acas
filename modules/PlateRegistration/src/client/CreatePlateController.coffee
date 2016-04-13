@@ -43,9 +43,18 @@ class CreatePlateController extends Backbone.View
     "change select": "handleFormFieldUpdate"
     "click button[name='submit']": "handleClickStart"
 
+  completeInitialization: =>
+    console.log "completeInitialization"
+    plateDefinition = document.getElementsByName("definition") #$("select[name='definition']")
+    console.log "plateDefinition"
+    console.log plateDefinition
+    # make sure the default selected plate type is reflected in the form model
+    @handleFormFieldUpdate({currentTarget: plateDefinition})
+
   render: =>
     $(@el).html @template() #@model.toJSON())
     @initializeSelectLists()
+
     @
 
   initializeSelectLists: =>
@@ -54,6 +63,8 @@ class CreatePlateController extends Backbone.View
     )
 
   handleFormFieldUpdate: (evt) ->
+    console.log "evt"
+    console.log evt
     target = $(evt.currentTarget)
     data = {}
     data[target.attr('name')] = $.trim(target.val())

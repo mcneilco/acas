@@ -55,6 +55,7 @@ class AppController extends Backbone.View
     plateTypeFetchPromise = @createPlateController.plateTypes.fetch()
     plateTypeFetchPromise.complete(() =>
       @$("div[name='formContainer']").html @createPlateController.render().el
+      @createPlateController.completeInitialization()
     )
 
   displayPlateDesignForm: (plateBarcode) =>

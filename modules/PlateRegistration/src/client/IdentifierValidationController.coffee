@@ -104,11 +104,11 @@ class IdentifierValidationController extends Backbone.View
     @$("div[name='errorMessages']").removeClass "hide"
 
   handleWarning: (warnings) =>
-    listOfAliasedIdentifiers = "<ul>"
+    listOfAliasedIdentifiers = "<table class='table'><tr><th>Aliased Identiier</th><th>Preferred Identifier</th></tr>"
     _.each(warnings, (arn) ->
-      listOfAliasedIdentifiers += "<li>" + arn.requestName + " ---> " + arn.preferredName + "</li>"
+      listOfAliasedIdentifiers += "<tr><td>" + arn.requestName + "</td><td>" + arn.preferredName + "</td></tr>"
     )
-    listOfAliasedIdentifiers += "</ul>"
+    listOfAliasedIdentifiers += "</table>"
     @$("div[name='aliasedIdentifiers']").html listOfAliasedIdentifiers
     @$("div[name='warningMessages']").removeClass "hide"
 
