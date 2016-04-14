@@ -2112,14 +2112,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
  
-  ### Removed scenario where performCalculationsStat1Stat2Seq() is used
-  #if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
-    # added normalizationDataFrame into the arguments to pass the default values in the case when no standards are defined for normalization
-    # as well as standardsDataFrame to track the enumerated standards and which ones are selected as "PC" and/or "NC" for transformation purposes
-    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDataFrame)
-  #} else {
-  #  resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, experiment$codeName, dryRun)
-  #}
+  # Perform calculations related to normalization and transformation (performCalculationsStat1Stat2Seq() is no longer relevant)
+  resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDataFrame)
+  
  
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
