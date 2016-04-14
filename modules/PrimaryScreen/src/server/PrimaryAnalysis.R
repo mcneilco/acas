@@ -2000,7 +2000,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (any(standardsDataFrame$concentration=="")) {
     stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
   }
-  #V###save(resultTable, normalizationDataFrame, standardsDataFrame, file="output2.Rda")  
 
 
   ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
@@ -2112,14 +2111,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # but those aren't created until later in the code
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
+ 
+  # Perform calculations related to normalization and transformation (performCalculationsStat1Stat2Seq() is no longer relevant)
+  resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDataFrame)
   
-  if (racas::applicationSettings$server.service.genericSpecificPreProcessor) {
-    # added normalizationDataFrame into the arguments to pass the default values in the case when no standards are defined for normalization
-    resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame)
-  } else {
-    resultTable <- performCalculationsStat1Stat2Seq(resultTable, parameters, experiment$codeName, dryRun)
-  }
-  
+ 
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
   }
