@@ -142,10 +142,31 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@tr).toBeDefined()
 				it "should have defaults", ->
 					expect(@tr.get('transformationRule')).toEqual "unassigned"
+		describe "model validation tests", ->
+			beforeEach ->
+				@tr = new TransformationRule transformationRule: window.primaryScreenTestJSON.transformationRules[0].transformationRule
+			it "should be valid as initialized", ->
+				expect(@tr.isValid()).toBeTruthy()
+			it "should be invalid when transformation rule is unassigned", ->
+				@tr.set transformationRule: "unassigned"
+				expect(@tr.isValid()).toBeFalsy()
+				filtErrors = _.filter @tr.validationError, (err) ->
+					err.attribute=='transformationRule'
+				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "Transformation Rule Model With Parameters testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@tr = new TransformationRuleWithParameters()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@tr).toBeDefined()
+				it "should have defaults", ->
+					expect(@tr.get('transformationRule')).toEqual "unassigned"
 					expect(@tr.get('transformationParameters') instanceof TransformationParameters).toBeTruthy()
 		describe "model validation tests", ->
 			beforeEach ->
-				@tr = new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
+				@tr = new TransformationRuleWithParameters window.primaryScreenTestJSON.transformationRules[0]
 			it "should be valid as initialized", ->
 				expect(@tr.isValid()).toBeTruthy()
 			it "should be invalid when transformation rule is unassigned", ->
@@ -174,7 +195,28 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@nm.get('normalizationRule')).toEqual "unassigned"
 		describe "model validation tests", ->
 			beforeEach ->
-				@nm = new Normalization window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
+				@nm = new Normalization normalizationRule: window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization.normalizationRule
+			it "should be valid as initialized", ->
+				expect(@nm.isValid()).toBeTruthy()
+			it "should be invalid when normalization rule is unassigned", ->
+				@nm.set normalizationRule: "unassigned"
+				expect(@nm.isValid()).toBeFalsy()
+				filtErrors = _.filter @nm.validationError, (err) ->
+					err.attribute=='normalizationRule'
+				expect(filtErrors.length).toBeGreaterThan 0
+
+	describe "NormalizationWithControls model testing", ->
+		describe "When loaded from new", ->
+			beforeEach ->
+				@nm = new NormalizationWithControls()
+			describe "Existence and Defaults", ->
+				it "should be defined", ->
+					expect(@nm).toBeDefined()
+				it "should have defaults", ->
+					expect(@nm.get('normalizationRule')).toEqual "unassigned"
+		describe "model validation tests", ->
+			beforeEach ->
+				@nm = new NormalizationWithControls window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
 			it "should be valid as initialized", ->
 				expect(@nm.isValid()).toBeTruthy()
 			it "should be invalid when normalization rule is unassigned", ->
@@ -288,13 +330,13 @@ describe "Primary Screen Experiment module testing", ->
 	describe "Transformation Rule List testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
-				@trl = new TransformationRuleList()
+				@trl = new TransformationRuleWithParametersList()
 			describe "Existence", ->
 				it "should be defined", ->
 					expect(@trl).toBeDefined()
 		describe "When loaded form existing", ->
 			beforeEach ->
-				@trl = new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+				@trl = new TransformationRuleWithParametersList window.primaryScreenTestJSON.transformationRules
 			it "should have three reads", ->
 				expect(@trl.length).toEqual 3
 			it "should have the correct rule info for the first rule", ->
@@ -308,7 +350,7 @@ describe "Primary Screen Experiment module testing", ->
 				expect(rulethree.get('transformationRule')).toEqual "null"
 		describe "collection validation", ->
 			beforeEach ->
-				@trl= new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+				@trl= new TransformationRuleWithParametersList window.primaryScreenTestJSON.transformationRules
 			it "should be invalid if a transformation rule is selected more than once", ->
 				@trl.at(0).set transformationRule: "sd"
 				@trl.at(1).set transformationRule: "sd"
@@ -330,7 +372,7 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('signalDirectionRule')).toEqual "unassigned"
 					expect(@psap.get('aggregateBy')).toEqual "unassigned"
 					expect(@psap.get('aggregationMethod')).toEqual "unassigned"
-					expect(@psap.get('normalization') instanceof Normalization).toBeTruthy()
+					expect(@psap.get('normalization') instanceof NormalizationWithControls).toBeTruthy()
 					expect(@psap.get('hitEfficacyThreshold')).toBeNull()
 					expect(@psap.get('hitSDThreshold')).toBeNull()
 					expect(@psap.get('standardCompoundList') instanceof StandardCompoundList).toBeTruthy()
@@ -346,23 +388,23 @@ describe "Primary Screen Experiment module testing", ->
 					expect(@psap.get('fluorescentStep')).toBeNull()
 					expect(@psap.get('latePeakTime')).toBeNull()
 					expect(@psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
-					expect(@psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
+					expect(@psap.get('transformationRuleList') instanceof TransformationRuleWithParametersList).toBeTruthy()
 		describe "When loaded from existing", ->
 			beforeEach ->
 				@psap = new PrimaryScreenAnalysisParameters window.primaryScreenTestJSON.primaryScreenAnalysisParameters
 			describe "composite object creation", ->
 				it "should convert readlist to PrimaryAnalysisReadList", ->
 					expect( @psap.get('primaryAnalysisReadList') instanceof PrimaryAnalysisReadList).toBeTruthy()
-				it "should convert transformationRuleList to TransformationRuleList", ->
-					expect( @psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
-				it "should convert transformationRuleList to TransformationRuleList", ->
-					expect( @psap.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
+				it "should convert transformationRuleList to TransformationRuleWithParametersList", ->
+					expect( @psap.get('transformationRuleList') instanceof TransformationRuleWithParametersList).toBeTruthy()
+				it "should convert transformationRuleList to TransformationRuleWithParametersList", ->
+					expect( @psap.get('transformationRuleList') instanceof TransformationRuleWithParametersList).toBeTruthy()
 				it "should convert standardCompoundList to StandardCompoundList", ->
 					expect( @psap.get('standardCompoundList') instanceof StandardCompoundList).toBeTruthy()
 				it "should convert additiveList to AdditiveList", ->
 					expect( @psap.get('additiveList') instanceof AdditiveList).toBeTruthy()
-				it "should convert normalization to Normalization", ->
-					expect( @psap.get('normalization') instanceof Normalization).toBeTruthy()
+				it "should convert normalization to NormalizationWithControls", ->
+					expect( @psap.get('normalization') instanceof NormalizationWithControls).toBeTruthy()
 			describe "model validation tests", ->
 				it "should be valid as initialized", ->
 					expect(@psap.isValid()).toBeTruthy()
@@ -783,7 +825,45 @@ describe "Primary Screen Experiment module testing", ->
 		describe "when instantiated", ->
 			beforeEach ->
 				@nc = new NormalizationController
-					model: new Normalization window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
+					model: new Normalization normalizationRule: window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization.normalizationRule
+					el: $('#fixture')
+				@nc.render()
+			describe "basic existence tests", ->
+				it "should exist", ->
+					expect(@nc).toBeDefined()
+				it "should have a template", ->
+					expect(@nc.$('.bv_normalizationRule').length).toEqual 1
+			describe "render existing parameters", ->
+				it "should show the normalization rule", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						expect(@nc.$('.bv_normalizationRule').val()).toEqual "plate order only"
+			describe "model updates", ->
+				it "should update the normalization rule", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@nc.$('.bv_normalizationRule').val('plate order and row')
+						@nc.$('.bv_normalizationRule').change()
+						expect(@nc.model.get('normalizationRule')).toEqual "plate order and row"
+			describe "validation", ->
+				it "should show error if normalizationRule is unassigned", ->
+					waitsFor ->
+						@nc.$('.bv_normalizationRule option').length > 0
+					, 1000
+					runs ->
+						@nc.$('.bv_normalizationRule').val "unassigned"
+						@nc.$('.bv_normalizationRule').change()
+						expect(@nc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
+
+	describe "NormalizationWithControlsController", ->
+		describe "when instantiated", ->
+			beforeEach ->
+				@nc = new NormalizationWithControlsController
+					model: new NormalizationWithControls window.primaryScreenTestJSON.primaryScreenAnalysisParameters.normalization
 					el: $('#fixture')
 					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@nc.render()
@@ -819,11 +899,11 @@ describe "Primary Screen Experiment module testing", ->
 						expect(@nc.$('.bv_group_normalizationRule').hasClass("error")).toBeTruthy()
 
 
-	describe "TransformationRuleController", ->
+	describe "TransformationRuleWithParametersController", ->
 		describe "when instantiated", ->
 			beforeEach ->
-				@trc = new TransformationRuleController
-					model: new TransformationRule window.primaryScreenTestJSON.transformationRules[0]
+				@trc = new TransformationRuleWithParametersController
+					model: new TransformationRuleWithParameters window.primaryScreenTestJSON.transformationRules[0]
 					el: $('#fixture')
 					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trc.render()
@@ -1154,9 +1234,9 @@ describe "Primary Screen Experiment module testing", ->
 	describe "Transformation Rule List Controller testing", ->
 		describe "when instantiated with no data", ->
 			beforeEach ->
-				@trlc= new TransformationRuleListController
+				@trlc= new TransformationRuleWithParametersListController
 					el: $('#fixture')
-					collection: new TransformationRuleList()
+					collection: new TransformationRuleWithParametersList()
 					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			describe "basic existence tests", ->
@@ -1187,9 +1267,9 @@ describe "Primary Screen Experiment module testing", ->
 
 		describe "when instantiated with data", ->
 			beforeEach ->
-				@trlc= new TransformationRuleListController
+				@trlc= new TransformationRuleWithParametersListController
 					el: $('#fixture')
-					collection: new TransformationRuleList window.primaryScreenTestJSON.transformationRules
+					collection: new TransformationRuleWithParametersList window.primaryScreenTestJSON.transformationRules
 					standardsList: new StandardCompoundList window.primaryScreenTestJSON.standards
 				@trlc.render()
 			it "should have three rules", ->

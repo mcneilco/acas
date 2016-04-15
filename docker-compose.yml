@@ -10,7 +10,6 @@ services:
     environment:
      - APP_NAME=development
      - PREPARE_MODULE_CONF_JSON=true
-     - PREPARE_CONFIG_FILES=true
     volumes:
      - /home/runner/build/src/r
      - /home/runner/build/privateUploads
@@ -18,13 +17,18 @@ services:
      - /home/runner/build/conf/compiled
      - /home/runner/logs
      # Dev volumes below this line
-#     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
+     - ./conf:/home/runner/acas/conf
+     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
+     - ./modules/PrimaryScreen:/home/runner/acas/modules/PrimaryScreen
+     - ./modules/ModuleMenus:/home/runner/acas/modules/ModuleMenus
+     - ./modules/ExperimentBrowser:/home/runner/acas/modules/ExperimentBrowser
+     - ./modules/ScreeningCampaign:/home/runner/acas/modules/ScreeningCampaign
     env_file:
       - ./bin/environments/acas/acas.env
 # Dev Command
-#    command: ["bin/acas.sh", "run", "acas", "dev"]
+    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-    command: ["bin/acas.sh", "run", "acas", "start"]
+#    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
     image: mcneilco/racas:development
     restart: always

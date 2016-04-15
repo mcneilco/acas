@@ -8,7 +8,9 @@ exports.setupAPIRoutes = (app) ->
 	app.put '/api/experiments/:id', exports.putExperiment
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
 	app.delete '/api/experiments/:id', exports.deleteExperiment
-
+	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
+	app.post '/api/postExptExptItxs', exports.postExptExptItxs
+	app.put '/api/putExptExptItxs', exports.putExptExptItxs
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -22,6 +24,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.delete '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.deleteExperiment
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
+	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', loginRoutes.ensureAuthenticated, exports.getItxExptExptsByFirstExpt
+	app.post '/api/postExptExptItxs', loginRoutes.ensureAuthenticated, exports.postExptExptItxs
+	app.put '/api/putExptExptItxs', loginRoutes.ensureAuthenticated, exports.putExptExptItxs
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -362,3 +367,68 @@ exports.experimentValueByStateTypeKindAndValueTypeKind = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.getItxExptExptsByFirstExpt = (req, resp) ->
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findByFirstExperiment/"+req.params.firstExptId
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.postExptExptItxs = (req, resp) ->
+	if global.specRunnerTestmode
+			res.end JSON.stringify "stubsMode not implemented"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
+		console.log "post expt expt itx body"
+		console.log req
+		console.log req.body
+		console.log "req.body.data"
+		console.log req.body.data
+		console.log "typeof: " + typeof req.body.data
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.data
+			json: true
+		, (error, response, json) =>
+			console.log "postExptExptItxs json"
+			console.log json
+			console.log "response.statusCode"
+			console.log response.statusCode
+			console.log response
+			if !error && response.statusCode == 201
+				resp.json json
+			else
+				console.log "got error posting expt expt itxs"
+				resp.end JSON.stringify error
+		)
+
+exports.putExptExptItxs = (req, resp) ->
+	if global.specRunnerTestmode
+			res.end JSON.stringify "stubsMode not implemented"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
+		request = require 'request'
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: req.body.data
+			json: true
+		, (error, response, json) =>
+			console.log "putExptExptItxs json"
+			console.log json
+			console.log "response.statusCode"
+			console.log response.statusCode
+			console.log response
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.log "got error putting expt expt itxs"
+				resp.end JSON.stringify "Error: " + error
+		)

@@ -139,6 +139,10 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 			@searchUrl = @genericSearchUrl
 		else
 			@searchUrl = @codeNameSearchUrl
+		if @options.domSuffix? #suffix added to end of dom elements that are searched for globally in handleDoSearchClicked
+			@domSuffix = @options.domSuffix
+		else
+			@domSuffix = ""
 
 
 	events:
@@ -161,14 +165,14 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_experimentTableController").addClass "hide"
-		$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		$(".bv_experimentTableController"+@domSuffix).addClass "hide"
+		$(".bv_errorOccurredPerformingSearch"+@domSuffix).addClass "hide"
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
-		$(".bv_exptSearchTerm").val ""
+		$(".bv_exptSearchTerm"+@domSuffix).val ""
 		if experimentSearchTerm isnt ""
-			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
-			$(".bv_experimentBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchExperimentsStatusIndicator").removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
+			$(".bv_experimentBrowserSearchInstructions"+@domSuffix).addClass "hide"
+			$(".bv_searchExperimentsStatusIndicator"+@domSuffix).removeClass "hide"
 			if !window.conf.browser.enableSearchAll and experimentSearchTerm is "*"
 				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
 			else
@@ -243,6 +247,10 @@ class window.ExperimentRowSummaryController extends Backbone.View
 
 class window.ExperimentSummaryTableController extends Backbone.View
 	initialize: ->
+		if @options.domSuffix?
+			@domSuffix = @options.domSuffix
+		else
+			@domSuffix = ""
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -251,10 +259,10 @@ class window.ExperimentSummaryTableController extends Backbone.View
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
 		if @collection.models.length is 0
-			$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).removeClass "hide"
 			# display message indicating no results were found
 		else
-			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
 			@collection.each (exp) =>
 				hideStatusesList = null
 				if window.conf.entity?.hideStatuses?
