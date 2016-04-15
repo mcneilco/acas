@@ -156,9 +156,26 @@ class window.TransformationParameters extends Backbone.Model
 		resp
 
 class window.TransformationRule extends Backbone.Model
-	defaults:
+	defaults: ->
 		transformationRule: "unassigned"
-		transformationParameters: new TransformationParameters
+
+	validate: (attrs) =>
+		errors = []
+		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
+			errors.push
+				attribute: 'transformationRule'
+				message: "Transformation Rule must be assigned"
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.TransformationRuleWithParameters extends TransformationRule
+	defaults: ->
+		_(super()).extend(
+			transformationParameters: new TransformationParameters
+		)
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -173,23 +190,27 @@ class window.TransformationRule extends Backbone.Model
 				@trigger 'amDirty'
 		resp
 
+class window.Normalization extends Backbone.Model
+	defaults: ->
+		normalizationRule: "unassigned"
+
 	validate: (attrs) =>
 		errors = []
-		if attrs.transformationRule is "unassigned" or attrs.transformationRule is null
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
 			errors.push
-				attribute: 'transformationRule'
-				message: "Transformation Rule must be assigned"
-
+				attribute: 'normalizationRule'
+				message: "Normalization Rule must be assigned"
 		if errors.length > 0
 			return errors
 		else
 			return null
 
-class window.Normalization extends Backbone.Model
-	defaults:
-		normalizationRule: "unassigned"
-		positiveControl: new ControlSetting()
-		negativeControl: new ControlSetting()
+class window.NormalizationWithControls extends Normalization
+	defaults: ->
+		_(super()).extend(
+			positiveControl: new ControlSetting()
+			negativeControl: new ControlSetting()
+		)
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -210,17 +231,6 @@ class window.Normalization extends Backbone.Model
 			resp.negativeControl.on 'amDirty', =>
 				@trigger 'amDirty'
 		resp
-
-	validate: (attrs) =>
-		errors = []
-		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
-			errors.push
-				attribute: 'normalizationRule'
-				message: "Normalization Rule must be assigned"
-		if errors.length > 0
-			return errors
-		else
-			return null
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
@@ -327,6 +337,9 @@ class window.TransformationRuleList extends Backbone.Collection
 					usedRules[currentRule] = index
 		modelErrors
 
+class window.TransformationRuleWithParametersList extends TransformationRuleList
+	model: TransformationRuleWithParameters
+
 
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults: ->
@@ -334,7 +347,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		signalDirectionRule: "unassigned"
 		aggregateBy: "unassigned"
 		aggregationMethod: "unassigned"
-		normalization: new Normalization()
+		normalization: new NormalizationWithControls()
 		assayVolume: null
 		transferVolume: null
 		dilutionFactor: null
@@ -350,7 +363,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		fluorescentStep: null
 		latePeakTime: null
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList()
+		transformationRuleList: new TransformationRuleWithParametersList()
 		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
 		standardCompoundList: new StandardCompoundList()
 		hasAdditives: false
@@ -377,8 +390,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			resp.primaryAnalysisTimeWindowList.on 'amDirty', =>
 				@trigger 'amDirty'
 		if resp.transformationRuleList?
-			if resp.transformationRuleList not instanceof TransformationRuleList
-				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
+			if resp.transformationRuleList not instanceof TransformationRuleWithParametersList
+				resp.transformationRuleList = new TransformationRuleWithParametersList(resp.transformationRuleList)
 			resp.transformationRuleList.on 'change', =>
 				@trigger 'change'
 			resp.transformationRuleList.on 'amDirty', =>
@@ -398,8 +411,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			resp.additiveList.on 'amDirty', =>
 				@trigger 'amDirty'
 		if resp.normalization?
-			if resp.normalization not instanceof Normalization
-				resp.normalization = new Normalization(resp.normalization)
+			if resp.normalization not instanceof NormalizationWithControls
+				resp.normalization = new NormalizationWithControls(resp.normalization)
 			resp.normalization.on 'change', =>
 				@trigger 'change'
 			resp.normalization.on 'amDirty', =>
@@ -825,26 +838,61 @@ class window.TransformationRuleController extends AbstractFormController
 		"change .bv_transformationRule": "ruleChanged"
 		"click .bv_deleteRule": "clear"
 
-	initialize: (options) ->
-		if options.standardsList?
-			@standardsList = options.standardsList
-		else
-			throw "TransformationRuleListController missing standardsList in options"
+	initialize: ->
 		@errorOwnerName = 'TransformationRuleController'
 		@setBindings()
 		@model.on "destroy", @remove, @
-
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@setUpTransformationRuleSelect()
-		@setUpControls()
+
 		@
 
 	ruleChanged: =>
 		@updateModel()
 		@render
+
+	updateModel: =>
+		@model.set transformationRule: @transformationListController.getSelectedCode()
+		@trigger 'updateState'
+
+	setUpTransformationRuleSelect: ->
+		@transformationList = new PickListList()
+		@transformationList.url = "/api/codetables/analysis parameter/transformation"
+		@transformationListController = new PickListSelectController
+			el: @$('.bv_transformationRule')
+			collection: @transformationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Transformation Rule"
+			selectedCode: @model.get('transformationRule')
+
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
+
+class window.TransformationRuleWithParametersController extends TransformationRuleController
+	controlsTemplate: _.template($("#TransformationRuleWithParametersView").html())
+
+	initialize: (options) ->
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "TransformationRuleWithParametersController missing standardsList in options"
+		@errorOwnerName = 'TransformationRuleWithParametersController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+
+	render: =>
+		super()
+		@$('.bv_transformationControls').html @controlsTemplate(@model.attributes)
+		@setUpControls()
+
+		@
 
 	updateModel: =>
 		@model.set transformationRule: @transformationListController.getSelectedCode()
@@ -886,22 +934,6 @@ class window.TransformationRuleController extends AbstractFormController
 		@$('.bv_transformationParameters').append @negativeControlController.el
 		@negativeControlController.on 'updateState', =>
 			@trigger 'updateState'
-
-	setUpTransformationRuleSelect: ->
-		@transformationList = new PickListList()
-		@transformationList.url = "/api/codetables/analysis parameter/transformation"
-		@transformationListController = new PickListSelectController
-			el: @$('.bv_transformationRule')
-			collection: @transformationList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Transformation Rule"
-			selectedCode: @model.get('transformationRule')
-
-
-	clear: =>
-		@model.destroy()
-		@attributeChanged()
 
 class window.ControlSettingController extends AbstractFormController
 	# Must be initialized with the option standardsList
@@ -968,26 +1000,20 @@ class window.ControlSettingController extends AbstractFormController
 				autoFetch: false
 
 class window.NormalizationController extends AbstractFormController
-	# Must be initialized with the option standardsList
 	template: _.template($("#NormalizationView").html())
+
 	events:
 		"change .bv_normalizationRule": "attributeChanged"
+
+	initialize: (options) ->
+		@errorOwnerName = 'NormalizationController'
+		@setBindings()
 
 	render: =>
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
 		@setupNormalizationSelect()
-		@setupPositiveControlSettingController()
-		@setupNegativeControlSettingController()
 		@
-
-	initialize: (options) ->
-		@errorOwnerName = 'NormalizationController'
-		@setBindings()
-		if options.standardsList?
-			@standardsList = options.standardsList
-		else
-			throw "NormalizationController missing standardsList in options"
 
 	updateModel: =>
 		@model.set normalizationRule: @normalizationListController.getSelectedCode()
@@ -1003,6 +1029,25 @@ class window.NormalizationController extends AbstractFormController
 				code: "unassigned"
 				name: "Select Normalization Rule"
 			selectedCode: @model.get('normalizationRule')
+
+class window.NormalizationWithControlsController extends NormalizationController
+	# Must be initialized with the option standardsList
+	controlsTemplate: _.template($("#NormalizationWithControlsView").html())
+
+	initialize: (options) ->
+		@errorOwnerName = 'NormalizationWithControlsController'
+		@setBindings()
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "NormalizationWithControlsController missing standardsList in options"
+
+	render: =>
+		super()
+		@$('.bv_normalizationControls').html @controlsTemplate(@model.attributes)
+		@setupPositiveControlSettingController()
+		@setupNegativeControlSettingController()
+		@
 
 	setupPositiveControlSettingController: ->
 		@positiveControlController = new ControlSettingController
@@ -1255,14 +1300,9 @@ class window.TransformationRuleListController extends AbstractFormController
 		"click .bv_addTransformationButton": "addNewRule"
 
 	initialize: (options) =>
-		if options.standardsList?
-			@standardsList = options.standardsList
-		else
-			throw "TransformationRuleListController missing standardsList in options"
 		@collection.on 'remove', @checkNumberOfRules
 		@collection.on 'remove', => @collection.trigger 'amDirty'
 		@collection.on 'remove', => @collection.trigger 'change'
-
 
 	render: =>
 		$(@el).empty()
@@ -1280,19 +1320,40 @@ class window.TransformationRuleListController extends AbstractFormController
 		unless skipAmDirtyTrigger is true
 			newModel.trigger 'amDirty'
 
-
 	addOneRule: (rule) ->
 		trc = new TransformationRuleController
+			model: rule
+		@$('.bv_transformationInfo').append trc.render().el
+		trc.on 'updateState', =>
+			@trigger 'updateState'
+
+	checkNumberOfRules: => #ensures that there is always one rule
+		if @collection.length == 0
+			@addNewRule()
+
+class window.TransformationRuleWithParametersListController extends TransformationRuleListController
+
+	initialize: (options) =>
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "TransformationRuleWithParametersListController missing standardsList in options"
+		super()
+
+	addNewRule: (skipAmDirtyTrigger)=>
+		newModel = new TransformationRuleWithParameters()
+		@collection.add newModel
+		@addOneRule(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneRule: (rule) ->
+		trc = new TransformationRuleWithParametersController
 			model: rule
 			standardsList: @standardsList
 		@$('.bv_transformationInfo').append trc.render().el
 		trc.on 'updateState', =>
 			@trigger 'updateState'
-
-
-	checkNumberOfRules: => #ensures that there is always one rule
-		if @collection.length == 0
-			@addNewRule()
 
 class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
 	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
@@ -1355,8 +1416,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupTimeWindowListController()
 		@setupStandardCompoundListController()
 		@setupAdditiveListController()
-		@setupNormalizationController()
-		@setupTransformationRuleListController()
+		@setupNormalizationWithControlsController()
+		@setupTransformationRuleWithParametersListController()
 		@handleMatchReadNameChanged(true)
 
 		@
@@ -1438,8 +1499,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@additiveListController.on 'updateState', =>
 			@trigger 'updateState'
 
-	setupNormalizationController: ->
-		@normalizationController = new NormalizationController
+	setupNormalizationWithControlsController: ->
+		@normalizationController = new NormalizationWithControlsController
 			el: @$('.bv_normalization')
 			model: @model.get('normalization')
 			standardsList: @model.get('standardCompoundList')
@@ -1447,8 +1508,8 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@normalizationController.on 'updateState', =>
 			@trigger 'updateState'
 
-	setupTransformationRuleListController: ->
-		@transformationRuleListController= new TransformationRuleListController
+	setupTransformationRuleWithParametersListController: ->
+		@transformationRuleListController= new TransformationRuleWithParametersListController
 			el: @$('.bv_transformationList')
 			collection: @model.get('transformationRuleList')
 			standardsList: @model.get('standardCompoundList')
