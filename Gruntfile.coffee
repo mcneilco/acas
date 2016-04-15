@@ -453,6 +453,9 @@ module.exports = (grunt) ->
 			module_routes_js:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
 				tasks: "newer:copy:module_routes_js"
+			copy_jade:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/views/*.jade", "#{i}/views/*.jade_template"]
+				tasks: "newer:copy:jade"
 			copy_module_jade:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/**/*.jade"]
 				tasks: "newer:copy:module_jade"
