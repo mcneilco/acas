@@ -1,4 +1,4 @@
-saveReports <- function(resultTable, spotfireResultTable, saveLocation, experiment, parameters, recordedBy) {
+saveReports <- function(resultTable, spotfireResultTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove) {
   # Runs all of the reports needed for a successfully dry run
   #output: a list of links to files
   library(gdata)
@@ -10,8 +10,9 @@ saveReports <- function(resultTable, spotfireResultTable, saveLocation, experime
     reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
                                         experiment, parameters, recordedBy)
   } else {
-    reportList$spotfireFile <- saveSpotfireFile(inputTable=spotfireResultTable, saveLocation, 
-                                                experiment, parameters, recordedBy)
+    reportList$spotfireFile <- saveSpotfireFile(
+      inputTable=spotfireResultTable, saveLocation, experiment, parameters, 
+      recordedBy, customSourceFileMove=customSourceFileMove)
   }
   
   return(reportList)
