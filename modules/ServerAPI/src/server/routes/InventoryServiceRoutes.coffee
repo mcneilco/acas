@@ -182,7 +182,6 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 		else
 			resp.json json
 
-
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
