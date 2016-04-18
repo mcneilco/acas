@@ -1,0 +1,70 @@
+<div class="row" style="padding-top: 56px;">
+    <div class="col-sm-12">
+        <h3 class="moduleTitle">Search for Plates</h3>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <div class="well well-small">
+            <div class="row">
+                <div class="col-sm-2">
+                    <label class="control-label">Barcode</label>
+                    <input type="text" class="form-control" />
+                </div>
+                <div class="col-sm-2">
+                    <label class="control-label">User</label>
+                    <select class="form-control"></select>
+                </div>
+                <div class="col-sm-2">
+                    <label class="control-label">Description</label>
+                    <input type="text" class="form-control" />
+                </div>
+                <div class="col-sm-2">
+                    <label class="control-label">Request ID</label>
+                    <select class="form-control"></select>
+                </div>
+                <div class="col-sm-2">
+                    <label class="control-label">Status</label>
+                    <select class="form-control"></select>
+                </div>
+                <div class="col-sm-2">
+                    <label class="control-label">Kind</label>
+                    <select class="form-control"></select>
+                    <br />
+                    <button class="btn btn-primary" name="search">Search</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 bv_searchResults">
+
+    </div>
+</div>
+<div class="modal fade" tabindex="-1" role="dialog" name="clonePlateDialogbox">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4>Clone Plate: <a class="bv_linkToPlateToClone" target="_blank"></a></h4>
+            </div>
+            <div class="modal-body">
+                <table class="table table-condensed">
+                    <thead>
+                        <tr>
+                            <th>Cloned Plate Barcode</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bv_clonePlateBarcodeContainer"></tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" name="cancelClonePlate">Cancel</button>
+                <button type="button" class="btn btn-primary" name="clonePlate">Clone</button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal" name="closeClonePlate">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

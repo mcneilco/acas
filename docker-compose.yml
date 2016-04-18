@@ -24,6 +24,9 @@ services:
      - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
      - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
      - ./modules/Login:/home/runner/acas/modules/Login
+     - ./public/lib/handsontable/dist/:/public/lib/handsontable/dist/
+     - ./views/:/home/runner/acas/views/
+     #handsontable.full.js
 
     env_file:
       - ./conf/docker/acas/environment/acas.env

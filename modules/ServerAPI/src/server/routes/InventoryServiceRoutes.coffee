@@ -316,7 +316,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								definitionValues =  definition.getValues()
 								console.debug "here are the values of the definition container: #{JSON.stringify(definitionValues,null, '  ')}"
 								out = _.extend containerValues, definitionValues
-								out.barcode = container.get('barcode').get("labelText")								
+								out.barcode = container.get('barcode').get("labelText")
 								out.codeName = containerCode
 								out.definitionCodeName = definition.get('codeName')
 								out.recordedBy = container.get('recordedBy')
@@ -950,7 +950,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: wellContent.wells
+			body: wellContent
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'

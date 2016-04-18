@@ -4,7 +4,9 @@ BackboneValidation = require('backbone-validation')
 _ = require('lodash')
 $ = require('jquery')
 
-SelectList = require('./SelectList.coffee').SelectController
+PickListSelectController = require('./SelectList.coffee').PickListSelectController
+PickList = require('./SelectList.coffee').PickList
+
 
 CREATE_PLATE_CONTROLLER_EVENTS =
   CREATE_PLATE: "CreatePlate"
@@ -32,10 +34,10 @@ class CreatePlateController extends Backbone.View
   initialize: (options) ->
     @model = options.model
     @plateTypes = options.plateTypes
-    @plateTypesSelectList = new SelectList({collection: @plateTypes, selectedValue: @model.get('type')})
+    #@plateTypesSelectList = new PickListSelectController({collection: @plateTypes, selectedValue: @model.get('type')})
     @selectLists = [
-      controller: @plateTypesSelectList
       containerSelector: "select[name='definition']"
+      collection: @plateTypes
     ]
 
   events:
@@ -59,7 +61,17 @@ class CreatePlateController extends Backbone.View
 
   initializeSelectLists: =>
     _.each(@selectLists, (selectList) =>
-      $(@el).find(selectList.containerSelector).html selectList.controller.render().el.childNodes
+      @plateTypesSelectList = new PickListSelectController
+        el: $(@el).find(selectList.containerSelector)
+        collection: selectList.collection
+        insertFirstOption: new PickList
+          code: "unassigned"
+          name: "Select Plate Definition"
+        selectedCode: "unassigned"
+        className: "form-control"
+
+
+      #$(@el).find(selectList.containerSelector).html selectList.controller.render().el
     )
 
   handleFormFieldUpdate: (evt) ->

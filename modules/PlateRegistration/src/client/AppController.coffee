@@ -17,6 +17,7 @@ DataServiceController = require('./DataServiceController.coffee').DataServiceCon
 AddContentIdentifierValidationController = require('./IdentifierValidationController.coffee').AddContentIdentifierValidationController
 PlateTableIdentifierValidationController = require('./IdentifierValidationController.coffee').PlateTableIdentifierValidationController
 LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
+PlateSearchController = require('./PlateSearchController.coffee').PlateSearchController
 
 APP_CONTROLLER_EVENTS = {}
 
@@ -31,6 +32,8 @@ class AppController extends Backbone.View
     @createPlateController = new CreatePlateController({model: new PlateModel(), plateTypes: new PlateTypeCollection()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
     @dataServiceController = new DataServiceController()
+
+    @plateSearchController = new PlateSearchController()
 
   completeInitialization: =>
     #@newPlateDesignController.completeInitialization()
@@ -57,6 +60,10 @@ class AppController extends Backbone.View
       @$("div[name='formContainer']").html @createPlateController.render().el
       @createPlateController.completeInitialization()
     )
+
+  displayPlateSearch: =>
+    @$("div[name='formContainer']").html @plateSearchController.render().el
+    @plateSearchController.completeInitialize()
 
   displayPlateDesignForm: (plateBarcode) =>
     @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))

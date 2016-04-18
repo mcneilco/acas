@@ -10,15 +10,19 @@ appController.completeInitialization()
 
 class AppRouter extends Backbone.Router
   routes:
+    "": "createPlateRoute"
     "createPlate": "createPlateRoute"
     "plateDesign/:plateCodeName": "plateDesignRoute"
-    "": "createPlateRoute"
+    "plateSearch": "plateSearchRoute"
 
   plateDesignRoute: (plateBarcode) ->
     appController.displayPlateDesignForm(plateBarcode)
 
   createPlateRoute: ->
     appController.displayCreatePlateForm()
+
+  plateSearchRoute: ->
+    appController.displayPlateSearch()
 
 
 module.exports =
