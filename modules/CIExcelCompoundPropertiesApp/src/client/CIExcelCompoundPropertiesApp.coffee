@@ -6,9 +6,18 @@ if true
 		$(document).ready ->
 			window.logger = new ExcelAppLogger
 				el: $('.bv_log')
-#			logger.render()
-			window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
-				el: $('.bv_excelInsertCompoundPropertiesView')
+#		logger.render()
+		window.getAuthorModulePreferences window.AppLaunchParams.loginUser.username, 'CIExcelCompoundPropertiesApp', (preferences, statusCode) ->
+			if statusCode == 200
+				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					el: $('.bv_excelInsertCompoundPropertiesView')
+					selectedBatchPropertyDescriptors: preferences.selectedBatchPropertyDescriptors
+					selectedParentPropertyDescriptors: preferences.selectedParentPropertyDescriptors
+					includeRequestedID: preferences.includeRequestedID
+					insertColumnHeaders: preferences.insertColumnHeaders
+			else
+				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					el: $('.bv_excelInsertCompoundPropertiesView')
 			insertCompoundPropertiesController.render()
 else
 	#The following is used for debugging the app in chrome
@@ -16,9 +25,19 @@ else
 		window.logger = new ExcelAppLogger
 			el: $('.bv_log')
 		logger.render()
-		window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
-			el: $('.bv_excelInsertCompoundPropertiesView')
-		insertCompoundPropertiesController.render()
+		window.getAuthorModulePreferences window.AppLaunchParams.loginUser.username, 'CIExcelCompoundPropertiesApp', (preferences, statusCode) ->
+			if statusCode == 200
+				logger.log preferences.includeRequestedName
+				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					el: $('.bv_excelInsertCompoundPropertiesView')
+					selectedBatchPropertyDescriptors: preferences.selectedBatchPropertyDescriptors
+					selectedParentPropertyDescriptors: preferences.selectedParentPropertyDescriptors
+					includeRequestedID: preferences.includeRequestedID
+					insertColumnHeaders: preferences.insertColumnHeaders
+			else
+				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					el: $('.bv_excelInsertCompoundPropertiesView')
+			insertCompoundPropertiesController.render()
 
 class window.Attributes extends Backbone.Model
 	defaults:
@@ -37,7 +56,10 @@ class window.AttributesController extends Backbone.View
 
 	render: =>
 		@$el.empty()
-		@model = new Attributes()
+		@model = new Attributes
+			insertColumnHeaders: @options.insertColumnHeaders
+			includeRequestedID: @options.includeRequestedID
+
 		@$el.html @template @model.attributes
 
 	handleInsertColumnHeaders: =>
@@ -71,7 +93,7 @@ class window.PropertyDescriptorController extends Backbone.View
 
 	render: ->
 		@$el.empty()
-		@model.set 'isChecked', false
+		@model.set 'isChecked', @options.isChecked
 		@$el.html @template(@model.attributes)
 		@$('.bv_descriptorLabel').text(@model.get('valueDescriptor').prettyName)
 		if @model.get('valueDescriptor').description?
@@ -112,7 +134,9 @@ class window.PropertyDescriptorListController extends Backbone.View
 		@collection.fetch
 			success: =>
 				@collection.each (propertyDescriptor) =>
-					@addPropertyDescriptor(propertyDescriptor)
+					if @options.selectedPropertyDescriptors?
+						check =  propertyDescriptor.get('valueDescriptor').name in @options.selectedPropertyDescriptors
+					@addPropertyDescriptor(propertyDescriptor, check)
 				@trigger 'ready'
 			error: =>
 				logger.log 'error fetching property descriptors from route: ' + @collection.url
@@ -131,6 +155,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 		@$('.bv_propertyDescriptorList').on 'hidden.bs.collapse', =>
 			@$('.bv_collapseExpand').removeClass('hide')
 			@$('.bv_collapseDown').addClass('hide')
+		@validate()
 		@
 
 	handleCheckAllClicked: ->
@@ -146,7 +171,7 @@ class window.PropertyDescriptorListController extends Backbone.View
 
 	handleUncheckAllClicked: ->
 		@propertyControllersList.forEach (pdc) ->
-			if pdc.model. get ('isChecked')
+			if pdc.model.get ('isChecked')
 					pdc.$('.bv_propertyDescriptorCheckbox').click()
 
 	getSelectedProperties: (callback)->
@@ -159,13 +184,18 @@ class window.PropertyDescriptorListController extends Backbone.View
 			selectedProps.prettyNames.push(selectedProperty.get('valueDescriptor').prettyName)
 		callback selectedProps
 
-	addPropertyDescriptor: (propertyDescriptor) ->
+	addPropertyDescriptor: (propertyDescriptor, isChecked) ->
 		pdc = new PropertyDescriptorController
 			model: propertyDescriptor
+			isChecked: isChecked
+		if isChecked
+			@numberChecked = @numberChecked + 1
 		pdc.on 'checked', =>
+			@trigger 'selectionChanged'
 			@numberChecked = @numberChecked + 1
 			@validate()
 		pdc.on 'unchecked', =>
+			@trigger 'selectionChanged'
 			@numberChecked = @numberChecked - 1
 			@validate()
 		@propertyControllersList.push pdc
@@ -196,31 +226,39 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@$el.html @template()
 		@attributesController = new AttributesController
 			el: $('.bv_attributes')
+			includeRequestedID: @options.includeRequestedID
+			insertColumnHeaders: @options.insertColumnHeaders
 		@attributesController.render()
 		@batchPropertyDescriptorListController = new PropertyDescriptorListController
 			el: $('.bv_batchProperties')
 			title: 'Batch Properties'
 			url: '/api/compound/batch/property/descriptors'
+			selectedPropertyDescriptors: @options.selectedBatchPropertyDescriptors
 		@batchPropertyDescriptorValid = false
-		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
 		@batchPropertyDescriptorListController.on 'valid', =>
 			@batchPropertyDescriptorValid = true
 			@validate()
-		@parentPropertyDescriptorValid = false
 		@batchPropertyDescriptorListController.on 'invalid', =>
 			@batchPropertyDescriptorValid = false
 			@validate()
+		@batchPropertyDescriptorListController.on 'selectionChanged', =>
+			@setPropertyLookUpStatus ""
+		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
+		@parentPropertyDescriptorValid = false
 		@parentPropertyDescriptorListController = new PropertyDescriptorListController
 			el: $('.bv_parentProperties')
 			title: 'Parent Properties'
 			url: '/api/compound/parent/property/descriptors'
-		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
+			selectedPropertyDescriptors: @options.selectedParentPropertyDescriptors
 		@parentPropertyDescriptorListController.on 'valid', =>
 			@parentPropertyDescriptorValid = true
 			@validate()
 		@parentPropertyDescriptorListController.on 'invalid', =>
 			@parentPropertyDescriptorValid = false
 			@validate()
+		@parentPropertyDescriptorListController.on 'selectionChanged', =>
+			@setPropertyLookUpStatus ""
+		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
 		@$("[data-toggle=instructions]").popover
 			html: true
 			content: '1. Choose Properties to look up.<br />
@@ -233,6 +271,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a><br /><a class="btn btn-xs btn-primary">Show Log'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
 			@validate()
+		@validate()
 
 	handleGetPropertiesClicked: =>
 		Office.context.document.getSelectedDataAsync 'matrix', (result) =>
@@ -319,7 +358,6 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@getSelectedProperties (selectedProperties) =>
 			@getPreferredIDAndProperties entityIdStringLines, selectedProperties
 
-
 	fetchPreferredReturn: (json) ->
 		@preferredIds = []
 		for res in json.results
@@ -360,6 +398,14 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 					@setPropertyLookUpStatus ("Error fetching data: " + jqXHR.statusText)
 				@$('.bv_insertProperties').removeAttr 'disabled'
 				@$('.bv_getProperties').removeAttr 'disabled'
+
+		preferences =
+			selectedBatchPropertyDescriptors: selectedProperties.batchNames
+			selectedParentPropertyDescriptors: selectedProperties.parentNames
+			includeRequestedID: @attributesController.getIncludeRequestedID()
+			insertColumnHeaders: @attributesController.getInsertColumnHeaders()
+		window.updateAuthorModulePreferences window.AppLaunchParams.loginUser.username, 'CIExcelCompoundPropertiesApp', JSON.stringify(preferences), (json, statusCode) =>
+			logger.log 'saved preferences'
 
 	fetchCompoundPropertiesReturn: (csv) =>
 		@outputArray = @convertCSVToMatrix csv

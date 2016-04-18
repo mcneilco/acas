@@ -7988,4 +7988,26 @@
 		recordedBy: "bbolts"
 	]
 
+	exports.searchContainersInternalResponse = [
+		"description": "test description",
+		"plateSize": 1536,
+		"numberOfRows": 32,
+		"numberOfColumns": 48,
+		"barcode": "TESTBARCODE-123",
+		"codeName": "CONT-00000001",
+		"definitionCodeName": "CONT-00000002",
+		"recordedBy": "acas"
+		,
+		"description": "test description 2",
+		"status": "active",
+		"type": "screening plate",
+		"plateSize": 1536,
+		"numberOfRows": 32,
+		"numberOfColumns": 48,
+		"barcode": "TESTBARCODE-124",
+		"codeName": "CONT-00003075",
+		"definitionCodeName": "CONT-00000002",
+		"recordedBy": "acas"
+	]
+
 ) (if (typeof process is "undefined" or not process.versions) then window.inventoryServiceTestJSON = window.inventoryServiceTestJSON or {} else exports)
