@@ -191,9 +191,11 @@ class window.PropertyDescriptorListController extends Backbone.View
 		if isChecked
 			@numberChecked = @numberChecked + 1
 		pdc.on 'checked', =>
+			@trigger 'selectionChanged'
 			@numberChecked = @numberChecked + 1
 			@validate()
 		pdc.on 'unchecked', =>
+			@trigger 'selectionChanged'
 			@numberChecked = @numberChecked - 1
 			@validate()
 		@propertyControllersList.push pdc
@@ -239,6 +241,8 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 		@batchPropertyDescriptorListController.on 'invalid', =>
 			@batchPropertyDescriptorValid = false
 			@validate()
+		@batchPropertyDescriptorListController.on 'selectionChanged', =>
+			@setPropertyLookUpStatus ""
 		@batchPropertyDescriptorListController.on 'ready', @batchPropertyDescriptorListController.render
 		@parentPropertyDescriptorValid = false
 		@parentPropertyDescriptorListController = new PropertyDescriptorListController
@@ -250,9 +254,10 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 			@parentPropertyDescriptorValid = true
 			@validate()
 		@parentPropertyDescriptorListController.on 'invalid', =>
-			logger.log 'should be invalid'
 			@parentPropertyDescriptorValid = false
 			@validate()
+		@parentPropertyDescriptorListController.on 'selectionChanged', =>
+			@setPropertyLookUpStatus ""
 		@parentPropertyDescriptorListController.on 'ready', @parentPropertyDescriptorListController.render
 		@$("[data-toggle=instructions]").popover
 			html: true
