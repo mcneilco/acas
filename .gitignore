@@ -20,6 +20,8 @@ public/src/conf/conf.js
 bin/*.pid
 bin/mpm-accept.*
 bin/rewrite-map.*
+Dockerfile*
+docker-compose*.yml
 build
 #this is for the soft link in .dockerfile (git ignore .git by default)
 .git

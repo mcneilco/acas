@@ -142,12 +142,12 @@ class window.BasicFileListController extends Backbone.View
 		@collection.each (fileInfo) =>
 			@addBasicFile(fileInfo)
 		if @collection.length == 0
-			@uploadNewBasicFile()
+			@uploadNewFile()
 		@trigger 'renderComplete'
 		@
 
 # For uploading new files
-	uploadNewBasicFile: =>
+	uploadNewFile: =>
 		newModel = new BasicFile
 		@collection.add newModel
 		@addBasicFile(newModel)
@@ -176,11 +176,11 @@ class window.BasicFileListController extends Backbone.View
 		notIgnoredFiles = @collection.filter (model) ->
 			model.get('ignored') == false or model.get('ignored') is undefined
 		if notIgnoredFiles.length == 0
-			@uploadNewBasicFile()
+			@uploadNewFile()
 
 	checkIfNeedToAddNew: =>
 		if @autoAddAttachFileModel
-			@uploadNewBasicFile()
+			@uploadNewFile()
 
 	isValid: =>
 		validCheck = true
@@ -246,7 +246,7 @@ class window.AttachFileListController extends BasicFileListController
 	template: _.template($("#AttachFileListView").html())
 
 	events:
-		"click .bv_addFileInfo": "uploadNewAttachFile"
+		"click .bv_addFileInfo": "uploadNewFile"
 
 	initialize: ->
 		unless @collection?
@@ -266,12 +266,12 @@ class window.AttachFileListController extends BasicFileListController
 		@collection.each (fileInfo) =>
 			@addAttachFile(fileInfo)
 		if @collection.length == 0
-			@uploadNewAttachFile()
+			@uploadNewFile()
 		@trigger 'renderComplete'
 		@
 
 # For uploading new files
-	uploadNewAttachFile: =>
+	uploadNewFile: =>
 		newModel = new AttachFile
 		@collection.add newModel
 		@addAttachFile(newModel)

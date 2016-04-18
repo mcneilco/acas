@@ -1,4 +1,5 @@
 _ = require('lodash')
+csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/compoundInventory', loginRoutes.ensureAuthenticated, exports.compoundInventoryIndex
@@ -63,10 +64,12 @@ exports.getWellsWithCompoundBatch = (req, res) ->
 	)
 
 exports.createPlate = (req, resp) ->
-	config = require '../conf/compiled/conf.js'
-	console.log "req.body - using post syntax"
-	console.log req.body
+	exports.createPlateInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
 
+exports.createPlateInternal = (input, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath + "containers/createPlate"
 	console.log "baseurl"
 	console.log baseurl
@@ -75,20 +78,27 @@ exports.createPlate = (req, resp) ->
 	request(
 		method: 'POST'
 		url: baseurl
-		body: JSON.stringify req.body
+		body: JSON.stringify input
 		json: true
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error
-			console.log JSON.stringify json
-			resp.setHeader('Content-Type', 'application/json')
-			resp.end JSON.stringify json
+			callback json, response.statusCode
+			# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom
+				if csUtilities.createPlate?
+					console.log "running customer specific server function createPlate"
+					csUtilities.createPlate input, (response) ->
+						console.log response
+				else
+					console.warn "could not find customer specific server function createPlate so not running it"
 		else
 			console.log 'got ajax error trying to save new experiment'
 			console.log error
 			console.log json
 			console.log response
-			resp.end JSON.stringify {error: "something went wrong :("}
+			callback JSON.stringify {error: "something went wrong :("}, 500
 	)
 
 

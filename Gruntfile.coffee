@@ -1,3 +1,4 @@
+path = require 'path'
 module.exports = (grunt) ->
 	"use strict"
 

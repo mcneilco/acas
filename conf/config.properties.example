@@ -138,15 +138,6 @@ server.service.persistence.fileUrl=${client.host}:${server.nodeapi.port}/uploads
 
 
 ###########################################################################
-# D. Communication with rScript
-###########################################################################
-
-server.r.installation.path=
-server.r=R
-server.rscript=Rscript
-
-
-###########################################################################
 # E. Communication with rApache
 ###########################################################################
 
@@ -173,7 +164,7 @@ server.sar.defaultTitle ="Tested Entity Information"
 server.sar.csvLabel = bestLabel
 #options are ignoreOperators or includeOperators
 client.sar.sorting = includeOperators
-client.cmpdreg.host=host5.labsynch.com
+client.cmpdreg.host=host4.labsynch.com
 client.service.external.structure.url=http://${client.cmpdreg.host}:8080/cmpdreg/structureimage/lot/
 client.service.external.lotDetails.url=http://${client.cmpdreg.host}:8080/cmpdreg/#lot/
 
@@ -378,10 +369,13 @@ server.file.server.path=privateUploads
 server.temp.file.server.path=privateTempFiles
 server.service.persistence.jdbc.validation.query=select version()
 
-
 #Rapache conf file configs
 server.rapache.conf.startservers=1
+server.rapache.conf.minspareservers=5
+server.rapache.conf.maxspareservers=5
 server.rapache.conf.serverlimit=5
+server.rapache.conf.maxclients=256
+server.rapache.conf.maxrequestsperchild=200
 server.rapache.conf.serversignature=On
 server.rapache.conf.hostnamelookups=On
 server.rapache.conf.serveradmin=root@localhost

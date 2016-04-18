@@ -1,6 +1,7 @@
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/sarRender/geneId/:referenceCode', exports.getGeneRenderRoute
 	app.get '/api/sarRender/cmpdRegBatch/:referenceCode', exports.getBatchRenderRoute
+	app.get '/api/sarRender/acasLsThingCorpName/:displayName/:referenceCode', exports.getACASLsThingCorpNameRoute
 	app.post '/api/sarRender/render', exports.renderAnyRoute
 	app.get '/api/sarRender/title/:displayName', exports.getTitleRoute
 
@@ -8,6 +9,7 @@ exports.setupAPIRoutes = (app) ->
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/sarRender/geneId/:referenceCode', loginRoutes.ensureAuthenticated, exports.getGeneRenderRoute
 	app.get '/api/sarRender/cmpdRegBatch/:referenceCode', loginRoutes.ensureAuthenticated, exports.getBatchRenderRoute
+	app.get '/api/sarRender/acasLsThingCorpName/:displayName/:referenceCode', loginRoutes.ensureAuthenticated, exports.getACASLsThingCorpNameRoute
 	app.post '/api/sarRender/render', loginRoutes.ensureAuthenticated, exports.renderAnyRoute
 	app.get '/api/sarRender/title/:displayName', loginRoutes.ensureAuthenticated, exports.getTitleRoute
 
@@ -53,9 +55,32 @@ exports.getBatchRenderRoute = (req, resp) ->
 		resp.json json
 
 exports.getBatchRender = (referenceCode, callback) ->
-	htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '"><br />'
+	htmlReturn = '<img src="' + config.all.client.service.external.structure.url + referenceCode + '" alt="Could not load entity image" ><br />'
 	htmlReturn += '<a href="'+config.all.client.service.external.lotDetails.url+referenceCode+'" target="_blank" align="center">'+referenceCode+'</a>'
 	callback html: htmlReturn
+
+
+##############################################
+# ACAS LSTHING CORPNAME
+##############################################
+
+exports.getACASLsThingCorpNameRoute = (req, resp) ->
+	console.log "in get ACAS LsThing corpName route"
+	referenceCode = req.params.referenceCode
+	displayName = req.params.displayName
+	exports.getACASLsThingRender referenceCode, displayName, (json) ->
+		resp.json json
+
+exports.getACASLsThingRender = (referenceCode, displayName, callback) ->
+	requestData =
+		displayName: displayName
+		requests:[
+			{requestName: referenceCode}
+		]
+	csv = false
+	codeService.pickBestLabels requestData, csv, (response) =>
+		bestLabel = response.results[0].bestLabel
+		callback html: '<a href="http://'+config.all.client.host+":"+config.all.client.port+"/entity/edit/codeName/"+referenceCode+'" target="_blank" align="center">'+bestLabel+'</a>'
 
 
 ##############################################
