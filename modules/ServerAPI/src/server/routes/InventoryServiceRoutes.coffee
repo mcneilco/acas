@@ -30,6 +30,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
 	app.post '/api/cloneContainers', exports.cloneContainers
 	app.post '/api/cloneContainer', exports.cloneContainer
+	app.post '/api/searchContainers', exports.searchContainers
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -60,6 +61,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
 	app.post '/api/cloneContainers', loginRoutes.ensureAuthenticated, exports.cloneContainers
 	app.post '/api/cloneContainer', loginRoutes.ensureAuthenticated, exports.cloneContainer
+	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -1089,3 +1091,48 @@ exports.cloneContainersInternal = (input, callback) ->
 								outputArray[index-1] = outContainer
 								if index == (input.length)
 									callback outputArray, 200
+
+exports.searchContainers = (req, resp) ->
+	console.log req.body
+	exports.searchContainersInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.searchContainersInternal = (input, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.searchContainersInternalResponse
+	else
+		console.debug "incoming searchContainers request: '#{JSON.stringify(input)}'"
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/searchContainers"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: input
+			json: true
+			headers:
+				'content-type': 'application/json'
+				'accept': 'application/json'
+		, (error, response, json) =>
+			console.debug "response statusCode: #{response.statusCode}"
+			if !error
+				_ = require 'underscore'
+				codeNames = _.map json, (container) ->
+					container.codeName
+				exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNames, (json, statusCode) =>
+					if statusCode == 500
+						callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
+					else
+						console.debug json
+						callback json, statusCode
+			else
+				console.error 'got ajax error trying to get searchContainers'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("updateWellContent failed"), 500
+		)
+
+
