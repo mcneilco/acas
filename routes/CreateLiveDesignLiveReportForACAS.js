@@ -25,7 +25,7 @@
         serverError = error;
         exptInfo = body;
         console.log(_this.responseJSON);
-        command = "./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e ";
+        command = "python ./public/src/modules/ServerAPI/src/server/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e ";
         command += "'" + config.all.client.service.result.viewer.liveDesign.baseUrl + "' -u '" + config.all.client.service.result.viewer.liveDesign.username + "' -p '" + config.all.client.service.result.viewer.liveDesign.password + "' -d '" + config.all.client.service.result.viewer.liveDesign.database + "' -i '";
         command += (JSON.stringify(exptInfo)) + "'";
         console.log("About to call python using command: " + command);

@@ -50,6 +50,9 @@
 
 		valuekinds:
 			[
+				typeName: "stringValue"
+				kindName: "model fit transformation"
+			,
 				typeName: "codeValue"
 				kindName: "model fit status"
 			,
@@ -102,6 +105,12 @@
 				typeName: "numericValue"
 			,
 				kindName: "Fitted EC50",
+				typeName: "numericValue"
+			,
+				kindName: "IC50",
+				typeName: "numericValue"
+			,
+				kindName: "Fitted IC50",
 				typeName: "numericValue"
 			,
 				kindName: "Fitted Ki",
@@ -165,6 +174,9 @@
 				typeName: "stringValue"
 			,
 				kindName: "EC50",
+				typeName: "stringValue"
+			,
+				kindName: "IC50",
 				typeName: "stringValue"
 			,
 				kindName: "Ki",
@@ -280,6 +292,13 @@
 				codeOrigin: "ACAS DDICT"
 				code: "Ki Fit"
 				name: "Ki"
+				ignored: false
+			,
+				codeType: "model fit"
+				codeKind: "type"
+				codeOrigin: "ACAS DDICT"
+				code: "4 parameter D-R IC50"
+				name: "IC50"
 				ignored: false
 			,
 				codeType: "user flag status"

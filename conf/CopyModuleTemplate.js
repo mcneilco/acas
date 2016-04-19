@@ -1,5 +1,5 @@
 (function() {
-  var REL_PATH_TO_MODULES, TEMPLATE_REPLACE_STRING, TEMPLATE_SOURCE_Dir, custom, error, files, fs, glob, moduleName, ncp,
+  var REL_PATH_TO_MODULES, TEMPLATE_REPLACE_STRING, TEMPLATE_SOURCE_Dir, custom, error, error1, files, fs, glob, moduleName, ncp,
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
   fs = require('fs');
@@ -68,8 +68,8 @@
       console.log("Ensure that this is the desired directory.");
       console.log("Note, the rest of the program will still run.\n");
     }
-  } catch (_error) {
-    error = _error;
+  } catch (error1) {
+    error = error1;
     console.log("The directory " + TEMPLATE_SOURCE_Dir + " does not exist.");
     moduleName = "-h";
   }

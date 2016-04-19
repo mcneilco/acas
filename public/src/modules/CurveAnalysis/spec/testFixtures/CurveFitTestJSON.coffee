@@ -65,6 +65,8 @@
 		smartMode: true
 		inactiveThresholdMode: true
 		inactiveThreshold: 20
+		theoreticalMaxMode: true
+		theoreticalMax: "120"
 		inverseAgonistMode: true
 
 

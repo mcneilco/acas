@@ -7,6 +7,8 @@
     extend(DoseResponseAnalysisParameters, superClass);
 
     function DoseResponseAnalysisParameters() {
+      this.handleTheoreticalMaxChanged = bind(this.handleTheoreticalMaxChanged, this);
+      this.handleInactiveThresholdChanged = bind(this.handleInactiveThresholdChanged, this);
       this.fixCompositeClasses = bind(this.fixCompositeClasses, this);
       return DoseResponseAnalysisParameters.__super__.constructor.apply(this, arguments);
     }
@@ -15,6 +17,8 @@
       smartMode: true,
       inactiveThresholdMode: true,
       inactiveThreshold: 20,
+      theoreticalMaxMode: false,
+      theoreticalMax: null,
       inverseAgonistMode: false,
       max: new Backbone.Model({
         limitType: 'none'
@@ -27,8 +31,22 @@
       })
     };
 
-    DoseResponseAnalysisParameters.prototype.initialize = function() {
-      return this.fixCompositeClasses();
+    DoseResponseAnalysisParameters.prototype.initialize = function(options) {
+      if (options != null) {
+        if (typeof options.inactiveThreshold === "undefined") {
+          this.set('inactiveThreshold', null);
+        } else {
+          this.set('inactiveThreshold', options.inactiveThreshold);
+        }
+        if (typeof options.theoreticalMax === "undefined") {
+          this.set('theoreticalMax', null);
+        } else {
+          this.set('theoreticalMax', options.theoreticalMax);
+        }
+      }
+      this.fixCompositeClasses();
+      this.on('change:inactiveThreshold', this.handleInactiveThresholdChanged);
+      return this.on('change:theoreticalMax', this.handleTheoreticalMaxChanged);
     };
 
     DoseResponseAnalysisParameters.prototype.fixCompositeClasses = function() {
@@ -45,6 +63,30 @@
       if (!(this.get('slope') instanceof Backbone.Model)) {
         return this.set({
           slope: new Backbone.Model(this.get('slope'))
+        });
+      }
+    };
+
+    DoseResponseAnalysisParameters.prototype.handleInactiveThresholdChanged = function() {
+      if (_.isNaN(this.get('inactiveThreshold')) || this.get('inactiveThreshold') === null) {
+        return this.set({
+          'inactiveThresholdMode': false
+        });
+      } else {
+        return this.set({
+          'inactiveThresholdMode': true
+        });
+      }
+    };
+
+    DoseResponseAnalysisParameters.prototype.handleTheoreticalMaxChanged = function() {
+      if (_.isNaN(this.get('theoreticalMax')) || this.get('theoreticalMax') === null) {
+        return this.set({
+          'theoreticalMaxMode': false
+        });
+      } else {
+        return this.set({
+          'theoreticalMaxMode': true
         });
       }
     };
@@ -73,10 +115,16 @@
           message: "Slope threshold value must be set when limit type is pin or limit"
         });
       }
-      if (_.isNaN(attrs.inactiveThreshold)) {
+      if (attrs.inactiveThresholdMode && _.isNaN(attrs.inactiveThreshold)) {
         errors.push({
           attribute: 'inactiveThreshold',
           message: "Inactive threshold value must be set to a number"
+        });
+      }
+      if (attrs.theoreticalMaxMode && _.isNaN(attrs.theoreticalMax)) {
+        errors.push({
+          attribute: 'theoreticalMax',
+          message: "Theoretical max value must be set to a number"
         });
       }
       if (errors.length > 0) {
@@ -98,9 +146,6 @@
       this.handleMinLimitTypeChanged = bind(this.handleMinLimitTypeChanged, this);
       this.handleMaxLimitTypeChanged = bind(this.handleMaxLimitTypeChanged, this);
       this.handleInverseAgonistModeChanged = bind(this.handleInverseAgonistModeChanged, this);
-      this.handleInactiveThresholdMoved = bind(this.handleInactiveThresholdMoved, this);
-      this.handleInactiveThresholdChanged = bind(this.handleInactiveThresholdChanged, this);
-      this.handleInactiveThresholdModeChanged = bind(this.handleInactiveThresholdModeChanged, this);
       this.handleSmartModeChanged = bind(this.handleSmartModeChanged, this);
       this.updateModel = bind(this.updateModel, this);
       this.render = bind(this.render, this);
@@ -114,7 +159,6 @@
     DoseResponseAnalysisParametersController.prototype.events = {
       "change .bv_smartMode": "handleSmartModeChanged",
       "change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged",
-      "change .bv_inactiveThresholdMode": "handleInactiveThresholdModeChanged",
       "click .bv_max_limitType_none": "handleMaxLimitTypeChanged",
       "click .bv_max_limitType_pin": "handleMaxLimitTypeChanged",
       "click .bv_max_limitType_limit": "handleMaxLimitTypeChanged",
@@ -126,7 +170,9 @@
       "click .bv_slope_limitType_limit": "handleSlopeLimitTypeChanged",
       "change .bv_max_value": "attributeChanged",
       "change .bv_min_value": "attributeChanged",
-      "change .bv_slope_value": "attributeChanged"
+      "change .bv_slope_value": "attributeChanged",
+      "change .bv_inactiveThreshold": "attributeChanged",
+      "change .bv_theoreticalMax": "attributeChanged"
     };
 
     DoseResponseAnalysisParametersController.prototype.initialize = function() {
@@ -138,39 +184,9 @@
     DoseResponseAnalysisParametersController.prototype.render = function() {
       this.$('.bv_autofillSection').empty();
       this.$('.bv_autofillSection').html(this.autofillTemplate($.parseJSON(JSON.stringify(this.model))));
-      this.$('.bv_inactiveThreshold').slider({
-        value: this.model.get('inactiveThreshold'),
-        min: 0,
-        max: 100
-      });
-      this.$('.bv_inactiveThreshold').on('slide', this.handleInactiveThresholdMoved);
-      this.$('.bv_inactiveThreshold').on('slidestop', this.handleInactiveThresholdChanged);
-      this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
       this.setFormTitle();
-      this.setThresholdModeEnabledState();
       this.setInverseAgonistModeEnabledState();
       return this;
-    };
-
-    DoseResponseAnalysisParametersController.prototype.updateThresholdDisplay = function(val) {
-      return this.$('.bv_inactiveThresholdDisplay').html(val);
-    };
-
-    DoseResponseAnalysisParametersController.prototype.setThresholdModeEnabledState = function() {
-      if (this.model.get('smartMode')) {
-        this.$('.bv_inactiveThresholdMode').removeAttr('disabled');
-      } else {
-        this.$('.bv_inactiveThresholdMode').attr('disabled', 'disabled');
-      }
-      return this.setThresholdSliderEnabledState();
-    };
-
-    DoseResponseAnalysisParametersController.prototype.setThresholdSliderEnabledState = function() {
-      if (this.model.get('inactiveThresholdMode') && this.model.get('smartMode')) {
-        return this.$('.bv_inactiveThreshold').slider('enable');
-      } else {
-        return this.$('.bv_inactiveThreshold').slider('disable');
-      }
     };
 
     DoseResponseAnalysisParametersController.prototype.setInverseAgonistModeEnabledState = function() {
@@ -192,44 +208,28 @@
         value: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_slope_value')))
       });
       this.model.set({
-        inactiveThresholdMode: this.$('.bv_inactiveThresholdMode').is(":checked")
-      }, {
+        inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked"),
+        smartMode: this.$('.bv_smartMode').is(":checked"),
+        inactiveThreshold: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_inactiveThreshold'))),
+        theoreticalMax: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_theoreticalMax'))),
         silent: true
       });
-      this.model.set({
-        inverseAgonistMode: this.$('.bv_inverseAgonistMode').is(":checked")
-      }, {
-        silent: true
-      });
-      this.model.set({
-        smartMode: this.$('.bv_smartMode').is(":checked")
-      }, {
-        silent: true
-      });
-      this.setThresholdModeEnabledState();
       this.setInverseAgonistModeEnabledState();
       this.model.trigger('change');
       return this.trigger('updateState');
     };
 
     DoseResponseAnalysisParametersController.prototype.handleSmartModeChanged = function() {
+      if (this.$('.bv_smartMode').is(":checked")) {
+        this.$('.bv_inactiveThreshold').removeAttr('disabled');
+        this.$('.bv_theoreticalMax').removeAttr('disabled');
+      } else {
+        this.$('.bv_inactiveThreshold').attr('disabled', 'disabled');
+        this.$('.bv_inactiveThreshold').val("");
+        this.$('.bv_theoreticalMax').attr('disabled', 'disabled');
+        this.$('.bv_theoreticalMax').val("");
+      }
       return this.attributeChanged();
-    };
-
-    DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdModeChanged = function() {
-      return this.attributeChanged();
-    };
-
-    DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdChanged = function(event, ui) {
-      this.model.set({
-        'inactiveThreshold': ui.value
-      });
-      this.updateThresholdDisplay(this.model.get('inactiveThreshold'));
-      return this.attributeChanged;
-    };
-
-    DoseResponseAnalysisParametersController.prototype.handleInactiveThresholdMoved = function(event, ui) {
-      return this.updateThresholdDisplay(ui.value);
     };
 
     DoseResponseAnalysisParametersController.prototype.handleInverseAgonistModeChanged = function() {
