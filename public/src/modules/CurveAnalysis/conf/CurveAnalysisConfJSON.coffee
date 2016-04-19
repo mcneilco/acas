@@ -50,6 +50,9 @@
 
 		valuekinds:
 			[
+				typeName: "stringValue"
+				kindName: "model fit transformation"
+			,
 				typeName: "codeValue"
 				kindName: "model fit status"
 			,

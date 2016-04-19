@@ -83,6 +83,8 @@
       smartMode: true,
       inactiveThresholdMode: true,
       inactiveThreshold: 20,
+      theoreticalMaxMode: true,
+      theoreticalMax: "120",
       inverseAgonistMode: true
     };
   })((typeof process === "undefined" || !process.versions ? window.CurveFitTestJSON = window.CurveFitTestJSON || {} : exports));
