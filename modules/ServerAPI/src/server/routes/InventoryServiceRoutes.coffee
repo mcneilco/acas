@@ -130,7 +130,6 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 							codeName =  containerCodes[index]
 							if codeName?.foundCodeNames[0]?
 								resp.codeName = codeName.foundCodeNames[0]
-							console.log codeName
 							container = _.findWhere(containers, {'containerCodeName': resp.codeName})
 							if container?.container?
 								resp.container = container.container
@@ -352,7 +351,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
 			console.debug "containers from service"
-			console.log JSON.stringify(containers, null, '  ')
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback containers, 400
@@ -392,8 +390,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 									return
 								else
 									if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == updateInfo.codeName
-										console.log 'here is the current barcode', container.get('barcode').get("labelText")
-										console.log 'setting barcode to', updateInfo.barcode
 										container.get('barcode').set("labelText", updateInfo.barcode)
 									else
 										message = "conflict: barcode '#{updateInfo.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
@@ -403,13 +399,10 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							container.updateValuesByKeyValue updateInfo
 							container.prepareToSave updateInformation[0].recordedBy
 							container.reformatBeforeSaving()
-							console.log 'pushing container'
 							containerArray.push container.attributes
 						else
 							console.error "could not find container #{updateInfo.codeName}"
 					containerJSONArray = JSON.stringify(containerArray)
-					console.log "here is the json array being sent to persist"
-					console.log JSON.stringify(containerArray, null, '  ')
 					exports.updateContainersInternal containerJSONArray, (savedContainers, statusCode) =>
 						if statusCode == 500
 							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
@@ -1038,7 +1031,6 @@ exports.getWellContentByContainerLabelsInternal = (containerLabels, containerTyp
 			if statusCode == 500
 				callback JSON.stringify("getContainersByLabels failed"), 500
 			else
-				console.log containerCodes
 				codeNames = _.map containerCodes, (code) ->
 					if code.foundCodeNames[0]?
 						code.foundCodeNames[0]
@@ -1170,48 +1162,17 @@ exports.splitContainerInternal = (input, callback) ->
 							destinationWellContent = _.filter originWellContent[0].wellContent, (wellCont) ->
 								wellCont.quadrant == quadrant.quadrant
 							destinationContainer.wells = destinationWellContent
-							console.log 'here is the destination before save'
-							console.log JSON.stringify(destinationContainer)
 							compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 							compoundInventoryRoutes.createPlateInternal destinationContainer, "1", (newContainer, statusCode) ->
-								console.log 'here is the new container'
-								console.log newContainer
 								if statusCode == 200
-									console.log 'new container code'
-									console.log newContainer.codeName
 									destinationContainer.codeName = newContainer.codeName
 									destinationContainer = _.omit destinationContainer, ["wells", "definitionCodeName"]
-									console.log 'destinationContainer'
-									console.log destinationContainer
 									exports.updateContainersByContainerCodesInternal [destinationContainer], "1", (updatedContainer, statusCode) ->
 										outContainer = _.extend updatedContainer[0], newContainer
 										outputArray[index-1] = outContainer
 										if index == input.quadrants.length
 											callback outputArray, 200
 
-#					for updateInfo, index in input
-#						if containerCodes[index].foundCodeNames.length > 0
-#							message = "conflict: barcode '#{containerCodes[index].requestLabel}' already being used by #{containerCodes[index].foundCodeNames.join(",")}"
-#							console.error message
-#							callback message, 409
-#							return
-#						container = _.findWhere(containers, {'codeName': updateInfo.codeName})
-#						container = _.extend container,updateInfo
-#						container = _.omit container, "codeName"
-#						container.definition = container.definitionCodeName
-#						wellContent = _.findWhere(wellContent, {'containerCodeName': updateInfo.codeName})
-#						if wellContent?.wellContent?
-#							wellContent = _.map wellContent.wellContent, (wellCont) ->
-#								_.omit wellCont, "containerCodeName"
-#							container.wells = wellContent
-#						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
-#						compoundInventoryRoutes.createPlateInternal container, "1", (newContainer, statusCode) ->
-#							container.codeName = newContainer.codeName
-#							exports.updateContainersByContainerCodesInternal [container], "1", (updatedContainer, statusCode) ->
-#								outContainer = _.extend updatedContainer[0], newContainer
-#								outputArray[index-1] = outContainer
-#								if index == (input.length)
-#									callback outputArray, 200
 
 exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
 	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
@@ -1248,7 +1209,6 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 
 
 exports.searchContainers = (req, resp) ->
-	console.log req.body
 	exports.searchContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json

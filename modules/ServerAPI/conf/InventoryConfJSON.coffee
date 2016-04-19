@@ -163,8 +163,8 @@
 #				name: "1.4 mL Matrix Mini-Tube"
 #				ignored: false
 #			,
-				codeType: "type tube"
-				codeKind: "container"
+				codeType: "type"
+				codeKind: "container tube"
 				codeOrigin: "ACAS DDICT"
 				code: "empty vial"
 				name: "Empty Vial"
