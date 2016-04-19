@@ -82,7 +82,10 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 		json: true
 		timeout: 6000000
 	, (error, response, json) =>
-		if !error
+		if !error  && response.statusCode == 200
+			console.log 'create plate save resposne'
+			console.log json
+			console.log response.statusCode
 			callback json, response.statusCode
 			# If call custom doesn't equal 0 then call custom
 			callCustom  = callCustom != "0"
@@ -94,13 +97,12 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 				else
 					console.warn "could not find customer specific server function createPlate so not running it"
 		else
-			console.log 'got ajax error trying to save new experiment'
+			console.log 'got ajax error trying to create plate'
 			console.log error
 			console.log json
 			console.log response
 			callback JSON.stringify {error: "something went wrong :("}, 500
 	)
-
 
 exports.updatePlate = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
