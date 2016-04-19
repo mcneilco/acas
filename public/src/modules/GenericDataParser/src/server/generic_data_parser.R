@@ -1687,11 +1687,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeType = "assay",
     codeKind = "scientist",
     lsTransaction= lsTransaction)
+  experimentStatus <- applicationSettings$server.sel.experimentStatus
+  if (is.null(experimentStatus) || experimentStatus == "") {
+    experimentStatus <- "approved"
+  }
   experimentValues[[length(experimentValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
     lsKind = "experiment status",
-    codeValue = "approved",
+    codeValue = experimentStatus,
     codeType = "experiment",
     codeKind = "status",
     codeOrigin = "ACAS DDICT",
