@@ -2228,11 +2228,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (dryRun && !testMode) {
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
-      "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, deleteOldFile = FALSE)
+      "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, 
+      deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     if (!is.null(flaggedWells) && flaggedWells != "") {
       serverFlagFileLocation <- saveAcasFileToExperiment(
         flaggedWells, experiment,
-        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction, deleteOldFile = FALSE)
+        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction, 
+        deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     }
   }
   
@@ -2264,7 +2266,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
 
     summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
-                                             experiment, parameters, user)
+                                             experiment, parameters, user, customSourceFileMove=customSourceFileMove)
     
     for (dryRunReport in summaryInfo$dryRunReports) {
       summaryInfo$info[[dryRunReport$title]] <- paste0(
@@ -2331,11 +2333,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
-      "metadata", "experiment metadata", "source file", user, lsTransaction, deleteOldFile = TRUE)
+      "metadata", "experiment metadata", "source file", user, lsTransaction, 
+      deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     if (!is.null(flaggedWells) && flaggedWells != "") {
       serverFlagFileLocation <- saveAcasFileToExperiment(
         flaggedWells, experiment, 
-        "metadata", "experiment metadata", "flag file", user, lsTransaction, deleteOldFile = TRUE)
+        "metadata", "experiment metadata", "flag file", user, lsTransaction, 
+        deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
       summaryInfo$info$"Original Flag File" <- paste0(
         '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     }

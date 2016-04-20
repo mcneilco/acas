@@ -1,4 +1,4 @@
-saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
+saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove) {
   # Saves spotfire file with correct column names
 
   # Change well type names
@@ -46,7 +46,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   
   # targetPath is only for testing
   finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
-                                        targetPath = "testSpotfire.txt")
+                                        targetPath = "testSpotfire.txt", customSourceFileMove=customSourceFileMove)
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
     # example: tibcospotfire:server:http\://severName/:analysis:/user/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
