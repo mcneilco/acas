@@ -83,9 +83,6 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error  && response.statusCode == 200
-			console.log 'create plate save resposne'
-			console.log json
-			console.log response.statusCode
 			callback json, response.statusCode
 			# If call custom doesn't equal 0 then call custom
 			callCustom  = callCustom != "0"

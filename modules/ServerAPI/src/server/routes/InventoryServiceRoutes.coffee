@@ -1136,7 +1136,7 @@ exports.splitContainerInternal = (input, callback) ->
 						text = "00"
 					else
 						text = "0"
-					content.wellName = alphabet[content.rowIndex-1]+text+content.rowIndex
+					content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
 					return _.omit(content, ['containerCodeName', 'recordedDate'])
 				destinationPlateSize = originContainer[0].plateSize/4
 				destinationCols = Math.sqrt(1.5*destinationPlateSize)
@@ -1162,17 +1162,24 @@ exports.splitContainerInternal = (input, callback) ->
 							destinationWellContent = _.filter originWellContent[0].wellContent, (wellCont) ->
 								wellCont.quadrant == quadrant.quadrant
 							destinationContainer.wells = destinationWellContent
+							input.quadrants[index].destinationContainer = destinationContainer
 							compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 							compoundInventoryRoutes.createPlateInternal destinationContainer, "1", (newContainer, statusCode) ->
 								if statusCode == 200
-									destinationContainer.codeName = newContainer.codeName
-									destinationContainer = _.omit destinationContainer, ["wells", "definitionCodeName"]
-									exports.updateContainersByContainerCodesInternal [destinationContainer], "1", (updatedContainer, statusCode) ->
-										outContainer = _.extend updatedContainer[0], newContainer
-										outputArray[index-1] = outContainer
-										if index == input.quadrants.length
+									quadrant = _.findWhere(input.quadrants, {"barcode": newContainer.barcode})
+									quadrant.newContainer = newContainer
+									quadrant.destinationContainer.codeName = newContainer.codeName
+									quadrant.destinationContainer = _.omit quadrant.destinationContainer, ["wells", "definitionCodeName"]
+									exports.updateContainersByContainerCodesInternal [quadrant.destinationContainer], "1", (updatedContainer, statusCode) ->
+										quandrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
+										quadrant.updatedContainer = updatedContainer[0]
+										outContainer = _.extend quadrant.updatedContainer, quandrant.newContainer
+										outputArray.push outContainer
+										if outputArray.length == input.quadrants.length
+											outputArray = _.sortBy outputArray, 'quadrant'
 											callback outputArray, 200
-
+								else
+									outputArray.push newContainer
 
 exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
 	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
