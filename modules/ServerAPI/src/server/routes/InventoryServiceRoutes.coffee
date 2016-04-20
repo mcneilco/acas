@@ -1,5 +1,7 @@
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+_ = require 'underscore'
+preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
@@ -30,7 +32,10 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
 	app.post '/api/cloneContainers', exports.cloneContainers
 	app.post '/api/cloneContainer', exports.cloneContainer
+	app.post '/api/splitContainer', exports.splitContainer
+	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -61,6 +66,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
 	app.post '/api/cloneContainers', loginRoutes.ensureAuthenticated, exports.cloneContainers
 	app.post '/api/cloneContainer', loginRoutes.ensureAuthenticated, exports.cloneContainer
+	app.post '/api/splitContainer', loginRoutes.ensureAuthenticated, exports.splitContainer
+	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
 
 exports.getContainersInLocation = (req, resp) ->
@@ -102,7 +109,6 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 			if statusCode == 500
 				callback JSON.stringify("getContainersByLabels failed"), 500
 			else
-				_ = require 'underscore'
 				codeNames = _.map containerCodes, (code) ->
 					if code.foundCodeNames[0]?
 						code.foundCodeNames[0]
@@ -124,7 +130,6 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 							codeName =  containerCodes[index]
 							if codeName?.foundCodeNames[0]?
 								resp.codeName = codeName.foundCodeNames[0]
-							console.log codeName
 							container = _.findWhere(containers, {'containerCodeName': resp.codeName})
 							if container?.container?
 								resp.container = container.container
@@ -257,7 +262,6 @@ exports.getContainerAndDefinitionContainerByContainerLabelInternal = (labels, ca
 			if statusCode == 500
 				callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
 			else
-				_ = require 'underscore'
 				codeNames = _.map containerCodes, (code) ->
 					if code.foundCodeNames[0]?
 						code.foundCodeNames[0]
@@ -292,8 +296,6 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 					if statusCode == 500
 						callback JSON.stringify "getContainerAndDefinitionContainerByContainerCodeNames failed", statusCode
 					else
-						_ = require 'underscore'
-						preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 						outArray = []
 						for containerCode, index in containerCodes
 							container = _.findWhere(containers, {'containerCodeName': containerCode})
@@ -345,12 +347,10 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 		resp.json inventoryServiceTestJSON.updateContainerMetadataByContainerCodeResponse
 	else
 		console.debug "incoming updateContainersByContainerCodesInternal request: #{JSON.stringify(updateInformation)}"
-		_ = require 'underscore'
 		codeNames = _.pluck updateInformation, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
 			console.debug "containers from service"
-			console.log JSON.stringify(containers, null, '  ')
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
 				callback containers, 400
@@ -368,7 +368,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
 					containerArray = []
-					preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
 					for updateInfo, index in updateInformation
 						container = _.findWhere(containers, {'containerCodeName': updateInfo.codeName})
 						if container.container?
@@ -391,8 +390,6 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 									return
 								else
 									if containerCodes[index].foundCodeNames.length == 0 || containerCodes[index].foundCodeNames[0] == updateInfo.codeName
-										console.log 'here is the current barcode', container.get('barcode').get("labelText")
-										console.log 'setting barcode to', updateInfo.barcode
 										container.get('barcode').set("labelText", updateInfo.barcode)
 									else
 										message = "conflict: barcode '#{updateInfo.barcode}' is already associated with container code '#{containerCodes[index].foundCodeNames[0]}'"
@@ -402,13 +399,10 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							container.updateValuesByKeyValue updateInfo
 							container.prepareToSave updateInformation[0].recordedBy
 							container.reformatBeforeSaving()
-							console.log 'pushing container'
 							containerArray.push container.attributes
 						else
 							console.error "could not find container #{updateInfo.codeName}"
 					containerJSONArray = JSON.stringify(containerArray)
-					console.log "here is the json array being sent to persist"
-					console.log JSON.stringify(containerArray, null, '  ')
 					exports.updateContainersInternal containerJSONArray, (savedContainers, statusCode) =>
 						if statusCode == 500
 							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
@@ -563,7 +557,6 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 		)
 
 exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) ->
-	_ = require 'underscore'
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellContentByContainerCodesResponse
@@ -627,28 +620,40 @@ exports.getAllContainers = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"containers"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.containersByTypeKind = (req, resp) ->
-	config = require '../conf/compiled/conf.js'
-	if req.query.format? and req.query.format=="codetable" #ie has '?format=codetable' appended to end of api route
-		if req.query.testMode or global.specRunnerTestmode
-			resp.end JSON.stringify "stubsMode for getting containers in codetable format not implemented yet"
-		else
-			baseurl = config.all.client.service.persistence.fullpath+"containers/codetable?lsType=#{req.params.lsType}&lsKind=#{req.params.lsKind}"
-			stubFlag = "with=stub"
-			if req.query.stub
-				baseurl += "?#{stubFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+
+exports.containersByTypeKind = (req, resp) ->
+	exports.containersByTypeKindInternal req.params.lsType, req.params.lsKind, req.query.format, req.query.stub, req.query.testMode, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, callback) ->
+	config = require '../conf/compiled/conf.js'
+	if testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		callback JSON.stringify(thingServiceTestJSON.batchList), 200
 	else
-		if req.query.testMode or global.specRunnerTestmode
-			thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-			resp.end JSON.stringify thingServiceTestJSON.batchList
-		else
-			baseurl = config.all.client.service.persistence.fullpath+"containers?lsType="+req.params.lsType+"&lsKind="+req.params.lsKind
-			stubFlag = "with=stub"
-			if req.query.stub
-				baseurl += "?#{stubFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		baseurl = config.all.client.service.persistence.fullpath+"containers?lsType="+lsType+"&lsKind="+lsKind
+		stubFlag = "with=stub"
+		if stub
+			baseurl += "?#{stubFlag}"
+		if format? and format=="codetable"
+			baseurl += "&format=codetable"
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json, 200
+			else
+				console.error 'got ajax error'
+				console.error error
+				console.error json
+				console.error response
+				callback "containersByTypeKind failed", 500
+		)
 
 exports.containerByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -1026,8 +1031,6 @@ exports.getWellContentByContainerLabelsInternal = (containerLabels, containerTyp
 			if statusCode == 500
 				callback JSON.stringify("getContainersByLabels failed"), 500
 			else
-				console.log containerCodes
-				_ = require 'underscore'
 				codeNames = _.map containerCodes, (code) ->
 					if code.foundCodeNames[0]?
 						code.foundCodeNames[0]
@@ -1057,7 +1060,6 @@ exports.cloneContainersInternal = (input, callback) ->
 		resp.json inventoryServiceTestJSON.cloneContainerResponse
 	else
 		console.debug "incoming cloneContainerInternal request: #{JSON.stringify(input)}"
-		_ = require 'underscore'
 		codeNames = _.pluck input, "codeName"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal codeNames, (containers, statusCode) =>
@@ -1065,7 +1067,7 @@ exports.cloneContainersInternal = (input, callback) ->
 				barcodes = _.pluck input, "barcode"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
-						callback "updateContainersByContainerCodesInternal failed", 500
+						callback "getContainersByCodeNamesInternal failed", 500
 						return
 					outputArray = []
 					for updateInfo, index in input
@@ -1092,8 +1094,128 @@ exports.cloneContainersInternal = (input, callback) ->
 								if index == (input.length)
 									callback outputArray, 200
 
+exports.splitContainer = (req, resp) ->
+	exports.splitContainerInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.splitContainerInternal = (input, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.splitContainerResponse
+	else
+		console.debug "incoming splitContainer request: #{JSON.stringify(input)}"
+		console.debug "calling getContainersByCodeNamesInternal"
+		console.error input.codeName
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [input.codeName], (originContainer, statusCode) =>
+			exports.getWellContentByContainerCodesInternal [input.codeName], (originWellContent) =>
+				isOdd = (num) ->
+					return (num % 2) == 1
+				alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+				originWellContent[0].wellContent = _.map originWellContent[0].wellContent, (content) ->
+					content = _.omit(content, ['containerCodeName', 'wellName', 'recordedDate'])
+					oddRow = isOdd(content.rowIndex)
+					oddColumn = isOdd(content.columnIndex)
+					if oddRow && oddColumn
+						content.quadrant = 1
+					else if oddRow && !oddColumn
+						content.quadrant = 2
+					else if !oddRow && oddColumn
+						content.quadrant = 3
+					else if !oddRow && !oddColumn
+						content.quadrant = 4
+					if oddRow
+						content.rowIndex = (content.rowIndex+1)/2
+					else
+						content.rowIndex = (content.rowIndex)/2
+					if oddColumn
+						content.columnIndex = (content.columnIndex+1)/2
+					else
+						content.columnIndex = (content.columnIndex)/2
+					if content.rowIndex < 10
+						text = "00"
+					else
+						text = "0"
+					content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
+					return _.omit(content, ['containerCodeName', 'recordedDate'])
+				destinationPlateSize = originContainer[0].plateSize/4
+				destinationCols = Math.sqrt(1.5*destinationPlateSize)
+				destinationRows = destinationCols / 1.5
+				exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
+					destinationContainerCode =  definitionContainer.get('codeName')
+					barcodes = _.pluck input.quadrants, "barcode"
+					exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
+						if statusCode == 500
+							callback "getContainersByCodeNamesInternal failed", 500
+							return
+						outputArray = []
+						for quadrant, index in input.quadrants
+							#Get barcode
+							if containerCodes[index].foundCodeNames.length > 0
+								message = "conflict: barcode '#{containerCodes[index].requestLabel}' already being used by #{containerCodes[index].foundCodeNames.join(",")}"
+								console.error message
+								callback message, 409
+								return
+							destinationContainerValues = _.extend originContainer[0], quadrant
+							destinationContainer = _.omit destinationContainerValues, "codeName"
+							destinationContainer.definition = destinationContainerCode
+							destinationWellContent = _.filter originWellContent[0].wellContent, (wellCont) ->
+								wellCont.quadrant == quadrant.quadrant
+							destinationContainer.wells = destinationWellContent
+							input.quadrants[index].destinationContainer = destinationContainer
+							compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
+							compoundInventoryRoutes.createPlateInternal destinationContainer, "1", (newContainer, statusCode) ->
+								if statusCode == 200
+									quadrant = _.findWhere(input.quadrants, {"barcode": newContainer.barcode})
+									quadrant.newContainer = newContainer
+									quadrant.destinationContainer.codeName = newContainer.codeName
+									quadrant.destinationContainer = _.omit quadrant.destinationContainer, ["wells", "definitionCodeName"]
+									exports.updateContainersByContainerCodesInternal [quadrant.destinationContainer], "1", (updatedContainer, statusCode) ->
+										quandrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
+										quadrant.updatedContainer = updatedContainer[0]
+										outContainer = _.extend quadrant.updatedContainer, quandrant.newContainer
+										outputArray.push outContainer
+										if outputArray.length == input.quadrants.length
+											outputArray = _.sortBy outputArray, 'quadrant'
+											callback outputArray, 200
+								else
+									outputArray.push newContainer
+
+exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
+	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberOfWells, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getDefinitionContainerByPlateSizeInternal
+	else
+		console.debug "incoming getDefinitionContainerByNumberOfWellsInternal request: #{JSON.stringify([lsType, lsKind, numberOfWells])}"
+		console.debug "calling containersByTypeKindInternal"
+		exports.containersByTypeKindInternal lsType, lsKind, null, false, false, (response, statusCode) ->
+			definitions = []
+			for container in response
+				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
+				if containerPreferredEntity?
+					console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
+				else
+					console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+					preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+						console.error types
+				definition = new containerPreferredEntity.model(container)
+				definitions.push definition
+			definition = _.find definitions, (definition) ->
+				return definition.get('plateSize').get('value').toString() == numberOfWells.toString()
+			if definition?
+				definition.prepareToSave()
+				definition.reformatBeforeSaving()
+				callback definition, 200
+			else
+				callback "could not find definition", 500
+
+
 exports.searchContainers = (req, resp) ->
-	console.log req.body
 	exports.searchContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
