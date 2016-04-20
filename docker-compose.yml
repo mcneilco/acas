@@ -21,6 +21,8 @@ services:
      - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
      - ./modules/PrimaryScreen:/home/runner/acas/modules/PrimaryScreen
      - ./modules/ModuleMenus:/home/runner/acas/modules/ModuleMenus
+     - ./modules/Components:/home/runner/acas/modules/Components
+     - ./modules/ProtocolBrowser:/home/runner/acas/modules/ProtocolBrowser
      - ./modules/ExperimentBrowser:/home/runner/acas/modules/ExperimentBrowser
      - ./modules/ScreeningCampaign:/home/runner/acas/modules/ScreeningCampaign
     env_file:
@@ -70,7 +72,7 @@ services:
       - ./bin/environments/roo/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:development
+    image: mcneilco/acas-roo-server:ACASDEV-591-multiple-controls
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
