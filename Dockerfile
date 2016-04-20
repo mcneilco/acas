@@ -1,10 +1,11 @@
 FROM centos:centos6
 # Update
 RUN \
-  useradd -ms /bin/bash builder && \
   yum update -y && \
   yum upgrade -y && \
-  yum install -y git initscripts tar gcc-c++ make krb5-devel && \
+# tar for pulling down node
+# git required for some npm packages
+  yum install -y tar git && \
   yum clean all
 
 # node
@@ -26,22 +27,29 @@ RUN curl -SLO "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x
 	&& npm cache clear
 
 # ACAS
-USER    root
 RUN	    useradd -u 1000 -ms /bin/bash runner
 ENV     APP_NAME ACAS
 ENV     BUILD_PATH /home/runner/build
 ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     APACHE Redhat
-RUN     npm install -g grunt grunt-cli forever nodemon mocha node-gyp coffee-script
-COPY    . $ACAS_BASE
+RUN     npm install -g grunt forever nodemon mocha coffee-script
+COPY    package.json $ACAS_BASE/package.json
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
 WORKDIR $ACAS_BASE
-# npm install needs 'LINK=g++ make install' because of the kerbos install of the mongodb-core dependency of winston-mongodb in acas
-RUN     export LINK=g++ make install && npm install && cp -r node_modules $BUILD_PATH && mkdir $BUILD_PATH/privateUploads
-RUN     mkdir /home/runner/logs && mkdir -p $BUILD_PATH/conf/compiled
-RUN     rm -rf $ACAS_BASE
+# This installs the modules but not acas, doing this makes subsequent builds much faster so that the container isn't invalidated on a small code change
+RUN     npm install --ignore-scripts --loglevel warn
+COPY    . $ACAS_BASE
+USER    root
+RUN     chown -R runner:runner $ACAS_BASE
+USER    runner
+RUN     cp -r node_modules $BUILD_PATH && \
+        npm install && \
+        mkdir $BUILD_PATH/privateUploads && \
+        mkdir /home/runner/logs && \
+        mkdir -p $BUILD_PATH/conf/compiled && \
+        rm -rf $ACAS_BASE
 WORKDIR $BUILD_PATH
 RUN     chmod u+x bin/*.sh
 ENV     PREPARE_MODULE_CONF_JSON=true
