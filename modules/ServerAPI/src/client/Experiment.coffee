@@ -400,9 +400,11 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
 		@render()
-		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
+		if @$('.bv_saveFailed').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
+		else if @$('.bv_cancelComplete').is(":visible")
+			@trigger 'amClean'
 		else
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'

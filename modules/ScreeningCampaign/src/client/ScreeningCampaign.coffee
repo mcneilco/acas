@@ -1,12 +1,9 @@
-class window.ParentExperiment extends Experiment
+class window.ScreeningExperiment extends PrimaryScreenExperiment #TODO: make Parent Experiment separately and make Screening Experiment
 
-	#TODO: ask Guy if screening experiment should have diff lsType/kind
 	initialize: ->
 		super()
 		@set lsType: "Parent"
-		@set lsKind: "Bio Activity"
-		#TODO: set protocol here
-#		@set protocol:
+		@set lsKind: "Bio Activity Screen"
 
 	getAnalysisParameters: =>
 		ap = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters"
@@ -22,15 +19,11 @@ class window.ScreeningExperimentParameters extends Backbone.Model
 		aggregationMethod: "unassigned"
 		normalization: new Normalization()
 		transformationRuleList: new TransformationRuleList()
-		primaryHitEfficacyThreshold: null
-		primaryHitSDThreshold: null
-		primaryThresholdType: null
-		primaryAutoHitSelection: false
-		confirmationHitEfficacyThreshold: null
-		confirmationHitSDThreshold: null
-		confirmationThresholdType: null
-		confirmationAutoHitSelection: false
-		generateSummaryReport: true
+		hitEfficacyThreshold: null
+		hitSDThreshold: null
+		thresholdType: null
+		useOriginalHits: false
+		autoHitSelection: false
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -72,23 +65,14 @@ class window.ScreeningExperimentParameters extends Backbone.Model
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
-		if attrs.primaryAutoHitSelection
-			if attrs.primaryThresholdType == "sd" && _.isNaN(attrs.primaryHitSDThreshold)
+		if attrs.autoHitSelection
+			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
 				errors.push
-					attribute: 'primaryHitSDThreshold'
+					attribute: 'hitSDThreshold'
 					message: "SD threshold must be a number"
-			if attrs.primaryThresholdType == "efficacy" && _.isNaN(attrs.primaryHitEfficacyThreshold)
+			if attrs.thresholdType == "efficacy" && _.isNaN(attrs.hitEfficacyThreshold)
 				errors.push
-					attribute: 'primaryHitEfficacyThreshold'
-					message: "Efficacy threshold must be a number"
-		if attrs.confirmationAutoHitSelection
-			if attrs.confirmationThresholdType == "sd" && _.isNaN(attrs.confirmationHitSDThreshold)
-				errors.push
-					attribute: 'confirmationHitSDThreshold'
-					message: "SD threshold must be a number"
-			if attrs.confirmationThresholdType == "efficacy" && _.isNaN(attrs.confirmationHitEfficacyThreshold)
-				errors.push
-					attribute: 'confirmationHitEfficacyThreshold'
+					attribute: 'hitEfficacyThreshold'
 					message: "Efficacy threshold must be a number"
 		if errors.length > 0
 			return errors
@@ -119,15 +103,10 @@ class window.SearchedExperimentSummaryTableController extends ExperimentSummaryT
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
-		console.log "searched expt - summary table selected Row Changed"
 		aoData = @dataTable.fnSettings().aoData
-		console.log aoData
 		aData = _.pluck aoData, '_aData'
 		exptNames = _.pluck aData, '2'
 		index = _.indexOf exptNames, row.get('lsLabels').pickBestName().get('labelText')
-		console.log "aData: " + aData
-		console.log "exptNames: " + exptNames
-		console.log "index: " + index
 		@dataTable.fnDeleteRow(index)
 
 
@@ -149,7 +128,6 @@ class window.SearchedExperimentSummaryTableController extends ExperimentSummaryT
 						model: exp
 					ersc.on "gotClick", @selectedRowChanged
 					ersc.on 'amDirty', =>
-						console.log "amDirty - ersc"
 						@trigger 'amDirty'
 					@$("tbody").append ersc.render().el
 
@@ -200,9 +178,6 @@ class window.AddedExperimentSummaryTableController extends ExperimentSummaryTabl
 		@dataTable = @$("table").dataTable oLanguage:
 			sSearch: "Filter results: " #rename summary table's search bar
 
-		console.log "creating datatable"
-		console.log @dataTable
-
 		if @collection.length is 0
 			$(@el).hide()
 			$(".bv_noLinked"+@domSuffix).show()
@@ -215,8 +190,6 @@ class window.AddedExperimentSummaryTableController extends ExperimentSummaryTabl
 		@linkExpt exp, "parent_confirmation child"
 
 	linkExpt: (exp, itxLsKind) =>
-		console.log "link expt"
-		console.log exp
 		@collection.add exp
 		@exptExptItxs.add new Backbone.Model
 			lsType: "has member"
@@ -231,12 +204,8 @@ class window.AddedExperimentSummaryTableController extends ExperimentSummaryTabl
 			model: exp
 		@$("tbody").append ersc.render().el
 
-		console.log "row render.el"
-		console.log ersc.render().el.cells
-
 		exptInfo = []
 		_.each ersc.render().el.cells, (cell) =>
-			console.log cell.innerHTML
 			exptInfo.push cell.innerHTML
 
 		@dataTable.fnAddData exptInfo
@@ -244,50 +213,28 @@ class window.AddedExperimentSummaryTableController extends ExperimentSummaryTabl
 		$(".bv_noLinked"+@domSuffix).hide()
 
 	handleRemoveExpt: (src) =>
-		console.log "handle remove expt"
-		console.log src
 		row = src.target.closest("tr")
-		console.log "codeName"
 		codeName = $.parseHTML(row.cells[0].innerHTML)[1].text
-		console.log codeName
 
 		exptName = row.cells[1].innerHTML
-		console.log "exptName to delete: " + exptName
 		aoData = @dataTable.fnSettings().aoData
 		aData = _.pluck aoData, '_aData'
 		exptNames = _.pluck aData, '1'
 		index = _.indexOf exptNames, exptName
-		console.log "aData: " + aData
-		console.log "exptNames: " + exptNames
-		console.log "index: " + index
 		@dataTable.fnDeleteRow(index)
-		console.log "collection"
 
-		#TODO: remove model from collection. Remove itx from @exptExptItxs if itx is not saved yet, mark as ignored if previously saved itx
+		#Remove model from collection. Remove itx from @exptExptItxs if itx is not saved yet, mark as ignored if previously saved itx
 		exptToRemove = @collection.findWhere {codeName: codeName}
 		itxToUpdate = @exptExptItxs.filter (itx) =>
 			secondExpt = itx.get('secondExperiment')
 			unless secondExpt instanceof Experiment
-				console.log "cast second expt as expt"
 				secondExpt = new Experiment secondExpt
-			console.log "itx"
-			console.log itx
-			console.log "secondExpt"
-			console.log secondExpt
-			console.log secondExpt.get('codeName')
-			console.log "secondExperiment.get('codeName'): " + secondExpt.get('codeName')
-			console.log "exptToRemove.get('codeName'): " + exptToRemove.get('codeName')
-			console.log "!itx.get('ignored'): " + !itx.get('ignored')
 			secondExpt.get('codeName') is exptToRemove.get('codeName') and !itx.get('ignored')
-		console.log "itxToUpdate list"
-		console.log itxToUpdate
 		if itxToUpdate[0].isNew()
 			@exptExptItxs.remove itxToUpdate[0]
 		else
 			itxToUpdate[0].set 'ignored', true
-#		@trigger 'removeLinkedExpt', exptToRemove
 		@collection.remove @collection.findWhere {codeName: codeName}
-		console.log @collection
 		if @collection.length is 0
 			$(@el).hide()
 			$(".bv_noLinked"+@domSuffix).show()
@@ -306,54 +253,53 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 		template = _.template( $("#LinkedExperimentsView").html(),  {includeDuplicateAndEdit: true} );
 		$(@el).empty()
 		$(@el).html template
-		@getLinkedExpts()
+		if @options.allExptExptItxs?
+			@allExptExptItxs = @options.allExptExptItxs
+		else
+			@allExptExptItxs = {}
+		@setupSearchAndTableControllers()
 
 	reinitialize: =>
 		template = _.template( $("#LinkedExperimentsView").html(),  {includeDuplicateAndEdit: true} );
 		$(@el).empty()
 		$(@el).html template
-		@getLinkedExpts(true)
+		@getLinkedExpts()
 
-	getLinkedExpts: (reinitialize) =>
+	getLinkedExpts: =>
 		$.ajax
 			type: 'GET'
 			url: "/api/getItxExptExptsByFirstExpt/"+@model.get('id')
 			success: (json) =>
-				console.log "linked primary experiments"
-				console.log json
-				@showExistingExptExptItxs JSON.parse json
-				@setupPrimaryExperimentSearchController()
-				@setupAddedPrimaryExperimentsTableController()
-				@setupFollowUpExperimentSearchController()
-				@setupAddedFollowUpExperimentsTableController()
-				if reinitialize
-					@$('.bv_cancelComplete').show()
-			error: (err) ->
-				console.log "got error"
+				@allExptExptItxs = JSON.parse json
+				@setupSearchAndTableControllers()
+				@$('.bv_cancelComplete').show()
+			error: (err) =>
+				alert 'Could not get expt expt itxs for this experiment, refreshing page'
+				window.location.reload()
+
+	setupSearchAndTableControllers: =>
+		@showExistingExptExptItxs @allExptExptItxs
+		@setupPrimaryExperimentSearchController()
+		@setupAddedPrimaryExperimentsTableController()
+		@setupFollowUpExperimentSearchController()
+		@setupAddedFollowUpExperimentsTableController()
 
 	showExistingExptExptItxs: (itxs) =>
-		console.log "showExisting expt expt itxs"
 		@primaryExptExptItxs = new Backbone.Collection()
 		@followUpExptExptItxs = new Backbone.Collection()
 		_.each itxs, (itx) =>
-			console.log itx
 			if itx.lsType is "has member" and itx.lsKind is "parent_primary child" and !itx.ignored
 				itx = new Backbone.Model itx
 				@primaryExptExptItxs.add itx
 			else if itx.lsType is "has member" and itx.lsKind is "parent_confirmation child" and !itx.ignored
 				itx = new Backbone.Model itx
 				@followUpExptExptItxs.add itx
-		console.log "@primaryExptExptItxs"
-		console.log @primaryExptExptItxs
 		@prevLinkedPrimaryExpts = new ExperimentList()
 		@primaryExptExptItxs.each (itx) =>
 			@prevLinkedPrimaryExpts.add itx.get('secondExperiment')
 		@prevLinkedFollowUpExpts = new ExperimentList()
 		@followUpExptExptItxs.each (itx) =>
 			@prevLinkedFollowUpExpts.add itx.get('secondExperiment')
-
-		console.log "@prevLinkedPrimaryExpts"
-		console.log @prevLinkedPrimaryExpts
 
 	setupPrimaryExperimentSearchController: =>
 		@primaryExperimentSearchController = new ExperimentSimpleSearchController
@@ -386,7 +332,6 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 					collection: filteredSearchedExpts
 					domSuffix: "PrimaryExpt"
 
-#				@searchedPrimaryExperimentsTableController.on "selectedRowUpdated", @selectedExperimentUpdated
 				@searchedPrimaryExperimentsTableController.on "selectedRowUpdated", @checkIfExptLinkedAsFollowUp
 				@searchedPrimaryExperimentsTableController.on "amDirty", =>
 					@handleAmDirty()
@@ -395,8 +340,6 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 	destroySearchedPrimaryExperimentSummaryTable: =>
 		if @searchedPrimaryExperimentsTableController?
 			@searchedPrimaryExperimentsTableController.remove()
-#		if @primaryExperimentSearchController?
-#			@primaryExperimentSearchController.remove()
 		@$(".bv_noMatchingExperimentsFoundMessagePrimaryExpt").addClass("hide")
 
 	setupAddedPrimaryExperimentsTableController: =>
@@ -404,9 +347,6 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 			collection: @prevLinkedPrimaryExpts
 			exptExptItxs: @primaryExptExptItxs
 			domSuffix: "PrimaryExpt"
-#
-#		@addedPrimaryExperimentsTableController.on "selectedRowUpdated", @selectedExperimentUpdated
-#		@addedPrimaryExperimentsTableController.on 'removeLinkedExpt', @handleRemoveLinkedPrimaryExpt
 		@addedPrimaryExperimentsTableController.on 'amDirty', =>
 			@handleAmDirty()
 		@$(".bv_addedPrimaryExperimentsTableController").html @addedPrimaryExperimentsTableController.render().el
@@ -429,14 +369,12 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 		@trigger 'amDirty'
 		@$('.bv_updateComplete').hide()
 		@$('.bv_cancelComplete').hide()
+		@$('.bv_updateFailed').hide()
 		@$('.bv_save').removeAttr 'disabled'
 		@$('.bv_cancel').removeAttr 'disabled'
 
 	filterSearchedExperiments: (searchedExpts, linkedExpts) =>
 		filteredSearchedExpts = new ExperimentList()
-		console.log "filter searched experiments"
-		console.log @model
-		console.log @model.get('id')
 		searchedExpts.each (expt) =>
 			unless linkedExpts.get(expt.id)? or expt.id is @model.get('id')
 				filteredSearchedExpts.add expt
@@ -472,8 +410,6 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 				@searchedFollowUpExperimentsTableController = new SearchedExperimentSummaryTableController
 					collection: filteredSearchedExpts
 					domSuffix: "FollowUpExpt"
-
-				#				@searchedPrimaryExperimentsTableController.on "selectedRowUpdated", @selectedExperimentUpdated
 				@searchedFollowUpExperimentsTableController.on "selectedRowUpdated", @checkIfExptLinkedAsPrimary
 				@searchedFollowUpExperimentsTableController.on "amDirty", =>
 					@handleAmDirty()
@@ -489,48 +425,42 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 			collection: @prevLinkedFollowUpExpts
 			exptExptItxs: @followUpExptExptItxs
 			domSuffix: "FollowUpExpt"
-		#
-		#		@addedPrimaryExperimentsTableController.on "selectedRowUpdated", @selectedExperimentUpdated
+
 		@addedFollowUpExperimentsTableController.on 'amDirty', =>
 			@handleAmDirty()
 		@$(".bv_addedFollowUpExperimentsTableController").html @addedFollowUpExperimentsTableController.render().el
 
-	saveExptItxs: ->
+	saveExptItxs: -> #TODO: rename
 		@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
 
-		console.log "save expt itxs"
-
-		console.log @addedPrimaryExperimentsTableController.exptExptItxs
-#		console.log "expt itxs to ignore"
-#		ignoredPrimaryExptExptItxs = @addedPrimaryExperimentsTableController.exptExptItxs.filter (itx) =>
-#			itx.get('ignored') is true
-#		console.log ignoredPrimaryExptExptItxs
-		console.log "expt itxs to create"
+		newExptExptItxs = new Backbone.Collection()
+		exptExptItxsToIgnore = new Backbone.Collection()
+		#add firstExperiment information to new primary expt expt itxs
 		@addedPrimaryExperimentsTableController.exptExptItxs.each (itx) =>
 			if itx.isNew()
 				itx.set 'firstExperiment', @model
+				#if experiment base was updated, @model will be updated as well
+				newExptExptItxs.add itx
+			else #if itx.get('ignored')
+				exptExptItxsToIgnore.add itx
 		@addedFollowUpExperimentsTableController.exptExptItxs.each (itx) =>
 			if itx.isNew()
 				itx.set 'firstExperiment', @model
-		console.log "concated expt expt itxs"
-		console.log @addedPrimaryExperimentsTableController.exptExptItxs.toJSON().concat @addedFollowUpExperimentsTableController.exptExptItxs.toJSON()
-#		newPrimaryExptExptItxs = @addedPrimaryExperimentsTableController.exptExptItxs.filter (itx) =>
-#			itx.isNew()
-		#add firstExperiment information to new primary expt expt itxs
-#		newPrimaryExptExptItxs = @addFirstExptInfoToItx newPrimaryExptExptItxs
-#		console.log newPrimaryExptExptItxs
+				newExptExptItxs.add itx
+			else #if itx.get('ignored')
+				exptExptItxsToIgnore.add itx
 
 		$.ajax
-			type: 'PUT'
-			url: "/api/putExptExptItxs"
-			data: data: JSON.stringify(@addedPrimaryExperimentsTableController.exptExptItxs.toJSON().concat @addedFollowUpExperimentsTableController.exptExptItxs.toJSON())
+			type: 'POST'
+			url: "/api/createAndUpdateExptExptItxs"
+			data:
+				exptExptItxsToIgnore: JSON.stringify exptExptItxsToIgnore.toJSON()
+				newExptExptItxs: JSON.stringify(newExptExptItxs.toJSON())
 			json: true
 			success: (response) =>
-				console.log "update expt itxs resp"
-				console.log response
 				@showExistingExptExptItxs response
 				@addedPrimaryExperimentsTableController.exptExptItxs = @primaryExptExptItxs
 				@addedPrimaryExperimentsTableController.collection = @prevLinkedPrimaryExpts
@@ -538,82 +468,91 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 				@addedFollowUpExperimentsTableController.collection = @prevLinkedFollowUpExpts
 				@exptItxsSavedSuccessfully()
 			error: (err) =>
-				alert "Save expt expt itx error"
+				@exptItxsSaveFailed()
 
 	exptItxsSavedSuccessfully: =>
 		@$('.bv_saving').hide()
-		@$('.bv_cancel').removeAttr 'disabled'
 		@$('.bv_updateComplete').show()
 		@trigger 'amClean'
 
+	exptItxsSaveFailed: =>
+		@$('.bv_updateFailed').show()
+		@$('.bv_saving').hide()
+		@$('.bv_cancel').removeAttr 'disabled'
+		@trigger 'amClean'
+
 	handleCancelClicked: =>
-#		if @model.isNew()
-#			if @model.get('lsKind') is "default" #base protocol/experiment
-#				@model = null
-#				@completeInitialization()
-#			else
-#				@trigger 'reinitialize'
-#		else
 		@$('.bv_canceling').show()
 		@$('.bv_cancel').attr 'disabled', 'disabled'
 		@$('.bv_save').attr 'disabled', 'disabled'
 		@reinitialize()
-#			@model.fetch
-#				success: @handleCancelComplete
 		@trigger 'amClean'
 
-#	addFirstExptInfoToItx: (exptExptItxs) =>
-#		_.each exptExptItxs, (itx) =>
-#			itx.set 'firstExperiment', @model
-#		exptExptItxs
-
-#class window.ScreeningCampaignDataAnalysisController extends PrimaryScreenAnalysisParametersController
 class window.ScreeningCampaignDataAnalysisController extends AbstractFormController
-#	template:  _.template($("#ScreeningCampaignDataAnalysisView").html())
-#	autofillTemplate: _.template($("#ScreeningCampaignDataAnalysisAutofillView").html())
 	template: _.template($("#ScreeningCampaignDataAnalysisView").html())
 
 	events: ->
 		"change .bv_signalDirectionRule": "attributeChanged"
 		"change .bv_aggregateBy": "attributeChanged"
 		"change .bv_aggregationMethod": "attributeChanged"
-		"keyup .bv_primaryHitEfficacyThreshold": "attributeChanged"
-		"keyup .bv_primaryHitSDThreshold": "attributeChanged"
-		"change .bv_primaryThresholdTypeEfficacy": "handlePrimaryThresholdTypeHitChanged"
-		"change .bv_primaryThresholdTypeSD": "handlePrimaryThresholdTypeHitChanged"
-		"change .bv_primaryAutoHitSelection": "handlePrimaryAutoHitSelectionCheckboxChanged"
-
-		"keyup .bv_confirmationHitEfficacyThreshold": "attributeChanged"
-		"keyup .bv_confirmationHitSDThreshold": "attributeChanged"
-		"change .bv_confirmationThresholdTypeEfficacy": "handleConfirmationThresholdTypeChanged"
-		"change .bv_confirmationThresholdTypeSD": "handleConfirmationThresholdTypeChanged"
-		"change .bv_confirmationAutoHitSelection": "handleConfirmationAutoHitSelectionCheckboxChanged"
+		"keyup .bv_hitEfficacyThreshold": "attributeChanged"
+		"keyup .bv_hitSDThreshold": "attributeChanged"
+		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
+		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
+		"change .bv_useOriginalHits": "handleUseOriginalHitsChanged"
+		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 
 		"click .bv_analyze": "handleAnalyzeClicked"
 
 	initialize: ->
 		@errorOwnerName = 'ScreeningCampaignDataAnalysisController'
 		@setBindings()
+
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		if @options.exptCode?
+			@exptCode = @options.exptCode
+		else
+			@exptCode = ""
+
+		if @options.analyzedPreviously?
+			@analyzedPreviously = @options.analyzedPreviously
+		else
+			@analyzedPreviously = false
+
+		if @options.previousAnalysisResults?
+			@previousAnalysisResults = @options.previousAnalysisResults
+		else
+			@previousAnalysisResults = ""
+
+		if @options.primaryExpts?
+			@primaryExpts = @options.primaryExpts
+		else
+			@primaryExpts = new Backbone.Collection()
+
+		if @options.followUpExpts?
+			@followUpExpts = @options.followUpExpts
+		else
+			@followUpExpts = new Backbone.Collection()
+
+		if @analyzedPreviously
+			@$('.bv_analyze').html "Re-Analyze"
+			@$('.bv_analysisResults').html @previousAnalysisResults
+			@$('.bv_analysisResults').show()
+		else
+			@$('.bv_analyze').html "Analyze"
+			@$('.bv_analysisResults').hide()
 		@model.bind 'amDirty', => @trigger 'amDirty', @
 		@listenTo @model, 'change', @modelChangeCallback
 
 	render: =>
-#		$(@el).empty()
-#		$(@el).html @template()
-
-#		@$('.bv_autofillSection').empty()
-#		@$('.bv_autofillSection').html @autofillTemplate(@model.attributes)
-
 		@$("[data-toggle=popover]").popover();
 		@$("body").tooltip selector: '.bv_popover'
 
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
-		@handleAutoHitSelectionChanged(true, "primary")
-		@handleAutoHitSelectionChanged(true, "confirmation")
+		@handleAutoHitSelectionChanged(true)
 		@setupNormalizationController()
 		@setupTransformationRuleListController()
 
@@ -621,7 +560,8 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 
 	modelChangeCallback: =>
 		@trigger 'amDirty'
-		@$('.bv_analyzeComplete').hide()
+		@$('.bv_analysisComplete').hide()
+		@$('.bv_analysisFailed').hide()
 		@$('.bv_cancel').removeAttr 'disabled'
 		@$('.bv_cancelComplete').hide()
 
@@ -664,69 +604,49 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 			el: @$('.bv_normalization')
 			model: @model.get('normalization')
 		@normalizationController.render()
-		@normalizationController.on 'updateState', =>
-			@trigger 'updateState'
 
 	setupTransformationRuleListController: ->
 		@transformationRuleListController= new TransformationRuleListController
 			el: @$('.bv_transformationList')
 			collection: @model.get('transformationRuleList')
 		@transformationRuleListController.render()
-		@transformationRuleListController.on 'updateState', =>
-			@trigger 'updateState'
 
 	updateModel: =>
 		@model.set
 			signalDirectionRule: @signalDirectionListController.getSelectedCode()
 			aggregateBy: @aggregateByListController.getSelectedCode()
 			aggregationMethod: @aggregationMethodListController.getSelectedCode()
-			primaryHitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_primaryHitEfficacyThreshold'))
-			primaryHitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_primaryHitSDThreshold'))
-			confirmationHitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_confirmationHitEfficacyThreshold'))
-			confirmationHitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_confirmationHitSDThreshold'))
-		@trigger 'updateState' #TODO: need this?
+			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
+			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
 		@$('.bv_cancel').removeAttr 'disabled'
 
 
-	handlePrimaryThresholdTypeHitChanged: =>
-		@handleThresholdTypeChanged "primary"
-
-	handleConfirmationThresholdTypeChanged: =>
-		@handleThresholdTypeChanged "confirmation"
-
-	handleThresholdTypeChanged: (prefix) =>
-		thresholdType = @$("input[name='bv_"+prefix+"ThresholdType"+"']:checked").val()
-
-		console.log "handle threshold type changed"
-		@model.set prefix+"ThresholdType", thresholdType
-		console.log console.log "prefix+thresholdType: " + prefix+thresholdType
-		console.log @model.get prefix+'ThresholdType'
+	handleThresholdTypeChanged: =>
+		thresholdType = @$("input[name='bv_thresholdType']:checked").val()
+		@model.set thresholdType: thresholdType
 		if thresholdType =="efficacy"
-			@$('.bv_'+prefix+'HitSDThreshold').attr('disabled','disabled')
-			@$('.bv_'+prefix+'HitEfficacyThreshold').removeAttr('disabled')
+			@$('.bv_hitSDThreshold').attr('disabled','disabled')
+			@$('.bv_hitEfficacyThreshold').removeAttr('disabled')
 		else
-			@$('.bv_'+prefix+'HitEfficacyThreshold').attr('disabled','disabled')
-			@$('.bv_'+prefix+'HitSDThreshold').removeAttr('disabled')
+			@$('.bv_hitEfficacyThreshold').attr('disabled','disabled')
+			@$('.bv_hitSDThreshold').removeAttr('disabled')
 		@attributeChanged()
 
-	handlePrimaryAutoHitSelectionCheckboxChanged: =>
-		@handleAutoHitSelectionChanged false, "primary"
+	handleUseOriginalHitsChanged: =>
+		useOriginalHits = @$('.bv_useOriginalHits').is(":checked")
+		@model.set useOriginalHits: useOriginalHits
+		@attributeChanged()
 
-	handleConfirmationAutoHitSelectionCheckboxChanged: =>
-		@handleAutoHitSelectionChanged false, "confirmation"
-
-	handleAutoHitSelectionChanged: (skipUpdate, prefix) =>
-		autoHitSelection = @$('.bv_'+prefix+'AutoHitSelection').is(":checked")
-		@model.set prefix+'AutoHitSelection', autoHitSelection
-		console.log "handle auto hit selection changed"
-		console.log prefix+'AutoHitSelection'
-		console.log @model.get prefix+'AutoHitSelection'
+	handleAutoHitSelectionChanged: (skipUpdate) =>
+		autoHitSelection = @$('.bv_autoHitSelection').is(":checked")
+		@model.set autoHitSelection: autoHitSelection
 		if autoHitSelection
-			@$('.bv_'+prefix+'ThresholdControls').show()
+			@$('.bv_thresholdControls').show()
 		else
-			@$('.bv_'+prefix+'ThresholdControls').hide()
+			@$('.bv_thresholdControls').hide()
 		unless skipUpdate is true
 			@attributeChanged()
+
 	validationError: =>
 		super()
 		@$('.bv_analyze').attr('disabled', 'disabled')
@@ -739,21 +659,35 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 		@$('.bv_analyzing').show()
 		@$('.bv_analyze').attr 'disabled', 'disabled'
 		@$('.bv_cancel').attr 'disabled', 'disabled'
-		#TODO: ask Sam about route
-#		$.ajax
-#			type: 'POST'
-#			url: "/api/analyzeScreeningCampaign"
-#			data: data: JSON.stringify @model
-#			json: true
-#			success: (response) =>
-#				console.log "analysis complete"
-#				console.log response
-#				@$('.bv_analysisComplete').show()
-#				@$('.bv_analyze').html "Re-analyze"
-#				@$('.bv_analyzing').hide()
-#			error: (err) =>
-#				alert "Error Analyzing Screening Campaign"
-				#TODO: catch error
+		@$('.bv_analyzingData').modal
+			backdrop: "static"
+
+		primaryExperimentCodes = @primaryExpts.pluck 'codeName'
+		followUpExperimentCodes = @followUpExpts.pluck 'codeName'
+
+		$.ajax
+			type: 'POST'
+			url: "/api/screeningCampaign/analyzeScreeningCampaign"
+			data:
+				user: window.AppLaunchParams.loginUser.username
+				experimentCode: @exptCode
+				inputParameters: JSON.stringify @model
+				primaryExperimentCodes: JSON.stringify primaryExperimentCodes
+				confirmationExperimentCodes: JSON.stringify followUpExperimentCodes
+			json: true
+			success: (response) =>
+				@$('.bv_analysisComplete').show()
+				@$('.bv_analyze').html "Re-analyze"
+				@$('.bv_analyzing').hide()
+				@$('.bv_analysisResults').html response.results.htmlSummary
+				@$('.bv_analysisResults').show()
+				@trigger 'analysisComplete'
+			error: (err) =>
+				alert "Error Analyzing Screening Campaign"
+				@$('.bv_analysisFailed').show()
+				@$('.bv_analyzing').hide()
+				@$('.bv_analysisResults').hide()
+				@$('.bv_analyzingData').modal 'hide'
 
 class window.ScreeningCampaignModuleController extends AbstractFormController
 	template: _.template($("#ScreeningCampaignModuleView").html())
@@ -769,7 +703,7 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 						type: 'GET'
 						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
-						error: (err) ->
+						error: (err) =>
 							alert 'Could not get experiment for code in this URL, creating new one'
 							@completeInitialization()
 						success: (json) =>
@@ -778,16 +712,26 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 							else
 								lsType = json.lsType
 								lsKind = json.lsKind
-								if lsType is "Parent" and lsKind is "Bio Activity"
-									expt = new ParentExperiment json
+								if lsType is "Parent" and lsKind is "Bio Activity Screen"
+									expt = new ScreeningExperiment json
 									expt.set expt.parse(expt.attributes)
-									if window.AppLaunchParams.moduleLaunchParams.copy
-										@model = expt.duplicateEntity()
-									else
-										@model = expt
+									$.ajax
+										type: 'GET'
+										url: "/api/getItxExptExptsByFirstExpt/"+expt.get('id')
+										success: (json) =>
+											@allExptExptItxs = JSON.parse(json)
+											@model = expt
+											@completeInitialization()
+										error: (err) =>
+											alert 'Could not get expt expt itxs for this experiment, creating new experiment'
+											@completeInitialization()
+#									if window.AppLaunchParams.moduleLaunchParams.copy
+#										@model = expt.duplicateEntity()
+#									else
+#										@model = expt
 								else
 									alert 'Could not get parent experiment for code in this URL. Creating new parent experiment'
-							@completeInitialization()
+									@completeInitialization()
 				else
 					@completeInitialization()
 			else
@@ -795,34 +739,63 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 
 	completeInitialization: =>
 		unless @model?
-			@model = new ParentExperiment()
+			@model = new ScreeningExperiment()
+			@allExptExptItxs = {}
 		if @model.isNew()
 			@getAndSetProtocol()
 		$(@el).html @template()
 		@setupExperimentBaseController()
 		@setupLinkedExperimentsController()
 		@setupDataAnalysisController()
-		@listenTo @model, 'sync', @modelSyncCallback
-		@listenTo @model, 'change', @modelChangeCallback
+		@listenTo @model, 'sync', =>
+			@analysisController.exptCode = @model.get('codeName')
 
 	getAndSetProtocol: ->
-		#TODO: create PROT-Screen if it doesn't exist
 		$.ajax
 			type: 'GET'
-			url: "/api/protocols/codename/PROT-00000001"
-#			url: "/api/protocols/codename/PROT-Screen"
+			url: "/api/protocols/codename/PROT-Screen"
 			success: (json) =>
 				if json.length == 0
-					alert("Could not find screening protocol")
+					console.log ("Could not find screening protocol, autocreating new screening protocol")
+					@createScreeningProtocol()
 				else
-					console.log "got protocol"
-					console.log json
-					@model.set protocol: new Protocol(json)
+					prot = new Protocol(json)
+					if prot.get('ignored')
+						alert 'Found ignored screening protocol. Contact administrator to change the codeName of PROT-Screen'
+					else
+						@model.set protocol: prot
+						@trigger 'amClean'
 #					if setAnalysisParams
 #						@getFullProtocol() # this will fetch full protocol
-			error: (err) ->
-				alert 'got ajax error from getting protocol '+ code
+			error: (err) =>
+				console.log 'Got ajax error from getting screening protocol, autocreating new screening protocol'
+				@createScreeningProtocol()
+
 			dataType: 'json'
+
+	createScreeningProtocol: =>
+		prot = new Protocol()
+		prot.set 'lsType', 'Parent'
+		prot.set 'lsKind', 'Bio Activity'
+		prot.set 'codeName', 'PROT-Screen'
+		prot.get('lsLabels').setBestName new Label
+			lsKind: "protocol name"
+			labelText: "PROT-Screen"
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		prot.getScientist().set 'codeValue', window.AppLaunchParams.loginUser.username
+		prot.getCreationDate().set 'dateValue', new Date().getTime()
+		prot.getNotebook().set 'stringValue', 'Autocreated Screening Protocol'
+		prot.prepareToSave()
+		prot.save null,
+			success: (model, response) =>
+				if response is "not unique protocol name"
+					alert 'Error creating Screening Protocol - not unique name. Contact administrator'
+			error: (model, response) =>
+				alert "Error saving new screening protocol"
+				console.log response
+
+
 
 	setupExperimentBaseController: ->
 		if @experimentBaseController?
@@ -835,52 +808,228 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 		@experimentBaseController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
 		@experimentBaseController.$('.bv_group_protocolCode').hide()
 		@experimentBaseController.on 'amDirty', =>
-			console.log "experiment base controller is dirty"
 			@trigger 'amDirty'
 			@linkedExptsController.$('.bv_saveChangesBeforeLink').show()
 			@linkedExptsController.$('.bv_linkedExperimentsWrapper').hide()
-			@dataAnalysisController.$('.bv_saveChangesBeforeAnalysis').show()
-			@dataAnalysisController.$('.bv_dataAnalysisParametersWrapper').hide()
+			@analysisController.setExperimentNotSaved()
 		@experimentBaseController.on 'amClean', =>
 			@trigger 'amClean'
 			@linkedExptsController.$('.bv_saveChangesBeforeLink').hide()
 			@linkedExptsController.$('.bv_linkedExperimentsWrapper').show()
-			@dataAnalysisController.$('.bv_saveChangesBeforeAnalysis').hide()
-			@dataAnalysisController.$('.bv_dataAnalysisParametersWrapper').show()
+			@analysisController.setExperimentSaved()
 		@experimentBaseController.on 'reinitialize', @reinitialize
+
+	reinitialize: =>
+		@model = null
+		@completeInitialization()
 
 	setupLinkedExperimentsController: ->
 		if @linkedExptsController?
 			@linkedExptsController.undelegateEvents()
 		@linkedExptsController = new LinkedExperimentsController
 			model: @model
+			allExptExptItxs: @allExptExptItxs
 			el: @$('.bv_screeningCampaignLinkedExperiments')
 		@linkedExptsController.on 'amDirty', =>
 			@trigger 'amDirty'
-			#TODO: figure out if need to disable editing general tab
-			@dataAnalysisController.$('.bv_saveChangesBeforeAnalysis').show()
-			@dataAnalysisController.$('.bv_dataAnalysisParametersWrapper').hide()
+			@analysisController.setExperimentNotSaved()
 		@linkedExptsController.on 'amClean', =>
 			@trigger 'amClean'
-			@dataAnalysisController.$('.bv_saveChangesBeforeAnalysis').hide()
-			@dataAnalysisController.$('.bv_dataAnalysisParametersWrapper').show()
+			@analysisController.setExperimentSaved()
 		@linkedExptsController.render()
 
 	setupDataAnalysisController: ->
-		if @dataAnalysisController?
-			@dataAnalysisController.undelegateEvents()
-		console.log "setup data analysis controller - analysis params"
-		console.log @model.getAnalysisParameters()
-		@dataAnalysisController = new ScreeningCampaignDataAnalysisController
-			model: @model.getAnalysisParameters()
+		if @analysisController?
+			@analysisController.undelegateEvents()
+		analysisParameters = @model.get('lsStates').getStateValueByTypeAndKind 'metadata', 'experiment metadata', 'clobValue', 'data analysis parameters'
+		if analysisParameters?
+			analysisParameters = new ScreeningExperimentParameters $.parseJSON(analysisParameters.get('clobValue'))
+		else
+			analysisParameters = new ScreeningExperimentParameters()
+		analysisStatus = @model.get('lsStates').getStateValueByTypeAndKind 'metadata', 'experiment metadata', 'codeValue', 'analysis status'
+		if analysisStatus?
+			analysisStatus = analysisStatus.get('codeValue')
+		else
+			analysisStatus = "not started"
+
+		if analysisStatus is "not started"
+			previousAnalysisResults = ""
+		else
+			previousAnalysisResults = @model.getAnalysisResultHTML().get('clobValue')
+
+		@analysisController = new ScreeningCampaignAnalysisController
+			model: @model
 			el: @$('.bv_screeningCampaignDataAnalysis')
-		@dataAnalysisController.on 'amDirty', =>
+			uploadAndRunControllerName: "UploadAndRunScreeningCampaignAnalsysisController"
+			exptCode: @model.get('codeName')
+			primaryExpts: @linkedExptsController.addedPrimaryExperimentsTableController.collection
+			followUpExpts: @linkedExptsController.addedFollowUpExperimentsTableController.collection
+		@analysisController.on 'amDirty', =>
 			@trigger 'amDirty'
-			#TODO: figure out if need to disable editing general tab
 			@linkedExptsController.$('.bv_saveChangesBeforeLink').show()
 			@linkedExptsController.$('.bv_linkedExperimentsWrapper').hide()
-		@dataAnalysisController.on 'amClean', =>
+		@analysisController.on 'amClean', =>
 			@trigger 'amClean'
 			@linkedExptsController.$('.bv_saveChangesBeforeLink').hide()
 			@linkedExptsController.$('.bv_linkedExperimentsWrapper').show()
-		@dataAnalysisController.render()
+		@analysisController.on 'warning', =>
+			@showWarningModal()
+		@analysisController.on 'dryRunRunning', =>
+			@showValidateProgressBar()
+		@analysisController.on 'dryRunDone', =>
+			@hideValidateProgressBar()
+		@analysisController.on 'analysisRunning', =>
+			@showSaveProgressBar()
+		@analysisController.on 'analysisDone', =>
+			@hideSaveProgressBar()
+		@analysisController.on 'analysis-completed', =>
+			@model.fetch
+				success: =>
+					console.log "fetched model"
+				error: =>
+					alert 'Could not get experiment after data analysis, refreshing page'
+					window.location.reload()
+		@$('.bv_screeningCampaignDataAnalysisTab').on 'shown', (e) =>
+			if @model.getAnalysisStatus().get('codeValue') is "not started"
+				@analysisController.checkForSourceFile()
+		@analysisController.render()
+
+
+	showWarningModal: ->
+		@$('a[href="#screeningCampaignDataAnalysis"]').tab('show')
+		dryRunStatus = @model.getDryRunStatus().get('codeValue')
+		dryRunResult = @model.getDryRunResultHTML().get('clobValue')
+		analysisStatus = @model.getAnalysisStatus().get('codeValue')
+		analysisResult = @model.getAnalysisResultHTML().get('clobValue')
+		@$('.bv_dryRunStatus').html("Dry Run Status: "+dryRunStatus)
+		@$('.bv_dryRunResult').html("Dry Run Result HTML: "+dryRunResult)
+		@$('.bv_analysisStatus').html("Analysis Status: "+analysisStatus)
+		@$('.bv_analysisResult').html("Analysis Result HTML: "+analysisResult)
+		@$('.bv_invalidAnalysisStates').modal
+			backdrop: "static"
+		@$('.bv_invalidAnalysisStates').modal("show")
+		@$('.bv_fileUploadWrapper .bv_fileUploadWrapper').hide()
+		@$('.bv_fileUploadWrapper .bv_flowControl').hide()
+
+	showValidateProgressBar: ->
+		@$('a[href="#screeningCampaignDataAnalysis"]').tab('show')
+		@$('.bv_validateStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_validateStatusDropDown').modal("show")
+
+	showSaveProgressBar: ->
+		@$('a[href="#screeningCampaignDataAnalysis"]').tab('show')
+		@$('.bv_saveStatusDropDown').modal
+			backdrop: "static"
+		@$('.bv_saveStatusDropDown').modal("show")
+
+	hideValidateProgressBar: ->
+		@$('.bv_validateStatusDropDown').modal("hide")
+
+	hideSaveProgressBar: ->
+		@$('.bv_saveStatusDropDown').modal("hide")
+
+class window.ScreeningCampaignAnalysisController extends PrimaryScreenAnalysisController
+
+	initialize: ->
+		if @options.exptCode?
+			@exptCode = @options.exptCode
+		else
+			@exptCode = ""
+		if @options.primaryExpts?
+			@primaryExpts = @options.primaryExpts
+		else
+			@primaryExpts = new Backbone.Collection()
+
+		if @options.followUpExpts?
+			@followUpExpts = @options.followUpExpts
+		else
+			@followUpExpts = new Backbone.Collection()
+		super()
+		@$('.bv_saveExperimentToAnalyze').html "To analyze data, save or cancel the changes made in the General and/or Linked Experiments tabs."
+
+	setupDataAnalysisController: (dacClassName) ->
+		if @model.getAnalysisStatus()?
+			analysisStatus = @model.getAnalysisStatus().get('codeValue')
+		else
+			analysisStatus = "not started"
+		newArgs =
+			el: @$('.bv_fileUploadWrapper')
+			paramsFromExperiment:	@model.getAnalysisParameters()
+			analyzedPreviously: analysisStatus !="not started"
+			exptCode: @exptCode
+			primaryExpts: @primaryExpts
+			followUpExpts: @followUpExpts
+		@dataAnalysisController = new window[dacClassName](newArgs)
+		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
+		@dataAnalysisController.setExperimentId(@model.id)
+		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
+		@dataAnalysisController.on 'amDirty', =>
+			@trigger 'amDirty'
+		@dataAnalysisController.on 'amClean', =>
+			@trigger 'amClean'
+
+	checkForSourceFile: ->
+		#don't load source file as a data file (file to parse)
+
+class window.UploadAndRunScreeningCampaignAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
+
+	initialize: ->
+		if @options.exptCode?
+			@exptCode = @options.exptCode
+		else
+			@exptCode = ""
+		if @options.primaryExpts?
+			@primaryExpts = @options.primaryExpts
+		else
+			@primaryExpts = new Backbone.Collection()
+
+		if @options.followUpExpts?
+			@followUpExpts = @options.followUpExpts
+		else
+			@followUpExpts = new Backbone.Collection()
+
+		@fileProcessorURL = "/api/screeningCampaign/analyzeScreeningCampaign"
+		@errorOwnerName = 'UploadAndRunScreeningCampaignAnalsysisController'
+		@allowedFileTypes = ['zip']
+		@maxFileSize = 200000000
+		@loadReportFile = false
+		@parseFileUploaded = true #not really uploaded but don't want to require data file upload
+		super()
+		@$('.bv_moduleTitle').hide()
+		@analysisParameterController = new ScreeningCampaignDataAnalysisController
+			model: @options.paramsFromExperiment
+			el: @$('.bv_additionalValuesForm')
+		@completeInitialization()
+		@handleFormValid()
+		@$('.bv_fileUploadDirections').hide()
+		@$('.bv_parseFile').hide()
+
+
+	validateParseFile: =>
+		primaryExperimentCodes = @primaryExpts.pluck 'codeName'
+		followUpExperimentCodes = @followUpExpts.pluck 'codeName'
+
+		@analysisParameterController.updateModel()
+		unless !@analysisParameterController.isValid()
+			@additionalData =
+				inputParameters: JSON.stringify @analysisParameterController.model
+				testMode: false
+				exptCode: @options.exptCode
+				primaryExperimentCodes: JSON.stringify primaryExperimentCodes
+				confirmationExperimentCodes: JSON.stringify followUpExperimentCodes
+			if @parseFileUploaded and not @$(".bv_next").attr('disabled')
+				@notificationController.clearAllNotificiations()
+				@$('.bv_validateStatusDropDown').modal
+					backdrop: "static"
+				@$('.bv_validateStatusDropDown').modal "show"
+				dataToPost = @prepareDataToPost(true)
+				$.ajax
+					type: 'POST'
+					url: @fileProcessorURL
+					data: dataToPost
+					success: @handleValidationReturnSuccess
+					error: (err) =>
+						@$('.bv_validateStatusDropDown').modal("hide")
+					dataType: 'json'
+

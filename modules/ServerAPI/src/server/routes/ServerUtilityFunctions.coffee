@@ -220,6 +220,8 @@ exports.getFromACASServer = (baseurl, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
+				resp.statusCode = 500
+				resp.end "Could not get from ACAS Server"
 				console.log 'got ajax error'
 				console.log error
 				console.log json

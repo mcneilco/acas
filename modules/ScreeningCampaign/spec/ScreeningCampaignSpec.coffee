@@ -9,14 +9,14 @@ describe "Screening Campaign module testing", ->
 	describe "Screening Experiment model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
-				@pe = new ParentExperiment()
+				@pe = new ScreeningExperiment()
 			describe "Existence and Defaults", ->
 				it "should be defined", ->
 					expect(@pe).toBeDefined()
 				it "should have lsType of Parent", ->
 					expect(@pe.get('lsType')).toEqual "Parent"
-				it "should have lsKind of Bio Activiy", ->
-					expect(@pe.get('lsKind')).toEqual "Bio Activity"
+				it "should have lsKind of Bio Activiy Screen", ->
+					expect(@pe.get('lsKind')).toEqual "Bio Activity Screen"
 	describe "Screening Experiment Parameters model testing", ->
 		describe "When loaded from new", ->
 			beforeEach ->
@@ -30,15 +30,11 @@ describe "Screening Campaign module testing", ->
 					expect(@sep.get('aggregationMethod')).toEqual "unassigned"
 					expect(@sep.get('normalization') instanceof Normalization).toBeTruthy()
 					expect(@sep.get('transformationRuleList') instanceof TransformationRuleList).toBeTruthy()
-					expect(@sep.get('primaryHitEfficacyThreshold')).toBeNull()
-					expect(@sep.get('primaryHitSDThreshold')).toBeNull()
-					expect(@sep.get('primaryThresholdType')).toEqual null
-					expect(@sep.get('primaryAutoHitSelection')).toBeFalsy()
-					expect(@sep.get('confirmationHitEfficacyThreshold')).toBeNull()
-					expect(@sep.get('confirmationHitSDThreshold')).toBeNull()
-					expect(@sep.get('confirmationThresholdType')).toEqual null
-					expect(@sep.get('confirmationAutoHitSelection')).toBeFalsy()
-					expect(@sep.get('generateSummaryReport')).toBeTruthy()
+					expect(@sep.get('hitEfficacyThreshold')).toBeNull()
+					expect(@sep.get('hitSDThreshold')).toBeNull()
+					expect(@sep.get('thresholdType')).toEqual null
+					expect(@sep.get('useOriginalHits')).toBeFalsy()
+					expect(@sep.get('autoHitSelection')).toBeFalsy()
 		describe "When loaded from existing", ->
 			beforeEach ->
 				@sep = new ScreeningExperimentParameters window.screeningCampaignTestJSON.screeningCampaignAnalysisParameters
@@ -68,37 +64,21 @@ describe "Screening Campaign module testing", ->
 					filtErrors = _.filter @sep.validationError, (err) ->
 						err.attribute=='signalDirectionRule'
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when primaryAutoHitSelection is checked and primaryThresholdType is sd and primaryHitSDThreshold is not a number", ->
-					@sep.set primaryAutoHitSelection: true
-					@sep.set primaryThresholdType: "sd"
-					@sep.set primaryHitSDThreshold: NaN
+				it "should be invalid when autoHitSelection is checked and thresholdType is sd and hitSDThreshold is not a number", ->
+					@sep.set autoHitSelection: true
+					@sep.set thresholdType: "sd"
+					@sep.set hitSDThreshold: NaN
 					expect(@sep.isValid()).toBeFalsy()
 					filtErrors = _.filter @sep.validationError, (err) ->
-						err.attribute=='primaryHitSDThreshold'
+						err.attribute=='hitSDThreshold'
 					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when primaryAutoHitSelection is checked and primaryThresholdType is efficacy and primaryHitEfficacyThreshold is not a number", ->
-					@sep.set primaryAutoHitSelection: true
-					@sep.set primaryThresholdType: "efficacy"
-					@sep.set primaryHitEfficacyThreshold: NaN
+				it "should be invalid when autoHitSelection is checked and thresholdType is efficacy and hitEfficacyThreshold is not a number", ->
+					@sep.set autoHitSelection: true
+					@sep.set thresholdType: "efficacy"
+					@sep.set hitEfficacyThreshold: NaN
 					expect(@sep.isValid()).toBeFalsy()
 					filtErrors = _.filter @sep.validationError, (err) ->
-						err.attribute=='primaryHitEfficacyThreshold'
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when confirmationAutoHitSelection is checked and confirmationThresholdType is sd and confirmationHitSDThreshold is not a number", ->
-					@sep.set confirmationAutoHitSelection: true
-					@sep.set confirmationThresholdType: "sd"
-					@sep.set confirmationHitSDThreshold: NaN
-					expect(@sep.isValid()).toBeFalsy()
-					filtErrors = _.filter @sep.validationError, (err) ->
-						err.attribute=='confirmationHitSDThreshold'
-					expect(filtErrors.length).toBeGreaterThan 0
-				it "should be invalid when confirmationAutoHitSelection is checked and confirmationThresholdType is efficacy and confirmationHitEfficacyThreshold is not a number", ->
-					@sep.set confirmationAutoHitSelection: true
-					@sep.set confirmationThresholdType: "efficacy"
-					@sep.set confirmationHitEfficacyThreshold: NaN
-					expect(@sep.isValid()).toBeFalsy()
-					filtErrors = _.filter @sep.validationError, (err) ->
-						err.attribute=='confirmationHitEfficacyThreshold'
+						err.attribute=='hitEfficacyThreshold'
 					expect(filtErrors.length).toBeGreaterThan 0
 	describe "AddedExperimentSummaryTableController", ->
 		beforeEach ->
@@ -116,28 +96,28 @@ describe "Screening Campaign module testing", ->
 		describe "Functions", ->
 			it "should be able to add primary expt interactions", ->
 				expect(@aestc.exptExptItxs.length).toEqual 0
-				@aestc.linkPrimaryExpt(new Experiment window.experimentServiceTestJSON.fullExperimentFromServer)
+				@aestc.linkPrimaryExpt(new ScreeningExperiment window.experimentServiceTestJSON.fullExperimentFromServer)
 				expect(@aestc.exptExptItxs.length).toEqual 1
 				expect(@aestc.exptExptItxs.at(0).get('lsType')).toEqual "has member"
 				expect(@aestc.exptExptItxs.at(0).get('lsKind')).toEqual "parent_primary child"
 			it "should be able to add follow up expt interactions", ->
 				@aestc.exptExptItxs = new Backbone.Collection
 				expect(@aestc.exptExptItxs.length).toEqual 0
-				@aestc.linkFollowUpExpt(new Experiment window.experimentServiceTestJSON.fullExperimentFromServer)
+				@aestc.linkFollowUpExpt(new ScreeningExperiment window.experimentServiceTestJSON.fullExperimentFromServer)
 				expect(@aestc.exptExptItxs.length).toEqual 1
 				expect(@aestc.exptExptItxs.at(0).get('lsType')).toEqual "has member"
 				expect(@aestc.exptExptItxs.at(0).get('lsKind')).toEqual "parent_confirmation child"
 			it "should be able to remove an itx", ->
 				@aestc.exptExptItxs = new Backbone.Collection
 				expect(@aestc.exptExptItxs.length).toEqual 0
-				@aestc.linkFollowUpExpt(new Experiment window.experimentServiceTestJSON.fullExperimentFromServer)
+				@aestc.linkFollowUpExpt(new ScreeningExperiment window.experimentServiceTestJSON.fullExperimentFromServer)
 				expect(@aestc.exptExptItxs.length).toEqual 1
 				@aestc.$('.bv_removeExpt:eq(0)').click()
 				expect(@aestc.exptExptItxs.length).toEqual 0
 	describe "LinkedExperimentsController tests", ->
 		beforeEach ->
 			@lec = new LinkedExperimentsController
-				model: new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
+				model: new ScreeningExperiment window.experimentServiceTestJSON.fullExperimentFromServer
 				el: @fixture
 			@lec.render()
 		describe "Basic existence and rendering tests", ->
@@ -183,25 +163,18 @@ describe "Screening Campaign module testing", ->
 					, 1000
 					runs ->
 						expect(@scdac.$('.bv_normalizationRule').val()).toEqual "plate order only"
-				it 'should start with primaryAutoHitSelection unchecked', ->
-					expect(@scdac.$('.bv_primaryAutoHitSelection').attr("checked")).toBeUndefined()
-				it 'should show the primaryHitSDThreshold', ->
-					expect(@scdac.$('.bv_primaryHitSDThreshold').val()).toEqual '5'
-				it 'should show the primaryHitEfficacyThreshold', ->
-					expect(@scdac.$('.bv_primaryHitEfficacyThreshold').val()).toEqual '42'
-				it 'should start with primaryThresholdType radio set', ->
-					expect(@scdac.$("input[name='bv_primaryThresholdType']:checked").val()).toEqual 'sd'
-				it 'should hide threshold controls if the model loads unchecked primaryAutomaticHitSelection', ->
-					expect(@scdac.$('.bv_primaryThresholdControls')).toBeHidden()
-				it 'should start with confirmationAutoHitSelection unchecked', ->
-					expect(@scdac.$('.bv_confirmationAutoHitSelection').attr("checked")).toBeUndefined()
-				it 'should show the confirmationHitSDThreshold', ->
-					expect(@scdac.$('.bv_confirmationHitSDThreshold').val()).toEqual '5'
-				it 'should show the confirmationHitEfficacyThreshold', ->
-					expect(@scdac.$('.bv_confirmationHitEfficacyThreshold').val()).toEqual '42'
-					expect(@scdac.$("input[name='bv_confirmationThresholdType']:checked").val()).toEqual 'sd'
-				it 'should hide threshold controls if the model loads unchecked confirmationAutomaticHitSelection', ->
-					expect(@scdac.$('.bv_confirmationThresholdControls')).toBeHidden()
+				it 'should start with useOriginalHits unchecked', ->
+					expect(@scdac.$('.bv_useOriginalHits').attr("checked")).toBeUndefined()
+				it 'should start with autoHitSelection unchecked', ->
+					expect(@scdac.$('.bv_autoHitSelection').attr("checked")).toBeUndefined()
+				it 'should show the hitSDThreshold', ->
+					expect(@scdac.$('.bv_hitSDThreshold').val()).toEqual '5'
+				it 'should show the hitEfficacyThreshold', ->
+					expect(@scdac.$('.bv_hitEfficacyThreshold').val()).toEqual '42'
+				it 'should start with thresholdType radio set', ->
+					expect(@scdac.$("input[name='bv_thresholdType']:checked").val()).toEqual 'sd'
+				it 'should hide threshold controls if the model loads unchecked automaticHitSelection', ->
+					expect(@scdac.$('.bv_thresholdControls')).toBeHidden()
 			describe "model updates", ->
 				it "should update the signal direction rule", ->
 					waitsFor ->
@@ -227,53 +200,33 @@ describe "Screening Campaign module testing", ->
 						@scdac.$('.bv_aggregationMethod').val('unassigned')
 						@scdac.$('.bv_aggregationMethod').change()
 						expect(@scdac.model.get('aggregationMethod')).toEqual "unassigned"
-				it "should update the primaryHitSDThreshold ", ->
-					@scdac.$('.bv_primaryHitSDThreshold').val(' 24 ')
-					@scdac.$('.bv_primaryHitSDThreshold').keyup()
-					expect(@scdac.model.get('primaryHitSDThreshold')).toEqual 24
-				it "should update the primaryHitEfficacyThreshold ", ->
-					@scdac.$('.bv_primaryHitEfficacyThreshold').val(' 25 ')
-					@scdac.$('.bv_primaryHitEfficacyThreshold').keyup()
-					expect(@scdac.model.get('primaryHitEfficacyThreshold')).toEqual 25
-				it "should update the primaryThresholdType ", ->
-					@scdac.$('.bv_primaryThresholdTypeEfficacy').click()
-					expect(@scdac.model.get('primaryThresholdType')).toEqual "efficacy"
-				it "should update the primaryAutoHitSelection ", ->
-					@scdac.$('.bv_primaryAutoHitSelection').click()
-					expect(@scdac.model.get('primaryAutoHitSelection')).toBeTruthy()
-				it "should update the confirmationHitSDThreshold", ->
-					@scdac.$('.bv_confirmationHitSDThreshold').val(' 24 ')
-					@scdac.$('.bv_confirmationHitSDThreshold').keyup()
-					expect(@scdac.model.get('confirmationHitSDThreshold')).toEqual 24
-				it "should update the confirmationHitEfficacyThreshold", ->
-					@scdac.$('.bv_confirmationHitEfficacyThreshold').val(' 25 ')
-					@scdac.$('.bv_confirmationHitEfficacyThreshold').keyup()
-					expect(@scdac.model.get('confirmationHitEfficacyThreshold')).toEqual 25
-				it "should update the confirmationThresholdType", ->
-					@scdac.$('.bv_confirmationThresholdTypeEfficacy').click()
-					expect(@scdac.model.get('confirmationThresholdType')).toEqual "efficacy"
-				it "should update the confirmationAutoHitSelection", ->
-					@scdac.$('.bv_confirmationAutoHitSelection').click()
-					expect(@scdac.model.get('confirmationAutoHitSelection')).toBeTruthy()
+				it "should update the hitSDThreshold ", ->
+					@scdac.$('.bv_hitSDThreshold').val(' 24 ')
+					@scdac.$('.bv_hitSDThreshold').keyup()
+					expect(@scdac.model.get('hitSDThreshold')).toEqual 24
+				it "should update the hitEfficacyThreshold ", ->
+					@scdac.$('.bv_hitEfficacyThreshold').val(' 25 ')
+					@scdac.$('.bv_hitEfficacyThreshold').keyup()
+					expect(@scdac.model.get('hitEfficacyThreshold')).toEqual 25
+				it "should update the thresholdType ", ->
+					@scdac.$('.bv_thresholdTypeEfficacy').click()
+					expect(@scdac.model.get('thresholdType')).toEqual "efficacy"
+				it "should update the useOriginalHits ", ->
+					@scdac.$('.bv_useOriginalHits').click()
+					expect(@scdac.model.get('useOriginalHits')).toBeTruthy()
+				it "should update the autoHitSelection ", ->
+					@scdac.$('.bv_autoHitSelection').click()
+					expect(@scdac.model.get('autoHitSelection')).toBeTruthy()
 			describe "behavior and validation", ->
-				it "should disable primary sd threshold field if that radio not selected", ->
-					@scdac.$('.bv_primaryThresholdTypeEfficacy').click()
-					expect(@scdac.$('.bv_primaryHitSDThreshold').attr("disabled")).toEqual "disabled"
-					expect(@scdac.$('.bv_primaryHitEfficacyThreshold').attr("disabled")).toBeUndefined()
-				it "should disable primary efficacy threshold field if that radio not selected", ->
-					@scdac.$('.bv_primaryThresholdTypeEfficacy').click()
-					@scdac.$('.bv_primaryThresholdTypeSD').click()
-					expect(@scdac.$('.bv_primaryHitEfficacyThreshold').attr("disabled")).toEqual "disabled"
-					expect(@scdac.$('.bv_primaryHitSDThreshold').attr("disabled")).toBeUndefined()
-				it "should disable confirmation sd threshold field if that radio not selected", ->
-					@scdac.$('.bv_confirmationThresholdTypeEfficacy').click()
-					expect(@scdac.$('.bv_confirmationHitSDThreshold').attr("disabled")).toEqual "disabled"
-					expect(@scdac.$('.bv_confirmationHitEfficacyThreshold').attr("disabled")).toBeUndefined()
-				it "should disable confirmation efficacy threshold field if that radio not selected", ->
-					@scdac.$('.bv_confirmationThresholdTypeEfficacy').click()
-					@scdac.$('.bv_confirmationThresholdTypeSD').click()
-					expect(@scdac.$('.bv_confirmationHitEfficacyThreshold').attr("disabled")).toEqual "disabled"
-					expect(@scdac.$('.bv_confirmationHitSDThreshold').attr("disabled")).toBeUndefined()
+				it "should disable sd threshold field if that radio not selected", ->
+					@scdac.$('.bv_thresholdTypeEfficacy').click()
+					expect(@scdac.$('.bv_hitSDThreshold').attr("disabled")).toEqual "disabled"
+					expect(@scdac.$('.bv_hitEfficacyThreshold').attr("disabled")).toBeUndefined()
+				it "should disable efficacy threshold field if that radio not selected", ->
+					@scdac.$('.bv_thresholdTypeEfficacy').click()
+					@scdac.$('.bv_thresholdTypeSD').click()
+					expect(@scdac.$('.bv_hitEfficacyThreshold').attr("disabled")).toEqual "disabled"
+					expect(@scdac.$('.bv_hitSDThreshold').attr("disabled")).toBeUndefined()
 		describe "validation testing", ->
 			beforeEach ->
 				@scdac = new ScreeningCampaignDataAnalysisController
@@ -305,30 +258,18 @@ describe "Screening Campaign module testing", ->
 						@scdac.$('.bv_aggregationMethod').val "unassigned"
 						@scdac.$('.bv_aggregationMethod').change()
 						expect(@scdac.$('.bv_group_aggregationMethod').hasClass("error")).toBeTruthy()
-				it "should show error if primary threshold type is efficacy and efficacy threshold not a number", ->
-					@scdac.$('.bv_primaryAutoHitSelection').click()
-					@scdac.$('.bv_primaryThresholdTypeEfficacy').click()
-					@scdac.$('.bv_primaryHitEfficacyThreshold').val ""
-					@scdac.$('.bv_primaryHitEfficacyThreshold').keyup()
-					expect(@scdac.$('.bv_group_primaryHitEfficacyThreshold').hasClass("error")).toBeTruthy()
-				it "should show error if primary threshold type is sd and sd threshold not a number", ->
-					@scdac.$('.bv_primaryAutoHitSelection').click()
-					@scdac.$('.bv_primaryThresholdTypeSD').click()
-					@scdac.$('.bv_primaryHitSDThreshold').val ""
-					@scdac.$('.bv_primaryHitSDThreshold').keyup()
-					expect(@scdac.$('.bv_group_primaryHitSDThreshold').hasClass("error")).toBeTruthy()
-				it "should show error if confirmation threshold type is efficacy and efficacy threshold confirmation not a number", ->
-					@scdac.$('.bv_confirmationAutoHitSelection').click()
-					@scdac.$('.bv_confirmationThresholdTypeEfficacy').click()
-					@scdac.$('.bv_confirmationHitEfficacyThreshold').val ""
-					@scdac.$('.bv_confirmationHitEfficacyThreshold').keyup()
-					expect(@scdac.$('.bv_group_confirmationHitEfficacyThreshold').hasClass("error")).toBeTruthy()
-				it "should show error if confirmation threshold type is sd and sd threshold confirmation not a number", ->
-					@scdac.$('.bv_confirmationAutoHitSelection').click()
-					@scdac.$('.bv_confirmationThresholdTypeSD').click()
-					@scdac.$('.bv_confirmationHitSDThreshold').val ""
-					@scdac.$('.bv_confirmationHitSDThreshold').keyup()
-					expect(@scdac.$('.bv_group_confirmationHitSDThreshold').hasClass("error")).toBeTruthy()
+				it "should show error if threshold type is efficacy and efficacy threshold not a number", ->
+					@scdac.$('.bv_autoHitSelection').click()
+					@scdac.$('.bv_thresholdTypeEfficacy').click()
+					@scdac.$('.bv_hitEfficacyThreshold').val ""
+					@scdac.$('.bv_hitEfficacyThreshold').keyup()
+					expect(@scdac.$('.bv_group_hitEfficacyThreshold').hasClass("error")).toBeTruthy()
+				it "should show error if threshold type is sd and sd threshold not a number", ->
+					@scdac.$('.bv_autoHitSelection').click()
+					@scdac.$('.bv_thresholdTypeSD').click()
+					@scdac.$('.bv_hitSDThreshold').val ""
+					@scdac.$('.bv_hitSDThreshold').keyup()
+					expect(@scdac.$('.bv_group_hitSDThreshold').hasClass("error")).toBeTruthy()
 				it "should show error if transformation rule is unassigned", ->
 					waitsFor ->
 						@scdac.$('.bv_transformationRule option').length > 0
@@ -352,7 +293,7 @@ describe "Screening Campaign module testing", ->
 	describe "ScreeningCampaignModuleController tests", ->
 		beforeEach ->
 			@scmc = new ScreeningCampaignModuleController
-				model: new Experiment window.experimentServiceTestJSON.fullExperimentFromServer
+				model: new ScreeningExperiment window.experimentServiceTestJSON.fullExperimentFromServer
 				el: @fixture
 			@scmc.render()
 		describe "Basic existence and rendering tests", ->

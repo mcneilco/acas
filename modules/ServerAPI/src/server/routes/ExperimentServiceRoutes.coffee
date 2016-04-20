@@ -9,8 +9,10 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
+	app.post '/api/createAndUpdateExptExptItxs', exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', exports.putExptExptItxs
+	app.post '/api/screeningCampaign/analyzeScreeningCampaign', exports.analyzeScreeningCampaign
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -25,8 +27,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', loginRoutes.ensureAuthenticated, exports.getItxExptExptsByFirstExpt
+	app.post '/api/createAndUpdateExptExptItxs', loginRoutes.ensureAuthenticated, exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', loginRoutes.ensureAuthenticated, exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', loginRoutes.ensureAuthenticated, exports.putExptExptItxs
+	app.post '/api/screeningCampaign/analyzeScreeningCampaign', loginRoutes.ensureAuthenticated, exports.analyzeScreeningCampaign
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -377,23 +381,18 @@ exports.getItxExptExptsByFirstExpt = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.postExptExptItxs = (req, resp) ->
-	if global.specRunnerTestmode
-			res.end JSON.stringify "stubsMode not implemented"
+postExptExptItxs = (exptExptItxs, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback JSON.stringify "stubsMode not implemented"
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
 		console.log "post expt expt itx body"
-		console.log req
-		console.log req.body
-		console.log "req.body.data"
-		console.log req.body.data
-		console.log "typeof: " + typeof req.body.data
 		request = require 'request'
 		request(
 			method: 'POST'
 			url: baseurl
-			body: req.body.data
+			body: exptExptItxs
 			json: true
 		, (error, response, json) =>
 			console.log "postExptExptItxs json"
@@ -402,15 +401,20 @@ exports.postExptExptItxs = (req, resp) ->
 			console.log response.statusCode
 			console.log response
 			if !error && response.statusCode == 201
-				resp.json json
+				callback json
 			else
 				console.log "got error posting expt expt itxs"
-				resp.end JSON.stringify error
+				callback "postExptExptItxs saveFailed: " + JSON.stringify error
 		)
 
-exports.putExptExptItxs = (req, resp) ->
-	if global.specRunnerTestmode
-			res.end JSON.stringify "stubsMode not implemented"
+
+exports.postExptExptItxs = (req, resp) ->
+	postExptExptItxs req.body, req.query.testMode, (newExptExptItxs) ->
+		resp.json newExptExptItxs
+
+putExptExptItxs = (exptExptItxs, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback JSON.stringify "stubsMode not implemented"
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
@@ -418,7 +422,7 @@ exports.putExptExptItxs = (req, resp) ->
 		request(
 			method: 'PUT'
 			url: baseurl
-			body: req.body.data
+			body: exptExptItxs
 			json: true
 		, (error, response, json) =>
 			console.log "putExptExptItxs json"
@@ -427,8 +431,47 @@ exports.putExptExptItxs = (req, resp) ->
 			console.log response.statusCode
 			console.log response
 			if !error && response.statusCode == 200
-				resp.json json
+				callback json
 			else
 				console.log "got error putting expt expt itxs"
-				resp.end JSON.stringify "Error: " + error
+				callback "putExptExptItxs saveFailed: " + JSON.stringify error
+		)
+
+exports.putExptExptItxs = (req, resp) ->
+	putExptExptItxs req.body, req.query.testMode, (updatedExptExptItxs) ->
+		resp.json updatedExptExptItxs
+
+exports.createAndUpdateExptExptItxs = (req, resp) ->
+	putExptExptItxs req.body.exptExptItxsToIgnore, req.query.testMode, (updatedExptExptItxs) ->
+		if updatedExptExptItxs.indexOf("saveFailed") > -1
+			resp.statusCode = 500
+			resp.json updatedExptExptItxs
+		else
+			postExptExptItxs req.body.newExptExptItxs, req.query.testMode, (newExptExptItxs) ->
+				if newExptExptItxs.indexOf("saveFailed") > -1
+					resp.statusCode = 500
+					resp.json newExptExptItxs
+				else
+					resp.json updatedExptExptItxs.concat newExptExptItxs
+
+exports.analyzeScreeningCampaign = (req, resp) ->
+	req.connection.setTimeout 180000000
+
+	resp.writeHead(200, {'Content-Type': 'application/json'});
+
+	if global.specRunnerTestmode
+		serverUtilityFunctions.runRFunction(
+			req,
+			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysisStub.R",
+			"analyzeScreeningCampaign",
+			(rReturn) ->
+				resp.end rReturn
+		)
+	else #TODO: add real implementation
+		serverUtilityFunctions.runRFunction(
+			req,
+			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysisStub.R",
+			"analyzeScreeningCampaign",
+			(rReturn) ->
+				resp.end rReturn
 		)
