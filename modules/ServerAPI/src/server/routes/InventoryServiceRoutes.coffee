@@ -300,6 +300,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						outArray = []
 						for containerCode, index in containerCodes
 							container = _.findWhere(containers, {'containerCodeName': containerCode})
+							definition = _.findWhere(definitions, {'containerCodeName': containerCode})
 							if container.container?
 								container = container.container
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
@@ -312,12 +313,10 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 									callback message, 400
 									return
 								container = new containerPreferredEntity.model(container)
-								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
-								definition = new definitionPreferredEntity.model(definitions[index].definition)
+								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
+								definition = new definitionPreferredEntity.model(definition.definition)
 								containerValues =  container.getValues()
-								console.debug "here are the values of the container: #{JSON.stringify(containerValues,null, '  ')}"
 								definitionValues =  definition.getValues()
-								console.debug "here are the values of the definition container: #{JSON.stringify(definitionValues,null, '  ')}"
 								out = _.extend containerValues, definitionValues
 								out.barcode = container.get('barcode').get("labelText")
 								out.codeName = containerCode
@@ -326,7 +325,6 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								outArray.push out
 							else
 								console.error "could not find container #{containerCode}"
-						console.debug "output of getContainerAndDefinitionContainerByContainerCodeNames: #{JSON.stringify(outArray,null, '  ')}"
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
@@ -1225,55 +1223,87 @@ exports.mergeContainersInternal = (input, callback) ->
 		console.debug "incoming mergeContainers request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
 		contanerCodes = _.pluck input.quadrants, "codeName"
-		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [contanerCodes[0]], (firstOriginContainer, statusCode) =>
-			destinationPlateSize = firstOriginContainer[0].plateSize*4
-			exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
-				exports.getWellContentByContainerCodesInternal contanerCodes, (originWellContent) =>
-					input.definition = definitionContainer.get 'codeName'
-					input.wells = []
-					isOdd = (num) ->
-						return (num % 2) == 1
-					alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-					_.map originWellContent, (originWells) ->
-						quadrant = _.findWhere input.quadrants, {"codeName": originWells.containerCodeName}
-						_.map originWells.wellContent, (wellContent) ->
-							wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
-							wellContent.recordedDate = 1455323242544
-							if quadrant.quadrant == 1
-								wellContent.rowIndex = 2*(wellContent.rowIndex)-1
-								wellContent.columnIndex = 2*(wellContent.columnIndex)-1
-							else if quadrant.quadrant == 2
-								wellContent.rowIndex = 2*(wellContent.rowIndex)-1
-								wellContent.columnIndex = 2*wellContent.columnIndex
-							else if quadrant.quadrant == 3
-								wellContent.rowIndex = 2*(wellContent.rowIndex)
-								wellContent.columnIndex = 2*(wellContent.columnIndex)-1
-							else if quadrant.quadrant == 4
-								wellContent.rowIndex = 2*(wellContent.rowIndex)
-								wellContent.columnIndex = 2*(wellContent.columnIndex)
-							if wellContent.rowIndex > 26
-								text = "A"+alphabet[wellContent.rowIndex-26-1]
-							else
-								text = alphabet[wellContent.rowIndex-1]
-							if wellContent.columnIndex < 10
-								text = text+"00"
-							else
-								text = text+"0"
-							wellContent.wellName = text+wellContent.columnIndex
-							input.wells.push wellContent
-					compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
-					compoundInventoryRoutes.createPlateInternal input, "1", (newContainer, statusCode) ->
-						if statusCode == 200
-							input.codeName = newContainer.codeName
-							containerToUpdate = _.omit input, ["wells", "definitionCodeName"]
-							exports.updateContainersByContainerCodesInternal [containerToUpdate], "1", (updatedContainer, statusCode) ->
-								if statusCode == 200
-									updatedContainer[0].wells = input.wells
-									callback updatedContainer[0], 200
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal contanerCodes, (originContainers, statusCode) =>
+			if statusCode == 400
+				callback originContainers, statusCode
+				return
+			else if statusCode == 500
+				callback "internal error", statusCode
+				return
+			plateSizes = _.pluck originContainers, "plateSize"
+			uniquePlateSizes = _.unique plateSizes
+			if !uniquePlateSizes[0]?
+				callback "could not determine destination plate size", 400
+				return
+			else if uniquePlateSizes.length > 1
+				console.error "multiple different plate sizes found #{JSON.stringify(_.map(originContainers, (originContainer) -> _.pick(originContainer, "codeName","plateSize")))}", 400
+				callback _.map(originContainers, (originContainer) -> _.pick(originContainer, "codeName","plateSize")), 400
+				return
+			destinationPlateSize = originContainers[0].plateSize*4
+			exports.getContainerCodesByLabelsInternal [input.barcode], null, null, "barcode", "barcode", (containerCodes, statusCode) =>
+				if statusCode == 500
+					callback "internal error", 500
+					return
+				else if containerCodes[0].foundCodeNames.length > 0
+						message = "barcode '#{containerCodes[0].requestLabel}' already being used by #{containerCodes[0].foundCodeNames.join(",")}"
+						console.error message
+						callback message, 409
+						return
+				exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
+					if statusCode == 400
+						message =  "could not get definition for plate size #{destinationPlateSize}"
+						console.error message
+						callback message, 400
+						return
+					else if statusCode == 500
+						callback "internal error", 500
+						return
+					exports.getWellContentByContainerCodesInternal contanerCodes, (originWellContent) =>
+						input.definition = definitionContainer.get 'codeName'
+						input.wells = []
+						isOdd = (num) ->
+							return (num % 2) == 1
+						alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+						_.map originWellContent, (originWells) ->
+							quadrant = _.findWhere input.quadrants, {"codeName": originWells.containerCodeName}
+							_.map originWells.wellContent, (wellContent) ->
+								wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
+								wellContent.recordedDate = 1455323242544
+								if quadrant.quadrant == 1
+									wellContent.rowIndex = 2*(wellContent.rowIndex)-1
+									wellContent.columnIndex = 2*(wellContent.columnIndex)-1
+								else if quadrant.quadrant == 2
+									wellContent.rowIndex = 2*(wellContent.rowIndex)-1
+									wellContent.columnIndex = 2*wellContent.columnIndex
+								else if quadrant.quadrant == 3
+									wellContent.rowIndex = 2*(wellContent.rowIndex)
+									wellContent.columnIndex = 2*(wellContent.columnIndex)-1
+								else if quadrant.quadrant == 4
+									wellContent.rowIndex = 2*(wellContent.rowIndex)
+									wellContent.columnIndex = 2*(wellContent.columnIndex)
+								if wellContent.rowIndex > 26
+									text = "A"+alphabet[wellContent.rowIndex-26-1]
 								else
-									callback "error updating plate after creating it", 500
-						else
-							callback "error creating plate", 500
+									text = alphabet[wellContent.rowIndex-1]
+								if wellContent.columnIndex < 10
+									text = text+"00"
+								else
+									text = text+"0"
+								wellContent.wellName = text+wellContent.columnIndex
+								input.wells.push wellContent
+						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
+						compoundInventoryRoutes.createPlateInternal input, "1", (newContainer, statusCode) ->
+							if statusCode == 200
+								input.codeName = newContainer.codeName
+								containerToUpdate = _.omit input, ["wells", "definitionCodeName"]
+								exports.updateContainersByContainerCodesInternal [containerToUpdate], "1", (updatedContainer, statusCode) ->
+									if statusCode == 200
+										updatedContainer[0].wells = input.wells
+										callback updatedContainer[0], 200
+									else
+										callback "error updating plate after creating it", 500
+							else
+								callback "error creating plate", 500
 
 exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
 	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
