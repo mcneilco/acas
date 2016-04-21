@@ -59,6 +59,9 @@ class WellsModel extends Backbone.Model
     'wells': []
 
   getWellAtRowIdxColIdx: (rowIdx, colIdx) ->
+    # 1-based index offset
+    rowIdx++
+    colIdx++
     well = _.find(@allWells, (w) ->
       if w.columnIndex is colIdx and w.rowIndex is rowIdx
         return true
