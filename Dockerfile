@@ -44,7 +44,8 @@ COPY    . $ACAS_BASE
 USER    root
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
-RUN     cp -r node_modules $BUILD_PATH && \
+RUN     mkdir -p $BUILD_PATH/node_modules && \
+        cp -r node_modules $BUILD_PATH && \
         npm install && \
         mkdir $BUILD_PATH/privateUploads && \
         mkdir /home/runner/logs && \
