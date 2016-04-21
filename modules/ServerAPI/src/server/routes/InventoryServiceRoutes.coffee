@@ -633,7 +633,7 @@ exports.containersByTypeKind = (req, resp) ->
 		if req.query.testMode or global.specRunnerTestmode
 			resp.end JSON.stringify "stubsMode for getting containers in codetable format not implemented yet"
 		else
-			baseurl = config.all.client.service.persistence.fullpath+"containers/codetable?lsType=#{req.params.lsType}&lsKind=#{req.params.lsKind}"
+			baseurl = config.all.client.service.persistence.fullpath+"containers/?format=codetable&lsType=#{req.params.lsType}&lsKind=#{req.params.lsKind}"
 			stubFlag = "with=stub"
 			if req.query.stub
 				baseurl += "?#{stubFlag}"
@@ -943,7 +943,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
+		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent"
 		console.debug 'base url: ', baseurl
@@ -951,7 +951,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: wellContent
+			body: JSON.stringify(wellContent.wells)
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'

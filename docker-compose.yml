@@ -24,7 +24,8 @@ services:
      - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
      - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
      - ./modules/Login:/home/runner/acas/modules/Login
-     - ./public/lib/handsontable/dist/:/public/lib/handsontable/dist/
+     - ./public/lib/handsontable/dist/:/home/runner/acas/public/lib/handsontable/dist/
+     - ./public/lib/dataTables/js/:/home/runner/acas/public/lib/dataTables/js/
      - ./views/:/home/runner/acas/views/
      #handsontable.full.js
 

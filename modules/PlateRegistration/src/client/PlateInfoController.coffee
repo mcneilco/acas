@@ -3,7 +3,8 @@ BackboneValidation = require('backbone-validation')
 _ = require('lodash')
 $ = require('jquery')
 
-SelectList = require('./SelectList.coffee').SelectController
+PickListSelectController = require('./SelectList.coffee').PickListSelectController
+PickList = require('./SelectList.coffee').PickList
 
 PLATE_INFO_CONTROLLER_EVENTS =
   DELETE_PLATE: 'deletePlate'
@@ -37,9 +38,8 @@ class PlateInfoController extends Backbone.View
     Backbone.Validation.bind(@)
     @model = options.model
     @plateTypes = options.plateTypes
-    @plateTypesSelectList = new SelectList({collection: @plateTypes, selectedValue: @model.get('type')})
     @plateStatuses = options.plateStatuses
-    @plateStatusSelectList = new SelectList({collection: @plateStatuses, selectedValue: @model.get('status')})
+    #@plateStatusSelectList = new SelectList({collection: @plateStatuses, selectedValue: @model.get('status')})
     @selectLists = [
       controller: @plateTypesSelectList
       containerSelector: "select[name='type']"
@@ -50,19 +50,40 @@ class PlateInfoController extends Backbone.View
 
   events:
     "change input": "handleFormFieldUpdate"
+    "change select": "handleFormFieldUpdate"
     "click button[name='delete']": "handleDeleteClick"
     "click button[name='createQuadPinnedPlate']": "handleCreateQuadPinnedPlateClick"
+
+  initializeSelectLists: =>
+    @plateTypesSelectList = new PickListSelectController
+      el: $(@el).find("select[name='type']")
+      collection: @plateTypes
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: "Select Plate Type"
+      selectedCode: "unassigned"
+      className: "form-control"
+
+    if @model.get("type")?
+      @plateTypesSelectList.setSelectedCode(@model.get("type"))
+
+    @plateStatusSelectList = new PickListSelectController
+      el: $(@el).find("select[name='status']")
+      collection: @plateStatuses
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: "Select Plate Status"
+      selectedCode: "unassigned"
+      className: "form-control"
+
+    if @model.get("status")?
+      @plateStatusSelectList.setSelectedCode(@model.get("status"))
 
   render: =>
     $(@el).html @template(@model.toJSON())
     @initializeSelectLists()
 
     @
-
-  initializeSelectLists: =>
-#    _.each(@selectLists, (selectList) =>
-#      $(@el).find(selectList.containerSelector).html selectList.controller.render().el.childNodes
-#    )
 
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)

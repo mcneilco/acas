@@ -3,8 +3,7 @@ Backbone = require('backbone')
 PickListList = require('./SelectList.coffee').PickListList
 
 PLATE_TYPE_COLLECTION_CONST =
-  #URL: "/api/containers/codetable?lsType=definition%20container&lsKind=plate"
-  URL: "/api/containers/definition%20container/plate?format=codetable"
+  URL: "api/codetables/type/container%20plate"
 
 
 class PlateTypeCollection extends PickListList
@@ -14,3 +13,4 @@ class PlateTypeCollection extends PickListList
 module.exports =
   PlateTypeCollection: PlateTypeCollection
   PLATE_TYPE_COLLECTION_CONST: PLATE_TYPE_COLLECTION_CONST
+

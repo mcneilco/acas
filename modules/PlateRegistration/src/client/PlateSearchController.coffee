@@ -3,6 +3,9 @@ DataTable = require('imports?this=>window!../../../../public/lib/dataTables/js/j
 require('expose?$!expose?jQuery!jquery');
 require("bootstrap-webpack!./bootstrap.config.js");
 
+PickListSelectController = require('./SelectList.coffee').PickListSelectController
+PickList = require('./SelectList.coffee').PickList
+
 class PlateSearchController extends Backbone.View
   template: _.template(require('html!./PlateSearchView.tmpl'))
   events:
@@ -10,28 +13,93 @@ class PlateSearchController extends Backbone.View
     "click button[name='clonePlate']": "handleClonePlateClicked"
 
   initialize: (options) ->
-    console.log "plate search controller -- is this getting updated?!?!?!"
-    #console.log "w2ui"
-    #console.log w2ui
+    @plateDefinitions = options.plateDefinitions
+    @plateTypes = options.plateTypes
+    @plateStatuses = options.plateStatuses
+
+    @selectLists = [
+      containerSelector: "select[name='definition']"
+      collection: @plateDefinitions
+    ]
 
   completeInitialize: =>
+    @initializeSelectLists()
+
+  initializeSelectLists: =>
+
+    @plateDefinitionsSelectList = new PickListSelectController
+      el: $(@el).find("select[name='definition']")
+      collection: @plateDefinitions
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: ""
+      selectedCode: "unassigned"
+      className: "form-control"
+
+    @plateTypesSelectList = new PickListSelectController
+      el: $(@el).find("select[name='type']")
+      collection: @plateTypes
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: ""
+      selectedCode: "unassigned"
+      className: "form-control"
+
+    @plateStatusesSelectList = new PickListSelectController
+      el: $(@el).find("select[name='status']")
+      collection: @plateStatuses
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: ""
+      selectedCode: "unassigned"
+      className: "form-control"
+
+
 
   handleSearchClicked: =>
-    @searchCallback(["foo", "bar"])
+    searchTerms = {}
+    barcode = $.trim(@$("input[name='barcodeSearchTerm']").val())
+    if barcode isnt ""
+      searchTerms.barcode = barcode
+    description = $.trim(@$("input[name='descriptionSearchTerm']").val())
+    if description isnt ""
+      searchTerms.description = description
+    if @plateDefinitionsSelectList.getSelectedCode() isnt "unassigned"
+      searchTerms.definition = @plateDefinitionsSelectList.getSelectedCode()
 
-  searchCallback: (searchResults) ->
-    results = [
-      {barcode: "Test Plate 2", codeName: "CONT-00006150", wells: "96", user: "bob", description: "plate description", requestId: "", status: "In Progress"},
-      {barcode: "Test Plate 2", codeName: "CONT-00006150", wells: "384", user: "bob", description: "plate description", requestId: "", status: "In Progress"}
-    ]
-    searchResultsCollection = new SearchResultCollection(results)
+    if @plateTypesSelectList.getSelectedCode() isnt "unassigned"
+      searchTerms.type = @plateTypesSelectList.getSelectedCode()
+
+    if @plateStatusesSelectList.getSelectedCode() isnt "unassigned"
+      searchTerms.status = @plateStatusesSelectList.getSelectedCode()
+
+    console.log "searchTerms"
+    console.log searchTerms
+    $.ajax(
+      data: searchTerms
+      dataType: "json"
+      method: "POST"
+      url: "api/searchContainers"
+    )
+    .done((data, textStatus, jqXHR) =>
+      console.log "got search results?"
+      console.log data
+      @searchCallback(data)
+    )
+    .fail((jqXHR, textStatus, errorThrown) =>
+      console.log "an error occured"
+      console.log errorThrown
+      #@plateCloneController.setControlToSavingError()
+    )
+
+  searchCallback: (searchResults) =>
+    searchResultsCollection = new SearchResultCollection(searchResults)
     if @searchResultsTable?
       @searchResultsTable.remove()
     @searchResultsTable = new SearchResultTable({collection: searchResultsCollection})
     @listenTo @searchResultsTable, SEARCH_RESULT_ROW_EVENTS.CLONE_PLATE, @handleClonePlate
     $(".bv_searchResults").html @searchResultsTable.render().el
     @searchResultsTable.completeInitialization()
-
 
   handleClonePlate: (plateInfo) =>
     @plateCloneController = new ClonePlateController()
@@ -100,6 +168,7 @@ class SearchResultTable extends Backbone.View
           <th>Description</th>
           <th>Request ID</th>
           <th>Status</th>
+          <th>Type</th>
           <th>Clone</th>
           <th>Launch</th>
       </tr>
@@ -136,11 +205,12 @@ class SearchResultRow extends Backbone.View
   tagName: "tr"
   template: """
       <td><%= barcode %></td>
-      <td><%= wells %></td>
-      <td><%= user %></td>
+      <td><%= plateSize %></td>
+      <td><%= recordedBy %></td>
       <td><%= description %></td>
-      <td><%= requestId %></td>
+      <td><!-- requestId --></td>
       <td><%= status %></td>
+      <td><%= type %></td>
       <td><button class="btn btn-xs btn-primary" name="clonePlateRow">Clone</button></td>
       <td><a href="#plateDesign/<%= barcode %>" target="_blank" >launch</a></td>
   """
@@ -156,6 +226,8 @@ class SearchResultRow extends Backbone.View
 
   render: =>
     compiledTemplate = _.template(@template)
+    console.log "@model.toJSON()"
+    console.log @model.toJSON()
     $(@el).html compiledTemplate(@model.toJSON())
 
     @

@@ -2,7 +2,7 @@ Backbone = require('backbone')
 
 _ = require('lodash')
 $ = require('jquery')
-Handsontable = require('imports?this=>window!../../../../public/lib/handsontable/dist/handsontable.full.js') #Handsontable || () ->
+Handsontable = require('imports?this=>window!../../../../public/lib/handsontable/dist/handsontable.full.js')
 require("bootstrap-webpack!./bootstrap.config.js")
 
 PlateFillerFactory = require('./PlateFillerFactory.coffee').PlateFillerFactory
@@ -73,8 +73,8 @@ class PlateTableController extends Backbone.View
       })
     else
       @handsOnTable = new Handsontable(container, {
-        rowHeaders: rowHeaders.slice(0, @plateMetaData.numberOfRows) #true
-        colHeaders: columnHeaders #true
+        rowHeaders: rowHeaders.slice(0, @plateMetaData.numberOfRows)
+        colHeaders: columnHeaders
         outsideClickDeselects: false
         startCols: @plateMetaData.numberOfColumns
         startRows: @plateMetaData.numberOfRows
@@ -90,13 +90,11 @@ class PlateTableController extends Backbone.View
 
   increaseFontSize: =>
     @fontSize = @fontSize + 2
-    #@renderHandsOnTable()
     @handsOnTable.init()
 
   decreaseFontSize: =>
     if @fontSize > 2
       @fontSize = @fontSize - 2
-    #@renderHandsOnTable()
     @handsOnTable.render()
 
   updateDataDisplayed: (dataFieldToDisplay) =>
@@ -121,14 +119,17 @@ class PlateTableController extends Backbone.View
           if well["batchCode"]?
             unless @listOfBatchCodes[well["batchCode"]]?
               color = "rgb(#{rComponent},#{gComponent},#{bComponent})"
-              @listOfBatchCodes[well["batchCode"]] = color
-              bComponent += 80
+              fontColor = "black"
+              if (rComponent + gComponent + bComponent) < 256
+                fontColor = "white"
+              @listOfBatchCodes[well["batchCode"]] = {backgroundColor: color, fontColor: fontColor}
+              bComponent += 85
               if bComponent > 255
-                bComponent = 0
-                gComponent += 80
-                if bComponent > 255
-                  gComponent = 0
-                  rComponent += 80
+                bComponent = bComponent - 255
+                gComponent += 85
+                if gComponent > 255
+                  gComponent = gComponent - 255
+                  rComponent += 85
         )
       else
         minValue = Infinity
@@ -144,8 +145,6 @@ class PlateTableController extends Backbone.View
               maxValue = well[@dataFieldToColorBy]
         )
 
-#        if minValue < 0
-#          minValue = 0
         if minValue is 0
           @minValue = minValue
         else
@@ -191,6 +190,9 @@ class PlateTableController extends Backbone.View
     @saveUpdatedWellContent()
 
   saveUpdatedWellContent: =>
+    console.log("@wellsToUpdate.get('wells')")
+    console.log(@wellsToUpdate.get('wells'))
+
     @wellsToUpdate.save()
     @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @identifiersToRemove
     @addContent1 @plateWells
@@ -270,13 +272,11 @@ class PlateTableController extends Backbone.View
         @wellsToUpdate.save()
         @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
       else
-        #@trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
         @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
   handleAcceptTruncatedPaste: =>
     _.each(@pendingChanges, (pc) ->
       pc[2] = pc[3]
-      #delete pc[3]
     )
     @addContent @pendingChanges
     @handleContentUpdated @pendingChanges, "paste"
@@ -319,7 +319,6 @@ class PlateTableController extends Backbone.View
       cell = @handsOnTable.getCell(aw.rowIdx, aw.colIdx)
       well = @wellsToUpdate.getWellAtRowIdxColIdx(aw.rowIdx, aw.colIdx)
       well.status = "invalid"
-      #@wellsToUpdate.fillWellWithWellObject(aw.rowIdx, aw.colIdx, well)
       $(cell).addClass "invalidIdentifierCell"
     )
 
@@ -334,10 +333,16 @@ class PlateTableController extends Backbone.View
         $(cell).removeClass "aliasedIdentifierCell"
     )
     $("div[name='updatingWellContents']").modal("show")
+    wellsToSaveTmp = new WellsModel({allWells: []})
+    wellsToSaveTmp.set("wells", @wellsToUpdate.get('wells'))
 
-    @listenTo @wellsToUpdate, "sync", =>
-      $("div[name='updatingWellContents']").modal('hide')
-    @wellsToUpdate.save()
+    wellsToSaveTmp.save(null, {
+      success: (result) =>
+        console.log "save success"
+        $("div[name='updatingWellContents']").modal('hide')
+      error: (result) =>
+        console.log "save error..."
+    })
 
   reformatUpdatedValues: (changes) ->
     updateValue = []
@@ -433,7 +438,9 @@ class PlateTableController extends Backbone.View
   applyBackgroundColorToCell: (td, well) =>
     if @dataFieldToColorBy is "batchCode"
       unless well.batchCode is ""
-        td.style.background = @listOfBatchCodes[well.batchCode]
+        if @listOfBatchCodes[well.batchCode]?
+          td.style.background = @listOfBatchCodes[well.batchCode].backgroundColor
+          td.style.color = @listOfBatchCodes[well.batchCode].fontColor
     else if @dataFieldToColorBy is "batchConcentration"
       backgroundColor = @calculateBackgroundColorForConcentration(well)
       td.style.background = backgroundColor
@@ -453,7 +460,6 @@ class PlateTableController extends Backbone.View
       normVal = 255
       if Math.log(well[@dataFieldToColorBy]) is -Infinity
         backgroundColor = "rgb(0,255,0)"
-        #td.style.background = backgroundColor
 
       else
         if @dataFieldToColorBy is "batchConcentration"
