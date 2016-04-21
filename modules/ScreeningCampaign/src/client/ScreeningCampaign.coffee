@@ -243,7 +243,7 @@ class window.AddedExperimentSummaryTableController extends ExperimentSummaryTabl
 class window.LinkedExperimentsController extends ExperimentBrowserController
 
 	events:
-		"click .bv_save": "saveExptItxs"
+		"click .bv_save": "handleSaveClicked"
 		"click .bv_cancel": "handleCancelClicked"
 		"click .bv_cancelClear": "handleCancelClearClicked"
 		"click .bv_confirmClear": "handleConfirmClearClicked"
@@ -267,10 +267,11 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 
 	getLinkedExpts: =>
 		$.ajax
-			type: 'GET'
-			url: "/api/getItxExptExptsByFirstExpt/"+@model.get('id')
+			type: 'POST'
+			url: "/api/getExptExptItxsToDisplay/"+@model.get('id')
+			json: true
 			success: (json) =>
-				@allExptExptItxs = JSON.parse json
+				@allExptExptItxs = json
 				@setupSearchAndTableControllers()
 				@$('.bv_cancelComplete').show()
 			error: (err) =>
@@ -430,7 +431,7 @@ class window.LinkedExperimentsController extends ExperimentBrowserController
 			@handleAmDirty()
 		@$(".bv_addedFollowUpExperimentsTableController").html @addedFollowUpExperimentsTableController.render().el
 
-	saveExptItxs: -> #TODO: rename
+	handleSaveClicked: ->
 		@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled', 'disabled')
@@ -716,10 +717,11 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 									expt = new ScreeningExperiment json
 									expt.set expt.parse(expt.attributes)
 									$.ajax
-										type: 'GET'
-										url: "/api/getItxExptExptsByFirstExpt/"+expt.get('id')
+										type: 'POST'
+										url: "/api/getExptExptItxsToDisplay/"+expt.get('id')
+										json: true
 										success: (json) =>
-											@allExptExptItxs = JSON.parse(json)
+											@allExptExptItxs = json
 											@model = expt
 											@completeInitialization()
 										error: (err) =>

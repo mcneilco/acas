@@ -13,6 +13,8 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/postExptExptItxs', exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', exports.putExptExptItxs
 	app.post '/api/screeningCampaign/analyzeScreeningCampaign', exports.analyzeScreeningCampaign
+	app.post '/api/experiments/getByCodeNamesArray', exports.experimentsByCodeNamesArray
+	app.post '/api/getExptExptItxsToDisplay/:firstExptId', exports.getExptExptItxsToDisplay
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -31,9 +33,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/postExptExptItxs', loginRoutes.ensureAuthenticated, exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', loginRoutes.ensureAuthenticated, exports.putExptExptItxs
 	app.post '/api/screeningCampaign/analyzeScreeningCampaign', loginRoutes.ensureAuthenticated, exports.analyzeScreeningCampaign
+	app.post '/api/experiments/getByCodeNamesArray', loginRoutes.ensureAuthenticated, exports.experimentsByCodeNamesArray
+	app.post '/api/getExptExptItxsToDisplay/:firstExptId', loginRoutes.ensureAuthenticated, exports.getExptExptItxsToDisplay
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+_ = require 'underscore'
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -371,15 +376,34 @@ exports.experimentValueByStateTypeKindAndValueTypeKind = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-exports.getItxExptExptsByFirstExpt = (req, resp) ->
+getItxExptExptsByFirstExpt = (firstExptId, callback) ->
 	if global.specRunnerTestmode
 		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
-		res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
+		callback JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findByFirstExperiment/"+req.params.firstExptId
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findByFirstExperiment/"+firstExptId
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback JSON.stringify json
+			else
+				callback JSON.stringify "Failed: Could not get expt expt itx by first expt from ACAS Server"
+				console.log 'got ajax error'
+				console.log error
+				console.log json
+				console.log response
+		)
+
+exports.getItxExptExptsByFirstExpt = (req, resp) ->
+	getItxExptExptsByFirstExpt req.params.firstExptId, (exptExptItxs) ->
+		if exptExptItxs.indexOf("Failed") > -1
+			resp.statusCode = 500
+		resp.end exptExptItxs
 
 postExptExptItxs = (exptExptItxs, testMode, callback) ->
 	if testMode or global.specRunnerTestmode
@@ -410,6 +434,8 @@ postExptExptItxs = (exptExptItxs, testMode, callback) ->
 
 exports.postExptExptItxs = (req, resp) ->
 	postExptExptItxs req.body, req.query.testMode, (newExptExptItxs) ->
+		if newExptExptItxs.indexOf("saveFailed") > -1
+			resp.statusCode = 500
 		resp.json newExptExptItxs
 
 putExptExptItxs = (exptExptItxs, testMode, callback) ->
@@ -439,6 +465,8 @@ putExptExptItxs = (exptExptItxs, testMode, callback) ->
 
 exports.putExptExptItxs = (req, resp) ->
 	putExptExptItxs req.body, req.query.testMode, (updatedExptExptItxs) ->
+		if updatedExptExptItxs.indexOf("saveFailed") > -1
+			resp.statusCode = 500
 		resp.json updatedExptExptItxs
 
 exports.createAndUpdateExptExptItxs = (req, resp) ->
@@ -475,3 +503,58 @@ exports.analyzeScreeningCampaign = (req, resp) ->
 			(rReturn) ->
 				resp.end rReturn
 		)
+
+exports.experimentsByCodeNamesArray = (req, resp) ->
+	experimentsByCodeNamesArray req.body.data, req.query.option, req.query.testMode, (returnedExpts) ->
+		if returnedExpts.indexOf("Failed") > -1
+			resp.statusCode = 500
+		resp.json returnedExpts
+
+
+experimentsByCodeNamesArray = (codeNamesArray, returnOption, testMode, callback) ->
+	if testMode or global.specRunnerTestmode
+		callback JSON.stringify "stubsMode not implemented"
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/jsonArray"
+		#returnOption are analysisgroups, analysisgroupstates, analysisgroupvalues, fullobject, prettyjson, prettyjsonstub, stubwithprot, and stub
+		if returnOption?
+			baseurl += "?with=#{returnOption}"
+		console.log "experimentsByCodeNamesArray"
+		console.log baseurl
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: codeNamesArray
+			json: true
+		, (error, response, json) =>
+			console.log "experimentsByCodeNamesArray json"
+			console.log json
+			console.log "response.statusCode"
+			console.log response.statusCode
+			console.log response
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log "Failed: got error in bulk get of experiments"
+				callback "Bulk get experiments saveFailed: " + JSON.stringify error
+		)
+
+exports.getExptExptItxsToDisplay = (req, resp) ->
+	console.log "getExptExptItxsToDisplay"
+	getItxExptExptsByFirstExpt req.params.firstExptId, (exptExptItxs) ->
+		if exptExptItxs.indexOf("Failed") > -1
+			resp.statusCode = 500
+			resp.end exptExptItxs
+		else
+			#filter out the ignored
+			exptExptItxs = _.filter JSON.parse(exptExptItxs), (itx) ->
+				!itx.ignored
+			secondExpts = _.pluck (_.pluck exptExptItxs, 'secondExperiment'), 'codeName'
+			experimentsByCodeNamesArray secondExpts, "stubwithprot", req.query.testMode, (returnedExpts) ->
+				#add returnedExpts information into the secondExperiment attribute
+				_.each exptExptItxs, (itx) ->
+					secondExptInfo = _.where(returnedExpts, experimentCodeName: itx.secondExperiment.codeName)[0]
+					itx.secondExperiment = secondExptInfo.experiment
+				resp.json exptExptItxs
