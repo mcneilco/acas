@@ -1106,7 +1106,6 @@ exports.splitContainerInternal = (input, callback) ->
 	else
 		console.debug "incoming splitContainer request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
-		console.error input.codeName
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [input.codeName], (originContainer, statusCode) =>
 			exports.getWellContentByContainerCodesInternal [input.codeName], (originWellContent) =>
 				isOdd = (num) ->
@@ -1132,15 +1131,13 @@ exports.splitContainerInternal = (input, callback) ->
 						content.columnIndex = (content.columnIndex+1)/2
 					else
 						content.columnIndex = (content.columnIndex)/2
-					if content.rowIndex < 10
+					if content.columnIndex < 10
 						text = "00"
 					else
 						text = "0"
 					content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
 					return _.omit(content, ['containerCodeName', 'recordedDate'])
 				destinationPlateSize = originContainer[0].plateSize/4
-				destinationCols = Math.sqrt(1.5*destinationPlateSize)
-				destinationRows = destinationCols / 1.5
 				exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
 					destinationContainerCode =  definitionContainer.get('codeName')
 					barcodes = _.pluck input.quadrants, "barcode"
