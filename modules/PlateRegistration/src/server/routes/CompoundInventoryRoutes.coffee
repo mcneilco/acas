@@ -93,12 +93,13 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 						console.log response
 				else
 					console.warn "could not find customer specific server function createPlate so not running it"
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
 		else
 			console.log 'got ajax error trying to create plate'
 			console.log error
-			console.log json
 			console.log response
-			callback JSON.stringify {error: "something went wrong :("}, 500
+			callback response.body, 500
 	)
 
 exports.updatePlate = (req, resp) ->
