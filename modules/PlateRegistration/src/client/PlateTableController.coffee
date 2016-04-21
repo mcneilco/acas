@@ -171,7 +171,7 @@ class PlateTableController extends Backbone.View
       wellData = ""
       unless dataField is "masterView"
         wellData = well[dataField]
-      hotData.push [well.rowIndex, well.columnIndex, wellData]
+      hotData.push [(well.rowIndex - 1), (well.columnIndex - 1), wellData]
     )
     return hotData
 
@@ -338,7 +338,6 @@ class PlateTableController extends Backbone.View
 
     wellsToSaveTmp.save(null, {
       success: (result) =>
-        console.log "save success"
         $("div[name='updatingWellContents']").modal('hide')
       error: (result) =>
         console.log "save error..."
@@ -433,8 +432,7 @@ class PlateTableController extends Backbone.View
     td.style.fontSize = "#{@fontSize}px"
 
     return td
-  console.log "@dataFieldToColorBy"
-  console.log @dataFieldToColorBy
+
   applyBackgroundColorToCell: (td, well) =>
     if @dataFieldToColorBy is "batchCode"
       unless well.batchCode is ""
