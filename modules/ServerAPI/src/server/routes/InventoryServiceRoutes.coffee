@@ -304,10 +304,10 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								console.debug "found container type: #{container.lsType}"
 								console.debug "found container kind: #{container.lsKind}"
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-								if containerPreferredEntity?
+								if !_.isEmpty containerPreferredEntity
 									console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
 								else
-									console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+									console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 									preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 										console.error types
 								console.debug "here is the container as returned by tomcat: #{JSON.stringify(container, null, '  ')}"
@@ -375,10 +375,10 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							console.debug "found container type: #{container.lsType}"
 							console.debug "found container kind: #{container.lsKind}"
 							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-							if preferredEntity?
+							if !_.isEmpty preferredEntity
 								console.debug "found preferred entity: #{JSON.stringify(preferredEntity)}"
 							else
-								console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
+								console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 								preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 									console.debug types
 							container = new preferredEntity.model(container)
@@ -1197,10 +1197,10 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 			definitions = []
 			for container in response
 				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-				if containerPreferredEntity?
+				if !_.isEmpty containerPreferredEntity
 					console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
 				else
-					console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+					console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 					preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 						console.error types
 				definition = new containerPreferredEntity.model(container)
