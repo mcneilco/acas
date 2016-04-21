@@ -11,6 +11,10 @@ CreatePlateController = require('./CreatePlateController.coffee').CreatePlateCon
 CREATE_PLATE_CONTROLLER_EVENTS = require('./CreatePlateController.coffee').CREATE_PLATE_CONTROLLER_EVENTS
 CreatePlateSaveController = require('./CreatePlateSaveController.coffee').CreatePlateSaveController
 PlateTypeCollection = require('./PlateTypeCollection.coffee').PlateTypeCollection
+PlateStatusCollection = require('./PlateStatusCollection.coffee').PlateStatusCollection
+
+
+PlateDefinitionCollection = require('./PlateDefinitionCollection.coffee').PlateDefinitionCollection
 PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
@@ -25,15 +29,15 @@ class AppController extends Backbone.View
   template: _.template(require('html!./AppView.tmpl'))
 
   initialize: ->
-    @newPlateDesignController = new NewPlateDesignController()
+    @newPlateDesignController = new NewPlateDesignController({plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection()})
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleAddIdentifierContentFromTable
 
-    @createPlateController = new CreatePlateController({model: new PlateModel(), plateTypes: new PlateTypeCollection()})
+    @createPlateController = new CreatePlateController({model: new PlateModel(), plateDefinitions: new PlateDefinitionCollection()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
     @dataServiceController = new DataServiceController()
 
-    @plateSearchController = new PlateSearchController()
+    @plateSearchController = new PlateSearchController({plateDefinitions: new PlateDefinitionCollection(), plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection()})
 
   completeInitialization: =>
     #@newPlateDesignController.completeInitialization()
@@ -55,23 +59,35 @@ class AppController extends Backbone.View
     @newPlateDesignController.completeInitialization()
 
   displayCreatePlateForm: =>
-    plateTypeFetchPromise = @createPlateController.plateTypes.fetch()
+    plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
     plateTypeFetchPromise.complete(() =>
       @$("div[name='formContainer']").html @createPlateController.render().el
       @createPlateController.completeInitialization()
     )
 
   displayPlateSearch: =>
-    @$("div[name='formContainer']").html @plateSearchController.render().el
-    @plateSearchController.completeInitialize()
+    promises = []
+    promises.push(@plateSearchController.plateStatuses.fetch())
+    promises.push(@plateSearchController.plateTypes.fetch())
+    promises.push(@plateSearchController.plateDefinitions.fetch())
+    $.when(promises).done(() =>
+      @$("div[name='formContainer']").html @plateSearchController.render().el
+      @plateSearchController.completeInitialize()
+    )
 
   displayPlateDesignForm: (plateBarcode) =>
+
     @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))
     @dataServiceController.doServiceCalls()
 
   handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
-    @$("div[name='formContainer']").html @newPlateDesignController.render().el
-    @newPlateDesignController.completeInitialization(plateAndWellData)
+    promises = []
+    promises.push(@newPlateDesignController.plateStatuses.fetch())
+    promises.push(@newPlateDesignController.plateTypes.fetch())
+    $.when(promises).done(() =>
+      @$("div[name='formContainer']").html @newPlateDesignController.render().el
+      @newPlateDesignController.completeInitialization(plateAndWellData)
+    )
 
   render: =>
     $(@el).html @template()

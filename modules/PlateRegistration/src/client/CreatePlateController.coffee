@@ -33,11 +33,10 @@ class CreatePlateController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
-    @plateTypes = options.plateTypes
-    #@plateTypesSelectList = new PickListSelectController({collection: @plateTypes, selectedValue: @model.get('type')})
+    @plateDefinitions = options.plateDefinitions
     @selectLists = [
       containerSelector: "select[name='definition']"
-      collection: @plateTypes
+      collection: @plateDefinitions
     ]
 
   events:
@@ -46,10 +45,7 @@ class CreatePlateController extends Backbone.View
     "click button[name='submit']": "handleClickStart"
 
   completeInitialization: =>
-    console.log "completeInitialization"
     plateDefinition = document.getElementsByName("definition") #$("select[name='definition']")
-    console.log "plateDefinition"
-    console.log plateDefinition
     # make sure the default selected plate type is reflected in the form model
     @handleFormFieldUpdate({currentTarget: plateDefinition})
 
@@ -61,7 +57,7 @@ class CreatePlateController extends Backbone.View
 
   initializeSelectLists: =>
     _.each(@selectLists, (selectList) =>
-      @plateTypesSelectList = new PickListSelectController
+      @plateDefinitionsSelectList = new PickListSelectController
         el: $(@el).find(selectList.containerSelector)
         collection: selectList.collection
         insertFirstOption: new PickList
@@ -69,14 +65,9 @@ class CreatePlateController extends Backbone.View
           name: "Select Plate Definition"
         selectedCode: "unassigned"
         className: "form-control"
-
-
-      #$(@el).find(selectList.containerSelector).html selectList.controller.render().el
     )
 
   handleFormFieldUpdate: (evt) ->
-    console.log "evt"
-    console.log evt
     target = $(evt.currentTarget)
     data = {}
     data[target.attr('name')] = $.trim(target.val())

@@ -24,10 +24,12 @@ NEW_PLATE_DESIGN_CONTROLLER_EVENTS =
 
 class NewPlateDesignController extends Backbone.View
   template: require('html!./NewPlateDesignTemplate.tmpl')
-  initialize: ->
+  initialize: (options) ->
+    @plateStatuses = options.plateStatuses
+    @plateTypes = options.plateTypes
     @startUpParams =
-      plateTypes: new PlateTypeCollection([{value: '', displayValue: ''}, {value: 'plate', displayValue: 'Plate'}])
-      plateStatuses: new PlateStatusCollection([{value: '', displayValue: ''}, {value: 'complete', displayValue: 'Complete'}])
+      plateTypes: @plateTypes
+      plateStatuses: @plateStatuses
       model: new PlateInfoModel()
 
     @plateInfoController = new PlateInfoController(@startUpParams)

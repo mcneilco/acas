@@ -37,7 +37,6 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
 
-
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
 	app.post '/api/getContainerCodesByLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesByLabels
@@ -950,7 +949,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
 	else
-		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent)
+		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent"
 		console.debug 'base url: ', baseurl
@@ -958,7 +957,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: wellContent
+			body: JSON.stringify(wellContent.wells)
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
