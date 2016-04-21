@@ -302,16 +302,15 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 							container = _.findWhere(containers, {'containerCodeName': containerCode})
 							if container.container?
 								container = container.container
-								console.debug "found container type: #{container.lsType}"
-								console.debug "found container kind: #{container.lsKind}"
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-								if !_.isEmpty containerPreferredEntity
-									console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
-								else
-									console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
+								if _.isEmpty containerPreferredEntity
+									message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+									console.error message
+									console.debug "here are the configured entity types"
 									preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-										console.error types
-								console.debug "here is the container as returned by tomcat: #{JSON.stringify(container, null, '  ')}"
+										console.debug types
+									callback message, 400
+									return
 								container = new containerPreferredEntity.model(container)
 								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definitions[index].definition.lsType, definitions[index].definition.lsKind, "ACAS Container"
 								definition = new definitionPreferredEntity.model(definitions[index].definition)
@@ -376,12 +375,14 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							console.debug "found container type: #{container.lsType}"
 							console.debug "found container kind: #{container.lsKind}"
 							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-							if !_.isEmpty preferredEntity
-								console.debug "found preferred entity: #{JSON.stringify(preferredEntity)}"
-							else
-								console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
+							if _.isEmpty preferredEntity
+								message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+								console.error message
+								console.debug "here are the configured entity types"
 								preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 									console.debug types
+								callback message, 400
+								return
 							container = new preferredEntity.model(container)
 							if updateInfo.barcode?
 								if containerCodes[index].foundCodeNames.length > 1
@@ -1108,52 +1109,84 @@ exports.splitContainerInternal = (input, callback) ->
 		console.debug "incoming splitContainer request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [input.codeName], (originContainer, statusCode) =>
-			exports.getWellContentByContainerCodesInternal [input.codeName], (originWellContent) =>
-				isOdd = (num) ->
-					return (num % 2) == 1
-				alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-				originWellContent[0].wellContent = _.map originWellContent[0].wellContent, (content) ->
-					content = _.omit(content, ['containerCodeName', 'wellName', 'recordedDate'])
-					oddRow = isOdd(content.rowIndex)
-					oddColumn = isOdd(content.columnIndex)
-					if oddRow && oddColumn
-						content.quadrant = 1
-					else if oddRow && !oddColumn
-						content.quadrant = 2
-					else if !oddRow && oddColumn
-						content.quadrant = 3
-					else if !oddRow && !oddColumn
-						content.quadrant = 4
-					if oddRow
-						content.rowIndex = (content.rowIndex+1)/2
-					else
-						content.rowIndex = (content.rowIndex)/2
-					if oddColumn
-						content.columnIndex = (content.columnIndex+1)/2
-					else
-						content.columnIndex = (content.columnIndex)/2
-					if content.columnIndex < 10
-						text = "00"
-					else
-						text = "0"
-					content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
-					return _.omit(content, ['containerCodeName', 'recordedDate'])
+			if statusCode == 400
+				callback originContainer, statusCode
+			else if statusCode == 500
+				callback "internal error", 500
+			else if statusCode == 200
+				console.log originContainer
+				if !originContainer[0].plateSize?
+					message = "plate size note defined for input container #{input.codeName}"
+					console.error message
+					callback message, 400
+				else if originContainer[0].plateSize <= 96
+					message = "cannot split #{originContainer[0].plateSize} well container"
+					console.error message
+					callback message, 400
+
+			barcodes = _.pluck input.quadrants, "barcode"
+			barcodesUnique = _.unique(barcodes).length == barcodes.length
+			if !barcodesUnique
+				callback "barcodes must be unique", 400
+				return
+			exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
+				if statusCode == 500
+					callback "internal error", 500
+					return
+				else
+					errors = []
+					for containerCode, index in containerCodes
+						if containerCode.foundCodeNames.length > 0
+							message = "barcode '#{containerCodes[index].requestLabel}' already being used by #{containerCodes[index].foundCodeNames.join(",")}"
+							console.error message
+							errors.push message
+					if errors.length > 0
+						callback errors, 409
+						return
 				destinationPlateSize = originContainer[0].plateSize/4
 				exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
+					if statusCode == 400
+						message =  "could not get definition for plate size #{destinationPlateSize}"
+						console.error message
+						callback message, 400
+						return
+					else if statusCode == 500
+						callback "internal error", 500
+						return
 					destinationContainerCode =  definitionContainer.get('codeName')
-					barcodes = _.pluck input.quadrants, "barcode"
-					exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
-						if statusCode == 500
-							callback "getContainersByCodeNamesInternal failed", 500
-							return
+					exports.getWellContentByContainerCodesInternal [input.codeName], (originWellContent) =>
+						isOdd = (num) ->
+							return (num % 2) == 1
+						alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+						originWellContent[0].wellContent = _.map originWellContent[0].wellContent, (content) ->
+							content = _.omit(content, ['containerCodeName', 'wellName', 'recordedDate'])
+							oddRow = isOdd(content.rowIndex)
+							oddColumn = isOdd(content.columnIndex)
+							if oddRow && oddColumn
+								content.quadrant = 1
+							else if oddRow && !oddColumn
+								content.quadrant = 2
+							else if !oddRow && oddColumn
+								content.quadrant = 3
+							else if !oddRow && !oddColumn
+								content.quadrant = 4
+							if oddRow
+								content.rowIndex = (content.rowIndex+1)/2
+							else
+								content.rowIndex = (content.rowIndex)/2
+							if oddColumn
+								content.columnIndex = (content.columnIndex+1)/2
+							else
+								content.columnIndex = (content.columnIndex)/2
+							if content.columnIndex < 10
+								text = "00"
+							else
+								text = "0"
+							content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
+							return _.omit(content, ['containerCodeName', 'recordedDate'])
 						outputArray = []
 						for quadrant, index in input.quadrants
 							#Get barcode
-							if containerCodes[index].foundCodeNames.length > 0
-								message = "conflict: barcode '#{containerCodes[index].requestLabel}' already being used by #{containerCodes[index].foundCodeNames.join(",")}"
-								console.error message
-								callback message, 409
-								return
 							destinationContainerValues = _.extend originContainer[0], quadrant
 							destinationContainer = _.omit destinationContainerValues, "codeName"
 							destinationContainer.definition = destinationContainerCode
@@ -1258,12 +1291,14 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 			definitions = []
 			for container in response
 				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-				if !_.isEmpty containerPreferredEntity
-					console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
-				else
-					console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
+				if _.isEmpty containerPreferredEntity
+					message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+					console.error message
+					console.debug "here are the configured entity types"
 					preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
-						console.error types
+						console.debug types
+					callback message, 400
+					return
 				definition = new containerPreferredEntity.model(container)
 				definitions.push definition
 			definition = _.find definitions, (definition) ->
@@ -1273,7 +1308,7 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 				definition.reformatBeforeSaving()
 				callback definition, 200
 			else
-				callback "could not find definition", 500
+				callback "could not find definition", 400
 
 
 exports.searchContainers = (req, resp) ->
