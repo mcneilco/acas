@@ -19,15 +19,9 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
-     - ./public/compiled:/home/runner/build/public/compiled
-     - ./modules/PlateRegistration:/home/runner/acas/modules/PlateRegistration
-     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
-     - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
-     - ./modules/Login:/home/runner/acas/modules/Login
-     - ./public/lib/handsontable/dist/:/public/lib/handsontable/dist/
-     - ./views/:/home/runner/acas/views/
-     #handsontable.full.js
-
+#     - ./modules/PlateRegistration:/home/runner/acas/modules/PlateRegistration
+#     - ./public/lib:/home/runner/acas/public/lib
+#     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command

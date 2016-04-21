@@ -33,6 +33,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/cloneContainers', exports.cloneContainers
 	app.post '/api/cloneContainer', exports.cloneContainer
 	app.post '/api/splitContainer', exports.splitContainer
+	app.post '/api/mergeContainers', exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
 
@@ -67,6 +68,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cloneContainers', loginRoutes.ensureAuthenticated, exports.cloneContainers
 	app.post '/api/cloneContainer', loginRoutes.ensureAuthenticated, exports.cloneContainer
 	app.post '/api/splitContainer', loginRoutes.ensureAuthenticated, exports.splitContainer
+	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
 
@@ -304,10 +306,10 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								console.debug "found container type: #{container.lsType}"
 								console.debug "found container kind: #{container.lsKind}"
 								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-								if containerPreferredEntity?
+								if !_.isEmpty containerPreferredEntity
 									console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
 								else
-									console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+									console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 									preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 										console.error types
 								console.debug "here is the container as returned by tomcat: #{JSON.stringify(container, null, '  ')}"
@@ -375,10 +377,10 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							console.debug "found container type: #{container.lsType}"
 							console.debug "found container kind: #{container.lsKind}"
 							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-							if preferredEntity?
+							if !_.isEmpty preferredEntity
 								console.debug "found preferred entity: #{JSON.stringify(preferredEntity)}"
 							else
-								console.debug "could not find preferred entity for ls type and kind, here are the configured entity types"
+								console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 								preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 									console.debug types
 							container = new preferredEntity.model(container)
@@ -1106,7 +1108,6 @@ exports.splitContainerInternal = (input, callback) ->
 	else
 		console.debug "incoming splitContainer request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
-		console.error input.codeName
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [input.codeName], (originContainer, statusCode) =>
 			exports.getWellContentByContainerCodesInternal [input.codeName], (originWellContent) =>
 				isOdd = (num) ->
@@ -1132,15 +1133,13 @@ exports.splitContainerInternal = (input, callback) ->
 						content.columnIndex = (content.columnIndex+1)/2
 					else
 						content.columnIndex = (content.columnIndex)/2
-					if content.rowIndex < 10
+					if content.columnIndex < 10
 						text = "00"
 					else
 						text = "0"
 					content.wellName = alphabet[content.rowIndex-1]+text+content.columnIndex
 					return _.omit(content, ['containerCodeName', 'recordedDate'])
 				destinationPlateSize = originContainer[0].plateSize/4
-				destinationCols = Math.sqrt(1.5*destinationPlateSize)
-				destinationRows = destinationCols / 1.5
 				exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
 					destinationContainerCode =  definitionContainer.get('codeName')
 					barcodes = _.pluck input.quadrants, "barcode"
@@ -1181,6 +1180,69 @@ exports.splitContainerInternal = (input, callback) ->
 								else
 									outputArray.push newContainer
 
+exports.mergeContainers = (req, resp) ->
+	exports.mergeContainersInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.mergeContainersInternal = (input, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.mergeContainersResponse
+	else
+		console.debug "incoming mergeContainers request: #{JSON.stringify(input)}"
+		console.debug "calling getContainersByCodeNamesInternal"
+		contanerCodes = _.pluck input.quadrants, "codeName"
+		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [contanerCodes[0]], (firstOriginContainer, statusCode) =>
+			destinationPlateSize = firstOriginContainer[0].plateSize*4
+			exports.getDefinitionContainerByNumberOfWellsInternal "definition container", "plate", destinationPlateSize, (definitionContainer, statusCode) ->
+				exports.getWellContentByContainerCodesInternal contanerCodes, (originWellContent) =>
+					input.definition = definitionContainer.get 'codeName'
+					input.wells = []
+					isOdd = (num) ->
+						return (num % 2) == 1
+					alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+					_.map originWellContent, (originWells) ->
+						quadrant = _.findWhere input.quadrants, {"codeName": originWells.containerCodeName}
+						_.map originWells.wellContent, (wellContent) ->
+							wellContent = _.omit(wellContent, ['containerCodeName', 'wellName', 'recordedDate'])
+							wellContent.recordedDate = 1455323242544
+							if quadrant.quadrant == 1
+								wellContent.rowIndex = 2*(wellContent.rowIndex)-1
+								wellContent.columnIndex = 2*(wellContent.columnIndex)-1
+							else if quadrant.quadrant == 2
+								wellContent.rowIndex = 2*(wellContent.rowIndex)-1
+								wellContent.columnIndex = 2*wellContent.columnIndex
+							else if quadrant.quadrant == 3
+								wellContent.rowIndex = 2*(wellContent.rowIndex)
+								wellContent.columnIndex = 2*(wellContent.columnIndex)-1
+							else if quadrant.quadrant == 4
+								wellContent.rowIndex = 2*(wellContent.rowIndex)
+								wellContent.columnIndex = 2*(wellContent.columnIndex)
+							if wellContent.rowIndex > 26
+								text = "A"+alphabet[wellContent.rowIndex-26-1]
+							else
+								text = alphabet[wellContent.rowIndex-1]
+							if wellContent.columnIndex < 10
+								text = text+"00"
+							else
+								text = text+"0"
+							wellContent.wellName = text+wellContent.columnIndex
+							input.wells.push wellContent
+					compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
+					compoundInventoryRoutes.createPlateInternal input, "1", (newContainer, statusCode) ->
+						if statusCode == 200
+							input.codeName = newContainer.codeName
+							containerToUpdate = _.omit input, ["wells", "definitionCodeName"]
+							exports.updateContainersByContainerCodesInternal [containerToUpdate], "1", (updatedContainer, statusCode) ->
+								if statusCode == 200
+									updatedContainer[0].wells = input.wells
+									callback updatedContainer[0], 200
+								else
+									callback "error updating plate after creating it", 500
+						else
+							callback "error creating plate", 500
+
 exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
 	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -1197,10 +1259,10 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 			definitions = []
 			for container in response
 				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
-				if containerPreferredEntity?
+				if !_.isEmpty containerPreferredEntity
 					console.debug "found preferred entity: #{JSON.stringify(containerPreferredEntity)}"
 				else
-					console.error "could not find preferred entity for ls type and kind, here are the configured entity types"
+					console.error "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}', here are the configured entity types"
 					preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
 						console.error types
 				definition = new containerPreferredEntity.model(container)
