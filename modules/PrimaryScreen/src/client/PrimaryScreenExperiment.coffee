@@ -133,7 +133,7 @@ class window.TransformationParameters extends Backbone.Model
 
 	parse: (resp, rule) ->
 		if rule?
-			if rule == 'sd' or rule == 'percent efficacy'
+			if rule is 'percent efficacy'
 				if resp.positiveControl?
 					if resp.positiveControl not instanceof ControlSetting
 						resp.positiveControl = new ControlSetting(resp.positiveControl)
@@ -143,6 +143,7 @@ class window.TransformationParameters extends Backbone.Model
 					@trigger 'change'
 				resp.positiveControl.on 'amDirty', =>
 					@trigger 'amDirty'
+			if rule is 'sd' or rule is 'percent efficacy'
 				if resp.negativeControl?
 					if resp.negativeControl not instanceof ControlSetting
 						resp.negativeControl = new ControlSetting(resp.negativeControl)
@@ -975,6 +976,7 @@ class window.ControlSettingController extends AbstractFormController
 		else
 			@$('.bv_defaultValue').addClass('hide')
 		@trigger 'updateState'
+		@trigger 'change'
 
 	setupStandardsListSelect: (standardsList) =>
 		standardsSelectArray = standardsList.map (model) =>
