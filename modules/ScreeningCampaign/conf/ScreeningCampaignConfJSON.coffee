@@ -1,5 +1,19 @@
 ((exports) ->
 	exports.typeKindList =
+		protocoltypes:
+			[
+				typeName: "Parent"
+			]
+
+		protocolkinds:
+			[
+				typeName: "Parent"
+				kindName: "Bio Activity"
+			,
+				typeName: "Parent"
+				kindName: "Bio Activity Screen"
+			]
+
 		experimenttypes:
 			[
 				typeName: "Parent"
@@ -9,6 +23,9 @@
 			[
 				typeName: "Parent"
 				kindName: "Bio Activity"
+			,
+				typeName: "Parent"
+				kindName: "Bio Activity Screen"
 			]
 
 		interactiontypes:

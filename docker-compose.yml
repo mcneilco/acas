@@ -21,6 +21,8 @@ services:
      - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
      - ./modules/PrimaryScreen:/home/runner/acas/modules/PrimaryScreen
      - ./modules/ModuleMenus:/home/runner/acas/modules/ModuleMenus
+     - ./modules/Components:/home/runner/acas/modules/Components
+     - ./modules/ProtocolBrowser:/home/runner/acas/modules/ProtocolBrowser
      - ./modules/ExperimentBrowser:/home/runner/acas/modules/ExperimentBrowser
      - ./modules/ScreeningCampaign:/home/runner/acas/modules/ScreeningCampaign
     env_file:

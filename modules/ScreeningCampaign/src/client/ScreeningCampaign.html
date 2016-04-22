@@ -4,7 +4,7 @@
             <ul class="nav nav-tabs">
                 <li class="active"><a href="#screeningCampaignGeneralInfo" data-toggle="tab">General</a></li>
                 <li><a href="#screeningCampaignLinkedExperiments" data-toggle="tab">Linked Experiments</a></li>
-                <li><a href="#screeningCampaignDataAnalysis" data-toggle="tab">Data Analysis</a></li>
+                <li><a class="bv_screeningCampaignDataAnalysisTab" href="#screeningCampaignDataAnalysis" data-toggle="tab">Data Analysis</a></li>
             </ul>
 
             <div class="tab-content span12">
@@ -13,7 +13,7 @@
 
                 <div class="tab-pane bv_screeningCampaignLinkedExperiments" id="screeningCampaignLinkedExperiments" style="overflow:hidden; width:800px;"></div>
 
-                <div class="tab-pane bv_screeningCampaignDataAnalysis" id="screeningCampaignDataAnalysis"></div>
+                <div class="tab-pane bv_screeningCampaignDataAnalysis" id="screeningCampaignDataAnalysis" style="overflow:hidden;"></div>
             </div>
         </div>
     </div>
@@ -118,9 +118,10 @@
 
     <!-- Save-->
         <div class="span12" style="margin-top:20px; margin-left:0px;">
-            <button type="button" class="btn btn-success bv_save pull-right" disabled="disabled">Save</button>
+            <button type="button" class="btn btn-success bv_save pull-right" disabled="disabled">Update</button>
             <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
-            <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;"></div>
+            <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+            <div class="bv_updateFailed pull-right hide" style="padding-top:5px;color:red;">Save Failed</div>
             <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;">Saving...</div>
             <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
             <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
@@ -265,27 +266,32 @@
 
 
         <h5>Hit Selection Parameters</h5>
-        <div class="control-group bv_group_primaryAutoHitSelection" style="margin-left:20px;margin-bottom:20px;">
+        <div class="control-group bv_group_useOriginalHits" style="margin-left:20px;margin-bottom:20px;">
             <label class="control-label checkbox" style="width:200px;padding-left:0;">
-                <input type="checkbox" name="bv_primaryAutoHitSelection" class="bv_primaryAutoHitSelection" <% if (primaryAutoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
+                <input type="checkbox" name="bv_useOriginalHits" class="bv_useOriginalHits" <% if (useOriginalHits) { %> checked="checked"<% }%> />Use Original Hits
+            </label>
+        </div>
+        <div class="control-group bv_group_autoHitSelection" style="margin-left:20px;margin-bottom:20px;">
+            <label class="control-label checkbox" style="width:200px;padding-left:0;">
+                <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
             </label>
         </div>
         <div class="form-horizontal">
-            <div class="bv_primaryThresholdControls">
-                <div class="control-group bv_group_primaryHitEfficacyThreshold">
+            <div class="bv_thresholdControls">
+                <div class="control-group bv_group_hitEfficacyThreshold">
                     <label class="control-label radio" style="width:145px;padding-left:30px;">
-                        <input type="radio" name="bv_primaryThresholdType" value="efficacy" class="bv_primaryThresholdTypeEfficacy" <% if (primaryThresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
+                        <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
                     </label>
                     <div class="controls" style="padding-left:35px;">
-                        <input class="bv_primaryHitEfficacyThreshold" style="width:335px;" value="<%=primaryHitEfficacyThreshold%>" type="text" <% if (primaryThresholdType!="efficacy") { %> disabled="disabled"<% } %>>
+                        <input class="bv_hitEfficacyThreshold" style="width:335px;" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
                     </div>
                 </div>
-                <div class="control-group bv_group_primaryHitSDThreshold">
+                <div class="control-group bv_group_hitSDThreshold">
                     <label class="control-label radio" style="width:115px;padding-left:59px;">
-                        <input type="radio" name="bv_primaryThresholdType" value="sd" class="bv_primaryThresholdTypeSD" <% if (primaryThresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
+                        <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
                     </label>
                     <div class="controls" style="padding-left:35px;">
-                        <input class="bv_primaryHitSDThreshold" style="width:335px;" value="<%=primaryHitSDThreshold%>" type="text" <% if (primaryThresholdType!="sd") { %> disabled="disabled"<% }%> />
+                        <input class="bv_hitSDThreshold" style="width:335px;" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
                     </div>
                 </div>
             </div>
@@ -293,51 +299,34 @@
 
         <hr class="span12" style="margin-left:0px;margin-right:70px;margin-bottom:0px;margin-top:10px;" />
 
-        <h5>Confirmation Selection Parameters</h5>
-        <div class="control-group bv_group_confirmationAutoHitSelection" style="margin-left:20px;margin-bottom:20px;">
-            <label class="control-label checkbox" style="width:200px;padding-left:0;">
-                <input type="checkbox" name="bv_confirmationAutoHitSelection" class="bv_confirmationAutoHitSelection" <% if (confirmationAutoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
-            </label>
-        </div>
-        <div class="form-horizontal">
-            <div class="bv_confirmationThresholdControls">
-                <div class="control-group bv_group_confirmationHitEfficacyThreshold">
-                    <label class="control-label radio" style="width:145px;padding-left:30px;">
-                        <input type="radio" name="bv_confirmationThresholdType" value="efficacy" class="bv_confirmationThresholdTypeEfficacy" <% if (confirmationThresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
-                    </label>
-                    <div class="controls" style="padding-left:35px;">
-                        <input class="bv_confirmationHitEfficacyThreshold" style="width:335px;" value="<%=confirmationHitEfficacyThreshold%>" type="text" <% if (confirmationThresholdType!="efficacy") { %> disabled="disabled"<% } %>>
-                    </div>
-                </div>
-                <div class="control-group bv_group_confirmationHitSDThreshold">
-                    <label class="control-label radio" style="width:115px;padding-left:59px;">
-                        <input type="radio" name="bv_confirmationThresholdType" value="sd" class="bv_confirmationThresholdTypeSD" <% if (confirmationThresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
-                    </label>
-                    <div class="controls" style="padding-left:35px;">
-                        <input class="bv_confirmationHitSDThreshold" style="width:335px;" value="<%=confirmationHitSDThreshold%>" type="text" <% if (confirmationThresholdType!="sd") { %> disabled="disabled"<% }%> />
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <hr class="span12" style="margin-left:0px;margin-right:70px;margin-bottom:0px;margin-top:10px;" />
-
-        <h5>Screen Campaign Summary Report</h5>
-        <div class="control-group" style="margin-left:20px;margin-bottom:20px;">
-            <label class="control-label checkbox" style="width:200px;padding-left:0;">
-                <input type="checkbox" name="bv_generateSummaryReport" class="bv_generateSummaryReport" <% if (generateSummaryReport) { %> checked="checked"<% }%> />Generate Summary Report
-            </label>
-        </div>
+        <!--<div class="well bv_analysisResults"></div>-->
 
         <!-- Save-->
-        <div class="span12" style="margin-top:20px; margin-left:0px;">
-            <button type="button" class="btn bv_analyze pull-right" disabled="disabled">Analyze</button>
-            <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
-            <div class="bv_analysisComplete pull-right hide" style="padding-top:5px;color:#62c462;">Analysis Complete</div>
-            <div class="bv_analyzing pull-right hide" style="padding-top:5px;color:red;">Analzying...</div>
-            <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
-            <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
-        </div>
+        <!--<div class="span12" style="margin-top:20px; margin-left:0px;">-->
+            <!--<button type="button" class="btn bv_analyze pull-right" disabled="disabled">Analyze</button>-->
+            <!--<button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>-->
+            <!--<div class="bv_analysisFailed pull-right hide" style="padding-top:5px;color:red;">Analysis Failed</div>-->
+            <!--<div class="bv_analysisComplete pull-right hide" style="padding-top:5px;color:#62c462;">Analysis Complete</div>-->
+            <!--<div class="bv_analyzing pull-right hide" style="padding-top:5px;color:red;">Analzying...</div>-->
+            <!--<div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>-->
+            <!--<div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>-->
+        <!--</div>-->
 
     </div>
+
+    <div class='modal bv_analyzingData hide'>
+        <div class="modal-header">
+            <h3>Analyzing Data</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 </script>

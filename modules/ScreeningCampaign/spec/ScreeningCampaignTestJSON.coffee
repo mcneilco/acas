@@ -55,16 +55,12 @@
 			negativeControl:
 				standardNumber: "input value"
 				defaultValue: 23
-		primaryHitEfficacyThreshold: 42
-		primaryHitSDThreshold: 5.0
-		primaryThresholdType: "sd" #or "efficacy"
-		primaryAutoHitSelection: false
-		confirmationHitEfficacyThreshold: 42
-		confirmationHitSDThreshold: 5.0
-		confirmationThresholdType: "sd" #or "efficacy"
-		confirmationAutoHitSelection: false
+		hitEfficacyThreshold: 42
+		hitSDThreshold: 5.0
+		thresholdType: "sd" #or "efficacy"
+		useOriginalHits: false
+		autoHitSelection: false
 		transformationRuleList: exports.transformationRules
-		generateSummaryReport: true
 
 ) (if (typeof process is "undefined" or not process.versions) then window.screeningCampaignTestJSON = window.screeningCampaignTestJSON or {} else exports)
 

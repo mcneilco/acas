@@ -119,11 +119,10 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				hideStatusesList
 				if window.conf.entity?.hideStatuses?
 					hideStatusesList = window.conf.entity.hideStatuses
 				#non-admin users can't see protocols with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]) or prot.get('codeName') is "PROT-Screen"
 					prsc = new ProtocolRowSummaryController
 						model: prot
 					prsc.on "gotClick", @selectedRowChanged
