@@ -27,6 +27,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerCodesFromLabels', exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 	app.post '/api/updateWellContent', exports.updateWellContent
+	app.post '/api/updateWellContentWithObject', exports.updateWellContentWithObject
 	app.post '/api/moveToLocation', exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
@@ -61,6 +62,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainerCodesFromLabels', loginRoutes.ensureAuthenticated, exports.getContainerCodesFromLabels
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
 	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
+	app.post '/api/updateWellContentWithObject', loginRoutes.ensureAuthenticated, exports.updateWellContentWithObject
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
@@ -940,6 +942,12 @@ exports.updateWellContent = (req, resp) ->
 		resp.statusCode = statusCode
 		resp.json json
 
+exports.updateWellContentWithObject = (req, resp) ->
+	req.setTimeout 86400000
+	exports.updateWellContentInternal req.body.wells, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
 exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 	# If call custom doesn't equal 0 then call custom
 	callCustom  = callCustom != "0"
@@ -956,7 +964,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 		request(
 			method: 'POST'
 			url: baseurl
-			body: JSON.stringify(wellContent.wells)
+			body: JSON.stringify(wellContent)
 			json: true
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
