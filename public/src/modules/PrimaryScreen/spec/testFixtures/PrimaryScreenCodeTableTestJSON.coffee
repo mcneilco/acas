@@ -112,5 +112,18 @@
 					name: "KI"
 					ignored: false
 				]
+		,
+			type: "analysis parameter"
+			kind: "statistic"
+			codes:
+					[
+						code: "max"
+						name: "Maximum"
+						ignored: false
+					,
+						code: "min"
+						name: "Minimum"
+						ignored: false
+					]
 		]
 ) (if (typeof process is "undefined" or not process.versions) then window.primaryScreenCodeTableTestJSON = window.primaryScreenCodeTableTestJSON or {} else exports)

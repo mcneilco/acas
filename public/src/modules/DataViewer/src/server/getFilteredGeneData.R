@@ -1,11 +1,14 @@
 # The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
 # ROUTE: /getFilteredGeneData
 #.libPaths('/opt/acas_home/app_1.4/acas/r_libs')
+#Sys.setenv(ACAS_HOME = "/Users/goshiro2014/Documents/McNeilco_2012/clients/Development/acasBuilds/acas")
+#.libPaths('/Users/goshiro2014/Documents/McNeilco_2012/clients/Development/acasBuilds/acas/r_libs')
 require('RCurl')
 require('rjson')
 require('data.table')
 require('racas')
 require('reshape2')
+require('gtools')
 
 
 source(file.path(racas::applicationSettings$appHome,"public/src/modules/DataViewer/src/server/getSELColOrder.R"))
@@ -171,12 +174,17 @@ geomMean <- function(data){
 
 # needs to be named fun.aggregate --Thanks BB
 # http://stackoverflow.com/questions/24542976/how-to-pass-fun-aggregate-as-argument-to-dcast-data-table
-fun.aggregate <- function(dataVector,type){
+fun.aggregate <- function(dataVector,type, exportCSV=exportCSV){
   if (length(dataVector)==1){
     return (dataVector)
   }
-  agData.values = sapply(dataVector,function(a) a[1])
-  agData.ids = paste(sapply(dataVector,function(a) a[2]),collapse=",")
+	if (exportCSV){
+  		agData.values = dataVector		
+	} else {
+		dataVector <- dataVector[mixedorder(sapply(dataVector,'[[', i=1), decreasing=FALSE)]
+  		agData.values = sapply(dataVector,function(a) a[1])
+  		agData.ids = paste(sapply(dataVector,function(a) a[2]),collapse=",")		
+	}
 
   if (type == "geomMean"){
     agData.value = geomMean(agData.values)
@@ -184,15 +192,28 @@ fun.aggregate <- function(dataVector,type){
     agData.value = arithMean(agData.values)
   #curve renderer does overlay with curve id's delimited by ,
   }else if(type == "curve"){
-    agData.value = paste(agData.values,collapse=",")
+		if (!exportCSV){
+    		agData.value = paste(agData.values,collapse=",")
+		} else {
+    		agData.value = paste(agData.values,collapse=",")			
+		}
   }else{
-    agData.value = paste(agData.values,collapse="<br>")
+		if (!exportCSV){
+    		agData.value = paste(agData.values,collapse="<br>")
+		} else{
+			agData.value = paste(agData.values,collapse=";")
+		}
   }
 
-  return(list(c(agData.value,agData.ids)))
+	if (exportCSV){
+		return(agData.value)
+	} else {
+  		return(list(c(agData.value,agData.ids)))	
+	}
 }
 
-pivotResults <- function(geneId, lsKind, result, aggType="other"){
+
+pivotResults <- function(geneId, lsKind, result, aggType="other", exportCSV=exportCSV){
 
   # dcast.data.table cannot find this if not pushed to global...........
   aggType <<- aggType
@@ -201,7 +222,7 @@ pivotResults <- function(geneId, lsKind, result, aggType="other"){
   if (nrow(exptSubset) == 0){  #can't use dcast on an empty data.table
     return (data.table(geneId))
   }
-  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = fun.aggregate, type = aggType, fill=list(NA))
+  dcast.data.table(exptSubset, geneId ~ lsKind, value.var=c("result"),fun.aggregate = fun.aggregate, type = aggType, exportCSV = exportCSV, fill=NA)
 }
 
 # wrapper function so that reduce can be called on data.table.merge with non-default arguments
@@ -213,24 +234,24 @@ myMerge <- function(x,y){
 # dataDT is the data returned from the server in a data.table
 # expt is the experiment or protocol id for the current group of data
 # returns outputDT, a data.table in the format of the final output (table of compounds vs. properies)
-aggAndPivot <- function(dataDT, expt){
+aggAndPivot <- function(dataDT, expt, exportCSV, aggregateData){
   if (aggregateData){
     # Get list of properties to aggregate with geometirc mean from config
     geomList <- unlist(strsplit(configList$server.sar.geomMean,","))
 
     # subset dataDT based aggregation type and dcast each subset by calling a different type of aggergation (last parameter to pivotResults)
     dataDTFilter <- dataDT[protocolId == expt]
-    outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result, "geomMean")]
-    outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result, "arithMean")]
-    outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result, "curve")]
-    outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result, "other")]
+    outputDTGeometric <- dataDTFilter[sub(" .*","",lsKind) %in% geomList , pivotResults(testedLot, lsKind, result, "geomMean", exportCSV)]
+    outputDTArithmetic <- dataDTFilter[lsType == "numericValue" & !(sub(" .*","",lsKind) %in% geomList), pivotResults(testedLot, lsKind, result, "arithMean", exportCSV)]
+    outputDTCurve <- dataDTFilter[lsKind == "curve id", pivotResults(testedLot, lsKind, result, "curve", exportCSV)]
+    outputDTOther <- dataDTFilter[lsType != "numericValue" & lsKind != "curve id", pivotResults(testedLot, lsKind, result, "other", exportCSV)]
 
     # merge all subsets back into one outputDT
     outputDT <- Reduce(myMerge, list(outputDTGeometric,outputDTArithmetic,outputDTCurve,outputDTOther))
 
   }else{ # Aggregate is false
-    outputDTCurve <- dataDT[experimentId == expt & (lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result, "curve")]
-    outputDTNonCurve <- dataDT[experimentId == expt & !(lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result)]
+    outputDTCurve <- dataDT[experimentId == expt & (lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result, "curve", exportCSV)]
+    outputDTNonCurve <- dataDT[experimentId == expt & !(lsType == "stringValue" & lsKind == "curve id"), pivotResults(testedLot, lsKind, result, "other", exportCSV)]
 
     # merge all subsets back into one outputDT
     outputDT <- Reduce(myMerge, list(outputDTCurve, outputDTNonCurve))
@@ -243,7 +264,7 @@ aggAndPivot <- function(dataDT, expt){
 #   experiment/protocol in the order from the original SEL file.
 # exptCodes is data.table that has a column experimentCodeName and contains all the experiments in
 #   current experiment/protocol. (yes, there is only one experiment in list is aggregate = false)
-getColOrder <- function(experimentList, outputDT){
+getColOrder <- function(experimentList, outputDT, exportCSV=exportCSV){
   exptDataColumns <- c()
   for (codeName in experimentList$experimentCodeName){
     exptDataColumns <- c(exptDataColumns,getExperimentColNames(experimentCode=codeName, showAllColumns=exportCSV))
@@ -261,7 +282,7 @@ getColOrder <- function(experimentList, outputDT){
 
 # Modifies inlineFileValue columns to display a link to the uploaded image (e.g. Western Blot)
 # fileValues is a list of the lsKind (column name) of each column to be modified
-modifyFileValues <- function(outputDT, fileValues){
+modifyFileValues <- function(outputDT, fileValues, exportCSV, aggregateData){
   if(exportCSV){
     # Do nothing?
   }else if (aggregateData){
@@ -307,7 +328,8 @@ extractFileName <- function(inputFilePath){
 return(combinedOutput)
 }
 
-modifyReportFileValues <- function(outputDT, reportFileValues){
+modifyReportFileValues <- function(outputDT, reportFileValues, exportCSV, aggregateData){
+
   if(exportCSV){
     # Do nothing?
   }else if (aggregateData){
@@ -342,9 +364,9 @@ modifyReportFileValues <- function(outputDT, reportFileValues){
 # For csv, only output url, without html tags
 modifyCurveValues <- function(curveIdCol){
   if (!exportCSV){
-    sapply(curveIdCol, function(x) list(c(paste0('<a href="http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2])))
+    sapply(curveIdCol, function(x) list(c(paste0('<a href="http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2])))
   }else{
-    sapply(curveIdCol, function(x) list(c(paste0('http://',configList$client.host,':',configList$client.port,'/api/curve/render/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'),x[2])))
+    sapply(curveIdCol, function(x) paste0('http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'))
   }
 }
 
@@ -358,7 +380,7 @@ setType <- function(lsType){
   return(sType)
 }
 
-processData <- function(postData){
+processData <- function(postData, exportCSV, onlyPublicData){
 
 	postData.list <- fromJSON(postData)
 
@@ -377,8 +399,8 @@ processData <- function(postData){
 
 	searchParams <- list()
 	if (length(postData.list$queryParams$experimentCodeList) > 1){
-	  searchParams$experimentCodeList <- postData.list$queryParams$experimentCodeList
-
+	  experimentCodes <- unique(postData.list$queryParams$experimentCodeList)
+	  searchParams$experimentCodeList <- experimentCodes[grepl("^EXPT-", experimentCodes)]
 	} else {
 	  searchParams$experimentCodeList <- list()
 	  searchParams$experimentCodeList[1] <- postData.list$queryParams$experimentCodeList
@@ -439,16 +461,17 @@ processData <- function(postData){
 	if (nrow(dataDT) > 0){  # If data was returned from the server
 	  firstPass <- TRUE
 
-	# Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
-	  if (aggregateData){
-	    protocolIdDT <- unique(subset(dataDT, ,sel=c(protocolId, protocolName)))
-	    setkey(protocolIdDT, protocolName)
-	    experimentIdList <- protocolIdDT$protocolId
-	  }else{
-	    experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName, experimentName)))
-	    setkey(experimentIdDT, experimentCodeName)
-	    experimentIdList <- experimentIdDT$experimentId
-	  }
+		# Make a list of protocols if we are aggregating by protocol, otherwise make a list of experiments
+		  if (aggregateData){
+		    protocolIdDT <- unique(subset(dataDT, ,sel=c(protocolId, protocolName)))
+		    setkey(protocolIdDT, protocolName)
+		    experimentIdList <- protocolIdDT$protocolId
+		  }else{
+		    experimentIdDT <- unique(subset(dataDT, ,sel=c(experimentId, experimentCodeName, experimentName)))
+		    setkey(experimentIdDT, experimentCodeName)
+		    experimentIdList <- experimentIdDT$experimentId
+		  }
+	
 
 	  # loop through all experiments/protocols
 	  for (expt in experimentIdList){
@@ -456,26 +479,28 @@ processData <- function(postData){
 	    if(firstPass){
 
 	      # Modify lsKind to include units, concentration info, and time duration as well (if it exists)
-	      dataDT[resultUnit != "", lsKind := paste(lsKind," (",resultUnit,")",sep="")]
-	      dataDT[testedConcentration != "", lsKind := paste(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
-	      dataDT[testedTime != "", lsKind := paste(lsKind, "for", roundString(testedTime), testedTimeUnit, sep=" ")]
+	      dataDT[resultUnit != "", lsKind := paste0(lsKind," (",resultUnit,")",sep="")]
+	      dataDT[testedConcentration != "", lsKind := paste0(lsKind,"at",testedConcentration,testedConcentrationUnit,sep=" ")]
+	      dataDT[testedTime != "", lsKind := paste0(lsKind, "for", roundString(testedTime), testedTimeUnit, sep=" ")]
 	      #TODO change "time units" to be the actual units...
 
 	      # Keep only 4 sig-figs if displying in browser
 	      if (!exportCSV){
-	        options( scipen = -2 )  # forces scientific notation more often
+	        #options( scipen = -2 )  # forces scientific notation more often
 	        dataDT[, result := roundString(result,sigfig)]
 	      }
 
 	      # Add operators to the front of result if they exist
-	      dataDT[, result := paste(operator,result,sep = '')]
+	      dataDT[, result := paste0(operator,result,sep = '')]
 
-	      # Add id's to the results as the second item in a list
-	      # This means that each element in the data.table is a two-element list: list(result,id)
-	      dataDT[, result := strsplit(paste(result,id,sep=","),",")]
+	      if (!exportCSV){
+		      # Add id's to the results as the second item in a list
+		      # This means that each element in the data.table is a two-element list: list(result,id)
+		      dataDT[, result := strsplit(paste(result,id,sep=","),",")]
+			}
 
 	      # Aggregate and pivot the data
-	      outputDT <- aggAndPivot(dataDT, expt)
+	      outputDT <- aggAndPivot(dataDT, expt, exportCSV, aggregateData)
 
 	      # Store info about current protocol/experiment
 	      if (aggregateData){
@@ -491,7 +516,7 @@ processData <- function(postData){
 
 	      # get the columns in outputDT in the same order as in the SEL file(s)
 
-	      exptDataColumns <- getColOrder(experimentList, outputDT)
+	      exptDataColumns <- getColOrder(experimentList, outputDT, exportCSV)
 
 	## add in columns that are in the database but not in the original SEL file
 	missingDataColumns <- setdiff(names(outputDT), exptDataColumns)
@@ -507,7 +532,7 @@ processData <- function(postData){
 	      }else{
 	        fileValues <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
 	      }
-	      outputDT <- modifyFileValues(outputDT, fileValues)
+	      outputDT <- modifyFileValues(outputDT, fileValues, exportCSV, aggregateData)
 	#      exptDataColumns <- c(exptDataColumns,fileValues)
 
 	      # Handle File Report columns (uploaded annotation file)
@@ -518,7 +543,7 @@ processData <- function(postData){
 	      }
 
 	saveSession('bforeModReportFile.rda')
-	      outputDT <- modifyReportFileValues(outputDT, reportFileValues)
+	      outputDT <- modifyReportFileValues(outputDT, reportFileValues, exportCSV, aggregateData)
 
 
 	      # Modify curve id column to display curve
@@ -552,12 +577,15 @@ processData <- function(postData){
 	      colNamesDF <- subset(colNamesDF,!duplicated(colNamesDF[["lsKind"]]))
 	  		allColNamesDF <- merge(colNamesDF, orderCols, by="lsKind")
 	  		allColNamesDF <- allColNamesDF[order(allColNamesDF$order),]
+	
+			## clean up NAs into blanks
+	      outputDT[is.na(outputDT)] <- " "
 
 	    } else {  # firstPass is false
 	  		myLogger$debug(paste0("current firstPass ", firstPass))
 
 	  		# Aggregate and pivot the data
-	      outputDT2 <- aggAndPivot(dataDT, expt)
+	      outputDT2 <- aggAndPivot(dataDT, expt, exportCSV, aggregateData)
 
 	      # Store info about current protocol/experiment
 	      if (aggregateData){
@@ -572,7 +600,7 @@ processData <- function(postData){
 	      }
 
 	      # get the columns in outputDT in the same order as in the SEL file(s)
-	      exptDataColumns <- getColOrder(experimentList, outputDT2)
+	      exptDataColumns <- getColOrder(experimentList, outputDT2, exportCSV)
 
 	## add in columns that are in the database but not in the original SEL file
 	missingDataColumns <- setdiff(names(outputDT2), exptDataColumns)
@@ -587,7 +615,7 @@ processData <- function(postData){
 	      }else{
 	        fileValues2 <- paste(unlist(unique(subset(dataDT,lsType=="inlineFileValue" & experimentId == expt,lsKind))))
 	      }
-	      outputDT2 <- modifyFileValues(outputDT2, fileValues2)
+	      outputDT2 <- modifyFileValues(outputDT2, fileValues2, exportCSV, aggregateData)
 	      #exptDataColumns <- c(exptDataColumns,fileValues2)
 	      fileValues <- c(fileValues,fileValues2)  # save a list of all fileValues
 
@@ -601,8 +629,7 @@ processData <- function(postData){
 	      } else {
 	        reportFileValues2<- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & experimentId == expt,lsKind))))
 	      }
-	      outputDT2 <- modifyReportFileValues(outputDT2, reportFileValues2)
-
+	      outputDT2 <- modifyReportFileValues(outputDT2, reportFileValues2, exportCSV, aggregateData)
 
 	      # Modify curve id column to display curve
 	      if (!is.null(outputDT2[["curve id"]])){  # column exists
@@ -613,7 +640,14 @@ processData <- function(postData){
 	  			setnames(outputDT2, colName, paste0(currentPassName, "::", colName))
 	  		}
 
+			## clean up NAs into blanks
+	      outputDT2[is.na(outputDT2)] <- " "
+	
 	  		outputDT <- merge(outputDT, outputDT2, by=c("geneId"), all=TRUE)
+	
+			## clean up NAs into blanks
+	      outputDT[is.na(outputDT)] <- " "
+
 	  		orderCols <- as.data.frame(cbind(lsKind=exptDataColumns, order=seq(1:length(exptDataColumns))))
 	  		orderCols$order <- as.integer(as.character(orderCols$order))
 
@@ -629,6 +663,10 @@ processData <- function(postData){
 	  		colNamesDF2 <- merge(colNamesDF2, orderCols, by="lsKind")
 	  		colNamesDF2 <- colNamesDF2[order(colNamesDF2$order),]
 	  		allColNamesDF <- rbind(allColNamesDF, colNamesDF2)
+	
+#exptIndex <- exptIndex + 1	
+#expt <- experimentIdList[exptIndex]
+	
 	      }
 	  }  # Done iterating through experiments/protocols
 
@@ -720,9 +758,13 @@ processData <- function(postData){
 	}
 
 	if (exportCSV){
-	  names = names(outputDT)[c(-1)] # names of all the data columns
-	  outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
-	  for (j in names) set(outputDT, j=j, value=as.character(outputDT[[j]]))
+#	  names = names(outputDT) # names of all the data columns
+#	  cleanDT <- outputDT[ , lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]#
+#	  rm(outputDT)
+#	  outputDT <- cleanDT
+#	  outputDT[, (names) := lapply(.SD, function(x) unlist(lapply(x,'[', 1))), .SDcols = names]
+
+#	  for (j in names) set(outputDT, j=j, value=as.character(outputDT[[j]]))
 
 	  # Note, this assumes there is only one entityType
 	  if (configList$server.sar.csvLabel == "bestLabel"){
@@ -790,6 +832,12 @@ if(is.null(GET$format)){
   onlyPublicData <- "false"
 }
 
+### for testing:
+#  exportCSV <- TRUE
+#  onlyPublicData <- "false"
+#  postData <- '{"queryParams":{"batchCodes":"CMPD-0000013-01A CMPD-0000012-01A CMPD-0000011-01A","experimentCodeList":["EXPT-00000033","EXPT-00000011"],"searchFilters":{"booleanFilter":"and","advancedFilter":""},"aggregate":"false"},"maxRowsToReturn":"10000","user":"bob"}'
+
+
 postData <- rawToChar(receiveBin())
 myLogger$info(postData)
 
@@ -799,7 +847,7 @@ myLogger$info(postData)
 #exportCSV <- TRUE
 #onlyPublicData <- "true"
 
-processData(postData)
+processData(postData, exportCSV, onlyPublicData)
 
 rm(postData)
 

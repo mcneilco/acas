@@ -107,13 +107,15 @@ class window.DataViewerResultController extends Backbone.View
 	modifyTableEntities: =>
 		#load sar rendering data
 		@$('td.referenceCode').each ->
+			referenceCode = $(@).html()
+			$(@).html("Loading...")
 			$.ajax
 				type: 'POST'
 				url: "/api/sarRender/render"
 				dataType: 'json'
 				data:
 					displayName: @displayName
-					referenceCode: $(@).html()
+					referenceCode: referenceCode
 				success: (json) =>
 					$(@).html(json.html)
 					$(@).removeClass("referenceCode") #only need to modify once

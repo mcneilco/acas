@@ -8,7 +8,9 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
+		# Possible issue: this lets letters following the numbers pass, like "12341a"
+		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
+		if (not readPositionIsNumeric or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -16,6 +18,31 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 			errors.push
 				attribute: 'readName'
 				message: "Read name must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.PrimaryAnalysisTimeWindow extends Backbone.Model
+	defaults:
+		position: 1
+		statistic: "max"
+		windowStart: ""
+		windowEnd: ""
+		unit: "s"
+
+	validate: (attrs) =>
+		errors = []
+		ws = attrs.windowStart
+		if _.isNaN(ws) or ws is "" or ws is null or ws is undefined or isNaN(ws)
+			errors.push
+				attribute: 'timeWindowStart'
+				message: "Window Start must be a number"
+		we = attrs.windowEnd
+		if _.isNaN(we) or we is "" or we is null or we is undefined or isNaN(we)
+			errors.push
+				attribute: 'timeWindowEnd'
+				message: "Window End must be a number"
 		if errors.length > 0
 			return errors
 		else
@@ -66,6 +93,22 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 					usedReadNames[currentReadName] = index
 		return modelErrors
 
+class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
+	model: PrimaryAnalysisTimeWindow
+
+	validateCollection: (matchReadName) =>
+		modelErrors = []
+		@each (model, index) ->
+			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
+			# which adds the class "error" to the invalid attributes
+			indivModelErrors = model.validate(model.attributes)
+			if indivModelErrors?
+				for error in indivModelErrors
+					unless (matchReadName and error.attribute == 'readPosition')
+						modelErrors.push
+							attribute: error.attribute+':eq('+index+')'
+							message: error.message
+		return modelErrors
 
 class window.TransformationRuleList extends Backbone.Collection
 	model: TransformationRule
@@ -117,8 +160,13 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		htsFormat: true
 		autoHitSelection: false
 		matchReadName: false
+		fluorescentStart: null
+		fluorescentEnd: null
+		fluorescentStep: null
+		latePeakTime: null
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
 		transformationRuleList: new TransformationRuleList()
+		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
 
 
 	initialize: ->
@@ -152,6 +200,13 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				@trigger 'change'
 			resp.primaryAnalysisReadList.on 'amDirty', =>
 				@trigger 'amDirty'
+		if resp.primaryAnalysisTimeWindowList?
+			if resp.primaryAnalysisTimeWindowList not instanceof PrimaryAnalysisTimeWindowList
+				resp.primaryAnalysisTimeWindowList = new PrimaryAnalysisTimeWindowList(resp.primaryAnalysisTimeWindowList)
+			resp.primaryAnalysisTimeWindowList.on 'change', =>
+				@trigger 'change'
+			resp.primaryAnalysisTimeWindowList.on 'amDirty', =>
+				@trigger 'amDirty'
 		if resp.transformationRuleList?
 			if resp.transformationRuleList not instanceof TransformationRuleList
 				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
@@ -166,6 +221,8 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
+		timeWindowErrors = @get('primaryAnalysisTimeWindowList').validateCollection(attrs.matchReadName)
+		errors.push timeWindowErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
 		positiveControl = @get('positiveControl').get('batchCode')
@@ -192,15 +249,18 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 
 		agonistControl = @get('agonistControl').get('batchCode')
 		agonistControlConc = @get('agonistControl').get('concentration')
-		if (agonistControl !="" and agonistControl != undefined and agonistControl != null) or (agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
-				errors.push
-					attribute: 'agonistControlBatch'
-					message: "A registered batch number must be provided."
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
-				errors.push
-					attribute: 'agonistControlConc'
-					message: "Agonist control conc must be set"
+		# agonist control concentration field is filled
+		agonistControlConcFilled = agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null
+		agonistControlBlank = agonistControl is "" or agonistControl is undefined or agonistControl is null
+		if (agonistControl is "invalid") or (agonistControlConcFilled and agonistControlBlank)
+			errors.push
+				attribute: 'agonistControlBatch'
+				message: "A registered batch number must be provided."
+		# empty string is still valid for Conc, needed for Dose Response
+		if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is null
+			errors.push
+				attribute: 'agonistControlConc'
+				message: "Agonist control conc must be set"
 		vehicleControl = @get('vehicleControl').get('batchCode')
 		if vehicleControl is "invalid"
 			errors.push
@@ -252,6 +312,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
+		if _.isNaN(attrs.fluorescentStart)
+			errors.push
+				attribute: 'fluorescentStart'
+				message: "Fluorescent Start must be a number"
+		if _.isNaN(attrs.fluorescentEnd)
+			errors.push
+				attribute: 'fluorescentEnd'
+				message: "Fluorescent End must be a number"
+		if _.isNaN(attrs.fluorescentStep)
+			errors.push
+				attribute: 'fluorescentStep'
+				message: "Fluorescent Step must be a number"
+		if _.isNaN(attrs.latePeakTime)
+			errors.push
+				attribute: 'latePeakTime'
+				message: "Late Peak Time must be a number"
 		if errors.length > 0
 			return errors
 		else
@@ -338,6 +414,51 @@ class window.PrimaryScreenExperiment extends Experiment
 #		super(protocol)
 #		@getModelFitStatus().set codeValue: modelFitStatus
 
+class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"keyup .bv_timeWindowStart": "attributeChanged"
+		"keyup .bv_timeWindowEnd": "attributeChanged"
+		"change .bv_timeStatistic": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'PrimaryAnalysisTimeWindowController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@$('.bv_timePosition').html('T'+@model.get('position'))
+		@setUpStatisticSelect()
+		@
+
+	setUpStatisticSelect: ->
+		@timeStatisticList = new PickListList()
+		@timeStatisticList.url = "/api/codetables/analysis parameter/statistic"
+		@timeStatisticListController = new PickListSelectController
+			el: @$('.bv_timeStatistic')
+			collection: @timeStatisticList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Statistic"
+			selectedCode: @model.get('statistic')
+
+
+	updateModel: =>
+		@model.set
+			windowStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowStart'))
+			windowEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowEnd'))
+			statistic: @timeStatisticListController.getSelectedCode()
+		@trigger 'updateState'
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
+
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
 	tagName: "div"
@@ -394,7 +515,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	updateModel: =>
 		@model.set
-			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
+			readPosition: UtilityFunctions::getTrimmedInput @$('.bv_readPosition')
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
@@ -411,7 +532,9 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
 
 class window.TransformationRuleController extends AbstractFormController
 	template: _.template($("#TransformationRuleView").html())
@@ -452,6 +575,52 @@ class window.TransformationRuleController extends AbstractFormController
 	clear: =>
 		@model.destroy()
 		@attributeChanged()
+
+
+class window.PrimaryAnalysisTimeWindowListController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowListView").html())
+	nextPositionNumber: 1
+	events:
+		"click .bv_addTimeWindowButton": "addNewWindow"
+
+	initialize: =>
+		@collection.on 'remove', @renumberTimeWindows
+		@collection.on 'remove', => @collection.trigger 'change'
+
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (timeWindow) =>
+			@addOneWindow(timeWindow)
+		@
+
+	addNewWindow: (skipAmDirtyTrigger) =>
+		newModel = new PrimaryAnalysisTimeWindow()
+		@collection.add newModel
+		@addOneWindow(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneWindow: (timeWindow) ->
+		timeWindow.set position: @nextPositionNumber
+		@nextPositionNumber++
+		parc = new PrimaryAnalysisTimeWindowController
+			model: timeWindow
+		@$('.bv_timeWindowInfo').append parc.render().el
+		parc.on 'updateState', =>
+			@trigger 'updateState'
+		parc.on 'updateAllActivities', @updateAllActivities
+
+	renumberTimeWindows: =>
+		@nextPositionNumber = 1
+		index = 0
+		while index < @collection.length
+			windowNumber = 'T' + @nextPositionNumber.toString()
+			@collection.at(index).set position: @nextPositionNumber
+			@$('.bv_timePosition:eq('+index+')').html(windowNumber)
+			index++
+			@nextPositionNumber++
 
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController
@@ -606,6 +775,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 		"change .bv_htsFormat": "attributeChanged"
 		"click .bv_matchReadName": "handleMatchReadNameChanged"
+		"keyup .bv_fluorescentStart": "attributeChanged"
+		"keyup .bv_fluorescentEnd": "attributeChanged"
+		"keyup .bv_fluorescentStep": "attributeChanged"
+		"keyup .bv_latePeakTime": "attributeChanged"
 
 
 
@@ -636,6 +809,7 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
 		@setupReadListController()
+		@setupTimeWindowListController()
 		@setupTransformationRuleListController()
 		@handleMatchReadNameChanged(true)
 
@@ -705,6 +879,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@readListController.on 'updateState', =>
 			@trigger 'updateState'
 
+	setupTimeWindowListController: ->
+		@timeWindowListController= new PrimaryAnalysisTimeWindowListController
+			el: @$('.bv_timeWindowList')
+			collection: @model.get('primaryAnalysisTimeWindowList')
+		@timeWindowListController.render()
+		@timeWindowListController.on 'updateState', =>
+			@trigger 'updateState'
+
 	setupTransformationRuleListController: ->
 		@transformationRuleListController= new TransformationRuleListController
 			el: @$('.bv_transformationList')
@@ -728,6 +910,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
 			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
 			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
+			fluorescentStart: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart')
+			fluorescentEnd: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd')
+			fluorescentStep: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep')
+			latePeakTime: UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
 			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
@@ -746,6 +932,14 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		if @model.get('agonistControl').get('concentration') != ""
 			@model.get('agonistControl').set
 				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
+		if @model.get('fluorescentStart') != ""
+			@model.set fluorescentStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart'))
+		if @model.get('fluorescentEnd') != ""
+			@model.set fluorescentEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd'))
+		if @model.get('fluorescentStep') != ""
+			@model.set fluorescentStep: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep'))
+		if @model.get('latePeakTime') != ""
+			@model.set latePeakTime: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime'))
 		@trigger 'updateState'
 
 	handlePositiveControlBatchChanged: ->
@@ -1025,7 +1219,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setExperimentSaved()
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
-
+			@checkForSourceFile()
 
 	render: =>
 		@showExistingResults()
@@ -1218,6 +1412,19 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 			@trigger 'amClean'
 #		@showExistingResults()
 
+	checkForSourceFile: ->
+		sourceFile = @model.getSourceFile()
+		if sourceFile? and @dataAnalysisController.parseFileNameOnServer is ""
+			sourceFileValue = sourceFile.get('fileValue')
+			displayName = sourceFile.get('comments')
+			@dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
+			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
+			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
+				@dataAnalysisController.parseFileController.render()
+				@dataAnalysisController.handleParseFileRemoved()
+#			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+@model.get('structural file').get('comments')+'</a></div>'
+#			@dataAnalysisController.parseFileController.lsFileChooser.fileUploadComplete(null,result:[name:sourceFile.get('fileValue')])
+
 
 # This wraps all the tabs
 class window.AbstractPrimaryScreenExperimentController extends Backbone.View
@@ -1296,6 +1503,10 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@fetchModel()
+		@$('.bv_primaryScreenDataAnalysisTab').on 'shown', (e) =>
+			if @model.getAnalysisStatus().get('codeValue') is "not started"
+				@analysisController.checkForSourceFile()
+
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@model.on 'statusChanged', @handleStatusChanged
 		@experimentBaseController.render()

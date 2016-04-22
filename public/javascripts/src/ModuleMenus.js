@@ -18,7 +18,7 @@
       if (window.conf.leaveACASMessage === "WARNING: There are unsaved changes.") {
         return window.conf.leaveACASMessage;
       } else {
-        return null;
+
       }
     };
 
@@ -55,8 +55,8 @@
       } else {
         this.$('.bv_homePageWrapper').show();
       }
-      if (window.conf.moduleMenus.headerName != null) {
-        this.$('.bv_headerName').html(window.conf.moduleMenus.headerName);
+      if (window.conf.moduleMenus.logoText != null) {
+        this.$('.bv_headerName').html(window.conf.moduleMenus.logoText);
       }
       if (window.conf.moduleMenus.homePageMessage != null) {
         this.$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage);

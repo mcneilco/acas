@@ -1,6 +1,9 @@
 
 
 adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
+  # Calculates calculated reads, changes names of colums in inputDataTable, 
+  #   and returns the modified inputDataTable
+  # Inputs:
   # inputColumnTable: 
   #   userReadPosition: null if "match names" = TRUE in GUI
   #   userReadName: character
@@ -9,6 +12,11 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   #   calculatedRead: boolean
   #   activityColName: character
   #   newActivityColName: character
+  # inputDataTable:
+  #   everthing else....
+  
+  # These columns should always exist
+  lockedColumns <- c("T_timePoints", "T_sequence", "agonistConc", "agonistBatchCode")
   
   # sets the names for all of the "defined" reads, but none of the calculated reads
   setnames(inputDataTable, 
@@ -16,7 +24,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
            inputColumnTable[activityColName != "None", ]$newActivityColName)
   
   # adds in any calculated columns
-  # TODO: this should be in it's own function
+  # TODO: this should be in its own function
   if(nrow(inputColumnTable[calculatedRead==TRUE])>0) {
     for (calculation in inputColumnTable[calculatedRead==TRUE]$userReadName) {
       if(calculation == "Calc: (R1/R2)*100") {
@@ -69,6 +77,26 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
                                               get(inputColumnTable[userReadOrder==2]$newActivityColName)) /
                                               (get(inputColumnTable[userReadOrder==1]$newActivityColName) +
                                               get(inputColumnTable[userReadOrder==2]$newActivityColName))) * 1000 ]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      } else if(calculation == "Calc: (R2-R1)/R1") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        if(!inputColumnTable[userReadOrder==2]$calculatedRead && !inputColumnTable[userReadOrder==1]$calculatedRead) {
+          inputDataTable[ , calculatedRead := ((get(inputColumnTable[userReadOrder==2]$newActivityColName) - 
+                                                  get(inputColumnTable[userReadOrder==1]$newActivityColName)) /
+                                                 get(inputColumnTable[userReadOrder==1]$newActivityColName))]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
+      } else if(calculation == "Calc: (R5-R4)/R4") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        if(!inputColumnTable[userReadOrder==5]$calculatedRead && !inputColumnTable[userReadOrder==4]$calculatedRead) {
+          inputDataTable[ , calculatedRead := ((get(inputColumnTable[userReadOrder==5]$newActivityColName) - 
+                                                  get(inputColumnTable[userReadOrder==4]$newActivityColName)) /
+                                                 get(inputColumnTable[userReadOrder==4]$newActivityColName))]
           setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
@@ -128,7 +156,7 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
                               "cmpdConc",
                               "batchCode")
   colNamesToCheck <- setdiff(colnames(inputDataTable), standardListOfColNames)
-  colNamesToKeep <- inputColumnTable$newActivityColName
+  colNamesToKeep <- c(inputColumnTable$newActivityColName, lockedColumns)
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
   inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)

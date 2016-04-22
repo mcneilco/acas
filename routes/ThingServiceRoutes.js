@@ -371,7 +371,7 @@
           } else {
             console.log('got ajax error trying to lookup lsThing name');
             console.log(error);
-            console.log(jsonthing);
+            console.log(json);
             console.log(response);
             return callback(json);
           }

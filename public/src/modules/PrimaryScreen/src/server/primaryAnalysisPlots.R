@@ -17,6 +17,9 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
   # Create density data to graph
   NCdensity <- density(values[wellTypes == "NC"])
   PCdensity <- density(values[wellTypes == "PC"])
+  if(sum(wellTypes == "test") < 2) {
+    stopUser("No test compounds found in the plates. Have all plates been loaded?")
+  }
   testDensity <- density(values[wellTypes == "test"])
   yHeight <- max(NCdensity$y, PCdensity$y, testDensity$y)
   
@@ -69,6 +72,7 @@ createGGComparison <- function(graphTitle, yLimits = NULL,
   # wellType is the test/PC/NC column
   # dataRow is the value column
   # xColumn is the x side
+  
   graphDataFrame <- data.frame(xColumn=xColumn, wellType=wellType, dataRow=dataRow, stringsAsFactors = F)
   if (!is.null(hits)) {
     graphDataFrame$isHit=hits
@@ -274,5 +278,24 @@ createZPrimeByPlatePlot <- function(resultTable) {
   box()
   axis(side=1, at=1:max(resultTable$plateOrder))
   axis(side=2, at=yAxisAt)
+  
+}
+getPlateDimensions <- function(numRows=NULL, numCols=NULL) {
+  if(is.null(numRows) && is.null(numCols)) {
+    stopUser("Internal error: unknown plate dimensions")
+  }
+  
+  if(is.null(numRows)) {
+    colDim <- ceiling((numCols / 12)) * 12
+    rowDim <- (colDim / 12) * 8
+  } else if (is.null(numCols)) {
+    rowDim <- ceiling((numRows / 8)) * 8
+    colDim <- (rowDim / 8) * 12
+  } else {
+    baseSize <- max(ceiling((numCols / 12)), ceiling((numRows / 8)))
+    colDim <- baseSize * 12
+    rowDim <- baseSize * 8
+  }
+  return(list(colDim=colDim, rowDim=rowDim))
   
 }

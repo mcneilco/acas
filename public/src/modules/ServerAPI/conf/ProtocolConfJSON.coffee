@@ -351,6 +351,13 @@
 				ignored: false
 			,
 				codeType: "analysis parameter"
+				codeKind: "normalization method"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "None"
+				ignored: false
+			,
+				codeType: "analysis parameter"
 				codeKind: "transformation"
 				codeOrigin: "ACAS DDICT"
 				code: "sd"

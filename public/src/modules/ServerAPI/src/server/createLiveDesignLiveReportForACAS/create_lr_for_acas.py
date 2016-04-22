@@ -79,7 +79,7 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId)
     	search_string = ""
     	for compound_id in compound_ids:
     		search_string += compound_id +"\n"
-    	search_results.extend(api.compound_search_by_id(search_string, database_names=[database]), project_id = projectId)
+    	search_results.extend(api.compound_search_by_id(search_string, database_names=[database], project_id = projectId))
     # Now add the rows for the compound ids for which we want data
     #compound_ids = ["V51411","V51412","V51413","V51414"]
     api.add_rows(lr_id, search_results)
@@ -109,16 +109,21 @@ def main():
     
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
-    project=args['input']['project']
+    try:
+		project=args['input']['project']
+    except:
+		project="Global"
     
     apiSuffix = "/api"
     apiEndpoint = endpoint + apiSuffix;
     api = Api(apiEndpoint, username, password)
-    api.reload_db_constants()
+#    api.reload_db_constants()
     try:
     	projectId = api.get_project_id_by_name(project)
     except:
     	projectId = 0
+    if type(projectId) is not int:
+		projectId = 0
     lr_id = make_acas_live_report(api, compound_ids, assays_to_add, database, projectId)
     
     liveReportSuffix = "/#/projects/"+str(projectId)+"/livereports/";
@@ -129,4 +134,4 @@ if __name__ == '__main__':
     main()
 
     
-    
+ 

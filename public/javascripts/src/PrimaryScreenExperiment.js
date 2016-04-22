@@ -19,9 +19,10 @@
     };
 
     PrimaryAnalysisRead.prototype.validate = function(attrs) {
-      var errors;
+      var errors, readPositionIsNumeric;
       errors = [];
-      if ((_.isNaN(attrs.readPosition) || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
+      readPositionIsNumeric = !_.isNaN(parseInt(attrs.readPosition)) || !_.isNaN(parseInt(attrs.readPosition.slice(1)));
+      if ((!readPositionIsNumeric || attrs.readPosition === "" || attrs.readPosition === null || attrs.readPosition === void 0) && attrs.readName.slice(0, 5) !== "Calc:") {
         errors.push({
           attribute: 'readPosition',
           message: "Read position must be a number"
@@ -41,6 +42,50 @@
     };
 
     return PrimaryAnalysisRead;
+
+  })(Backbone.Model);
+
+  window.PrimaryAnalysisTimeWindow = (function(superClass) {
+    extend(PrimaryAnalysisTimeWindow, superClass);
+
+    function PrimaryAnalysisTimeWindow() {
+      this.validate = bind(this.validate, this);
+      return PrimaryAnalysisTimeWindow.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisTimeWindow.prototype.defaults = {
+      position: 1,
+      statistic: "max",
+      windowStart: "",
+      windowEnd: "",
+      unit: "s"
+    };
+
+    PrimaryAnalysisTimeWindow.prototype.validate = function(attrs) {
+      var errors, we, ws;
+      errors = [];
+      ws = attrs.windowStart;
+      if (_.isNaN(ws) || ws === "" || ws === null || ws === void 0 || isNaN(ws)) {
+        errors.push({
+          attribute: 'timeWindowStart',
+          message: "Window Start must be a number"
+        });
+      }
+      we = attrs.windowEnd;
+      if (_.isNaN(we) || we === "" || we === null || we === void 0 || isNaN(we)) {
+        errors.push({
+          attribute: 'timeWindowEnd',
+          message: "Window End must be a number"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
+    };
+
+    return PrimaryAnalysisTimeWindow;
 
   })(Backbone.Model);
 
@@ -127,6 +172,45 @@
 
   })(Backbone.Collection);
 
+  window.PrimaryAnalysisTimeWindowList = (function(superClass) {
+    extend(PrimaryAnalysisTimeWindowList, superClass);
+
+    function PrimaryAnalysisTimeWindowList() {
+      this.validateCollection = bind(this.validateCollection, this);
+      return PrimaryAnalysisTimeWindowList.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisTimeWindowList.prototype.model = PrimaryAnalysisTimeWindow;
+
+    PrimaryAnalysisTimeWindowList.prototype.validateCollection = function(matchReadName) {
+      var modelErrors;
+      modelErrors = [];
+      this.each(function(model, index) {
+        var error, i, indivModelErrors, len, results1;
+        indivModelErrors = model.validate(model.attributes);
+        if (indivModelErrors != null) {
+          results1 = [];
+          for (i = 0, len = indivModelErrors.length; i < len; i++) {
+            error = indivModelErrors[i];
+            if (!(matchReadName && error.attribute === 'readPosition')) {
+              results1.push(modelErrors.push({
+                attribute: error.attribute + ':eq(' + index + ')',
+                message: error.message
+              }));
+            } else {
+              results1.push(void 0);
+            }
+          }
+          return results1;
+        }
+      });
+      return modelErrors;
+    };
+
+    return PrimaryAnalysisTimeWindowList;
+
+  })(Backbone.Collection);
+
   window.TransformationRuleList = (function(superClass) {
     extend(TransformationRuleList, superClass);
 
@@ -206,8 +290,13 @@
         htsFormat: true,
         autoHitSelection: false,
         matchReadName: false,
+        fluorescentStart: null,
+        fluorescentEnd: null,
+        fluorescentStep: null,
+        latePeakTime: null,
         primaryAnalysisReadList: new PrimaryAnalysisReadList(),
-        transformationRuleList: new TransformationRuleList()
+        transformationRuleList: new TransformationRuleList(),
+        primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
       };
     };
 
@@ -271,6 +360,21 @@
           };
         })(this));
       }
+      if (resp.primaryAnalysisTimeWindowList != null) {
+        if (!(resp.primaryAnalysisTimeWindowList instanceof PrimaryAnalysisTimeWindowList)) {
+          resp.primaryAnalysisTimeWindowList = new PrimaryAnalysisTimeWindowList(resp.primaryAnalysisTimeWindowList);
+        }
+        resp.primaryAnalysisTimeWindowList.on('change', (function(_this) {
+          return function() {
+            return _this.trigger('change');
+          };
+        })(this));
+        resp.primaryAnalysisTimeWindowList.on('amDirty', (function(_this) {
+          return function() {
+            return _this.trigger('amDirty');
+          };
+        })(this));
+      }
       if (resp.transformationRuleList != null) {
         if (!(resp.transformationRuleList instanceof TransformationRuleList)) {
           resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList);
@@ -290,10 +394,12 @@
     };
 
     PrimaryScreenAnalysisParameters.prototype.validate = function(attrs) {
-      var agonistControl, agonistControlConc, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, transformationErrors, vehicleControl;
+      var agonistControl, agonistControlBlank, agonistControlConc, agonistControlConcFilled, errors, negativeControl, negativeControlConc, positiveControl, positiveControlConc, readErrors, timeWindowErrors, transformationErrors, vehicleControl;
       errors = [];
       readErrors = this.get('primaryAnalysisReadList').validateCollection(attrs.matchReadName);
       errors.push.apply(errors, readErrors);
+      timeWindowErrors = this.get('primaryAnalysisTimeWindowList').validateCollection(attrs.matchReadName);
+      errors.push.apply(errors, timeWindowErrors);
       transformationErrors = this.get('transformationRuleList').validateCollection();
       errors.push.apply(errors, transformationErrors);
       positiveControl = this.get('positiveControl').get('batchCode');
@@ -326,19 +432,19 @@
       }
       agonistControl = this.get('agonistControl').get('batchCode');
       agonistControlConc = this.get('agonistControl').get('concentration');
-      if ((agonistControl !== "" && agonistControl !== void 0 && agonistControl !== null) || (agonistControlConc !== "" && agonistControlConc !== void 0 && agonistControlConc !== null)) {
-        if (agonistControl === "" || agonistControl === void 0 || agonistControl === null || agonistControl === "invalid") {
-          errors.push({
-            attribute: 'agonistControlBatch',
-            message: "A registered batch number must be provided."
-          });
-        }
-        if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === "" || agonistControlConc === null) {
-          errors.push({
-            attribute: 'agonistControlConc',
-            message: "Agonist control conc must be set"
-          });
-        }
+      agonistControlConcFilled = agonistControlConc !== "" && agonistControlConc !== void 0 && agonistControlConc !== null;
+      agonistControlBlank = agonistControl === "" || agonistControl === void 0 || agonistControl === null;
+      if ((agonistControl === "invalid") || (agonistControlConcFilled && agonistControlBlank)) {
+        errors.push({
+          attribute: 'agonistControlBatch',
+          message: "A registered batch number must be provided."
+        });
+      }
+      if (_.isNaN(agonistControlConc) || agonistControlConc === void 0 || agonistControlConc === null) {
+        errors.push({
+          attribute: 'agonistControlConc',
+          message: "Agonist control conc must be set"
+        });
       }
       vehicleControl = this.get('vehicleControl').get('batchCode');
       if (vehicleControl === "invalid") {
@@ -413,6 +519,30 @@
         errors.push({
           attribute: 'transferVolume',
           message: "Transfer volume must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentStart)) {
+        errors.push({
+          attribute: 'fluorescentStart',
+          message: "Fluorescent Start must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentEnd)) {
+        errors.push({
+          attribute: 'fluorescentEnd',
+          message: "Fluorescent End must be a number"
+        });
+      }
+      if (_.isNaN(attrs.fluorescentStep)) {
+        errors.push({
+          attribute: 'fluorescentStep',
+          message: "Fluorescent Step must be a number"
+        });
+      }
+      if (_.isNaN(attrs.latePeakTime)) {
+        errors.push({
+          attribute: 'latePeakTime',
+          message: "Late Peak Time must be a number"
         });
       }
       if (errors.length > 0) {
@@ -559,10 +689,80 @@
 
   })(Experiment);
 
+  window.PrimaryAnalysisTimeWindowController = (function(superClass) {
+    extend(PrimaryAnalysisTimeWindowController, superClass);
+
+    function PrimaryAnalysisTimeWindowController() {
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
+      return PrimaryAnalysisTimeWindowController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisTimeWindowController.prototype.template = _.template($("#PrimaryAnalysisTimeWindowView").html());
+
+    PrimaryAnalysisTimeWindowController.prototype.tagName = "div";
+
+    PrimaryAnalysisTimeWindowController.prototype.className = "form-inline";
+
+    PrimaryAnalysisTimeWindowController.prototype.events = {
+      "keyup .bv_timeWindowStart": "attributeChanged",
+      "keyup .bv_timeWindowEnd": "attributeChanged",
+      "change .bv_timeStatistic": "attributeChanged",
+      "click .bv_delete": "clear"
+    };
+
+    PrimaryAnalysisTimeWindowController.prototype.initialize = function() {
+      this.errorOwnerName = 'PrimaryAnalysisTimeWindowController';
+      this.setBindings();
+      return this.model.on("destroy", this.remove, this);
+    };
+
+    PrimaryAnalysisTimeWindowController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.$('.bv_timePosition').html('T' + this.model.get('position'));
+      this.setUpStatisticSelect();
+      return this;
+    };
+
+    PrimaryAnalysisTimeWindowController.prototype.setUpStatisticSelect = function() {
+      this.timeStatisticList = new PickListList();
+      this.timeStatisticList.url = "/api/codetables/analysis parameter/statistic";
+      return this.timeStatisticListController = new PickListSelectController({
+        el: this.$('.bv_timeStatistic'),
+        collection: this.timeStatisticList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Statistic"
+        }),
+        selectedCode: this.model.get('statistic')
+      });
+    };
+
+    PrimaryAnalysisTimeWindowController.prototype.updateModel = function() {
+      this.model.set({
+        windowStart: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_timeWindowStart'))),
+        windowEnd: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_timeWindowEnd'))),
+        statistic: this.timeStatisticListController.getSelectedCode()
+      });
+      return this.trigger('updateState');
+    };
+
+    PrimaryAnalysisTimeWindowController.prototype.clear = function() {
+      this.model.destroy();
+      return this.attributeChanged();
+    };
+
+    return PrimaryAnalysisTimeWindowController;
+
+  })(AbstractFormController);
+
   window.PrimaryAnalysisReadController = (function(superClass) {
     extend(PrimaryAnalysisReadController, superClass);
 
     function PrimaryAnalysisReadController() {
+      this.clear = bind(this.clear, this);
       this.handleActivityChanged = bind(this.handleActivityChanged, this);
       this.handleReadNameChanged = bind(this.handleReadNameChanged, this);
       this.updateModel = bind(this.updateModel, this);
@@ -635,7 +835,7 @@
 
     PrimaryAnalysisReadController.prototype.updateModel = function() {
       this.model.set({
-        readPosition: parseInt(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition')))
+        readPosition: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_readPosition'))
       });
       return this.trigger('updateState');
     };
@@ -658,6 +858,11 @@
       });
       this.attributeChanged();
       return this.trigger('updateAllActivities');
+    };
+
+    PrimaryAnalysisReadController.prototype.clear = function() {
+      this.model.destroy();
+      return this.attributeChanged();
     };
 
     return PrimaryAnalysisReadController;
@@ -721,6 +926,94 @@
     };
 
     return TransformationRuleController;
+
+  })(AbstractFormController);
+
+  window.PrimaryAnalysisTimeWindowListController = (function(superClass) {
+    extend(PrimaryAnalysisTimeWindowListController, superClass);
+
+    function PrimaryAnalysisTimeWindowListController() {
+      this.renumberTimeWindows = bind(this.renumberTimeWindows, this);
+      this.addNewWindow = bind(this.addNewWindow, this);
+      this.render = bind(this.render, this);
+      this.initialize = bind(this.initialize, this);
+      return PrimaryAnalysisTimeWindowListController.__super__.constructor.apply(this, arguments);
+    }
+
+    PrimaryAnalysisTimeWindowListController.prototype.template = _.template($("#PrimaryAnalysisTimeWindowListView").html());
+
+    PrimaryAnalysisTimeWindowListController.prototype.nextPositionNumber = 1;
+
+    PrimaryAnalysisTimeWindowListController.prototype.events = {
+      "click .bv_addTimeWindowButton": "addNewWindow"
+    };
+
+    PrimaryAnalysisTimeWindowListController.prototype.initialize = function() {
+      this.collection.on('remove', this.renumberTimeWindows);
+      return this.collection.on('remove', (function(_this) {
+        return function() {
+          return _this.collection.trigger('change');
+        };
+      })(this));
+    };
+
+    PrimaryAnalysisTimeWindowListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(timeWindow) {
+          return _this.addOneWindow(timeWindow);
+        };
+      })(this));
+      return this;
+    };
+
+    PrimaryAnalysisTimeWindowListController.prototype.addNewWindow = function(skipAmDirtyTrigger) {
+      var newModel;
+      newModel = new PrimaryAnalysisTimeWindow();
+      this.collection.add(newModel);
+      this.addOneWindow(newModel);
+      if (skipAmDirtyTrigger !== true) {
+        return newModel.trigger('amDirty');
+      }
+    };
+
+    PrimaryAnalysisTimeWindowListController.prototype.addOneWindow = function(timeWindow) {
+      var parc;
+      timeWindow.set({
+        position: this.nextPositionNumber
+      });
+      this.nextPositionNumber++;
+      parc = new PrimaryAnalysisTimeWindowController({
+        model: timeWindow
+      });
+      this.$('.bv_timeWindowInfo').append(parc.render().el);
+      parc.on('updateState', (function(_this) {
+        return function() {
+          return _this.trigger('updateState');
+        };
+      })(this));
+      return parc.on('updateAllActivities', this.updateAllActivities);
+    };
+
+    PrimaryAnalysisTimeWindowListController.prototype.renumberTimeWindows = function() {
+      var index, results1, windowNumber;
+      this.nextPositionNumber = 1;
+      index = 0;
+      results1 = [];
+      while (index < this.collection.length) {
+        windowNumber = 'T' + this.nextPositionNumber.toString();
+        this.collection.at(index).set({
+          position: this.nextPositionNumber
+        });
+        this.$('.bv_timePosition:eq(' + index + ')').html(windowNumber);
+        index++;
+        results1.push(this.nextPositionNumber++);
+      }
+      return results1;
+    };
+
+    return PrimaryAnalysisTimeWindowListController;
 
   })(AbstractFormController);
 
@@ -1000,7 +1293,11 @@
       "change .bv_volumeTypeDilution": "handleVolumeTypeChanged",
       "change .bv_autoHitSelection": "handleAutoHitSelectionChanged",
       "change .bv_htsFormat": "attributeChanged",
-      "click .bv_matchReadName": "handleMatchReadNameChanged"
+      "click .bv_matchReadName": "handleMatchReadNameChanged",
+      "keyup .bv_fluorescentStart": "attributeChanged",
+      "keyup .bv_fluorescentEnd": "attributeChanged",
+      "keyup .bv_fluorescentStep": "attributeChanged",
+      "keyup .bv_latePeakTime": "attributeChanged"
     };
 
     PrimaryScreenAnalysisParametersController.prototype.initialize = function() {
@@ -1032,6 +1329,7 @@
       this.setupNormalizationSelect();
       this.handleAutoHitSelectionChanged(true);
       this.setupReadListController();
+      this.setupTimeWindowListController();
       this.setupTransformationRuleListController();
       this.handleMatchReadNameChanged(true);
       return this;
@@ -1120,6 +1418,19 @@
       })(this));
     };
 
+    PrimaryScreenAnalysisParametersController.prototype.setupTimeWindowListController = function() {
+      this.timeWindowListController = new PrimaryAnalysisTimeWindowListController({
+        el: this.$('.bv_timeWindowList'),
+        collection: this.model.get('primaryAnalysisTimeWindowList')
+      });
+      this.timeWindowListController.render();
+      return this.timeWindowListController.on('updateState', (function(_this) {
+        return function() {
+          return _this.trigger('updateState');
+        };
+      })(this));
+    };
+
     PrimaryScreenAnalysisParametersController.prototype.setupTransformationRuleListController = function() {
       this.transformationRuleListController = new TransformationRuleListController({
         el: this.$('.bv_transformationList'),
@@ -1147,6 +1458,10 @@
         assayVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_assayVolume')),
         transferVolume: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_transferVolume')),
         dilutionFactor: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_dilutionFactor')),
+        fluorescentStart: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStart')),
+        fluorescentEnd: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentEnd')),
+        fluorescentStep: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStep')),
+        latePeakTime: UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_latePeakTime')),
         htsFormat: htsFormat
       });
       if (this.model.get('assayVolume') !== "") {
@@ -1179,6 +1494,26 @@
       if (this.model.get('agonistControl').get('concentration') !== "") {
         this.model.get('agonistControl').set({
           concentration: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_agonistControlConc')))
+        });
+      }
+      if (this.model.get('fluorescentStart') !== "") {
+        this.model.set({
+          fluorescentStart: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStart')))
+        });
+      }
+      if (this.model.get('fluorescentEnd') !== "") {
+        this.model.set({
+          fluorescentEnd: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentEnd')))
+        });
+      }
+      if (this.model.get('fluorescentStep') !== "") {
+        this.model.set({
+          fluorescentStep: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_fluorescentStep')))
+        });
+      }
+      if (this.model.get('latePeakTime') !== "") {
+        this.model.set({
+          latePeakTime: parseFloat(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_latePeakTime')))
         });
       }
       return this.trigger('updateState');
@@ -1602,7 +1937,8 @@
         return this.setExperimentNotSaved();
       } else {
         this.setExperimentSaved();
-        return this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        this.setupDataAnalysisController(this.options.uploadAndRunControllerName);
+        return this.checkForSourceFile();
       }
     };
 
@@ -1848,6 +2184,23 @@
       })(this));
     };
 
+    PrimaryScreenAnalysisController.prototype.checkForSourceFile = function() {
+      var displayName, sourceFile, sourceFileValue;
+      sourceFile = this.model.getSourceFile();
+      if ((sourceFile != null) && this.dataAnalysisController.parseFileNameOnServer === "") {
+        sourceFileValue = sourceFile.get('fileValue');
+        displayName = sourceFile.get('comments');
+        this.dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html('<div style="margin-top:5px;"><a style="margin-left:20px;" href="' + window.conf.datafiles.downloadurl.prefix + sourceFileValue + '">' + displayName + '</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>');
+        this.dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'));
+        return this.dataAnalysisController.$('.bv_deleteSavedSourceFile').on('click', (function(_this) {
+          return function() {
+            _this.dataAnalysisController.parseFileController.render();
+            return _this.dataAnalysisController.handleParseFileRemoved();
+          };
+        })(this));
+      }
+    };
+
     return PrimaryScreenAnalysisController;
 
   })(Backbone.View);
@@ -1981,6 +2334,13 @@
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
           return _this.fetchModel();
+        };
+      })(this));
+      this.$('.bv_primaryScreenDataAnalysisTab').on('shown', (function(_this) {
+        return function(e) {
+          if (_this.model.getAnalysisStatus().get('codeValue') === "not started") {
+            return _this.analysisController.checkForSourceFile();
+          }
         };
       })(this));
       this.model.on("protocol_attributes_copied", this.handleProtocolAttributesCopied);

@@ -577,7 +577,7 @@
         el: this.$('.bv_attachFileList'),
         collection: attachFileList,
         firstOptionName: "Select Method",
-        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf'],
+        allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip'],
         fileTypeList: fileTypeList,
         required: false
       });
@@ -814,9 +814,11 @@
     };
 
     BaseEntityController.prototype.checkDisplayMode = function() {
+      var status;
+      status = this.model.getStatus().get('codeValue');
       if (this.readOnly === true) {
         return this.displayInReadOnlyMode();
-      } else if (this.model.getStatus().get('codeValue') === "deleted") {
+      } else if (status === "deleted" || status === "approved" || status === "rejected") {
         this.disableAllInputs();
         this.$('.bv_newEntity').removeAttr('disabled');
         return this.$('.bv_newEntity').removeAttr('disabled');

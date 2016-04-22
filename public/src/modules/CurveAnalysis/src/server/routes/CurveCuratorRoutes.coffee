@@ -4,7 +4,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.getCurveDetail
 	app.put '/api/curve/detail/:id', loginRoutes.ensureAuthenticated, exports.updateCurveDetail
 	app.post '/api/curve/stub/:id', loginRoutes.ensureAuthenticated, exports.updateCurveStub
-	app.get  '/api/curve/render/*', loginRoutes.ensureAuthenticated, exports.renderCurve
+	app.get  '/api/curve/render/:route/*', loginRoutes.ensureAuthenticated, exports.renderCurve
 	app.get '/curveCurator/*', loginRoutes.ensureAuthenticated, exports.curveCuratorIndex
 
 exports.getCurveStubs = (req, resp) ->
@@ -179,5 +179,5 @@ exports.renderCurve = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
 	redirectQuery = req._parsedUrl.query
-	rapacheCall = config.all.client.service.rapache.fullpath + '/curve/render/dr/?' + redirectQuery
+	rapacheCall = config.all.client.service.rapache.fullpath + "/curve/render/#{req.params.route}/?" + redirectQuery
 	req.pipe(request(rapacheCall)).pipe(resp)

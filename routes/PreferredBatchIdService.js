@@ -20,7 +20,7 @@
   };
 
   exports.getPreferredCompoundBatchIDs = function(requests, callback) {
-    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, request, serverUtilityFunctions, serviceType;
+    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, req, request, serverUtilityFunctions, serviceType;
     _ = require("underscore");
     each = require("each");
     request = require('request');
@@ -43,10 +43,14 @@
         }));
       });
     } else if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
-      req.body.user = "";
-      return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
+      req = {
+        testMode: false,
+        requests: requests,
+        user: ""
+      };
+      return serverUtilityFunctions.runRFunctionOutsideRequest("", req, "public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R", "seuratBatchCodeCheck", function(rReturn) {
         return callback(rReturn);
-      });
+      }, null, false);
     } else if (serviceType === "AcasCmpdReg" && !global.specRunnerTestmode) {
       req.body.user = "";
       return serverUtilityFunctions.runRFunction(req, "public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R", "acasCmpdRegBatchCheck", function(rReturn) {

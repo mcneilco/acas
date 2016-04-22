@@ -1,6 +1,7 @@
 class window.BulkLoadSampleTransfersController extends BasicFileValidateAndSaveController
 
 	initialize: ->
+		@allowedFileTypes = ['zip', 'csv']
 		super()
 		@fileProcessorURL = "/api/bulkLoadSampleTransfers"
 		@errorOwnerName = 'BulkLoadSampleTransfersController'

@@ -86,18 +86,35 @@
       } else {
         this.insertFirstOption = null;
       }
-      if (this.options.displayCodeName != null) {
-        return this.displayCodeName = this.options.displayCodeName;
+      if (this.options.displayName != null) {
+        return this.displayName = this.options.displayName;
       } else {
-        return this.displayCodeName = false;
+        return this.displayName = null;
       }
     };
 
     PickListOptionControllerForLsThing.prototype.render = function() {
-      var bestName, displayValue, preferredNames;
-      if (this.displayCodeName === true) {
-        if (this.model.get('codeName') != null) {
-          displayValue = this.model.get("codeName");
+      var bestName, corpName, displayValue, notebookValue, preferredNames;
+      if (this.displayName !== null) {
+        if (this.displayName === 'corpName' || this.displayName === 'corpName_notebook') {
+          if (!(this.model.get('lsLabels') instanceof LabelList)) {
+            this.model.set('lsLabels', new LabelList(this.model.get('lsLabels')));
+          }
+          if (!(this.model.get('lsStates') instanceof StateList)) {
+            this.model.set('lsStates', new StateList(this.model.get('lsStates')));
+          }
+          corpName = this.model.get('lsLabels').getACASLsThingCorpName();
+          if (corpName != null) {
+            displayValue = corpName.get('labelText');
+            if (this.displayName === 'corpName_notebook') {
+              notebookValue = this.model.get('lsStates').getOrCreateValueByTypeAndKind('metadata', this.model.get('lsKind') + ' batch', 'stringValue', 'notebook');
+              displayValue = displayValue + " " + notebookValue.get('stringValue');
+            }
+          } else {
+            displayValue = this.insertFirstOption.get('name');
+          }
+        } else if (this.model.get(this.displayName) != null) {
+          displayValue = this.model.get(this.displayName);
         } else {
           displayValue = this.insertFirstOption.get('name');
         }
@@ -271,10 +288,10 @@
 
     PickListForLsThingsSelectController.prototype.initialize = function() {
       PickListForLsThingsSelectController.__super__.initialize.call(this);
-      if (this.options.displayCodeName != null) {
-        return this.displayCodeName = this.options.displayCodeName;
+      if (this.options.displayName != null) {
+        return this.displayName = this.options.displayName;
       } else {
-        return this.displayCodeName = false;
+        return this.displayName = null;
       }
     };
 
@@ -316,7 +333,7 @@
         return $(this.el).append(new PickListOptionControllerForLsThing({
           model: enm,
           insertFirstOption: this.insertFirstOption,
-          displayCodeName: this.displayCodeName
+          displayName: this.displayName
         }).render().el);
       }
     };
@@ -577,11 +594,11 @@
     EditablePickListSelectController.prototype.handleAddOptionRequested = function() {
       var newOptionCode, newPickList, requestedOptionModel;
       requestedOptionModel = this.addPanelController.model;
-      newOptionCode = requestedOptionModel.get('newOptionLabel').toLowerCase();
+      newOptionCode = requestedOptionModel.get('newOptionLabel');
       if (this.pickListController.checkOptionInCollection(newOptionCode) === void 0) {
         newPickList = new PickList({
           code: newOptionCode,
-          name: requestedOptionModel.get('newOptionLabel'),
+          name: newOptionCode,
           ignored: false,
           codeType: requestedOptionModel.get('codeType'),
           codeKind: requestedOptionModel.get('codeKind'),

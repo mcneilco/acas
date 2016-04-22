@@ -1,4 +1,4 @@
-performCalculations <- function(resultTable, parameters) {
+performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun) {
   # exampleClient
   resultTable <- normalizeData(resultTable, parameters)
   
@@ -6,9 +6,7 @@ performCalculations <- function(resultTable, parameters) {
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
-    if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters)]
-    }
+    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
   }
   
   # compute Z' and Z' by plate
@@ -130,9 +128,11 @@ normalizeData <- function(resultTable, parameters) {
                                                        overallMinLevel=overallMinLevel,
                                                        overallMaxLevel=overallMaxLevel, parameters), 
                 by= section]
+  } else if (normalization == "none") {
+    resultTable[, normalizedActivity := resultTable$activity]
   } else {
     warnUser("No normalization applied.")
-    resultTable$normalizedActivity <- resultTable$activity
+    resultTable[, normalizedActivity := resultTable$activity]
   }
   
   return(resultTable)
@@ -177,8 +177,13 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
     + overallMaxLevel)
 }
 
-computeTransformedResults <- function(mainData, transformation, parameters) { 
-  #TODO switch on transformation
+computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun) { 
+  #switch on transformation
+  # based on transformation (custom code for each), responds with a vector of the new transformation
+  # Inputs:
+  #   transformation: string
+  #   mainData: data.table
+  #   parameters: list
   if (transformation == "percent efficacy") {
     aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
     
@@ -216,11 +221,75 @@ computeTransformedResults <- function(mainData, transformation, parameters) {
     } else {
       stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
     }
-    
+  } else if (transformation == "normalize by R3") {
+    R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
+    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
+    aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
+    return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
+  } else if (transformation == "noAgonist") {
+    return(getNoAgonist(parameters, mainData))
+  } else if (transformation == "enhancement") {
+    groupBy <- getGroupBy(parameters)
+    neededColumns <- c(groupBy, "normalizedActivity", "flag", "transformed_noAgonist")
+    if (!("transformed_noAgonist" %in% names(mainData))) {
+      mainData[, transformed_noAgonist:=getNoAgonist(parameters, .SD)]
+    }
+    mainCopy <- mainData[, neededColumns, with=FALSE]
+    # users expect this to group by assayBarcode, could look at allowing full groupBy later
+    mainCopy[, NCMean := mean(normalizedActivity[wellType == "NC" & is.na(flag)]), by = "assayBarcode"]
+    return(mainCopy[, V1 := normalizedActivity - (transformed_noAgonist + NCMean)]$V1)
+  } else if (transformation == "enhancementRatio") {
+    groupBy <- getGroupBy(parameters)
+    neededColumns <- c(groupBy, "normalizedActivity", "flag", "transformed_noAgonist")
+    if (!("transformed_noAgonist" %in% names(mainData))) {
+      mainData[, transformed_noAgonist:=getNoAgonist(parameters, .SD)]
+    }
+    mainCopy <- mainData[, neededColumns, with=FALSE]
+    # users expect this to group by assayBarcode, could look at allowing full groupBy later
+    mainCopy[, NCMean := mean(normalizedActivity[wellType == "NC" & is.na(flag)]), by = "assayBarcode"]
+    if (any(na.omit(mainCopy$transformed_noAgonist + mainCopy$NCMean) == 0)) {
+      # This is really unlikely as both of these should be positive... they don't use normalization with this
+      stopUser("Cannot use enhancementRatio if any of the noAgonist + NCMean = 0")
+    }
+    return(mainCopy[, V1 := normalizedActivity / (transformed_noAgonist + NCMean)]$V1)
+  } else if (transformation == "enhancementGraph") {
+    if (!("transformed_noAgonist" %in% names(mainData))) {
+      mainData[, transformed_noAgonist:=getNoAgonist(parameters, .SD)]
+    }
+    if (dryRun) {
+      filePath <- paste0("experiments/", experimentCodeName, "/dryRun/images")
+    } else {
+      filePath <- paste0("experiments/", experimentCodeName, "/images")
+    }
+    source(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/server/saveComparisonTraces.R"), local = TRUE)
+    saveComparisonTraces(mainData, filePath)
+    # Filenames: any rows with wellType other than 'test' are given an entry of NA
+    filePaths <- ifelse(
+      mainData$wellType == 'test',
+      file.path(filePath, paste0(mainData$assayBarcode, "_", mainData$batchCode, ".png")),
+      NA_character_)
+    return(filePaths)
+  } else if (transformation == "none") {
+    return(mainData$activity)
   } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
-    return(mainData$normalizedActivity)
+    return(mainData$activity)
   } else {
     stopUser("Transformation not defined in system.")
   }  
+}
+
+getNoAgonist <- function(parameters, mainData) {
+  groupBy <- getGroupBy(parameters)
+  neededColumns <- c(groupBy, "agonistConc", "normalizedActivity", "flag")
+  mainCopy <- mainData[, neededColumns, with = FALSE]
+  meanZero <- function(agonistConc, normalizedActivity, flag) {
+    zeroData <- normalizedActivity[agonistConc == 0 & is.na(flag)]
+    if (length(zeroData) == 0) {
+      return(NA_real_)
+    } else {
+      return(mean(zeroData))
+    }
+  }
+  return(mainCopy[, V1 := meanZero(agonistConc, normalizedActivity, flag), by = groupBy]$V1)
 }

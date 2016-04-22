@@ -146,6 +146,12 @@
       return LsThingItxList.__super__.constructor.apply(this, arguments);
     }
 
+    LsThingItxList.prototype.getAllItxByTypeAndKind = function(type, kind) {
+      return this.filter(function(itx) {
+        return (itx.get('lsType') === type) && (itx.get('lsKind') === kind);
+      });
+    };
+
     LsThingItxList.prototype.getItxByTypeAndKind = function(type, kind) {
       return this.filter(function(itx) {
         return (!itx.get('ignored')) && (itx.get('lsType') === type) && (itx.get('lsKind') === kind);

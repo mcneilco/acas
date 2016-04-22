@@ -11,15 +11,15 @@ library(plyr)
 
 tryCatch({
   qu <- paste0("SELECT DISTINCT aagr.tested_lot FROM 
-            api_analysis_group_results_ld aagr
-               JOIN api_experiment_ld e ON e.id = aagr.experiment_id
+            api_analysis_group_results aagr
+               JOIN api_experiment e ON e.id = aagr.experiment_id
                WHERE e.code_name = '", GET$experiment, "'")
   testedLotDF <- query(qu)
   names(testedLotDF) <- tolower(names(testedLotDF))
   qu <- paste0("SELECT DISTINCT p.label_text, aagr.ls_kind FROM 
-            api_analysis_group_results_ld aagr
-            JOIN api_experiment_ld e ON e.id = aagr.experiment_id
-            JOIN api_protocol_ld p ON e.protocol_id = p.protocol_id
+            api_analysis_group_results aagr
+            JOIN api_experiment e ON e.id = aagr.experiment_id
+            JOIN api_protocol p ON e.protocol_id = p.protocol_id
             WHERE e.code_name = '", GET$experiment, "'")
   lsKindDF <- query(qu)
   names(lsKindDF) <- tolower(names(lsKindDF))

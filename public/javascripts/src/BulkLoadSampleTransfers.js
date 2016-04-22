@@ -10,6 +10,7 @@
     }
 
     BulkLoadSampleTransfersController.prototype.initialize = function() {
+      this.allowedFileTypes = ['zip', 'csv'];
       BulkLoadSampleTransfersController.__super__.initialize.call(this);
       this.fileProcessorURL = "/api/bulkLoadSampleTransfers";
       this.errorOwnerName = 'BulkLoadSampleTransfersController';
