@@ -1098,7 +1098,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       # default list
       doseResponseKinds <- list(
         "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-        "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+        "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
         "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
         "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
       )
@@ -1118,7 +1118,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     # This list is a copy of the Dose Response kinds, because both use the same fitter. Update later.
     timeResultKinds <- list(
       "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
       "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
       "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
     )
