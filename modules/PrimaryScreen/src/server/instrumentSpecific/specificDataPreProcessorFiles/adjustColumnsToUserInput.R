@@ -149,7 +149,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   colNamesToKeep <- c(inputColumnTable$newActivityColName, lockedColumns)
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
-  inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)
+  inputDataTable <- addMissingColumns(inputColumnTable$newActivityColName, inputDataTable)
+  inputDataTable <- addMissingColumns(lockedColumns, inputDataTable, warnAdd = FALSE)
   
   # copy the read column that we want to do transformation/normalization on (user input)
   activityColName <- inputColumnTable[activityCol==TRUE]$newActivityColName

@@ -65,7 +65,7 @@ computeRawZPrimeByPlate <- function(mainData) {
 }
 
 normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
-  normalization <- parameters$normalizationRule
+  normalization <- parameters$normalization$normalizationRule
   
   if (nrow(resultTable[(wellType == 'NC' & is.na(flag))]) == 0) {
     # execute the error prompt about lack of NC only if no default value was defined in lieu of a negative control

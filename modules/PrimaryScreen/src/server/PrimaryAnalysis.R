@@ -1503,7 +1503,7 @@ removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
   return(inputDataTable)
 }
 
-addMissingColumns <- function(requiredColNames, inputDataTable)  {
+addMissingColumns <- function(requiredColNames, inputDataTable, warnAdd = TRUE)  {
   # This function cycles through a list of required column names and compares them to 
   # colnames in a data.table. It adds any columns with a value of "NA" if they are not found.
   #
@@ -1521,10 +1521,12 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
     }
   }
   
-  if(length(addList) == 1) {
-    warnUser(paste0("Added 1 data column: '", addList[[1]], "', coercing to NA."))
-  } else if(length(addList) > 1) {
-    warnUser(paste0("Added ",length(addList)," data columns: '", paste(addList, collapse="','"), "', coercing to NA"))
+  if (warnAdd) {
+    if(length(addList) == 1) {
+      warnUser(paste0("Added 1 data column: '", addList[[1]], "', coercing to NA."))
+    } else if(length(addList) > 1) {
+      warnUser(paste0("Added ",length(addList)," data columns: '", paste(addList, collapse="','"), "', coercing to NA"))
+    }
   }
   
   return(inputDataTable)
@@ -2304,7 +2306,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     # Create the final Spotfire File
     summaryInfo$reports <- saveReports(resultTable, spotfireResultTable, saveLocation=reportLocation, 
-                                       experiment, parameters, user)
+                                       experiment, parameters, user, customSourceFileMove=customSourceFileMove)
 
     rm(spotfireResultTable)
     gc()
