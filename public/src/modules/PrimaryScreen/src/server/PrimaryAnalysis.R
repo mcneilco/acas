@@ -1895,10 +1895,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
   
   targetLocation <- file.path(experimentFolderPath, "rawData")
-  dryRunFileLocation <- file.path(experimentFolderPath, "dryRun")
+  dryRunFileLocation <- file.path("experiments", experiment$codeName, "dryRun")
   specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
   parsedInputFileLocation <- file.path(experimentFolderPath, "parsedInput")
-  dir.create(dryRunFileLocation, showWarnings = FALSE)
+  dir.create(racas::getUploadedFilePath(dryRunFileLocation), showWarnings = FALSE)
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
   dir.create(parsedInputFileLocation, showWarnings = FALSE)
   
@@ -2149,8 +2149,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         ifelse(dryRunReport$download, 'download', ''), '>', dryRunReport$title, '</a>')
     }
   } else { #This section is "If not dry run"
-    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
-    dir.create(reportLocation, showWarnings = FALSE)
+    reportLocation <- file.path("experiments", experiment$codeName, "analysis")
+    dir.create(getUploadedFilePath(reportLocation), showWarnings = FALSE)
     
     source(file.path("public/src/modules/PrimaryScreen/src/server/createReports/",
                      clientName,"createPDF.R"), local = TRUE)

@@ -289,7 +289,7 @@ createWellTable <- function(barcodeList, testMode) {
   }
   
   names(wellTable) <- toupper(names(wellTable))
-  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- Inf
+  wellTable$CONCENTRATION[wellTable$CONCENTRATION_STRING == "infinite"] <- 0
   
   return(wellTable)
   }
