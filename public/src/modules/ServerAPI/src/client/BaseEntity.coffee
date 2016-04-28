@@ -522,8 +522,8 @@ class window.BaseEntityController extends AbstractFormController
 			@displayInReadOnlyMode()
 		else if status is "deleted" or status is "approved" or status is "rejected"
 			@disableAllInputs()
-			if @model.getStatus().get('codeValue') is "deleted"
-				@$('.bv_status').attr 'disabled', 'disabled'
+			unless @model.getStatus().get('codeValue') is "deleted"
+				@$('.bv_status').removeAttr 'disabled'
 			@$('.bv_newEntity').removeAttr('disabled')
 			@$('.bv_newEntity').removeAttr('disabled')
 
