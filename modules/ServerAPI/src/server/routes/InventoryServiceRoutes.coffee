@@ -1219,6 +1219,8 @@ exports.splitContainerInternal = (input, callback) ->
 									outputArray.push newContainer
 
 exports.mergeContainers = (req, resp) ->
+	console.log "req.body"
+	console.log req.body
 	exports.mergeContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json

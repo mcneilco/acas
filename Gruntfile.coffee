@@ -30,7 +30,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly') && fs.existsSync("#{acas_base}/modules/PlateRegistration")
+		if !grunt.option('customonly') && fs.existsSync("#{acas_base}/moduledyn/PlateRegistration")
 			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
@@ -389,7 +389,7 @@ module.exports = (grunt) ->
 					root: [path.resolve("<%= build %>/node_modules")]
 			build:
 				entry:
-					"index": "<%= acas_base %>/modules/PlateRegistration/src/client/index.coffee",
+					"index": "<%= acas_base %>/moduledyn/PlateRegistration/src/client/index.coffee",
 					#"spec": "./modules/PlateRegistration/spec/CompoundInventorySpec.coffee"
 				output:
 					path: "<%= build %>/public/compiled",
@@ -412,10 +412,10 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
 			webpack_build:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/src/client/*"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/moduledyn/PlateRegistration/src/client/*"]
 				tasks: ['webpack:build']
 			webpack_spec_build:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/PlateRegistration/spec/*.coffee"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/moduledyn/PlateRegistration/spec/*.coffee"]
 				tasks: ['webpack:build']
 			module_server_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
