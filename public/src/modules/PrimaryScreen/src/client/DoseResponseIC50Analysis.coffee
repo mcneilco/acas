@@ -6,7 +6,7 @@ class window.DoseResponsePlotCurveLL4IC50 extends Backbone.Model
 	render: (brd, curve, plotWindow) =>
 		log10 = @log10
 		fct = (x) ->
-			curve.max + (curve.min - curve.max) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ic50)))
+			curve.min + (curve.max - curve.min) / (1 + Math.exp(curve.slope * Math.log(Math.pow(10,x) / curve.ic50)))
 		brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
 		if curve.curveAttributes.IC50?
 			intersect = fct(log10(curve.curveAttributes.IC50))
