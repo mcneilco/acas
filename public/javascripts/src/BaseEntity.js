@@ -808,6 +808,9 @@
         return this.displayInReadOnlyMode();
       } else if (status === "deleted" || status === "approved" || status === "rejected") {
         this.disableAllInputs();
+        if (this.model.getStatus().get('codeValue') === "deleted") {
+          this.$('.bv_status').attr('disabled', 'disabled');
+        }
         this.$('.bv_newEntity').removeAttr('disabled');
         return this.$('.bv_newEntity').removeAttr('disabled');
       }
