@@ -483,7 +483,7 @@
       this.updateEditable();
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_cancel').attr('disabled', 'disabled');
-      if (this.readOnly === true) {
+      if (this.readOnly === true || !this.hasEditingRole()) {
         this.displayInReadOnlyMode();
       }
       return this;
@@ -506,6 +506,33 @@
       this.$('.bv_updateComplete').hide();
       this.$('.bv_cancel').removeAttr('disabled');
       return this.$('.bv_cancelComplete').hide();
+    };
+
+    BaseEntityController.prototype.hasEditingRole = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.editingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          console.log("role");
+          console.log(role);
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else {
+            rolesToTest.push($.trim(role));
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
     };
 
     BaseEntityController.prototype.setupStatusSelect = function() {
@@ -804,12 +831,12 @@
     BaseEntityController.prototype.checkDisplayMode = function() {
       var status;
       status = this.model.getStatus().get('codeValue');
-      if (this.readOnly === true) {
+      if (this.readOnly === true || !this.hasEditingRole()) {
         return this.displayInReadOnlyMode();
       } else if (status === "deleted" || status === "approved" || status === "rejected") {
         this.disableAllInputs();
-        if (this.model.getStatus().get('codeValue') === "deleted") {
-          this.$('.bv_status').attr('disabled', 'disabled');
+        if (this.model.getStatus().get('codeValue') !== "deleted") {
+          this.$('.bv_status').removeAttr('disabled');
         }
         this.$('.bv_newEntity').removeAttr('disabled');
         return this.$('.bv_newEntity').removeAttr('disabled');
