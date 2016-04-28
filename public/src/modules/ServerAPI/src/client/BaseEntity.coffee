@@ -304,8 +304,6 @@ class window.BaseEntityController extends AbstractFormController
 		if window.conf.entity?.editingRoles?
 			rolesToTest = []
 			for role in window.conf.entity.editingRoles.split(",")
-				console.log "role"
-				console.log role
 				if role is 'entityScientist'
 					if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
 						return true

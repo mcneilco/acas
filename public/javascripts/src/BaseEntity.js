@@ -515,8 +515,6 @@
         ref1 = window.conf.entity.editingRoles.split(",");
         for (i = 0, len = ref1.length; i < len; i++) {
           role = ref1[i];
-          console.log("role");
-          console.log(role);
           if (role === 'entityScientist') {
             if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
               return true;
