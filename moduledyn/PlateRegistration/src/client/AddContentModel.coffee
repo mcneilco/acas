@@ -70,13 +70,20 @@ class AddContentModel extends Backbone.Model
         if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] > computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
           return "The number of selected wells must be the same or less than the number of identifiers entered"
 
-  formatIdentifiersForValidationService: ->
-#    identifiers = _.reduce(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (memo, identifier) ->
-#      return memo + identifier + IDENTIFIER_LIST_DELIMETER
-#    , "")
+  formatIdentifiersForBatchIdValidationService: ->
     identifiers = _.map(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (identifier) ->
       return {requestName: identifier}
     )
+    console.log "identifiers"
+    console.log identifiers
+
+    identifiers
+
+  formatIdentifiersForBarcodeValidationService: ->
+#    identifiers = _.map(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (identifier) ->
+#      return {requestName: identifier}
+#    )
+    identifiers = {barcodes: @get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)}
     console.log "identifiers"
     console.log identifiers
 

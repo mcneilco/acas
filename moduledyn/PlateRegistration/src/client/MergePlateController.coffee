@@ -59,14 +59,21 @@ class MergePlatesController extends Backbone.View
       url: "/api/getContainerAndDefinitionContainerByContainerLabel/#{barcode}"
     )
     .done((data, textStatus, jqXHR) =>
+      $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
+      $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+
       if data.plateSize > MAX_PLATE_SIZE
         console.log "source plate too big"
         @$("span[name='sourcePlateTooBig']").removeClass "hide"
+        $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
         @plateQuadrants[evt.currentTarget.name].isValid = false
       else
         @plateQuadrants[evt.currentTarget.name].barcode = barcode
         @plateQuadrants[evt.currentTarget.name].codeName = data.codeName
         @$("span[name='sourcePlateTooBig']").addClass "hide"
+
+
+
 
 
         @plateQuadrants[evt.currentTarget.name].plateSize = data.plateSize
@@ -75,11 +82,14 @@ class MergePlatesController extends Backbone.View
         if plateSizeIsValid
           $(evt.currentTarget).parent().removeClass("has-error")
           $(evt.currentTarget).parent().addClass("has-success")
+          $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
           @plateQuadrants[evt.currentTarget.name].isValid = true
           @$("div[name='errorMessages']").addClass "hide"
         else
+
           $(evt.currentTarget).parent().removeClass("has-success")
           $(evt.currentTarget).parent().addClass("has-error")
+          $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
           @plateQuadrants[evt.currentTarget.name].isValid = false
           @$("div[name='errorMessages']").removeClass "hide"
 
@@ -92,6 +102,8 @@ class MergePlatesController extends Backbone.View
       $("span[name='#{plateNotFoundErrorSelector}']").removeClass("hide")
       $(evt.currentTarget).parent().removeClass("has-success")
       $(evt.currentTarget).parent().addClass("has-error")
+      $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+      $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
       @setStateOfSubmitButton()
     )
 
@@ -157,12 +169,16 @@ class MergePlatesController extends Backbone.View
       $(evt.currentTarget).parent().addClass("has-error")
       @$("span[name='destinationPlateBarcodeAlreadyInUse']").removeClass "hide"
       @destinationPlate.isValid = false
+      $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+      $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
       @setStateOfSubmitButton()
     )
     .fail((jqXHR, textStatus, errorThrown) =>
       $(evt.currentTarget).parent().removeClass("has-error")
       $(evt.currentTarget).parent().addClass("has-success")
       @$("span[name='destinationPlateBarcodeAlreadyInUse']").addClass "hide"
+      $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
+      $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
       @destinationPlate.isValid = true
       @setStateOfSubmitButton()
     )
@@ -278,6 +294,10 @@ class MergePlatesController extends Backbone.View
     @$("input[name='plateQuadrant3']").parent().removeClass("has-success")
     @$("input[name='plateQuadrant4']").parent().removeClass("has-error")
     @$("input[name='plateQuadrant4']").parent().removeClass("has-success")
+    $(".glyphicon-ok").addClass("hide")
+    $(".glyphicon-warning-sign").addClass("hide")
+
+    @setStateOfSubmitButton()
 
 
 exports.MergePlatesController = MergePlatesController

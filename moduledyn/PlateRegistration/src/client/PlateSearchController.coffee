@@ -106,6 +106,9 @@ class PlateSearchController extends Backbone.View
 
   handleClonePlate: (plateInfo) =>
     #@plateCloneController = new ClonePlateController()
+    @$("textarea[name='clonedPlateBarcodes']").val("")
+    @$("div[name='plateBarcodeEntry']").removeClass "hide"
+    @$("table[name='plateCloningStatusTable']").addClass "hide"
 
     @$("button[name='cancelClonePlate']").removeClass "hide"
     @$("button[name='clonePlate']").removeClass "hide"
@@ -216,7 +219,7 @@ class SearchResultTable extends Backbone.View
           <th>Status</th>
           <th>Type</th>
           <th>Clone</th>
-          <th>Launch</th>
+          <th>Edit</th>
       </tr>
     </thead>
     <tbody class="bv_searchResultsBody">
@@ -258,7 +261,7 @@ class SearchResultRow extends Backbone.View
       <td><%= status %></td>
       <td><%= type %></td>
       <td><button class="btn btn-xs btn-primary" name="clonePlateRow">Clone</button></td>
-      <td><a href="#plateDesign/<%= barcode %>" target="_blank" >launch</a></td>
+      <td><a class="btn btn-primary btn-xs" href="#plateDesign/<%= barcode %>" target="_blank" >Edit</a></td>
   """
   events:
     "click button[name='clonePlateRow']": "handleClonePlateClicked"
@@ -287,7 +290,7 @@ class ClonePlateController extends Backbone.View
     </td>
     <td>
       <p class='bv_cloningMessage hide'>Cloning...</p>
-      <a href="" class='bv_linkToNewPlate hide' target="_blank">complete</a>
+      <a href="" class='btn btn-primary bv_linkToNewPlate hide' target="_blank">Edit</a>
       <p class='bv_barcodeAlreadyUsedError hide'>Error: duplicate barcode</p>
     </td>
 """

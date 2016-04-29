@@ -42,6 +42,7 @@ class AddContentController extends Backbone.View
     "paste textarea[name='identifiers']": "handleIdentifiersPaste"
     "change input[name='fillStrategy']": "handleFillStrategyChanged"
     "change input[name='fillDirection']": "handleFillDirectionChanged"
+    "change input[name='identifierType']": "handleIdentifierTypeChanged"
     "change input[type='text']": "handleFormFieldUpdate"
     "click button[name='add']": "handleAddClick"
 
@@ -62,6 +63,14 @@ class AddContentController extends Backbone.View
         opt.value == @model.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION)
       )
       $(fillDirection).prop("checked", true)
+
+    if @model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is ""
+      $("input[name='identifierType']").prop('checked', false)
+    else
+      identifierType = _.find(@$("input[name='identifierType']"), (opt) =>
+        opt.value == @model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE)
+      )
+      $(identifierType).prop("checked", true)
 
     if @model.isValid(true)
       @enableAddButton()
@@ -115,7 +124,14 @@ class AddContentController extends Backbone.View
 
     @render()
 
+  handleIdentifierTypeChanged: (e) =>
+    console.log "e.currentTarget.value"
+    console.log e.currentTarget.value
+    @model.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE, e.currentTarget.value
+    @render()
+
   handleFillStrategyChanged: (e) =>
+    console.log e.currentTarget.value
     @model.set ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, e.currentTarget.value
     @render()
 

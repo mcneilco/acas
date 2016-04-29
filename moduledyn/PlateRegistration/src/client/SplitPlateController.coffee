@@ -62,6 +62,10 @@ class SplitPlatesController extends Backbone.View
         $("a[name='#{existingPlateLinkSelector}']").prop("href", "#plateDesign/#{barcode}")
         $("a[name='#{existingPlateLinkSelector}']").html barcode
         $("span[name='#{plateFoundErrorSelector}']").removeClass("hide")
+        $(evt.currentTarget).parent().removeClass("has-success")
+        $(evt.currentTarget).parent().addClass("has-error")
+        $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+        $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
 
         @setStateOfSubmitButton()
       )
@@ -73,6 +77,9 @@ class SplitPlatesController extends Backbone.View
         $("span[name='#{plateFoundErrorSelector}']").addClass("hide")
         $(evt.currentTarget).parent().addClass("has-success")
         $(evt.currentTarget).parent().removeClass("has-error")
+
+        $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
+        $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
 
         @setStateOfSubmitButton()
       )
@@ -142,6 +149,8 @@ class SplitPlatesController extends Backbone.View
         @sourcePlate.isValid = false
       else
         @$("span[name='sourcePlateTooSmall']").addClass "hide"
+        $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
+        $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
         @sourcePlate.isValid = true
 
       @setStateOfSubmitButton()
@@ -150,6 +159,8 @@ class SplitPlatesController extends Backbone.View
       $(evt.currentTarget).parent().removeClass("has-success")
       $(evt.currentTarget).parent().addClass("has-error")
       @$("span[name='sourcePlateNotFound']").removeClass "hide"
+      $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+      $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
       @sourcePlate.isValid = false
       @setStateOfSubmitButton()
     )
@@ -284,6 +295,9 @@ class SplitPlatesController extends Backbone.View
     @$("input[name='plateQuadrant3']").parent().removeClass("has-success")
     @$("input[name='plateQuadrant4']").parent().removeClass("has-error")
     @$("input[name='plateQuadrant4']").parent().removeClass("has-success")
+
+    $(".glyphicon-ok").addClass("hide")
+    $(".glyphicon-warning-sign").addClass("hide")
 
     @setStateOfSubmitButton()
 

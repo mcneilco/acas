@@ -66,6 +66,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
+	app.post '/api/getWellContentByContainerLabelsObject', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabelsObject
 	app.post '/api/cloneContainers', loginRoutes.ensureAuthenticated, exports.cloneContainers
 	app.post '/api/cloneContainer', loginRoutes.ensureAuthenticated, exports.cloneContainer
 	app.post '/api/splitContainer', loginRoutes.ensureAuthenticated, exports.splitContainer
@@ -1023,6 +1024,11 @@ exports.getWellContentByContainerLabel = (req, resp) ->
 	exports.getWellContentByContainerLabelsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
+
+exports.getWellContentByContainerLabelsObject = (req, resp) ->
+	exports.getWellContentByContainerLabelsInternal req.body.barcodes, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
 
 exports.getWellContentByContainerLabels = (req, resp) ->
 	exports.getWellContentByContainerLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->

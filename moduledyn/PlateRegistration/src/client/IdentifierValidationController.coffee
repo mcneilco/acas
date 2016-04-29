@@ -7,7 +7,8 @@ ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL
 
 IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES =
   #URL: '/api/validateIdentifiers'
-  URL: "/api/preferredBatchId"
+  BATCH_ID_URL: "/api/preferredBatchId"
+  BARCODE_URL: "/api/getWellContentByContainerLabelsObject?containerType=container&containerKind=tube"
 
 DATA_SERVICE_CONTROLLER_EVENTS =
   CLOSE_MODAL: "CloseModal"
@@ -18,21 +19,54 @@ class IdentifierValidationController extends Backbone.View
   template: _.template(require('html!./IdentifierValidationView.tmpl'))
 
   initialize: (options)->
-    @serviceCallProgressText = "Validating Identifiers"
-    @url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.URL
     @addContentModel = options.addContentModel
-    @data = { requests: @addContentModel.formatIdentifiersForValidationService() }
+    #@url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.BATCH_ID_URL
+
+    if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "barcode"
+      @url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.BARCODE_URL
+      @data = @addContentModel.formatIdentifiersForBarcodeValidationService()
+    else if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "compoundBatchId"
+      @url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.BATCH_ID_URL
+      @data = { requests: @addContentModel.formatIdentifiersForBatchIdValidationService() }
+
+    @serviceCallProgressText = "Validating Identifiers"
     console.log "@data to check"
     console.log @data
     @successCallback = options.successCallback
     @ajaxMethod = 'POST'
 
   handleSuccessCallback: (data, textStatus, jqXHR) =>
+    if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "barcode"
+      @handleBarcodeValidationCallback(data, textStatus, jqXHR)
+    else if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "compoundBatchId"
+      @handleBatchIdValidationCallback(data, textStatus, jqXHR)
+
     window.FOODATA = data
 
-    @aliasedRequestNames = @getAliasedRequestNames data
-    @invalidRequestNames = @getInvalidRequestNames data
-    @validRequestNames = @getValidRequestNames data
+
+  handleBarcodeValidationCallback: (data, textStatus, jqXHR) =>
+    hasInvalidEntries = false
+    @invalidRequestNames = []
+    @validRequestNames = []
+    @aliasedRequestNames = []
+    _.each(data, (well) =>
+      if _.size(well.wellContent) is 0
+        @invalidRequestNames.push {requestName: well.label}
+      else
+        @validRequestNames.push {requestName: well.wellContent[0].batchCode}
+    )
+    @processIdentifiers()
+
+#    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS, @invalidRequestNames
+#    if _.size(@invalidRequestNames) > 0
+#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
+#      @handleError(@invalidRequestNames)
+
+  handleBatchIdValidationCallback: (data, textStatus, jqXHR) =>
+    validatedIdentifiers = data.results
+    @aliasedRequestNames = @getAliasedRequestNames validatedIdentifiers
+    @invalidRequestNames = @getInvalidRequestNames validatedIdentifiers
+    @validRequestNames = @getValidRequestNames validatedIdentifiers
 
     aliasedIdentifiers = []
     _.each(@aliasedRequestNames, (aliasedName) ->
@@ -44,12 +78,13 @@ class IdentifierValidationController extends Backbone.View
     )
     @validIdentifiers = _.union(aliasedIdentifiers, validIdentifier)
 
+    @processIdentifiers()
+
+  processIdentifiers: =>
     @addContentModel.set ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS, @aliasedRequestNames
     @addContentModel.set ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS, @invalidRequestNames
-
     if _.size(@invalidRequestNames) is 0 and _.size(@aliasedRequestNames) is 0
       validNames = _.union(@aliasedRequestNames, @validRequestNames)
-
       valuesToAdd = []
       _.each(validNames, (v) ->
         valuesToAdd.push v.preferredName
@@ -83,6 +118,8 @@ class IdentifierValidationController extends Backbone.View
   getInvalidRequestNames: (requestNames) ->
     invalidRequestNames = []
     _.each(requestNames, (requestName) ->
+      console.log "requestName"
+      console.log requestName
       if requestName.preferredName is ""
         invalidRequestNames.push requestName
     )

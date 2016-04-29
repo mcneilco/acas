@@ -214,7 +214,7 @@ class PlateTableController extends Backbone.View
       hotData.push([d[0], d[1], d[2][@dataFieldToDisplay]])
     )
     @handsOnTable.setDataAtCell hotData, 'programaticEdit'
-    @handsOnTable.init() # force re-render so tooltip content is updated
+    #@handsOnTable.init() # force re-render so tooltip content is updated
 
   handleRegionSelected: (rowStart, colStart, rowStop, colStop) =>
     @selectedRegionBoundries =
@@ -251,6 +251,8 @@ class PlateTableController extends Backbone.View
         return false
 
   handleContentUpdated: (changes, source) =>
+    console.log "handleContentUpdated"
+    console.log source
     if source in ["edit", "autofill", "paste"]
       listOfIdentifiers = []
       wellsToUpdate = @reformatUpdatedValues changes
@@ -363,11 +365,6 @@ class PlateTableController extends Backbone.View
     )
 
     wellData
-
-  lookupWellByRowCol: (row, col) =>
-
-    _.each(@wells, (well) ->
-    )
 
   toolTipCellRenderer: (instance, td, row, col, prop, value, cellProperties) =>
     Handsontable.renderers.TextRenderer.apply(@, arguments)
