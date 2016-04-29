@@ -72,20 +72,20 @@ class WellsModel extends Backbone.Model
 
   fillWell: (rowIndex, columnIndex, amount, batchCode, batchConcentration) ->
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
-    well.amount = amount
+    well.amount = parseFloat(amount)
     well.amountUnits = "uL"
     well.batchCode = batchCode
-    well.batchConcentration = batchConcentration
+    well.batchConcentration = parseFloat(batchConcentration)
     recordedDate = new Date()
     well.recordedDate = recordedDate.getTime()
     @get("wells").push well
 
   fillWellWithWellObject: (rowIndex, columnIndex, wellObject) ->
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
-    well.amount = wellObject.amount
+    well.amount = parseFloat(wellObject.amount)
     well.amountUnits = "uL"
     well.batchCode = wellObject.batchCode
-    well.batchConcentration = wellObject.batchConcentration
+    well.batchConcentration = parseFloat(wellObject.batchConcentration)
     recordedDate = new Date()
     well.recordedDate = recordedDate.getTime()
     @get("wells").push well
