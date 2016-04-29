@@ -43,6 +43,9 @@
 				typeName: "constants"
 				kindName: "format"
 			,
+				typeName: "constants"
+				kindName: "information"
+			,
 				typeName: "metadata"
 				kindName: "information"
 			,

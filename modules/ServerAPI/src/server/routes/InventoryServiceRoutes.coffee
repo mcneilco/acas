@@ -1214,9 +1214,9 @@ exports.splitContainerInternal = (input, callback) ->
 									quadrant.destinationContainer.codeName = newContainer.codeName
 									quadrant.destinationContainer = _.omit quadrant.destinationContainer, ["wells", "definitionCodeName"]
 									exports.updateContainersByContainerCodesInternal [quadrant.destinationContainer], "1", (updatedContainer, statusCode) ->
-										quandrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
+										quadrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
 										quadrant.updatedContainer = updatedContainer[0]
-										outContainer = _.extend quadrant.updatedContainer, quandrant.newContainer
+										outContainer = _.extend quadrant.updatedContainer, quadrant.newContainer
 										outputArray.push outContainer
 										if outputArray.length == input.quadrants.length
 											outputArray = _.sortBy outputArray, 'quadrant'
@@ -1239,6 +1239,14 @@ exports.mergeContainersInternal = (input, callback) ->
 		console.debug "incoming mergeContainers request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
 		contanerCodes = _.pluck input.quadrants, "codeName"
+		_.map input.quadrants, (quadrant) ->
+			if typeof(quadrant.quadrant) != "number"
+				console.warn "provided quadrant #{quadrant.quadrant} is typeOf #{typeof(quadrant.quadrant)} but should be typeof of number"
+				quadrant.quadrant = Number(quadrant.quadrant)
+				if isNaN(quadrant.quadrant)
+					msg = "received #{quadrant.quadrant} when attempting to coerce quadrant"
+					console.error msg
+					callback msg, 400
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal contanerCodes, (originContainers, statusCode) =>
 			if statusCode == 400
 				callback originContainers, statusCode
@@ -1297,6 +1305,8 @@ exports.mergeContainersInternal = (input, callback) ->
 								else if quadrant.quadrant == 4
 									wellContent.rowIndex = 2*(wellContent.rowIndex)
 									wellContent.columnIndex = 2*(wellContent.columnIndex)
+								else
+									callback "quadrant #{quadrant.quadrant} is not a valid option", 400
 								if wellContent.rowIndex > 26
 									text = "A"+alphabet[wellContent.rowIndex-26-1]
 								else
@@ -1396,7 +1406,7 @@ exports.searchContainersInternal = (input, callback) ->
 				console.error error
 				console.error json
 				console.error response
-				callback JSON.stringify("updateWellContent failed"), 500
+				callback JSON.stringify("searchContainers failed"), 500
 		)
 
 
