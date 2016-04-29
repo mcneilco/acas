@@ -170,7 +170,17 @@
             <button class="btn bv_duplicateExperiment pull-right hide" style="margin-left: 0.5em;">Duplicate</button>
             <button class="btn bv_editExperiment pull-right">Edit</button>
             <% } %>
-			<button class="btn bv_openInQueryTool pull-right" style="margin-right:5px;">Open in <span class="bv_queryToolDisplayName"></span></button>
+			<!--<button class="btn bv_openInQueryTool pull-right" style="margin-right:5px;">Open in <span class="bv_queryToolDisplayName"></span></button>-->
+			<span class="btn-group pull-right bv_openInQueryTool" style="margin-right:5px;">
+				<button type="button" class="btn btn-default bv_openInQueryToolButton dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Open In <span class="caret"></span>
+				</button>
+				<ul class="dropdown-menu bv_viewerOptions">
+					<!--<li><a href="#">Data Viewer</a></li>-->
+					<!--<li><a href="#">Seurat</a></li>-->
+					<!--<li><a href="#">Live Design</a></li>-->
+				</ul>
+			</span>
 		</div>
         <hr />
 		<div class="">
