@@ -403,8 +403,6 @@ class window.ExperimentBrowserController extends Backbone.View
 		if configuredViewers? and configuredViewers.length>1
 			for viewer in configuredViewers
 				viewerName = $.trim viewer
-				if viewerName is "DataViewer"
-					viewerName = "Data Viewer"
 				href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{@experimentController.model.get("codeName")}','_blank'"
 				if @experimentController.model.getStatus().get('codeValue') != "approved" and viewerName is "LiveDesign"
 					@$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'

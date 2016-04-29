@@ -581,9 +581,6 @@
         for (i = 0, len = configuredViewers.length; i < len; i++) {
           viewer = configuredViewers[i];
           viewerName = $.trim(viewer);
-          if (viewerName === "DataViewer") {
-            viewerName = "Data Viewer";
-          }
           href = "'/openExptInQueryTool?tool=" + viewerName + "&experiment=" + (this.experimentController.model.get("codeName")) + "','_blank'";
           if (this.experimentController.model.getStatus().get('codeValue') !== "approved" && viewerName === "LiveDesign") {
             results.push(this.$('.bv_viewerOptions').append('<li class="disabled"><a href=' + href + ' target="_blank">' + viewerName + '</a></li>'));
