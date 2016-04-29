@@ -1208,9 +1208,9 @@ exports.splitContainerInternal = (input, callback) ->
 									quadrant.destinationContainer.codeName = newContainer.codeName
 									quadrant.destinationContainer = _.omit quadrant.destinationContainer, ["wells", "definitionCodeName"]
 									exports.updateContainersByContainerCodesInternal [quadrant.destinationContainer], "1", (updatedContainer, statusCode) ->
-										quandrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
+										quadrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
 										quadrant.updatedContainer = updatedContainer[0]
-										outContainer = _.extend quadrant.updatedContainer, quandrant.newContainer
+										outContainer = _.extend quadrant.updatedContainer, quadrant.newContainer
 										outputArray.push outContainer
 										if outputArray.length == input.quadrants.length
 											outputArray = _.sortBy outputArray, 'quadrant'
