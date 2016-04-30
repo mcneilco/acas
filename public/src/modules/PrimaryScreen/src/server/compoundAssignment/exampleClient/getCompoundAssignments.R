@@ -1,12 +1,18 @@
 
 getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
   # exampleClient
+  
+  # If user selects case = No Inventory in the GUI, userBypassInventory is TRUE
+  userBypassInventory <- TRUE
+  
+  # added one extra argument in getAssayCompoundData that passes the flag userBypassInventory
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
                                             testMode=testMode,
                                             tempFilePath=tempFilePath,
-                                            assayData=instrumentData$assayData)
-  
+                                            assayData=instrumentData$assayData,
+                                            userBypassInventory)
+save(assayCompoundData, file="public/src/modules/PrimaryScreen/src/server/export.Rda")  
   resultTable <- assayCompoundData$allAssayCompoundData[ , c("plateType",
                                                              "assayBarcode",
                                                              "cmpdBarcode",
@@ -19,19 +25,27 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
                                                              "batch_number",
                                                              "cmpdConc",
                                                              assayCompoundData$activityColNames), with=FALSE]
-  # TODO: Check concUnit prior to making this adjustment
-  #resultTable[ , cmpdConc := cmpdConc * 1000]
-  # Divide concentrations by 1000 only if the plate template does not show uM conc. units (assuming then it is nM)
-  # as the goal is to store concentrations in uM units
-  if (!as.logical(assayCompoundData[names(assayCompoundData)=="microMolarFlag"])) {
-    resultTable[ , cmpdConc := cmpdConc * 1000]   #divide by 1000 if units are nM?????
+  
+  # If user selects case = No Inventory in the GUI, check if concentrations need to be adjusted depending on the unit
+  # othewise proceed using the code below as scripted before
+  if (userBypassInventory) {
+    # Divide concentrations by 1000 only if the plate template does not show uM conc. units (assuming then it is nM)
+    # as the goal is to store concentrations in uM units
+    if (!as.logical(assayCompoundData[names(assayCompoundData)=="microMolarFlag"])) {
+      resultTable[ , cmpdConc := cmpdConc * 1000]   #divide by 1000 if units are nM?????
+    }
+    
+    # fuse the corp name with the bacth number, adjusting for the NA case
+    resultTable[, batchCode := paste0(corp_name,"-",batch_number)]  
+    resultTable[batchCode == "NA-NA", batchCode := "-"]
+  } else {
+    # TODO: Check concUnit prior to making this adjustment
+    resultTable[ , cmpdConc := cmpdConc * 1000]
+    
+    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]   #is this the proper way to paste corp_name with batch_number?????
+    resultTable[batchCode == "NA::NA", batchCode := "::"]
   }
-  
-  
-  #resultTable[, batchCode := paste0(corp_name,"::",batch_number)]   #is this the proper way to paste corp_name with batch_number?????
-  resultTable[, batchCode := paste0(corp_name,"-",batch_number)]
-  #resultTable[batchCode == "NA::NA", batchCode := "::"]
-  resultTable[batchCode == "NA-NA", batchCode := "-"]
+    
   #   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
   setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
   

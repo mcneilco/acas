@@ -19,7 +19,11 @@ specificDataPreProcessor <- function (parameters, folderToParse, errorEnv,
   
   fileList <- c(list.files(file.path(instrumentSpecificFolder, "/specificDataPreProcessorFiles/"), full.names=TRUE),
                 list.files(file.path(instrumentSpecificFolder, instrumentClass), full.names=TRUE))
-  lapply(fileList, source)
+  #lapply(fileList, source)
+  # Cannot use lapply because then "local" is inside lapply
+  for (sourceFile in fileList) { 
+    source(sourceFile, local=TRUE)
+  }
   
   readsTable <- getReadOrderTable(readList=parameters$primaryAnalysisReadList)
   
