@@ -48,7 +48,7 @@ class SplitPlatesController extends Backbone.View
     plateFoundErrorSelector = evt.currentTarget.name + "_barcodeFound"
     existingPlateLinkSelector = evt.currentTarget.name + "_existingPlateLink"
     target = $(evt.currentTarget)
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       barcode = _.toUpper(target.val())
       target.val barcode
     else
@@ -137,7 +137,7 @@ class SplitPlatesController extends Backbone.View
 
   handleSourcePlateBarcodeChange: (evt) =>
     target = $(evt.currentTarget)
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       barcode = _.toUpper(target.val())
       target.val barcode
     else

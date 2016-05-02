@@ -143,7 +143,7 @@ class AddContentController extends Backbone.View
     console.log "handleIdentifiersPaste"
 
   handleIdentifiersChanged: =>
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       listOfIdentifiers = @parseIdentifiers $.trim(_.toUpper(@$("textarea[name='identifiers']").val()))
     else
       listOfIdentifiers = @parseIdentifiers $.trim(@$("textarea[name='identifiers']").val())

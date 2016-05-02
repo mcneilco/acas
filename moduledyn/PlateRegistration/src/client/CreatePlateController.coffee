@@ -74,7 +74,7 @@ class CreatePlateController extends Backbone.View
     data = {}
     if target.attr('name') is "barcode"
       barcode = $.trim(target.val())
-      if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      if AppLaunchParams.enforceUppercaseBarcodes
         barcode = $.trim(_.toUpper(target.val()))
         target.val(barcode)
       data[target.attr('name')] = barcode

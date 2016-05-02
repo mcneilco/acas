@@ -151,7 +151,7 @@ class PlateSearchController extends Backbone.View
     )
 
   handleClonePlateClicked: =>
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       cloneBarcodes = @parseBarcodes(_.toUpper(@$("textarea[name='clonedPlateBarcodes']").val()))
     else
       cloneBarcodes = @parseBarcodes(@$("textarea[name='clonedPlateBarcodes']").val())
@@ -355,7 +355,7 @@ class ClonePlateController extends Backbone.View
     @$("input[name='clonedPlateBarcode']").val()
 
   handleClonePlateBarcodeChange: =>
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       cloneBarcodes = _.toUpper(@$("input[name='clonedPlateBarcode']").val())
       @$("input[name='clonedPlateBarcode']").val(cloneBarcodes)
 

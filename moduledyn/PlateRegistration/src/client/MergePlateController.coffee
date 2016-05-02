@@ -53,7 +53,7 @@ class MergePlatesController extends Backbone.View
   handlePlateQuadrantBarcodeChange: (evt) =>
     target = $(evt.currentTarget)
     plateNotFoundErrorSelector = evt.currentTarget.name + "_barcodeNodeFound"
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       barcode = _.toUpper(target.val())
       target.val barcode
     else
@@ -160,7 +160,7 @@ class MergePlatesController extends Backbone.View
   handleDestinationPlateBarcodeChange: (evt) =>
     target = $(evt.currentTarget)
 
-    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+    if AppLaunchParams.enforceUppercaseBarcodes
       barcode = _.toUpper(target.val())
       target.val barcode
     else
