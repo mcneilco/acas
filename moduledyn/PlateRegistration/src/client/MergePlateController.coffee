@@ -240,6 +240,8 @@ class MergePlatesController extends Backbone.View
 
   displayMergeSuccessMessages: (data) =>
     @$("a[name='linkToNewPlate']").prop("href", "#plateDesign/#{data.barcode}")
+    @$("span[name='mergedPlateName']").html data.barcode
+
     @$("div[name='mergedPlateLink']").removeClass "hide"
     @$("span[name='mergingStatus']").addClass "hide"
     @$("span[name='dialogDismissButtons']").removeClass "hide"

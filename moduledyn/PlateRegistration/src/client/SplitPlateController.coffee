@@ -233,13 +233,13 @@ class SplitPlatesController extends Backbone.View
 
   displayMergeSuccessMessages: (data) =>
     @$("a[name='linkToQuad1Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant1'].barcode}")
-    @$("a[name='linkToQuad1Plate']").html @plateQuadrants['plateQuadrant1'].barcode
+    @$("span[name='barcodeQuad1Plate']").html @plateQuadrants['plateQuadrant1'].barcode
     @$("a[name='linkToQuad2Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant2'].barcode}")
-    @$("a[name='linkToQuad2Plate']").html @plateQuadrants['plateQuadrant2'].barcode
+    @$("span[name='barcodeQuad2Plate']").html @plateQuadrants['plateQuadrant2'].barcode
     @$("a[name='linkToQuad3Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant3'].barcode}")
-    @$("a[name='linkToQuad3Plate']").html @plateQuadrants['plateQuadrant3'].barcode
+    @$("span[name='barcodeQuad3Plate']").html @plateQuadrants['plateQuadrant3'].barcode
     @$("a[name='linkToQuad4Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant4'].barcode}")
-    @$("a[name='linkToQuad4Plate']").html @plateQuadrants['plateQuadrant4'].barcode
+    @$("span[name='barcodeQuad4Plate']").html @plateQuadrants['plateQuadrant4'].barcode
     @$("div[name='splitPlateLinks']").removeClass "hide"
     @$("span[name='splitingStatus']").addClass "hide"
     @$("span[name='dialogDismissButtons']").removeClass "hide"
