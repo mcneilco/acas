@@ -78,7 +78,9 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 	baseurl = config.all.client.service.persistence.fullpath + "containers/createPlate"
 	console.log "baseurl"
 	console.log baseurl
-
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		input.barcode = input.barcode.toUpperCase()
+		console.warn input.barcode
 	request = require 'request'
 	request(
 		method: 'POST'

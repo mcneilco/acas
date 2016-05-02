@@ -2,6 +2,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
 preferredEntityCodeService = require '../routes/PreferredEntityCodeService.js'
+config = require '../conf/compiled/conf.js'
 
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainersInLocation', exports.getContainersInLocation
@@ -1135,7 +1136,9 @@ exports.splitContainerInternal = (input, callback) ->
 					message = "cannot split #{originContainer[0].plateSize} well container"
 					console.error message
 					callback message, 400
-
+			if config.all.client.compoundInventory.enforceUppercaseBarcodes
+				_.map input.quadrants, (quadrant) ->
+					quadrant.barcode = quadrant.barcode.toUpperCase()
 			barcodes = _.pluck input.quadrants, "barcode"
 			barcodesUnique = _.unique(barcodes).length == barcodes.length
 			if !barcodesUnique
@@ -1264,6 +1267,10 @@ exports.mergeContainersInternal = (input, callback) ->
 				callback _.map(originContainers, (originContainer) -> _.pick(originContainer, "codeName","plateSize")), 400
 				return
 			destinationPlateSize = originContainers[0].plateSize*4
+
+			if config.all.client.compoundInventory.enforceUppercaseBarcodes
+				input.barcode = input.barcode.toUpperCase()
+
 			exports.getContainerCodesByLabelsInternal [input.barcode], null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 				if statusCode == 500
 					callback "internal error", 500
