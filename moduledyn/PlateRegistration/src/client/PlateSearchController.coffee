@@ -57,9 +57,7 @@ class PlateSearchController extends Backbone.View
       selectedCode: "unassigned"
       className: "form-control"
 
-
-
-  handleSearchClicked: =>
+  getFormValues: =>
     searchTerms = {}
     barcode = $.trim(@$("input[name='barcodeSearchTerm']").val())
     if barcode isnt ""
@@ -76,8 +74,37 @@ class PlateSearchController extends Backbone.View
     if @plateStatusesSelectList.getSelectedCode() isnt "unassigned"
       searchTerms.status = @plateStatusesSelectList.getSelectedCode()
 
+    searchTerms
+
+  isFormValid: (formValues) =>
+    searchIsValid = false
+    if formValues.barcode?
+      if formValues.barcode isnt ""
+        searchIsValid = true
+    if formValues.description?
+      if formValues.description isnt ""
+        searchIsValid = true
+    if formValues.definition?
+      if formValues.definition isnt ""
+        searchIsValid = true
+    if formValues.type?
+      if formValues.type isnt "unassigned"
+        searchIsValid = true
+    if formValues.status?
+      if formValues.status isnt "unassigned"
+        searchIsValid = true
+
+    searchIsValid
+
+  handleSearchClicked: =>
+    searchTerms = @getFormValues()
     console.log "searchTerms"
     console.log searchTerms
+    if @isFormValid(searchTerms)
+      console.log "valid"
+    else
+      console.log "invalid"
+
     $.ajax(
       data: searchTerms
       dataType: "json"
@@ -124,7 +151,11 @@ class PlateSearchController extends Backbone.View
     )
 
   handleClonePlateClicked: =>
-    cloneBarcodes = @parseBarcodes(@$("textarea[name='clonedPlateBarcodes']").val())
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      cloneBarcodes = @parseBarcodes(_.toUpper(@$("textarea[name='clonedPlateBarcodes']").val()))
+    else
+      cloneBarcodes = @parseBarcodes(@$("textarea[name='clonedPlateBarcodes']").val())
+
     console.log "cloneBarcodes"
     console.log cloneBarcodes
     @$(".bv_clonePlateBarcodeContainer").empty()
@@ -294,6 +325,9 @@ class ClonePlateController extends Backbone.View
       <p class='bv_barcodeAlreadyUsedError hide'>Error: duplicate barcode</p>
     </td>
 """
+  events:
+    "change input[name='clonedPlateBarcode']":"handleClonePlateBarcodeChange"
+
   initialize: (options) ->
     @clonePlateBarcode = options.clonePlateBarcode
     @sourcePlateBarcode = options.sourcePlateBarcode
@@ -319,6 +353,11 @@ class ClonePlateController extends Backbone.View
 
   getBarcode: =>
     @$("input[name='clonedPlateBarcode']").val()
+
+  handleClonePlateBarcodeChange: =>
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      cloneBarcodes = _.toUpper(@$("input[name='clonedPlateBarcode']").val())
+      @$("input[name='clonedPlateBarcode']").val(cloneBarcodes)
 
   saveClonedPlate: =>
     deferred = $.Deferred()

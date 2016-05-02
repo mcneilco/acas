@@ -16,6 +16,10 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 
 exports.compoundInventoryIndex = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	console.log "config"
+	console.log config
+	#config = require '../conf/compiled/conf.js'
 	loginUserName = req.user.username
 	loginUser = req.user
 	return resp.render 'PlateRegistration',
@@ -23,10 +27,18 @@ exports.compoundInventoryIndex = (req, resp) ->
 		AppLaunchParams:
 			loginUserName: loginUserName
 			loginUser: loginUser
+			headerName: config.all.client.moduleMenus.headerName
+			enforceUppercaseBarcodes: config.all.client.compoundInventory.enforceUppercaseBarcodes
 
 exports.compoundInventorySpecRunner = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
 	return resp.render ' PlateRegistrationSpecRunner',
 		title: 'Plate Registration SpecRunner'
+		AppLaunchParams:
+			loginUserName: loginUserName
+			loginUser: loginUser
+			headerName: config.all.client.moduleMenus.headerName
+			enforceUppercaseBarcodes: config.all.client.compoundInventory.enforceUppercaseBarcodes
 
 exports.validateIdentifiers = (req, resp) ->
 	if global.specRunnerTestmode

@@ -103,7 +103,7 @@ class PlateInfoController extends Backbone.View
 
     @model.set data
     #date = new Date()
-    @model.set("recordedBy", "acas")
+    @model.set "recordedBy", AppLaunchParams.loginUserName
     @model.set "createdDate", null
     $.ajax(
       data: @model.toJSON()

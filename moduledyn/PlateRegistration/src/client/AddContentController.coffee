@@ -87,7 +87,35 @@ class AddContentController extends Backbone.View
     @$("button[name='add']").addClass('disabled')
 
   handleAddClick: =>
-    @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @model
+    console.log "@model"
+    console.log @model
+
+    hasIdentifiersToValidate = false
+    if _.isArray(@model.get("identifiers"))
+      console.log "identifiers is array"
+      _.each(@model.get("identifiers"), (identifier, key) =>
+
+        if _.size(identifier) > 0
+          hasIdentifiersToValidate = true
+        else
+          @model.get("identifiers").splice(key, 1)
+      )
+    else
+      if _.size(@model.get("identifiers")) > 0
+        hasIdentifiersToValidate = true
+        @model.set("identifiers", [@model.get("identifiers")])
+      else
+        @model.set("identifiers", [])
+
+    if hasIdentifiersToValidate
+      @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @model
+    else
+      @model.set("aliasedIdentifiers", [])
+      @model.set("invalidIdentifiers", [])
+      @model.set("validIdentifiers", [])
+      @model.set("validatedIdentifiers", [])
+
+      @trigger 'ADD_CONTENT_NO_VALIDATION', @model
 
   handleIdentifiersAdded: (validatedIdentifiers) =>
     @model.reset()
@@ -115,7 +143,10 @@ class AddContentController extends Backbone.View
     console.log "handleIdentifiersPaste"
 
   handleIdentifiersChanged: =>
-    listOfIdentifiers = @parseIdentifiers $.trim(@$("textarea[name='identifiers']").val())
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      listOfIdentifiers = @parseIdentifiers $.trim(_.toUpper(@$("textarea[name='identifiers']").val()))
+    else
+      listOfIdentifiers = @parseIdentifiers $.trim(@$("textarea[name='identifiers']").val())
     updatedValues = {}
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS] =  listOfIdentifiers
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS_DISPLAY_STRING] =  @formatListOfIdentifiersForDisplay(listOfIdentifiers)

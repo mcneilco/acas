@@ -1,5 +1,6 @@
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
+PLATE_MODEL_FIELDS = require('./PlateModel.coffee').PLATE_MODEL_FIELDS
 
 _ = require('lodash')
 $ = require('jquery')
@@ -33,6 +34,7 @@ class CreatePlateController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
+    @model.set PLATE_MODEL_FIELDS.RECORDED_BY, AppLaunchParams.loginUserName
     @plateDefinitions = options.plateDefinitions
     @selectLists = [
       containerSelector: "select[name='definition']"
@@ -70,7 +72,14 @@ class CreatePlateController extends Backbone.View
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)
     data = {}
-    data[target.attr('name')] = $.trim(target.val())
+    if target.attr('name') is "barcode"
+      barcode = $.trim(target.val())
+      if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+        barcode = $.trim(_.toUpper(target.val()))
+        target.val(barcode)
+      data[target.attr('name')] = barcode
+    else
+      data[target.attr('name')] = $.trim(target.val())
     @updateModel data
 
   updateModel: (data) =>

@@ -51,8 +51,13 @@ class MergePlatesController extends Backbone.View
     @
 
   handlePlateQuadrantBarcodeChange: (evt) =>
+    target = $(evt.currentTarget)
     plateNotFoundErrorSelector = evt.currentTarget.name + "_barcodeNodeFound"
-    barcode = evt.currentTarget.value
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      barcode = _.toUpper(target.val())
+      target.val barcode
+    else
+      barcode = target.val()
     $.ajax(
       dataType: "json"
       method: 'get'
@@ -71,11 +76,6 @@ class MergePlatesController extends Backbone.View
         @plateQuadrants[evt.currentTarget.name].barcode = barcode
         @plateQuadrants[evt.currentTarget.name].codeName = data.codeName
         @$("span[name='sourcePlateTooBig']").addClass "hide"
-
-
-
-
-
         @plateQuadrants[evt.currentTarget.name].plateSize = data.plateSize
         plateSizeIsValid = @validatePlateSizes()
         $("span[name='#{plateNotFoundErrorSelector}']").addClass("hide")
@@ -158,7 +158,13 @@ class MergePlatesController extends Backbone.View
     return platesAreSameSize
 
   handleDestinationPlateBarcodeChange: (evt) =>
-    barcode = evt.currentTarget.value
+    target = $(evt.currentTarget)
+
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      barcode = _.toUpper(target.val())
+      target.val barcode
+    else
+      barcode = target.val()
     $.ajax(
       dataType: "json"
       method: 'get'

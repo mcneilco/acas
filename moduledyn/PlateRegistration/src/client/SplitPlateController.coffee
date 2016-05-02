@@ -47,7 +47,12 @@ class SplitPlatesController extends Backbone.View
   handlePlateQuadrantBarcodeChange: (evt) =>
     plateFoundErrorSelector = evt.currentTarget.name + "_barcodeFound"
     existingPlateLinkSelector = evt.currentTarget.name + "_existingPlateLink"
-    barcode = evt.currentTarget.value
+    target = $(evt.currentTarget)
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      barcode = _.toUpper(target.val())
+      target.val barcode
+    else
+      barcode = target.val()
     @plateQuadrants[evt.currentTarget.name].barcode = barcode
     if @destinationPlatesAreUnique()
       @$("span[name='duplicateBarcodeErrorMessage']").addClass "hide"
@@ -131,7 +136,12 @@ class SplitPlatesController extends Backbone.View
       @$("button[name='splitPlate']").addClass('disabled')
 
   handleSourcePlateBarcodeChange: (evt) =>
-    barcode = evt.currentTarget.value
+    target = $(evt.currentTarget)
+    if AppLaunchParams.client.compoundInventory.enforceUppercaseBarcodes
+      barcode = _.toUpper(target.val())
+      target.val barcode
+    else
+      barcode = target.val()
     $.ajax(
       dataType: "json"
       method: 'get'

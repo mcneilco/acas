@@ -34,6 +34,7 @@ class AppController extends Backbone.View
     @newPlateDesignController = new NewPlateDesignController({plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection()})
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleAddIdentifierContentFromTable
+    @listenTo @newPlateDesignController, 'ADD_CONTENT_NO_VALIDATION', @handleAddContentNoValidation
 
     @createPlateController = new CreatePlateController({model: new PlateModel(), plateDefinitions: new PlateDefinitionCollection()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
@@ -51,6 +52,10 @@ class AppController extends Backbone.View
   handleAddContent: (addContentModel) =>
     @dataServiceController.setupService(new AddContentIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentSuccessCallback}))
     @dataServiceController.doServiceCall(@handleAddContentSuccess)
+
+  handleAddContentNoValidation: (addContentModel) =>
+    console.log "handleAddContentNoValidation"
+    @newPlateDesignController.handleAddContentSuccessCallback(addContentModel)
 
   handleAddIdentifierContentFromTable: (addContentModel) =>
     @dataServiceController.setupService(new PlateTableIdentifierValidationController({addContentModel: addContentModel, successCallback: @newPlateDesignController.handleAddContentFromTableSuccessCallback, mode: "plateTable"}))

@@ -263,7 +263,19 @@ class PlateTableController extends Backbone.View
       addContentModel = new AddContentModel()
       addContentModel.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, listOfIdentifiers
       addContentModel.set ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE, wellsToUpdate
-      unless @dataFieldToDisplay is "batchCode"
+      hasIdentifiersToValidate = false
+      _.each(addContentModel.get("identifiers"), (identifier, key) ->
+        console.log "key"
+        console.log key
+        if _.size(identifier) > 0
+          hasIdentifiersToValidate = true
+        else
+          addContentModel.get("identifiers").splice(key, 1)
+      )
+      if hasIdentifiersToValidate and @dataFieldToDisplay is "batchCode"
+        @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
+
+      else
         updatedValues = @reformatUpdatedValues changes
         @wellsToUpdate.resetWells()
         _.each(updatedValues, (updatedValue) =>
@@ -274,8 +286,6 @@ class PlateTableController extends Backbone.View
 
         @wellsToUpdate.save()
         @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
-      else
-        @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
   handleAcceptTruncatedPaste: =>
     _.each(@pendingChanges, (pc) ->
@@ -288,7 +298,8 @@ class PlateTableController extends Backbone.View
     aliasedIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS), 'requestName')
     invalidIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS), 'requestName')
     validIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-
+    console.log "addContentModel"
+    console.log addContentModel
     aliasedWells = _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
       return well.value in aliasedIdentifiers
     )
@@ -330,6 +341,8 @@ class PlateTableController extends Backbone.View
       well = @wellsToUpdate.getWellAtRowIdxColIdx(aw.rowIdx, aw.colIdx)
       if well?
         well.status = "valid"
+        console.log "aw.value"
+        console.log aw.value
         well[@dataFieldToDisplay] = aw.value
         @wellsToUpdate.fillWellWithWellObject(aw.rowIdx, aw.colIdx, well)
         $(cell).removeClass "invalidIdentifierCell"
