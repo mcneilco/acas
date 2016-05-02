@@ -151,7 +151,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					flatten: true
-					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/*/src/server/routes/*.coffee"]
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/*/src/server/routes/*.coffee", "#{i}/moduledyn/*/src/server/routes/*.coffee"]
 					dest: "<%= build %>/routes/"
 					ext: '.js'
 				]
@@ -275,6 +275,17 @@ module.exports = (grunt) ->
 					rename: (dest, matchedSrcPath, options) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "")}".split("/")[0]
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/modules/", "").replace(grunt.config.get('acas_base')+"/modules/", "").replace(module+"/src/client",module)}"
+					dest: "<%= build %>/public/stylesheets"
+				]
+			moduledyn_css:
+				files: [
+					expand: true
+					flatten:false
+					cwd: "."
+					src: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/moduledyn/**/src/client/*.css"]
+					rename: (dest, matchedSrcPath, options) ->
+						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/moduledyn/", "").replace(grunt.config.get('acas_base')+"/moduledyn/", "")}".split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/moduledyn/", "").replace(grunt.config.get('acas_base')+"/moduledyn/", "").replace(module+"/src/client",module)}"
 					dest: "<%= build %>/public/stylesheets"
 				]
 			module_jade:
@@ -448,7 +459,7 @@ module.exports = (grunt) ->
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/routes/*.coffee"]
 				tasks: "newer:coffee:routes"
 			module_routes_coffee:
-				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.coffee"]
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.coffee", "#{i}/moduledyn/**/src/server/routes/*.coffee"]
 				tasks: "newer:coffee:module_routes"
 			module_routes_js:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
@@ -474,6 +485,9 @@ module.exports = (grunt) ->
 			module_css:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.css"]
 				tasks: "newer:copy:module_css"
+			moduledyn_css:
+				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/moduledyn/**/src/client/*.css"]
+				tasks: "newer:copy:moduledyn_css"
 		#watchers on the custom folder
 			custom_compilePublicConf:
 				files: "<%= acas_custom %>/public_conf/*.coffee"
