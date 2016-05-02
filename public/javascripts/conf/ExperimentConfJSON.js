@@ -38,6 +38,9 @@
         }, {
           typeName: "metadata",
           kindName: "custom experiment metadata gui"
+        }, {
+          typeName: "metadata",
+          kindName: "data column order"
         }
       ],
       valuetypes: [
@@ -504,6 +507,20 @@
           code: "min",
           name: "Min",
           ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "statistic",
+          codeOrigin: "ACAS DDICT",
+          code: "mean",
+          name: "Mean",
+          ignored: false
+        }, {
+          codeType: "analysis parameter",
+          codeKind: "statistic",
+          codeOrigin: "ACAS DDICT",
+          code: "median",
+          name: "Median",
+          ignored: false
         }
       ],
       labelsequences: [
@@ -514,7 +531,7 @@
           labelSeparator: "-",
           labelTypeAndKind: "id_codeName",
           thingTypeAndKind: "document_experiment",
-          latestNumber: 1
+          latestNumber: 0
         }
       ]
     };

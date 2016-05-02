@@ -1,5 +1,5 @@
 (function() {
-  var _, apacheHardCodedConfigs, csUtilities, flat, fs, getApacheCompileOptions, getApacheSpecificConfString, getRApacheSpecificConfString, getRFileHandlerString, getRFilesWithRoute, glob, os, path, properties, shell, sysEnv, underscoreDeepExtend, writeApacheConfFile, writeClientJSONFormat, writeJSONFormat, writePropertiesFormat;
+  var _, csUtilities, flat, fs, getApacheCompileOptions, getApacheSpecificConfString, getRApacheSpecificConfString, getRFileHandlerString, getRFilesWithRoute, glob, os, path, properties, shell, sysEnv, underscoreDeepExtend, writeApacheConfFile, writeClientJSONFormat, writeJSONFormat, writePropertiesFormat;
 
   csUtilities = require("../public/src/conf/CustomerSpecificServerFunctions.js");
 
@@ -230,7 +230,7 @@
     return compileOptions;
   };
 
-  getRApacheSpecificConfString = function(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) {
+  getRApacheSpecificConfString = function(config, apacheCompileOptions, acasHome) {
     var confs, runUser, urlPrefix;
     confs = [];
     runUser = config.all.server.run.user;
@@ -240,22 +240,13 @@
     }).output.replace('\n', ''));
     confs.push('Listen ' + config.all.server.rapache.listen + ':' + config.all.client.service.rapache.port);
     confs.push('PidFile ' + acasHome + '/bin/apache.pid');
-    confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {
-      directive: 'StartServers'
-    }).value);
-    confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {
-      directive: 'ServerSignature'
-    }).value);
+    confs.push('StartServers ' + config.all.server.rapache.conf.startservers);
+    confs.push('ServerLimit ' + config.all.server.rapache.conf.serverlimit);
+    confs.push('ServerSignature ' + config.all.server.rapache.conf.serversignature);
     confs.push('ServerName ' + config.all.client.host);
-    confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {
-      directive: 'HostnameLookups'
-    }).value);
-    confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {
-      directive: 'ServerAdmin'
-    }).value);
-    confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {
-      directive: 'LogFormat'
-    }).value);
+    confs.push('HostnameLookups ' + config.all.server.rapache.conf.hostnamelookups);
+    confs.push('ServerAdmin ' + config.all.server.rapache.conf.serveradmin);
+    confs.push('LogFormat ' + config.all.server.rapache.conf.logformat);
     confs.push('ErrorLog ' + config.all.server.log.path + '/racas.log');
     confs.push('LogLevel ' + config.all.server.log.level.toLowerCase());
     if (Boolean(config.all.client.use.ssl)) {
@@ -276,7 +267,7 @@
     return confs.join('\n');
   };
 
-  getApacheSpecificConfString = function(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) {
+  getApacheSpecificConfString = function(config, apacheCompileOptions, acasHome) {
     var apacheSpecificConfs, apacheVersion, modulesDir, serverRoot, typesConfig;
     apacheSpecificConfs = [];
     apacheVersion = _.findWhere(apacheCompileOptions, {
@@ -330,42 +321,17 @@
     return apacheSpecificConfs.join('\n');
   };
 
-  apacheHardCodedConfigs = [
-    {
-      directive: 'StartServers',
-      value: '5'
-    }, {
-      directive: 'ServerSignature',
-      value: 'On'
-    }, {
-      directive: 'HostnameLookups',
-      value: 'On'
-    }, {
-      directive: 'ServerAdmin',
-      value: 'root@localhost'
-    }, {
-      directive: 'ServerSignature',
-      value: 'On'
-    }, {
-      directive: 'LogFormat',
-      value: '"%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined'
-    }, {
-      directive: 'RewriteEngine',
-      value: 'On'
-    }
-  ];
-
   writeApacheConfFile = function() {
     var acasHome, apacheCompileOptions, apacheSpecificConfString, config, rFileHandlerString, rFilesWithRoute, rapacheConfString;
     config = require('./compiled/conf.js');
     acasHome = path.resolve(__dirname, '..');
     apacheCompileOptions = getApacheCompileOptions();
     if (apacheCompileOptions !== 'skip') {
-      apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome);
+      apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome);
     } else {
       apacheSpecificConfString = '';
     }
-    rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome);
+    rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, acasHome);
     rFilesWithRoute = getRFilesWithRoute();
     rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome);
     fs.writeFileSync("./compiled/apache.conf", [apacheSpecificConfString, rapacheConfString, rFileHandlerString].join('\n'));

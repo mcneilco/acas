@@ -6,11 +6,15 @@
  */
 
 (function() {
-  var checkBatch_TestMode, fs, serverUtilityFunctions;
+  var ACAS_HOME, _, checkBatch_TestMode, fs, serverUtilityFunctions;
 
-  serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+  ACAS_HOME = "../../..";
+
+  serverUtilityFunctions = require(ACAS_HOME + "/routes/ServerUtilityFunctions.js");
 
   fs = require('fs');
+
+  _ = require('underscore');
 
   exports.logUsage = function(action, data, username) {
     console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
@@ -25,7 +29,7 @@
 
   exports.authCheck = function(user, pass, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -43,7 +47,10 @@
         if (!error && response.statusCode === 200) {
           return retFun(JSON.stringify(json));
         } else if (!error && response.statusCode === 302) {
-          return retFun(JSON.stringify(response.headers.location));
+          console.log('Auth Successful - checking roles');
+          return exports.checkRoles(user, function(checkRoleResponse) {
+            return retFun(checkRoleResponse);
+          });
         } else {
           console.log('got connection error trying authenticate a user');
           console.log(error);
@@ -57,7 +64,7 @@
 
   exports.resetAuth = function(email, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -86,7 +93,7 @@
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -118,8 +125,8 @@
 
   exports.getUser = function(username, callback) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
-    if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
+    if (config.all.client.require.login) {
       request = require('request');
       return request({
         headers: {
@@ -162,7 +169,7 @@
   };
 
   exports.isUserAdmin = function(user) {
-    var _, adminRoles, isAdmin;
+    var adminRoles, isAdmin;
     _ = require('underscore');
     adminRoles = _.filter(user.roles, function(role) {
       return role.roleEntry.roleName === 'admin';
@@ -176,12 +183,12 @@
 
   exports.loginStrategy = function(username, password, done) {
     return exports.authCheck(username, password, function(results) {
-      var error;
+      var error, error1, error2, error3;
       if (results.indexOf("login_error") >= 0) {
         try {
           exports.logUsage("User failed login: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error1) {
+          error = error1;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -190,8 +197,8 @@
       } else if (results.indexOf("connection_error") >= 0) {
         try {
           exports.logUsage("Connection to authentication service failed: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error2) {
+          error = error2;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -200,8 +207,8 @@
       } else {
         try {
           exports.logUsage("User logged in succesfully: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error3) {
+          error = error3;
           console.log("Exception trying to log:" + error);
         }
         return exports.getUser(username, done);
@@ -244,27 +251,27 @@
 
   exports.getCustomerMolecularTargetCodes = function(resp) {
     var molecTargetTestJSON;
-    molecTargetTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    molecTargetTestJSON = require(ACAS_HOME + "/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js");
     return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
   };
 
   exports.validateCloneAndGetTarget = function(req, resp) {
     var psProtocolServiceTestJSON;
-    psProtocolServiceTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    psProtocolServiceTestJSON = require(ACAS_HOME + "/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js");
     return resp.json(psProtocolServiceTestJSON.successfulCloneValidation);
   };
 
-  exports.getAuthors = function(resp) {
+  exports.getAuthors = function(req, resp) {
     var baseurl, config;
-    config = require('../../../conf/compiled/conf.js');
-    serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
+    serverUtilityFunctions = require(ACAS_HOME + "/routes/ServerUtilityFunctions.js");
     baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
     return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
   exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
     var absEntitiesFolder, absEntityFolder, config, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
     oldPath = uploadsPath + fileValue.fileValue;
     relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
@@ -330,7 +337,7 @@
 
   exports.getDownloadUrl = function(fileValue) {
     var config;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     return config.all.client.datafiles.downloadurl.prefix + fileValue;
   };
 
@@ -420,9 +427,8 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
-      console.log("search term: " + requests[0]);
       return request({
         method: 'POST',
         url: config.all.server.service.external.preferred.batchid.url,
@@ -466,7 +472,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -509,7 +515,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -554,7 +560,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -595,6 +601,32 @@
         respId = requestName;
     }
     return respId;
+  };
+
+  exports.checkRoles = function(user, retFun) {
+    return exports.getUser(user, function(expectnull, author) {
+      var config, loginRoles, ref, ref1, roles;
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
+      if (((author != null ? author.roles : void 0) != null) && (((ref = config.all.client.roles) != null ? ref.loginRole : void 0) != null)) {
+        roles = _.map(author.roles, function(role) {
+          return role.roleEntry.roleName;
+        });
+        loginRoles = config.all.client.roles.loginRole.split(",");
+        console.log(loginRoles);
+        console.log(_.intersection(loginRoles, roles));
+        if (_.intersection(loginRoles, roles).length > 0) {
+          console.log('Role check successful');
+          return retFun('success');
+        } else {
+          console.log('Role check failed');
+          return retFun('login_error');
+        }
+      } else if (((ref1 = config.all.client.roles) != null ? ref1.loginRole : void 0) != null) {
+        return retFun('login_error');
+      } else {
+        return retFun('success');
+      }
+    });
   };
 
 }).call(this);

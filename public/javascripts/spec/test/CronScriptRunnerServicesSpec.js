@@ -33,11 +33,11 @@ Basic requirements:
   baseURL = "http://" + config.all.client.host + ":" + config.all.server.nodeapi.port;
 
   parseResponse = function(jsonStr) {
-    var error;
+    var error, error1;
     try {
       return JSON.parse(jsonStr);
-    } catch (_error) {
-      error = _error;
+    } catch (error1) {
+      error = error1;
       console.log("response unparsable: " + error);
       return null;
     }

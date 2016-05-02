@@ -912,6 +912,19 @@
     };
 
     CurveSummaryController.prototype.initialize = function() {
+      var curveFitClasses, curvefitClassesCollection, renderCurvePath;
+      curvefitClassesCollection = new Backbone.Collection($.parseJSON(window.conf.curvefit.modelfitparameter.classes));
+      curveFitClasses = curvefitClassesCollection.findWhere({
+        code: this.model.get('curveAttributes').renderingHint
+      });
+      renderCurvePath = curveFitClasses.get('renderCurvePath');
+      console.log(renderCurvePath);
+      if (renderCurvePath != null) {
+        console.log(renderCurvePath);
+        this.renderCurvePath = renderCurvePath;
+      } else {
+        this.renderCurvePath = 'dr';
+      }
       this.model.on('change', this.render);
       if (this.options.locked) {
         return this.locked = this.options.locked;
@@ -926,7 +939,7 @@
         curveUrl = "/src/modules/curveAnalysis/spec/testFixtures/testThumbs/";
         curveUrl += this.model.get('curveid') + ".png";
       } else {
-        curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds=";
+        curveUrl = "/api/curve/render/" + this.renderCurvePath + "/?legend=false&showGrid=true&height=120&width=250&curveIds=";
         curveUrl += this.model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false";
       }
       this.$el.html(this.template({
