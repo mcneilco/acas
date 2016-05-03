@@ -152,6 +152,28 @@ exports.saveProjects = (jsonBody, callback) ->
 			callback JSON.stringify {error: "something went wrong :("}
 	)
 
+exports.updateProjects = (jsonBody, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in updateProjects'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
+	request(
+		method: 'PUT'
+		url: cmpdRegCall
+		body: JSON.stringify jsonBody
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to update CmpdReg projects'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
 exports.getScientists = (req, callback) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'

@@ -69,11 +69,23 @@ exports.syncLiveDesignProjectsUsers = (req, resp) ->
 			foundProjectCodes = _.pluck foundProjects, 'code'
 			console.debug 'found projects are: '+foundProjectCodes
 			newProjectCodes = _.difference projectCodes, foundProjectCodes
-			if newProjectCodes? && newProjectCodes.length > 0
-				console.debug 'creating new projects: ' + JSON.stringify newProjectCodes
-				newProjects = _.filter acasGroupsAndProjects.projects, (project) ->
-					return project.code in newProjectCodes
-				cmpdRegRoutes.saveProjects newProjects, (saveProjectsResponse) ->
+			newProjects = _.filter acasGroupsAndProjects.projects, (project) ->
+				return project.code in newProjectCodes
+			projectsToUpdate = _.filter acasGroupsAndProjects.projects, (project) ->
+				found = (_.findWhere foundProjects, {code: project.code})?
+				unchanged = (_.findWhere foundProjects, {code: project.code, name: project.name})?
+				return (found and !unchanged)
+			if (newProjects? and newProjects.length > 0) or (projectsToUpdate? and projectsToUpdate.length > 0)
+				if (newProjects? and newProjects.length > 0)
+					console.debug 'saving new projects with JSON: '+ JSON.stringify newProjects
+					cmpdRegRoutes.saveProjects newProjects, (saveProjectsResponse) ->
+				else
+					for projectToUpdate in projectsToUpdate
+						oldProject = _.findWhere foundProjects, {code: projectToUpdate.code}
+						projectToUpdate.id = oldProject.id
+						projectToUpdate.version = oldProject.version
+					console.debug 'updating projects with JSON: '+ JSON.stringify projectsToUpdate
+					cmpdRegRoutes.updateProjects projectsToUpdate, (updateProjectsResponse) ->
 			else
 				console.debug 'CmpdReg projects are up-to-date'
 
