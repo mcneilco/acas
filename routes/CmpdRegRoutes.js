@@ -55,7 +55,7 @@
         isChemist: isChemist,
         isAdmin: isAdmin
       };
-      syncCmpdRegUser(cmpdRegUser);
+      syncCmpdRegUser(req, cmpdRegUser);
     } else {
       loginUserName = "nouser";
       loginUser = {
@@ -88,37 +88,41 @@
     });
   };
 
-  syncCmpdRegUser = function(cmpdRegUser) {
-    var config, getScientists, getUsersUrl, request, scientists;
+  syncCmpdRegUser = function(req, cmpdRegUser) {
+    var _, config, request;
     request = require('request');
     config = require('../conf/compiled/conf.js');
-    getUsersUrl = config.all.client.service.cmpdReg.persistence.basepath + '/scientists';
-    getScientists = function(getUsersUrl, resp) {
-      return request({
-        method: 'GET',
-        url: getUsersUrl,
-        timeout: 6000000
-      }, (function(_this) {
-        return function(error, response, json) {
-          if (!error) {
-            console.log(JSON.stringify(json));
-            resp.setHeader('Content-Type', 'application/json');
-            return resp.end(JSON.stringify(json));
-          } else {
-            console.log('got ajax error trying to search for compounds');
-            console.log(error);
-            console.log(json);
-            console.log(response);
-            return resp.end(JSON.stringify({
-              error: "something went wrong :("
-            }));
-          }
-        };
-      })(this));
-    };
-    scientists = (getScientists(getUsersUrl)).json;
-    console.log('scientists:');
-    return console.log(scientists);
+    _ = require("underscore");
+    return exports.getScientists(req, function(scientistResponse) {
+      var foundScientists, oldScientist;
+      foundScientists = JSON.parse(scientistResponse);
+      if ((_.findWhere(foundScientists, {
+        code: cmpdRegUser.code
+      })) != null) {
+        console.debug('found scientist ' + cmpdRegUser.code);
+        if ((_.findWhere(foundScientists, {
+          code: cmpdRegUser.code,
+          isAdmin: cmpdRegUser.isAdmin,
+          isChemist: cmpdRegUser.isChemist,
+          name: cmpdRegUser.name
+        })) != null) {
+          return console.debug('CmpdReg scientists are up-to-date');
+        } else {
+          oldScientist = _.findWhere(foundScientists, {
+            code: cmpdRegUser.code
+          });
+          cmpdRegUser.id = oldScientist.id;
+          cmpdRegUser.ignore = oldScientist.ignore;
+          cmpdRegUser.version = oldScientist.version;
+          console.debug('updating scientist with JSON: ' + JSON.stringify(cmpdRegUser));
+          return exports.updateScientists([cmpdRegUser], function(updateScientistsResponse) {});
+        }
+      } else {
+        console.debug('scientist ' + cmpdRegUser.code + ' not found.');
+        console.debug('creating new scientist' + JSON.stringify(cmpdRegUser));
+        return exports.saveScientists([cmpdRegUser], function(saveScientistsResponse) {});
+      }
+    });
   };
 
   exports.getBasicCmpdReg = function(req, resp) {
@@ -149,7 +153,7 @@
           console.log(JSON.stringify(json));
           return callback(JSON.stringify(json));
         } else {
-          console.log('got ajax error trying to search for compounds');
+          console.log('got ajax error trying to get CmpdReg projects');
           console.log(error);
           console.log(json);
           console.log(response);
@@ -178,7 +182,93 @@
           console.log(JSON.stringify(json));
           return callback(JSON.stringify(json));
         } else {
-          console.log('got ajax error trying to search for compounds');
+          console.log('got ajax error trying to save CmpdReg projects');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.getScientists = function(req, callback) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log('in getScientists');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists";
+    return request({
+      method: 'GET',
+      url: cmpdRegCall,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return callback(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to get CmpdReg scientists');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.saveScientists = function(jsonBody, callback) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log('in saveScientists');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray";
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(jsonBody),
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return callback(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to save CmpdReg scientists');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.updateScientists = function(jsonBody, callback) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log('in updateScientists');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray";
+    return request({
+      method: 'PUT',
+      url: cmpdRegCall,
+      body: JSON.stringify(jsonBody),
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return callback(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to update CmpdReg scientists');
           console.log(error);
           console.log(json);
           console.log(response);

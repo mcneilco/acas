@@ -47,7 +47,7 @@ exports.cmpdRegIndex = (req, res) ->
 			name: req.user.firstName + " " + req.user.lastName
 			isChemist: isChemist
 			isAdmin: isAdmin
-		syncCmpdRegUser cmpdRegUser
+		syncCmpdRegUser req, cmpdRegUser
 	else
 		loginUserName = "nouser"
 		loginUser =
@@ -75,30 +75,29 @@ exports.cmpdRegIndex = (req, res) ->
 			deployMode: global.deployMode
 			cmpdRegConfig: cmpdRegConfig
 
-syncCmpdRegUser = (cmpdRegUser) ->
+syncCmpdRegUser = (req, cmpdRegUser) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	getUsersUrl = config.all.client.service.cmpdReg.persistence.basepath + '/scientists'
-	getScientists = (getUsersUrl, resp) ->
-		request(
-			method: 'GET'
-			url: getUsersUrl
-			timeout: 6000000
-		, (error, response, json) =>
-			if !error
-				console.log JSON.stringify json
-				resp.setHeader('Content-Type', 'application/json')
-				resp.end JSON.stringify json
+	_ = require "underscore"
+	exports.getScientists req, (scientistResponse) ->
+		foundScientists = JSON.parse scientistResponse
+		if (_.findWhere foundScientists, {code: cmpdRegUser.code})?
+			#update scientist
+			console.debug 'found scientist '+cmpdRegUser.code
+			if (_.findWhere foundScientists, {code: cmpdRegUser.code, isAdmin: cmpdRegUser.isAdmin, isChemist: cmpdRegUser.isChemist, name: cmpdRegUser.name})?
+				console.debug 'CmpdReg scientists are up-to-date'
 			else
-				console.log 'got ajax error trying to search for compounds'
-				console.log error
-				console.log json
-				console.log response
-				resp.end JSON.stringify {error: "something went wrong :("}
-		)
-	scientists = (getScientists getUsersUrl).json
-	console.log 'scientists:'
-	console.log scientists
+				oldScientist = _.findWhere foundScientists, {code: cmpdRegUser.code}
+				cmpdRegUser.id = oldScientist.id
+				cmpdRegUser.ignore = oldScientist.ignore
+				cmpdRegUser.version = oldScientist.version
+				console.debug 'updating scientist with JSON: '+ JSON.stringify cmpdRegUser
+				exports.updateScientists [cmpdRegUser], (updateScientistsResponse) ->
+		else
+			#create new scientist
+			console.debug 'scientist '+cmpdRegUser.code+' not found.'
+			console.debug 'creating new scientist' + JSON.stringify cmpdRegUser
+			exports.saveScientists [cmpdRegUser], (saveScientistsResponse) ->
 
 exports.getBasicCmpdReg = (req, resp) ->
 	request = require 'request'
@@ -124,7 +123,7 @@ exports.getProjects = (req, callback) ->
 			console.log JSON.stringify json
 			callback JSON.stringify json
 		else
-			console.log 'got ajax error trying to search for compounds'
+			console.log 'got ajax error trying to get CmpdReg projects'
 			console.log error
 			console.log json
 			console.log response
@@ -146,7 +145,72 @@ exports.saveProjects = (jsonBody, callback) ->
 			console.log JSON.stringify json
 			callback JSON.stringify json
 		else
-			console.log 'got ajax error trying to search for compounds'
+			console.log 'got ajax error trying to save CmpdReg projects'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.getScientists = (req, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in getScientists'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists"
+	request(
+		method: 'GET'
+		url: cmpdRegCall
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to get CmpdReg scientists'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.saveScientists = (jsonBody, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in saveScientists'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: JSON.stringify jsonBody
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to save CmpdReg scientists'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.updateScientists = (jsonBody, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in updateScientists'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/scientists/jsonArray"
+	request(
+		method: 'PUT'
+		url: cmpdRegCall
+		body: JSON.stringify jsonBody
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to update CmpdReg scientists'
 			console.log error
 			console.log json
 			console.log response
