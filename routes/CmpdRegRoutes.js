@@ -133,6 +133,63 @@
     return req.pipe(request(cmpdRegCall)).pipe(resp);
   };
 
+  exports.getProjects = function(req, callback) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log('in getProjects');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects";
+    return request({
+      method: 'GET',
+      url: cmpdRegCall,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return callback(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to search for compounds');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.saveProjects = function(jsonBody, callback) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log('in saveProjects');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray";
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(jsonBody),
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          return callback(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to search for compounds');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
   exports.searchCmpds = function(req, resp) {
     var cmpdRegCall, config, request;
     request = require('request');

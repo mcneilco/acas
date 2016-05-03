@@ -110,6 +110,49 @@ exports.getBasicCmpdReg = (req, resp) ->
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
+exports.getProjects = (req, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in getProjects'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects"
+	request(
+		method: 'GET'
+		url: cmpdRegCall
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to search for compounds'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.saveProjects = (jsonBody, callback) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log 'in saveProjects'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/projects/jsonArray"
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: JSON.stringify jsonBody
+		json: true
+	, (error, response, json)=>
+		if !error
+			console.log JSON.stringify json
+			callback JSON.stringify json
+		else
+			console.log 'got ajax error trying to search for compounds'
+			console.log error
+			console.log json
+			console.log response
+			callback JSON.stringify {error: "something went wrong :("}
+	)
+
 exports.searchCmpds = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
