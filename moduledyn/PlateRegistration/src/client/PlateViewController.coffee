@@ -5,7 +5,7 @@ PLATE_TABLE_CONTROLLER_EVENTS = require('./PlateTableController.coffee').PLATE_T
 _ = require('lodash')
 #$ = require('jquery')
 require('expose?$!expose?jQuery!jquery');
-require("bootstrap-webpack!./bootstrap.config.js");
+require("bootstrap-webpack!./bootstrap.config.js")
 
 PLATE_VIEW_CONTROLLER_EVENTS =
   COMPOUND_VIEW_SELECTED: "CompundViewSelected"
