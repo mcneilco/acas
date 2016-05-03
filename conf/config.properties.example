@@ -314,6 +314,7 @@ client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 client.roles.htsAdmin=admin
 client.browser.enableSearchAll=true
+client.search.maxResults=1000
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=${client.cmpdreg.host}
