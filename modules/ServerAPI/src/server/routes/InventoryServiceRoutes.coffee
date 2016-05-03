@@ -317,14 +317,19 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 									callback message, 400
 									return
 								container = new containerPreferredEntity.model(container)
-								definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
-								definition = new definitionPreferredEntity.model(definition.definition)
+								if definition.definition?
+									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
+									definition = new definitionPreferredEntity.model(definition.definition)
+									definitionValues =  definition.getValues()
+									definitionCodeName = definition.get('codeName')
+								else
+									definitionValues = {}
+									definitionCodeName = null
 								containerValues =  container.getValues()
-								definitionValues =  definition.getValues()
 								out = _.extend containerValues, definitionValues
 								out.barcode = container.get('barcode').get("labelText")
 								out.codeName = containerCode
-								out.definitionCodeName = definition.get('codeName')
+								out.definitionCodeName = definitionCodeName
 								out.recordedBy = container.get('recordedBy')
 								outArray.push out
 							else
