@@ -495,10 +495,10 @@ exports.analyzeScreeningCampaign = (req, resp) ->
 			(rReturn) ->
 				resp.end rReturn
 		)
-	else #TODO: add real implementation
+	else
 		serverUtilityFunctions.runRFunction(
 			req,
-			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysisStub.R",
+			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysis.R",
 			"analyzeScreeningCampaign",
 			(rReturn) ->
 				resp.end rReturn
