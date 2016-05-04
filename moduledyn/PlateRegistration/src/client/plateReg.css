@@ -6,9 +6,9 @@
 
 .editorNavWell {
   width: 50px;
-  height: 690px;
-  padding: 0;
-  background-color: #E9E9E9;
+  height: 661px;
+  padding: 0 !important;
+  background-color: #E9E9E9 !important;
 }
 
 .editorNavCollapse {
@@ -17,7 +17,7 @@
 
 .editorCollapseButton {
   /*margin-top: 191px;*/
-  margin-top: 335px;
+  margin-top: 312px;
   padding-top: 6px;
   padding-bottom: 6px;
   width: 40px;
@@ -81,22 +81,22 @@
 .editorTabAddContentLink {
   width: 85px;
   padding-bottom: 35px;
-  /*
+
   z-index: -1;
-  */
+
 }
 
 .editorTabTemplateLink {
   /*width: 100px;
   padding-bottom: 100px;*/
-  /*
+
   z-index: -1;
-  */
+
 }
 
 .editorTabSerialDilutionLink {
   width: 90px;
-  padding-bottom: 35px;
+  padding-bottom: 40px;
   /*
   z-index: -1;
   */
@@ -108,7 +108,7 @@
 }
 
 .editorPanelWell {
-  height: 690px;
+  height: 661px;
 }
 
 .editorPanel h5 {
@@ -212,20 +212,29 @@
 
 .editorMain {
   padding-left: 0;
-  margin-left: 320px;
+  margin-left: 315px;
 }
 
 .toolbarWell {
-  background-color: #E9E9E9;
-  width: 950px;
-  padding: 10px;
+  background-color: #E9E9E9 !important;
+  width: 646px;
+  padding: 10px !important;
+  margin-bottom: 10px !important;
 }
 
 .toolbarButtons {
   /*margin-right: 10px;*/
 }
 
+.toolbarViewButtonFit {
+  width: 120px;
+}
+
 .toolbarViewButton {
+  width: 150px;
+}
+
+.toolbarViewButtonColor {
   width: 175px;
 }
 
@@ -261,4 +270,116 @@
 .invalidIdentifierCell {
   background-color: #a94442 !important;
   border: solid 1px red;
+}
+
+.searchBarcode {
+  padding-right: 5px;
+}
+
+.searchUser {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.searchDescription {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.searchPlateSize {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.searchRequestID {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.searchStatus {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+
+.searchType {
+  padding-left: 5px;
+}
+
+.mergePlatesInstructions {
+  margin-bottom: 15px;
+}
+
+.plateNotFound {
+  margin-left: 15px;
+}
+
+.plateInUse {
+  margin-left: 15px;
+}
+
+.plateTooSmall {
+  margin-left: 15px;
+}
+
+.errorWell {
+  background-color: #F0D6D6 !important;
+  color: #9B2226 !important;
+  border: none;
+  border-radius: 0;
+  -webkit-box-shadow: 0 0 0 0;
+  -moz-box-shadow: 0 0 0 0;
+  box-shadow: 0 0 0 0;
+  padding: 15px 15px 15px 15px;
+  margin-top: 20px;
+}
+
+.tableContainerSpacing {
+  margin-left: 10px !important;
+}
+
+.plateCreatedTitle {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  margin-left: 15px;
+}
+
+.editPlateButton {
+  margin-bottom: 5px;
+  margin-left: 5px;
+}
+
+.plateSplitTitle {
+  margin-left: 15px;
+}
+
+.splitPlateLinks {
+  margin-left: 15px;
+}
+
+.splitPlateLinksList {
+  margin-left: 50px;
+}
+
+.splitPlateLinkEntries {
+  margin-top: 10px;
+  margin-bottom: 5px;
+}
+
+.mergePlateTitle {
+  margin-left: 15px;
+}
+
+.mergedPlateLink {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  margin-left: 15px;
+}
+
+.editMergePlateButton {
+  margin-bottom: 5px;
+  margin-left: 5px;
+}
+
+.barcodeAlreadyUsedError {
+  font-weight: bold;
 }

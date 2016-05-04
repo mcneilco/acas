@@ -1,11 +1,14 @@
 <div class="hide" name="warningMessages">
-    <h4><p class="bg-warning"></p></h4>
+    <h5><p class="bg-warning"></p></h5>
 </div>
 <div class="hide" name="errorMessages">
-    <h4><p class="bg-error">Error:</p></h4>
-    <p>The barcode <a name="barcode" style="font-weight: bold;" target="_blank"></a> has already been used.  Please go back and enter a different barcode.</p>
+    <h5><p class="bg-error">Error:</p></h5>
+    <p>The barcode <a name="barcode" class="barcodeAlreadyUsedError" target="_blank"></a> has already been used.  Please go back and enter a different barcode.</p>
 
 </div>
 <div class="hide" name="plateCreatedSuccessfully">
-    <h5><p>Plate created successfully: <span name="plateText"></span>&nbsp;&nbsp;<a href="" class="btn btn-primary btn-sm" target="_blank" name="linkToPlate">edit</a></p></h5>
+    <h5 class="plateCreatedTitle">
+      Plate created successfully: <span name="plateText"></span>
+      <a href="" class="btn btn-primary editPlateButton" target="_blank" name="linkToPlate">Edit</a>
+    </h5>
 </div>

@@ -1,77 +1,72 @@
-<div class="row" style="padding-top: 56px;">
-    <div class="col-sm-12">
-        <h3 class="moduleTitle">Merge Plates</h3>
-    </div>
+<div class="row">
+  <div class="col-sm-12">
+      <h3 class="moduleTitle">Merge Plates</h3>
+  </div>
 </div>
-
 <div class="row">
     <div class="col-sm-12">
-        <div class="well well-small">
+        <div class="well">
+            <div class="mergePlatesInstructions">Select the plate barcodes to go into each quadrant</div>
             <div class="row">
-                <div class="col-sm-6">
-                    <label class="control-label">Select the plate barcodes to go into each quadrant</label>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
+                <div class="form col-sm-6">
                     <div class="form-group has-feedback">
-                        <label class="control-label">Q1: <span name="plateQuadrant1_barcodeNodeFound" class="hide">Plate not found</span></label>
-                        <input type="text" class="form-control" name="plateQuadrant1" />
-                        <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
-                        <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
+                        <label class="">Q1 <span name="plateQuadrant1_barcodeNodeFound" class="plateNotFound hide">Plate not found</span></label>
+                          <input type="text" class="form-control" name="plateQuadrant1" />
+                          <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
+                          <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <label class="">Q2 <span name="plateQuadrant2_barcodeNodeFound" class="plateNotFound hide">Plate not found</span></label>
+                          <input type="text" class="form-control" name="plateQuadrant2" />
+                          <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
+                          <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
                     </div>
                 </div>
-                <div class="col-sm-6">
-                    <div class="form-group has-feedback">
-                        <label class="control-label">Q2: <span name="plateQuadrant2_barcodeNodeFound" class="hide">Plate not found</span></label>
-                        <input type="text" class="form-control" name="plateQuadrant2" />
-                        <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
-                        <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-sm-6">
-                    <div class="form-group has-feedback">
-                        <label class="control-label">Q3: <span name="plateQuadrant3_barcodeNodeFound" class="hide">Plate not found</span></label>
+
+                <div class="form col-sm-6">
+                  <div class="form-group has-feedback">
+                      <label>Q3 <span name="plateQuadrant3_barcodeNodeFound" class="plateNotFound hide">Plate not found</span></label>
                         <input type="text" class="form-control" name="plateQuadrant3" />
                         <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
                         <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
-                    </div>
-                </div>
-                <div class="col-sm-6">
-                    <div class="form-group has-feedback">
-                        <label class="control-label">Q4: <span name="plateQuadrant4_barcodeNodeFound" class="hide">Plate not found</span></label>
+                  </div>
+                  <div class="form-group has-feedback">
+                      <label>Q4 <span name="plateQuadrant4_barcodeNodeFound" class="plateNotFound hide">Plate not found</span></label>
                         <input type="text" class="form-control" name="plateQuadrant4"/>
                         <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
                         <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
-                    </div>
+                  </div>
                 </div>
             </div>
-            <hr />
+
             <div class="row">
-                <div class="col-sm-6">
+                <div class="form col-sm-12">
                     <div class="form-group has-feedback">
-                        <label class="control-label">Destination plate barcode</label>
+                        <label class="control-label">Destination plate barcode<span class="hide" name="destinationPlateBarcodeAlreadyInUse" class="plateInUse">A plate has already been registered with that barcode.</span></label>
                         <input type="text" class="form-control" name='destinationPlateBarcode' />
-                        <span class="hide" name="destinationPlateBarcodeAlreadyInUse">A plate has already been registered with that barcode</span>
                         <span class="glyphicon glyphicon-ok form-control-feedback hide" aria-hidden="true"></span>
                         <span class="glyphicon glyphicon-warning-sign form-control-feedback hide" aria-hidden="true"></span>
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <div class="col-sm-6 hide" name="errorMessages">
-                    Plates must all be the same size.
-                </div>
-                <span class="hide" name="sourcePlateTooBig">Error: cannot merge a plate larger than 384 wells.</span>
-            </div>
-            <div class="row">
-                <div class="col-sm-12">
-                    <button class="btn btn-primary pull-right" name="mergePlate">Merge</button>
-                </div>
-            </div>
         </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12">
+        <button class="btn btn-primary pull-right" name="mergePlate">Merge</button>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 hide" name="errorMessages">
+      <div class="well errorWell">
+        Error: Plates must all be the same size.
+      </div>
+    </div>
+    <div class="col-sm-12 hide" name="sourcePlateTooBig">
+      <div class="well errorWell">
+        Error: cannot merge a plate larger than 384 wells.
+      </div>
     </div>
 </div>
 
@@ -79,12 +74,12 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h4>Merging Plates</h4>
-                <div name="mergedPlateLink" class="hide">
-                    Plates successfully merged: <span name="mergedPlateName"></span>  <a class="btn btn-primary btn-xs" name="linkToNewPlate" target="_blank">edit</a>
+                <h5 class="mergePlateTitle">Merging Plates</h5>
+                <div name="mergedPlateLink" class="mergedPlateLink hide">
+                    Plates successfully merged: <span name="mergedPlateName"></span><a class="btn btn-primary editMergePlateButton" name="linkToNewPlate" target="_blank">Edit</a>
                 </div>
                 <div class="hide" name="duplicateBarcodeErrorMessage">
-                    <h4><p class="bg-error">Error:</p></h4>
+                    <h5 class="bg-error">Error:</h5>
                     <p>The barcode <a name="barcode" style="font-weight: bold;" target="_blank"></a> has already been used.  Please go back and enter a different barcode.</p>
                 </div>
             </div>

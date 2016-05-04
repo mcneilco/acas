@@ -1,26 +1,32 @@
-<!--<div class="row">-->
-    <!--<div class="col-sm-12">-->
-        <!-- -->
-    <!--</div>-->
-<!--</div>-->
-<div class="row" name="operationSelectionContainer" style="padding-top: 56px;">
-    <div class="col-sm-8 well well col-sm-offset-2">
-        <h3 class="moduleTitle">Merge or Split Plates</h3>
-        <form class="form-horizontal">
-            <div class="form-group ">
-                <label for="plateOperation" class="col-sm-1 control-label">Action:</label>
-                <div class="col-sm-11">
-                    <select id="plateOperation" name="plateOperation" class="form-control">
-                        <option value=""></option>
-                        <option value="mergePlates">Merge Plates</option>
-                        <option value="splitPlates">Split Plates</option>
-                    </select>
-                </div>
-            </div>
-        </form>
-        <hr />
-        <button class="btn btn-primary disabled pull-right" disabled name="splitMergeNextStep">Next</button>
+<div name="operationSelectionContainer">
+  <div class="row">
+    <div class="col-sm-12">
+      <h3 class="moduleTitle">Merge or Split Plates</h3>
     </div>
+  </div>
+  <div class="row">
+      <div class="col-sm-12">
+        <div class="well acasWell">
+          <div class="form-horizontal">
+              <div class="form-group">
+                  <label for="plateOperation" class="col-sm-2 control-label">Action</label>
+                  <div class="col-sm-10">
+                      <select id="plateOperation" name="plateOperation" class="form-control">
+                          <option value=""></option>
+                          <option value="mergePlates">Merge Plates</option>
+                          <option value="splitPlates">Split Plates</option>
+                      </select>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <button class="btn btn-primary disabled pull-right" disabled name="splitMergeNextStep">Next</button>
+    </div>
+  </div>
 </div>
 
 <div class="row">
