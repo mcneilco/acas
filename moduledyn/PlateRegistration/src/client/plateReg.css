@@ -273,7 +273,7 @@
 }
 
 /* jQuery UI overides */
-.ui-widget{font-size:12px !important;}}
+.ui-widget{font-size:12px !important;}
 
 .searchBarcode {
   padding-right: 5px;
