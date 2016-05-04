@@ -3,12 +3,14 @@ subjecValueKindsToView <- function(request) {
   viewName <- request$viewName
   library(racas)
   library(data.table)
-  valueKinds <- as.data.table(query("select ls_type, ls_kind, count(*) from subject_value group by ls_type, ls_kind"))
+  conn <- getDatabaseConnection()
+  on.exit(dbDisconnect(conn))
+  valueKinds <- as.data.table(query("select ls_type, ls_kind, count(*) from subject_value group by ls_type, ls_kind"), conn = conn)
   setnames(valueKinds, c("typeName", "kindName", "count"))
   # Removing duplicate value kinds by selecting max amount of rows
   valueKinds <- valueKinds[, .SD[count == max(count)],  by = c("kindName")]
   
-  columnTypes <- as.data.table(query("select column_name, data_type from information_schema.columns where table_name = 'subject_value'"));
+  columnTypes <- as.data.table(query("select column_name, data_type from information_schema.columns where table_name = 'subject_value'"), conn = conn);
   columnMap <- data.table(typeName = c("clobValue","codeValue","dateValue","fileValue","numericValue","stringValue"),
                           column = c("clob_value", "code_value", "date_value", "file_value", "numeric_value", "string_value"))
   setkey(valueKinds, typeName)
@@ -33,8 +35,9 @@ subjecValueKindsToView <- function(request) {
   }]
   setkey(valueKinds, kindName, typeName)
   select <- paste0(valueKinds$typeName,'."',valueKinds$kindName,'"',collapse = ",")
-  dropped <- query(paste0('drop view if exists ', viewName, " cascade"))
-  query(paste0("create or replace view ",viewName," as select subject_state.id as subject_state_id,",select,"\nfrom\nsubject_state\n",answer))
+  dropped <- query(paste0('drop view if exists ', viewName, " cascade"), conn = conn)
+  query(paste0("create or replace view ",viewName," as select subject_state.id as subject_state_id,",select,"\nfrom\nsubject_state\n",answer), catchError=FALSE, conn = conn)
+  dbCommit(conn)
   cat(viewName, "view created\n")
 }
 
