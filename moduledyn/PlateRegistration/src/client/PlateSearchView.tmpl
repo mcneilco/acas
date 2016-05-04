@@ -1,4 +1,4 @@
-<div class="row" style="padding-top: 56px;">
+<div class="row">
     <div class="col-sm-12">
         <h3 class="moduleTitle">Search for Plates</h3>
     </div>
@@ -7,41 +7,41 @@
     <div class="col-sm-12">
         <div class="well well-small">
             <div class="row">
-                <div class="col-sm-2">
+                <div class="col-sm-2 searchBarcode">
                     <label class="control-label">Barcode</label>
                     <input type="text" class="form-control" name='barcodeSearchTerm' />
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-2 searchUser">
                     <label class="control-label">User</label>
                     <select class="form-control" name="user"></select>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-2 searchDescription">
                     <label class="control-label">Description</label>
                     <input type="text" class="form-control" name='descriptionSearchTerm' />
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-1 searchPlateSize">
                     <label class="control-label">Plate Size</label>
                     <select class="form-control" name="definition"></select>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-2 searchRequestID">
                     <label class="control-label">Request ID</label>
                     <select class="form-control" disabled></select>
                 </div>
-                <div class="col-sm-1">
+                <div class="col-sm-1 searchStatus">
                     <label class="control-label">Status</label>
                     <select class="form-control" name="status"></select>
                 </div>
-                <div class="col-sm-1">
+                <div class="col-sm-2 searchType">
                     <label class="control-label">Type</label>
                     <select class="form-control" name="type"></select>
                     <br />
-                    <button class="btn btn-primary" name="search">Search</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
 <div class="row">
+<<<<<<< HEAD
     <div class="col-sm-12 hide" name="maxNumberOfSearchResultsReturned">
         <p class="text-danger">
             Showing first <%= AppLaunchParams.maxSearchResults %> results
@@ -63,6 +63,15 @@
             </div>
         </div>
     </div>
+=======
+  <div class="col-sm-12">
+    <button class="btn btn-primary pull-right" name="search">Search</button>
+  </div>
+</div>
+<div class="row">
+    <div class="col-sm-12 bv_searchResults">
+</div>
+>>>>>>> 5d8d1f1723eeeb77bd6c38353a12d4af69887169
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" name="clonePlateDialogbox">
     <div class="modal-dialog">
