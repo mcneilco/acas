@@ -23,9 +23,9 @@
                 </li>
             </ul>
             <!-- TODO: fix username and logout button collapse behavior -->
-            <a class="btn btn-warning navbar-btn navbar-right acasLogout" href="login.html">Logout</a>
-            <p class="navbar-text navbar-right">
-                Signed in as <a href="#" class="navbar-link">Bob Roberts</a>
+            <a class="btn btn-warning navbar-btn navbar-right acasLogout" href="/logout" style="margin-right: 0.5em;">Logout</a>
+            <p class="navbar-text navbar-right" style="margin-right: 1em;">
+                Signed in as <a href="#" class="navbar-link"><%= AppLaunchParams.loginUser.firstName %> <%= AppLaunchParams.loginUser.lastName %></a>
             </p>
             <ul class="nav navbar-nav navbar-right hide">
                 <li class="dropdown">

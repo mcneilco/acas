@@ -78,19 +78,23 @@ class PlateTableController extends Backbone.View
         outsideClickDeselects: false
         startCols: @plateMetaData.numberOfColumns
         startRows: @plateMetaData.numberOfRows
+        #tabMoves: {row:1, col:0}
         renderer: @defaultCellRenderer
         afterChange: @handleContentUpdated
         beforeChange: @handleTableChangeRangeValidation
         afterSelection: @handleRegionSelected
+        autoWrapCol: true
+        autoWrapRow: true
       })
-    window.FOOHOT = @handsOnTable
+    #window.FOOHOT = @handsOnTable
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
     @addContent(hotData)
     @fitToScreen()
 
   increaseFontSize: =>
     @fontSize = @fontSize + 2
-    @handsOnTable.init()
+    #@handsOnTable.init()
+    @handsOnTable.render()
 
   decreaseFontSize: =>
     if @fontSize > 2
@@ -206,7 +210,8 @@ class PlateTableController extends Backbone.View
 
   addContent: (data) =>
     @handsOnTable.setDataAtCell data, 'programaticEdit'
-    @handsOnTable.init() # force re-render so tooltip content is updated
+    #@handsOnTable.init() # force re-render so tooltip content is updated
+    @handsOnTable.render()
 
   addContent1: (data) =>
     hotData = []
@@ -528,8 +533,8 @@ class PlateTableController extends Backbone.View
       colWidths: null,
       rowHeights: null
     })
-    @handsOnTable.init()
-    #@handsOnTable.render()
+    #@handsOnTable.init()
+    @handsOnTable.render()
 
   fitToScreen: =>
     @shouldFitToScreen = true

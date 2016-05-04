@@ -1,7 +1,7 @@
-DataTable = require('imports?this=>window!../../../../public/lib/dataTables/js/jquery.dataTables.js') #Handsontable || () ->
+DataTable = require('imports?this=>window!../../../../public/lib/dataTables/js/jquery.dataTables.js')
+require('expose?$!expose?jQuery!jquery')
 
-require('expose?$!expose?jQuery!jquery');
-require("bootstrap-webpack!./bootstrap.config.js");
+require("bootstrap-webpack!./bootstrap.config.js")
 
 PickListSelectController = require('./SelectList.coffee').PickListSelectController
 PickList = require('./SelectList.coffee').PickList
@@ -14,11 +14,14 @@ class PlateSearchController extends Backbone.View
     "click button[name='search']": "handleSearchClicked"
     "click button[name='clonePlate']": "handleClonePlateClicked"
     "click button[name='tryClonePlateAgain']": "handleTryCloneAgainClicked"
+    "change input": "handleInputChanged"
+    "change select": "handleInputChanged"
 
   initialize: (options) ->
     @plateDefinitions = options.plateDefinitions
     @plateTypes = options.plateTypes
     @plateStatuses = options.plateStatuses
+    @users = options.users
 
     @selectLists = [
       containerSelector: "select[name='definition']"
@@ -27,6 +30,11 @@ class PlateSearchController extends Backbone.View
 
   completeInitialize: =>
     @initializeSelectLists()
+    @setStateOfSubmitButton()
+    @delegateEvents()
+
+  handleInputChanged: =>
+    @setStateOfSubmitButton()
 
   initializeSelectLists: =>
 
@@ -57,6 +65,15 @@ class PlateSearchController extends Backbone.View
       selectedCode: "unassigned"
       className: "form-control"
 
+    @usersSelectList = new PickListSelectController
+      el: $(@el).find("select[name='user']")
+      collection: @users
+      insertFirstOption: new PickList
+        code: "unassigned"
+        name: ""
+      selectedCode: "unassigned"
+      className: "form-control"
+
   getFormValues: =>
     searchTerms = {}
     barcode = $.trim(@$("input[name='barcodeSearchTerm']").val())
@@ -73,6 +90,9 @@ class PlateSearchController extends Backbone.View
 
     if @plateStatusesSelectList.getSelectedCode() isnt "unassigned"
       searchTerms.status = @plateStatusesSelectList.getSelectedCode()
+
+    if @usersSelectList.getSelectedCode() isnt "unassigned"
+      searchTerms.createdUser = @usersSelectList.getSelectedCode()
 
     searchTerms
 
@@ -93,18 +113,18 @@ class PlateSearchController extends Backbone.View
     if formValues.status?
       if formValues.status isnt "unassigned"
         searchIsValid = true
+    if formValues.createdUser?
+      if formValues.createdUser isnt "unassigned"
+        searchIsValid = true
 
     searchIsValid
 
   handleSearchClicked: =>
+    @$(".bv_searchResults").addClass "hide"
+    @$("div[name='noSearchResultsReturned']").addClass "hide"
+    @$("div[name='maxNumberOfSearchResultsReturned']").addClass "hide"
+    @$(".bv_searchInProgressMessage").removeClass "hide"
     searchTerms = @getFormValues()
-    console.log "searchTerms"
-    console.log searchTerms
-    if @isFormValid(searchTerms)
-      console.log "valid"
-    else
-      console.log "invalid"
-
     $.ajax(
       data: searchTerms
       dataType: "json"
@@ -112,8 +132,6 @@ class PlateSearchController extends Backbone.View
       url: "api/searchContainers"
     )
     .done((data, textStatus, jqXHR) =>
-      console.log "got search results?"
-      console.log data
       @searchCallback(data)
     )
     .fail((jqXHR, textStatus, errorThrown) =>
@@ -124,12 +142,24 @@ class PlateSearchController extends Backbone.View
 
   searchCallback: (searchResults) =>
     searchResultsCollection = new SearchResultCollection(searchResults)
-    if @searchResultsTable?
-      @searchResultsTable.remove()
-    @searchResultsTable = new SearchResultTable({collection: searchResultsCollection})
-    @listenTo @searchResultsTable, SEARCH_RESULT_ROW_EVENTS.CLONE_PLATE, @handleClonePlate
-    $(".bv_searchResults").html @searchResultsTable.render().el
-    @searchResultsTable.completeInitialization()
+    if searchResultsCollection.size() is AppLaunchParams.maxSearchResults
+      @$("div[name='maxNumberOfSearchResultsReturned']").removeClass "hide"
+    else
+      @$("div[name='maxNumberOfSearchResultsReturned']").addClass "hide"
+    if searchResultsCollection.size() is 0
+      @$("div[name='noSearchResultsReturned']").removeClass "hide"
+    else
+      @$("div[name='noSearchResultsReturned']").addClass "hide"
+
+      if @searchResultsTable?
+        @searchResultsTable.remove()
+      @searchResultsTable = new SearchResultTable({collection: searchResultsCollection})
+      @listenTo @searchResultsTable, SEARCH_RESULT_ROW_EVENTS.CLONE_PLATE, @handleClonePlate
+      $(".bv_searchResults").html @searchResultsTable.render().el
+
+      @$(".bv_searchResults").removeClass "hide"
+      @searchResultsTable.completeInitialization()
+    @$(".bv_searchInProgressMessage").addClass "hide"
 
   handleClonePlate: (plateInfo) =>
     #@plateCloneController = new ClonePlateController()
@@ -155,9 +185,6 @@ class PlateSearchController extends Backbone.View
       cloneBarcodes = @parseBarcodes(_.toUpper(@$("textarea[name='clonedPlateBarcodes']").val()))
     else
       cloneBarcodes = @parseBarcodes(@$("textarea[name='clonedPlateBarcodes']").val())
-
-    console.log "cloneBarcodes"
-    console.log cloneBarcodes
     @$(".bv_clonePlateBarcodeContainer").empty()
     @$("div[name='plateBarcodeEntry']").addClass "hide"
     @$("table[name='plateCloningStatusTable']").removeClass "hide"
@@ -179,16 +206,10 @@ class PlateSearchController extends Backbone.View
     )
     @$("span[name='cloningStatus']").removeClass "hide"
     @$("span[name='dialogDismissButtons']").addClass "hide"
-    console.log "promises"
-    console.log promises
     $.when.apply($, promises).done( (callbacks...) =>
       hadErrors = _.find(callbacks, (cb) ->
-        console.log "!cb"
-        console.log !cb
         cb is false
       )
-      console.log "hadErrors"
-      console.log hadErrors
       @$("span[name='cloningStatus']").addClass "hide"
       @$("span[name='dialogDismissButtons']").removeClass "hide"
       if hadErrors?
@@ -218,6 +239,15 @@ class PlateSearchController extends Backbone.View
       listOfBarcodes = [barcodes]
 
     listOfBarcodes
+
+  setStateOfSubmitButton: =>
+    formValues = @getFormValues()
+    if @isFormValid(formValues)
+      @$("button[name='search']").prop('disabled', false)
+      @$("button[name='search']").removeClass('disabled')
+    else
+      @$("button[name='search']").prop('disabled', true)
+      @$("button[name='search']").addClass('disabled')
 
   render: =>
     $(@el).html @template()
@@ -263,7 +293,6 @@ class SearchResultTable extends Backbone.View
     $(@el).DataTable()
 
   handleClonePlate: (plateInfo) =>
-    console.log "propagating event with codename: ", plateInfo
     @trigger SEARCH_RESULT_ROW_EVENTS.CLONE_PLATE, plateInfo
 
   render: =>
@@ -301,13 +330,10 @@ class SearchResultRow extends Backbone.View
     @model = options.model
 
   handleClonePlateClicked: =>
-    console.log "handleClonePlateClicked"
     @trigger SEARCH_RESULT_ROW_EVENTS.CLONE_PLATE, {codeName: @model.get('codeName'), barcode: @model.get('barcode')}
 
   render: =>
     compiledTemplate = _.template(@template)
-    console.log "@model.toJSON()"
-    console.log @model.toJSON()
     $(@el).html compiledTemplate(@model.toJSON())
 
     @

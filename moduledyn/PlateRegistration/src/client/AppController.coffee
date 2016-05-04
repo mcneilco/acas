@@ -12,7 +12,7 @@ CREATE_PLATE_CONTROLLER_EVENTS = require('./CreatePlateController.coffee').CREAT
 CreatePlateSaveController = require('./CreatePlateSaveController.coffee').CreatePlateSaveController
 PlateTypeCollection = require('./PlateTypeCollection.coffee').PlateTypeCollection
 PlateStatusCollection = require('./PlateStatusCollection.coffee').PlateStatusCollection
-
+AuthorCollection = require('./AuthorCollection.coffee').AuthorCollection
 
 MergeOrSplitPlatesController = require('./MergeOrSplitPlatesController.coffee').MergeOrSplitPlatesController
 
@@ -40,7 +40,7 @@ class AppController extends Backbone.View
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate
     @dataServiceController = new DataServiceController()
 
-    @plateSearchController = new PlateSearchController({plateDefinitions: new PlateDefinitionCollection(), plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection()})
+    @plateSearchController = new PlateSearchController({plateDefinitions: new PlateDefinitionCollection(), plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection(), users: new AuthorCollection()})
 
   completeInitialization: =>
     #@newPlateDesignController.completeInitialization()
@@ -65,30 +65,42 @@ class AppController extends Backbone.View
     @newPlateDesignController.handleAddContentSuccessCallback()
     @newPlateDesignController.completeInitialization()
 
+  resetCurrentlyDisplayedForm: =>
+    if @currentFormController?
+      console.log "removing current form controller"
+      @currentFormController.remove()
+
   displayCreatePlateForm: =>
+    @resetCurrentlyDisplayedForm()
     plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
     plateTypeFetchPromise.complete(() =>
       @$("div[name='formContainer']").html @createPlateController.render().el
+      @currentFormController = @createPlateController
       @createPlateController.completeInitialization()
     )
 
   displayPlateSearch: =>
+    @resetCurrentlyDisplayedForm()
     promises = []
     promises.push(@plateSearchController.plateStatuses.fetch())
     promises.push(@plateSearchController.plateTypes.fetch())
     promises.push(@plateSearchController.plateDefinitions.fetch())
+    promises.push(@plateSearchController.users.fetch())
     $.when(promises).done(() =>
+      @currentFormController = @plateSearchController
       @$("div[name='formContainer']").html @plateSearchController.render().el
       @plateSearchController.completeInitialize()
     )
 
   displayPlateDesignForm: (plateBarcode) =>
-
+    @resetCurrentlyDisplayedForm()
     @dataServiceController.setupService(new LoadPlateController({plateBarcode: plateBarcode, successCallback: @handleAllDataLoadedForPlateDesignForm}))
     @dataServiceController.doServiceCalls()
 
   displayMergeOrSplitPlatesForm: () =>
+    @resetCurrentlyDisplayedForm()
     @mergeOrSplitPlatesController = new MergeOrSplitPlatesController()
+    @currentFormController = @mergeOrSplitPlatesController
     @$("div[name='formContainer']").html @mergeOrSplitPlatesController.render().el
   
   handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
@@ -97,6 +109,7 @@ class AppController extends Backbone.View
     promises.push(@newPlateDesignController.plateTypes.fetch())
     $.when(promises).done(() =>
       @$("div[name='formContainer']").html @newPlateDesignController.render().el
+      @currentFormController = @newPlateDesignController
       @newPlateDesignController.completeInitialization(plateAndWellData)
     )
 

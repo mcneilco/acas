@@ -26,6 +26,7 @@ services:
      - ./modules/Login:/home/runner/acas/modules/Login
      - ./public/lib/handsontable/dist/:/home/runner/acas/public/lib/handsontable/dist/
      - ./public/lib/dataTables/js/:/home/runner/acas/public/lib/dataTables/js/
+     - ./public/lib/jquery-ui-1.10.2.custom/js/:/home/runner/acas/public/lib/jquery-ui-1.10.2.custom/js/
      - ./views/:/home/runner/acas/views/
      - ./Gruntfile.coffee:/home/runner/build/Gruntfile.coffee
      #handsontable.full.js

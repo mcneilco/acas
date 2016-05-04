@@ -1,5 +1,8 @@
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
+
+jQueryUI = require('imports?this=>window!../../../../public/lib/jquery-ui-1.10.2.custom/js/jquery-ui-1.10.2.custom.min.js')
+
 _ = require('lodash')
 $ = require('jquery')
 
@@ -39,7 +42,6 @@ class PlateInfoController extends Backbone.View
     @model = options.model
     @plateTypes = options.plateTypes
     @plateStatuses = options.plateStatuses
-    #@plateStatusSelectList = new SelectList({collection: @plateStatuses, selectedValue: @model.get('status')})
     @selectLists = [
       controller: @plateTypesSelectList
       containerSelector: "select[name='type']"
@@ -82,6 +84,10 @@ class PlateInfoController extends Backbone.View
   render: =>
     $(@el).html @template(@model.toJSON())
     @initializeSelectLists()
+    @$("input[name='createdDate']").datepicker()
+    if @model.get "createdDate"
+      createdDate = new Date(@model.get "createdDate")
+      @$("input[name='createdDate']").datepicker("setDate", createdDate)
 
     @
 
@@ -99,12 +105,11 @@ class PlateInfoController extends Backbone.View
 
   updateModel: (data) =>
     originalBarcode = @model.get("barcode")
-
-
     @model.set data
-    #date = new Date()
+    createdDate = @$("input[name='createdDate']").datepicker("getDate").getTime()
+
     @model.set "recordedBy", AppLaunchParams.loginUserName
-    @model.set "createdDate", null
+    @model.set "createdDate", createdDate
     $.ajax(
       data: @model.toJSON()
       dataType: "json"
@@ -112,8 +117,6 @@ class PlateInfoController extends Backbone.View
       url: @model.url
     )
     .done((data, textStatus, jqXHR) =>
-      console.log "data"
-      console.log data
       if originalBarcode isnt @model.get("barcode")
         appRouter.navigate("/plateDesign/#{@model.get('barcode')}")
     )

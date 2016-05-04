@@ -13,7 +13,7 @@
                 </div>
                 <div class="col-sm-2">
                     <label class="control-label">User</label>
-                    <select class="form-control"></select>
+                    <select class="form-control" name="user"></select>
                 </div>
                 <div class="col-sm-2">
                     <label class="control-label">Description</label>
@@ -42,8 +42,26 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-sm-12 bv_searchResults">
+    <div class="col-sm-12 hide" name="maxNumberOfSearchResultsReturned">
+        <p class="text-danger">
+            Showing first <%= AppLaunchParams.maxSearchResults %> results
+        </p>
+    </div>
+    <div class="col-sm-12 hide" name="noSearchResultsReturned" style="text-align: center">
+        <h3 class="text-info">
+            No search results found.
+        </h3>
+    </div>
+    <div class="col-sm-12 bv_searchResults hide">
 
+    </div>
+    <div class="col-sm-12 bv_searchInProgressMessage hide" style="text-align: center;">
+        <h4>Searching</h4>
+        <div class="progress">
+            <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
+                <span class="sr-only">Cloning Plates</span>
+            </div>
+        </div>
     </div>
 </div>
 <div class="modal fade" tabindex="-1" role="dialog" name="clonePlateDialogbox">
