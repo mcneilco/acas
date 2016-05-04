@@ -384,4 +384,29 @@ server.rapache.conf.serversignature=On
 server.rapache.conf.logformat='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
 server.rapache.conf.rewriteengine=On
 
+#################### SUPPORT EMAIL ####################
+
+#
+# PROPERTY: server.support.smtp.host
+#           server.support.smtp.port
+#           server.support.smtp.username
+#           server.support.smtp.password
+#           server.support.smtp.auth
+#           server.support.smtp.ssl
+#
+# EXAMPLE:
+#           server.support.smtp.host=smtp.gmail.com
+#           server.support.smtp.port=465
+#           server.support.smtp.username=brian@mcneilco.com
+#           server.support.smtp.password=password
+#           server.support.smtp.auth=true
+#           server.support.smtp.ssl=true
+
+server.support.smtp.host=localhost
+server.support.smtp.port=25
+server.support.smtp.username=support@mcneilco.com
+server.support.smtp.password=null
+server.support.smtp.auth=false
+
+client.roles.containerInventory.admin=${server.support.smtp.username}
 client.compoundInventory.enforceUppercaseBarcodes=true
