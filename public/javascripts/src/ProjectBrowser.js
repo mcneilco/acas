@@ -48,7 +48,7 @@
 
     ProjectSimpleSearchController.prototype.template = _.template($("#ProjectSimpleSearchView").html());
 
-    ProjectSimpleSearchController.prototype.genericSearchUrl = "/api/genericSearch/things/";
+    ProjectSimpleSearchController.prototype.genericSearchUrl = "/api/genericSearch/projects/";
 
     ProjectSimpleSearchController.prototype.initialize = function() {
       this.includeDuplicateAndEdit = this.options.includeDuplicateAndEdit;

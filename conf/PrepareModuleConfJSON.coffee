@@ -35,6 +35,9 @@ typeKinds = [
 	"unitkinds"
 	"valuetypes"
 	"valuekinds"
+	"roletypes"
+	"rolekinds"
+	"lsroles"
 ]
 
 #name/pattern of confJSON file(s) to compile and store in CompiledModuleConfJSONs.json and to save the contents into the database

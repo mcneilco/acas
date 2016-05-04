@@ -18,7 +18,7 @@
     fs.writeFileSync(newFileName, jsonfilestring);
   }
 
-  typeKinds = ["codetables", "containertypes", "containerkinds", "ddicttypes", "ddictkinds", "experimenttypes", "experimentkinds", "interactiontypes", "interactionkinds", "labeltypes", "labelkinds", "labelsequences", "operatortypes", "operatorkinds", "protocoltypes", "protocolkinds", "statetypes", "statekinds", "thingtypes", "thingkinds", "unittypes", "unitkinds", "valuetypes", "valuekinds"];
+  typeKinds = ["codetables", "containertypes", "containerkinds", "ddicttypes", "ddictkinds", "experimenttypes", "experimentkinds", "interactiontypes", "interactionkinds", "labeltypes", "labelkinds", "labelsequences", "operatortypes", "operatorkinds", "protocoltypes", "protocolkinds", "statetypes", "statekinds", "thingtypes", "thingkinds", "unittypes", "unitkinds", "valuetypes", "valuekinds", "roletypes", "rolekinds", "lsroles"];
 
   selectedConfJSONFiles = process.argv[2];
 

@@ -75,6 +75,35 @@
 				kindName: "project name"
 			]
 
+		roletypes:
+			[
+				typeName: "Project"
+			,
+				typeName: "LDAP"
+			,
+				typeName: "System"
+			]
+
+		rolekinds:
+			[
+				typeName: "System"
+				kindName: "ACAS"
+			,
+				typeName: "System"
+				kindName: "CmpdReg"
+			]
+
+		lsroles:
+			[
+				lsType: "System"
+				lsKind: "ACAS"
+				roleName: "ROLE_ACAS-USERS"
+			,
+				lsType: "System"
+				lsKind: "CmpdReg"
+				roleName: "ROLE_CMPDREG-USERS"
+			]
+
 		labelsequences:
 			[
 				digits: 8

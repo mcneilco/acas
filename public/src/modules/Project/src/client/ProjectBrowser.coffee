@@ -10,7 +10,7 @@ class window.ProjectSearch extends Backbone.Model
 
 class window.ProjectSimpleSearchController extends AbstractFormController
 	template: _.template($("#ProjectSimpleSearchView").html())
-	genericSearchUrl: "/api/genericSearch/things/"
+	genericSearchUrl: "/api/genericSearch/projects/"
 #	codeNameSearchUrl: "/api/projects/codename/"
 
 	initialize: ->
