@@ -4,7 +4,7 @@
 
     <div class="btn-group toolbarButtons" role="group">
         <div class="btn-group">
-            <button class="btn btn-default dropdown-toggle toolbarViewButtonFit" data-toggle="dropdown" name="cellZoom">Fit to Screen</button>
+            <button class="btn btn-default dropdown-toggle toolbarViewButtonFit" data-toggle="dropdown" name="cellZoom">Fit to Screen <span class='caret'></span></button>
             <ul class="dropdown-menu" role="menu">
                 <li><a href="#" name="showAll">Show All</a></li>
                 <li><a href="#" name="fitToContents">Fit to Contents</a></li>
@@ -13,7 +13,7 @@
         </div>
 
         <div class="btn-group">
-            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="selectedView" >Compound View</button>
+            <button class="btn btn-default dropdown-toggle toolbarViewButton" data-toggle="dropdown" name="selectedView" >Compound View <span class="caret"></span></button>
             <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
                 <li><a href="#" name="compoundView">Compound View</a></li>
                 <li><a href="#" name="volumeView">Volume View</a></li>
@@ -22,7 +22,7 @@
             </ul>
         </div>
         <div class="btn-group">
-            <button class="btn btn-default dropdown-toggle toolbarViewButtonColor" data-toggle="dropdown" name="selectedColorBy">No Color</button>
+            <button class="btn btn-default dropdown-toggle toolbarViewButtonColor" data-toggle="dropdown" name="selectedColorBy">No Color <span class='caret'></span></button>
             <ul class="dropdown-menu" role="menu">
                 <li><a href="#" name="colorByCompound">Color By Compound</a></li>
                 <li><a href="#" name="colorByVolume">Color By Volume</a></li>
@@ -35,8 +35,12 @@
         <button class="btn btn-default toolbarViewButtonSmall hide"><i class="fa fa-undo"></i></button>
         <button class="btn btn-default toolbarViewButtonSmall hide"><i class="fa fa-repeat"></i></button>
         <button class="btn btn-default toolbarViewButtonSmall" name="displayToolTips"><i class="fa fa-search-plus"></i></button>
-    </div>
 
+    </div>
+    <div class="pull-right">
+        <div data-toggle="tooltip" data-placement="left" title="When one or two fields are filled in but not all 3.  These wells are Ignored during analysis unless a side car provides their content."><span name="invalidWellCount"></span> Invalid</div>
+        <div data-toggle="tooltip" data-placement="left" title="When all 3 fields are not filled in. These wells are Ignored during analysis unless a side car provides their content."><span name="emptyWellCount" ></span> Empty</div>
+    </div>
     <!--<button class="btn btn-default">Save</button>-->
     <button class="btn btn-primary hide">Complete</button>
 

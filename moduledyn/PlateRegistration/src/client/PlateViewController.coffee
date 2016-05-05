@@ -35,50 +35,50 @@ class PlateViewController extends Backbone.View
 
   handleCompoundViewClick: (e) =>
     e.preventDefault()
-    @updateSelectedView "Compound View"
+    @updateSelectedView "Compound View <span class='caret'></span>"
     @plateTableController.updateDataDisplayed "batchCode"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
   handleVolumeViewClick: (e) =>
     e.preventDefault()
-    @updateSelectedView "Volume View"
+    @updateSelectedView "Volume View <span class='caret'></span>"
     @plateTableController.updateDataDisplayed "amount"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.VOLUME_VIEW_SELECTED
 
   handleConcentrationViewClick: (e) =>
     e.preventDefault()
-    @updateSelectedView "Concentration View"
+    @updateSelectedView "Concentration View <span class='caret'></span>"
     @plateTableController.updateDataDisplayed "batchConcentration"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.CONCENTRATION_VIEW_SELECTED
 
   handleMasterViewClick: (e) =>
     e.preventDefault()
-    @updateSelectedView "Master View"
+    @updateSelectedView "Master View <span class='caret'></span>"
     @$("button[name='displayToolTips']").addClass("active")
     @plateTableController.updateDataDisplayed "masterView"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.MASTER_VIEW_SELECTED
 
   handleColorByCompoundClick: (e) =>
     e.preventDefault()
-    @updateSelectedColorBy "Color By Compound"
+    @updateSelectedColorBy "Color By Compound <span class='caret'></span>"
     @plateTableController.updateColorBy "batchCode"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
   handleColorByVolumeClick: (e) =>
     e.preventDefault()
-    @updateSelectedColorBy "Color By Volume"
+    @updateSelectedColorBy "Color By Volume <span class='caret'></span>"
     @plateTableController.updateColorBy "amount"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
   handleColorByConcentrationClick: (e) =>
     e.preventDefault()
-    @updateSelectedColorBy "Color By Concentration"
+    @updateSelectedColorBy "Color By Concentration  <span class='caret'></span>"
     @plateTableController.updateColorBy "batchConcentration"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
   handleColorByNoneClick: (e) =>
     e.preventDefault()
-    @updateSelectedColorBy "No Color"
+    @updateSelectedColorBy "No Color <span class='caret'></span>"
     @plateTableController.updateColorBy "noColor"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
@@ -90,17 +90,17 @@ class PlateViewController extends Backbone.View
 
   handleShowAll: (e) =>
     e.preventDefault()
-    @updateSelectedTableFitMode "Show All"
+    @updateSelectedTableFitMode "Show All <span class='caret'></span>"
     @plateTableController.showAll()
 
   handleFitToContents: (e) =>
     e.preventDefault()
-    @updateSelectedTableFitMode "Fit to Contents"
+    @updateSelectedTableFitMode "Fit to Contents <span class='caret'></span>"
     @plateTableController.fitToContents()
 
   fitToScreen: (e) =>
     e.preventDefault()
-    @updateSelectedTableFitMode "Fit to Screen"
+    @updateSelectedTableFitMode "Fit to Screen <span class='caret'></span>"
     @plateTableController.fitToScreen()
 
   updateSelectedTableFitMode: (displayMode) =>
@@ -123,12 +123,13 @@ class PlateViewController extends Backbone.View
     @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @handleRegionSelected
     @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleContentUpdated
     @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @handlePlateContentUpdated
+    @plateTableController.on PLATE_TABLE_CONTROLLER_EVENTS.EMPTY_INVALID_COUNT_UPDATED, @handleValidInvalidCountUpdated
 
   completeInitialization: (plateWells, plateMetaData) =>
     @wells = plateWells
     @plateMetaData = plateMetaData
     @plateTableController.completeInitialization(@wells, @plateMetaData)
-
+    $('[data-toggle="tooltip"]').tooltip()
   render: =>
     $(@el).html @template()
     @$("div[name='plateTableContainer']").html @plateTableController.render().el
@@ -145,11 +146,14 @@ class PlateViewController extends Backbone.View
     @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, identifiersToRemove
 
   addContent: (data) =>
-    console.log "addContent"
     @plateTableController.handleContentAdded data
 
   applyDilution: (dilutionModel) =>
     @plateTableController.applyDilution dilutionModel
+
+  handleValidInvalidCountUpdated: (emptyInvalidCount) =>
+    @$("span[name='emptyWellCount']").html emptyInvalidCount.numEmpty
+    @$("span[name='invalidWellCount']").html emptyInvalidCount.numInvalid
 
 
 module.exports =

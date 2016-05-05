@@ -75,7 +75,10 @@ class PlateSearchController extends Backbone.View
       className: "form-control"
 
   getFormValues: =>
-    searchTerms = {}
+    searchTerms = {
+      "lsType":"container",
+      "lsKind":"plate"
+    }
     barcode = $.trim(@$("input[name='barcodeSearchTerm']").val())
     if barcode isnt ""
       searchTerms.barcode = barcode
@@ -93,6 +96,8 @@ class PlateSearchController extends Backbone.View
 
     if @usersSelectList.getSelectedCode() isnt "unassigned"
       searchTerms.createdUser = @usersSelectList.getSelectedCode()
+      #searchTerms.recordedBy = @usersSelectList.getSelectedCode()
+
 
     searchTerms
 

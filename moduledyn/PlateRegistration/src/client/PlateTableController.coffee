@@ -22,6 +22,7 @@ PLATE_TABLE_CONTROLLER_EVENTS =
   REGION_SELECTED: "RegionSelected"
   PLATE_CONTENT_UPADATED: "PlateContentUpdated"
   ADD_IDENTIFIER_CONTENT_FROM_TABLE: "AddIdentifierContentFromTable"
+  EMPTY_INVALID_COUNT_UPDATED: "emptyInvalidCountUpdated"
 
 
 
@@ -53,7 +54,14 @@ class PlateTableController extends Backbone.View
     @wells = wells
     @plateMetaData = plateMetaData
     @wellsToUpdate = new WellsModel({allWells: @wells})
+    @updateEmptyAndInvalidWellCount()
     @renderHandsOnTable()
+
+  updateEmptyAndInvalidWellCount: =>
+    numEmpty = @wellsToUpdate.getNumberOfEmptyWells()
+    numInvalid = @wellsToUpdate.getNumberOfInvalidWells()
+
+    @trigger PLATE_TABLE_CONTROLLER_EVENTS.EMPTY_INVALID_COUNT_UPDATED, {numEmpty: numEmpty, numInvalid: numInvalid}
 
   renderHandsOnTable: =>
     container = document.getElementsByName("handsontablecontainer")[0]
@@ -70,6 +78,10 @@ class PlateTableController extends Backbone.View
         beforeChange: @handleTableChangeRangeValidation
         afterChange: @handleContentUpdated
         afterSelection: @handleRegionSelected
+        autoWrapCol: true
+        autoWrapRow: true
+        allowInsertColumn: false
+        allowInsertRow: false
       })
     else
       @handsOnTable = new Handsontable(container, {
@@ -77,7 +89,9 @@ class PlateTableController extends Backbone.View
         colHeaders: columnHeaders
         outsideClickDeselects: false
         startCols: @plateMetaData.numberOfColumns
+        maxCols: @plateMetaData.numberOfColumns
         startRows: @plateMetaData.numberOfRows
+        maxRows: @plateMetaData.numberOfRows
         #tabMoves: {row:1, col:0}
         renderer: @defaultCellRenderer
         afterChange: @handleContentUpdated
@@ -85,6 +99,8 @@ class PlateTableController extends Backbone.View
         afterSelection: @handleRegionSelected
         autoWrapCol: true
         autoWrapRow: true
+        allowInsertColumn: false
+        allowInsertRow: false
       })
     #window.FOOHOT = @handsOnTable
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
@@ -180,7 +196,6 @@ class PlateTableController extends Backbone.View
     return hotData
 
   handleContentAdded: (addContentModel) =>
-    console.log "handleContentAdded"
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries)
     wellContentOverwritten = []
@@ -195,10 +210,8 @@ class PlateTableController extends Backbone.View
     @saveUpdatedWellContent()
 
   saveUpdatedWellContent: =>
-    console.log("@wellsToUpdate.get('wells')")
-    console.log(@wellsToUpdate.get('wells'))
-
     @wellsToUpdate.save()
+    @updateEmptyAndInvalidWellCount()
     @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, @identifiersToRemove
     @addContent1 @plateWells
 
@@ -256,8 +269,7 @@ class PlateTableController extends Backbone.View
         return false
 
   handleContentUpdated: (changes, source) =>
-    console.log "handleContentUpdated"
-    console.log source
+
     if source in ["edit", "autofill", "paste"]
       listOfIdentifiers = []
       wellsToUpdate = @reformatUpdatedValues changes
@@ -270,8 +282,6 @@ class PlateTableController extends Backbone.View
       addContentModel.set ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE, wellsToUpdate
       hasIdentifiersToValidate = false
       _.each(addContentModel.get("identifiers"), (identifier, key) ->
-        console.log "key"
-        console.log key
         if _.size(identifier) > 0
           hasIdentifiersToValidate = true
         else
@@ -290,6 +300,7 @@ class PlateTableController extends Backbone.View
         )
 
         @wellsToUpdate.save()
+        @updateEmptyAndInvalidWellCount()
         @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
 
   handleAcceptTruncatedPaste: =>
@@ -303,8 +314,6 @@ class PlateTableController extends Backbone.View
     aliasedIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.ALIASED_IDENTIFIERS), 'requestName')
     invalidIdentifiers = _.map(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS), 'requestName')
     validIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-    console.log "addContentModel"
-    console.log addContentModel
     aliasedWells = _.filter(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE), (well)->
       return well.value in aliasedIdentifiers
     )
@@ -346,8 +355,6 @@ class PlateTableController extends Backbone.View
       well = @wellsToUpdate.getWellAtRowIdxColIdx(aw.rowIdx, aw.colIdx)
       if well?
         well.status = "valid"
-        console.log "aw.value"
-        console.log aw.value
         well[@dataFieldToDisplay] = aw.value
         @wellsToUpdate.fillWellWithWellObject(aw.rowIdx, aw.colIdx, well)
         $(cell).removeClass "invalidIdentifierCell"
@@ -360,6 +367,7 @@ class PlateTableController extends Backbone.View
     wellsToSaveTmp.save(null, {
       success: (result) =>
         $("div[name='updatingWellContents']").modal('hide')
+        @updateEmptyAndInvalidWellCount()
       error: (result) =>
         console.log "save error..."
     })
@@ -555,7 +563,7 @@ class PlateTableController extends Backbone.View
         colWidths: null,
         rowHeights: null
       })
-
+    #@handsOnTable.init()
     @handsOnTable.render()
 
 
