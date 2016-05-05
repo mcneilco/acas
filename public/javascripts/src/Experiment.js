@@ -159,7 +159,7 @@
     };
 
     Experiment.prototype.validate = function(attrs) {
-      var bestName, cDate, errors, nameError, notebook, projectCode, reqProject, scientist;
+      var bestName, cDate, errors, nameError, notebook, projectCode, ref, reqProject, scientist;
       errors = [];
       bestName = attrs.lsLabels.pickBestName();
       nameError = true;
@@ -209,18 +209,20 @@
         });
       }
       if (attrs.subclass != null) {
-        reqProject = window.conf.include.project;
-        if (reqProject == null) {
-          reqProject = "true";
-        }
-        reqProject = reqProject.toLowerCase();
-        if (reqProject !== "false") {
-          projectCode = this.getProjectCode().get('codeValue');
-          if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
-            errors.push({
-              attribute: 'projectCode',
-              message: "Project must be set"
-            });
+        if (!((((ref = window.conf.save) != null ? ref.project : void 0) != null) && window.conf.save.project.toLowerCase() === "false")) {
+          reqProject = window.conf.include.project;
+          if (reqProject == null) {
+            reqProject = "true";
+          }
+          reqProject = reqProject.toLowerCase();
+          if (reqProject !== "false") {
+            projectCode = this.getProjectCode().get('codeValue');
+            if (projectCode === "" || projectCode === "unassigned" || projectCode === void 0) {
+              errors.push({
+                attribute: 'projectCode',
+                message: "Project must be set"
+              });
+            }
           }
         }
         cDate = this.getCompletionDate().get('dateValue');
@@ -528,6 +530,7 @@
     };
 
     ExperimentBaseController.prototype.completeInitialization = function() {
+      var ref;
       if (this.model == null) {
         this.model = new Experiment();
       }
@@ -559,7 +562,11 @@
       this.setupScientistSelect();
       this.setupTagList();
       this.setupProtocolSelect(this.options.protocolFilter, this.options.protocolKindFilter);
-      this.setupProjectSelect();
+      if ((((ref = window.conf.save) != null ? ref.project : void 0) != null) && window.conf.save.project.toLowerCase() === "false") {
+        this.$('.bv_group_projectCode').hide();
+      } else {
+        this.setupProjectSelect();
+      }
       this.setupAttachFileListController();
       this.setupCustomExperimentMetadataController();
       this.render();
@@ -569,13 +576,16 @@
     };
 
     ExperimentBaseController.prototype.render = function() {
+      var ref;
       if (this.model == null) {
         this.model = new Experiment();
       }
       if (this.model.get('protocol') !== null) {
         this.$('.bv_protocolCode').val(this.model.get('protocol').get('codeName'));
       }
-      this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
+      if (!((((ref = window.conf.save) != null ? ref.project : void 0) != null) && window.conf.save.project.toLowerCase() === "false")) {
+        this.$('.bv_projectCode').val(this.model.getProjectCode().get('codeValue'));
+      }
       this.setUseProtocolParametersDisabledState();
       this.$('.bv_completionDate').datepicker();
       this.$('.bv_completionDate').datepicker("option", "dateFormat", "yy-mm-dd");
