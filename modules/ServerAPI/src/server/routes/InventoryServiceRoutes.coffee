@@ -316,6 +316,14 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 										console.debug types
 									callback message, 400
 									return
+								else if !containerPreferredEntity.model?
+										message = "could not find model for preferred entity lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
 								container = new containerPreferredEntity.model(container)
 								if definition.definition?
 									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
