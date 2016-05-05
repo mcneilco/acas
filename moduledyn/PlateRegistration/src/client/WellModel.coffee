@@ -50,6 +50,23 @@ class WellModel extends Backbone.Model
       required: true
       msg: "Please select the plate size"
 
+  isWellEmpty: ->
+    if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CODE)) is "") and ($.trim(@get(WELL_MODEL_FIELDS.AMOUNT)) is "") and ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)) is "")
+      return true
+    else if (@get(WELL_MODEL_FIELDS.BATCH_CODE) is null) and (@get(WELL_MODEL_FIELDS.AMOUNT) is null) and (@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION) is null)
+      return true
+    else
+      return false
+
+  isWellValid: ->
+    if @isWellEmpty()
+      return true
+    else
+      if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CODE)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.AMOUNT)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)) isnt "")
+        return true
+      else
+        return false
+
 class WellsModel extends Backbone.Model
   url: '/api/updateWellContentWithObject'
   initialize: (options) ->
@@ -92,6 +109,26 @@ class WellsModel extends Backbone.Model
 
   resetWells: =>
     @set("wells", [])
+
+  getNumberOfEmptyWells: ->
+    numberOfEmptyWells = _.reduce(@allWells, (memo, w) ->
+      well = new WellModel(w)
+      if well.isWellEmpty()
+        memo++
+      else
+        window.FOOWELL = well
+      return memo
+    , 0)
+
+  getNumberOfInvalidWells: ->
+    numberOfEmptyWells = _.reduce(@allWells, (memo, w) ->
+      well = new WellModel(w)
+      unless well.isWellValid()
+        memo++
+      else
+        window.FOOWELL = well
+      return memo
+    , 0)
 
 
 module.exports =
