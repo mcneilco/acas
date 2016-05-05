@@ -10,6 +10,7 @@ if true
 		window.getAuthorModulePreferences window.AppLaunchParams.loginUser.username, 'CIExcelCompoundPropertiesApp', (preferences, statusCode) ->
 			if statusCode == 200
 				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					title: "Parent/Batch/Alias Properties"
 					el: $('.bv_excelInsertCompoundPropertiesView')
 					selectedBatchPropertyDescriptors: preferences.selectedBatchPropertyDescriptors
 					selectedParentPropertyDescriptors: preferences.selectedParentPropertyDescriptors
@@ -17,6 +18,7 @@ if true
 					insertColumnHeaders: preferences.insertColumnHeaders
 			else
 				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					title: "Parent/Batch/Alias Properties"
 					el: $('.bv_excelInsertCompoundPropertiesView')
 			insertCompoundPropertiesController.render()
 else
@@ -29,6 +31,7 @@ else
 			if statusCode == 200
 				logger.log preferences.includeRequestedName
 				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					title: "Parent/Batch/Alias Properties"
 					el: $('.bv_excelInsertCompoundPropertiesView')
 					selectedBatchPropertyDescriptors: preferences.selectedBatchPropertyDescriptors
 					selectedParentPropertyDescriptors: preferences.selectedParentPropertyDescriptors
@@ -36,6 +39,7 @@ else
 					insertColumnHeaders: preferences.insertColumnHeaders
 			else
 				window.insertCompoundPropertiesController = new ExcelInsertCompoundPropertiesController
+					title: "Parent/Batch/Alias Properties"
 					el: $('.bv_excelInsertCompoundPropertiesView')
 			insertCompoundPropertiesController.render()
 
@@ -224,6 +228,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 	render: =>
 		@$el.empty()
 		@$el.html @template()
+		@$('.bv_title').html @options.title
 		@attributesController = new AttributesController
 			el: $('.bv_attributes')
 			includeRequestedID: @options.includeRequestedID
