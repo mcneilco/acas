@@ -386,3 +386,7 @@
 .barcodeAlreadyUsedError {
   font-weight: bold;
 }
+
+.editorSpacing {
+  margin-left: -55px !important;
+}
