@@ -14,6 +14,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createPlate', loginRoutes.ensureAuthenticated, exports.createPlate
 	app.post '/api/updateWellStatus', loginRoutes.ensureAuthenticated, exports.updateWellStatus
 
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.post '/api/createPlate', exports.createPlate
 
 exports.compoundInventoryIndex = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
