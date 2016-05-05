@@ -410,3 +410,4 @@ server.support.smtp.auth=false
 
 client.roles.containerInventory.admin=${server.support.smtp.username}
 client.compoundInventory.enforceUppercaseBarcodes=true
+

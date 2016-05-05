@@ -253,17 +253,17 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
   		)
 
 exports.getContainerAndDefinitionContainerByContainerLabel = (req, resp) ->
-	exports.getContainerAndDefinitionContainerByContainerLabelInternal [req.params.label], (json, statusCode) ->
+	exports.getContainerAndDefinitionContainerByContainerLabelInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
 
-exports.getContainerAndDefinitionContainerByContainerLabelInternal = (labels, callback) ->
+exports.getContainerAndDefinitionContainerByContainerLabelInternal = (labels, containerType, containerKind, labelType, labelKind, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
 	else
 		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{JSON.stringify(labels)}'"
-		exports.getContainerCodesByLabelsInternal labels, null, null, null, null, (containerCodes, statusCode) =>
+		exports.getContainerCodesByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (containerCodes, statusCode) =>
 			if statusCode == 500
 				callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
 			else
@@ -316,6 +316,14 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 										console.debug types
 									callback message, 400
 									return
+								else if !containerPreferredEntity.model?
+										message = "could not find model for preferred entity lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
 								container = new containerPreferredEntity.model(container)
 								if definition.definition?
 									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
@@ -1420,5 +1428,4 @@ exports.searchContainersInternal = (input, callback) ->
 				console.error response
 				callback JSON.stringify("searchContainers failed"), 500
 		)
-
 
