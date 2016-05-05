@@ -17,7 +17,7 @@
     app.get('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
-    app.get('/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
+    app.get('/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects);
     app.get('/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
@@ -135,6 +135,48 @@
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" + endOfUrl;
     console.log(cmpdRegCall);
     return req.pipe(request(cmpdRegCall)).pipe(resp);
+  };
+
+  exports.getAuthorizedCmpdRegProjects = function(req, resp) {
+    return exports.getAuthorizedCmpdRegProjectsInternal(req, (function(_this) {
+      return function(response) {
+        resp.status("200");
+        return resp.end(JSON.stringify(response));
+      };
+    })(this));
+  };
+
+  exports.getAuthorizedCmpdRegProjectsInternal = function(req, callback) {
+    var _;
+    _ = require("underscore");
+    return exports.getACASProjects(req, function(acasProjectsResponse) {
+      var acasProjects;
+      acasProjects = acasProjectsResponse;
+      return exports.getProjects(req, function(cmpdRegProjectsResponse) {
+        var allowedProjectCodes, allowedProjects, cmpdRegProjects;
+        cmpdRegProjects = JSON.parse(cmpdRegProjectsResponse);
+        allowedProjectCodes = _.pluck(acasProjects, 'code');
+        allowedProjects = _.filter(cmpdRegProjects, function(cmpdRegProject) {
+          var ref;
+          return (ref = cmpdRegProject.code, indexOf.call(allowedProjectCodes, ref) >= 0);
+        });
+        return callback(allowedProjects);
+      });
+    });
+  };
+
+  exports.getACASProjects = function(req, callback) {
+    var csUtilities;
+    csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+    if (req.user == null) {
+      req.user = {};
+      req.user.username = req.params.username;
+    }
+    if (global.specRunnerTestmode) {
+      return resp.end(JSON.stringify("testMode not implemented"));
+    } else {
+      return csUtilities.getProjectsInternal(req, callback);
+    }
   };
 
   exports.getProjects = function(req, callback) {
