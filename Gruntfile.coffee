@@ -286,7 +286,7 @@ module.exports = (grunt) ->
 					rename: (dest, matchedSrcPath, options) ->
 						module = "#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/moduledyn/", "").replace(grunt.config.get('acas_base')+"/moduledyn/", "")}".split("/")[0]
 						"#{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace(grunt.config.get('acas_custom')+"/moduledyn/", "").replace(grunt.config.get('acas_base')+"/moduledyn/", "").replace(module+"/src/client",module)}"
-					dest: "<%= build %>/public/stylesheets"
+					dest: "<%= build %>/public/stylesheetsdyn"
 				]
 			module_jade:
 				files: [
