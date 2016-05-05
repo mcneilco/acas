@@ -55,7 +55,7 @@ class SplitPlatesController extends Backbone.View
       barcode = target.val()
     @plateQuadrants[evt.currentTarget.name].barcode = barcode
     if @destinationPlatesAreUnique()
-      @$("span[name='duplicateBarcodeErrorMessage']").addClass "hide"
+      @$("div[name='duplicateBarcodeErrorMessage']").addClass "hide"
       $.ajax(
         dataType: "json"
         method: 'get'
@@ -90,7 +90,7 @@ class SplitPlatesController extends Backbone.View
       )
     else
       @setStateOfSubmitButton()
-      @$("span[name='duplicateBarcodeErrorMessage']").removeClass "hide"
+      @$("div[name='duplicateBarcodeErrorMessage']").removeClass "hide"
 
   isValid: =>
     if @sourcePlate.isValid

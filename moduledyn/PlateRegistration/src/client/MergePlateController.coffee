@@ -270,15 +270,19 @@ class MergePlatesController extends Backbone.View
   resetForm: =>
     @plateQuadrants["plateQuadrant1"].codeName = ""
     @plateQuadrants["plateQuadrant1"].isValid = false
+    #@plateQuadrants["plateQuadrant1"].plateSize = ""
 
     @plateQuadrants["plateQuadrant2"].codeName = ""
     @plateQuadrants["plateQuadrant2"].isValid = false
+    #@plateQuadrants["plateQuadrant2"].plateSize = ""
 
     @plateQuadrants["plateQuadrant3"].codeName = ""
     @plateQuadrants["plateQuadrant3"].isValid = false
+    #@plateQuadrants["plateQuadrant3"].plateSize = ""
 
     @plateQuadrants["plateQuadrant4"].codeName = ""
     @plateQuadrants["plateQuadrant4"].isValid = false
+    #@plateQuadrants["plateQuadrant4"].plateSize = ""
 
     @destinationPlate = {
       barcode: ""

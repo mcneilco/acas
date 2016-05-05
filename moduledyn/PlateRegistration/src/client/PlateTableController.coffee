@@ -566,6 +566,13 @@ class PlateTableController extends Backbone.View
     #@handsOnTable.init()
     @handsOnTable.render()
 
+  maximizeTable: =>
+    @$(".editorHandsontable").css("left", "100px")
+    @calculateLayout()
+
+  minimizeTable: =>
+    @$(".editorHandsontable").css("left", "350px")
+    @calculateLayout()
 
 module.exports =
   PlateTableController: PlateTableController

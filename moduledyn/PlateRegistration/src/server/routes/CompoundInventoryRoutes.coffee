@@ -32,6 +32,7 @@ exports.compoundInventoryIndex = (req, resp) ->
 			headerName: config.all.client.moduleMenus.headerName
 			enforceUppercaseBarcodes: config.all.client.compoundInventory.enforceUppercaseBarcodes
 			maxSearchResults: config.all.client.containerInventory.search.maxResult
+			adminEmail: config.all.client.roles.containerInventory.admin
 
 exports.compoundInventorySpecRunner = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
@@ -42,6 +43,8 @@ exports.compoundInventorySpecRunner = (req, resp) ->
 			loginUser: loginUser
 			headerName: config.all.client.moduleMenus.headerName
 			enforceUppercaseBarcodes: config.all.client.compoundInventory.enforceUppercaseBarcodes
+			maxSearchResults: config.all.client.containerInventory.search.maxResult
+			adminEmail: config.all.client.roles.containerInventory.admin
 
 exports.validateIdentifiers = (req, resp) ->
 	if global.specRunnerTestmode
