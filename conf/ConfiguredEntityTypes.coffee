@@ -65,3 +65,12 @@ exports.entityTypes =
     sourceExternal: false
     parent: false
     model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerPlate
+
+  'Definition Container Tube':
+    type: 'definition container'
+    kind: 'tube'
+    codeOrigin: 'ACAS Container'
+    displayName: 'Definition Tube'
+    sourceExternal: false
+    parent: false
+    model: require("../routes/ServerUtilityFunctions.js").DefinitionContainerTube
