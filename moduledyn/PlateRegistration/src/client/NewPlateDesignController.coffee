@@ -12,6 +12,7 @@ SerialDilutionController = require('./SerialDilutionController.coffee').SerialDi
 SERIAL_DILUTION_CONTROLLER_EVENTS = require('./SerialDilutionController.coffee').SERIAL_DILUTION_CONTROLLER_EVENTS
 SerialDilutionModel = require('./SerialDilutionModel.coffee').SerialDilutionModel
 EditorFormTabViewController = require('./EditorFormTabViewController.coffee').EditorFormTabViewController
+EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS = require('./EditorFormTabViewController.coffee').EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS
 PlateInfoModel = require('./PlateInfoModel.coffee').PlateInfoModel
 
 $ = require('jquery')
@@ -48,6 +49,8 @@ class NewPlateDesignController extends Backbone.View
     @serialDilutionController = new SerialDilutionController({model: new SerialDilutionModel()})
     @listenTo @serialDilutionController, SERIAL_DILUTION_CONTROLLER_EVENTS.APPLY_DILUTION, @handleApplyDilution
     @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController})
+    @listenTo @editorFormsTabView,  EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MAXIMIZED, @handleEditorFormsMaximized
+    @listenTo @editorFormsTabView,  EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MINIMIZED, @handleEditorFormsMinimized
 
   completeInitialization: (plateAndWellData) =>
     @plateInfoController.updatePlate plateAndWellData.plateMetadata
@@ -88,11 +91,16 @@ class NewPlateDesignController extends Backbone.View
   handleAddContentFromTableSuccessCallback: (addContentModel) =>
     @plateViewController.plateTableController.identifiersValidated addContentModel
 
-
   handleApplyDilution: (dilutionModel) =>
     @plateViewController.applyDilution dilutionModel
 
+  handleEditorFormsMaximized: =>
+    @$(".editorMain").css("margin-left", "315px")
+    @plateViewController.plateTableController.minimizeTable()
 
+  handleEditorFormsMinimized: =>
+    @$(".editorMain").css("margin-left", "65px")
+    @plateViewController.plateTableController.maximizeTable()
 
 
 module.exports =

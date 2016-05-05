@@ -3,6 +3,10 @@ Backbone = require('backbone')
 _ = require('lodash')
 $ = require('jquery')
 
+EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS =
+  EDITOR_FORMS_MINIMIZED: "editorFormsMinimized"
+  EDITOR_FORMS_MAXIMIZED: "editorFormsMaximized"
+
 class EditorFormTabViewController extends Backbone.View
   template: require('html!./EditorFormTabView.tmpl')
   initialize: (options) ->
@@ -74,6 +78,11 @@ class EditorFormTabViewController extends Backbone.View
 
   handleEditorCollapseButtonClick: =>
     @$(".editorPanel").toggleClass("hidden")
+    if @$(".editorPanel").hasClass("hidden")
+      @trigger EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MINIMIZED
+    else
+      @trigger EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MAXIMIZED
 
 module.exports =
   EditorFormTabViewController: EditorFormTabViewController
+  EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS: EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS
