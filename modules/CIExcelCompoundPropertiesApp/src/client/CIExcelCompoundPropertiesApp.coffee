@@ -273,7 +273,7 @@ class window.ExcelInsertCompoundPropertiesController extends Backbone.View
 								5. Click <button class="btn btn-xs btn-primary">Insert Properties</button>'
 		@$("[data-toggle=options]").popover
 			html: true
-			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a><br /><a class="btn btn-xs btn-primary">Show Log'
+			content: '<a class="btn btn-xs btn-primary" href="/logout/excelApps">Logout</a>'
 		Office.context.document.addHandlerAsync Office.EventType.DocumentSelectionChanged, =>
 			@validate()
 		@validate()
