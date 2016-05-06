@@ -1387,6 +1387,8 @@ class DefinitionContainerPlate extends Container
 
 	defaultSecondLsThingItx: []
 
+class DefinitionContainerTube extends DefinitionContainerPlate
+
 class ContainerTube extends ContainerPlate
 	urlRoot: "/api/containers"
 
@@ -1459,6 +1461,7 @@ exports.FirstLsThingItxList = FirstLsThingItxList
 exports.SecondLsThingItxList = SecondLsThingItxList
 exports.Container = Container
 exports.DefinitionContainerPlate = DefinitionContainerPlate
+exports.DefinitionContainerTube = DefinitionContainerTube
 exports.ContainerPlate = ContainerPlate
 exports.ContainerTube = ContainerTube
 
