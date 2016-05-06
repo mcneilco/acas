@@ -138,8 +138,20 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   plotWells(latePeakWells, "Late Peak Wells")
   plotWells(hitWells, "Hit Wells")
   plotWells(flaggedWells, "Flagged Wells")
-  plotWells(positiveControlWells, "Positive Control Wells")
-  plotWells(negativeControlWells, "Negative Control Wells")
+
+  # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs) 
+  ## missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))) & 
+  ##                            (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))))
+  # Correct calculations to be performed exclusively on allResultTable (as opposed to both allResultTable and resultTable immediately above)
+  missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))) & 
+                               (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))))
+  
+  # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
+  if (!missingDataForControls) {
+    plotWells(positiveControlWells, "Positive Control Wells")
+    plotWells(negativeControlWells, "Negative Control Wells")
+  }
+  
   
   dev.off()
   

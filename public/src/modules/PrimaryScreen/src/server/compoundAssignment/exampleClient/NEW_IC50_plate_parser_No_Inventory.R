@@ -13,19 +13,20 @@ getPlateContent <- function(pathToExcelFile) {
   library(XLConnect)
   
   # Define a vector that contains all the names of all the wells in the plate contained in the excel file, whether
-  # it is a 96-, 384-, or 1536-well plate format
+  # it is a 96-, 384-, or 1536-well plate format - make sure that number of digits in every well is the same with the number used
+  # in table assayData (e.g. A001)
   # Case 1: 96 well plate format (8 rows x 12 columns) reading row after row
   # Generate index vector for well location (96 wells)
   wellLetters_96 <- rep(LETTERS[1:8], each=12)
   wellNumbers_96 <- rep(seq(1:12), times=8)
-  leadingZerosWellNumbers_96 <- formatC(wellNumbers_96, width = 2, format = "d", flag = "0")
+  leadingZerosWellNumbers_96 <- formatC(wellNumbers_96, width = 3, format = "d", flag = "0")
   standardWellNames_96 <- paste0(wellLetters_96, leadingZerosWellNumbers_96)
   
   #  Case 2: 384 well plate format (16 rows x 24 columns) reading row after row
   # Generate index vector for well location (384 wells)
   wellLetters_384 <- rep(LETTERS[1:16], each=24)
   wellNumbers_384 <- rep(seq(1:24), times=16)
-  leadingZerosWellNumbers_384 <- formatC(wellNumbers_384, width = 2, format = "d", flag = "0")
+  leadingZerosWellNumbers_384 <- formatC(wellNumbers_384, width = 3, format = "d", flag = "0")
   standardWellNames_384 <- paste0(wellLetters_384, leadingZerosWellNumbers_384)
   
   #  Case 3: 1536 well plate format (32 rows x 48 columns) reading row after row
@@ -269,8 +270,8 @@ getPlateContent <- function(pathToExcelFile) {
 formatPlateContent <- function(plateDataFrame) {
   # Description: A function that provides the appropriate format for a dataframe containing the plate content for
   # each tab in the excel file (plate template without inventory tab), as well as expected supplementary info 
-  # regarding column headers, data read units, concentration units and plate ID, before it can be used by function
-  # getAssayCompoundData()
+  # regarding column headers, data read units, concentration units and plate ID, before it can be used 
+  # by function getAssayCompoundData()
   #
   # Arg: A dataframe with supplementary unit/header info embedded in its first row
   #
@@ -281,16 +282,28 @@ formatPlateContent <- function(plateDataFrame) {
   plateIDString <- plateDataFrame[1, columnWithPlateID]
   strippedPlateID <- trimws(gsub("Plate Id:", "", plateIDString))
   
+  # Extract the names for Data_Reads from the first row of the dataframe
+  indexForDataReads <- grep("^Data_Read", colnames(plateDataFrame))
+  dataReadsNames <- plateDataFrame[1, indexForDataReads]
+  vectorDataReadsNames <- as.vector(as.matrix(plateDataFrame[1,indexForDataReads]))
+  oldHeaders <- colnames(plateDataFrame)
+  oldHeaders <- oldHeaders[indexForDataReads]
+  setnames(plateDataFrame, old=oldHeaders, new=vectorDataReadsNames)
+
   # Remove first line from dataframe (containing column headers, data read units, concentration units and plate ID) 
   # and reset row numbering
   formattedDataFrame <- plateDataFrame[-1,]
   rownames(formattedDataFrame) <- NULL
-  
+options("scipen"=100)  
   # Rename headers to the ones expected by function getAssayCompoundData()
   setnames(formattedDataFrame, c("PlateContent","PlateConc", "plateWells"), c("cmpdBarcode","cmpdConc", "wellReference"))
   formattedDataFrame$assayBarcode <- strippedPlateID
-  # Save the concentration as numbers so that they can be used in concentration djusting calculations later on
-  formattedDataFrame$cmpdConc <- as.numeric(formattedDataFrame$cmpdConc)
+  # Save the concentration as numbers so that they can be used in concentration adjusting calculations later on
+  formattedDataFrame$cmpdConc <- as.numeric(as.character(formattedDataFrame$cmpdConc))
+  
+  # Save the Data Reads as numbers (after turned into character) so that they can be used in calculations later on
+  formattedDataFrame[, indexForDataReads] <- sapply(formattedDataFrame[, indexForDataReads], as.character)
+  formattedDataFrame[, indexForDataReads] <- sapply(formattedDataFrame[, indexForDataReads], as.numeric)
   
   # Required column headers by function getAssayCompoundData()
   # "plateType","assayBarcode","cmpdBarcode","sourceType","wellReference",
@@ -309,7 +322,7 @@ formatPlateContent <- function(plateDataFrame) {
   formattedDataFrame$corp_name <- ifelse((compoundNumber!=""), yes=paste0(corpInitials, "-", compoundNumber), no=NA)
   
   # Isolate the batch number and turn it into  number
-  formattedDataFrame$batch_number <- as.numeric(rapply(compoundBatchSplitList, function(x) {x[3]}))
+  formattedDataFrame$batch_number <- as.character(rapply(compoundBatchSplitList, function(x) {x[3]}))
   
   # Generate the remaining required columns
   formattedDataFrame$plateType <- "no inventory"

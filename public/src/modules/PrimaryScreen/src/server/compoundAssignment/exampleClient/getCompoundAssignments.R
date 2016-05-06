@@ -1,18 +1,29 @@
 
-getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
+getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath, missingInstrumentFiles) {
   # exampleClient
   
-  # If user selects case = No Inventory in the GUI, userBypassInventory is TRUE
+  # Flag missingInstrumentFiles = TRUE, for the case where no instrument files (.txt) are uploaded
+  
+  # If user selects userBypassInventory=TRUE in the GUI, this translates to Excel files being zipped together with standard instrument files
+  # otherwise if userBypassInventory=FALSE, then proceed as usual (only instrument files zipped)
   userBypassInventory <- TRUE
   
-  # added one extra argument in getAssayCompoundData that passes the flag userBypassInventory
+  # Added three last arguments in getAssayCompoundData (userBypassInventory, parameters, missingInstrumentFiles) required in the cases 
+  # user chooses to process both plate (.xls) and instrument data (.txt) files  at the same time, and no instrument files are loaded
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
                                             testMode=testMode,
                                             tempFilePath=tempFilePath,
                                             assayData=instrumentData$assayData,
-                                            userBypassInventory)
-save(assayCompoundData, file="public/src/modules/PrimaryScreen/src/server/export.Rda")  
+                                            userBypassInventory,
+                                            parameters,
+                                            missingInstrumentFiles)
+  
+  if (missingInstrumentFiles) {
+    # If missing instrument files then return the alternative instrumentData table that would otherwise be vacant in higher-level functions
+    instrumentData <- assayCompoundData$alternativeInstrumentData
+  }
+  
   resultTable <- assayCompoundData$allAssayCompoundData[ , c("plateType",
                                                              "assayBarcode",
                                                              "cmpdBarcode",
@@ -26,8 +37,8 @@ save(assayCompoundData, file="public/src/modules/PrimaryScreen/src/server/export
                                                              "cmpdConc",
                                                              assayCompoundData$activityColNames), with=FALSE]
   
-  # If user selects case = No Inventory in the GUI, check if concentrations need to be adjusted depending on the unit
-  # othewise proceed using the code below as scripted before
+  # If user selects to process .xls files in the GUI, check if concentrations need to be adjusted depending on the conc. units reported
+  # othewise proceed using the code below as scripted before (i.e. only instrument data available)
   if (userBypassInventory) {
     # Divide concentrations by 1000 only if the plate template does not show uM conc. units (assuming then it is nM)
     # as the goal is to store concentrations in uM units
@@ -36,13 +47,13 @@ save(assayCompoundData, file="public/src/modules/PrimaryScreen/src/server/export
     }
     
     # fuse the corp name with the bacth number, adjusting for the NA case
-    resultTable[, batchCode := paste0(corp_name,"-",batch_number)]  
+    resultTable[, batchCode := paste0(corp_name,"-",batch_number)]     #is this the proper way to paste corp_name with batch_number?????
     resultTable[batchCode == "NA-NA", batchCode := "-"]
   } else {
     # TODO: Check concUnit prior to making this adjustment
     resultTable[ , cmpdConc := cmpdConc * 1000]
     
-    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]   #is this the proper way to paste corp_name with batch_number?????
+    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
     resultTable[batchCode == "NA::NA", batchCode := "::"]
   }
     
@@ -54,7 +65,13 @@ save(assayCompoundData, file="public/src/modules/PrimaryScreen/src/server/export
     resultTable$cmpdConc <- resultTable$cmpdConc / parameters$dilutionRatio
   }
   
-  return(resultTable)
+  if (missingInstrumentFiles) {
+    # If missing instrument files then return both resultTable and the alternative instrumentData table (which is not populated in higher-level functions, since
+    # no .txt instrument data are processed) as a list
+    return(list(resultTable=resultTable, instrumentData=instrumentData))
+  } else {
+    return(resultTable)
+  }
 }
 
 

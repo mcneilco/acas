@@ -1515,7 +1515,14 @@ addMissingColumns <- function(requiredColNames, inputDataTable)  {
   if(length(addList) == 1) {
     warnUser(paste0("Added 1 data column: '", addList[[1]], "', coercing to NA."))
   } else if(length(addList) > 1) {
-    warnUser(paste0("Added ",length(addList)," data columns: '", paste(addList, collapse="','"), "', coercing to NA"))
+    # Silence the following warning when only the 4 data columns 'T_timePoints','T_sequence','agonistConc','agonistBatchCode' are added
+    expectedAddition <- c('T_timePoints','T_sequence','agonistConc','agonistBatchCode')
+    # Define scenarioFourColumnHeaders is TRUE when the aforementioned columns are the only ones added and coerced to NA
+    scenarioFourColumnHeaders <- (length(addList)==length(expectedAddition)) & all(addList %in% expectedAddition)
+    if (!scenarioFourColumnHeaders) {
+      warnUser(paste0("Added ",length(addList)," data columns: '", paste(addList, collapse="','"), "', coercing to NA"))
+    }
+    
   }
   
   return(inputDataTable)
@@ -1661,39 +1668,42 @@ autoFlagWells <- function(resultTable, parameters) {
     fluoroThreshold <- parameters$fluorescentStep
   }
 
-
-  # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
-  vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
-
-
-  # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
-  if (statusFluorescent=="complete") {
-    # Find the index for elements corresponding to start and end of target time window
-    indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
-
-    # Apply the function that determines if a well is fluorescent to all wells
-    wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
-    wellsKO <- unname(wellsKO)
+  # Skip the section immediately below that determines fluorescent or late peak wells only if there are no T_timepoints strings 
+  # (i.e. defined as NA), and subsequently no T_sequence strings
+  # In other words if at least one element of resultTable$T_timePoints in not NA then execute the commands immediately below
+  if (!all(is.na(resultTable$T_timePoints))) {
+    # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
+    vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
+    
+    
+    # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
+    if (statusFluorescent=="complete") {
+      # Find the index for elements corresponding to start and end of target time window
+      indexPairStartEnd <- findTimeWindowBrackets(vectTime, timeWindowStart, timeWindowEnd)
+      
+      # Apply the function that determines if a well is fluorescent to all wells
+      wellsKO <- vapply(resultTable[, T_sequence], findFluoroTabDelimited, TRUE, startIndex=indexPairStartEnd$startReadIndex, endIndex=indexPairStartEnd$endReadIndex, fluoroThreshold)
+      wellsKO <- unname(wellsKO)
+    }
+    
+    # Perform the following commands only if the user provided a value for the late peak time parameter
+    if (!(is.null(parameters$latePeakTime) | parameters$latePeakTime=="")) {
+      # Apply the function that determines if a well corresponds to a late peak
+      wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
+      wellsLate <- unname(wellsLate)
+      
+      # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks
+      resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
+    }
+    
+    
+    # Only if all parameters regarding fluorescent well determination exist, then update resultTable with fluorescent wells
+    if (statusFluorescent=="complete") {
+      # Update the appropriate resultTable columns to reflect the wells found to be fluorescent
+      resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
+    }
   }
-
-  # Perform the following commands only if the user provided a value for the late peak time parameter
-  if (!(is.null(parameters$latePeakTime) | parameters$latePeakTime=="")) {
-    # Apply the function that determines if a well corresponds to a late peak
-    wellsLate <- vapply(resultTable[, T_sequence], findLatePeakIndex, TRUE, vectTime, parameters$latePeakTime)
-    wellsLate <- unname(wellsLate)
-
-    # First update the appropriate resultTable columns to reflect the wells knocked out as late peaks
-    resultTable[wellsLate, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "late peak", "max time")]
-  }
-
-
-  # Only if all parameters regarding fluorescent well determination exist, then update resultTable with fluorescent wells
-  if (statusFluorescent=="complete") {
-    # Update the appropriate resultTable columns to reflect the wells found to be fluorescent
-    resultTable[wellsKO, c("autoFlagType", "autoFlagObservation", "autoFlagReason") := list("knocked out", "fluorescent", "slope")]
-  }
-
-
+  
 
   # Flag HITs
   if(!parameters$autoHitSelection) {
@@ -1862,7 +1872,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
-  
+
   parameters <- getExperimentParameters(inputParameters)
   
   if(parameters$autoHitSelection) {
@@ -1911,32 +1921,45 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     load(file.path(parsedInputFileLocation,"primaryAnalysis-resultTable.Rda"))
   } else {
     ## if this is not a spotfire reanalysis and/or the saved .Rda is not found
-    
+
     # GREEN (instrument-specific)
     instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
+
+    # Define flag missingInstrumentFiles = TRUE, for the case where no instrument files (.txt) are uploaded through a zipped folder. In that case,
+    # function specificDataPreProcessor is not executed to populate instrumentData, which leads to table instrumentData being constructed with the
+    #  information entered through the plate files (.xlsx) in the uploaded zipped file
+    # If flag missingInstrumentFiles = FALSE then execute as usual (i.e. use the instrument .txt files zipped together with a .csv file)
+    missingInstrumentFiles <- TRUE #FALSE
     
-    # TODO: add config server.service.genericSpecificPreProcessor
-    if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
-      instrumentData <- specificDataPreProcessor(parameters=parameters,
-                                                 folderToParse=fullPathToParse,
-                                                 errorEnv=errorEnv,
-                                                 dryRun=dryRun,
-                                                 instrumentClass=instrumentReadParams$dataFormat,
-                                                 testMode=testMode,
-                                                 tempFilePath=specDataPrepFileLocation)
+    # Commands immediately below are bypassed in the case where no instrument files are uploaded, so instrumentData does not get defined
+    if (!missingInstrumentFiles) {
+      # TODO: add config server.service.genericSpecificPreProcessor
+      if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
+        instrumentData <- specificDataPreProcessor(parameters=parameters,
+                                                   folderToParse=fullPathToParse,
+                                                   errorEnv=errorEnv,
+                                                   dryRun=dryRun,
+                                                   instrumentClass=instrumentReadParams$dataFormat,
+                                                   testMode=testMode,
+                                                   tempFilePath=specDataPrepFileLocation)
+      } else {
+        instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters,
+                                                                folderToParse=fullPathToParse,
+                                                                errorEnv=errorEnv,
+                                                                dryRun=dryRun,
+                                                                instrumentClass=instrumentReadParams$dataFormat,
+                                                                testMode=testMode,
+                                                                tempFilePath=specDataPrepFileLocation)
+      }
     } else {
-      instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters,
-                                                              folderToParse=fullPathToParse,
-                                                              errorEnv=errorEnv,
-                                                              dryRun=dryRun,
-                                                              instrumentClass=instrumentReadParams$dataFormat,
-                                                              testMode=testMode,
-                                                              tempFilePath=specDataPrepFileLocation)
+      # Initialize instrumentData as empty so it can be populated through the next function call immediately below
+      instrumentData <- c()
     }
+    
     
     # RED (client-specific)
     # getCompoundAssignments
-    
+  
     # exampleClient is set at the head of runMain function
     if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
       resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData,
@@ -1944,9 +1967,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     } else {
       resultTable <- getCompoundAssignments(fullPathToParse, instrumentData,
                                             testMode, parameters,
-                                            tempFilePath=specDataPrepFileLocation)
+                                            tempFilePath=specDataPrepFileLocation,
+                                            missingInstrumentFiles)     # Pass flag missingInstrumentFiles as an argument to lower-level functions
     }
-    
+
+    if (missingInstrumentFiles) {
+      # If missing instrument files (.txt) then extract both resultTable and instrumentData from the expanded list (resultTable) generated from the function call
+      # immediately above
+      # First extract the instrumentData part from the expanded resultTable
+      instrumentData <- resultTable$instrumentData
+      # Then re-define expanded resultTable to (original size) resultTable
+      resultTable <- resultTable$resultTable
+    }
+
     # this also performs any calculations from the GUI
     source("public/src/modules/PrimaryScreen/src/server/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE)
     # TODO: break this function into customer-specific usable parts
@@ -1958,15 +1991,16 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                          vehicleControl=parameters$vehicleControl, testMode=testMode)
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
+
+    
     checkControls(resultTable)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
-    
     # instrumentData is still needed, but pulling out assayData could let us clean it up
     #rm(instrumentData)
     #gc()
   }
-  
+
   ## User Well Flagging Here
   
   # user well flagging
@@ -3050,7 +3084,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
   developmentMode <- globalMessenger$devMode
-  
+
   if (developmentMode) {
     loadResult <- list(value = runMain(folderToParse = folderToParse, 
                                        user = user, 
