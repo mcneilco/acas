@@ -603,7 +603,7 @@ bulkLoadSampleTransfers <- function(request) {
 runBulkLoadSampleMult <- function(fileName, dryRun, testMode, developmentMode, recordedBy) {
   targetDir <- tempfile(pattern = "bulkLoadT", tmpdir = racas::applicationSettings$server.file.server.path)
   unzip(getUploadedFilePath(fileName), exdir = targetDir)
-  csvFiles <- list.files(targetDir, pattern = "\\.csv")
+  csvFiles <- list.files(targetDir, pattern = "\\.csv", recursive = T)
   csvFiles <- file.path(basename(targetDir), csvFiles)
   if (length(csvFiles) == 0) {
     stopUser("No csv files found in zip file")

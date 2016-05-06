@@ -214,20 +214,20 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
   # Throw an error if no positive controls are defined in the GUI
   if (is.null(length(grep("PC", standardsDataFrame$standardTypeEnumerated))) | length(grep("PC", standardsDataFrame$standardTypeEnumerated))==0) {
     stopUser("No Positive Control Standards were defined.")
-  }  
+  }
   # Throw an error if any of the standards was left unassigned in the GUI
   if (any(standardsDataFrame$standardType=="unassigned")) {
     stopUser("The standard type for at least one Standard was not defined. Please select a type: Positive Control, Negative Control, or Vehicle Control")
   }
   
-  # Cycling through all the standards (PC, NC, VC) and update well types accordingly, also confirming that each standard is within tolerance 
+  # Cycling through all the standards (PC, NC, VC) and update well types accordingly, also confirming that each standard is within tolerance
   #from the corresponding concentrations (as defined in the standards section of the GUI)
   for (targetStandard in standardsDataFrame$standardTypeEnumerated) {
     targetConc <- (standardsDataFrame$concentration[standardsDataFrame$standardTypeEnumerated==targetStandard])
     currentStandardFilter <- batchNames==standardsDataFrame$batchCode[standardsDataFrame$standardTypeEnumerated==targetStandard]
     currentStandardFilterConcConfirmed <- currentStandardFilter & (abs(concentrations-targetConc) <= (targetConc * toleranceRange)/100)
     wellTypes[currentStandardFilterConcConfirmed] <- targetStandard
-  }  
+  }
 
   return(wellTypes)
 }
@@ -1450,34 +1450,22 @@ checkControls <- function(resultTable, normalizationDataFrame) {
   }
 
   # Modify the cases where both PC standard AND default value for PC are missing AND/OR the same applies to NC
-  if(!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) && 
+  if(!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &&
      !controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
     stopUser("Either (1) the positive and negative controls at the stated concentrations were not found in the plates, or (2) no standards were
-              selected while no Input Values were defined for positive and negative control. Make sure all transfers have been loaded 
+              selected while no Input Values were defined for positive and negative control. Make sure all transfers have been loaded
               and your controls and dilution factor are defined correctly, and either standards are selected or input values are defined.")
   } else if (!controlsExist$posExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC'])) {
     stopUser("Either (1) the Positive Control at the stated concentration was not found in the plates, or (2) no Standard was
-              selected while no Input Value was defined for Positive Control. Make sure all transfers have been loaded 
+              selected while no Input Value was defined for Positive Control. Make sure all transfers have been loaded
               and your Positive Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
               is defined for the Positive Control.")
   } else if (!controlsExist$negExists & is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])) {
     stopUser("Either (1) the Negative Control at the stated concentration was not found in the plates, or (2) no Standard was
-              selected while no Input Value was defined for Negative Control. Make sure all transfers have been loaded 
+              selected while no Input Value was defined for Negative Control. Make sure all transfers have been loaded
               and your Negative Control (or dilution factor) is defined correctly, and either a standard is selected or an input value
               is defined for the Negative Control.")
   }
-    
-  #if(!controlsExist$posExists && !controlsExist$negExists) {
-  #  stopUser("The positive and negative controls at the stated concentrations were not found in the plates. Make sure all transfers have been loaded 
-  #           and your controls and dilution factor are defined correctly.")
-  #} else if (!controlsExist$posExists) {
-  #  stopUser("The positive control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-  #           and your positive control (or dilution factor) is defined correctly.")
-  #} else if (!controlsExist$negExists) {
-  #  stopUser("The negative control at the stated concentration was not found in the plates. Make sure all transfers have been loaded 
-  #           and your negative control (or dilution factor) is defined correctly.")
-  #}
-  
 }
 
 removeColumns <- function(colNamesToCheck, colNamesToKeep, inputDataTable) {
@@ -1678,8 +1666,8 @@ autoFlagWells <- function(resultTable, parameters) {
     # Take the (first) string representing every element of column T_timePoints and parse it into a vector (string is tab-delimited)
     vectTime <- as.numeric(unlist(strsplit(resultTable[1, T_timePoints], "\t")))
   }
-    
-  
+
+
 
   # Only if all parameters regarding fluorescent well determination exist, determine fluorescent wells
   if (statusFluorescent=="complete") {
@@ -1721,12 +1709,12 @@ autoFlagWells <- function(resultTable, parameters) {
     thresholdType <- "percent efficacy"
     
     setnames(resultTable, "transformed_percent efficacy","transformed_efficacy")
-    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out"), autoFlagType := "HIT"]
+    resultTable[(transformed_efficacy > hitThreshold) & (is.na(flagType) | flagType != "knocked out") & (wellType == "test"), autoFlagType := "HIT"]
     setnames(resultTable, "transformed_efficacy","transformed_percent efficacy")
   } else if(parameters$thresholdType == "sd") {
     hitThreshold <- parameters$hitSDThreshold
     thresholdType <- "standard deviation"
-    resultTable[transformed_sd > hitThreshold , autoFlagType := "HIT"]
+    resultTable[(transformed_sd > hitThreshold) & (is.na(flagType) | flagType != "knocked out") & (wellType == "test"), autoFlagType := "HIT"]
   } else {
     stopUser(paste0("Config error: threshold type of ", parameters$thresholdType, " not recognized"))
   }
@@ -1860,7 +1848,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   
   library("data.table")
   library("plyr")
-  
+
   if (folderToParse == "") {
     stopUser("Input file not found. If you are trying to load a previous experiment, please upload the original data files again.")
   }
@@ -1897,24 +1885,24 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Define the data frame that holds information about normalization controls, as defined in the GUI
   normalizationDataFrame <- as.data.frame(rbind(parameters$normalization$positiveControl,
                                                 parameters$normalization$negativeControl))
-  
-  
+
+
   setnames(normalizationDataFrame, c('standardNumber','defaultValue'))
   normalizationDataFrame$standardType <- c('PC', 'NC')
-  
+
   normalizationDataFrame$defaultValue[normalizationDataFrame$defaultValue==""] <- NA
   normalizationDataFrame$defaultValue <- as.numeric(normalizationDataFrame$defaultValue)
   #normalizationDataFrame$standardNumber <- paste0("S",normalizationDataFrame$standardNumber)
 
 
-  
+
   # Throw an error if no PC and no NC were defined for normalization (absence of standards and default values)
   if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' &
       normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'unassigned') {
-    stopUser("No Standards were defined for Positive Control and Negative Control in the normalization section. 
+    stopUser("No Standards were defined for Positive Control and Negative Control in the normalization section.
                 Standards, or alteratively Input Values, for Positive and Negative Controls are required for normalization calculations.")
   }
-  
+
   # Throw an error either PC or NC were defined as unassigned
   if ((normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'unassigned' | #&
        #normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'unassigned') |
@@ -1924,35 +1912,35 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
               in the normalization section. Standards, or alternatively Input Values, for Positive and Negative Controls
               are required for normalization calculations.")
   }
-    
-  
-  # Throw an error if only normalization-associated NC standards are defined via default value in the GUI 
+
+
+  # Throw an error if only normalization-associated NC standards are defined via default value in the GUI
   # (i.e. absence of positive control standard AND default value for positive control)
   scenarioOnlyNC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
                      is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
                      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value' &
                      !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC'])  )
 
-  # Throw an error if only normalization-associated PC standards are defined via default value in the GUI 
-  # (i.e. absence of negative control standard AND default value for negative control) 
+  # Throw an error if only normalization-associated PC standards are defined via default value in the GUI
+  # (i.e. absence of negative control standard AND default value for negative control)
   scenarioOnlyPC <- (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
                      !is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='PC']) &
                      is.na(normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=='NC']) &
                      normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value')
-     
+
   if (scenarioOnlyNC) {
-    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or input value in lieu of a Positive Control 
-              were detected. Selecting a Positive Control standard or setting an input value for Positive Control is required 
+    stopUser("In the normalization section, only a Negative Control was defined -- no Positive Control or input value in lieu of a Positive Control
+              were detected. Selecting a Positive Control standard or setting an input value for Positive Control is required
               for normalization calculations.")
   }
 
   if (scenarioOnlyPC) {
-    stopUser("In the normalization section, only a Positive Control was defined -- no Negative Control or input value in lieu of a Negative Control 
+    stopUser("In the normalization section, only a Positive Control was defined -- no Negative Control or input value in lieu of a Negative Control
               were detected. Selecting a Negative Control standard or setting an input value for Negative Control is required
               for normalization calculations.")
   }
-  
-  
+
+
   # Throw an error if input values were selected for both PC and NC were defined for normalization but no numerical values were provided
   if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] == 'input value' &
       normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] == 'input value') {
@@ -1963,15 +1951,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                 Numeric Input Values in lieu of Standards for Positive and Negative Controls are required for normalization calculations.")
     }
   }
-  
-    
+
+
   # Throw an error if (in the case where both PC and NC were defined for normalization) the same standard was used for both PC and NC
   # regarding normalization when defined in the GUI
   if (normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'] != 'input value' &
       normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'] != 'input value') {
     if (identical(normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC'],
                   normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC'])) {
-      stopUser("The same Standard was defined for both Positive Control and Negative Control in the normalization section. 
+      stopUser("The same Standard was defined for both Positive Control and Negative Control in the normalization section.
                 Different Standards for Positive and Negative Controls are required for normalization calculations.")
     }
   }
@@ -1979,23 +1967,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   # Add a column to the data frame that holds information about multiple standards, enumerating all available standards
   standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType, "-S", standardsDataFrame$standardNumber)
 
-  
+
   # If a normalization-related PC is defined then mark it separately in the standards database
   normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
   if (normalizationPC != 'input value') {
     standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationPC] <- 'PC'
   }
-  
+
   # If a normalization-related NC is defined then mark it separately in the standards database
   normalizationNC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']
   if (normalizationNC != 'input value') {
     standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationNC] <- 'NC'
   }
-  
+
   # Validate all the batchcodes entered for multiple standards in the GUI
   standardsDataFrame$batchCode <- validateBatchCodes(standardsDataFrame$batchCode)
 
-  # Throw an error if there is a standard defined in the GUI that is not a PC, NC, or VC, or if its concentration was not defined 
+  # Throw an error if there is a standard defined in the GUI that is not a PC, NC, or VC, or if its concentration was not defined
   if (any(standardsDataFrame$standardType=="null")) {
     stopUser("Please check Data Analysis entries - At least one of the standards was defined beyond the allowable options of Positive, Negative, and Vehicle Control.")
   }
@@ -2023,10 +2011,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   experimentFolderPath <- file.path(racas::getUploadedFilePath("experiments"),experiment$codeName)
   
   targetLocation <- file.path(experimentFolderPath, "rawData")
-  dryRunFileLocation <- file.path(experimentFolderPath, "dryRun")
+  dryRunFileLocation <- file.path("experiments", experiment$codeName, "dryRun")
   specDataPrepFileLocation <- file.path(experimentFolderPath, "parseLogs")
   parsedInputFileLocation <- file.path(experimentFolderPath, "parsedInput")
-  dir.create(dryRunFileLocation, showWarnings = FALSE)
+  dir.create(racas::getUploadedFilePath(dryRunFileLocation), showWarnings = FALSE)
   dir.create(specDataPrepFileLocation, showWarnings = FALSE)
   dir.create(parsedInputFileLocation, showWarnings = FALSE)
   
@@ -2093,13 +2081,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
+
+    # instrumentData is still needed, but pulling out assayData could let us clean it up
+    #rm(instrumentData)
+    #gc()
   }
   
   ## User Well Flagging Here
   
   # user well flagging
   resultTable <- getWellFlagging(flaggedWells,resultTable, flaggingStage, experiment, parameters)
- 
+
   ## End User Well Flagging
   
   ## RED SECTION - Client Specific
@@ -2107,17 +2099,17 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if(length(unique(resultTable$activity)) == 1) {
     stopUser(paste0("All of the activity values are the same (",unique(resultTable$activity),"). Please check your read name selections and adjust as necessary."))
   }
-   
+
   # knock out the controls with NA values
   # it would be technically more correct if these reasons could be placed in the "autoFlag" columns, 
   # but those aren't created until later in the code
   resultTable[(wellType == 'NC' | wellType == 'PC') & is.na(activity), 
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
- 
+
   # Perform calculations related to normalization and transformation (performCalculationsStat1Stat2Seq() is no longer relevant)
   resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDataFrame)
-  
- 
+
+
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {
     stopUser("Activity normalization resulted in 'divide by 0' errors. Please check the data and your read name selections.")
   }
@@ -2230,16 +2222,18 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   if (dryRun && !testMode) {
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
-      "metadata", "experiment metadata", "dryrun source file", user, lsTransaction, 
+      "metadata", "experiment metadata", "dryrun source file", user, lsTransaction,
       deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     if (!is.null(flaggedWells) && flaggedWells != "") {
       serverFlagFileLocation <- saveAcasFileToExperiment(
         flaggedWells, experiment,
-        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction, 
+        "metadata", "experiment metadata", "dryrun flag file", user, lsTransaction,
         deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     }
   }
   
+  resultTable[tolower(flagType) == "hit" | tolower(autoFlagType) == "hit", flag := "HIT"]
+  resultTable[tolower(flagType) == "knocked out" | tolower(autoFlagType) == "knocked out", flag := "KO"]
   if (dryRun) {
     lsTransaction <- NULL
     dryRunLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "draft"))
@@ -2276,8 +2270,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         ifelse(dryRunReport$download, 'download', ''), '>', dryRunReport$title, '</a>')
     }
   } else { #This section is "If not dry run"
-    reportLocation <- racas::getUploadedFilePath(file.path("experiments", experiment$codeName, "analysis"))
-    dir.create(reportLocation, showWarnings = FALSE)
+    reportLocation <- file.path("experiments", experiment$codeName, "analysis")
+    dir.create(getUploadedFilePath(reportLocation), showWarnings = FALSE)
     
     source(file.path("src/r/PrimaryScreen/createReports/",
                      clientName,"createPDF.R"), local = TRUE)
@@ -2295,11 +2289,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     activityName <- getReadOrderTable(parameters$primaryAnalysisReadList)[activity == TRUE]$readName
     pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo,
                              threshold = hitThreshold, experiment, dryRun, activityName) 
-    
+
     rm(instrumentData)
     gc()
-    
-    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":", 
+
+    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":",
                                          racas::applicationSettings$client.port,
                                          '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
@@ -2316,7 +2310,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         '<a href="', singleReport$link, '" target="_blank" ',
         ifelse(singleReport$download, 'download', ''), '>', singleReport$title, '</a>')
     }
-    
+
     rm(singleReport)
     gc()
 
@@ -2335,12 +2329,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     
     serverFileLocation <- saveAcasFileToExperiment(
       folderToParse, experiment, 
-      "metadata", "experiment metadata", "source file", user, lsTransaction, 
+      "metadata", "experiment metadata", "source file", user, lsTransaction,
       deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     if (!is.null(flaggedWells) && flaggedWells != "") {
       serverFlagFileLocation <- saveAcasFileToExperiment(
         flaggedWells, experiment, 
-        "metadata", "experiment metadata", "flag file", user, lsTransaction, 
+        "metadata", "experiment metadata", "flag file", user, lsTransaction,
         deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
       summaryInfo$info$"Original Flag File" <- paste0(
         '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
@@ -2361,7 +2355,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"),
     #                                 stringsAsFactors=FALSE)
     #
-    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "src/r/PrimaryScreen/conf/savingSettings.csv"))
+    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
 
     #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"),
     #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"),
@@ -2373,13 +2367,21 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
     resultTable[, tempId:=index]
     subjectDataLong <- meltKnownTypes(resultTable, resultTypes, "saveAsSubject")
+		rm(resultTable)
+		gc()
+
+
     # Remove empty rows (getting rid of NA flags)
     subjectDataLong <- subjectDataLong[!(is.na(numericValue) & is.na(stringValue) & is.na(codeValue))]
 
     treatmentGroupDataLong <- meltKnownTypes(treatmentGroupData, resultTypes, "saveAsTreatment")
+		rm(treatmentGroupData)
+		gc()
 
     analysisGroupDataLong <- meltKnownTypes(analysisGroupData, resultTypes, "saveAsAnalysis",
                                             forceBatchCodeAdd = TRUE)
+		rm(analysisGroupData)
+		gc()
     analysisGroupDataLong[, parentId:=experimentId]
 
     # Removes blank rows
@@ -2392,10 +2394,192 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # Change subject hits to be saved in lowercase
     subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "hit", codeValue := "hit"]
     subjectDataLong[valueKind == "flag status" & tolower(codeValue) == "ko", codeValue := "knocked out"]
-    lsTransaction <- uploadData(analysisGroupData=analysisGroupDataLong, treatmentGroupData=treatmentGroupDataLong,
-                                subjectData=subjectDataLong,
-                                recordedBy=user, lsTransaction=lsTransaction)
-    
+
+		# TODO: Replacing uploadData to possibly save memory here
+		# This area needs cleanup and testing to see if it actually saves memory
+		analysisGroupData <- analysisGroupDataLong
+		rm(analysisGroupDataLong)
+		gc()
+		treatmentGroupData <- treatmentGroupDataLong
+		rm(treatmentGroupDataLong)
+		gc()
+		subjectData <- subjectDataLong
+		rm(subjectDataLong)
+		gc()
+		recordedBy <- user
+
+		# Start replacement of uploadData function
+		library('plyr')
+
+		valueKindDF <- unique(data.frame(
+			valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+			valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+		))
+		valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
+		validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+
+		if(is.null(lsTransaction)) {
+			lsTransaction <- createLsTransaction()$id
+		}
+
+		### Analysis Group Data
+		# Not all of these will be filled
+		analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-",
+																																 analysisGroupData$stateKind)))
+		analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
+
+		if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
+			analysisGroupData$publicData <- TRUE
+		}
+		if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
+			analysisGroupData$stateGroupIndex <- 1
+		}
+
+		#analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+		#analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+		#analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
+
+		analysisGroupData$lsTransaction <- lsTransaction
+		analysisGroupData$recordedBy <- recordedBy
+		analysisGroupData$lsType <- "default"
+		analysisGroupData$lsKind <- "default"
+
+		#analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+
+		if(!is.null(treatmentGroupData)) {
+			### TreatmentGroup Data
+			treatmentGroupData$lsTransaction <- lsTransaction
+			treatmentGroupData$recordedBy <- recordedBy
+			treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-",
+																																		treatmentGroupData$stateKind)))
+
+			treatmentGroupData$lsType <- "default"
+			treatmentGroupData$lsKind <- "default"
+
+		}
+
+		if(!is.null(subjectData)) {
+			### subject Data
+			subjectData$lsTransaction <- lsTransaction
+			subjectData$recordedBy <- recordedBy
+			subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-",
+																														 subjectData$stateKind)))
+			subjectData$lsType <- "default"
+			subjectData$lsKind <- "default"
+		}
+
+		# Start replacement of saveAllViaDirectDatabase function
+		appendCodeName <- list(analysisGroup = "curve id")
+		sendFiles <- list()
+
+		if (!(is.null(appendCodeName$analysisGroup))) {
+			analysisGroupData <- appendCodeNames(analysisGroupData, appendCodeName$analysisGroup, "analysis group")
+		}
+		if (!(is.null(appendCodeName$treatmentGroup))) {
+			treatmentGroupData <- appendCodeNames(treatmentGroupData, appendCodeName$treatmentGroup, "treatment group")
+		}
+		if (!(is.null(appendCodeName$subject))) {
+			subjectData <- appendCodeNames(subjectData, appendCodeName$subject, "subject")
+		}
+		setkey(analysisGroupData, NULL)
+		setkey(treatmentGroupData, NULL)
+		setkey(subjectData, NULL)
+#       response <- saveDataDirectDatabase(analysisGroupData,
+#                                          treatmentGroupData,
+#                                          subjectData)
+		# Start replacement of saveDataDirectDatabase function
+		lsTransactionId <- NA
+		agData <- analysisGroupData
+		rm(analysisGroupData)
+		gc()
+		tgData <- treatmentGroupData
+		rm(treatmentGroupData)
+		gc()
+
+
+		if (is.na(lsTransactionId)) {
+			if (is.null(agData$lsTransaction)) {
+				stop("If lsTransactionId is NA, lsTransaction must be defined in input data tables")
+			} else {
+				lsTransactionId <- unique(agData$lsTransaction)
+				if (length(lsTransactionId) > 1) {
+					stop("multiple lsTransaction's found in agData")
+				}
+				if (is.na(lsTransactionId)) {
+					stop("lsTransactionId cannot be NA when all lsTransaction in agData are NA")
+				}
+			}
+		}
+
+		conn <- getDatabaseConnection(racas::applicationSettings)
+		on.exit(dbDisconnect(conn))
+		result <- tryCatchLog({
+			if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+				sqlDeferConstraints <- "SET CONSTRAINTS ALL DEFERRED"
+				rs1 <- dbSendQuery(conn, sqlDeferConstraints)
+				Sys.setenv(ORA_SDTZ = "PST8PDT")
+				Sys.setenv(TZ = "PST8PDT")
+				recordedDate <- Sys.time()
+			} else {
+				dbSendQuery(conn, "BEGIN TRANSACTION")
+				recordedDate <- as.character(format(Sys.time(), "%Y-%m-%d %H:%M:%OS"))
+			}
+
+			# Saving each set. The garbage collection may be unnecessary, but won't hurt
+			if (!is.null(agData)) {
+				agData <- prepareTableForDD(agData)
+				outputAgDT <- saveAgDataDD(conn, agData, experimentId, lsTransactionId, recordedDate)
+				rm(agData)
+				gc()
+			}
+
+			if (!is.null(tgData)) {
+				tgData <- prepareTableForDD(tgData)
+				outputTgDT <- saveTgDataDD(conn, tgData, outputAgDT, lsTransactionId, recordedDate)
+				rm(tgData)
+				rm(outputAgDT)
+				gc()
+			}
+
+			if (!is.null(subjectData)) {
+				subjectData <- prepareTableForDD(subjectData)
+				outputSubjectDT <- saveSubjectDataDD(conn, subjectData, outputTgDT, lsTransactionId, recordedDate)
+				rm(subjectData)
+				rm(outputTgDT)
+				rm(outputSubjectDT)
+				gc()
+			}
+			TRUE
+		})
+
+		# If anything fails, roll the transaction back
+		if (is.null(result) || is.null(result$value)){
+			dbRollback(conn)
+			if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
+				# On Oracle, delete everything saved in this transaction
+				limitQuery <-  paste("where ls_transaction =", lsTransactionId)
+				dbSendQuery(conn, paste("delete from subject_value", limitQuery))
+				dbSendQuery(conn, paste("delete from subject_state", limitQuery))
+				dbSendQuery(conn, paste("delete from treatment_group_value", limitQuery))
+				dbSendQuery(conn, paste("delete from treatment_group_state", limitQuery))
+				dbSendQuery(conn, paste("delete from analysis_group_value", limitQuery))
+				dbSendQuery(conn, paste("delete from analysis_group_state", limitQuery))
+				dbSendQuery(conn, paste("delete from treatmentgroup_subject where treatment_group_id in ",
+																"(select id from treatment_group", limitQuery, ")"))
+				dbSendQuery(conn, paste("delete from analysisgroup_treatmentgroup where analysis_group_id in ",
+																"(select id from analysis_group", limitQuery, ")"))
+				dbSendQuery(conn, paste("delete from subject", limitQuery))
+				dbSendQuery(conn, paste("delete from treatment_group", limitQuery))
+				dbSendQuery(conn, paste("delete from experiment_analysisgroup where analysis_group_id in ",
+																"(select id from analysis_group", limitQuery, ")"))
+				dbSendQuery(conn, paste("delete from analysis_group", limitQuery))
+				dbCommit(conn)
+			}
+			stop("direct database save failed")
+		} else {
+			dbCommit(conn)
+		}
+
     if (racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
       experimentName <- paste0(experiment$codeName, "::", experiment$lsLabels[[1]]$labelText)
     } else {
@@ -2422,122 +2606,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
 combineTwoAgonist <- function(agData) {
   if(nrow(agData) == 1) {
-  	return(agData)
-	} else if (nrow(agData) > 2) { # This should not happen, these should be curves
-	stop(paste("Too many rows for combineTwoAgonist:", nrow(agData)))
-	} else if (sum(agData$agonistConc == 0) != 1) {
-		stopUser(paste("At least one concentration must be 0 for ", agData$batchCode[1]))
-	} else {
-		outputTable <- agData[agonistConc > 0]
-	# outputTable[, transformed_noAgonist := agData[agonistConc == 0, normalizedActivity]]
-	return(outputTable)
-	}
-}
-
-saveAllViaDirectDatabase <- function(analysisGroupData, treatmentGroupData, subjectData, appendCodeName = list()) {
-
-  sendFiles <- list()
-
-  if (!(is.null(appendCodeName$analysisGroup))) {
-    analysisGroupData <- appendCodeNames(analysisGroupData, appendCodeName$analysisGroup, "analysis group")
-  }
-  if (!(is.null(appendCodeName$treatmentGroup))) {
-    treatmentGroupData <- appendCodeNames(treatmentGroupData, appendCodeName$treatmentGroup, "treatment group")
-  }
-  if (!(is.null(appendCodeName$subject))) {
-    subjectData <- appendCodeNames(subjectData, appendCodeName$subject, "subject")
-  }
-  setkey(analysisGroupData, NULL)
-  setkey(treatmentGroupData, NULL)
-  setkey(subjectData, NULL)
-  response <- saveDataDirectDatabase(analysisGroupData,
-                                     treatmentGroupData,
-                                     subjectData)
-  return(response)
-}
-
-saveDataDirectDatabase <- function(agData, tgData, subjectData, lsTransactionId = NA, experimentId = NULL) {
-  if (is.na(lsTransactionId)) {
-    if (is.null(agData$lsTransaction)) {
-      stop("If lsTransactionId is NA, lsTransaction must be defined in input data tables")
-    } else {
-      lsTransactionId <- unique(agData$lsTransaction)
-      if (length(lsTransactionId) > 1) {
-        stop("multiple lsTransaction's found in agData")
-      }
-      if (is.na(lsTransactionId)) {
-        stop("lsTransactionId cannot be NA when all lsTransaction in agData are NA")
-      }
-    }
-  }
-
-  conn <- getDatabaseConnection(racas::applicationSettings)
-  on.exit(dbDisconnect(conn))
-  result <- tryCatchLog({
-    if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
-      sqlDeferConstraints <- "SET CONSTRAINTS ALL DEFERRED"
-      rs1 <- dbSendQuery(conn, sqlDeferConstraints)
-      Sys.setenv(ORA_SDTZ = "PST8PDT")
-      Sys.setenv(TZ = "PST8PDT")
-      recordedDate <- Sys.time()
-    } else {
-      dbSendQuery(conn, "BEGIN TRANSACTION")
-      recordedDate <- as.character(format(Sys.time(), "%Y-%m-%d %H:%M:%OS"))
-    }
-
-    # Saving each set. The garbage collection may be unnecessary, but won't hurt
-    if (!is.null(agData)) {
-      agData <- prepareTableForDD(agData)
-      outputAgDT <- saveAgDataDD(conn, agData, experimentId, lsTransactionId, recordedDate)
-      rm(agData)
-      gc()
-    }
-
-    if (!is.null(tgData)) {
-      tgData <- prepareTableForDD(tgData)
-      outputTgDT <- saveTgDataDD(conn, tgData, outputAgDT, lsTransactionId, recordedDate)
-      rm(tgData)
-      rm(outputAgDT)
-      gc()
-    }
-
-    if (!is.null(subjectData)) {
-      subjectData <- prepareTableForDD(subjectData)
-      outputSubjectDT <- saveSubjectDataDD(conn, subjectData, outputTgDT, lsTransactionId, recordedDate)
-      rm(subjectData)
-      rm(outputTgDT)
-      rm(outputSubjectDT)
-      gc()
-    }
-    TRUE
-  })
-
-  # If anything fails, roll the transaction back
-  if (is.null(result) || is.null(result$value)){
-    dbRollback(conn)
-    if (grepl("Oracle", racas::applicationSettings$server.database.driver)){
-      # On Oracle, delete everything saved in this transaction
-      limitQuery <-  paste("where ls_transaction =", lsTransactionId)
-      dbSendQuery(conn, paste("delete from subject_value", limitQuery))
-      dbSendQuery(conn, paste("delete from subject_state", limitQuery))
-      dbSendQuery(conn, paste("delete from treatment_group_value", limitQuery))
-      dbSendQuery(conn, paste("delete from treatment_group_state", limitQuery))
-      dbSendQuery(conn, paste("delete from analysis_group_value", limitQuery))
-      dbSendQuery(conn, paste("delete from analysis_group_state", limitQuery))
-      dbSendQuery(conn, paste("delete from treatmentgroup_subject where treatment_group_id in ",
-                              "(select id from treatment_group", limitQuery, ")"))
-      dbSendQuery(conn, paste("delete from analysisgroup_treatmentgroup where analysis_group_id in ",
-                              "(select id from analysis_group", limitQuery, ")"))
-      dbSendQuery(conn, paste("delete from subject", limitQuery))
-      dbSendQuery(conn, paste("delete from treatment_group", limitQuery))
-      dbSendQuery(conn, paste("delete from experiment_analysisgroup where analysis_group_id in ",
-                              "(select id from analysis_group", limitQuery, ")"))
-      dbSendQuery(conn, paste("delete from analysis_group", limitQuery))
-      dbCommit(conn)
-    }
-    stop("direct database save failed")
+    return(agData)
+  } else if (nrow(agData) > 2) { # This should not happen, these should be curves
+    stop(paste("Too many rows for combineTwoAgonist:", nrow(agData)))
+  } else if (sum(agData$agonistConc == 0) != 1) {
+    stopUser(paste("At least one concentration must be 0 for ", agData$batchCode[1]))
   } else {
-    dbCommit(conn)
+    outputTable <- agData[agonistConc > 0]
+    # outputTable[, transformed_noAgonist := agData[agonistConc == 0, normalizedActivity]]
+    return(outputTable)
   }
 }
 
@@ -2580,84 +2657,85 @@ validateValueKinds <- function(valueKinds, valueTypes, createNew=TRUE) {
 
 
 
-uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
-                       recordedBy) {
-  # Uploads all the data to the server
-  # 
-  # Args:
-  #   lsTransaction:          An id of the transaction
-  #   analysisGroupData:      A data.table of the analysis group data
-  #   treatmentGroupData:     A data.table of the treatment group data
-  #   subjectData:            A data.table of the subject data
-  #   recordedBy:             The username of the current user
-  #
-  #   Returns:
-  #     lsTransaction
-  
-  library('plyr')
-  
-  valueKindDF <- unique(data.frame(
-    valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
-    valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
-  ))
-  valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
-  validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
-  
-  if(is.null(lsTransaction)) {
-    lsTransaction <- createLsTransaction()$id
-  }
-  
-  ### Analysis Group Data
-  # Not all of these will be filled
-  analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-", 
-                                                               analysisGroupData$stateKind)))
-  analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
 
-  if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
-    analysisGroupData$publicData <- TRUE
-  }
-  if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
-    analysisGroupData$stateGroupIndex <- 1
-  }
-
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
-  #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
-
-  analysisGroupData$lsTransaction <- lsTransaction
-  analysisGroupData$recordedBy <- recordedBy
-  analysisGroupData$lsType <- "default"
-  analysisGroupData$lsKind <- "default"
-
-  #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
-
-  if(!is.null(treatmentGroupData)) {
-    ### TreatmentGroup Data
-    treatmentGroupData$lsTransaction <- lsTransaction
-    treatmentGroupData$recordedBy <- recordedBy
-    treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-",
-                                                                  treatmentGroupData$stateKind)))
-
-    treatmentGroupData$lsType <- "default"
-    treatmentGroupData$lsKind <- "default"
-
-  }
-
-  if(!is.null(subjectData)) {
-    ### subject Data
-    subjectData$lsTransaction <- lsTransaction
-    subjectData$recordedBy <- recordedBy
-    subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-",
-                                                           subjectData$stateKind)))
-    subjectData$lsType <- "default"
-    subjectData$lsKind <- "default"
-  }
-
-  saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData,
-                           appendCodeName = list(analysisGroup = "curve id"))
-  
-  return (lsTransaction)
-}
+# uploadData <- function(lsTransaction=NULL,analysisGroupData,treatmentGroupData=NULL,subjectData=NULL,
+#                        recordedBy) {
+#   # Uploads all the data to the server
+#   #
+#   # Args:
+#   #   lsTransaction:          An id of the transaction
+#   #   analysisGroupData:      A data.table of the analysis group data
+#   #   treatmentGroupData:     A data.table of the treatment group data
+#   #   subjectData:            A data.table of the subject data
+#   #   recordedBy:             The username of the current user
+#   #
+#   #   Returns:
+#   #     lsTransaction
+#
+#   library('plyr')
+#
+#   valueKindDF <- unique(data.frame(
+#     valueKind = c(analysisGroupData$valueKind, treatmentGroupData$valueKind, subjectData$valueKind),
+#     valueType = c(analysisGroupData$valueType, treatmentGroupData$valueType, subjectData$valueType)
+#   ))
+#   valueKindDF <- valueKindDF[!is.na(valueKindDF$valueKind), ]
+#   validateValueKinds(valueKindDF$valueKind, valueKindDF$valueType)
+#
+#   if(is.null(lsTransaction)) {
+#     lsTransaction <- createLsTransaction()$id
+#   }
+#
+#   ### Analysis Group Data
+#   # Not all of these will be filled
+#   analysisGroupData$tempStateId <- as.numeric(as.factor(paste0(analysisGroupData$tempId, "-", analysisGroupData$stateGroupIndex, "-",
+#                                       analysisGroupData$stateKind)))
+#   analysisGroupData[is.na(stateKind), tempStateId:=NA_real_]
+#
+#   if(is.null(analysisGroupData$publicData) && nrow(analysisGroupData) > 0) {
+#     analysisGroupData$publicData <- TRUE
+#   }
+#   if(is.null(analysisGroupData$stateGroupIndex) && nrow(analysisGroupData) > 0) {
+#     analysisGroupData$stateGroupIndex <- 1
+#   }
+#
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltConcentrations(analysisGroupData))
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltTimes(analysisGroupData))
+#   #analysisGroupData <- rbind.fill(analysisGroupData, meltBatchCodes(analysisGroupData, batchCodeStateIndices=1, optionalColumns = "analysisGroupID"))
+#
+#   analysisGroupData$lsTransaction <- lsTransaction
+#   analysisGroupData$recordedBy <- recordedBy
+#   analysisGroupData$lsType <- "default"
+#   analysisGroupData$lsKind <- "default"
+#
+#   #analysisGroupIDandVersion <- saveFullEntityData(analysisGroupData, "analysisGroup")
+#
+#   if(!is.null(treatmentGroupData)) {
+#     ### TreatmentGroup Data
+#     treatmentGroupData$lsTransaction <- lsTransaction
+#     treatmentGroupData$recordedBy <- recordedBy
+#     treatmentGroupData$tempStateId <- as.numeric(as.factor(paste0(treatmentGroupData$tempId, "-", treatmentGroupData$stateGroupIndex, "-",
+#                                          treatmentGroupData$stateKind)))
+#
+#     treatmentGroupData$lsType <- "default"
+#     treatmentGroupData$lsKind <- "default"
+#
+#   }
+#
+#   if(!is.null(subjectData)) {
+#     ### subject Data
+#     subjectData$lsTransaction <- lsTransaction
+#     subjectData$recordedBy <- recordedBy
+#     subjectData$tempStateId <- as.numeric(as.factor(paste0(subjectData$tempId, "-", subjectData$stateGroupIndex, "-",
+#                                   subjectData$stateKind)))
+#     subjectData$lsType <- "default"
+#     subjectData$lsKind <- "default"
+#   }
+#
+#   saveAllViaDirectDatabase(analysisGroupData, treatmentGroupData, subjectData,
+#                 appendCodeName = list(analysisGroup = "curve id"))
+#
+#   return (lsTransaction)
+# }
 
 changeColNameReadability <- function(inputTable, readabilityChange, parameters) {
   # Changes column names of inputTable human-readable to non-spaced computer-readable
@@ -3084,7 +3162,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   globalMessenger$devMode <- FALSE
   options("scipen"=15)
 #save(request, file="request.Rda")
- 
+
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId
   folderToParse <- request$fileToParse
@@ -3100,7 +3178,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   dryRun <- interpretJSONBoolean(dryRun)
   testMode <- interpretJSONBoolean(testMode)
   developmentMode <- globalMessenger$devMode
- 
+
   if (developmentMode) {
     loadResult <- list(value = runMain(folderToParse = folderToParse, 
                                        user = user, 

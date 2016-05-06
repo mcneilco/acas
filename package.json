@@ -51,7 +51,7 @@
     "properties": "*",
     "properties-parser": "*",
     "request": "2.12.0",
-    "shelljs": "*",
+    "shelljs": "0.6.0",
     "temporary": ">= 0.0.0",
     "underscore": ">= 0.0.0",
     "underscore-deep-extend": ">= 0.0.0",

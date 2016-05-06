@@ -37,6 +37,9 @@
 			,
 				typeName: "metadata"
 				kindName: "custom experiment metadata gui"
+			,
+				typeName: "metadata"
+				kindName: "data column order"
 			]
 
 		valuetypes:
