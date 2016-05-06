@@ -18,6 +18,7 @@ PLATE_MODEL_FIELDS =
   PLATE_SIZE: "plateSize"
 
 MAX_BARCODE_LENGTH = 40
+MAX_DESCRIPTION_LENGTH = 255
 
 class PlateModel extends Backbone.Model
   url: "/api/v1/containers/createPlate"
@@ -35,16 +36,20 @@ class PlateModel extends Backbone.Model
     "wells": []
 
   validation:
-    barcode:[
-      required: true
-      msg: "Please the Plate ID"
-      ,
-      maxLength: MAX_BARCODE_LENGTH
-      msg: "Barcodes can only contain #{MAX_BARCODE_LENGTH} characters"
-    ]
     definition: (value) ->
-      if value is "unassigned"
+      if value is "unassigned" or value is ""
         return "Please select the plate size"
+    barcode:[{
+      required: true
+    }, {
+      maxLength: MAX_BARCODE_LENGTH
+      msg:
+        tooLong: "Barcodes can only contain #{MAX_BARCODE_LENGTH} characters"
+    }
+    ]
+    description:
+      maxLength: MAX_DESCRIPTION_LENGTH
+      msg: "Description can only contain #{MAX_DESCRIPTION_LENGTH} characters"
 
   reset: ->
     @.set

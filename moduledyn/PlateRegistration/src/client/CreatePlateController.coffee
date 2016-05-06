@@ -62,7 +62,6 @@ class CreatePlateController extends Backbone.View
   initializeSelectLists: =>
     _.each(@selectLists, (selectList) =>
       if @plateDefinitionsSelectList?
-        console.log "@plateDefinitionsSelectList exists ?"
         @plateDefinitionsSelectList = new PickListSelectController
           el: $(@el).find(selectList.containerSelector)
           collection: selectList.collection
@@ -81,6 +80,7 @@ class CreatePlateController extends Backbone.View
           autoFetch: false
     )
 
+
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)
     data = {}
@@ -97,10 +97,22 @@ class CreatePlateController extends Backbone.View
   updateModel: (data) =>
     @model.set data
     if @model.isValid(true)
+      @$("div[name='barcodeTooLongErrorMessageContainer']").addClass "hide"
+      @$("div[name='descriptionTooLongErrorMessageContainer']").addClass "hide"
       @$("button[name='submit']").prop("disabled", false)
     else
       errorMessages = @model.validate()
-      #if errorMessages.barcode?
+      if errorMessages.barcode
+        if errorMessages.barcode.tooLong
+          @$("div[name='barcodeTooLongErrorMessageContainer']").removeClass "hide"
+          @$("div[name='barcodeTooLongErrorMessage']").html errorMessages.barcode.tooLong
+      else
+        @$("div[name='barcodeTooLongErrorMessageContainer']").addClass "hide"
+      if errorMessages.description
+        @$("div[name='descriptionTooLongErrorMessageContainer']").removeClass "hide"
+        @$("div[name='descriptionTooLongErrorMessage']").html errorMessages.description
+      else
+        @$("div[name='descriptionTooLongErrorMessageContainer']").addClass "hide"
 
       @$("button[name='submit']").prop("disabled", true)
 

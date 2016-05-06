@@ -76,7 +76,7 @@ class AppController extends Backbone.View
     plateTypeFetchPromise.complete(() =>
       @$("div[name='formContainer']").html @createPlateController.render().el
       @currentFormController = @createPlateController
-      @createPlateController.completeInitialization()
+      #@createPlateController.completeInitialization()
     )
 
   displayPlateSearch: =>

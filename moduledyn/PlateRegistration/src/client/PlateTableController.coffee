@@ -26,7 +26,7 @@ PLATE_TABLE_CONTROLLER_EVENTS =
   ADD_IDENTIFIER_CONTENT_FROM_TABLE: "AddIdentifierContentFromTable"
   EMPTY_INVALID_COUNT_UPDATED: "emptyInvalidCountUpdated"
 
-
+INITIAL_FONT_SIZE = 14
 
 class PlateTableController extends Backbone.View
   template: _.template(require('html!./PlateTableView.tmpl'))
@@ -42,13 +42,12 @@ class PlateTableController extends Backbone.View
     @dataFieldToDisplay = "batchCode"
     @dataFieldToColorBy = "noColor"
     @listOfBatchCodes = {}
-    @fontSize = 14;
-    window.FOOTABLECONTROLLER = @
-    $(window).resize(_.debounce(@calculateLayout, 100))
+    @fontSize = INITIAL_FONT_SIZE
     @shouldFitToScreen = false
 
   render: =>
     $(@el).html @template()
+    $(window).resize(_.debounce(@calculateLayout, 100))
 
     @
 
