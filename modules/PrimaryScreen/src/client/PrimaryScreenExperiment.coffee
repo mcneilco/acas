@@ -951,6 +951,8 @@ class window.ControlSettingController extends AbstractFormController
 		$(@el).html @template(@model.attributes)
 		@setupStandardsListSelect(@standardsList)
 		@$('.control-label').html @controlLabel
+		selectedStandard = @standardsListSelectController.getSelectedCode()
+		@showInputValue(selectedStandard)
 		@
 
 	initialize: (options) ->
@@ -974,12 +976,15 @@ class window.ControlSettingController extends AbstractFormController
 		@model.set
 			defaultValue: defaultValue
 			standardNumber: selectedStandard
+		@showInputValue(selectedStandard)
+		@trigger 'updateState'
+		@trigger 'change'
+
+	showInputValue: (selectedStandard) =>
 		if selectedStandard is 'input value'
 			@$('.bv_defaultValue').removeClass('hide')
 		else
 			@$('.bv_defaultValue').addClass('hide')
-		@trigger 'updateState'
-		@trigger 'change'
 
 	setupStandardsListSelect: (standardsList) =>
 		standardsSelectArray = standardsList.map (model) =>
