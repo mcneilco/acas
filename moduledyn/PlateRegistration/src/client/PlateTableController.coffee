@@ -8,6 +8,8 @@ require("bootstrap-webpack!./bootstrap.config.js")
 PlateFillerFactory = require('./PlateFillerFactory.coffee').PlateFillerFactory
 SerialDilutionFactory = require('./SerialDilutionFactory.coffee').SerialDilutionFactory
 WellsModel = require('./WellModel.coffee').WellsModel
+WellModel = require('./WellModel.coffee').WellModel
+WELL_MODEL_FIELDS = require('./WellModel.coffee').WELL_MODEL_FIELDS
 
 ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL_FIELDS
 AddContentModel = require('./AddContentModel.coffee').AddContentModel
@@ -123,6 +125,7 @@ class PlateTableController extends Backbone.View
       @displayToolTips = true
       @fitToScreen()
       @renderHandsOnTable()
+      @updateColorBy("status")
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
 
@@ -150,6 +153,23 @@ class PlateTableController extends Backbone.View
                 if gComponent > 255
                   gComponent = gComponent - 255
                   rComponent += 85
+        )
+      else if @dataFieldToColorBy is "status"
+        @listWellStatusColors = {}
+        _.each(@wells, (well) =>
+          w = new WellModel(well)
+          color = '#00bb00'
+          fontColor = 'black'
+          if w.isWellEmpty()
+            color = '#dddddd'
+          else
+            if w.isWellValid()
+              color = '#00bb00'
+            else
+              color = '#a94442'
+              fontColor = 'white'
+
+          @listWellStatusColors[w.get(WELL_MODEL_FIELDS.CONTAINER_CODE_NAME)] = {backgroundColor: color, fontColor: fontColor}
         )
       else
         minValue = Infinity
@@ -271,37 +291,76 @@ class PlateTableController extends Backbone.View
   handleContentUpdated: (changes, source) =>
 
     if source in ["edit", "autofill", "paste"]
+      console.log "changes"
+      console.log changes
       listOfIdentifiers = []
-      wellsToUpdate = @reformatUpdatedValues changes
-      _.each(changes, (change) ->
-        listOfIdentifiers.push change[3]
-
-      )
-      addContentModel = new AddContentModel()
-      addContentModel.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, listOfIdentifiers
-      addContentModel.set ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE, wellsToUpdate
-      hasIdentifiersToValidate = false
-      _.each(addContentModel.get("identifiers"), (identifier, key) ->
-        if _.size(identifier) > 0
-          hasIdentifiersToValidate = true
-        else
-          addContentModel.get("identifiers").splice(key, 1)
-      )
-      if hasIdentifiersToValidate and @dataFieldToDisplay is "batchCode"
-        @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
-
-      else
-        updatedValues = @reformatUpdatedValues changes
-        @wellsToUpdate.resetWells()
-        _.each(updatedValues, (updatedValue) =>
-          well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
-          well[@dataFieldToDisplay] = updatedValue.value
-          @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+      @resetCellColoring(changes)
+      changes = @removeNonChangedValues(changes)
+      unless _.size(changes) is 0
+        wellsToUpdate = @reformatUpdatedValues changes
+        _.each(changes, (change) ->
+          if change?
+            listOfIdentifiers.push change[3]
         )
+        console.log "listOfIdentifiers"
+        console.log listOfIdentifiers
+        addContentModel = new AddContentModel()
+        addContentModel.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, listOfIdentifiers
+        addContentModel.set ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE, wellsToUpdate
+        hasIdentifiersToValidate = false
+        _.each(addContentModel.get("identifiers"), (identifier, key) ->
+          if _.size(identifier) > 0
+            hasIdentifiersToValidate = true
+          else
+            addContentModel.get("identifiers").splice(key, 1)
+        )
+        console.log "@dataFieldToDisplay"
+        console.log @dataFieldToDisplay
+        if hasIdentifiersToValidate and @dataFieldToDisplay is "batchCode"
+          console.log "ADD_IDENTIFIER_CONTENT_FROM_TABLE"
+          @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
-        @wellsToUpdate.save()
-        @updateEmptyAndInvalidWellCount()
-        @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+        else
+          unless @dataFieldToDisplay is "batchCode"
+            console.log "running an else block...?"
+            updatedValues = @reformatUpdatedValues changes
+            @wellsToUpdate.resetWells()
+            hasNonNumericValues = false
+            _.each(updatedValues, (updatedValue) =>
+              well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
+              well[@dataFieldToDisplay] = updatedValue.value
+              if isNaN(parseFloat(updatedValue.value))
+                cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+                well.status = "invalid"
+                @wellsToUpdate.fillWellWithWellObject(well.rowIndex - 1, well.columnIndex - 1, well)
+                $(cell).addClass "invalidIdentifierCell"
+                hasNonNumericValues = true
+              else
+                @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+                cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+                well.status = "valid"
+                $(cell).removeClass "invalidIdentifierCell"
+            )
+            if hasNonNumericValues
+              console.log "hasNonNumericValues"
+              $("div[name='enteringNonNumericConcentrationError']").modal("show")
+            @wellsToUpdate.save()
+            @updateEmptyAndInvalidWellCount()
+            @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+
+  removeNonChangedValues: (changes) =>
+    for change, idx in changes
+      if ((change[2] is null) and (change[3] is "")) or (change[2] is change[3])
+        delete changes[idx]
+    console.log "changes"
+    console.log changes
+    changes
+
+  resetCellColoring: (changes) =>
+    for change, idx in changes
+      if change[3] is ""
+        cell = @handsOnTable.getCell(change[0], change[1])
+        $(cell).removeClass "invalidIdentifierCell"
 
   handleAcceptTruncatedPaste: =>
     _.each(@pendingChanges, (pc) ->
@@ -360,25 +419,31 @@ class PlateTableController extends Backbone.View
         $(cell).removeClass "invalidIdentifierCell"
         $(cell).removeClass "aliasedIdentifierCell"
     )
-    $("div[name='updatingWellContents']").modal("show")
-    wellsToSaveTmp = new WellsModel({allWells: []})
-    wellsToSaveTmp.set("wells", @wellsToUpdate.get('wells'))
 
-    wellsToSaveTmp.save(null, {
-      success: (result) =>
-        $("div[name='updatingWellContents']").modal('hide')
-        @updateEmptyAndInvalidWellCount()
-      error: (result) =>
-        console.log "save error..."
-    })
+    wellsToSaveTmp = new WellsModel({allWells: []})
+    unless _.size(@wellsToUpdate.get('wellsToSave')) is 0
+      $("div[name='updatingWellContents']").modal("show")
+      wellsToSaveTmp.set("wellsToSave", @wellsToUpdate.get('wellsToSave'))
+      wellsToSaveTmp.save(null, {
+        success: (result) =>
+          $("div[name='updatingWellContents']").modal('hide')
+          @updateEmptyAndInvalidWellCount()
+        error: (result) =>
+          console.log "save error..."
+      })
+    else
+      @updateEmptyAndInvalidWellCount()
 
   reformatUpdatedValues: (changes) ->
     updateValue = []
     _.each(changes, (change) ->
-      updateValue.push
-        rowIdx: change[0]
-        colIdx: change[1]
-        value: change[3]
+      console.log "change"
+      console.log change
+      if change?
+        updateValue.push
+          rowIdx: change[0]
+          colIdx: change[1]
+          value: change[3]
     )
 
     updateValue
@@ -463,6 +528,9 @@ class PlateTableController extends Backbone.View
         if @listOfBatchCodes[well.batchCode]?
           td.style.background = @listOfBatchCodes[well.batchCode].backgroundColor
           td.style.color = @listOfBatchCodes[well.batchCode].fontColor
+    else if @dataFieldToColorBy is "status"
+      td.style.background = @listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]].backgroundColor
+      td.style.color = @listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]].fontColor
     else if @dataFieldToColorBy is "batchConcentration"
       backgroundColor = @calculateBackgroundColorForConcentration(well)
       td.style.background = backgroundColor

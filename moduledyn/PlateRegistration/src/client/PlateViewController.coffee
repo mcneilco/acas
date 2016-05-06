@@ -25,6 +25,7 @@ class PlateViewController extends Backbone.View
     "click a[name='colorByCompound']": "handleColorByCompoundClick"
     "click a[name='colorByVolume']": "handleColorByVolumeClick"
     "click a[name='colorByConcentration']": "handleColorByConcentrationClick"
+    "click a[name='colorByStatus']": "handleColorByStatusClick"
     "click a[name='colorByNone']": "handleColorByNoneClick"
     "click a[name='showAll']": "handleShowAll"
     "click a[name='fitToContents']": "handleFitToContents"
@@ -54,6 +55,7 @@ class PlateViewController extends Backbone.View
   handleMasterViewClick: (e) =>
     e.preventDefault()
     @updateSelectedView "Master View <span class='caret'></span>"
+    @updateSelectedColorBy "Color By Status  <span class='caret'></span>"
     @$("button[name='displayToolTips']").addClass("active")
     @plateTableController.updateDataDisplayed "masterView"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.MASTER_VIEW_SELECTED
@@ -74,6 +76,12 @@ class PlateViewController extends Backbone.View
     e.preventDefault()
     @updateSelectedColorBy "Color By Concentration  <span class='caret'></span>"
     @plateTableController.updateColorBy "batchConcentration"
+    @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
+
+  handleColorByStatusClick: (e) =>
+    e.preventDefault()
+    @updateSelectedColorBy "Color By Status  <span class='caret'></span>"
+    @plateTableController.updateColorBy "status"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.COMPOUND_VIEW_SELECTED
 
   handleColorByNoneClick: (e) =>

@@ -46,6 +46,7 @@ class PlateSearchController extends Backbone.View
         name: ""
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
     @plateTypesSelectList = new PickListSelectController
       el: $(@el).find("select[name='type']")
@@ -55,6 +56,7 @@ class PlateSearchController extends Backbone.View
         name: ""
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
     @plateStatusesSelectList = new PickListSelectController
       el: $(@el).find("select[name='status']")
@@ -64,6 +66,7 @@ class PlateSearchController extends Backbone.View
         name: ""
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
     @usersSelectList = new PickListSelectController
       el: $(@el).find("select[name='user']")
@@ -73,6 +76,7 @@ class PlateSearchController extends Backbone.View
         name: ""
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
   getFormValues: =>
     searchTerms = {

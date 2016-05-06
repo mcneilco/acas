@@ -8,6 +8,8 @@ $ = require('jquery')
 PickListSelectController = require('./SelectList.coffee').PickListSelectController
 PickList = require('./SelectList.coffee').PickList
 
+MAX_PLATE_BARCODE_SIZE = 40
+MAX_DESCRIPTION_SIZE = 255
 
 CREATE_PLATE_CONTROLLER_EVENTS =
   CREATE_PLATE: "CreatePlate"
@@ -59,14 +61,24 @@ class CreatePlateController extends Backbone.View
 
   initializeSelectLists: =>
     _.each(@selectLists, (selectList) =>
-      @plateDefinitionsSelectList = new PickListSelectController
-        el: $(@el).find(selectList.containerSelector)
-        collection: selectList.collection
-        insertFirstOption: new PickList
-          code: "unassigned"
-          name: "Select Plate Definition"
-        selectedCode: "unassigned"
-        className: "form-control"
+      if @plateDefinitionsSelectList?
+        console.log "@plateDefinitionsSelectList exists ?"
+        @plateDefinitionsSelectList = new PickListSelectController
+          el: $(@el).find(selectList.containerSelector)
+          collection: selectList.collection
+          selectedCode: "unassigned"
+          className: "form-control"
+          autoFetch: false
+      else
+        @plateDefinitionsSelectList = new PickListSelectController
+          el: $(@el).find(selectList.containerSelector)
+          collection: selectList.collection
+          insertFirstOption: new PickList
+            code: "unassigned"
+            name: "Select Plate Definition"
+          selectedCode: "unassigned"
+          className: "form-control"
+          autoFetch: false
     )
 
   handleFormFieldUpdate: (evt) ->
@@ -87,9 +99,15 @@ class CreatePlateController extends Backbone.View
     if @model.isValid(true)
       @$("button[name='submit']").prop("disabled", false)
     else
+      errorMessages = @model.validate()
+      #if errorMessages.barcode?
+
       @$("button[name='submit']").prop("disabled", true)
 
   handleClickStart: =>
+    createdDate = new Date()
+    @model.set "createdDate", createdDate.getTime()
+    @model.set "recordedBy", AppLaunchParams.loginUserName
     @trigger CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @model
 
   handleSuccessfulSave: (updatedModel) =>

@@ -959,7 +959,7 @@ exports.updateWellContent = (req, resp) ->
 
 exports.updateWellContentWithObject = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body.wells, req.query.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body.wellsToSave, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 

@@ -119,8 +119,9 @@ class MergePlatesController extends Backbone.View
   sourcePlatesAreValid: =>
     isValid = true
     _.each(@plateQuadrants, (plate) =>
-      unless plate.isValid
-        isValid = false
+      unless plate.codeName is ""
+        unless plate.isValid
+          isValid = false
     )
     if isValid
       isValid = false

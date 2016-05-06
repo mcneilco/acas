@@ -65,6 +65,7 @@ class PlateInfoController extends Backbone.View
         name: "Select Plate Type"
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
     if @model.get("type")?
       @plateTypesSelectList.setSelectedCode(@model.get("type"))
@@ -77,6 +78,7 @@ class PlateInfoController extends Backbone.View
         name: "Select Plate Status"
       selectedCode: "unassigned"
       className: "form-control"
+      autoFetch: false
 
     if @model.get("status")?
       @plateStatusSelectList.setSelectedCode(@model.get("status"))

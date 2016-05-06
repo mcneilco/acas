@@ -105,12 +105,13 @@ class SplitPlatesController extends Backbone.View
       return false
 
   destinationPlatesAreValid: =>
-    isValid = true
+    isValid = false
     _.each(@plateQuadrants, (plate) =>
-      if plate.barcode is ""
-        isValid = false
+      unless plate.barcode is ""
+        isValid = true
     )
-
+    console.log "destinationPlatesAreValid"
+    console.log isValid
     return isValid
 
   destinationPlatesAreUnique: =>
@@ -242,14 +243,42 @@ class SplitPlatesController extends Backbone.View
     @$("span[name='dialogDismissButtons']").removeClass "hide"
 
   displayMergeSuccessMessages: (data) =>
-    @$("a[name='linkToQuad1Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant1'].barcode}")
-    @$("span[name='barcodeQuad1Plate']").html @plateQuadrants['plateQuadrant1'].barcode
-    @$("a[name='linkToQuad2Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant2'].barcode}")
-    @$("span[name='barcodeQuad2Plate']").html @plateQuadrants['plateQuadrant2'].barcode
-    @$("a[name='linkToQuad3Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant3'].barcode}")
-    @$("span[name='barcodeQuad3Plate']").html @plateQuadrants['plateQuadrant3'].barcode
-    @$("a[name='linkToQuad4Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant4'].barcode}")
-    @$("span[name='barcodeQuad4Plate']").html @plateQuadrants['plateQuadrant4'].barcode
+    if @plateQuadrants['plateQuadrant1'].barcode is ""
+      @$("a[name='linkToQuad1Plate']").addClass "hide"
+      @$("span[name='barcodeQuad1Plate']").addClass "hide"
+    else
+      @$("a[name='linkToQuad1Plate']").removeClass "hide"
+      @$("span[name='barcodeQuad1Plate']").removeClass "hide"
+      @$("a[name='linkToQuad1Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant1'].barcode}")
+      @$("span[name='barcodeQuad1Plate']").html @plateQuadrants['plateQuadrant1'].barcode
+
+    if @plateQuadrants['plateQuadrant2'].barcode is ""
+      @$("a[name='linkToQuad2Plate']").addClass "hide"
+      @$("span[name='barcodeQuad2Plate']").addClass "hide"
+    else
+      @$("a[name='linkToQuad2Plate']").removeClass "hide"
+      @$("span[name='barcodeQuad2Plate']").removeClass "hide"
+      @$("a[name='linkToQuad2Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant2'].barcode}")
+      @$("span[name='barcodeQuad2Plate']").html @plateQuadrants['plateQuadrant2'].barcode
+
+    if @plateQuadrants['plateQuadrant3'].barcode is ""
+      @$("a[name='linkToQuad3Plate']").addClass "hide"
+      @$("span[name='barcodeQuad3Plate']").addClass "hide"
+    else
+      @$("a[name='linkToQuad3Plate']").removeClass "hide"
+      @$("span[name='barcodeQuad3Plate']").removeClass "hide"
+      @$("a[name='linkToQuad3Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant3'].barcode}")
+      @$("span[name='barcodeQuad3Plate']").html @plateQuadrants['plateQuadrant3'].barcode
+
+    if @plateQuadrants['plateQuadrant4'].barcode is ""
+      @$("a[name='linkToQuad4Plate']").addClass "hide"
+      @$("span[name='barcodeQuad4Plate']").addClass "hide"
+    else
+      @$("a[name='linkToQuad4Plate']").removeClass "hide"
+      @$("span[name='barcodeQuad4Plate']").removeClass "hide"
+      @$("a[name='linkToQuad4Plate']").prop("href", "#plateDesign/#{@plateQuadrants['plateQuadrant4'].barcode}")
+      @$("span[name='barcodeQuad4Plate']").html @plateQuadrants['plateQuadrant4'].barcode
+
     @$("div[name='splitPlateLinks']").removeClass "hide"
     @$("span[name='splitingStatus']").addClass "hide"
     @$("span[name='dialogDismissButtons']").removeClass "hide"

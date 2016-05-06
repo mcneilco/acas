@@ -28,13 +28,13 @@ class WellModel extends Backbone.Model
     "amount": ""
     "amountUnits": ""
     "batchCode": ""
-    "batchConcUnits": ""
+    "batchConcUnits": "mM"
     "batchConcentration": ""
     "columnIndex": ""
     "containerCodeName": ""
     "level": ""
     "message": ""
-    "physicalState": ""
+    "physicalState": "liquid"
     "containerCodeName": ""
     "recordedBy": ""
     "recordedDate": ""
@@ -62,10 +62,13 @@ class WellModel extends Backbone.Model
     if @isWellEmpty()
       return true
     else
-      if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CODE)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.AMOUNT)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)) isnt "")
-        return true
-      else
+      if isNaN(parseFloat(@get(WELL_MODEL_FIELDS.AMOUNT))) or isNaN(parseFloat(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)))
         return false
+      else
+        if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CODE)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.AMOUNT)) isnt "") and ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)) isnt "")
+          return true
+        else
+          return false
 
 class WellsModel extends Backbone.Model
   url: '/api/updateWellContentWithObject'
@@ -74,6 +77,7 @@ class WellsModel extends Backbone.Model
 
   defaults:
     'wells': []
+    'wellsToSave': []
 
   getWellAtRowIdxColIdx: (rowIdx, colIdx) ->
     # 1-based index offset
@@ -89,26 +93,71 @@ class WellsModel extends Backbone.Model
 
   fillWell: (rowIndex, columnIndex, amount, batchCode, batchConcentration) ->
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
+    canSave = true
+    if amount?
+      if isNaN(parseFloat(amount))
+        well.amount = amount
+        canSave = false
+      else
+        well.amount = parseFloat(amount)
+    else
+      well.amount = null
     well.amount = parseFloat(amount)
     well.amountUnits = "uL"
     well.batchCode = batchCode
-    well.batchConcentration = parseFloat(batchConcentration)
+    if batchConcentration?
+      if isNaN(parseFloat(batchConcentration))
+        well.batchConcentration = batchConcentration
+        canSave = false
+      else
+        well.batchConcentration = parseFloat(batchConcentration)
+    else
+      well.batchConcentration = null
+
     recordedDate = new Date()
     well.recordedDate = recordedDate.getTime()
     @get("wells").push well
+    if canSave
+      delete well['status']
+      @get("wellsToSave").push well
 
   fillWellWithWellObject: (rowIndex, columnIndex, wellObject) ->
+    console.log "wellObject"
+    console.log wellObject
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
-    well.amount = parseFloat(wellObject.amount)
+    canSave = true
+    if wellObject.amount?
+      if isNaN(parseFloat(wellObject.amount))
+        well.amount = wellObject.amount
+        canSave = false
+      else
+        well.amount = parseFloat(wellObject.amount)
+    else
+      well.amount = null
     well.amountUnits = "uL"
+    well.batchConcUnits = "mM"
+    well.physicalState = "liquid"
     well.batchCode = wellObject.batchCode
-    well.batchConcentration = parseFloat(wellObject.batchConcentration)
+    if wellObject.batchConcentration?
+      if isNaN(parseFloat(wellObject.batchConcentration))
+        well.batchConcentration = wellObject.batchConcentration
+        canSave = false
+      else
+        well.batchConcentration = parseFloat(wellObject.batchConcentration)
+
+    else
+      well.batchConcentration = null
+    #well.batchConcentration = parseFloat(wellObject.batchConcentration)
     recordedDate = new Date()
     well.recordedDate = recordedDate.getTime()
     @get("wells").push well
+    if canSave
+      delete well['status']
+      @get("wellsToSave").push well
 
   resetWells: =>
     @set("wells", [])
+    @set("wellsToSave", [])
 
   getNumberOfEmptyWells: ->
     numberOfEmptyWells = _.reduce(@allWells, (memo, w) ->
