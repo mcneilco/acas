@@ -94,6 +94,14 @@ exports.createPlate = (req, resp) ->
 exports.createPlateInternal = (input, callCustom, callback) ->
 	config = require '../conf/compiled/conf.js'
 	baseurl = config.all.client.service.persistence.fullpath + "containers/createPlate"
+	if input.createdDate?
+		if typeof(input.createdDate) != "number"
+			console.warn "#{input.createdDate} is typeof #{typeof(input.createdDate)}, created date should be a number"
+			input.createdDate = parseInt input.createdDate
+			if isNaN(input.createdDate)
+				msg = "received #{input.createdDate} when attempting to coerce created date"
+				console.error msg
+				callback msg, 400
 	console.log "baseurl"
 	console.log baseurl
 	if config.all.client.compoundInventory.enforceUppercaseBarcodes
