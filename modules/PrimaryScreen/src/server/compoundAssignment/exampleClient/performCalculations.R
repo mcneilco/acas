@@ -10,9 +10,7 @@ performCalculations <- function(resultTable, parameters, experimentCodeName, dry
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
-    if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame)]
-    }
+    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
   }
   
   # compute Z' and Z' by plate
@@ -95,8 +93,8 @@ normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
   } else {
     overallMaxLevel <- normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="PC"]
   }
-    
-    
+  
+  
   if (normalization == "plate order only") {
     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
                                                        overallMinLevel=overallMinLevel,
@@ -146,11 +144,11 @@ normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
     }
     resultTable[,normalizedActivity:=computeNormalized(activity, wellType, flag,
                                                        overallMinLevel=overallMinLevel,
-                                                       overallMaxLevel=overallMaxLevel, parameters), 
+                                                       overallMaxLevel=overallMaxLevel, parameters),
                 by= assayBarcode]
     resultTable[,normalizedActivity:=computeNormalized(normalizedActivity, wellType, flag,
                                                        overallMinLevel=overallMinLevel,
-                                                       overallMaxLevel=overallMaxLevel, parameters), 
+                                                       overallMaxLevel=overallMaxLevel, parameters),
                 by= section]
   } else if (normalization == "none") {
     resultTable[, normalizedActivity := resultTable$activity]
@@ -163,7 +161,7 @@ normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
 }
 
 computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallMaxLevel, parameters) {
-  # Computes normalized version of the given values based on the unflagged positive and 
+  # Computes normalized version of the given values based on the unflagged positive and
   # negative controls
   # Rreference 'data_normalization.pdf'
   #
@@ -175,11 +173,11 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
   #   A numeric vector of the same length as the inputs that is normalized.
   
   if ((length((values[(wellType == 'NC' & is.na(flag))])) == 0)) {
-    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row) 
+    stopUser("All of the negative controls in one normalization group (barcode, or barcode and plate row)
              were flagged, so normalization cannot proceed.")
   }
   if ((length((values[(wellType == 'PC' & is.na(flag))])) == 0)) {
-    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row) 
+    stopUser("All of the positive controls in one normalization group (barcode, or barcode and plate row)
              were flagged, so normalization cannot proceed.")
   }
   
@@ -190,18 +188,18 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
   
   # If the min and max are the same, it causes a divide by zero error
   if ((grpMinLevel - grpMaxLevel) == 0) {
-    stopUser(paste0("For at least normalization group, the positive control and the negative ", 
-                    "control are the same. Either check your data or change your ", 
+    stopUser(paste0("For at least normalization group, the positive control and the negative ",
+                    "control are the same. Either check your data or change your ",
                     "normalization rule."))
   }
   
   return(
-    ((values - grpMaxLevel) 
+    ((values - grpMaxLevel)
      * ((overallMinLevel - overallMaxLevel) / (grpMinLevel - grpMaxLevel)))
     + overallMaxLevel)
 }
 
-computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame) { 
+computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame) {
   #switch on transformation
   # based on transformation (custom code for each), responds with a vector of the new transformation
   # Inputs:
@@ -211,7 +209,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
   
   # Structure the data frame that holds information about transformation controls, as defined in the GUI
   transformationDataFrame <- as.data.frame(rbind(parameters$transformationRuleList[[1]]$transformationParameters$positiveControl,
-                                                parameters$transformationRuleList[[1]]$transformationParameters$negativeControl))
+                                                 parameters$transformationRuleList[[1]]$transformationParameters$negativeControl))
   
   #setnames(transformationDataFrame, c('standardNumber','defaultValue'))
   transformationDataFrame$standardType <- c('PC', 'NC')
@@ -219,14 +217,14 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
   # Replace "" by NA to avoid NA coersion warnings when turning the defaultValues of transformationDataFrame to numerical values
   transformationDataFrame$defaultValue[transformationDataFrame$defaultValue==""] <- NA
   transformationDataFrame$defaultValue <- as.numeric(transformationDataFrame$defaultValue)
-
-    
+  
+  
   # For the two transformation options available in the GUI, check if there are any 'unassigned' PC, NC
   if (transformation == "percent efficacy" | transformation == "sd") {
     if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'unassigned' |
         transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'unassigned') {
       stopUser("In the transformation section, at least one of the Positive or Negative Controls was not defined.
-                Selecting a Standard, or alternatively, setting an Input Value for Positive and Negative Control is required 
+                Selecting a Standard, or alternatively, setting an Input Value for Positive and Negative Control is required
                 for transformation calculations.")
     }
     
@@ -247,7 +245,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
         transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] != 'input value') {
       if (identical(transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'],
                     transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'])) {
-        stopUser("The same Standard was defined for both Positive Control and Negative Control in the tranformation section. 
+        stopUser("The same Standard was defined for both Positive Control and Negative Control in the tranformation section.
                   Different Standards for Positive and Negative Controls are required for tranformation calculations.")
       }
     }
@@ -257,15 +255,15 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
          !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'])) &
         (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value' &
          !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) &
-        identical(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'], 
-              transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) {
+        identical(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'],
+                  transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) {
       stopUser("In the transformation section, Input Values were selected for both Positive and Negative Controls
                 which appear to be exactly identical for both controls. Selecting different Input Values for
                 Positive and Negative Control is required for proper transformation calculations.")
     }
   }
-
-
+  
+  
   if (transformation == "percent efficacy") {
     
     # Use the transformation-related PC to calculate aggregatePosControl in the two possible scenarios below, where a default value has been
@@ -280,14 +278,14 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       # If at least one entry of the transformation-related PC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
       if (nrow(mainData[wellType == enumeratedTransfPC & is.na(flag)]) == 0) {
-        stopUser("Either there are no wells with the Positive Control defined in the transformation section or all wells with 
+        stopUser("Either there are no wells with the Positive Control defined in the transformation section or all wells with
                   that Positive Control are flagged. Please check the data or alternatively select an Input Value for Positive Control
                   in the transformation section.")
       } else {
         aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == enumeratedTransfPC & is.na(flag)]$normalizedActivity), parameters)
       }
     }
-
+    
     # Use the transformation-related NC to calculate aggregateVehControl in the two possible scenarios below, where a default value has been
     # defined OR a standard is defined
     if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value') {
@@ -300,7 +298,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       # If at least one entry of the transformation-related NC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
       if (nrow(mainData[wellType == enumeratedTransfNC & is.na(flag)]) == 0) {
-        stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with 
+        stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with
                   that Negative Control are flagged. Please check the data or alternatively select an Input Value for Negative Control
                   in the transformation section.")
       } else {
@@ -336,7 +334,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       # If at least one entry of the transformation-related NC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
       if (nrow(mainData[wellType == enumeratedTransfNC & is.na(flag)]) == 0) {
-        stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with 
+        stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with
                   that Negative Control are flagged. Please check the data or alternatively select an Input Value for Negative Control
                   in the transformation section.")
       } else {
@@ -367,6 +365,11 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     } else {
       stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
     }
+  } else if (transformation == "normalize by R3") {
+    R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
+    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
+    aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
+    return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
   } else if (transformation == "noAgonist") {
     return(getNoAgonist(parameters, mainData))
   } else if (transformation == "enhancement") {
@@ -410,12 +413,14 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       file.path(filePath, paste0(mainData$assayBarcode, "_", mainData$batchCode, ".png")),
       NA_character_)
     return(filePaths)
-  } else if (transformation == "null" || transformation == "" || transformation =="none") {
+  } else if (transformation == "none") {
+    return(mainData$activity)
+  } else if (transformation == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
-    return(mainData$normalizedActivity)
+    return(mainData$activity)
   } else {
     stopUser("Transformation not defined in system.")
-  }  
+  }
 }
 
 getNoAgonist <- function(parameters, mainData) {
