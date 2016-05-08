@@ -146,6 +146,36 @@
           kindName: "Min",
           typeName: "numericValue"
         }, {
+          kindName: "VMax",
+          typeName: "numericValue"
+        }, {
+          kindName: "VMax",
+          typeName: "stringValue"
+        }, {
+          kindName: "Fitted VMax",
+          typeName: "numericValue"
+        }, {
+          kindName: "Km",
+          typeName: "numericValue"
+        }, {
+          kindName: "Km",
+          typeName: "stringValue"
+        }, {
+          kindName: "kcat",
+          typeName: "numericValue"
+        }, {
+          kindName: "kcat",
+          typeName: "stringValue"
+        }, {
+          kindName: "kcat/Km",
+          typeName: "numericValue"
+        }, {
+          kindName: "kcat/Km",
+          typeName: "stringValue"
+        }, {
+          kindName: "Fitted Km",
+          typeName: "numericValue"
+        }, {
           kindName: "Response",
           typeName: "numericValue"
         }, {
@@ -171,6 +201,9 @@
           typeName: "stringValue"
         }, {
           kindName: "curve id",
+          typeName: "stringValue"
+        }, {
+          kindName: "curve name",
           typeName: "stringValue"
         }, {
           kindName: "EC50",
@@ -299,6 +332,13 @@
           codeOrigin: "ACAS DDICT",
           code: "4 parameter D-R IC50",
           name: "IC50",
+          ignored: false
+        }, {
+          codeType: "model fit",
+          codeKind: "type",
+          codeOrigin: "ACAS DDICT",
+          code: "Michaelis-Menten",
+          name: "Michaelis-Menten",
           ignored: false
         }, {
           codeType: "user flag status",
