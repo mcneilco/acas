@@ -1140,7 +1140,6 @@ exports.splitContainerInternal = (input, callback) ->
 			else if statusCode == 500
 				callback "internal error", 500
 			else if statusCode == 200
-				console.log originContainer
 				if !originContainer[0].plateSize?
 					message = "plate size note defined for input container #{input.codeName}"
 					console.error message
@@ -1241,8 +1240,6 @@ exports.splitContainerInternal = (input, callback) ->
 									outputArray.push newContainer
 
 exports.mergeContainers = (req, resp) ->
-	console.log "req.body"
-	console.log req.body
 	exports.mergeContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1419,7 +1416,6 @@ exports.searchContainersInternal = (input, callback) ->
 					if statusCode == 500
 						callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
 					else
-						console.debug json
 						callback json, statusCode
 			else
 				console.error 'got ajax error trying to get searchContainers'

@@ -198,4 +198,4 @@ exports.getAuthors = (req, resp) ->
 		baseEntityServiceTestJSON = require '../src/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
 		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
 	else
-		csUtilities.getAuthors req, resp
+		csUtilities.getAuthors resp
