@@ -4,15 +4,19 @@ PlateModel = require('../src/client/PlateModel.coffee').PlateModel
 PlateTypeCollection = require('../src/client/PlateTypeCollection.coffee').PlateTypeCollection
 fixtures = require('./testFixtures/CreatePlateFixtures.coffee')
 
-fdescribe "CreatePlateController", ->
+$ = require('jquery')
+_ = require('lodash')
+
+describe "CreatePlateController", ->
   beforeEach ->
+    window.AppLaunchParams = {}
     fixture = '<div id="fixture"></div>'
     document.body.insertAdjacentHTML('afterbegin', fixture)
     @startUpParams = {}
     @model = new PlateModel()
     @startUpParams =
       model: @model
-      plateTypes: new PlateTypeCollection()
+      plateDefinitions: new PlateTypeCollection()
     @createPlateController = new CreatePlateController(@startUpParams)
 
   it "should exist", ->
@@ -42,4 +46,4 @@ fdescribe "CreatePlateController", ->
 
   describe "fields", ->
     it "should have a PlateTypeCollection field", ->
-      expect(@createPlateController.plateTypes instanceof PlateTypeCollection).toBeTruthy()
+      expect(@createPlateController.plateDefinitions instanceof PlateTypeCollection).toBeTruthy()

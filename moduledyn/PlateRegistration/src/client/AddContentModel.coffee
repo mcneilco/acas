@@ -66,7 +66,10 @@ class AddContentModel extends Backbone.Model
 
   validateIdentifiers: (value, attr, computedState) ->
     if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 0
-      unless computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "sameIdentifier"
+      if computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "sameIdentifier"
+        if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 1
+          return "Only one identifier may be entered when filling the region with the same identifier"
+      else
         if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] > computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
           return "The number of selected wells must be the same or less than the number of identifiers entered"
 
@@ -74,8 +77,6 @@ class AddContentModel extends Backbone.Model
     identifiers = _.map(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (identifier) ->
       return {requestName: identifier}
     )
-    console.log "identifiers"
-    console.log identifiers
 
     identifiers
 

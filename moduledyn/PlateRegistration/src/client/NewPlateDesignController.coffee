@@ -38,7 +38,7 @@ class NewPlateDesignController extends Backbone.View
       model: new AddContentModel()
     @addContentController = new AddContentController(addContentControllerStartUpParams)
     @listenTo @addContentController, ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
-    @listenTo @addContentController, 'ADD_CONTENT_NO_VALIDATION', @handleAddContentNoValidation
+    @listenTo @addContentController, ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, @handleAddContentNoValidation
 
     @plateViewController = new PlateViewController()
     @listenTo @plateViewController, PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @handleRegionSelected
@@ -75,7 +75,7 @@ class NewPlateDesignController extends Backbone.View
     @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, addContentModel
 
   handleAddContentNoValidation: (addContentModel) =>
-    @trigger 'ADD_CONTENT_NO_VALIDATION', addContentModel
+    @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, addContentModel
 
   handleAddContentSuccessCallback: (addContentModel) =>
     @plateViewController.addContent addContentModel

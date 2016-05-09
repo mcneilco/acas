@@ -21,6 +21,7 @@ PlateModel = require('./PlateModel.coffee').PlateModel
 
 DataServiceController = require('./DataServiceController.coffee').DataServiceController
 AddContentIdentifierValidationController = require('./IdentifierValidationController.coffee').AddContentIdentifierValidationController
+ADD_CONTENT_CONTROLLER_EVENTS = require('./AddContentController.coffee').ADD_CONTENT_CONTROLLER_EVENTS
 PlateTableIdentifierValidationController = require('./IdentifierValidationController.coffee').PlateTableIdentifierValidationController
 LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
 PlateSearchController = require('./PlateSearchController.coffee').PlateSearchController
@@ -34,7 +35,7 @@ class AppController extends Backbone.View
     @newPlateDesignController = new NewPlateDesignController({plateStatuses: new PlateStatusCollection(), plateTypes: new PlateTypeCollection()})
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
     @listenTo @newPlateDesignController, NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, @handleAddIdentifierContentFromTable
-    @listenTo @newPlateDesignController, 'ADD_CONTENT_NO_VALIDATION', @handleAddContentNoValidation
+    @listenTo @newPlateDesignController, ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, @handleAddContentNoValidation
 
     @createPlateController = new CreatePlateController({model: new PlateModel(), plateDefinitions: new PlateDefinitionCollection()})
     @listenTo @createPlateController, CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @handleCreatePlate

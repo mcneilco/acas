@@ -33,9 +33,6 @@ class PlateInfoModel extends Backbone.Model
     numberOfRows: ""
 
   validation:
-#    barcode:
-#      required: true
-#      msg: "Please enter a valid Plate Barcode"
     plateSize: [
       required: true
       msg: "Please enter the plate size"
@@ -43,9 +40,6 @@ class PlateInfoModel extends Backbone.Model
       pattern: 'number'
       msg: "Plate Size must be numeric"
     ]
-#    status:
-#      required: true
-#      msg: "Please select a status"
 
 
 module.exports =

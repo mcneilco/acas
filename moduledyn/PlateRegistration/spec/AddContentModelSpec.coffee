@@ -140,7 +140,7 @@ describe "AddContentModel", ->
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 1)
       expect(@addContent.isValid(true)).toBeTruthy()
 
-    it "should require that the user enter 1 identifier if the 'Fill Region with Same Batch ID' option is selected", ->
+    xit "should require that the user enter 1 identifier if the 'Fill Region with Same Batch ID' option is selected", ->
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS, 0)
       @addContent.set(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, "sameIdentifier")
       expect(@addContent.isValid(true)).toBeFalsy()

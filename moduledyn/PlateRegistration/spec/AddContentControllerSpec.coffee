@@ -11,6 +11,7 @@ _ = require('lodash')
 
 describe "AddContentController", ->
   beforeEach ->
+    window.AppLaunchParams = {}
     fixture = '<div id="fixture"></div>'
     document.body.insertAdjacentHTML('afterbegin', fixture)
     @startUpParams = {}
@@ -142,52 +143,18 @@ describe "AddContentController", ->
       @addContent = new AddContentController(@startUpParams)
       $("#fixture").html @addContent.render().el
 
-    it "should emit an ADD_CONTENT event when the 'Add' button is clicked", (done) ->
+    it "should emit an ADD_CONTENT event when there are identifiers being added and the 'Add' button is clicked", (done) ->
       @addContent.on ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, ->
         expect(true).toBeTruthy()
         done()
 
+      @model.set("identifiers", ["id1"])
       @addContent.handleAddClick()
-#
-#    describe "model events", ->
-#      it "should trigger a PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID event when the form model is updated to an valid state", (done) ->
-#        @plateInfo.on PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_VALID, ->
-#          expect(true).toBeTruthy()
-#          done()
-#        @plateInfo.updateModel(plateModelFixtures.validPlateInfoModel)
-#
-#      it "should trigger a PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID event when the form model is updated to an invalid state", (done) ->
-#        @plateInfo.on PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID, ->
-#          expect(true).toBeTruthy()
-#          done()
-#
-#        @plateInfo.updateModel({})
-#
-#    describe "form input fields and model attributes should be bound", ->
-#      it "when the model is empty, the input fields should be empty", ->
-#        expect($("#fixture").find("[name='plateBarcode']").val()).toEqual ""
-#        expect($("#fixture").find("[name='description']").val()).toEqual ""
-#        expect($("#fixture").find("[name='plateSize']").val()).toEqual ""
-#        expect($("#fixture").find("[name='type']").val()).toEqual ""
-#        expect($("#fixture").find("[name='status']").val()).toEqual ""
-#        expect($("#fixture").find("[name='createdDate']").val()).toEqual ""
-#        expect($("#fixture").find("[name='supplier']").val()).toEqual ""
-#
-#      it "when the model has values set, the input fields should display those values", ->
-#@plateInfo.model.set(plateModelFixtures.validPlateInfoModel)
-#        @model = new PlateInfoModel(plateModelFixtures.validPlateInfoModel)
-#        @startUpParams.model = @model
-#        plateInfo = new PlateInfoController(@startUpParams)
-#        $("#fixture").html plateInfo.render().el
-#        expect($("#fixture").find("[name='plateBarcode']").val()).toEqual plateModelFixtures.validPlateInfoModel.plateBarcode
-#        expect($("#fixture").find("[name='description']").val()).toEqual plateModelFixtures.validPlateInfoModel.description
-#        expect(parseInt($("#fixture").find("[name='plateSize']").val())).toEqual plateModelFixtures.validPlateInfoModel.plateSize
-#        expect($("#fixture").find("[name='type']").val()).toEqual plateModelFixtures.validPlateInfoModel.type
-#        expect($("#fixture").find("[name='status']").val()).toEqual plateModelFixtures.validPlateInfoModel.status
-#        expect($("#fixture").find("[name='createdDate']").val()).toEqual plateModelFixtures.validPlateInfoModel.createdDate
-#        expect($("#fixture").find("[name='supplier']").val()).toEqual plateModelFixtures.validPlateInfoModel.supplier
-#
-#
-#
 
+    it "should emit an ADD_CONTENT_NO_VALIDATION event when there are no identifiers being added and the 'Add' button is clicked", (done) ->
+      @addContent.on ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, ->
+        expect(true).toBeTruthy()
+        done()
 
+      @model.set("identifiers", [])
+      @addContent.handleAddClick()

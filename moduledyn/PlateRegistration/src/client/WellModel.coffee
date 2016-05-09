@@ -122,31 +122,35 @@ class WellsModel extends Backbone.Model
       @get("wellsToSave").push well
 
   fillWellWithWellObject: (rowIndex, columnIndex, wellObject) ->
-    console.log "wellObject"
-    console.log wellObject
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
     canSave = true
-    if wellObject.amount?
-      if isNaN(parseFloat(wellObject.amount))
-        well.amount = wellObject.amount
-        canSave = false
-      else
-        well.amount = parseFloat(wellObject.amount)
+    if wellObject.amount is ""
+      wellObject.amount = null
     else
-      well.amount = null
+      if wellObject.amount?
+        if isNaN(parseFloat(wellObject.amount))
+          well.amount = wellObject.amount
+          canSave = false
+        else
+          well.amount = parseFloat(wellObject.amount)
+      else
+        well.amount = null
     well.amountUnits = "uL"
     well.batchConcUnits = "mM"
     well.physicalState = "liquid"
     well.batchCode = wellObject.batchCode
-    if wellObject.batchConcentration?
-      if isNaN(parseFloat(wellObject.batchConcentration))
-        well.batchConcentration = wellObject.batchConcentration
-        canSave = false
-      else
-        well.batchConcentration = parseFloat(wellObject.batchConcentration)
-
+    if wellObject.batchConcentration is ""
+      wellObject.batchConcentration = null
     else
-      well.batchConcentration = null
+      if wellObject.batchConcentration?
+        if isNaN(parseFloat(wellObject.batchConcentration))
+          well.batchConcentration = wellObject.batchConcentration
+          canSave = false
+        else
+          well.batchConcentration = parseFloat(wellObject.batchConcentration)
+
+      else
+        well.batchConcentration = null
     #well.batchConcentration = parseFloat(wellObject.batchConcentration)
     recordedDate = new Date()
     well.recordedDate = recordedDate.getTime()

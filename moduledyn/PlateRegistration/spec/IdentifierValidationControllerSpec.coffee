@@ -1,12 +1,20 @@
 $ = require('jquery')
 _ = require('lodash')
 
-IdentifierValidationController = require('../src/client/IdentifierValidationController.coffee').IdentifierValidationController
+AddContentIdentifierValidationController = require('../src/client/IdentifierValidationController.coffee').AddContentIdentifierValidationController
+PlateTableIdentifierValidationController = require('../src/client/IdentifierValidationController.coffee').PlateTableIdentifierValidationController
 AddContentModel = require('../src/client/AddContentModel.coffee').AddContentModel
 
-describe "IdentifierValidationController", ->
+describe "AddContentIdentifierValidationController", ->
   beforeEach ->
-    @identifierValidationController = new IdentifierValidationController({addContentModel: new AddContentModel(), successCallback: () ->})
+    @addContentIdentifierValidationController = new AddContentIdentifierValidationController({addContentModel: new AddContentModel(), successCallback: () ->})
 
   it "should exist", ->
-    expect(@identifierValidationController).toBeTruthy()
+    expect(@addContentIdentifierValidationController).toBeTruthy()
+
+describe "PlateTableIdentifierValidationController", ->
+  beforeEach ->
+    @plateTableIdentifierValidationController = new PlateTableIdentifierValidationController({addContentModel: new AddContentModel(), successCallback: () ->})
+
+  it "should exist", ->
+    expect(@plateTableIdentifierValidationController).toBeTruthy()

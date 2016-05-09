@@ -103,7 +103,7 @@ class PlateTableController extends Backbone.View
         allowInsertColumn: false
         allowInsertRow: false
       })
-    #window.FOOHOT = @handsOnTable
+
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
     @addContent(hotData)
     @fitToScreen()
@@ -121,10 +121,16 @@ class PlateTableController extends Backbone.View
   updateDataDisplayed: (dataFieldToDisplay) =>
     @dataFieldToDisplay = dataFieldToDisplay
     if @dataFieldToDisplay is "masterView"
+      console.log "master view - table should be readonly"
+
       @displayToolTips = true
       @fitToScreen()
       @renderHandsOnTable()
       @updateColorBy("status")
+      @handsOnTable.updateSettings({readOnly: true})
+    else
+      console.log "non master view - table should be editable"
+      @handsOnTable.updateSettings({readOnly: false})
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
 

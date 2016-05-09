@@ -42,6 +42,7 @@ class PlateInfoController extends Backbone.View
     @model = options.model
     @plateTypes = options.plateTypes
     @plateStatuses = options.plateStatuses
+
     @selectLists = [
       controller: @plateTypesSelectList
       containerSelector: "select[name='type']"
@@ -57,35 +58,37 @@ class PlateInfoController extends Backbone.View
     "click button[name='createQuadPinnedPlate']": "handleCreateQuadPinnedPlateClick"
 
   initializeSelectLists: =>
+    selectedTypeCode = "unassigned"
+    if @model.get("type")
+      selectedTypeCode = @model.get("type")
     @plateTypesSelectList = new PickListSelectController
       el: $(@el).find("select[name='type']")
       collection: @plateTypes
+      selectedCode: selectedTypeCode
       insertFirstOption: new PickList
         code: "unassigned"
         name: "Select Plate Type"
-      selectedCode: "unassigned"
       className: "form-control"
       autoFetch: false
 
-    if @model.get("type")?
-      @plateTypesSelectList.setSelectedCode(@model.get("type"))
+    selectedStatusCode = "unassigned"
+    if @model.get("status")
+      selectedStatusCode = @model.get("status")
 
     @plateStatusSelectList = new PickListSelectController
       el: $(@el).find("select[name='status']")
       collection: @plateStatuses
+      selectedCode: selectedStatusCode
       insertFirstOption: new PickList
         code: "unassigned"
         name: "Select Plate Status"
-      selectedCode: "unassigned"
       className: "form-control"
       autoFetch: false
 
-    if @model.get("status")?
-      @plateStatusSelectList.setSelectedCode(@model.get("status"))
 
   render: =>
     $(@el).html @template(@model.toJSON())
-    @initializeSelectLists()
+
     @$("input[name='createdDate']").datepicker()
     if @model.get "createdDate"
       createdDate = new Date(@model.get "createdDate")
@@ -142,6 +145,7 @@ class PlateInfoController extends Backbone.View
   updatePlate: (plate) =>
     @model.set plate
     @render()
+    @initializeSelectLists()
 
 
 

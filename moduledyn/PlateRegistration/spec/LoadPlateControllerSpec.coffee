@@ -5,7 +5,9 @@ LoadPlateController = require('../src/client/LoadPlateController.coffee').LoadPl
 
 describe "LoadPlateController", ->
   beforeEach ->
-    @loadPlateController = new LoadPlateController()
+    options =
+      plateBarcode: "plateBarcode"
+    @loadPlateController = new LoadPlateController(options)
 
   it "should exist", ->
     expect(@loadPlateController).toBeTruthy()

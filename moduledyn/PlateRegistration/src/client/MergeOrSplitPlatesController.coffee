@@ -1,3 +1,5 @@
+Backbone = require('backbone')
+
 SplitPlatesController = require('./SplitPlateController.coffee').SplitPlatesController
 MergePlatesController = require('./MergePlateController.coffee').MergePlatesController
 

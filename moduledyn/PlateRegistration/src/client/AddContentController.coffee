@@ -7,6 +7,7 @@ ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL
 
 ADD_CONTENT_CONTROLLER_EVENTS =
   ADD_CONTENT: "AddContent"
+  ADD_CONTENT_NO_VALIDATION: "addContentNoValidation"
 
 LIST_OF_IDENTIFIER_DELIMITERS = [';', '\t', '\n']
 
@@ -87,9 +88,6 @@ class AddContentController extends Backbone.View
     @$("button[name='add']").addClass('disabled')
 
   handleAddClick: =>
-    console.log "@model"
-    console.log @model
-
     hasIdentifiersToValidate = false
     if _.isArray(@model.get("identifiers"))
       console.log "identifiers is array"
@@ -115,7 +113,7 @@ class AddContentController extends Backbone.View
       @model.set("validIdentifiers", [])
       @model.set("validatedIdentifiers", [])
 
-      @trigger 'ADD_CONTENT_NO_VALIDATION', @model
+      @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, @model
 
   handleIdentifiersAdded: (validatedIdentifiers) =>
     @model.reset()

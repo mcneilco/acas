@@ -5,6 +5,7 @@ AppController = require('../src/client/AppController.coffee').AppController
 
 describe "AppController", ->
   beforeEach ->
+    window.AppLaunchParams = {}
     @appController = new AppController()
 
   it "should exist", ->

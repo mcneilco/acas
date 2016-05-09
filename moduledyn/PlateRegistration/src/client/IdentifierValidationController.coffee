@@ -6,7 +6,6 @@ require('expose?$!expose?jQuery!jquery')
 ADD_CONTENT_MODEL_FIELDS = require('./AddContentModel.coffee').ADD_CONTENT_MODEL_FIELDS
 
 IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES =
-  #URL: '/api/validateIdentifiers'
   BATCH_ID_URL: "/api/preferredBatchId"
   BARCODE_URL: "/api/getWellContentByContainerLabelsObject?containerType=container&containerKind=tube"
 
@@ -20,7 +19,6 @@ class IdentifierValidationController extends Backbone.View
 
   initialize: (options)->
     @addContentModel = options.addContentModel
-    #@url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.BATCH_ID_URL
 
     if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "barcode"
       @url = IDENTIFIER_VALIDATION_CONTROLLER_PROPERTIES.BARCODE_URL
@@ -30,8 +28,6 @@ class IdentifierValidationController extends Backbone.View
       @data = { requests: @addContentModel.formatIdentifiersForBatchIdValidationService() }
 
     @serviceCallProgressText = "Validating Identifiers"
-    console.log "@data to check"
-    console.log @data
     @successCallback = options.successCallback
     @ajaxMethod = 'POST'
 
@@ -40,9 +36,6 @@ class IdentifierValidationController extends Backbone.View
       @handleBarcodeValidationCallback(data, textStatus, jqXHR)
     else if @addContentModel.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE) is "compoundBatchId"
       @handleBatchIdValidationCallback(data, textStatus, jqXHR)
-
-    window.FOODATA = data
-
 
   handleBarcodeValidationCallback: (data, textStatus, jqXHR) =>
     hasInvalidEntries = false
@@ -56,11 +49,6 @@ class IdentifierValidationController extends Backbone.View
         @validRequestNames.push {requestName: well.wellContent[0].batchCode}
     )
     @processIdentifiers()
-
-#    @addContentModel.set ADD_CONTENT_MODEL_FIELDS.INVALID_IDENTIFIERS, @invalidRequestNames
-#    if _.size(@invalidRequestNames) > 0
-#      @trigger DATA_SERVICE_CONTROLLER_EVENTS.ERROR
-#      @handleError(@invalidRequestNames)
 
   handleBatchIdValidationCallback: (data, textStatus, jqXHR) =>
     validatedIdentifiers = data.results

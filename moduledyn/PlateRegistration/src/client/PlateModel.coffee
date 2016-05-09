@@ -62,8 +62,6 @@ class PlateModel extends Backbone.Model
       "wells": []
 
 
-
-
 module.exports =
   PlateModel: PlateModel
   PLATE_MODEL_FIELDS: PLATE_MODEL_FIELDS
