@@ -139,8 +139,8 @@ class PlateViewController extends Backbone.View
     @plateTableController.completeInitialization(@wells, @plateMetaData)
     # default to 'Color By Status'
     @$("a[name='colorByStatus']").click()
-
     $('[data-toggle="tooltip"]').tooltip()
+
   render: =>
     $(@el).html @template()
     @$("div[name='plateTableContainer']").html @plateTableController.render().el

@@ -121,15 +121,12 @@ class PlateTableController extends Backbone.View
   updateDataDisplayed: (dataFieldToDisplay) =>
     @dataFieldToDisplay = dataFieldToDisplay
     if @dataFieldToDisplay is "masterView"
-      console.log "master view - table should be readonly"
-
       @displayToolTips = true
       @fitToScreen()
       @renderHandsOnTable()
       @updateColorBy("status")
       @handsOnTable.updateSettings({readOnly: true})
     else
-      console.log "non master view - table should be editable"
       @handsOnTable.updateSettings({readOnly: false})
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
@@ -296,8 +293,6 @@ class PlateTableController extends Backbone.View
   handleContentUpdated: (changes, source) =>
 
     if source in ["edit", "autofill", "paste"]
-      console.log "changes"
-      console.log changes
       listOfIdentifiers = []
       @resetCellColoring(changes)
       changes = @removeNonChangedValues(changes)
@@ -307,8 +302,6 @@ class PlateTableController extends Backbone.View
           if change?
             listOfIdentifiers.push change[3]
         )
-        console.log "listOfIdentifiers"
-        console.log listOfIdentifiers
         addContentModel = new AddContentModel()
         addContentModel.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS, listOfIdentifiers
         addContentModel.set ADD_CONTENT_MODEL_FIELDS.WELLS_TO_UPDATE, wellsToUpdate
@@ -319,15 +312,11 @@ class PlateTableController extends Backbone.View
           else
             addContentModel.get("identifiers").splice(key, 1)
         )
-        console.log "@dataFieldToDisplay"
-        console.log @dataFieldToDisplay
         if hasIdentifiersToValidate and @dataFieldToDisplay is "batchCode"
-          console.log "ADD_IDENTIFIER_CONTENT_FROM_TABLE"
           @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
 
         else
           unless @dataFieldToDisplay is "batchCode"
-            console.log "running an else block...?"
             updatedValues = @reformatUpdatedValues changes
             @wellsToUpdate.resetWells()
             hasNonNumericValues = false
@@ -347,7 +336,6 @@ class PlateTableController extends Backbone.View
                 $(cell).removeClass "invalidIdentifierCell"
             )
             if hasNonNumericValues
-              console.log "hasNonNumericValues"
               $("div[name='enteringNonNumericConcentrationError']").modal("show")
             @wellsToUpdate.save()
             @updateEmptyAndInvalidWellCount()
@@ -357,8 +345,7 @@ class PlateTableController extends Backbone.View
     for change, idx in changes
       if ((change[2] is null) and (change[3] is "")) or (change[2] is change[3])
         delete changes[idx]
-    console.log "changes"
-    console.log changes
+
     changes
 
   resetCellColoring: (changes) =>
@@ -442,8 +429,6 @@ class PlateTableController extends Backbone.View
   reformatUpdatedValues: (changes) ->
     updateValue = []
     _.each(changes, (change) ->
-      console.log "change"
-      console.log change
       if change?
         updateValue.push
           rowIdx: change[0]
@@ -478,13 +463,19 @@ class PlateTableController extends Backbone.View
       well.amount = ""
     unless well.batchConcentration?
       well.batchConcentration = ""
-    t = '<div class="popover left"> <div class="arrow"></div> <h3 class="popover-title">Well Details: ' + well.wellName + '</h3> <div class="popover-content"><p>Batch Code: ' + well.batchCode + '</p><p>Volume: ' + well.amount + '</p><p>Concentration: ' + well.batchConcentration + '</p></div> </div>'
+    content = "Batch Code: " + well.batchCode + "<br />Volume: " + well.amount + "<br />Concentration: " + well.batchConcentration
 
-    $(td).tooltip({
+    t = '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+    popupPlacement = "right"
+    if col > (@plateMetaData.numberOfColumns / 2)
+      popupPlacement = "left"
+    $(td).popover({
       trigger: 'hover active',
-      title: 'Tooltip -- boom!',
-      placement: 'right',
+      title: "Well Details: #{well.wellName}",
+      placement: popupPlacement,
       container: 'body',
+      html: true
+      content: content
       template: t
     })
     if well?

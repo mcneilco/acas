@@ -8,7 +8,8 @@ module.exports = {
         'modal': true,
         'tooltip': true,
         'dropdown': true,
-        'collapse': true
+        'collapse': true,
+        'popover': true
     },
     styles: {
         // add every bootstrap style you need
