@@ -126,7 +126,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 			ii = 0
 			while ii < points.length
-				x = points[ii].dose
+				x = if logDose then log10(points[ii].dose) else points[ii].dose
 				y = points[ii].response
 				userFlagStatus = points[ii].userFlagStatus
 				preprocessFlagStatus = points[ii].preprocessFlagStatus

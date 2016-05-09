@@ -192,7 +192,7 @@
         })(this);
         ii = 0;
         while (ii < points.length) {
-          x = points[ii].dose;
+          x = logDose ? log10(points[ii].dose) : points[ii].dose;
           y = points[ii].response;
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
