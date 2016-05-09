@@ -58,6 +58,7 @@ class PlateInfoController extends Backbone.View
     "click button[name='createQuadPinnedPlate']": "handleCreateQuadPinnedPlateClick"
 
   initializeSelectLists: =>
+    console.log "initializeSelectLists"
     selectedTypeCode = "unassigned"
     if @model.get("type")
       selectedTypeCode = @model.get("type")
@@ -145,7 +146,13 @@ class PlateInfoController extends Backbone.View
   updatePlate: (plate) =>
     @model.set plate
     @render()
-    @initializeSelectLists()
+    # ensure the DOM has rendered before setting values
+    nonImmediateSetSelect = _.debounce(() =>
+      @initializeSelectLists()
+    , 1)
+
+    nonImmediateSetSelect()
+
 
 
 
