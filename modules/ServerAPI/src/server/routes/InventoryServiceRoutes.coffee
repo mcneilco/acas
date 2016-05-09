@@ -327,6 +327,22 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								container = new containerPreferredEntity.model(container)
 								if definition.definition?
 									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
+									if _.isEmpty definitionPreferredEntity
+										message = "could not find preferred entity for lsType '#{definition.definition.lsType}' and lsKind '#{definition.definition.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
+									else if !definitionPreferredEntity.model?
+										message = "could not find model for preferred entity lsType '#{definition.definition.lsType}' and lsKind '#{definition.definition.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
 									definition = new definitionPreferredEntity.model(definition.definition)
 									definitionValues =  definition.getValues()
 									definitionCodeName = definition.get('codeName')
