@@ -71,7 +71,7 @@ class WellModel extends Backbone.Model
           return false
 
 class WellsModel extends Backbone.Model
-  url: '/api/updateWellContentWithObject'
+  url: '/api/updateWellContentWithObject?copyPreviousValues=0'
   initialize: (options) ->
     @allWells = options.allWells
 

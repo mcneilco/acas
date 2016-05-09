@@ -969,19 +969,21 @@ exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and 
 
 exports.updateWellContent = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body, req.query.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body, req.query.copyPreviousValues, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
 exports.updateWellContentWithObject = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body.wellsToSave, req.query.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body.wellsToSave, req.query.copyPreviousValues, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
+exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom, callback) ->
 	# If call custom doesn't equal 0 then call custom
 	callCustom  = callCustom != "0"
+	# If copyPreviousValues doesn't equal 1 then copyPreviousValues
+	copyPreviousValues  = copyPreviousValues != "0"
 
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
@@ -989,7 +991,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 	else
 		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent?copyPreviousValues="+copyPreviousValues
 		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
