@@ -327,6 +327,22 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 								container = new containerPreferredEntity.model(container)
 								if definition.definition?
 									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
+									if _.isEmpty definitionPreferredEntity
+										message = "could not find preferred entity for lsType '#{definition.definition.lsType}' and lsKind '#{definition.definition.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
+									else if !definitionPreferredEntity.model?
+										message = "could not find model for preferred entity lsType '#{definition.definition.lsType}' and lsKind '#{definition.definition.lsKind}'"
+										console.error message
+										console.debug "here are the configured entity types"
+										preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+											console.debug types
+										callback message, 400
+										return
 									definition = new definitionPreferredEntity.model(definition.definition)
 									definitionValues =  definition.getValues()
 									definitionCodeName = definition.get('codeName')
@@ -953,19 +969,21 @@ exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and 
 
 exports.updateWellContent = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body, req.query.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body, req.query.copyPreviousValues, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
 exports.updateWellContentWithObject = (req, resp) ->
 	req.setTimeout 86400000
-	exports.updateWellContentInternal req.body.wellsToSave, req.query.callCustom, (json, statusCode) ->
+	exports.updateWellContentInternal req.body.wellsToSave, req.query.copyPreviousValues, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
+exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom, callback) ->
 	# If call custom doesn't equal 0 then call custom
 	callCustom  = callCustom != "0"
+	# If copyPreviousValues doesn't equal 1 then copyPreviousValues
+	copyPreviousValues  = copyPreviousValues != "0"
 
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
@@ -973,7 +991,7 @@ exports.updateWellContentInternal = (wellContent, callCustom, callback) ->
 	else
 		console.debug 'incoming updateWellContentInternal request: ', JSON.stringify(wellContent.wells)
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent"
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateWellContent?copyPreviousValues="+copyPreviousValues
 		console.debug 'base url: ', baseurl
 		request = require 'request'
 		request(
@@ -1140,7 +1158,6 @@ exports.splitContainerInternal = (input, callback) ->
 			else if statusCode == 500
 				callback "internal error", 500
 			else if statusCode == 200
-				console.log originContainer
 				if !originContainer[0].plateSize?
 					message = "plate size note defined for input container #{input.codeName}"
 					console.error message
@@ -1241,8 +1258,6 @@ exports.splitContainerInternal = (input, callback) ->
 									outputArray.push newContainer
 
 exports.mergeContainers = (req, resp) ->
-	console.log "req.body"
-	console.log req.body
 	exports.mergeContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1419,7 +1434,6 @@ exports.searchContainersInternal = (input, callback) ->
 					if statusCode == 500
 						callback JSON.stringify "getContainerAndDefinitionContainerByContainerLabelInternal failed", statusCode
 					else
-						console.debug json
 						callback json, statusCode
 			else
 				console.error 'got ajax error trying to get searchContainers'
