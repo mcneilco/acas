@@ -47,6 +47,7 @@ class SplitPlatesController extends Backbone.View
   handlePlateQuadrantBarcodeChange: (evt) =>
     plateFoundErrorSelector = evt.currentTarget.name + "_barcodeFound"
     existingPlateLinkSelector = evt.currentTarget.name + "_existingPlateLink"
+
     target = $(evt.currentTarget)
     if AppLaunchParams.enforceUppercaseBarcodes
       barcode = _.toUpper(target.val())
@@ -54,6 +55,14 @@ class SplitPlatesController extends Backbone.View
     else
       barcode = target.val()
     @plateQuadrants[evt.currentTarget.name].barcode = barcode
+
+    $("a[name='#{existingPlateLinkSelector}']").html barcode
+    $("span[name='#{plateFoundErrorSelector}']").addClass("hide")
+    $(evt.currentTarget).parent().removeClass("has-success")
+    $(evt.currentTarget).parent().removeClass("has-error")
+    $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+    $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
+
     if @destinationPlatesAreUnique()
       @$("div[name='duplicateBarcodeErrorMessage']").addClass "hide"
       $.ajax(
@@ -67,25 +76,15 @@ class SplitPlatesController extends Backbone.View
         $("a[name='#{existingPlateLinkSelector}']").prop("href", "#plateDesign/#{barcode}")
         $("a[name='#{existingPlateLinkSelector}']").html barcode
         $("span[name='#{plateFoundErrorSelector}']").removeClass("hide")
-        $(evt.currentTarget).parent().removeClass("has-success")
         $(evt.currentTarget).parent().addClass("has-error")
-        $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
         $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
 
         @setStateOfSubmitButton()
       )
       .fail((jqXHR, textStatus, errorThrown) =>
-        $("span[name='#{plateFoundErrorSelector}']").addClass("hide")
-
-
         @plateQuadrants[evt.currentTarget.name].isValid = true
-        $("span[name='#{plateFoundErrorSelector}']").addClass("hide")
         $(evt.currentTarget).parent().addClass("has-success")
-        $(evt.currentTarget).parent().removeClass("has-error")
-
         $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
-        $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
-
         @setStateOfSubmitButton()
       )
     else
@@ -110,8 +109,6 @@ class SplitPlatesController extends Backbone.View
       unless plate.barcode is ""
         isValid = true
     )
-    console.log "destinationPlatesAreValid"
-    console.log isValid
     return isValid
 
   destinationPlatesAreUnique: =>
@@ -143,23 +140,28 @@ class SplitPlatesController extends Backbone.View
       target.val barcode
     else
       barcode = target.val()
+
+    @$("span[name='sourcePlateTooSmall']").addClass "hide"
+    @$("span[name='sourcePlateNotFound']").addClass "hide"
+    $(evt.currentTarget).parent().removeClass("has-error")
+    $(evt.currentTarget).parent().removeClass("has-success")
+    $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
+    $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
     $.ajax(
       dataType: "json"
       method: 'get'
       url: "/api/getContainerAndDefinitionContainerByContainerLabel/#{barcode}"
     )
     .done((data, textStatus, jqXHR) =>
-      $(evt.currentTarget).parent().removeClass("has-error")
-      $(evt.currentTarget).parent().addClass("has-success")
-      @$("span[name='sourcePlateNotFound']").addClass "hide"
-
       @sourcePlate.codeName = data.codeName
       @sourcePlate.plateSize = data.plateSize
       if @sourcePlate.plateSize < MINIMUM_PLATE_SIZE
         @$("span[name='sourcePlateTooSmall']").removeClass "hide"
+        $(evt.currentTarget).parent().addClass("has-error")
         @sourcePlate.isValid = false
       else
         @$("span[name='sourcePlateTooSmall']").addClass "hide"
+        $(evt.currentTarget).parent().addClass("has-success")
         $(evt.currentTarget).parent().find(".glyphicon-ok").removeClass("hide")
         $(evt.currentTarget).parent().find(".glyphicon-warning-sign").addClass("hide")
         @sourcePlate.isValid = true
@@ -167,10 +169,8 @@ class SplitPlatesController extends Backbone.View
       @setStateOfSubmitButton()
     )
     .fail((jqXHR, textStatus, errorThrown) =>
-      $(evt.currentTarget).parent().removeClass("has-success")
       $(evt.currentTarget).parent().addClass("has-error")
       @$("span[name='sourcePlateNotFound']").removeClass "hide"
-      $(evt.currentTarget).parent().find(".glyphicon-ok").addClass("hide")
       $(evt.currentTarget).parent().find(".glyphicon-warning-sign").removeClass("hide")
       @sourcePlate.isValid = false
       @setStateOfSubmitButton()

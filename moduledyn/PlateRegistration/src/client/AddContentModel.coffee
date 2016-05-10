@@ -1,4 +1,6 @@
 _ = require('lodash')
+$ = require('jquery')
+
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
 
@@ -41,14 +43,14 @@ class AddContentModel extends Backbone.Model
     identifierType:
       required: true
       msg: "Please select an identifier type"
-    amount:
-      required: false
-      pattern: "number"
-      msg: "Please enter numeric value for amount"
-    batchConcentration:
-      required: false
-      pattern: "number"
-      msg: "Please enter numeric value for concentration"
+    amount: (value) ->
+      value = @formatNumericValue(value)
+      if isNaN value
+        return "Please enter numeric value for amount"
+    batchConcentration: (value) ->
+      value = @formatNumericValue(value)
+      if isNaN value
+        return "Please enter numeric value for concentration"
     fillStrategy:
       required: true
       msg: "Please select a fill strategy"
@@ -80,13 +82,18 @@ class AddContentModel extends Backbone.Model
 
     identifiers
 
+  formatNumericValue: (value) ->
+    value = $.trim(value)
+    if value is ""
+      return null
+    else
+      if value.substring(0,1)  is "."
+        value = "0" + value
+
+    value
+
   formatIdentifiersForBarcodeValidationService: ->
-#    identifiers = _.map(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (identifier) ->
-#      return {requestName: identifier}
-#    )
     identifiers = {barcodes: @get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS)}
-    console.log "identifiers"
-    console.log identifiers
 
     identifiers
 

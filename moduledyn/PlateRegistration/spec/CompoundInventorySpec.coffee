@@ -1,4 +1,7 @@
-MergePlateControllerSpec = require('./MergePlateControllerSpec.coffee')
+#MergePlateControllerSpec = require('./MergePlateControllerSpec.coffee')
+
+AddContentControllerSpec = require('./AddContentControllerSpec.coffee')
+AddContentModelSpec = require('./AddContentModelSpec.coffee')
 
 unless true
   AddContentControllerSpec = require('./AddContentControllerSpec.coffee')
