@@ -116,16 +116,16 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 		timeout: 6000000
 	, (error, response, json) =>
 		if !error  && response.statusCode == 200
-			callback json, response.statusCode
 			# If call custom doesn't equal 0 then call custom
 			callCustom  = callCustom != "0"
-			if callCustom
-				if csUtilities.createPlate?
-					console.log "running customer specific server function createPlate"
-					csUtilities.createPlate input, (response) ->
-						console.log response
-				else
-					console.warn "could not find customer specific server function createPlate so not running it"
+			if callCustom && csUtilities.createPlate?
+				console.log "running customer specific server function createPlate"
+				csUtilities.createPlate input, (res) ->
+					console.log res
+					callback json, response.statusCode
+			else
+				console.warn "could not find customer specific server function createPlate so not running it"
+				callback json, response.statusCode
 		else if response.statusCode == 400
 			callback response.body, response.statusCode
 		else
