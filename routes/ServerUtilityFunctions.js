@@ -73,7 +73,7 @@
               encoding: 'utf8'
             }, (function(_this) {
               return function(err, stdoutFileText) {
-                var error1, message, result;
+                var message, result;
                 if (stdoutFileText.indexOf("R Execution Error") === 0) {
                   message = {
                     errorLevel: "error",
@@ -97,8 +97,8 @@
                     } else {
                       return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", request.body.user);
                     }
-                  } catch (error1) {
-                    error = error1;
+                  } catch (_error) {
+                    error = _error;
                     return console.log(error);
                   }
                 }
@@ -150,7 +150,7 @@
         body: JSON.stringify(requestBody)
       }, (function(_this) {
         return function(error, response, body) {
-          var error1, message, messageText, result;
+          var message, messageText, result;
           _this.serverError = error;
           _this.responseJSON = body;
           if (((_this.responseJSON != null) && (_this.responseJSON["RExecutionError"] != null)) || (_this.serverError != null)) {
@@ -180,8 +180,8 @@
               } else {
                 return csUtilities.logUsage("Returned success from R function: " + rFunction, "NA", username);
               }
-            } catch (error1) {
-              error = error1;
+            } catch (_error) {
+              error = _error;
               return console.log(error);
             }
           }

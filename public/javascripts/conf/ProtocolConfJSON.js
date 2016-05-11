@@ -119,6 +119,12 @@
         }, {
           typeName: "codeValue",
           kindName: "model fit type"
+        }, {
+          typeName: "stringValue",
+          kindName: "model fit transformation"
+        }, {
+          typeName: "codeValue",
+          kindName: "model fit transformation units"
         }
       ],
       labeltypes: [
@@ -206,6 +212,9 @@
         }, {
           typeName: "model fit",
           kindName: "type"
+        }, {
+          typeName: "model fit",
+          kindName: "transformation units"
         }
       ],
       codetables: [
@@ -383,6 +392,20 @@
           codeOrigin: "ACAS DDICT",
           code: "4 parameter D-R",
           name: "EC50",
+          ignored: false
+        }, {
+          codeType: "model fit",
+          codeKind: "transformation units",
+          codeOrigin: "ACAS DDICT",
+          code: "none",
+          name: "None",
+          ignored: false
+        }, {
+          codeType: "model fit",
+          codeKind: "transformation units",
+          codeOrigin: "ACAS DDICT",
+          code: "%",
+          name: "%",
           ignored: false
         }
       ],

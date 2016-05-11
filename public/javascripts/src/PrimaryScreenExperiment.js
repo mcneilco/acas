@@ -381,7 +381,8 @@
         }
         resp.transformationRuleList.on('change', (function(_this) {
           return function() {
-            return _this.trigger('change');
+            _this.trigger('change');
+            return _this.trigger('transformationRuleChanged');
           };
         })(this));
         resp.transformationRuleList.on('amDirty', (function(_this) {
@@ -588,6 +589,7 @@
     extend(PrimaryScreenExperiment, superClass);
 
     function PrimaryScreenExperiment() {
+      this.validateModelFitParams = bind(this.validateModelFitParams, this);
       return PrimaryScreenExperiment.__super__.constructor.apply(this, arguments);
     }
 
@@ -599,6 +601,30 @@
       return this.set({
         lsKind: "Bio Activity"
       });
+    };
+
+    PrimaryScreenExperiment.prototype.validateModelFitParams = function() {
+      var errors, fitTrans, transUnits;
+      errors = [];
+      fitTrans = this.getModelFitTransformation().get('stringValue');
+      if (fitTrans === "Select Fit Transformation" || fitTrans === void 0 || fitTrans === null) {
+        errors.push({
+          attribute: 'fitTransformation',
+          message: "Fit transformation must be set"
+        });
+      }
+      transUnits = this.getModelFitTransformationUnits().get('codeValue');
+      if (transUnits === "unassigned" || transUnits === void 0 || transUnits === null) {
+        errors.push({
+          attribute: 'transformationUnits',
+          message: "Transformation units must be set"
+        });
+      }
+      if (errors.length > 0) {
+        return errors;
+      } else {
+        return null;
+      }
     };
 
     PrimaryScreenExperiment.prototype.getDryRunStatus = function() {
@@ -683,6 +709,37 @@
         });
       }
       return type;
+    };
+
+    PrimaryScreenExperiment.prototype.getModelFitTransformation = function() {
+      var trans;
+      trans = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit transformation");
+      if (!trans.has('stringValue')) {
+        trans.set({
+          stringValue: "Select Fit Transformation"
+        });
+      }
+      return trans;
+    };
+
+    PrimaryScreenExperiment.prototype.getModelFitTransformationUnits = function() {
+      var tu;
+      tu = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit transformation units");
+      if (!tu.has('codeValue')) {
+        tu.set({
+          codeValue: "%"
+        });
+        tu.set({
+          codeType: "model fit"
+        });
+        tu.set({
+          codeKind: "transformation units"
+        });
+        tu.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return tu;
     };
 
     return PrimaryScreenExperiment;
@@ -1902,6 +1959,11 @@
         model: this.options.paramsFromExperiment,
         el: this.$('.bv_additionalValuesForm')
       });
+      this.analysisParameterController.model.on("transformationRuleChanged", (function(_this) {
+        return function() {
+          return _this.trigger('transformationRuleChanged', _this.analysisParameterController.model.get('transformationRuleList'));
+        };
+      })(this));
       return this.completeInitialization();
     };
 
@@ -2172,6 +2234,11 @@
       this.dataAnalysisController.setUser(window.AppLaunchParams.loginUserName);
       this.dataAnalysisController.setExperimentId(this.model.id);
       this.dataAnalysisController.on('analysis-completed', this.handleAnalysisComplete);
+      this.dataAnalysisController.on('transformationRuleChanged', (function(_this) {
+        return function(transformationRuleList) {
+          return _this.trigger('transformationRuleChanged', transformationRuleList);
+        };
+      })(this));
       this.dataAnalysisController.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');
@@ -2334,6 +2401,11 @@
       this.analysisController.on('analysis-completed', (function(_this) {
         return function() {
           return _this.fetchModel();
+        };
+      })(this));
+      this.analysisController.on('transformationRuleChanged', (function(_this) {
+        return function(transformationRuleList) {
+          return _this.modelFitController.handleTransformationRuleChanged(transformationRuleList);
         };
       })(this));
       this.$('.bv_primaryScreenDataAnalysisTab').on('shown', (function(_this) {
