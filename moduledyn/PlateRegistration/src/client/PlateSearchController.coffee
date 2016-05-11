@@ -38,7 +38,13 @@ class PlateSearchController extends Backbone.View
     @setStateOfSubmitButton()
     @delegateEvents()
 
-  handleInputChanged: =>
+  handleInputChanged: (evt) =>
+    target = $(evt.currentTarget)
+    if target.attr('name') is "barcodeSearchTerm"
+      barcode = $.trim(target.val())
+      if AppLaunchParams.enforceUppercaseBarcodes
+        barcode = $.trim(_.toUpper(target.val()))
+        target.val(barcode)
     @setStateOfSubmitButton()
 
   initializeSelectLists: =>
@@ -90,6 +96,8 @@ class PlateSearchController extends Backbone.View
     }
     barcode = $.trim(@$("input[name='barcodeSearchTerm']").val())
     if barcode isnt ""
+      if AppLaunchParams.enforceUppercaseBarcodes
+        barcode = $.trim(_.toUpper(barcode))
       searchTerms.barcode = barcode
     description = $.trim(@$("input[name='descriptionSearchTerm']").val())
     if description isnt ""

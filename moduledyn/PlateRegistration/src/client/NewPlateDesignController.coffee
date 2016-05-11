@@ -54,6 +54,7 @@ class NewPlateDesignController extends Backbone.View
 
   completeInitialization: (plateAndWellData) =>
     @plateInfoController.updatePlate plateAndWellData.plateMetadata
+    #@plateInfoController.initializeSelectLists()
     @plateViewController.completeInitialization(plateAndWellData.wellContent, plateAndWellData.plateMetadata)
     @serialDilutionController.completeInitialization(plateAndWellData.plateMetadata)
 

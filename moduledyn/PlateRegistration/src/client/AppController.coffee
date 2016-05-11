@@ -105,10 +105,17 @@ class AppController extends Backbone.View
     @$("div[name='formContainer']").html @mergeOrSplitPlatesController.render().el
   
   handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
-    promises = []
-    promises.push(@newPlateDesignController.plateStatuses.fetch())
-    promises.push(@newPlateDesignController.plateTypes.fetch())
-    $.when(promises).done(() =>
+    plateStatusesDeferred = $.Deferred()
+    plateTypesDeferred = $.Deferred()
+    @newPlateDesignController.plateStatuses.fetch({
+      success: () =>
+        plateStatusesDeferred.resolve()
+    })
+    @newPlateDesignController.plateTypes.fetch({
+      success: () =>
+        plateTypesDeferred.resolve()
+    })
+    $.when(plateStatusesDeferred, plateTypesDeferred).done(() =>
       @$("div[name='formContainer']").html @newPlateDesignController.render().el
       @currentFormController = @newPlateDesignController
       @newPlateDesignController.completeInitialization(plateAndWellData)
