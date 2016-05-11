@@ -20,7 +20,7 @@
   };
 
   exports.getPreferredCompoundBatchIDs = function(requests, callback) {
-    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, req, request, serverUtilityFunctions, serviceType;
+    var _, config, csUtilities, each, errorMessage, possibleServiceTypes, req, request, results, serverUtilityFunctions, serviceType;
     _ = require("underscore");
     each = require("each");
     request = require('request');
@@ -28,7 +28,7 @@
     serverUtilityFunctions = require('./ServerUtilityFunctions.js');
     serviceType = config.all.client.service.external.preferred.batchid.type;
     csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-    possibleServiceTypes = ['NewLineSepBulkPost', 'SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString'];
+    possibleServiceTypes = ['NewLineSepBulkPost', 'SeuratCmpdReg', 'GeneCodeCheckByR', 'AcasCmpdReg', 'LabSynchCmpdReg', 'SingleBatchNameQueryString', 'AllPass'];
     if (indexOf.call(possibleServiceTypes, serviceType) < 0) {
       errorMessage = "client.service.external.preferred.batchid.type '" + serviceType + "' is not in possible service types " + possibleServiceTypes;
       console.log(errorMessage);
@@ -42,6 +42,24 @@
           results: preferredResp
         }));
       });
+    } else if (serviceType === "AllPass" && !global.specRunnerTestmode) {
+      results = (function() {
+        var i, len, results1;
+        results1 = [];
+        for (i = 0, len = requests.length; i < len; i++) {
+          req = requests[i];
+          results1.push({
+            requestName: req.requestName,
+            preferredName: req.requestName
+          });
+        }
+        return results1;
+      })();
+      return callback(JSON.stringify({
+        error: false,
+        errorMessages: [],
+        results: results
+      }));
     } else if (serviceType === "SeuratCmpdReg" && !global.specRunnerTestmode) {
       req = {
         testMode: false,
