@@ -985,16 +985,11 @@ class window.ProjectController extends AbstractFormController
 			@$('.bv_saving').hide()
 			@$('.bv_saveFailed').show()
 		else
-			@saveProject()
+			@saveProjectAndRoles()
 
-	saveProject: =>
+	saveProjectAndRoles: =>
 		@prepareToSaveAttachedFiles()
 		@prepareToSaveProjectLeaders()
-		if !@model.isNew() and UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
-			authorRoles = @prepareToSaveAuthorRoles()
-			newAuthorRoles = authorRoles[0]
-			authorRolesToDelete = authorRoles[1]
-
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
@@ -1011,63 +1006,18 @@ class window.ProjectController extends AbstractFormController
 					if response is "update lsThing failed"
 						@model.trigger 'saveFailed'
 					else
-						dataToPost =
-							rolekind:
-								[
-									typeName: "Project"
-									kindName: @model.get('codeName')
-								]
-							lsroles:
-								[
-									lsType: "Project"
-									lsKind: @model.get('codeName')
-									roleName: "User"
-								,
-									lsType: "Project"
-									lsKind: @model.get('codeName')
-									roleName: "Administrator"
-								]
-
-						$.ajax
-							type: 'POST'
-							url: '/api/projects/createRoleKindAndName'
-							data: dataToPost
-							success: (response) =>
-								console.log "created project role kind and name"
-							error: (err) =>
-								@serviceReturn = null
-								if err.responseText.indexOf("saveFailed") > -1
-									alert 'An error occurred saving the projectt role kind and name. Please contact an administrator.'
-							dataType: 'json'
+						@createRoleKindAndName()
 
 		else
 			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
-				dataToPost =
-					newAuthorRoles: JSON.stringify newAuthorRoles
-					authorRolesToDelete: JSON.stringify authorRolesToDelete
-				$.ajax
-					type: 'POST'
-					url: '/api/projects/updateProjectRoles'
-					data: dataToPost
-					dataType: 'json'
-					success: (response) =>
-						@model.save null,
-							success: (model, response) =>
-								if response is "update lsThing failed"
-									@model.trigger 'saveFailed'
-							error: (err) =>
-								@serviceReturn = null
-								if err.responseText.indexOf("saveFailed") > -1
-									alert 'An error occurred saving the project.'
-									@model.trigger 'saveFailed'
-					error: (err) =>
-						alert 'An error occurred saving the project roles'
-						@model.trigger 'saveFailed'
+				@updateProjectRoles()
 			else
 				@model.save null,
 					success: (model, response) =>
 						if response is "update lsThing failed"
 							@model.trigger 'saveFailed'
+						else
+							@syncRoles()
 					error: (err) =>
 						@model.trigger 'saveFailed'
 
@@ -1139,6 +1089,72 @@ class window.ProjectController extends AbstractFormController
 			authorRolesToDelete.push author
 
 		[newAuthorRoles, authorRolesToDelete]
+
+	createRoleKindAndName: =>
+		dataToPost =
+			rolekind:
+				[
+					typeName: "Project"
+					kindName: @model.get('codeName')
+				]
+			lsroles:
+				[
+					lsType: "Project"
+					lsKind: @model.get('codeName')
+					roleName: "User"
+				,
+					lsType: "Project"
+					lsKind: @model.get('codeName')
+					roleName: "Administrator"
+				]
+
+		$.ajax
+			type: 'POST'
+			url: '/api/projects/createRoleKindAndName'
+			data: dataToPost
+			dataType: 'json'
+			success: (response) =>
+				@syncRoles()
+			error: (err) =>
+				@serviceReturn = null
+				if err.responseText.indexOf("saveFailed") > -1
+					alert 'An error occurred saving the projectt role kind and name. Please contact an administrator.'
+
+	updateProjectRoles: =>
+		authorRoles = @prepareToSaveAuthorRoles()
+
+		dataToPost =
+			newAuthorRoles: JSON.stringify authorRoles[0]
+			authorRolesToDelete: JSON.stringify authorRoles[1]
+		$.ajax
+			type: 'POST'
+			url: '/api/projects/updateProjectRoles'
+			data: dataToPost
+			dataType: 'json'
+			success: (response) =>
+				@model.save null,
+					success: (model, response) =>
+						if response is "update lsThing failed"
+							@model.trigger 'saveFailed'
+						else
+							@syncRoles()
+					error: (err) =>
+						@serviceReturn = null
+						if err.responseText.indexOf("saveFailed") > -1
+							alert 'An error occurred saving the project.'
+							@model.trigger 'saveFailed'
+			error: (err) =>
+				alert 'An error occurred saving the project roles'
+				@model.trigger 'saveFailed'
+
+	syncRoles: =>
+		$.ajax
+			type: 'GET'
+			url: "/api/syncLiveDesignProjectsUsers"
+			error: (err) -> #TODO: add real error handling
+				alert 'error syncing live design project users'
+			success: (json) =>
+				console.log 'successfully synced live design project users'
 
 	validationError: =>
 		super()

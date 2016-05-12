@@ -1019,10 +1019,13 @@
       this.checkDisplayMode = bind(this.checkDisplayMode, this);
       this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
       this.validationError = bind(this.validationError, this);
+      this.syncRoles = bind(this.syncRoles, this);
+      this.updateProjectRoles = bind(this.updateProjectRoles, this);
+      this.createRoleKindAndName = bind(this.createRoleKindAndName, this);
       this.prepareToSaveAuthorRoles = bind(this.prepareToSaveAuthorRoles, this);
       this.prepareToSaveProjectLeaders = bind(this.prepareToSaveProjectLeaders, this);
       this.prepareToSaveAttachedFiles = bind(this.prepareToSaveAttachedFiles, this);
-      this.saveProject = bind(this.saveProject, this);
+      this.saveProjectAndRoles = bind(this.saveProjectAndRoles, this);
       this.handleValidateReturn = bind(this.handleValidateReturn, this);
       this.handleSaveClicked = bind(this.handleSaveClicked, this);
       this.updateModel = bind(this.updateModel, this);
@@ -1546,19 +1549,14 @@
         this.$('.bv_saving').hide();
         return this.$('.bv_saveFailed').show();
       } else {
-        return this.saveProject();
+        return this.saveProjectAndRoles();
       }
     };
 
-    ProjectController.prototype.saveProject = function() {
-      var authorRoles, authorRolesToDelete, dataToPost, newAuthorRoles, newProject;
+    ProjectController.prototype.saveProjectAndRoles = function() {
+      var newProject;
       this.prepareToSaveAttachedFiles();
       this.prepareToSaveProjectLeaders();
-      if (!this.model.isNew() && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
-        authorRoles = this.prepareToSaveAuthorRoles();
-        newAuthorRoles = authorRoles[0];
-        authorRolesToDelete = authorRoles[1];
-      }
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       this.model.reformatBeforeSaving();
@@ -1574,90 +1572,25 @@
         return this.model.save(null, {
           success: (function(_this) {
             return function(model, response) {
-              var dataToPost;
               if (response === "update lsThing failed") {
                 return _this.model.trigger('saveFailed');
               } else {
-                dataToPost = {
-                  rolekind: [
-                    {
-                      typeName: "Project",
-                      kindName: _this.model.get('codeName')
-                    }
-                  ],
-                  lsroles: [
-                    {
-                      lsType: "Project",
-                      lsKind: _this.model.get('codeName'),
-                      roleName: "User"
-                    }, {
-                      lsType: "Project",
-                      lsKind: _this.model.get('codeName'),
-                      roleName: "Administrator"
-                    }
-                  ]
-                };
-                return $.ajax({
-                  type: 'POST',
-                  url: '/api/projects/createRoleKindAndName',
-                  data: dataToPost,
-                  success: function(response) {
-                    return console.log("created project role kind and name");
-                  },
-                  error: function(err) {
-                    _this.serviceReturn = null;
-                    if (err.responseText.indexOf("saveFailed") > -1) {
-                      return alert('An error occurred saving the projectt role kind and name. Please contact an administrator.');
-                    }
-                  },
-                  dataType: 'json'
-                });
+                return _this.createRoleKindAndName();
               }
             };
           })(this)
         });
       } else {
         if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
-          dataToPost = {
-            newAuthorRoles: JSON.stringify(newAuthorRoles),
-            authorRolesToDelete: JSON.stringify(authorRolesToDelete)
-          };
-          return $.ajax({
-            type: 'POST',
-            url: '/api/projects/updateProjectRoles',
-            data: dataToPost,
-            dataType: 'json',
-            success: (function(_this) {
-              return function(response) {
-                return _this.model.save(null, {
-                  success: function(model, response) {
-                    if (response === "update lsThing failed") {
-                      return _this.model.trigger('saveFailed');
-                    }
-                  },
-                  error: function(err) {
-                    _this.serviceReturn = null;
-                    if (err.responseText.indexOf("saveFailed") > -1) {
-                      alert('An error occurred saving the project.');
-                      return _this.model.trigger('saveFailed');
-                    }
-                  }
-                });
-              };
-            })(this),
-            error: (function(_this) {
-              return function(err) {
-                alert('An error occurred saving the project roles');
-                return _this.model.trigger('saveFailed');
-              };
-            })(this)
-          });
+          return this.updateProjectRoles();
         } else {
           return this.model.save(null, {
             success: (function(_this) {
               return function(model, response) {
                 if (response === "update lsThing failed") {
                   return _this.model.trigger('saveFailed');
+                } else {
+                  return _this.syncRoles();
                 }
               };
             })(this),
@@ -1779,6 +1712,104 @@
         };
       })(this));
       return [newAuthorRoles, authorRolesToDelete];
+    };
+
+    ProjectController.prototype.createRoleKindAndName = function() {
+      var dataToPost;
+      dataToPost = {
+        rolekind: [
+          {
+            typeName: "Project",
+            kindName: this.model.get('codeName')
+          }
+        ],
+        lsroles: [
+          {
+            lsType: "Project",
+            lsKind: this.model.get('codeName'),
+            roleName: "User"
+          }, {
+            lsType: "Project",
+            lsKind: this.model.get('codeName'),
+            roleName: "Administrator"
+          }
+        ]
+      };
+      return $.ajax({
+        type: 'POST',
+        url: '/api/projects/createRoleKindAndName',
+        data: dataToPost,
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            return _this.syncRoles();
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            _this.serviceReturn = null;
+            if (err.responseText.indexOf("saveFailed") > -1) {
+              return alert('An error occurred saving the projectt role kind and name. Please contact an administrator.');
+            }
+          };
+        })(this)
+      });
+    };
+
+    ProjectController.prototype.updateProjectRoles = function() {
+      var authorRoles, dataToPost;
+      authorRoles = this.prepareToSaveAuthorRoles();
+      dataToPost = {
+        newAuthorRoles: JSON.stringify(authorRoles[0]),
+        authorRolesToDelete: JSON.stringify(authorRoles[1])
+      };
+      return $.ajax({
+        type: 'POST',
+        url: '/api/projects/updateProjectRoles',
+        data: dataToPost,
+        dataType: 'json',
+        success: (function(_this) {
+          return function(response) {
+            return _this.model.save(null, {
+              success: function(model, response) {
+                if (response === "update lsThing failed") {
+                  return _this.model.trigger('saveFailed');
+                } else {
+                  return _this.syncRoles();
+                }
+              },
+              error: function(err) {
+                _this.serviceReturn = null;
+                if (err.responseText.indexOf("saveFailed") > -1) {
+                  alert('An error occurred saving the project.');
+                  return _this.model.trigger('saveFailed');
+                }
+              }
+            });
+          };
+        })(this),
+        error: (function(_this) {
+          return function(err) {
+            alert('An error occurred saving the project roles');
+            return _this.model.trigger('saveFailed');
+          };
+        })(this)
+      });
+    };
+
+    ProjectController.prototype.syncRoles = function() {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/syncLiveDesignProjectsUsers",
+        error: function(err) {
+          return alert('error syncing live design project users');
+        },
+        success: (function(_this) {
+          return function(json) {
+            return console.log('successfully synced live design project users');
+          };
+        })(this)
+      });
     };
 
     ProjectController.prototype.validationError = function() {
