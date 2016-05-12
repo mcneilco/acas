@@ -83,31 +83,46 @@
 </div>
 
 <div class="modal fade" tabindex="-1" role="dialog" name="splitPlateDialogBox">
-    <div class="modal-dialog">
+    <div class="modal-dialog splitPlateModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="plateSplitTitle">Splitting Plate</h5>
                 <div name="splitPlateLinks" class="splitPlateLinks hide">
                     Plate successfully split:
                     <div class="row">
-                      <div class="col-sm-12 splitPlateLinksList">
+                      <div class="col-sm-11 splitPlateLinksList">
                         <div class="row">
-                          <ul class="col-sm-6">
-                              <li class="splitPlateLinkEntries">
-                                  Q1: <span name="barcodeQuad1Plate"></span>&nbsp;&nbsp;<a class="btn btn-primary" target="_blank" name="linkToQuad1Plate">Edit</a>
-                              </li>
-                              <li class="splitPlateLinkEntries">
-                                  Q3: <span name="barcodeQuad3Plate"></span>&nbsp;&nbsp;<a class="btn btn-primary" target="_blank" name="linkToQuad3Plate">Edit</a>
-                              </li>
-                            </ul>
-                            <ul class="col-sm-6">
-                              <li class="splitPlateLinkEntries">
-                                  Q2: <span name="barcodeQuad2Plate"></span>&nbsp;&nbsp;<a class="btn btn-primary" target="_blank" name="linkToQuad2Plate">Edit</a>
-                              </li>
-                              <li class="splitPlateLinkEntries">
-                                  Q4: <span name="barcodeQuad4Plate"></span>&nbsp;&nbsp;<a class="btn btn-primary" target="_blank" name="linkToQuad4Plate">Edit</a>
-                              </li>
-                          </ul>
+                          <div class="col-sm-6">
+                            <div class="row">
+                              <div class="splitPlateLinkEntries">
+                                <span class="col-sm-2 splitPlateSpacing splitPlateQ">Q1: </span><span class="col-sm-8 splitPlateBarcodeSpacing" name="barcodeQuad1Plate"></span>&nbsp;&nbsp;<span class="col-sm-2 splitPlateSpacing splitPlateEditButton"><a class="btn btn-primary" target="_blank" name="linkToQuad1Plate">Edit</a></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="row">
+                              <div class="splitPlateLinkEntries">
+                                  <span class="col-sm-2 splitPlateSpacing splitPlateQ">Q2: </span><span class="col-sm-8 splitPlateBarcodeSpacing" name="barcodeQuad2Plate"></span>&nbsp;&nbsp;<span class="col-sm-2 splitPlateSpacing splitPlateEditButton"><a class="btn btn-primary" target="_blank" name="linkToQuad2Plate">Edit</a></span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-sm-6">
+                            <div class="row">
+                              <div class="splitPlateLinkEntries">
+                                  <span class="col-sm-2 splitPlateSpacing splitPlateQ">Q3: </span><span class="col-sm-8 splitPlateBarcodeSpacing" name="barcodeQuad3Plate"></span>&nbsp;&nbsp;<span class="col-sm-2 splitPlateSpacing splitPlateEditButton"><a class="btn btn-primary" target="_blank" name="linkToQuad3Plate">Edit</a></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="col-sm-6">
+                            <div class="row">
+                              <div class="splitPlateLinkEntries">
+                                  <span class="col-sm-2 splitPlateSpacing splitPlateQ">Q4: </span><span class="col-sm-8 splitPlateBarcodeSpacing" name="barcodeQuad4Plate"></span>&nbsp;&nbsp;<span class="col-sm-2 splitPlateSpacing splitPlateEditButton"><a class="btn btn-primary" target="_blank" name="linkToQuad4Plate">Edit</a></span>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

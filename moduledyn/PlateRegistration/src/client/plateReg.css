@@ -217,7 +217,7 @@
 
 .toolbarWell {
   background-color: #E9E9E9 !important;
-  width: 746px;
+  width: 750px;
   padding: 10px !important;
   margin-bottom: 10px !important;
 }
@@ -227,15 +227,15 @@
 }
 
 .toolbarViewButtonFit {
-  width: 120px;
+  width: 130px;
 }
 
 .toolbarViewButton {
-  width: 150px;
+  width: 160px;
 }
 
 .toolbarViewButtonColor {
-  width: 175px;
+  width: 185px;
 }
 
 .toolbarViewButtonSmall {
@@ -309,6 +309,27 @@
   padding-left: 5px;
 }
 
+.searchButton {
+  margin-bottom: 20px;
+}
+
+.searchErrorWell {
+  margin-top: 0 !important;
+}
+
+.searchWarningWell {
+  margin-top: 0 !important;
+}
+
+.searchInfoWell {
+  margin-top: 0 !important;
+}
+
+.searchingHeader {
+  margin-top: 0 !important;
+  margin-bottom: 20px !important;
+}
+
 .mergePlatesInstructions {
   margin-bottom: 15px;
 }
@@ -337,6 +358,42 @@
   margin-top: 20px;
 }
 
+.warningWell {
+  background-color: #FFE9D3 !important;
+  color: #EB7703 !important;
+  border: none;
+  border-radius: 0;
+  -webkit-box-shadow: 0 0 0 0;
+  -moz-box-shadow: 0 0 0 0;
+  box-shadow: 0 0 0 0;
+  padding: 15px 15px 15px 15px;
+  margin-top: 20px;
+}
+
+.infoWell {
+  background-color: #E2EDEE !important;
+  color: #3C4656 !important;
+  border: none;
+  border-radius: 0;
+  -webkit-box-shadow: 0 0 0 0;
+  -moz-box-shadow: 0 0 0 0;
+  box-shadow: 0 0 0 0;
+  padding: 15px 15px 15px 15px;
+  margin-top: 20px;
+}
+
+.successWell {
+  background-color: #D8EECE !important;
+  color: #2E662C !important;
+  border: none;
+  border-radius: 0;
+  -webkit-box-shadow: 0 0 0 0;
+  -moz-box-shadow: 0 0 0 0;
+  box-shadow: 0 0 0 0;
+  padding: 15px 15px 15px 15px;
+  margin-top: 20px;
+}
+
 .tableContainerSpacing {
   margin-left: 10px !important;
 }
@@ -352,6 +409,10 @@
   margin-left: 5px;
 }
 
+/*.splitPlateModal {
+  width: 800px;
+}*/
+
 .plateSplitTitle {
   margin-left: 15px;
 }
@@ -361,12 +422,30 @@
 }
 
 .splitPlateLinksList {
-  margin-left: 50px;
+  margin-left: 25px;
 }
 
 .splitPlateLinkEntries {
   margin-top: 10px;
   margin-bottom: 5px;
+  word-wrap: break-word;
+}
+
+.splitPlateSpacing {
+  padding: 0 !important;
+}
+
+.splitPlateBarcodeSpacing {
+  padding-right: 5px !important;
+  padding-left: 5px !important;
+}
+
+.splitPlateQ {
+  width: 25px;
+}
+
+.splitPlateEditButton {
+  width: 52px;
 }
 
 .mergePlateTitle {
@@ -390,4 +469,10 @@
 
 .editorSpacing {
   margin-left: -55px !important;
+}
+
+.statusCounts {
+  font-size: 12px;
+  margin-top: 1px;
+  margin-right: 2px;
 }
