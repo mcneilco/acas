@@ -1,28 +1,10 @@
-
-getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath, missingInstrumentFiles) {
+getCompoundAssignments <- function(folderToParse, instrumentData, testMode, parameters, tempFilePath) {
   # exampleClient
-  
-  # Flag missingInstrumentFiles = TRUE, for the case where no instrument files (.txt) are uploaded
-  
-  # If user selects userBypassInventory=TRUE in the GUI, this translates to Excel files being zipped together with standard instrument files
-  # otherwise if userBypassInventory=FALSE, then proceed as usual (only instrument files zipped)
-  userBypassInventory <- TRUE
-  
-  # Added three last arguments in getAssayCompoundData (userBypassInventory, parameters, missingInstrumentFiles) required in the cases 
-  # user chooses to process both plate (.xls) and instrument data (.txt) files  at the same time, and no instrument files are loaded
   assayCompoundData <- getAssayCompoundData(filePath=folderToParse,
                                             plateData=instrumentData$plateAssociationDT,
                                             testMode=testMode,
                                             tempFilePath=tempFilePath,
-                                            assayData=instrumentData$assayData,
-                                            userBypassInventory,
-                                            parameters,
-                                            missingInstrumentFiles)
-  
-  if (missingInstrumentFiles) {
-    # If missing instrument files then return the alternative instrumentData table that would otherwise be vacant in higher-level functions
-    instrumentData <- assayCompoundData$alternativeInstrumentData
-  }
+                                            assayData=instrumentData$assayData)
   
   resultTable <- assayCompoundData$allAssayCompoundData[ , c("plateType",
                                                              "assayBarcode",
@@ -36,27 +18,11 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
                                                              "batch_number",
                                                              "cmpdConc",
                                                              assayCompoundData$activityColNames), with=FALSE]
+  # TODO: Check concUnit prior to making this adjustment
+  resultTable[ , cmpdConc := cmpdConc * 1000]
   
-  # If user selects to process .xls files in the GUI, check if concentrations need to be adjusted depending on the conc. units reported
-  # othewise proceed using the code below as scripted before (i.e. only instrument data available)
-  if (userBypassInventory) {
-    # Divide concentrations by 1000 only if the plate template does not show uM conc. units (assuming then it is nM)
-    # as the goal is to store concentrations in uM units
-    if (!as.logical(assayCompoundData[names(assayCompoundData)=="microMolarFlag"])) {
-      resultTable[ , cmpdConc := cmpdConc * 1000]   #divide by 1000 if units are nM?????
-    }
-    
-    # fuse the corp name with the bacth number, adjusting for the NA case
-    resultTable[, batchCode := paste0(corp_name,"-",batch_number)]     #is this the proper way to paste corp_name with batch_number?????
-    resultTable[batchCode == "NA-NA", batchCode := "-"]
-  } else {
-    # TODO: Check concUnit prior to making this adjustment
-    resultTable[ , cmpdConc := cmpdConc * 1000]
-    
-    resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
-    resultTable[batchCode == "NA::NA", batchCode := "::"]
-  }
-    
+  resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
+  resultTable[batchCode == "NA::NA", batchCode := "::"]
   #   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
   setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
   
@@ -65,13 +31,79 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
     resultTable$cmpdConc <- resultTable$cmpdConc / parameters$dilutionRatio
   }
   
-  if (missingInstrumentFiles) {
-    # If missing instrument files then return both resultTable and the alternative instrumentData table (which is not populated in higher-level functions, since
-    # no .txt instrument data are processed) as a list
-    return(list(resultTable=resultTable, instrumentData=instrumentData))
-  } else {
-    return(resultTable)
+  return(resultTable)
+}
+
+getCompoundAssignmentsFromFiles <- function(folderToParse, instrumentData, parameters) {
+  library(plyr)
+  library(XLConnect)
+  
+  allAvailableExcelFiles <- list.files(folderToParse, pattern = "\\.xlsx?$")
+  
+  compoundData <- ldply(allAvailableExcelFiles, getCompoundAssignmentsFromFile, folderToParse=folderToParse)
+  
+  # ActivityColNames are the names in assayData
+  activityColNames <- instrumentData$userInputReadTable$activityColName
+  usedAssayData <- instrumentData$assayData[, c("assayBarcode", "wellReference", activityColNames)]
+  resultTable <- merge(compoundData, usedAssayData, by = c("assayBarcode", "wellReference"))
+  
+  setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
+  
+  # apply dilution
+  if (!is.null(parameters$dilutionRatio) && parameters$dilutionRatio != "") {
+    resultTable$cmpdConc <- as.numeric(resultTable$cmpdConc) / parameters$dilutionRatio
   }
+  
+  return(as.data.table(resultTable))
+}
+
+getCompoundAssignmentsFromFile <- function(fileName, folderToParse) {
+  # Inputs fileName with no path in folderToParse
+  # Outputs data.frame defined at end
+  pathToExcelFile <- file.path(folderToParse, fileName)
+  wkbk <- loadWorkbook(pathToExcelFile)
+  sheetNames <- getSheets(wkbk)
+  if (!("PlateContent" %in% sheetNames)) {
+    return(data.frame())
+  } else if (!("PlateConc" %in% sheetNames)) {
+    stopUser("All Excel files with PlateContent sheet must also have a PlateConc sheet")
+  }
+  
+  contentDataFrame <- readWorksheetFromFile(pathToExcelFile, sheet="PlateContent", header=FALSE)
+  headerInfo <- getSection(contentDataFrame, "Plate Information", transpose = TRUE, required = TRUE)
+  numberOfWells <- as.numeric(headerInfo$"Plate Format")
+  plateFormatInfo <- getPlateFormatInfo(numberOfWells)
+  rowRange <- plateFormatInfo$rowRange + 1  # Offset by 1 to skip labels
+  columnRange <- plateFormatInfo$columnRange + 1 # Offset by 1 to skip labels
+  plateSection <- getSection(contentDataFrame, "^Plate$", required = TRUE)
+  compoundVector <- as.vector(t(plateSection[rowRange, columnRange]))
+  
+  concDataFrame <- readWorksheetFromFile(pathToExcelFile, sheet="PlateConc", header=FALSE)
+  headerInfo <- getSection(concDataFrame, "Plate Information", transpose = TRUE, required = TRUE)
+  plateSection <- getSection(concDataFrame, "^Plate$", required = TRUE)
+  concVector <- as.vector(t(plateSection[rowRange, columnRange]))
+  
+  # Split batchCode into compound and batch
+  batchSep <- racas::applicationSettings$server.service.external.preferred.batchid.separator
+  splitBatch <- strsplit(compoundVector, batchSep)
+  batchNumber <- vapply(splitBatch, tail, "", n=1)
+  batchNumber[batchNumber==compoundVector] <- NA
+  compoundName <- vapply(lapply(splitBatch, tail, n=-1), paste, "", collapse=batchSep)
+  compoundName[compoundName==""] <- compoundVector[compoundName==""]
+  output <- data.frame(plateType=NA,
+                       assayBarcode=headerInfo$"Assay Barcode",
+                       cmpdBarcode=NA,
+                       sourceType=NA,
+                       wellReference=plateFormatInfo$wellName,
+                       rowName=plateFormatInfo$rowName,
+                       colName=plateFormatInfo$colName,
+                       plateOrder=as.numeric(headerInfo$"Plate Order"),
+                       corp_name=compoundName,
+                       batch_number=batchNumber,
+                       cmpdConc=concVector,
+                       batchCode=compoundVector, 
+                       stringsAsFactors = FALSE)
+  return(output)
 }
 
 
@@ -149,11 +181,11 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   
   controlsFrame <- controlsFrameDupl
   
-
+  
   
   # Find any wells annotated in the template as (positive/negative) controls that are simultaneously annotated also as test compounds 
   commonWellsNames <- intersect(controlsFrame$WELL_NAME,wellTable$WELL_NAME)
-
+  
   
   # If at least one well is common (i.e. well is registered as both a control and a test), then warn the user
   # with the following warning, displaying all the common wells
@@ -195,7 +227,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   # The indices in the following line were raising n error so I fed the function above with the full resultTable$assayBarcode and
   # resultTable$wellReference vectors
   #batchNamesAndConcentrations <- getBatchNamesAndConcentrations(resultTable[[1]]$assayBarcode, resultTable[[1]]$wellReference, wellTable)
-
+  
   
   
   #print(resultTable)
@@ -209,7 +241,7 @@ getCompoundAssignmentsInternal <- function(folderToParse, instrumentData, testMo
   resultTable[, agonistBatchCode := parameters$agonistControl$batchCode]
   # save(resultTable, file="public/cmpdAssignmentsOutput.Rda")  
   return(resultTable)
-
+  
 }
 
 getAgonist <- function(agonist, wellTable) {
@@ -348,13 +380,13 @@ getControlValues <- function(pathToExcelFile) {
   # Arg: file path to target excel file
   #
   # Returns: The wanted data.frame
-
+  
   #path <- "~/Desktop/Template_v1.xlsx"  #temporary file-path
   
   
   # Load the library to extract from Excel
   library(XLConnect)
-
+  
   # Generate index vector for well location
   first.letter <- rep(LETTERS[1:16], time=24)
   numbers <- rep(seq(1:24), each=16)
@@ -405,5 +437,4 @@ getControlValues <- function(pathToExcelFile) {
   final <- data.frame(WELL_NAME,controls,agonistConc=agonist, stringsAsFactors = FALSE)
   return(final)
 }
-
 

@@ -42,13 +42,9 @@
 
 
 source("public/src/conf/customFunctions.R", local=TRUE)
-# TODO: Test structure, probably removing this folder eventually
+# TODO: Removing this folder eventually
 clientName <- "exampleClient"
-# END: Test structure
 
-# Hack for Suse png issues
-png(tempfile())
-dev.off()
 
 # Source the client specific compound assignment functions
 compoundAssignmentFilePath <- file.path("public/src/modules/PrimaryScreen/src/server/compoundAssignment",
@@ -1923,37 +1919,36 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     ## if this is not a spotfire reanalysis and/or the saved .Rda is not found
 
     # GREEN (instrument-specific)
-    instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
-
-    # Define flag missingInstrumentFiles = TRUE, for the case where no instrument files (.txt) are uploaded through a zipped folder. In that case,
-    # function specificDataPreProcessor is not executed to populate instrumentData, which leads to table instrumentData being constructed with the
-    #  information entered through the plate files (.xlsx) in the uploaded zipped file
-    # If flag missingInstrumentFiles = FALSE then execute as usual (i.e. use the instrument .txt files zipped together with a .csv file)
-    missingInstrumentFiles <- TRUE #FALSE
-    
-    # Commands immediately below are bypassed in the case where no instrument files are uploaded, so instrumentData does not get defined
-    if (!missingInstrumentFiles) {
-      # TODO: add config server.service.genericSpecificPreProcessor
-      if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
-        instrumentData <- specificDataPreProcessor(parameters=parameters,
-                                                   folderToParse=fullPathToParse,
-                                                   errorEnv=errorEnv,
-                                                   dryRun=dryRun,
-                                                   instrumentClass=instrumentReadParams$dataFormat,
-                                                   testMode=testMode,
-                                                   tempFilePath=specDataPrepFileLocation)
-      } else {
-        instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters,
-                                                                folderToParse=fullPathToParse,
-                                                                errorEnv=errorEnv,
-                                                                dryRun=dryRun,
-                                                                instrumentClass=instrumentReadParams$dataFormat,
-                                                                testMode=testMode,
-                                                                tempFilePath=specDataPrepFileLocation)
-      }
-    } else {
+    if (parameters$instrumentReader == 'generic plate') {
+      # For the case where no instrument files (.txt) are uploaded through a
+      # zipped folder. In that case, function specificDataPreProcessor is not
+      # executed to populate instrumentData, which leads to table instrumentData
+      # being constructed with the information entered through the plate files
+      # (.xlsx) in the uploaded zipped file
+      
       # Initialize instrumentData as empty so it can be populated through the next function call immediately below
       instrumentData <- c()
+      instrumentData <- genericPlateDataPreProcessor(parameters=parameters,
+                                                     folderToParse=fullPathToParse,
+                                                     tempFilePath=specDataPrepFileLocation)
+    } else if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
+      instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
+      instrumentData <- specificDataPreProcessor(parameters=parameters,
+                                                 folderToParse=fullPathToParse,
+                                                 errorEnv=errorEnv,
+                                                 dryRun=dryRun,
+                                                 instrumentClass=instrumentReadParams$dataFormat,
+                                                 testMode=testMode,
+                                                 tempFilePath=specDataPrepFileLocation)
+    } else {
+      instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
+      instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters,
+                                                              folderToParse=fullPathToParse,
+                                                              errorEnv=errorEnv,
+                                                              dryRun=dryRun,
+                                                              instrumentClass=instrumentReadParams$dataFormat,
+                                                              testMode=testMode,
+                                                              tempFilePath=specDataPrepFileLocation)
     }
     
     
@@ -1961,23 +1956,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # getCompoundAssignments
   
     # exampleClient is set at the head of runMain function
-    if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
+    if (checkPlateContentInFiles(fullPathToParse)) {
+      resultTable <- getCompoundAssignmentsFromFiles(fullPathToParse, instrumentData, parameters)
+    } else if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
       resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData,
                                                     testMode, parameters)
     } else {
       resultTable <- getCompoundAssignments(fullPathToParse, instrumentData,
                                             testMode, parameters,
-                                            tempFilePath=specDataPrepFileLocation,
-                                            missingInstrumentFiles)     # Pass flag missingInstrumentFiles as an argument to lower-level functions
-    }
-
-    if (missingInstrumentFiles) {
-      # If missing instrument files (.txt) then extract both resultTable and instrumentData from the expanded list (resultTable) generated from the function call
-      # immediately above
-      # First extract the instrumentData part from the expanded resultTable
-      instrumentData <- resultTable$instrumentData
-      # Then re-define expanded resultTable to (original size) resultTable
-      resultTable <- resultTable$resultTable
+                                            tempFilePath=specDataPrepFileLocation)
     }
 
     # this also performs any calculations from the GUI

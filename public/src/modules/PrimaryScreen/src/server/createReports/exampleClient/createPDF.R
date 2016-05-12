@@ -119,7 +119,6 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
     title(main=paste0(barcode, " : ", well, "\n", batchCode))
     mtext(title, 3, line=0, adj=0.5, cex=1.2, outer=TRUE)
   }
-  
   plotWells <- function(wellType, wellTypeName) {
     # wellType could be fluorescentWells, and then wellTypeName would be "Fluorescent Wells"
     if(nrow(wellType) > 0) {
@@ -127,30 +126,32 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
       mapply(plotFigure, wellType$T_timePoints, wellType$T_sequence, wellType$assayBarcode, wellType$well, wellType$batchCode, wellTypeName)
     }
   }
-  fluorescentWells <- allResultTable[allResultTable$autoFlagObservation == "fluorescent", ]
-  hitWells <- allResultTable[allResultTable$flag == "HIT", ]
-  latePeakWells <- allResultTable[allResultTable$autoFlagObservation == "late peak", ]
-  flaggedWells <- allResultTable[allResultTable$flag == "KO", ] #,well,sequence,timePoints,batchName)]
-  positiveControlWells <- allResultTable[allResultTable$wellType == "PC", ]
-  negativeControlWells <- allResultTable[allResultTable$wellType == "NC", ]
   
-  plotWells(fluorescentWells, "Fluorescent Wells")
-  plotWells(latePeakWells, "Late Peak Wells")
-  plotWells(hitWells, "Hit Wells")
-  plotWells(flaggedWells, "Flagged Wells")
+  if (any(!is.na(allResultTable$T_timePoints))) {
 
-  # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs) 
-  ## missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))) & 
-  ##                            (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))))
-  # Correct calculations to be performed exclusively on allResultTable (as opposed to both allResultTable and resultTable immediately above)
-  missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))) & 
-                               (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))))
-  
-  # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
-  if (!missingDataForControls) {
-    plotWells(positiveControlWells, "Positive Control Wells")
-    plotWells(negativeControlWells, "Negative Control Wells")
+    fluorescentWells <- allResultTable[allResultTable$autoFlagObservation == "fluorescent", ]
+    hitWells <- allResultTable[allResultTable$flag == "HIT", ]
+    latePeakWells <- allResultTable[allResultTable$autoFlagObservation == "late peak", ]
+    flaggedWells <- allResultTable[allResultTable$flag == "KO", ] #,well,sequence,timePoints,batchName)]
+    positiveControlWells <- allResultTable[allResultTable$wellType == "PC", ]
+    negativeControlWells <- allResultTable[allResultTable$wellType == "NC", ]
+    
+    plotWells(fluorescentWells, "Fluorescent Wells")
+    plotWells(latePeakWells, "Late Peak Wells")
+    plotWells(hitWells, "Hit Wells")
+    plotWells(flaggedWells, "Flagged Wells")
+    
+    # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs) 
+    missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))) & 
+                                 (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",allResultTable$wellType))]))))
+    
+    # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
+    if (!missingDataForControls) {
+      plotWells(positiveControlWells, "Positive Control Wells")
+      plotWells(negativeControlWells, "Negative Control Wells")
+    }
   }
+  
   
   
   dev.off()
