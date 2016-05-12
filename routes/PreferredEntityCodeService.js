@@ -357,9 +357,14 @@
     var i, len, outStr, pref, preferreds;
     preferreds = prefResp;
     outStr = "Requested Name,Reference Code\n";
-    for (i = 0, len = preferreds.length; i < len; i++) {
-      pref = preferreds[i];
-      outStr += pref.requestName + ',' + pref.preferredName + '\n';
+    if (prefResp != null) {
+      for (i = 0, len = preferreds.length; i < len; i++) {
+        pref = preferreds[i];
+        outStr += pref.requestName + ',' + pref.preferredName + '\n';
+      }
+    } else {
+      console.log('no prefResp sent to formatReqArrayAsCSV');
+      outStr += ',\n';
     }
     return outStr;
   };

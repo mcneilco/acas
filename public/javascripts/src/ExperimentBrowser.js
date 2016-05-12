@@ -420,6 +420,7 @@
     function ExperimentBrowserController() {
       this.render = bind(this.render, this);
       this.destroyExperimentSummaryTable = bind(this.destroyExperimentSummaryTable, this);
+      this.formatOpenInQueryToolButton = bind(this.formatOpenInQueryToolButton, this);
       this.handleOpenInQueryToolClicked = bind(this.handleOpenInQueryToolClicked, this);
       this.handleDuplicateExperimentClicked = bind(this.handleDuplicateExperimentClicked, this);
       this.handleEditExperimentClicked = bind(this.handleEditExperimentClicked, this);
@@ -439,7 +440,7 @@
       "click .bv_duplicateExperiment": "handleDuplicateExperimentClicked",
       "click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked",
       "click .bv_cancelDelete": "handleCancelDeleteClicked",
-      "click .bv_openInQueryTool": "handleOpenInQueryToolClicked"
+      "click .bv_openInQueryToolButton": "handleOpenInQueryToolClicked"
     };
 
     ExperimentBrowserController.prototype.initialize = function() {
@@ -455,8 +456,7 @@
         includeDuplicateAndEdit: this.includeDuplicateAndEdit
       });
       this.searchController.render();
-      this.searchController.on("searchReturned", this.setupExperimentSummaryTable);
-      return this.$('.bv_queryToolDisplayName').html(window.conf.service.result.viewer.displayName);
+      return this.searchController.on("searchReturned", this.setupExperimentSummaryTable);
     };
 
     ExperimentBrowserController.prototype.setupExperimentSummaryTable = function(experiments) {
@@ -499,6 +499,7 @@
         this.$('.bv_deleteExperiment').hide();
         return this.$('.bv_editExperiment').hide();
       } else {
+        this.formatOpenInQueryToolButton();
         this.$('.bv_editExperiment').show();
         return this.$('.bv_deleteExperiment').show();
       }
@@ -563,7 +564,38 @@
     };
 
     ExperimentBrowserController.prototype.handleOpenInQueryToolClicked = function() {
-      return window.open("/openExptInQueryTool?experiment=" + (this.experimentController.model.get("codeName")), '_blank');
+      if (!this.$('.bv_openInQueryToolButton').hasClass('dropdown-toggle')) {
+        return window.open("/openExptInQueryTool?experiment=" + (this.experimentController.model.get("codeName")), '_blank');
+      }
+    };
+
+    ExperimentBrowserController.prototype.formatOpenInQueryToolButton = function() {
+      var configuredViewers, href, i, len, results, viewer, viewerName;
+      this.$('.bv_viewerOptions').empty();
+      configuredViewers = window.conf.service.result.viewer.configuredViewers;
+      if (configuredViewers != null) {
+        configuredViewers = configuredViewers.split(",");
+      }
+      if ((configuredViewers != null) && configuredViewers.length > 1) {
+        results = [];
+        for (i = 0, len = configuredViewers.length; i < len; i++) {
+          viewer = configuredViewers[i];
+          viewerName = $.trim(viewer);
+          href = "'/openExptInQueryTool?tool=" + viewerName + "&experiment=" + (this.experimentController.model.get("codeName")) + "','_blank'";
+          if (this.experimentController.model.getStatus().get('codeValue') !== "approved" && viewerName === "LiveDesign") {
+            results.push(this.$('.bv_viewerOptions').append('<li class="disabled"><a href=' + href + ' target="_blank">' + viewerName + '</a></li>'));
+          } else {
+            results.push(this.$('.bv_viewerOptions').append('<li><a href=' + href + ' target="_blank">' + viewerName + '</a></li>'));
+          }
+        }
+        return results;
+      } else {
+        this.$('.bv_openInQueryToolButton').removeAttr('data-toggle', 'dropdown');
+        this.$('.bv_openInQueryToolButton').removeClass('dropdown-toggle');
+        this.$('.bv_openInQueryToolButton .caret').hide();
+        this.$('.bv_openInQueryToolButton').html("Open In " + window.conf.service.result.viewer.displayName);
+        return this.$('.bv_openInQueryTool').removeClass("btn-group");
+      }
     };
 
     ExperimentBrowserController.prototype.destroyExperimentSummaryTable = function() {

@@ -8,11 +8,11 @@
   _ = require('underscore');
 
   parseResponse = function(jsonStr) {
-    var error;
+    var error, error1;
     try {
       return JSON.parse(jsonStr);
-    } catch (_error) {
-      error = _error;
+    } catch (error1) {
+      error = error1;
       console.log("response unparsable: " + error);
       console.log("response: " + jsonStr);
       return null;
