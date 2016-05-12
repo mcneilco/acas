@@ -404,7 +404,7 @@ class window.AssignSdfPropertiesController extends Backbone.View
 
 	setupProjectSelect: ->
 		@projectList = new PickListList()
-		@projectList.url = "/api/projects"
+		@projectList.url = "/cmpdreg/projects"
 		@projectListController = new PickListSelectController
 			el: @$('.bv_dbProject')
 			collection: @projectList
