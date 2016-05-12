@@ -74,7 +74,9 @@ class PlateTableController extends Backbone.View
         colHeaders: columnHeaders
         outsideClickDeselects: false
         startCols: @plateMetaData.numberOfColumns
+        maxCols: @plateMetaData.numberOfColumns
         startRows: @plateMetaData.numberOfRows
+        maxRows: @plateMetaData.numberOfRows
         renderer: @toolTipCellRenderer
         beforeChange: @handleTableChangeRangeValidation
         afterChange: @handleContentUpdated
@@ -93,7 +95,6 @@ class PlateTableController extends Backbone.View
         maxCols: @plateMetaData.numberOfColumns
         startRows: @plateMetaData.numberOfRows
         maxRows: @plateMetaData.numberOfRows
-        #tabMoves: {row:1, col:0}
         renderer: @defaultCellRenderer
         afterChange: @handleContentUpdated
         beforeChange: @handleTableChangeRangeValidation
@@ -130,6 +131,79 @@ class PlateTableController extends Backbone.View
       @handsOnTable.updateSettings({readOnly: false})
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
+
+  updateColorByNoReRender: =>
+    unless @dataFieldToColorBy is "noColor"
+      if @dataFieldToColorBy is "batchCode"
+        @listOfBatchCodes = {}
+        rComponent = 0
+        gComponent = 0
+        bComponent = 50
+
+        _.each(@wells, (well) =>
+          if well["batchCode"]?
+            unless @listOfBatchCodes[well["batchCode"]]?
+              color = "rgb(#{rComponent},#{gComponent},#{bComponent})"
+              fontColor = "black"
+              if (rComponent + gComponent + bComponent) < 256
+                fontColor = "white"
+              @listOfBatchCodes[well["batchCode"]] = {backgroundColor: color, fontColor: fontColor}
+              bComponent += 85
+              if bComponent > 255
+                bComponent = bComponent - 255
+                gComponent += 85
+                if gComponent > 255
+                  gComponent = gComponent - 255
+                  rComponent += 85
+        )
+      else if @dataFieldToColorBy is "status"
+        @listWellStatusColors = {}
+        _.each(@wells, (well) =>
+          w = new WellModel(well)
+          color = '#00bb00'
+          fontColor = 'black'
+          if w.isWellEmpty()
+            color = '#dddddd'
+          else
+            if w.isWellValid()
+              color = '#00bb00'
+            else
+              color = '#a94442'
+              fontColor = 'white'
+
+          @listWellStatusColors[w.get(WELL_MODEL_FIELDS.CONTAINER_CODE_NAME)] = {backgroundColor: color, fontColor: fontColor}
+        )
+      else
+        minValue = Infinity
+        maxValue = -Infinity
+        _.each(@wells, (well) =>
+          unless isNaN(parseFloat(well[@dataFieldToColorBy]))
+            if well[@dataFieldToColorBy] < minValue
+              if well[@dataFieldToColorBy] is 0
+                minValue = 0.000001
+              else
+                minValue = well[@dataFieldToColorBy]
+            if well[@dataFieldToColorBy] > maxValue
+              maxValue = well[@dataFieldToColorBy]
+        )
+
+        if minValue is 0
+          @minValue = minValue
+        else
+          if @dataFieldToColorBy is "batchConcentration"
+            @minValue = Math.log(minValue)
+          else
+            @minValue = minValue
+        if maxValue < 0
+          maxValue = 0
+
+        if maxValue is 0
+          @maxValue = maxValue
+        else
+          if @dataFieldToColorBy is "batchConcentration"
+            @maxValue = Math.log(maxValue)
+          else
+            @maxValue = maxValue
 
   updateColorBy: (dataFieldToColorBy) =>
     @dataFieldToColorBy = dataFieldToColorBy
@@ -245,7 +319,7 @@ class PlateTableController extends Backbone.View
 
   addContent: (data) =>
     @handsOnTable.setDataAtCell data, 'programaticEdit'
-    #@handsOnTable.init() # force re-render so tooltip content is updated
+    @updateColorByNoReRender()
     @handsOnTable.render()
 
   addContent1: (data) =>
@@ -254,7 +328,8 @@ class PlateTableController extends Backbone.View
       hotData.push([d[0], d[1], d[2][@dataFieldToDisplay]])
     )
     @handsOnTable.setDataAtCell hotData, 'programaticEdit'
-    #@handsOnTable.init() # force re-render so tooltip content is updated
+    @updateColorByNoReRender()
+    @handsOnTable.render()
 
   handleRegionSelected: (rowStart, colStart, rowStop, colStop) =>
     @selectedRegionBoundries =
@@ -291,7 +366,6 @@ class PlateTableController extends Backbone.View
         return false
 
   handleContentUpdated: (changes, source) =>
-
     if source in ["edit", "autofill", "paste"]
       listOfIdentifiers = []
       @resetCellColoring(changes)
@@ -312,8 +386,32 @@ class PlateTableController extends Backbone.View
           else
             addContentModel.get("identifiers").splice(key, 1)
         )
-        if hasIdentifiersToValidate and @dataFieldToDisplay is "batchCode"
-          @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
+        if @dataFieldToDisplay is "batchCode"
+          if hasIdentifiersToValidate
+            @trigger PLATE_TABLE_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel
+          else
+            updatedValues = @reformatUpdatedValues changes
+            @wellsToUpdate.resetWells()
+            _.each(updatedValues, (updatedValue) =>
+              well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
+              well[@dataFieldToDisplay] = updatedValue.value
+              cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+              if $.trim(updatedValue.value) is ""
+                @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+                well.status = "valid"
+                $(cell).removeClass "invalidIdentifierCell"
+              else
+                @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+                well.status = "valid"
+                $(cell).removeClass "invalidIdentifierCell"
+              @updateColorByNoReRender()
+              if @displayToolTips
+                @updateTooltip(cell, well)
+              @applyBackgroundColorToCell(cell, well)
+            )
+            @wellsToUpdate.save()
+            @updateEmptyAndInvalidWellCount()
+            @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
 
         else
           unless @dataFieldToDisplay is "batchCode"
@@ -323,22 +421,33 @@ class PlateTableController extends Backbone.View
             _.each(updatedValues, (updatedValue) =>
               well = @wellsToUpdate.getWellAtRowIdxColIdx(updatedValue.rowIdx, updatedValue.colIdx)
               well[@dataFieldToDisplay] = updatedValue.value
-              if isNaN(parseFloat(updatedValue.value))
-                cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+              cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+              if $.trim(updatedValue.value) is ""
+                @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
+
+                well.status = "valid"
+                $(cell).removeClass "invalidIdentifierCell"
+              else if isNaN(parseFloat(updatedValue.value))
+
                 well.status = "invalid"
                 @wellsToUpdate.fillWellWithWellObject(well.rowIndex - 1, well.columnIndex - 1, well)
                 $(cell).addClass "invalidIdentifierCell"
                 hasNonNumericValues = true
               else
                 @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
-                cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+
                 well.status = "valid"
                 $(cell).removeClass "invalidIdentifierCell"
+              @updateColorByNoReRender()
+              if @displayToolTips
+                @updateTooltip(cell, well)
+              @applyBackgroundColorToCell(cell, well)
             )
             if hasNonNumericValues
               $("div[name='enteringNonNumericConcentrationError']").modal("show")
             @wellsToUpdate.save()
             @updateEmptyAndInvalidWellCount()
+
             @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
 
   removeNonChangedValues: (changes) =>
@@ -410,6 +519,10 @@ class PlateTableController extends Backbone.View
         @wellsToUpdate.fillWellWithWellObject(aw.rowIdx, aw.colIdx, well)
         $(cell).removeClass "invalidIdentifierCell"
         $(cell).removeClass "aliasedIdentifierCell"
+        @updateColorByNoReRender()
+        if @displayToolTips
+          @updateTooltip(cell, well)
+        @applyBackgroundColorToCell(cell, well)
     )
 
     wellsToSaveTmp = new WellsModel({allWells: []})
@@ -456,28 +569,8 @@ class PlateTableController extends Backbone.View
       else
         return false
     )
+    @attachTooltip(td, well, col)
 
-    unless well.batchCode?
-      well.batchCode = ""
-    unless well.amount?
-      well.amount = ""
-    unless well.batchConcentration?
-      well.batchConcentration = ""
-    content = "Batch Code: " + well.batchCode + "<br />Volume: " + well.amount + "<br />Concentration: " + well.batchConcentration
-
-    t = '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
-    popupPlacement = "right"
-    if col > (@plateMetaData.numberOfColumns / 2)
-      popupPlacement = "left"
-    $(td).popover({
-      trigger: 'hover active',
-      title: "Well Details: #{well.wellName}",
-      placement: popupPlacement,
-      container: 'body',
-      html: true
-      content: content
-      template: t
-    })
     if well?
       if well.status?
         if well.status is "valid"
@@ -492,6 +585,42 @@ class PlateTableController extends Backbone.View
         td = @applyBackgroundColorToCell(td, well)
     td.style.fontSize = "#{@fontSize}px"
     return td
+
+  attachTooltip: (td, well, colIdx) =>
+    content = @generateTooltipContent(well)
+
+    template = '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+    popupPlacement = "right"
+    if colIdx > (@plateMetaData.numberOfColumns / 2)
+      popupPlacement = "left"
+    $(td).popover({
+      animation: false
+      trigger: 'hover active'
+      title: "Well Details: #{well.wellName}"
+      placement: popupPlacement
+      container: 'body'
+      html: true
+      content: content
+      template: template
+    })
+
+  updateTooltip: (td, well) =>
+    content = @generateTooltipContent(well)
+    popover = $(td).data('bs.popover')
+    popover.options.content = content
+
+  generateTooltipContent: (well) ->
+    batchCode = ""
+    amount = ""
+    batchConcentration = ""
+
+    if well.batchCode?
+      batchCode = well.batchCode
+    if well.amount?
+      amount = well.amount
+    if well.batchConcentration?
+      batchConcentration = well.batchConcentration
+    content = "Batch Code: " + batchCode + "<br />Volume: " + amount + "<br />Concentration: " + batchConcentration
 
   defaultCellRenderer: (instance, td, row, col, prop, value, cellProperties) =>
     Handsontable.renderers.TextRenderer.apply(@, arguments)

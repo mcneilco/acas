@@ -102,9 +102,14 @@ class WellsModel extends Backbone.Model
         well.amount = parseFloat(amount)
     else
       well.amount = null
-    well.amount = parseFloat(amount)
+
     well.amountUnits = "uL"
-    well.batchCode = batchCode
+
+    if batchCode is ""
+      well.batchCode = null
+    else
+      well.batchCode = batchCode
+
     if batchConcentration?
       if isNaN(parseFloat(batchConcentration))
         well.batchConcentration = batchConcentration
@@ -125,7 +130,7 @@ class WellsModel extends Backbone.Model
     well = @getWellAtRowIdxColIdx rowIndex, columnIndex
     canSave = true
     if wellObject.amount is ""
-      wellObject.amount = null
+      well.amount = null
     else
       if wellObject.amount?
         if isNaN(parseFloat(wellObject.amount))
@@ -138,9 +143,14 @@ class WellsModel extends Backbone.Model
     well.amountUnits = "uL"
     well.batchConcUnits = "mM"
     well.physicalState = "liquid"
-    well.batchCode = wellObject.batchCode
+
+    if wellObject.batchCode is ""
+      well.batchCode = null
+    else
+      well.batchCode = wellObject.batchCode
+
     if wellObject.batchConcentration is ""
-      wellObject.batchConcentration = null
+      well.batchConcentration = null
     else
       if wellObject.batchConcentration?
         if isNaN(parseFloat(wellObject.batchConcentration))
@@ -168,8 +178,6 @@ class WellsModel extends Backbone.Model
       well = new WellModel(w)
       if well.isWellEmpty()
         memo++
-      else
-        window.FOOWELL = well
       return memo
     , 0)
 
@@ -178,8 +186,6 @@ class WellsModel extends Backbone.Model
       well = new WellModel(w)
       unless well.isWellValid()
         memo++
-      else
-        window.FOOWELL = well
       return memo
     , 0)
 

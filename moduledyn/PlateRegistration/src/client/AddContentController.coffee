@@ -73,11 +73,15 @@ class AddContentController extends Backbone.View
       )
       $(identifierType).prop("checked", true)
 
+    @setStatusOfSubmitButton()
+
+    @
+
+  setStatusOfSubmitButton: =>
     if @model.isValid(true)
       @enableAddButton()
     else
       @disableAddButton()
-    @
 
   enableAddButton: =>
     @$("button[name='add']").prop('disabled', false)
@@ -90,7 +94,6 @@ class AddContentController extends Backbone.View
   handleAddClick: =>
     hasIdentifiersToValidate = false
     if _.isArray(@model.get("identifiers"))
-      console.log "identifiers is array"
       _.each(@model.get("identifiers"), (identifier, key) =>
 
         if _.size(identifier) > 0
@@ -120,6 +123,8 @@ class AddContentController extends Backbone.View
     @model.set ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, 0
     @removeInsertedIdentifiers validatedIdentifiers
     @render()
+    #@setStatusOfSubmitButton()
+
 
   removeInsertedIdentifiers: (insertedIdentifiers) =>
     remainingIdentifiers = _.difference(@model.get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), insertedIdentifiers)
@@ -133,9 +138,9 @@ class AddContentController extends Backbone.View
     target = $(evt.currentTarget)
     data = {}
     data[target.attr('name')] = $.trim(target.val())
-    #@updateModel data
     @model.set data
-    @render()
+    #@render()
+    @setStatusOfSubmitButton()
 
   handleIdentifiersPaste: =>
     console.log "handleIdentifiersPaste"
@@ -149,18 +154,18 @@ class AddContentController extends Backbone.View
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS] =  listOfIdentifiers
     updatedValues[ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS_DISPLAY_STRING] =  @formatListOfIdentifiersForDisplay(listOfIdentifiers)
     updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] =  _.size(listOfIdentifiers)
+    @$(".addContentTotal").html updatedValues[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
     @model.set updatedValues
 
-    @render()
+    @setStatusOfSubmitButton()
+    #@render()
 
   handleIdentifierTypeChanged: (e) =>
-    console.log "e.currentTarget.value"
-    console.log e.currentTarget.value
     @model.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE, e.currentTarget.value
-    @render()
+    #@render()
+    @setStatusOfSubmitButton()
 
   handleFillStrategyChanged: (e) =>
-    console.log e.currentTarget.value
     @model.set ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY, e.currentTarget.value
     @render()
 
@@ -176,12 +181,12 @@ class AddContentController extends Backbone.View
     identifiersDisplayString
 
   updateSelectedRegion: (selectedRegionBoundries) =>
-
     @selectedRegionBoundries = selectedRegionBoundries
-
     numberOfSelectedCells = @calculateNumberOfSelectedCells @selectedRegionBoundries
     @model.set ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED, numberOfSelectedCells
-    @render()
+    #@render()
+    @$(".cellsSelected").html numberOfSelectedCells
+    @setStatusOfSubmitButton()
 
   calculateNumberOfSelectedCells: (selectedRegionBoundries) =>
     width = Math.abs(selectedRegionBoundries.rowStop - selectedRegionBoundries.rowStart) + 1
