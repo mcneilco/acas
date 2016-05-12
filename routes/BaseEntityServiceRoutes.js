@@ -11,7 +11,7 @@
       return resp.end(JSON.stringify(baseEntityServiceTestJSON.authorsList));
     } else {
       csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
-      return csUtilities.getAuthors(resp);
+      return csUtilities.getAuthors(req, resp);
     }
   };
 
