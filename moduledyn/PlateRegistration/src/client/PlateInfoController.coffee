@@ -43,14 +43,6 @@ class PlateInfoController extends Backbone.View
     @plateTypes = options.plateTypes
     @plateStatuses = options.plateStatuses
 
-    @selectLists = [
-      controller: @plateTypesSelectList
-      containerSelector: "select[name='type']"
-    ,
-      controller: @plateStatusSelectList
-      containerSelector: "select[name='status']"
-    ]
-
   events:
     "change input": "handleFormFieldUpdate"
     "change select": "handleFormFieldUpdate"
@@ -58,7 +50,6 @@ class PlateInfoController extends Backbone.View
     "click button[name='createQuadPinnedPlate']": "handleCreateQuadPinnedPlateClick"
 
   initializeSelectLists: =>
-    console.log "initializeSelectLists"
     selectedTypeCode = "unassigned"
     if @model.get("type")
       selectedTypeCode = @model.get("type")
@@ -100,7 +91,15 @@ class PlateInfoController extends Backbone.View
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)
     data = {}
-    data[target.attr('name')] = $.trim(target.val())
+    if target.attr('name') is "barcode"
+      barcode = $.trim(target.val())
+      if AppLaunchParams.enforceUppercaseBarcodes
+        barcode = $.trim(_.toUpper(target.val()))
+        target.val(barcode)
+      data[target.attr('name')] = barcode
+    else
+      data[target.attr('name')] = $.trim(target.val())
+
     @updateModel data
 
   handleDeleteClick: =>
@@ -141,19 +140,10 @@ class PlateInfoController extends Backbone.View
     else
       @trigger PLATE_INFO_CONTROLLER_EVENTS.MODEL_UPDATE_INVALID
 
-
-
   updatePlate: (plate) =>
     @model.set plate
     @render()
-    # ensure the DOM has rendered before setting values
-    nonImmediateSetSelect = _.debounce(() =>
-      @initializeSelectLists()
-    , 1)
-
-    nonImmediateSetSelect()
-
-
+    @initializeSelectLists()
 
 
 module.exports =
