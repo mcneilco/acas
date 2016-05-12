@@ -21,11 +21,16 @@
                     <input class="bv_projectName" style="width:336px;" type="text" placeholder="">
                 </div>
             </div>
-            <div class="control-group bv_group_projectAlias">
+            <div class="control-group bv_group_projectAlias" style="margin-bottom:10px;">
                 <label class="control-label">*Project Alias</label>
                 <div class="controls">
                     <input class="bv_projectAlias" style="width:336px;" type="text" placeholder="">
                 </div>
+            </div>
+            <div class="control-group bv_group_restrictedData" style="margin-left:140px;margin-bottom:10px;">
+                <label class="control-label checkbox" style="width:100px;padding-left:0;margin-left:18px;">
+                    <input type="checkbox" name="bv_restrictedData" class="bv_restrictedData" />Restricted Data
+                </label>
             </div>
             <div class="control-group bv_group_startDate">
                 <label class="control-label">Start Date</label>
@@ -74,6 +79,38 @@
             </div>
         </div>
     </div>
+
+    <div class="bv_saveBeforeManagingPermissions hide">
+        Manage user permissions by editing project after it is saved.
+    </div>
+    <div class="bv_manageUserPermissions accordion hide" style="width:664px;">
+        <div class="accordion-group">
+            <div class="accordion-heading">
+                <a class="accordion-toggle" data-toggle="collapse" href="#userPermissions">
+                    Manage User Permissions
+                </a>
+            </div>
+            <div id="userPermissions" class="accordion-body collapse bv_userPermissions">
+                <div class="accordion-inner">
+                    <div class="form-horizontal">
+                        <div class="control-group" style="width:670px;">
+                            <label class="control-label" style="width:100px;margin-left:40px;">Project Users</label>
+                            <div class="controls">
+                                <span class="bv_projectUserList"></span>
+                            </div>
+                        </div>
+                        <div class="control-group" style="width:670px;">
+                            <label class="control-label" style="width:100px;margin-left:40px;">Project Admins</label>
+                            <div class="controls">
+                                <span class="bv_projectAdminList"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- SAVE AND CANCEL -->
     <div class="span10" style="width:650px;margin-left:0px;">
         <div class="span12" style="margin-left:25px;margin-top:25px;">
@@ -176,4 +213,32 @@
 <script type="text/template" id="ProjectLeaderListView" xmlns="http://www.w3.org/1999/html">
     <span class="bv_projectLeaderInfo pull-right"></span>
     <button class="btn bv_addProjectLeaderButton" style="margin-left: 228px;">Add Project Leader</button>
+</script>
+
+<script type="text/template" id="ProjectUserView" xmlns="http://www.w3.org/1999/html">
+    <div class="span5 bv_projectUserWrapper" style="width:510px;">
+        <span class="control-group bv_group_user">
+            <select class="bv_user" style="margin-right:10px;margin-bottom:9px;width:350px;display: inline-block;"></select>
+            <button class="close bv_deleteProjectUser" style="margin-right:130px;margin-top:3px;">&times;</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="ProjectUserListView" xmlns="http://www.w3.org/1999/html">
+    <span class="bv_projectUserInfo pull-right"></span>
+    <button class="btn bv_addProjectUserButton" style="margin-left: 290px;">Add User</button>
+</script>
+
+<script type="text/template" id="ProjectAdminView" xmlns="http://www.w3.org/1999/html">
+    <div class="span5 bv_projectAdminWrapper" style="width:510px;">
+        <span class="control-group bv_group_admin">
+            <select class="bv_admin" style="margin-right:10px;margin-bottom:9px;width:350px;display: inline-block;"></select>
+            <button class="close bv_deleteProjectAdmin" style="margin-right:130px;margin-top:3px;">&times;</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="ProjectAdminListView" xmlns="http://www.w3.org/1999/html">
+    <span class="bv_projectAdminInfo pull-right"></span>
+    <button class="btn bv_addProjectAdminButton" style="margin-left: 290px;">Add Admin</button>
 </script>

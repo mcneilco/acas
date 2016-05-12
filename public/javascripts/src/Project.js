@@ -59,6 +59,120 @@
 
   })(Backbone.Collection);
 
+  window.ProjectUser = (function(superClass) {
+    extend(ProjectUser, superClass);
+
+    function ProjectUser() {
+      return ProjectUser.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectUser.prototype.defaults = function() {
+      return {
+        user: "unassigned",
+        saved: false
+      };
+    };
+
+    return ProjectUser;
+
+  })(Backbone.Model);
+
+  window.ProjectUserList = (function(superClass) {
+    extend(ProjectUserList, superClass);
+
+    function ProjectUserList() {
+      this.validateCollection = bind(this.validateCollection, this);
+      return ProjectUserList.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectUserList.prototype.model = ProjectUser;
+
+    ProjectUserList.prototype.validateCollection = function() {
+      var currentUser, i, index, model, modelErrors, ref, usedUsers;
+      modelErrors = [];
+      usedUsers = {};
+      if (this.length !== 0) {
+        for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
+          model = this.at(index);
+          currentUser = model.get('user');
+          if (currentUser in usedUsers) {
+            modelErrors.push({
+              attribute: 'user:eq(' + index + ')',
+              message: "The same user can not be chosen more than once"
+            });
+            modelErrors.push({
+              attribute: 'user:eq(' + usedUsers[currentUser] + ')',
+              message: "The same scientist can not be chosen more than once"
+            });
+          } else {
+            usedUsers[currentUser] = index;
+          }
+        }
+      }
+      return modelErrors;
+    };
+
+    return ProjectUserList;
+
+  })(Backbone.Collection);
+
+  window.ProjectAdmin = (function(superClass) {
+    extend(ProjectAdmin, superClass);
+
+    function ProjectAdmin() {
+      return ProjectAdmin.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectAdmin.prototype.defaults = function() {
+      return {
+        admin: "unassigned",
+        saved: false
+      };
+    };
+
+    return ProjectAdmin;
+
+  })(Backbone.Model);
+
+  window.ProjectAdminList = (function(superClass) {
+    extend(ProjectAdminList, superClass);
+
+    function ProjectAdminList() {
+      this.validateCollection = bind(this.validateCollection, this);
+      return ProjectAdminList.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectAdminList.prototype.model = ProjectAdmin;
+
+    ProjectAdminList.prototype.validateCollection = function() {
+      var currentAdmin, i, index, model, modelErrors, ref, usedAdmins;
+      modelErrors = [];
+      usedAdmins = {};
+      if (this.length !== 0) {
+        for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
+          model = this.at(index);
+          currentAdmin = model.get('admin');
+          if (currentAdmin in usedAdmins) {
+            modelErrors.push({
+              attribute: 'admin:eq(' + index + ')',
+              message: "The same admin can not be chosen more than once"
+            });
+            modelErrors.push({
+              attribute: 'admin:eq(' + usedAdmins[currentAdmin] + ')',
+              message: "The same admin can not be chosen more than once"
+            });
+          } else {
+            usedAdmins[currentAdmin] = index;
+          }
+        }
+      }
+      return modelErrors;
+    };
+
+    return ProjectAdminList;
+
+  })(Backbone.Collection);
+
   window.Project = (function(superClass) {
     extend(Project, superClass);
 
@@ -129,6 +243,16 @@
           stateKind: 'project metadata',
           type: 'numericValue',
           kind: 'live design id'
+        }, {
+          key: 'is restricted',
+          stateType: 'metadata',
+          stateKind: 'project metadata',
+          type: 'codeValue',
+          kind: 'is restricted',
+          codeType: 'project',
+          codeKind: 'restricted',
+          codeOrigin: 'ACAS DDICT',
+          value: 'true'
         }
       ],
       defaultFirstLsThingItx: [],
@@ -251,6 +375,17 @@
       }
     };
 
+    Project.prototype.isEditable = function() {
+      var status;
+      status = this.get('project status').get('value');
+      switch (status) {
+        case "active":
+          return true;
+        case "inactive":
+          return false;
+      }
+    };
+
     return Project;
 
   })(Thing);
@@ -320,9 +455,7 @@
       var newModel, scientist;
       scientist = this.scientistListController.getSelectedCode();
       if (this.model.get('id') != null) {
-        newModel = new ProjectLeader(_.clone(this.model.attributes));
-        newModel.unset('id');
-        newModel.set({
+        newModel = new ProjectLeader({
           scientist: scientist
         });
         this.model.set("ignored", true);
@@ -472,6 +605,410 @@
 
   })(Backbone.View);
 
+  window.ProjectUserController = (function(superClass) {
+    extend(ProjectUserController, superClass);
+
+    function ProjectUserController() {
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
+      return ProjectUserController.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectUserController.prototype.template = _.template($("#ProjectUserView").html());
+
+    ProjectUserController.prototype.tagName = "div";
+
+    ProjectUserController.prototype.events = function() {
+      return {
+        "change .bv_user": "attributeChanged",
+        "click .bv_deleteProjectUser": "clear"
+      };
+    };
+
+    ProjectUserController.prototype.initialize = function() {
+      this.errorOwnerName = 'ProjectUserController';
+      this.setBindings();
+      return this.model.on("destroy", this.remove, this);
+    };
+
+    ProjectUserController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.setupUserSelect();
+      return this;
+    };
+
+    ProjectUserController.prototype.setupUserSelect = function() {
+      this.userList = new PickListList();
+      this.userList.url = "/api/authors";
+      return this.userListController = new PickListSelectController({
+        el: this.$('.bv_user'),
+        collection: this.userList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select User"
+        }),
+        selectedCode: this.model.get('user')
+      });
+    };
+
+    ProjectUserController.prototype.updateModel = function() {
+      var newModel, user;
+      user = this.userListController.getSelectedCode();
+      if (this.model.get('saved')) {
+        newModel = new ProjectUser({
+          user: user
+        });
+        this.model.set("ignored", true);
+        this.$('.bv_projectUserWrapper').hide();
+        this.trigger('addNewModel', newModel);
+      } else {
+        this.model.set({
+          user: user
+        });
+      }
+      return this.trigger('amDirty');
+    };
+
+    ProjectUserController.prototype.clear = function() {
+      if (this.model.get('saved') === true) {
+        this.model.set("ignored", true);
+        this.$('.bv_projectUserWrapper').hide();
+      } else {
+        this.model.destroy();
+      }
+      return this.trigger('amDirty');
+    };
+
+    return ProjectUserController;
+
+  })(AbstractFormController);
+
+  window.ProjectUserListController = (function(superClass) {
+    extend(ProjectUserListController, superClass);
+
+    function ProjectUserListController() {
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.isValid = bind(this.isValid, this);
+      this.addProjectUser = bind(this.addProjectUser, this);
+      this.addNewProjectUser = bind(this.addNewProjectUser, this);
+      this.render = bind(this.render, this);
+      return ProjectUserListController.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectUserListController.prototype.template = _.template($("#ProjectUserListView").html());
+
+    ProjectUserListController.prototype.events = {
+      "click .bv_addProjectUserButton": "addNewProjectUser"
+    };
+
+    ProjectUserListController.prototype.initialize = function() {
+      var newModel;
+      if (this.collection == null) {
+        this.collection = new ProjectUserList();
+        newModel = new ProjectUser;
+        return this.collection.add(newModel);
+      }
+    };
+
+    ProjectUserListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(userInfo) {
+          return _this.addProjectUser(userInfo);
+        };
+      })(this));
+      if (this.collection.length === 0) {
+        this.addNewProjectUser();
+      }
+      this.trigger('renderComplete');
+      return this;
+    };
+
+    ProjectUserListController.prototype.addNewProjectUser = function() {
+      var newModel;
+      newModel = new ProjectUser();
+      this.collection.add(newModel);
+      this.addProjectUser(newModel);
+      return this.trigger('amDirty');
+    };
+
+    ProjectUserListController.prototype.addProjectUser = function(userInfo) {
+      var plc;
+      plc = new ProjectUserController({
+        model: userInfo
+      });
+      plc.on('addNewModel', (function(_this) {
+        return function(newModel) {
+          _this.collection.add(newModel);
+          return _this.addProjectUser(newModel);
+        };
+      })(this));
+      plc.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.$('.bv_projectUserInfo').append(plc.render().el);
+    };
+
+    ProjectUserListController.prototype.isValid = function() {
+      var errors, validCheck;
+      validCheck = true;
+      errors = this.collection.validateCollection();
+      if (errors.length > 0) {
+        validCheck = false;
+      }
+      this.validationError(errors);
+      return validCheck;
+    };
+
+    ProjectUserListController.prototype.validationError = function(errors) {
+      this.clearValidationErrorStyles();
+      return _.each(errors, (function(_this) {
+        return function(err) {
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
+        };
+      })(this));
+    };
+
+    ProjectUserListController.prototype.clearValidationErrorStyles = function() {
+      var errorElms;
+      errorElms = this.$('.input_error');
+      return _.each(errorElms, (function(_this) {
+        return function(ee) {
+          $(ee).removeAttr('data-toggle');
+          $(ee).removeAttr('data-placement');
+          $(ee).removeAttr('title');
+          $(ee).removeAttr('data-original-title');
+          return $(ee).removeClass('input_error error');
+        };
+      })(this));
+    };
+
+    return ProjectUserListController;
+
+  })(Backbone.View);
+
+  window.ProjectAdminController = (function(superClass) {
+    extend(ProjectAdminController, superClass);
+
+    function ProjectAdminController() {
+      this.clear = bind(this.clear, this);
+      this.updateModel = bind(this.updateModel, this);
+      this.render = bind(this.render, this);
+      return ProjectAdminController.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectAdminController.prototype.template = _.template($("#ProjectAdminView").html());
+
+    ProjectAdminController.prototype.tagName = "div";
+
+    ProjectAdminController.prototype.events = function() {
+      return {
+        "change .bv_admin": "attributeChanged",
+        "click .bv_deleteProjectAdmin": "clear"
+      };
+    };
+
+    ProjectAdminController.prototype.initialize = function() {
+      this.errorOwnerName = 'ProjectAdminController';
+      this.setBindings();
+      return this.model.on("destroy", this.remove, this);
+    };
+
+    ProjectAdminController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template(this.model.attributes));
+      this.setupAdminSelect();
+      return this;
+    };
+
+    ProjectAdminController.prototype.setupAdminSelect = function() {
+      this.adminList = new PickListList();
+      this.adminList.url = "/api/authors";
+      return this.adminListController = new PickListSelectController({
+        el: this.$('.bv_admin'),
+        collection: this.adminList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Admin"
+        }),
+        selectedCode: this.model.get('admin')
+      });
+    };
+
+    ProjectAdminController.prototype.updateModel = function() {
+      var admin, newModel;
+      admin = this.adminListController.getSelectedCode();
+      if (this.model.get('saved')) {
+        newModel = new ProjectAdmin({
+          admin: admin
+        });
+        this.model.set("ignored", true);
+        this.$('.bv_projectAdminWrapper').hide();
+        this.trigger('addNewModel', newModel);
+      } else {
+        this.model.set({
+          admin: admin
+        });
+      }
+      return this.trigger('amDirty');
+    };
+
+    ProjectAdminController.prototype.clear = function() {
+      if (this.model.get('saved') === true) {
+        this.model.set("ignored", true);
+        this.$('.bv_projectAdminWrapper').hide();
+      } else {
+        this.model.destroy();
+      }
+      return this.trigger('amDirty');
+    };
+
+    return ProjectAdminController;
+
+  })(AbstractFormController);
+
+  window.ProjectAdminListController = (function(superClass) {
+    extend(ProjectAdminListController, superClass);
+
+    function ProjectAdminListController() {
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
+      this.isValid = bind(this.isValid, this);
+      this.addProjectAdmin = bind(this.addProjectAdmin, this);
+      this.addNewProjectAdmin = bind(this.addNewProjectAdmin, this);
+      this.render = bind(this.render, this);
+      return ProjectAdminListController.__super__.constructor.apply(this, arguments);
+    }
+
+    ProjectAdminListController.prototype.template = _.template($("#ProjectAdminListView").html());
+
+    ProjectAdminListController.prototype.events = {
+      "click .bv_addProjectAdminButton": "addNewProjectAdmin"
+    };
+
+    ProjectAdminListController.prototype.initialize = function() {
+      var newModel;
+      if (this.collection == null) {
+        this.collection = new ProjectAdminList();
+        newModel = new ProjectAdmin;
+        return this.collection.add(newModel);
+      }
+    };
+
+    ProjectAdminListController.prototype.render = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      this.collection.each((function(_this) {
+        return function(adminInfo) {
+          return _this.addProjectAdmin(adminInfo);
+        };
+      })(this));
+      if (this.collection.length === 0) {
+        this.addNewProjectAdmin();
+      }
+      this.trigger('renderComplete');
+      return this;
+    };
+
+    ProjectAdminListController.prototype.addNewProjectAdmin = function() {
+      var newModel;
+      newModel = new ProjectAdmin();
+      this.collection.add(newModel);
+      this.addProjectAdmin(newModel);
+      return this.trigger('amDirty');
+    };
+
+    ProjectAdminListController.prototype.addProjectAdmin = function(adminInfo) {
+      var plc;
+      plc = new ProjectAdminController({
+        model: adminInfo
+      });
+      plc.on('addNewModel', (function(_this) {
+        return function(newModel) {
+          _this.collection.add(newModel);
+          return _this.addProjectAdmin(newModel);
+        };
+      })(this));
+      plc.on('amDirty', (function(_this) {
+        return function() {
+          return _this.trigger('amDirty');
+        };
+      })(this));
+      return this.$('.bv_projectAdminInfo').append(plc.render().el);
+    };
+
+    ProjectAdminListController.prototype.isValid = function() {
+      var errors, validCheck;
+      validCheck = true;
+      errors = this.collection.validateCollection();
+      if (errors.length > 0) {
+        validCheck = false;
+      }
+      this.validationError(errors);
+      return validCheck;
+    };
+
+    ProjectAdminListController.prototype.validationError = function(errors) {
+      this.clearValidationErrorStyles();
+      return _.each(errors, (function(_this) {
+        return function(err) {
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
+        };
+      })(this));
+    };
+
+    ProjectAdminListController.prototype.clearValidationErrorStyles = function() {
+      var errorElms;
+      errorElms = this.$('.input_error');
+      return _.each(errorElms, (function(_this) {
+        return function(ee) {
+          $(ee).removeAttr('data-toggle');
+          $(ee).removeAttr('data-placement');
+          $(ee).removeAttr('title');
+          $(ee).removeAttr('data-original-title');
+          return $(ee).removeClass('input_error error');
+        };
+      })(this));
+    };
+
+    return ProjectAdminListController;
+
+  })(Backbone.View);
+
   window.ProjectController = (function(superClass) {
     extend(ProjectController, superClass);
 
@@ -482,6 +1019,7 @@
       this.checkDisplayMode = bind(this.checkDisplayMode, this);
       this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
       this.validationError = bind(this.validationError, this);
+      this.prepareToSaveAuthorRoles = bind(this.prepareToSaveAuthorRoles, this);
       this.prepareToSaveProjectLeaders = bind(this.prepareToSaveProjectLeaders, this);
       this.prepareToSaveAttachedFiles = bind(this.prepareToSaveAttachedFiles, this);
       this.saveProject = bind(this.saveProject, this);
@@ -490,6 +1028,8 @@
       this.updateModel = bind(this.updateModel, this);
       this.handleStartDateIconClicked = bind(this.handleStartDateIconClicked, this);
       this.handleProjectCodeNameChanged = bind(this.handleProjectCodeNameChanged, this);
+      this.updateEditable = bind(this.updateEditable, this);
+      this.handleStatusChanged = bind(this.handleStatusChanged, this);
       this.setupAttachFileListController = bind(this.setupAttachFileListController, this);
       this.modelChangeCallback = bind(this.modelChangeCallback, this);
       this.modelSaveCallback = bind(this.modelSaveCallback, this);
@@ -505,6 +1045,7 @@
 
     ProjectController.prototype.events = function() {
       return {
+        "change .bv_status": "handleStatusChanged",
         "keyup .bv_projectCode": "handleProjectCodeNameChanged",
         "keyup .bv_projectName": "attributeChanged",
         "keyup .bv_projectAlias": "attributeChanged",
@@ -512,6 +1053,7 @@
         "click .bv_startDateIcon": "handleStartDateIconClicked",
         "keyup .bv_shortDescription": "attributeChanged",
         "keyup .bv_projectDetails": "attributeChanged",
+        "change .bv_restrictedData": "attributeChanged",
         "click .bv_save": "handleSaveClicked"
       };
     };
@@ -573,6 +1115,11 @@
       this.setupTagList();
       this.setupAttachFileListController();
       this.setupProjectLeaderListController();
+      this.setupIsRestrictedCheckbox();
+      if (!this.model.isNew() && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        this.setupProjectUserListController();
+        this.setupProjectAdminListController();
+      }
       return this.render();
     };
 
@@ -584,6 +1131,11 @@
       codeName = this.model.get('codeName');
       this.$('.bv_projectCode').val(codeName);
       this.$('.bv_projectCode').html(codeName);
+      if (this.model.isNew()) {
+        this.$('.bv_projectCode').removeAttr('disabled');
+      } else {
+        this.$('.bv_projectCode').attr('disabled', 'disabled');
+      }
       bestName = this.model.get('lsLabels').pickBestName();
       if (bestName != null) {
         this.$('.bv_projectName').val(bestName.get('labelText'));
@@ -601,6 +1153,15 @@
       }
       this.$('.bv_shortDescription').val(this.model.get('short description').get('value'));
       this.$('.bv_projectDetails').val(this.model.get('project details').get('value'));
+      if (this.model.isNew()) {
+        this.$('.bv_status').attr('disabled', 'disabled');
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+          this.$('.bv_saveBeforeManagingPermissions').show();
+          this.$('.bv_manageUserPermissions').hide();
+        }
+      } else {
+        this.updateEditable();
+      }
       if (this.readOnly === true) {
         this.displayInReadOnlyMode();
       }
@@ -628,6 +1189,10 @@
       }
       this.setupAttachFileListController();
       this.setupProjectLeaderListController();
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        this.setupProjectUserListController();
+        this.setupProjectAdminListController();
+      }
       this.render();
       return this.trigger('amClean');
     };
@@ -760,6 +1325,150 @@
       })(this));
     };
 
+    ProjectController.prototype.setupProjectUserListController = function() {
+      var projectCodeName;
+      if (this.projectUserListController != null) {
+        this.projectUserListController.undelegateEvents();
+      }
+      projectCodeName = this.model.get('codeName');
+      return $.ajax({
+        type: 'GET',
+        url: "/api/projects/getByRoleTypeKindAndName/Project/" + projectCodeName + "/User?format=codetable",
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get list of project users');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var users;
+            users = new ProjectUserList();
+            _.each(json, function(user) {
+              return users.add(new ProjectUser({
+                user: user.code,
+                saved: true
+              }));
+            });
+            _this.projectUserListController = new ProjectUserListController({
+              el: _this.$('.bv_projectUserList'),
+              collection: users
+            });
+            _this.projectUserListController.on('amClean', function() {
+              return _this.trigger('amClean');
+            });
+            _this.projectUserListController.on('renderComplete', function() {
+              return _this.checkDisplayMode();
+            });
+            _this.projectUserListController.render();
+            return _this.projectUserListController.on('amDirty', function() {
+              _this.trigger('amDirty');
+              _this.$('.bv_saveComplete').hide();
+              _this.$('.bv_saveFailed').hide();
+              return _this.checkFormValid();
+            });
+          };
+        })(this)
+      });
+    };
+
+    ProjectController.prototype.setupProjectAdminListController = function() {
+      var projectCodeName;
+      if (this.projectAdminListController != null) {
+        this.projectAdminListController.undelegateEvents();
+      }
+      projectCodeName = this.model.get('codeName');
+      return $.ajax({
+        type: 'GET',
+        url: "/api/projects/getByRoleTypeKindAndName/Project/" + projectCodeName + "/Administrator?format=codetable",
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get list of project admins');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var admins;
+            admins = new ProjectAdminList();
+            _.each(json, function(admin) {
+              return admins.add(new ProjectAdmin({
+                admin: admin.code,
+                saved: true
+              }));
+            });
+            _this.projectAdminListController = new ProjectAdminListController({
+              el: _this.$('.bv_projectAdminList'),
+              collection: admins
+            });
+            _this.projectAdminListController.on('amClean', function() {
+              return _this.trigger('amClean');
+            });
+            _this.projectAdminListController.on('renderComplete', function() {
+              return _this.checkDisplayMode();
+            });
+            _this.projectAdminListController.render();
+            return _this.projectAdminListController.on('amDirty', function() {
+              _this.trigger('amDirty');
+              _this.$('.bv_saveComplete').hide();
+              _this.$('.bv_saveFailed').hide();
+              return _this.checkFormValid();
+            });
+          };
+        })(this)
+      });
+    };
+
+    ProjectController.prototype.setupIsRestrictedCheckbox = function() {
+      if (this.model.get('is restricted') === "false") {
+        return this.$('.bv_restrictedData').removeAttr('checked');
+      } else {
+        return this.$('.bv_restrictedData').attr('checked', 'checked');
+      }
+    };
+
+    ProjectController.prototype.handleStatusChanged = function() {
+      var value;
+      value = this.statusListController.getSelectedCode();
+      if ((value === "inactive") && !this.isValid()) {
+        value = value.charAt(0).toUpperCase() + value.substring(1);
+        alert('All fields must be valid before changing the status to "' + value + '"');
+        return this.statusListController.setSelectedCode(this.model.get('project status').get('value'));
+      } else {
+        this.model.get("project status").set("value", value);
+        this.updateEditable();
+        return this.checkFormValid();
+      }
+    };
+
+    ProjectController.prototype.updateEditable = function() {
+      if (this.model.isEditable()) {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+          this.enableAllInputs();
+          this.$('.bv_projectCode').attr('disabled', 'disabled');
+          this.$('.bv_manageUserPermissions').show();
+          return this.$('.bv_saveBeforeManagingPermissions').hide();
+        } else {
+          this.enableLimitedEditing();
+          return this.$('.bv_manageUserPermissions').hide();
+        }
+      } else {
+        this.disableAllInputs();
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+          this.$('.bv_status').removeAttr('disabled', 'disabled');
+          return this.$('.bv_manageUserPermissions').show();
+        } else {
+          return this.$('.bv_manageUserPermissions').hide();
+        }
+      }
+    };
+
+    ProjectController.prototype.enableLimitedEditing = function() {
+      this.disableAllInputs();
+      this.$('.bv_shortDescription').removeAttr('disabled');
+      this.$('.bv_projectDetails').removeAttr('disabled');
+      this.$('.bv_fileType').removeAttr('disabled');
+      this.$('button').removeAttr('disabled');
+      this.$('.bv_deleteProjectLeader').attr('disabled', 'disabled');
+      return this.$('.bv_addProjectLeaderButton').attr('disabled', 'disabled');
+    };
+
     ProjectController.prototype.handleProjectCodeNameChanged = function() {
       var codeName;
       codeName = UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_projectCode'));
@@ -778,11 +1487,14 @@
     };
 
     ProjectController.prototype.updateModel = function() {
+      var isRestricted;
       this.model.get("project name").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_projectName')));
       this.model.get("project alias").set("labelText", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_projectAlias')));
       this.model.get("start date").set("value", UtilityFunctions.prototype.convertYMDDateToMs(UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_startDate'))));
       this.model.get("short description").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_shortDescription')));
-      return this.model.get("project details").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_projectDetails')));
+      this.model.get("project details").set("value", UtilityFunctions.prototype.getTrimmedInput(this.$('.bv_projectDetails')));
+      isRestricted = this.$('.bv_restrictedData').is(":checked");
+      return this.model.get("is restricted").set("value", isRestricted.toString());
     };
 
     ProjectController.prototype.handleSaveClicked = function() {
@@ -839,26 +1551,124 @@
     };
 
     ProjectController.prototype.saveProject = function() {
+      var authorRoles, authorRolesToDelete, dataToPost, newAuthorRoles, newProject;
       this.prepareToSaveAttachedFiles();
       this.prepareToSaveProjectLeaders();
+      if (!this.model.isNew() && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        authorRoles = this.prepareToSaveAuthorRoles();
+        newAuthorRoles = authorRoles[0];
+        authorRolesToDelete = authorRoles[1];
+      }
       this.tagListController.handleTagsChanged();
       this.model.prepareToSave();
       this.model.reformatBeforeSaving();
       if (this.model.isNew()) {
         this.$('.bv_saveComplete').html('Save Complete');
+        newProject = true;
       } else {
         this.$('.bv_saveComplete').html('Update Complete');
+        newProject = false;
       }
       this.$('.bv_save').attr('disabled', 'disabled');
-      return this.model.save(null, {
-        success: (function(_this) {
-          return function(model, response) {
-            if (response === "update lsThing failed") {
-              return _this.model.trigger('saveFailed');
-            }
+      if (this.model.isNew()) {
+        return this.model.save(null, {
+          success: (function(_this) {
+            return function(model, response) {
+              var dataToPost;
+              if (response === "update lsThing failed") {
+                return _this.model.trigger('saveFailed');
+              } else {
+                dataToPost = {
+                  rolekind: [
+                    {
+                      typeName: "Project",
+                      kindName: _this.model.get('codeName')
+                    }
+                  ],
+                  lsroles: [
+                    {
+                      lsType: "Project",
+                      lsKind: _this.model.get('codeName'),
+                      roleName: "User"
+                    }, {
+                      lsType: "Project",
+                      lsKind: _this.model.get('codeName'),
+                      roleName: "Administrator"
+                    }
+                  ]
+                };
+                return $.ajax({
+                  type: 'POST',
+                  url: '/api/projects/createRoleKindAndName',
+                  data: dataToPost,
+                  success: function(response) {
+                    return console.log("created project role kind and name");
+                  },
+                  error: function(err) {
+                    _this.serviceReturn = null;
+                    if (err.responseText.indexOf("saveFailed") > -1) {
+                      return alert('An error occurred saving the projectt role kind and name. Please contact an administrator.');
+                    }
+                  },
+                  dataType: 'json'
+                });
+              }
+            };
+          })(this)
+        });
+      } else {
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+          dataToPost = {
+            newAuthorRoles: JSON.stringify(newAuthorRoles),
+            authorRolesToDelete: JSON.stringify(authorRolesToDelete)
           };
-        })(this)
-      });
+          return $.ajax({
+            type: 'POST',
+            url: '/api/projects/updateProjectRoles',
+            data: dataToPost,
+            dataType: 'json',
+            success: (function(_this) {
+              return function(response) {
+                return _this.model.save(null, {
+                  success: function(model, response) {
+                    if (response === "update lsThing failed") {
+                      return _this.model.trigger('saveFailed');
+                    }
+                  },
+                  error: function(err) {
+                    _this.serviceReturn = null;
+                    if (err.responseText.indexOf("saveFailed") > -1) {
+                      alert('An error occurred saving the project.');
+                      return _this.model.trigger('saveFailed');
+                    }
+                  }
+                });
+              };
+            })(this),
+            error: (function(_this) {
+              return function(err) {
+                alert('An error occurred saving the project roles');
+                return _this.model.trigger('saveFailed');
+              };
+            })(this)
+          });
+        } else {
+          return this.model.save(null, {
+            success: (function(_this) {
+              return function(model, response) {
+                if (response === "update lsThing failed") {
+                  return _this.model.trigger('saveFailed');
+                }
+              };
+            })(this),
+            error: (function(_this) {
+              return function(err) {
+                return _this.model.trigger('saveFailed');
+              };
+            })(this)
+          });
+        }
+      }
     };
 
     ProjectController.prototype.prepareToSaveAttachedFiles = function() {
@@ -902,6 +1712,73 @@
           }
         };
       })(this));
+    };
+
+    ProjectController.prototype.prepareToSaveAuthorRoles = function() {
+      var adminsToDelete, adminsToPost, authorRolesToDelete, newAuthorRoles, usersToDelete, usersToPost;
+      newAuthorRoles = [];
+      usersToPost = this.projectUserListController.collection.filter(function(user) {
+        return !user.get('saved') && user.get('user') !== "unassigned" && !user.get('ignored');
+      });
+      _.each(usersToPost, (function(_this) {
+        return function(user) {
+          var newAuthor;
+          newAuthor = {
+            roleType: "Project",
+            roleKind: _this.model.get('codeName'),
+            roleName: "User",
+            userName: user.get('user')
+          };
+          return newAuthorRoles.push(newAuthor);
+        };
+      })(this));
+      adminsToPost = this.projectAdminListController.collection.filter(function(admin) {
+        return !admin.get('saved') && admin.get('admin') !== "unassigned" && !admin.get('ignored');
+      });
+      _.each(adminsToPost, (function(_this) {
+        return function(admin) {
+          var newAuthor;
+          newAuthor = {
+            roleType: "Project",
+            roleKind: _this.model.get('codeName'),
+            roleName: "Administrator",
+            userName: admin.get('admin')
+          };
+          return newAuthorRoles.push(newAuthor);
+        };
+      })(this));
+      authorRolesToDelete = [];
+      usersToDelete = this.projectUserListController.collection.filter(function(user) {
+        return user.get('saved') && user.get('ignored');
+      });
+      _.each(usersToDelete, (function(_this) {
+        return function(user) {
+          var author;
+          author = {
+            roleType: "Project",
+            roleKind: _this.model.get('codeName'),
+            roleName: "User",
+            userName: user.get('user')
+          };
+          return authorRolesToDelete.push(author);
+        };
+      })(this));
+      adminsToDelete = this.projectAdminListController.collection.filter(function(admin) {
+        return admin.get('saved') && admin.get('ignored');
+      });
+      _.each(adminsToDelete, (function(_this) {
+        return function(admin) {
+          var author;
+          author = {
+            roleType: "Project",
+            roleKind: _this.model.get('codeName'),
+            roleName: "Administrator",
+            userName: admin.get('admin')
+          };
+          return authorRolesToDelete.push(author);
+        };
+      })(this));
+      return [newAuthorRoles, authorRolesToDelete];
     };
 
     ProjectController.prototype.validationError = function() {
@@ -948,6 +1825,16 @@
       }
       if (this.projectLeaderListController != null) {
         if (this.projectLeaderListController.isValid() === false) {
+          validCheck = false;
+        }
+      }
+      if (this.projectUserListController != null) {
+        if (this.projectUserListController.isValid() === false) {
+          validCheck = false;
+        }
+      }
+      if (this.projectAdminListController != null) {
+        if (this.projectAdminListController.isValid() === false) {
           validCheck = false;
         }
       }
