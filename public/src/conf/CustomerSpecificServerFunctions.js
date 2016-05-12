@@ -217,6 +217,15 @@
   };
 
   exports.getProjects = function(req, resp) {
+    return exports.getProjectsInternal(req, (function(_this) {
+      return function(response) {
+        resp.status(response.statusCode);
+        return resp.end(response);
+      };
+    })(this));
+  };
+
+  exports.getProjectsInternal = function(req, callback) {
     var config, request, url;
     config = require('../../../conf/compiled/conf.js');
     url = config.all.client.service.persistence.fullpath + "authorization/projects?find=ByUserName&userName=" + req.user.username + "&format=codeTable";
@@ -228,14 +237,14 @@
     }, (function(_this) {
       return function(error, response, json) {
         if (!error && response.statusCode === 200) {
-          return resp.json(json);
+          return callback(json);
         } else {
           console.log('got ajax error trying get acas project codes');
           console.log(error);
           console.log(json);
           console.log(response);
-          resp.status(response.statusCode);
-          return resp.json(json);
+          callback.statusCode = response.statusCode;
+          return callback(json);
         }
       };
     })(this));

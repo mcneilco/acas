@@ -86,7 +86,7 @@ $(function () {
         searchReturn: function(ajaxReturn) {
             this.trigger('clearErrors', "SearchController");
             this.delegateEvents(); // start listening to events
-            this.searchResults = ajaxReturn;
+            this.searchResults = ajaxReturn.foundCompounds;
             if(this.searchResults.length>0){
                 if( this.searchResultsController !=null ) {
                     this.deleteSearchResultsController();
@@ -104,6 +104,13 @@ $(function () {
             } else {
                 this.trigger('notifyError', {owner: "SearchController", errorLevel: 'warning', message: "No lots match your search criteria"});
                 this.searchController.show();
+            }
+            if(window.configuration.search) {
+                if(window.configuration.search.showWithheldMessage) {
+                    if(ajaxReturn.lotsWithheld) {
+                        this.trigger('notifyError', {owner: "SearchController", errorLevel: 'warning', message: "Results have been removed due to project restrictions"});
+                    }
+                }
             }
         },
         openLot: function(corpName) {

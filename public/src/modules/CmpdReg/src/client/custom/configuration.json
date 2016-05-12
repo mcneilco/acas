@@ -7,7 +7,7 @@
     },
     "clientUILabels": {
         "corpNameLabel": "CMPD Number",
-        "applicationNameForTitleBar": "DDAG Compound Registration",
+        "applicationNameForTitleBar": "ACAS Compound Registration",
         "commonNameLabel": "Original ID:"
     },
     "marvin": {
@@ -38,22 +38,22 @@
     	"saltSeparator": "",   	
     	"batchSeparator": "-",
     	"numberCorpDigits": 7,
-    	"formatBatchDigits": 3,
+    	"formatBatchDigits": 2,
     	"startingCorpNumber": 0,
     	"fancyCorpNumberFormat": false,
     	"corpBatchFormat": "corp_batch_saltcode",
-    	"appendSaltCodeToLotName": false,
-    	"noSaltCode": "",
+    	"appendSaltCodeToLotName": true,
+    	"noSaltCode": "A",
     	"usePredefinedList": false,
     	"newUserIsChemist": false,
     	"uniqueNotebook": false,
-    	"notebookSavePath": "/vol/bluebird/acas/app/privateUploads/cmpdreg/noteBookFiles/noteBook/",
+    	"notebookSavePath": "/opt/cmpdreg/noteBookFiles/noteBook/",
     	"exactMatchDef": "DUPLICATE_TAUTOMER",
     	"maxSearchTime": 180000,
     	"maxSearchResults": 5000,
     	"unitTestDB": true,
     	"initalDBLoad": true,
-    	"jchemVersion": "15.10.5.0"
+    	"jchemVersion": "16.4.11.0"
     },
     "bulkLoadSettings": {
     	"dbProperties": [

@@ -24,7 +24,7 @@ tryCatch({
   lsKindDF <- query(qu)
   names(lsKindDF) <- tolower(names(lsKindDF))
   qu <- paste0("SELECT e.project FROM
-  				api_experiment_ld e
+  				api_experiment e
             	WHERE e.code_name = '", GET$experiment, "'")
   projectDF <- query(qu)
   names(projectDF) <- tolower(names(projectDF))

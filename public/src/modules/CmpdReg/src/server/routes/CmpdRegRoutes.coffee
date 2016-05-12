@@ -12,7 +12,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects
 	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -108,6 +108,33 @@ exports.getBasicCmpdReg = (req, resp) ->
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
+
+exports.getAuthorizedCmpdRegProjects = (req, resp) ->
+	exports.getAuthorizedCmpdRegProjectsInternal req, (response) =>
+		resp.status "200"
+		resp.end JSON.stringify response
+
+exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
+	_ = require "underscore"
+	exports.getACASProjects req, (acasProjectsResponse)->
+		acasProjects = acasProjectsResponse
+		exports.getProjects req, (cmpdRegProjectsResponse)->
+			cmpdRegProjects = JSON.parse cmpdRegProjectsResponse
+			allowedProjectCodes = _.pluck acasProjects, 'code'
+			allowedProjects = _.filter cmpdRegProjects, (cmpdRegProject) ->
+				return (cmpdRegProject.code in allowedProjectCodes)
+			callback allowedProjects
+
+
+exports.getACASProjects = (req, callback) ->
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	if !req.user?
+		req.user = {}
+		req.user.username = req.params.username
+	if global.specRunnerTestmode
+		resp.end JSON.stringify "testMode not implemented"
+	else
+		csUtilities.getProjectsInternal req, callback
 
 exports.getProjects = (req, callback) ->
 	request = require 'request'
