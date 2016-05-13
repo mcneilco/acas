@@ -133,7 +133,7 @@ class window.TransformationParameters extends Backbone.Model
 
 	parse: (resp, rule) ->
 		if rule?
-			if rule == 'sd' or rule == 'percent efficacy'
+			if rule is 'percent efficacy'
 				if resp.positiveControl?
 					if resp.positiveControl not instanceof ControlSetting
 						resp.positiveControl = new ControlSetting(resp.positiveControl)
@@ -143,6 +143,7 @@ class window.TransformationParameters extends Backbone.Model
 					@trigger 'change'
 				resp.positiveControl.on 'amDirty', =>
 					@trigger 'amDirty'
+			if rule is 'sd' or rule is 'percent efficacy'
 				if resp.negativeControl?
 					if resp.negativeControl not instanceof ControlSetting
 						resp.negativeControl = new ControlSetting(resp.negativeControl)
@@ -182,8 +183,8 @@ class window.TransformationRuleWithParameters extends TransformationRule
 
 	parse: (resp) =>
 		if resp.transformationParameters?
-			if resp.transformationParameters not instanceof Backbone.Model
-				resp.transformationParameters = new Backbone.Model(resp.transformationParameters, {rule: @transformationRule})
+			if resp.transformationParameters not instanceof TransformationParameters
+				resp.transformationParameters = new TransformationParameters(resp.transformationParameters, {rule: @transformationRule})
 			resp.transformationParameters.on 'change', =>
 				@trigger 'change'
 			resp.transformationParameters.on 'amDirty', =>
@@ -962,9 +963,12 @@ class window.TransformationRuleWithParametersController extends TransformationRu
 		else
 			newAttr = @model.get('transformationParameters')
 		@transformationParameters = new TransformationParameters newAttr, {rule: rule}
+		@transformationParameters.on 'change', =>
+			@model.trigger 'change'
 		@$('.bv_transformationParameters').empty()
-		if rule == 'sd' or rule == 'percent efficacy'
+		if rule is 'percent efficacy'
 			@setUpPositiveControlSettingController()
+		if rule is 'sd' or rule is 'percent efficacy'
 			@setUpNegativeControlSettingController()
 
 	setUpPositiveControlSettingController: =>
@@ -1003,6 +1007,8 @@ class window.ControlSettingController extends AbstractFormController
 		$(@el).html @template(@model.attributes)
 		@setupStandardsListSelect(@standardsList)
 		@$('.control-label').html @controlLabel
+		selectedStandard = @standardsListSelectController.getSelectedCode()
+		@showInputValue(selectedStandard)
 		@
 
 	initialize: (options) ->
@@ -1026,11 +1032,15 @@ class window.ControlSettingController extends AbstractFormController
 		@model.set
 			defaultValue: defaultValue
 			standardNumber: selectedStandard
+		@showInputValue(selectedStandard)
+		@trigger 'updateState'
+		@trigger 'change'
+
+	showInputValue: (selectedStandard) =>
 		if selectedStandard is 'input value'
 			@$('.bv_defaultValue').removeClass('hide')
 		else
 			@$('.bv_defaultValue').addClass('hide')
-		@trigger 'updateState'
 
 	setupStandardsListSelect: (standardsList) =>
 		standardsSelectArray = standardsList.map (model) =>

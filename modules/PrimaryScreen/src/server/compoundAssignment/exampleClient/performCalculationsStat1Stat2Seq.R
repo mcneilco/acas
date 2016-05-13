@@ -2,14 +2,12 @@ performCalculationsStat1Stat2Seq <- function(resultTable, parameters, experiment
   # resultTable: data.table
   
   # This assumes that there is only one normalization rule passed through the GUI
-  resultTable <- normalizeData(resultTable, parameters$normalizationRule)
+  resultTable <- normalizeData(resultTable, parameters)
   
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
   transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in transformationList) {
-    if(transformation != "none") {
-      resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
-    }
+    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
   }
   
   #maxTime is the point used by the stat1/2 files, overallMaxTime includes points outside of that range
@@ -91,24 +89,6 @@ computeActivity <- function(mainData, transformation) {
     return(mainData$activity)
   }	
 }
-
-############# Commenting out normalizeData() immediately below since the same function is sourced within performCalculations.R
-# normalizeData <- function(resultTable, normalization) {
-#   #if (normalization=="plate order") {
-#   # Separated the first element of the list which has the normalization rule
-#   normalization <- normalization["normalizationRule"]
-#   if (normalization=="plate order only") {
-#     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= assayBarcode]
-#   } else if (normalization=="row order") {
-#     resultTable[,plateRow:=gsub("\\d", "",well)]
-#     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag), by= list(assayBarcode,plateRow)]
-#   } else {
-#     resultTable[,normalizedActivity:=resultTable$activity]
-#   }
-#   
-#   return(resultTable)
-# }
-#############
 
 # computeNormalized  <- function(values, wellType, flag) {
 #   # Computes normalized version of the given values based on the unflagged positive and 

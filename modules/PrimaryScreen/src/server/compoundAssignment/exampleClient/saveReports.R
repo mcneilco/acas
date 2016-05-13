@@ -7,7 +7,7 @@ saveReports <- function(resultTable, spotfireResultTable, saveLocation, experime
   
   spotfireHost <- racas::applicationSettings$client.service.spotfire.host
   if (is.null(spotfireHost) || gdata::trim(spotfireHost) == "") {
-    reportList$txtFile <- saveTxtReport(inputTable=spotfireResultTable, saveLocation, 
+    reportList$txtFile <- saveCsvReport(inputTable=spotfireResultTable, saveLocation, 
                                         experiment, parameters, recordedBy)
   } else {
     reportList$spotfireFile <- saveSpotfireFile(
@@ -18,7 +18,7 @@ saveReports <- function(resultTable, spotfireResultTable, saveLocation, experime
   return(reportList)
 }
 
-saveTxtReport <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
+saveCsvReport <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
   # Saves tab-delimited report, responds with a list of list(title="All Data", link=userLink, fileLink=fileLink, fileText=fileText, download = TRUE)
   
   # Change well type names
@@ -42,14 +42,12 @@ saveTxtReport <- function(inputTable, saveLocation, experiment, parameters, reco
     }
   }
   
-  fileLocation <- file.path(saveLocation,"allData-DRAFT.txt")
-  write.table(inputTable, file=fileLocation, quote=TRUE, na="", row.names=FALSE, sep="\t")
-  
-  fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
-  
-  # targetPath is only for testing
-  finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
-                                        targetPath = "allData.txt")
+  initialFileLocation <- tempfile("allData", fileext = ".csv")
+  write.table(inputTable, file=initialFileLocation, quote=TRUE, na="", row.names=FALSE, sep=",")
+  fileText <- readChar(initialFileLocation, nchar=file.info(initialFileLocation)$size)
+  finalLocation <- file.path(saveLocation, "allData.csv")
+  finalLocation <- moveFileToFileServer(initialFileLocation, experiment = experiment, recordedBy = recordedBy, 
+                                        targetPath = finalLocation)
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
     stop("server.service.external.file.type == 'custom' not implemented for Txt file")

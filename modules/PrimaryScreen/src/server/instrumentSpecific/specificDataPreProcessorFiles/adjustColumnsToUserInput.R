@@ -91,6 +91,16 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
         } else {
           stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
         }
+      } else if(calculation == "Calc: (R5-R4)/R4") {
+        verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 2)
+        if(!inputColumnTable[userReadOrder==5]$calculatedRead && !inputColumnTable[userReadOrder==4]$calculatedRead) {
+          inputDataTable[ , calculatedRead := ((get(inputColumnTable[userReadOrder==5]$newActivityColName) - 
+                                                  get(inputColumnTable[userReadOrder==4]$newActivityColName)) /
+                                                 get(inputColumnTable[userReadOrder==4]$newActivityColName))]
+          setnames(inputDataTable, "calculatedRead", inputColumnTable[userReadName == calculation]$newActivityColName)
+        } else {
+          stopUser("System not set up to calculate a read off another calculated read. Please redefine your read names.")
+        }
       } else if(calculation == "Calc: R1/Heavy Atom Count") {
         verifyCalculationInputs(inputDataTable, inputColumnTable, numberOfColumnsToCheck = 1)
         
@@ -149,7 +159,8 @@ adjustColumnsToUserInput <- function(inputColumnTable, inputDataTable) {
   colNamesToKeep <- c(inputColumnTable$newActivityColName, lockedColumns)
   
   inputDataTable <- removeColumns(colNamesToCheck, colNamesToKeep, inputDataTable)
-  inputDataTable <- addMissingColumns(colNamesToKeep, inputDataTable)
+  inputDataTable <- addMissingColumns(inputColumnTable$newActivityColName, inputDataTable)
+  inputDataTable <- addMissingColumns(lockedColumns, inputDataTable, warnAdd = FALSE)
   
   # copy the read column that we want to do transformation/normalization on (user input)
   activityColName <- inputColumnTable[activityCol==TRUE]$newActivityColName
