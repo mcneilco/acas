@@ -85,12 +85,6 @@ class AppController extends Backbone.View
 
   displayPlateSearch: =>
     @resetCurrentlyDisplayedForm()
-#    promises = []
-#    promises.push(@plateSearchController.plateStatuses.fetch())
-#    promises.push(@plateSearchController.plateTypes.fetch())
-#    promises.push(@plateSearchController.plateDefinitions.fetch())
-#    promises.push(@plateSearchController.users.fetch())
-
     plateStatusesDeferred = $.Deferred()
     plateTypesDeferred = $.Deferred()
     plateDefinitionsDeferred = $.Deferred()
@@ -112,7 +106,7 @@ class AppController extends Backbone.View
       success: () =>
         usersDeferred.resolve()
     })
-    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
+    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
       @plateSearchController.plateDefinitions.convertLabelsToNumeric()
       @plateSearchController.plateDefinitions.comparator = "numericPlateName"
       @plateSearchController.plateDefinitions.sort()
