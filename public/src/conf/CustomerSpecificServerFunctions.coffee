@@ -164,9 +164,9 @@ exports.loginStrategy = (username, password, done) ->
 			exports.getUser username,done
 
 exports.getProjects = (req, resp) ->
-	exports.getProjectsInternal req, (response) =>
-		resp.status response.statusCode
-		resp.end response
+	exports.getProjectsInternal req, (statusCode, response) =>
+		resp.statusCode = statusCode
+		resp.json response
 
 exports.getProjectsInternal = (req, callback) ->
 	config = require '../../../conf/compiled/conf.js'
@@ -178,14 +178,13 @@ exports.getProjectsInternal = (req, callback) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			callback json
+			callback response.statusCode, json
 		else
 			console.log 'got ajax error trying get acas project codes'
 			console.log error
 			console.log json
 			console.log response
-			callback.statusCode = response.statusCode
-			callback json
+			callback response.statusCode, json
 	)
 
 exports.makeServiceRequestHeaders = (user) ->

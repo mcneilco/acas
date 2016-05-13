@@ -32,7 +32,7 @@ exports.syncLiveDesignProjectsUsers = (req, resp) ->
 			projectEntry =
 				id: project.id
 				name: project.code
-				active: if project.active? then ['Y','N'][+project.active] else 'Y'
+				active: if project.active? then ['N','Y'][+project.active] else 'Y'
 				is_restricted: if project.isRestricted? then +project.isRestricted else 0
 				project_desc: project.name
 			projectsJSON.projects.push projectEntry

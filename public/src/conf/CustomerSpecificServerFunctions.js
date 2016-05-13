@@ -183,12 +183,12 @@
 
   exports.loginStrategy = function(username, password, done) {
     return exports.authCheck(username, password, function(results) {
-      var error;
+      var error, error1, error2, error3;
       if (results.indexOf("login_error") >= 0) {
         try {
           exports.logUsage("User failed login: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error1) {
+          error = error1;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -197,8 +197,8 @@
       } else if (results.indexOf("connection_error") >= 0) {
         try {
           exports.logUsage("Connection to authentication service failed: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error2) {
+          error = error2;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -207,8 +207,8 @@
       } else {
         try {
           exports.logUsage("User logged in succesfully: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error3) {
+          error = error3;
           console.log("Exception trying to log:" + error);
         }
         return exports.getUser(username, done);
@@ -218,9 +218,9 @@
 
   exports.getProjects = function(req, resp) {
     return exports.getProjectsInternal(req, (function(_this) {
-      return function(response) {
-        resp.status(response.statusCode);
-        return resp.end(response);
+      return function(statusCode, response) {
+        resp.statusCode = statusCode;
+        return resp.json(response);
       };
     })(this));
   };
@@ -237,14 +237,13 @@
     }, (function(_this) {
       return function(error, response, json) {
         if (!error && response.statusCode === 200) {
-          return callback(json);
+          return callback(response.statusCode, json);
         } else {
           console.log('got ajax error trying get acas project codes');
           console.log(error);
           console.log(json);
           console.log(response);
-          callback.statusCode = response.statusCode;
-          return callback(json);
+          return callback(response.statusCode, json);
         }
       };
     })(this));
