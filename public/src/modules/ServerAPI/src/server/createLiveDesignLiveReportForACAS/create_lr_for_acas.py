@@ -53,6 +53,9 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId,
     	        assay_tree=assay_tree['children'][0]
             for assay in assay_tree['children']:
                 assay_column_ids.extend(assay['addable_column_ids'])
+                if len(assay['children'])>0:
+                    for sub_assay in assay['children']:
+                        assay_column_ids.extend(sub_assay['addable_column_ids'])
     else:
         assays = api.assays()
         assay_hash = {}
