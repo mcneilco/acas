@@ -25,6 +25,8 @@ services:
      - ./modules/ProtocolBrowser:/home/runner/acas/modules/ProtocolBrowser
      - ./modules/ExperimentBrowser:/home/runner/acas/modules/ExperimentBrowser
      - ./modules/ScreeningCampaign:/home/runner/acas/modules/ScreeningCampaign
+     - ./modules/ParentProtocol:/home/runner/acas/modules/ParentProtocol
+     - ./modules/ParentExperiment:/home/runner/acas/modules/ParentExperiment
     env_file:
       - ./bin/environments/acas/acas.env
 # Dev Command

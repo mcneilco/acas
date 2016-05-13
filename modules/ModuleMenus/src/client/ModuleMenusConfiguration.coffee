@@ -41,10 +41,6 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"cationic_block"
 	,
-		isHeader: false, menuName: "Screening Campaign"
-		mainControllerClassName: "ScreeningCampaignModuleController"
-		autoLaunchName:"screening_campaign"
-	,
 		isHeader: true
 		menuName: "Inventory"
 	,
@@ -75,4 +71,21 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Logging"
 		mainControllerClassName: "LoggingController"
+	,
+		isHeader: true
+		menuName: "Across Experiments"
+	,
+		isHeader: false
+		menuName: "Parent Protocol"
+		mainControllerClassName: "ParentProtocolController"
+		autoLaunchName: "parent_protocol"
+	,
+		isHeader: false
+		menuName: "Parent Experiment"
+		mainControllerClassName: "ParentExperimentModuleController"
+		autoLaunchName: "parent_experiment"
+	,
+		isHeader: false, menuName: "Screening Campaign"
+		mainControllerClassName: "ScreeningCampaignModuleController"
+		autoLaunchName:"screening_campaign"
 	]

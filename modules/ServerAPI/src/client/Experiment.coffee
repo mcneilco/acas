@@ -86,10 +86,11 @@ class window.Experiment extends BaseEntity
 			mft.unset 'id'
 			mft.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mft
-			@getDryRunStatus().set ignored: true
-			@getDryRunStatus().set codeValue: 'not started'
-			@getDryRunResultHTML().set ignored: true
-			@getDryRunResultHTML().set clobValue: ""
+# 		commented because experiment base does not have these values
+#			@getDryRunStatus().set ignored: true
+#			@getDryRunStatus().set codeValue: 'not started'
+#			@getDryRunResultHTML().set ignored: true
+#			@getDryRunResultHTML().set clobValue: ""
 
 		@set
 			lsKind: protocol.get('lsKind')
@@ -149,7 +150,7 @@ class window.Experiment extends BaseEntity
 			if isNaN(cDate)
 				errors.push
 					attribute: 'completionDate'
-					meetsage: "Assay completion date must be set"
+					message: "Assay completion date must be set"
 
 		if errors.length > 0
 			return errors

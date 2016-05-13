@@ -10,6 +10,8 @@
 					deepLink: "protocol_base"
 				"Bio Activity":
 					deepLink: "primary_screen_protocol"
+				"Parent Bio Activity":
+					deepLink: "parent_protocol"
 				relatedFilesRelativePath: "protocols"
 			EXPT:
 				entityName: "experiments"
@@ -17,6 +19,10 @@
 					deepLink: "experiment_base"
 				"Bio Activity":
 					deepLink: "primary_screen_experiment"
+				"Bio Activity Screen":
+					deepLink: "screening_campaign"
+				"Parent Bio Activity":
+					deepLink: "parent_experiment"
 				relatedFilesRelativePath: "experiments"
 			PT:
 				entityName: "parent thing"

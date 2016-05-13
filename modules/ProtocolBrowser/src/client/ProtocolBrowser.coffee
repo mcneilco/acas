@@ -175,15 +175,22 @@ class window.ProtocolBrowserController extends Backbone.View
 
 	selectedProtocolUpdated: (protocol) =>
 		@trigger "selectedProtocolUpdated"
-		if protocol.get('lsKind') is "Bio Activity"
+		if protocol.get('lsKind') is "Parent Bio Activity"
+			#get parent protocol to return childProtocols as well
+			@getParentProtocol(protocol.get('codeName'))
+		else if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
 				readOnly: true
+			@showMasterView()
 		else
 			@protocolController = new ProtocolBaseController
 				model: protocol
 				readOnly: true
+			@showMasterView()
 
+	showMasterView: =>
+		protocol = @protocolController.model
 		$('.bv_protocolBaseController').html @protocolController.render().el
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
@@ -203,6 +210,21 @@ class window.ProtocolBrowserController extends Backbone.View
 #			else
 #				@$('.bv_deleteProtocol').hide()
 
+	getParentProtocol: (codeName) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/protocols/parentProtocol/codename/"+codeName
+			dataType: 'json'
+			error: (err) ->
+				alert 'Error - Could not get parent protocol ' + codeName
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get parent protocol ' + codeName
+				else
+					@protocolController = new ParentProtocolController
+						model: new ParentProtocol json
+						readOnly: true
+					@showMasterView()
 
 	handleDeleteProtocolClicked: =>
 		@$(".bv_protocolCodeName").html @protocolController.model.get("codeName")

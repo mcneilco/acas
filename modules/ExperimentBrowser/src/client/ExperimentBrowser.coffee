@@ -325,7 +325,15 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		if experiment.get('lsKind') is "Bio Activity"
+		if experiment.get('lsKind') is "Parent Bio Activity"
+			@experimentController = new ParentExperimentMetadataController
+				model: new ScreeningExperiment experiment.attributes
+				readOnly: true
+		if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController = new ExperimentBaseController
+				model: new ParentExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity"
 			@experimentController = new ExperimentBaseController
 				protocolKindFilter: "?protocolKind=Bio Activity"
 				model: new PrimaryScreenExperiment experiment.attributes
@@ -336,6 +344,9 @@ class window.ExperimentBrowserController extends Backbone.View
 				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
+		if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
+			@experimentController.$('.bv_group_protocolCode').hide()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		if experiment.getStatus().get('codeValue') is "deleted"

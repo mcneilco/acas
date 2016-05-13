@@ -15,6 +15,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/screeningCampaign/analyzeScreeningCampaign', exports.analyzeScreeningCampaign
 	app.post '/api/experiments/getByCodeNamesArray', exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', exports.getExptExptItxsToDisplay
+	app.post '/api/experiments/parentExperiment', exports.postParentExperiment
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -35,6 +36,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/screeningCampaign/analyzeScreeningCampaign', loginRoutes.ensureAuthenticated, exports.analyzeScreeningCampaign
 	app.post '/api/experiments/getByCodeNamesArray', loginRoutes.ensureAuthenticated, exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', loginRoutes.ensureAuthenticated, exports.getExptExptItxsToDisplay
+	app.post '/api/experiments/parentExperiment', loginRoutes.ensureAuthenticated, exports.postParentExperiment
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -140,12 +142,13 @@ updateExpt = (expt, testMode, callback) ->
 					callback JSON.stringify "saveFailed"
 			)
 
-postExperiment = (req, resp) ->
+postExperiment = (exptToSave, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	exptToSave = req.body
+#	exptToSave = req.body
 	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
 		exptToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, exptToSave
-		if req.query.testMode or global.specRunnerTestmode
+		if testMode or global.specRunnerTestmode
+#		if req.query.testMode or global.specRunnerTestmode
 			unless exptToSave.codeName?
 				exptToSave.codeName = "EXPT-00000001"
 			unless exptToSave.id?
@@ -156,8 +159,8 @@ postExperiment = (req, resp) ->
 			filesToSave = fileVals.length
 
 			completeExptUpdate = (exptToUpdate)->
-				updateExpt exptToUpdate, req.query.testMode, (updatedExpt) ->
-					resp.json updatedExpt
+				updateExpt exptToUpdate, testMode, (updatedExpt) ->
+					callback updatedExpt
 
 			fileSaveCompleted = (passed) ->
 				if !passed
@@ -170,9 +173,9 @@ postExperiment = (req, resp) ->
 				for fv in fileVals
 					csUtilities.relocateEntityFile fv, prefix, expt.codeName, fileSaveCompleted
 			else
-				resp.json expt
+				callback expt
 
-		if req.query.testMode or global.specRunnerTestmode
+		if testMode or global.specRunnerTestmode
 			checkFilesAndUpdate exptToSave
 		else
 			config = require '../conf/compiled/conf.js'
@@ -189,13 +192,16 @@ postExperiment = (req, resp) ->
 				else
 					console.log 'got ajax error trying to save experiment - not unique name'
 					if response.body[0].message is "not unique experiment name"
-						resp.end JSON.stringify response.body[0].message
+						callback JSON.stringify "saveFailed: " + response.body[0].message
 					else
-						resp.end JSON.stringify "saveFailed"
+						callback JSON.stringify "saveFailed"
 			)
 
 exports.postExperiment = (req, resp) ->
-	postExperiment req, resp
+	postExperiment req.body, req.query.testMode, (response) =>
+		console.log "file vals"
+		console.log serverUtilityFunctions.getFileValuesFromEntity response, false
+		resp.json response
 
 exports.putExperiment = (req, resp) ->
 	exptToSave = req.body
@@ -558,3 +564,54 @@ exports.getExptExptItxsToDisplay = (req, resp) ->
 					secondExptInfo = _.where(returnedExpts, experimentCodeName: itx.secondExperiment.codeName)[0]
 					itx.secondExperiment = secondExptInfo.experiment
 				resp.json exptExptItxs
+
+
+exports.postParentExperiment = (req, resp) ->
+	if global.specRunnerTestmode
+		parentExperiment = require '../public/javascripts/spec/ParentExperiment/testFixtures/ParentExperimentServiceTestJSON.js'
+		resp.end JSON.stringify parentExperiment['savedParentExperiment']
+	else
+		console.log "post parent experiment"
+		console.log req.body
+		console.log "parent experiment"
+		console.log req.body.parentExperiment
+		console.log "child experiments"
+		console.log req.body.childExperiments
+		config = require '../conf/compiled/conf.js'
+		request = require 'request'
+
+#		#post parent experiment first, get file value and update fileValues for childExperiments
+#
+#		#post parent experiment
+#		parentExperiment = req.body.parentExperiment
+#		postExperiment parentExperiment, req.query.testMode, (response) =>
+#			if response.indexOf("saveFailed") > -1
+#				resp.statusCode = 500
+#				resp.json response
+#			else
+#				#get fileValue
+#				sourceFileVal = serverUtilityFunctions.getFileValuesFromEntity(response, false)[0]
+#
+#				#update fileValue for all child experiments
+#				childExperiments =
+#
+#
+#		#bulk post of all the experiments
+#		baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
+#		request(
+#			method: 'POST'
+#			url: baseurl
+#			body: req.body
+#			json: true
+#		, (error, response, json) =>
+#			if !error && response.statusCode == 201
+#				callback json
+#			else
+#				console.log "got error posting expt expt itxs"
+#				callback "postExptExptItxs saveFailed: " + JSON.stringify error
+#		)
+
+#move source file (csUtilities.relocateEntityFile). If file saved in privateUploads, then put file under folder for parent experiment
+#update the fileValues
+
+#post expt expt itxs

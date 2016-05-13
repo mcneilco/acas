@@ -778,7 +778,7 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 	createScreeningProtocol: =>
 		prot = new Protocol()
 		prot.set 'lsType', 'Parent'
-		prot.set 'lsKind', 'Bio Activity'
+		prot.set 'lsKind', 'Bio Activity Screen'
 		prot.set 'codeName', 'PROT-Screen'
 		prot.get('lsLabels').setBestName new Label
 			lsKind: "protocol name"
@@ -793,6 +793,9 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 			success: (model, response) =>
 				if response is "not unique protocol name"
 					alert 'Error creating Screening Protocol - not unique name. Contact administrator'
+				else
+					prot = new Protocol model
+					@model.set protocol: prot
 			error: (model, response) =>
 				alert "Error saving new screening protocol"
 				console.log response
@@ -805,8 +808,8 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 		@experimentBaseController = new ExperimentBaseController
 			model: @model
 			el: @$('.bv_screeningCampaignGeneralInfo')
-			protocolFilter: @protocolFilter
-			protocolKindFilter: @protocolKindFilter
+#			protocolFilter: @protocolFilter
+#			protocolKindFilter: @protocolKindFilter
 		@experimentBaseController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
 		@experimentBaseController.$('.bv_group_protocolCode').hide()
 		@experimentBaseController.on 'amDirty', =>

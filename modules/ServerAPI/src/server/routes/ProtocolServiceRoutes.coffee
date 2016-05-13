@@ -193,7 +193,7 @@ exports.protocolCodeList = (req, resp) ->
 			if shouldFilterByName
 				match = label.labelText.toUpperCase().indexOf(filterString) > -1
 			else if shouldFilterByKind
-				if label.protocol.lsKind == "default"
+				if label.protocol.lsKind == "default" or label.protocol.lsKind == "Bio Activity"
 					match = label.protocol.lsKind.indexOf(filterString) > -1
 				else
 					match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
@@ -207,7 +207,7 @@ exports.protocolCodeList = (req, resp) ->
 		protCodes
 
 	if global.specRunnerTestmode
-		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/ProtocolServiceTestJSON.js'
 		labels = protocolServiceTestJSON.lsLabels
 		resp.json translateToCodes(labels)
 

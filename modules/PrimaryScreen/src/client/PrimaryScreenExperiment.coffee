@@ -574,10 +574,66 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		type
 
-#	copyProtocolAttributes: (protocol) =>
+	copyProtocolAttributes: (protocol) =>
 #		modelFitStatus = @getModelFitStatus().get('codeValue')
 #		super(protocol)
 #		@getModelFitStatus().set codeValue: modelFitStatus
+#only need to copy protocol's experiment metadata attributes
+		pstates = protocol.get('lsStates')
+		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
+		if pExptMeta.length > 0
+			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+			if eExptMeta.length > 0
+				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
+				if dapVal.length > 0
+#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					if dapVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove dapVal[0]
+					else
+						dapVal[0].set ignored: true
+			else
+				eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
+			dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters").attributes)
+			dap.unset 'id'
+			dap.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add dap
+
+			mfpVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "model fit parameters"
+			if mfpVal.length > 0
+				if mfpVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mfpVal[0]
+				else
+					mfpVal[0].set ignored: true
+			mfp = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters").attributes)
+			mfp.unset 'id'
+			mfp.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mfp
+
+			mftVal = eExptMeta[0].getValuesByTypeAndKind "codeValue", "model fit type"
+			if mftVal.length > 0
+				if mftVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftVal[0]
+				else
+					mftVal[0].set ignored: true
+			mft = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type").attributes)
+			mft.unset 'id'
+			mft.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mft
+			@getDryRunStatus().set ignored: true
+			@getDryRunStatus().set codeValue: 'not started'
+			@getDryRunResultHTML().set ignored: true
+			@getDryRunResultHTML().set clobValue: ""
+
+		@set
+			lsKind: protocol.get('lsKind')
+			protocol: protocol
+		@trigger 'change'
+		@trigger "protocol_attributes_copied"
+		return
+
+
+class window.PrimaryScreenExperimentList extends Backbone.Collection
+	model: PrimaryScreenExperiment
 
 class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisTimeWindowView").html())
