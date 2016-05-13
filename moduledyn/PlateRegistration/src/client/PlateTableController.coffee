@@ -47,7 +47,7 @@ class PlateTableController extends Backbone.View
 
   render: =>
     $(@el).html @template()
-    $(window).resize(_.debounce(@calculateLayout, 100))
+    $(window).resize(_.debounce(@calculateLayout, 50))
 
     @
 
@@ -68,6 +68,7 @@ class PlateTableController extends Backbone.View
     container = document.getElementsByName("handsontablecontainer")[0]
     columnHeaders = [1..@plateMetaData.numberOfColumns]
     rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'W', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
+
     if @displayToolTips
       @handsOnTable = new Handsontable(container, {
         rowHeaders: rowHeaders
@@ -85,6 +86,7 @@ class PlateTableController extends Backbone.View
         autoWrapRow: true
         allowInsertColumn: false
         allowInsertRow: false
+        stretchH: 'all'
       })
     else
       @handsOnTable = new Handsontable(container, {
@@ -103,6 +105,8 @@ class PlateTableController extends Backbone.View
         autoWrapRow: true
         allowInsertColumn: false
         allowInsertRow: false
+        #viewportRowRenderingOffset: 0
+        stretchH: 'all'
       })
 
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
@@ -113,11 +117,13 @@ class PlateTableController extends Backbone.View
     @fontSize = @fontSize + 2
     #@handsOnTable.init()
     @handsOnTable.render()
+    @calculateLayout()
 
   decreaseFontSize: =>
     if @fontSize > 2
       @fontSize = @fontSize - 2
-    @handsOnTable.render()
+    #@handsOnTable.render()
+    @calculateLayout()
 
   updateDataDisplayed: (dataFieldToDisplay) =>
     @dataFieldToDisplay = dataFieldToDisplay
@@ -131,6 +137,7 @@ class PlateTableController extends Backbone.View
       @handsOnTable.updateSettings({readOnly: false})
     hotData = @convertWellsDataToHandsonTableData(dataFieldToDisplay)
     @addContent(hotData)
+    @calculateLayout()
 
   updateColorByNoReRender: =>
     unless @dataFieldToColorBy is "noColor"
@@ -407,7 +414,8 @@ class PlateTableController extends Backbone.View
               @updateColorByNoReRender()
               if @displayToolTips
                 @updateTooltip(cell, well)
-              @applyBackgroundColorToCell(cell, well)
+              #@applyBackgroundColorToCell(cell, well)
+              @handsOnTable.render()
             )
             @wellsToUpdate.save()
             @updateEmptyAndInvalidWellCount()
@@ -441,7 +449,9 @@ class PlateTableController extends Backbone.View
               @updateColorByNoReRender()
               if @displayToolTips
                 @updateTooltip(cell, well)
-              @applyBackgroundColorToCell(cell, well)
+              #@applyBackgroundColorToCell(cell, well)
+              @handsOnTable.render()
+
             )
             if hasNonNumericValues
               $("div[name='enteringNonNumericConcentrationError']").modal("show")
@@ -522,7 +532,8 @@ class PlateTableController extends Backbone.View
         @updateColorByNoReRender()
         if @displayToolTips
           @updateTooltip(cell, well)
-        @applyBackgroundColorToCell(cell, well)
+        #@applyBackgroundColorToCell(cell, well)
+        @handsOnTable.render()
     )
 
     wellsToSaveTmp = new WellsModel({allWells: []})
@@ -700,24 +711,21 @@ class PlateTableController extends Backbone.View
     unless isNaN(parseFloat(well[@dataFieldToColorBy]))
       conc = parseFloat(well[@dataFieldToColorBy])
       normVal = 255
-      if Math.log(well[@dataFieldToColorBy]) is -Infinity
-        backgroundColor = "rgb(255,0,0)"
-      else if @minValue is @maxValue
+      if @minValue is @maxValue
         backgroundColor = "rgb(0,255,0)"
       else
-        if @dataFieldToColorBy is "batchConcentration"
-          logVal = Math.log(well[@dataFieldToColorBy])
-        else
-          logVal = well[@dataFieldToColorBy]
+        logVal = parseFloat(well[@dataFieldToColorBy])
         midValue = (@minValue + @maxValue) / 2
 
-
-        if logVal < midValue
-          normVal = ((parseInt(minRange + (logVal - midValue) * (maxRange - minRange) / (@maxValue - midValue))))
-          backgroundColor = "rgb(255,#{normVal},0)"
-        else
-          normVal = 255 - ((maxRange - parseInt(minRange + (midValue - logVal) * (maxRange - minRange) / (midValue - @minValue))))
+        if logVal > midValue
+          #normVal = ((parseInt(minRange + (logVal - midValue) * (maxRange - minRange) / (@maxValue - midValue))))
+          normVal = ((maxRange - parseInt(minRange + (logVal - midValue) * (maxRange - minRange) / (@maxValue - midValue))))
           backgroundColor = "rgb(#{normVal},255,0)"
+
+        else
+          #normVal = 255 - ((maxRange + parseInt(minRange + (midValue - logVal) * (maxRange - minRange) / (midValue - @minValue))))
+          normVal = 255 - ((parseInt(minRange + (midValue - logVal) * (maxRange - minRange) / (midValue - @minValue))))
+          backgroundColor = "rgb(255,#{normVal},0)"
     backgroundColor
 
   showAll: =>
@@ -729,10 +737,16 @@ class PlateTableController extends Backbone.View
 
   fitToContents: =>
     @shouldFitToScreen = false
+    columnWidth = @getContentWidth()
+    height = $(".editorHandsontable").height()
 
+    rowHeight = (height - 50) / @plateMetaData.numberOfRows
+
+    if columnWidth < 60
+      columnWidth = null
     @handsOnTable.updateSettings({
-      colWidths: null,
-      rowHeights: null
+      colWidths: columnWidth,
+      rowHeights: rowHeight
     })
     #@handsOnTable.init()
     @handsOnTable.render()
@@ -742,22 +756,35 @@ class PlateTableController extends Backbone.View
     @calculateLayout()
 
   calculateLayout: =>
+    width = ($(".editorHandsontable").width() - 20) # allow offset for vertical scroll bar
+    height = $(".editorHandsontable").height()
+    columnWidth = (width - 60) / @plateMetaData.numberOfColumns
+    rowHeight = (height - 50) / @plateMetaData.numberOfRows
+    if rowHeight < 23
+      rowHeight = 23
     if @shouldFitToScreen
-      width = $(".editorHandsontable").width()
-      height = $(".editorHandsontable").height()
-      columnWidth = (width - 60) / @plateMetaData.numberOfColumns
-      rowHeight = (height - 50) / @plateMetaData.numberOfRows
       @handsOnTable.updateSettings({
         colWidths: columnWidth,
         rowHeights: rowHeight
       })
     else
+      columnWidth = @getContentWidth()
+      if columnWidth < 60
+        columnWidth = null
       @handsOnTable.updateSettings({
-        colWidths: null,
-        rowHeights: null
+        colWidths: columnWidth,
+        rowHeights: rowHeight
       })
     #@handsOnTable.init()
     @handsOnTable.render()
+
+  getContentWidth: =>
+    longestString = @wellsToUpdate.getLongestStringByFieldName(@dataFieldToDisplay) + "M"
+    $(".bv_textWidthContainer").html(longestString)
+    $(".bv_textWidthContainer")[0].style.fontSize = "#{@fontSize}px"
+    columnWidth = $(".bv_textWidthContainer").width()
+
+    columnWidth
 
   maximizeTable: =>
     @$(".editorHandsontable").css("left", "100px")

@@ -81,8 +81,9 @@
 .editorTabAddContentLink {
   width: 85px;
   padding-bottom: 35px;
-
+  /*
   z-index: -1;
+  */
 
 }
 
