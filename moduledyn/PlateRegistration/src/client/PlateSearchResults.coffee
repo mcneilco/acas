@@ -10,6 +10,19 @@ class SearchResultModel extends Backbone.Model
 
 class SearchResultCollection extends Backbone.Collection
   model: SearchResultModel
+  mapStatusCodeValuesToNames: (statusCollection) ->
+    _.each(@models, (model) ->
+      unless model.get('status') is ""
+        model.set('status', statusCollection.find({code: model.get('status')}).get("name"))
+    )
+
+  mapTypeCodeValuesToNames: (typesCollection) ->
+    mapStatusCodeValuesToNames: (typesCollection) ->
+    _.each(@models, (model) ->
+      unless model.get('type') is ""
+        model.set('type', typesCollection.find({code: model.get('type')}).get("name"))
+    )
+
 
 class SearchResultTable extends Backbone.View
   tagName: "table"
@@ -77,6 +90,7 @@ class SearchResultRow extends Backbone.View
 
   render: =>
     compiledTemplate = _.template(@template)
+
     $(@el).html compiledTemplate(@model.toJSON())
 
     @

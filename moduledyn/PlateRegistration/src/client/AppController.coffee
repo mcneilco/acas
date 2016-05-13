@@ -75,6 +75,9 @@ class AppController extends Backbone.View
     @resetCurrentlyDisplayedForm()
     plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
     plateTypeFetchPromise.complete(() =>
+      @createPlateController.plateDefinitions.convertLabelsToNumeric()
+      @createPlateController.plateDefinitions.comparator = "numericPlateName"
+      @createPlateController.plateDefinitions.sort()
       @$("div[name='formContainer']").html @createPlateController.render().el
       @currentFormController = @createPlateController
       #@createPlateController.completeInitialization()
@@ -82,12 +85,31 @@ class AppController extends Backbone.View
 
   displayPlateSearch: =>
     @resetCurrentlyDisplayedForm()
-    promises = []
-    promises.push(@plateSearchController.plateStatuses.fetch())
-    promises.push(@plateSearchController.plateTypes.fetch())
-    promises.push(@plateSearchController.plateDefinitions.fetch())
-    promises.push(@plateSearchController.users.fetch())
-    $.when(promises).done(() =>
+    plateStatusesDeferred = $.Deferred()
+    plateTypesDeferred = $.Deferred()
+    plateDefinitionsDeferred = $.Deferred()
+    usersDeferred = $.Deferred()
+
+    @plateSearchController.plateStatuses.fetch({
+      success: () =>
+        plateStatusesDeferred.resolve()
+    })
+    @plateSearchController.plateTypes.fetch({
+      success: () =>
+        plateTypesDeferred.resolve()
+    })
+    @plateSearchController.plateDefinitions.fetch({
+      success: () =>
+        plateDefinitionsDeferred.resolve()
+    })
+    @plateSearchController.users.fetch({
+      success: () =>
+        usersDeferred.resolve()
+    })
+    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
+      @plateSearchController.plateDefinitions.convertLabelsToNumeric()
+      @plateSearchController.plateDefinitions.comparator = "numericPlateName"
+      @plateSearchController.plateDefinitions.sort()
       @currentFormController = @plateSearchController
       @$("div[name='formContainer']").html @plateSearchController.render().el
       @plateSearchController.completeInitialize()

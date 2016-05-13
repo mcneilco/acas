@@ -189,6 +189,16 @@ class WellsModel extends Backbone.Model
       return memo
     , 0)
 
+  getLongestStringByFieldName: (fieldName) ->
+    longestString = ""
+    _.each(@allWells, (well) ->
+      if well[fieldName]?
+        if well[fieldName].length > longestString.length
+          longestString = well[fieldName]
+    )
+
+    longestString
+
 
 module.exports =
   WellModel: WellModel

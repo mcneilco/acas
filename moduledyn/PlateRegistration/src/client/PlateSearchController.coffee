@@ -164,6 +164,9 @@ class PlateSearchController extends Backbone.View
 
   searchCallback: (searchResults) =>
     searchResultsCollection = new SearchResultCollection(searchResults)
+    searchResultsCollection.mapStatusCodeValuesToNames(@plateStatuses)
+    searchResultsCollection.mapTypeCodeValuesToNames(@plateTypes)
+
     if searchResultsCollection.size() is AppLaunchParams.maxSearchResults
       @$("div[name='maxNumberOfSearchResultsReturned']").removeClass "hide"
     else
