@@ -673,7 +673,7 @@
 
     AssignSdfPropertiesController.prototype.setupProjectSelect = function() {
       this.projectList = new PickListList();
-      this.projectList.url = "/api/projects";
+      this.projectList.url = "/cmpdreg/projects";
       return this.projectListController = new PickListSelectController({
         el: this.$('.bv_dbProject'),
         collection: this.projectList,

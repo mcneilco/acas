@@ -149,7 +149,7 @@
   exports.getAuthorizedCmpdRegProjectsInternal = function(req, callback) {
     var _;
     _ = require("underscore");
-    return exports.getACASProjects(req, function(acasProjectsResponse) {
+    return exports.getACASProjects(req, function(statusCode, acasProjectsResponse) {
       var acasProjects;
       acasProjects = acasProjectsResponse;
       return exports.getProjects(req, function(cmpdRegProjectsResponse) {

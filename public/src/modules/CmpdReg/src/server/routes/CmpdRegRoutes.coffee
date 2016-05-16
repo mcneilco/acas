@@ -116,7 +116,7 @@ exports.getAuthorizedCmpdRegProjects = (req, resp) ->
 
 exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
 	_ = require "underscore"
-	exports.getACASProjects req, (acasProjectsResponse)->
+	exports.getACASProjects req, (statusCode, acasProjectsResponse)->
 		acasProjects = acasProjectsResponse
 		exports.getProjects req, (cmpdRegProjectsResponse)->
 			cmpdRegProjects = JSON.parse cmpdRegProjectsResponse
