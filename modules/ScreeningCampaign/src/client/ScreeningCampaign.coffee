@@ -751,6 +751,7 @@ class window.ScreeningCampaignModuleController extends AbstractFormController
 		@setupDataAnalysisController()
 		@listenTo @model, 'sync', =>
 			@analysisController.exptCode = @model.get('codeName')
+			@analysisController.dataAnalysisController.exptCode = @model.get('codeName')
 
 	getAndSetProtocol: ->
 		$.ajax
@@ -1020,7 +1021,7 @@ class window.UploadAndRunScreeningCampaignAnalsysisController extends AbstractUp
 			@additionalData =
 				inputParameters: JSON.stringify @analysisParameterController.model
 				testMode: false
-				exptCode: @options.exptCode
+				exptCode: @exptCode
 				primaryExperimentCodes: JSON.stringify primaryExperimentCodes
 				confirmationExperimentCodes: JSON.stringify followUpExperimentCodes
 			if @parseFileUploaded and not @$(".bv_next").attr('disabled')
