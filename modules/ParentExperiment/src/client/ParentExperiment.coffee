@@ -26,17 +26,19 @@ class window.ChildExperiment extends PrimaryScreenExperiment
 
 	validate: (attrs) ->
 		errors = []
-		errors.push super(attrs)...
-		bestName = attrs.lsLabels.pickBestName()
-		nameError = true
-		if bestName?
+		#only validate child experiment if it is new
+		unless attrs.id?
+			errors.push super(attrs)...
+			bestName = attrs.lsLabels.pickBestName()
 			nameError = true
-			if bestName.get('labelText') != ""
-				nameError = false
-		if nameError
-			errors.push
-				attribute: 'childExperimentName'
-				message: "Child experiment name must be set"
+			if bestName?
+				nameError = true
+				if bestName.get('labelText') != ""
+					nameError = false
+			if nameError
+				errors.push
+					attribute: 'childExperimentName'
+					message: "Child experiment name must be set"
 		if errors.length > 0
 			return errors
 		else
@@ -85,6 +87,12 @@ class window.ChildExperimentController extends AbstractFormController
 			@$('.bv_childExperimentCodeLink').show()
 			@$('.bv_childExperimentCodeLink').attr "href", "/entity/edit/codeName/#{@model.get('codeName')}"
 			@$('.bv_childExperimentCodeLink').html @model.get('codeName')
+			childExptName = @model.get('lsLabels').pickBestName()
+			console.log 'childExptName'
+			console.log childExptName
+			console.log @model
+			@$('.bv_childExperimentName').val childExptName.get('labelText')
+			@$('.bv_childExperimentName').attr 'disabled', 'disabled'
 		@
 
 	updateModel: =>
@@ -119,6 +127,7 @@ class window.ChildExperimentsListController extends Backbone.View
 		if errors.length > 0
 			validCheck = false
 		@validationError(errors)
+		console.log errors
 		validCheck
 
 	validationError: (errors) =>
@@ -146,12 +155,67 @@ class window.ChildExperimentsListController extends Backbone.View
 class window.ParentExperimentMetadataController extends ExperimentBaseController
 	template: _.template($("#ParentExperimentMetadataView").html())
 
+	completeInitialization: ->
+		unless @model?
+			@model = new ParentExperiment()
+		@errorOwnerName = 'ParentExperimentMetadataController'
+		@setBindings()
+		if @options.readOnly?
+			@readOnly = @options.readOnly
+		else
+			@readOnly = false
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@model.on 'notUniqueName', =>
+#			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
+#TODO: redirect user to experiment browser with a list of experiments with same name
+			@$('.bv_experimentSaveFailed').modal('show')
+			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
+			@$('.bv_saveFailed').show()
+			@$('.bv_experimentSaveFailed').on 'hide.bs.modal', =>
+				@$('.bv_saveFailed').hide()
+		@model.on 'saveFailed', =>
+			@$('.bv_saveFailed').show()
+		@setupStatusSelect()
+		@setupScientistSelect()
+		@setupTagList()
+		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
+		@setupProjectSelect()
+		@setupAttachFileListController()
+		@setupCustomExperimentMetadataController()
+		unless @model.isNew()
+			@setupSavedChildExperiments()
+		@render()
+		@listenTo @model, 'sync', @modelSyncCallback
+		@listenTo @model, 'change', @modelChangeCallback
+		@model.getStatus().on 'change', @updateEditable
+
 	render: =>
 		super()
 		if @model.isNew()
 			@$('.bv_experimentName').removeAttr 'disabled'
 		@updateEditable()
 		@
+
+	modelSyncCallback: =>
+		super()
+		@setupSavedChildExperiments()
+
+	setupSavedChildExperiments: =>
+		$.ajax
+			type: 'GET'
+			url: "/api/getItxExptExptsByFirstExpt/"+@model.get('id')
+			success: (json) =>
+				console.log json
+				childExperiments = _.pluck json, 'secondExperiment'
+				@childExperiments = new ChildExperimentList childExperiments
+				console.log "existing child experiments"
+				console.log @childExperiments
+				@setupChildExperimentsListController()
+			error: (err) ->
+				alert 'got ajax error from getting protocol '+ code
+			dataType: 'json'
+
 
 	getAndSetProtocol: (code, setAnalysisParams) ->
 		if code == "" || code == "unassigned"
@@ -171,7 +235,7 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 						alert("Could not find selected protocol in database")
 					else
 						if json.childProtocols?
-							@setupChildExperiments(json.childProtocols)
+							@setupNewChildExperiments(json.childProtocols)
 							delete json.childProtocols
 						@model.set protocol: new Protocol(json)
 						if setAnalysisParams
@@ -180,7 +244,7 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 					alert 'got ajax error from getting protocol '+ code
 				dataType: 'json'
 
-	setupChildExperiments: (childProtocols) =>
+	setupNewChildExperiments: (childProtocols) =>
 		@childExperiments = new ChildExperimentList()
 		project = @model.getProjectCode().get('codeValue')
 		scientist = @model.getScientist().get('codeValue')
@@ -345,15 +409,19 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 		@model.save(infoToSave)
 
 	isValid: =>
+		console.log "isValid meta controller"
 		validCheck = super()
+		console.log "expt base valid?" + console.log validCheck
 		if @childExperimentsListController?
-			if @childExperimentsListController.isValid() is true
-				return validCheck
-			else
+			unless @childExperimentsListController.isValid() is true
 				@$('.bv_save').attr 'disabled', 'disabled'
-				return false
+				console.log "child expts invalid"
+				validCheck = false
+		if validCheck
+			@$('.bv_save').removeAttr 'disabled'
 		else
-			return validCheck
+			@$('.bv_save').attr 'disabled', 'disabled'
+		validCheck
 
 class window.ParentExperimentModuleController extends Backbone.View
 	template: _.template($("#ParentExperimentModuleView").html())
@@ -365,28 +433,28 @@ class window.ParentExperimentModuleController extends Backbone.View
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-#					$.ajax
-#						type: 'GET'
-#						url: "/api/protocols/parentProtocol/codename/"+window.AppLaunchParams.moduleLaunchParams.code
-#						dataType: 'json'
-#						error: (err) ->
-#							alert 'Could not get protocol for code in this URL, creating new one'
-#							@completeInitialization()
-#						success: (json) =>
-#							if json.length == 0
-#								alert 'Could not get protocol for code in this URL, creating new one'
-#							else
-#								lsKind = json.lsKind
-#								if lsKind is "Parent Bio Activity"
-#									prot = new ParentProtocol json
-#									prot.set prot.parse(prot.attributes)
-#									if window.AppLaunchParams.moduleLaunchParams.copy
-#										@model = prot.duplicateEntity()
-#									else
-#										@model = prot
-#								else
-#									alert 'Could not get protocol for code in this URL. Creating new protocol'
-#							@completeInitialization()
+					$.ajax
+						type: 'GET'
+						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						dataType: 'json'
+						error: (err) ->
+							alert 'Could not get experiment for code in this URL, creating new one'
+							@completeInitialization()
+						success: (json) =>
+							if json.length == 0
+								alert 'Could not get experiment for code in this URL, creating new one'
+							else
+								lsKind = json.lsKind
+								if lsKind is "Parent Bio Activity"
+									expt = new ParentExperiment json
+									expt.set expt.parse(expt.attributes)
+									if window.AppLaunchParams.moduleLaunchParams.copy
+										@model = expt.duplicateEntity()
+									else
+										@model = expt
+								else
+									alert 'Could not get experiment for code in this URL. Creating new experiment'
+							@completeInitialization()
 				else
 					@completeInitialization()
 			else
@@ -423,3 +491,4 @@ class window.ParentExperimentModuleController extends Backbone.View
 		@experimentMetadataController.on 'amClean', =>
 			@trigger 'amClean'
 		@experimentMetadataController.render()
+

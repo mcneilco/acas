@@ -327,11 +327,11 @@ class window.ExperimentBrowserController extends Backbone.View
 		@trigger "selectedExperimentUpdated"
 		if experiment.get('lsKind') is "Parent Bio Activity"
 			@experimentController = new ParentExperimentMetadataController
-				model: new ScreeningExperiment experiment.attributes
-				readOnly: true
-		if experiment.get('lsKind') is "Bio Activity Screen"
-			@experimentController = new ExperimentBaseController
 				model: new ParentExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController = new ExperimentBaseController
+				model: new ScreeningExperiment experiment.attributes
 				readOnly: true
 		else if experiment.get('lsKind') is "Bio Activity"
 			@experimentController = new ExperimentBaseController

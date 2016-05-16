@@ -56,31 +56,4 @@ exports.getParentExperimentByCodeName = (req, resp) ->
 # TODO: fill in childExperiments
 # TODO: add option to return childExperiments in full object (with states) format or with just min info for ParentExperiment View
 
-exports.postParentExperiment = (req, resp) ->
-	if global.specRunnerTestmode
-		parentExperiment = require '../public/javascripts/spec/ParentExperiment/testFixtures/ParentExperimentServiceTestJSON.js'
-		resp.end JSON.stringify parentExperiment['savedParentExperiment']
-	else
-		config = require '../conf/compiled/conf.js'
-		request = require 'request'
-
-		#post parent experiment first, get file value
-		#bulk post of all the experiments
-		baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
-		request(
-			method: 'POST'
-			url: baseurl
-			body: req.body
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 201
-				callback json
-			else
-				console.log "got error posting expt expt itxs"
-				callback "postExptExptItxs saveFailed: " + JSON.stringify error
-		)
-
-		#move source file (csUtilities.relocateEntityFile). If file saved in privateUploads, then put file under folder for parent experiment
-		#update the fileValues
-
-		#post expt expt itxs
+#getExperimentByIdOrCodename =

@@ -16,6 +16,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/experiments/getByCodeNamesArray', exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', exports.postParentExperiment
+	app.put '/api/experiments/parentExperiment/:id', exports.putParentExperiment
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -37,10 +38,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/experiments/getByCodeNamesArray', loginRoutes.ensureAuthenticated, exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', loginRoutes.ensureAuthenticated, exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', loginRoutes.ensureAuthenticated, exports.postParentExperiment
+	app.put '/api/experiments/parentExperiment/:id', loginRoutes.ensureAuthenticated, exports.putParentExperiment
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 _ = require 'underscore'
+config = require '../conf/compiled/conf.js'
+request = require 'request'
 
 exports.experimentByCodename = (req, resp) ->
 	console.log req.params.code
@@ -143,6 +147,7 @@ updateExpt = (expt, testMode, callback) ->
 			)
 
 postExperiment = (exptToSave, testMode, callback) ->
+	console.log "posting experiment"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 #	exptToSave = req.body
 	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
@@ -204,6 +209,7 @@ exports.postExperiment = (req, resp) ->
 		resp.json response
 
 exports.putExperiment = (req, resp) ->
+	console.log "put experiment"
 	exptToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
 	filesToSave = fileVals.length
@@ -412,12 +418,15 @@ exports.getItxExptExptsByFirstExpt = (req, resp) ->
 		resp.end exptExptItxs
 
 postExptExptItxs = (exptExptItxs, testMode, callback) ->
+	console.log "post expt expt itxs"
 	if testMode or global.specRunnerTestmode
 		callback JSON.stringify "stubsMode not implemented"
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/jsonArray"
 		console.log "post expt expt itx body"
+		console.log exptExptItxs
+		console.log JSON.stringify exptExptItxs
 		request = require 'request'
 		request(
 			method: 'POST'
@@ -572,46 +581,90 @@ exports.postParentExperiment = (req, resp) ->
 		resp.end JSON.stringify parentExperiment['savedParentExperiment']
 	else
 		console.log "post parent experiment"
-		console.log req.body
-		console.log "parent experiment"
-		console.log req.body.parentExperiment
-		console.log "child experiments"
-		console.log req.body.childExperiments
+#		console.log req.body
+#		console.log "parent experiment"
+#		console.log req.body.parentExperiment
+#		console.log "child experiments"
+#		console.log req.body.childExperiments
 		config = require '../conf/compiled/conf.js'
 		request = require 'request'
 
-#		#post parent experiment first, get file value and update fileValues for childExperiments
-#
-#		#post parent experiment
-#		parentExperiment = req.body.parentExperiment
-#		postExperiment parentExperiment, req.query.testMode, (response) =>
-#			if response.indexOf("saveFailed") > -1
-#				resp.statusCode = 500
-#				resp.json response
-#			else
-#				#get fileValue
-#				sourceFileVal = serverUtilityFunctions.getFileValuesFromEntity(response, false)[0]
-#
-#				#update fileValue for all child experiments
-#				childExperiments =
-#
-#
-#		#bulk post of all the experiments
-#		baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
-#		request(
-#			method: 'POST'
-#			url: baseurl
-#			body: req.body
-#			json: true
-#		, (error, response, json) =>
-#			if !error && response.statusCode == 201
-#				callback json
-#			else
-#				console.log "got error posting expt expt itxs"
-#				callback "postExptExptItxs saveFailed: " + JSON.stringify error
-#		)
+		#post parent experiment first, get file value and update fileValues for childExperiments
 
-#move source file (csUtilities.relocateEntityFile). If file saved in privateUploads, then put file under folder for parent experiment
-#update the fileValues
+		#post parent experiment
+		parentExperiment = JSON.parse req.body.parentExperiment
+		postExperiment parentExperiment, req.query.testMode, (saveParentExptResp) =>
+			console.log "post experiment response"
+			console.log saveParentExptResp
+			if typeof saveParentExptResp is "string" and saveParentExptResp.indexOf("saveFailed") > -1
+				resp.statusCode = 500
+				resp.json saveParentExptResp
+			else
+				#get fileValue
+				sourceFileVal = serverUtilityFunctions.getFileValuesFromEntity(saveParentExptResp, false)[0]
+				console.log "sourceFileVal"
+				console.log sourceFileVal
 
-#post expt expt itxs
+				#update fileValue for all child experiments
+				childExperiments = JSON.parse req.body.childExperiments
+				_.each childExperiments, (childExpt) =>
+					childExptFileVal = serverUtilityFunctions.getFileValuesFromEntity(childExpt, false)[0]
+					childExptFileVal.fileValue = sourceFileVal.fileValue
+					childExptFileVal.comments = sourceFileVal.comments
+
+				console.log "childExpts to bulk post"
+				console.log childExperiments
+
+				#bulk post of all the experiments
+				bulkPostExperiments childExperiments, (saveChildExptsResp) =>
+					if typeof saveChildExptsResp is "string" and saveChildExptsResp.indexOf("saveFailed") > -1
+						resp.statusCode = 500
+						resp.json saveChildExptsResp
+					else
+						#save itxs between parent and child experiments
+						exptExptItxs = []
+						_.each saveChildExptsResp, (childExpt) =>
+							exptExptItxs.push
+								lsType: "has member"
+								lsKind: "collection member"
+								recordedBy: childExpt.recordedBy #window.AppLaunchParams.loginUser.username
+								recordedDate: new Date().getTime()
+								ignored: false
+								firstExperiment: saveParentExptResp
+								secondExperiment: childExpt
+						postExptExptItxs exptExptItxs, false, (saveExptExptItxsResp) ->
+							console.log "saveExptExptItxsResp"
+							console.log saveExptExptItxsResp
+							if saveExptExptItxsResp.indexOf("saveFailed") > -1
+								resp.statusCode = 500
+								resp.json saveExptExptItxsResp
+							else
+								#return
+								resp.json saveExptExptItxsResp
+
+
+bulkPostExperiments = (exptsArray, callback) ->
+	console.log "bulkPostExperiments"
+	console.log JSON.stringify exptsArray
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"/experiments/jsonArray"
+	request(
+		method: 'POST'
+		url: baseurl
+		body: exptsArray
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 201
+#respond with the saved parent response
+			savedChildExperiments = json
+			console.log "savedChildExperiments"
+			console.log savedChildExperiments
+			callback savedChildExperiments
+		else
+			console.log "got error posting child experiments"
+			callback JSON.stringify "post child experiments saveFailed: " + JSON.stringify error
+	)
+
+exports.putParentExperiment = (req, resp) ->
+	console.log "put parent experiment"
+	exports.putExperiment req, resp
