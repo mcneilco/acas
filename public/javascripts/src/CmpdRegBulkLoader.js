@@ -1528,13 +1528,19 @@
       }
       this.$('.bv_loginUserFirstName').html(window.AppLaunchParams.loginUser.firstName);
       this.$('.bv_loginUserLastName').html(window.AppLaunchParams.loginUser.lastName);
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])) {
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.adminRole])) {
         this.$('.bv_adminDropdownWrapper').show();
       } else {
         this.$('.bv_adminDropdownWrapper').hide();
       }
       this.$('.bv_searchNavOption').hide();
-      return this.setupBulkRegCmpdsController();
+      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.chemistRole])) {
+        this.setupBulkRegCmpdsController();
+        return this.$('.bv_registerDropdown').show();
+      } else {
+        this.$('.bv_bulkReg').html("You do not have permission to register compounds.");
+        return this.$('.bv_registerDropdown').hide();
+      }
     };
 
     CmpdRegBulkLoaderAppController.prototype.handleBulkRegDropdownSelected = function() {

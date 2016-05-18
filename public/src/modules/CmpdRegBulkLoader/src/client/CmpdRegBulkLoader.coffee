@@ -965,12 +965,17 @@ class window.CmpdRegBulkLoaderAppController extends Backbone.View
 
 		@$('.bv_loginUserFirstName').html window.AppLaunchParams.loginUser.firstName
 		@$('.bv_loginUserLastName').html window.AppLaunchParams.loginUser.lastName
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
+		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.adminRole]
 			@$('.bv_adminDropdownWrapper').show()
 		else
 			@$('.bv_adminDropdownWrapper').hide()
 		@$('.bv_searchNavOption').hide()
-		@setupBulkRegCmpdsController()
+		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.cmpdreg.chemistRole]
+			@setupBulkRegCmpdsController()
+			@$('.bv_registerDropdown').show()
+		else
+			@$('.bv_bulkReg').html "You do not have permission to register compounds."
+			@$('.bv_registerDropdown').hide()
 
 
 	handleBulkRegDropdownSelected: ->

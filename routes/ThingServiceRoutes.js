@@ -49,7 +49,7 @@
   csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
 
   exports.thingByCodeName = function(req, resp) {
-    var baseurl, config, nestedfull, nestedstub, prettyjson, stub, thingTestJSON;
+    var baseurl, config, nestedfull, nestedstub, prettyjson, request, stub, thingTestJSON;
     if (req.query.testMode || global.specRunnerTestmode) {
       thingTestJSON = require('../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
       return resp.json(thingTestJSON.thingParent);
@@ -69,7 +69,29 @@
         stub = "with=stub";
         baseurl += "?" + stub;
       }
-      return serverUtilityFunctions.getFromACASServer(baseurl, resp);
+      request = require('request');
+      return request({
+        method: 'GET',
+        url: baseurl,
+        json: true
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return resp.end(JSON.stringify(json));
+          } else {
+            console.log('got ajax error');
+            console.log(error);
+            console.log(json);
+            console.log(response);
+            resp.statusCode = 500;
+            if ((response != null) && response.statusCode === 404 && ((json != null ? json[0] : void 0) != null) && json[0].errorLevel === "error" && json[0].message.indexOf("not found") > -1) {
+              return resp.end(JSON.stringify(json));
+            } else {
+              return resp.end("Error getting thing by codeName");
+            }
+          }
+        };
+      })(this));
     }
   };
 

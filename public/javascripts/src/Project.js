@@ -1049,7 +1049,7 @@
     ProjectController.prototype.events = function() {
       return {
         "change .bv_status": "handleStatusChanged",
-        "keyup .bv_projectCode": "handleProjectCodeNameChanged",
+        "change .bv_projectCode": "handleProjectCodeNameChanged",
         "keyup .bv_projectName": "attributeChanged",
         "keyup .bv_projectAlias": "attributeChanged",
         "keyup .bv_startDate": "attributeChanged",
@@ -1071,10 +1071,12 @@
               type: 'GET',
               url: "/api/things/project/project/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
               dataType: 'json',
-              error: function(err) {
-                alert('Could not get project for code in this URL, creating new one');
-                return this.completeInitialization();
-              },
+              error: (function(_this) {
+                return function(err) {
+                  alert('Could not get project for code in this URL, creating new one');
+                  return _this.completeInitialization();
+                };
+              })(this),
               success: (function(_this) {
                 return function(json) {
                   var proj;
@@ -1119,7 +1121,14 @@
       this.setupAttachFileListController();
       this.setupProjectLeaderListController();
       this.setupIsRestrictedCheckbox();
-      if (!this.model.isNew() && UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+      if (!this.model.isNew()) {
+        this.adminRole = {
+          lsType: "Project",
+          lsKind: this.model.get('codeName'),
+          roleName: "Administrator"
+        };
+      }
+      if (!this.model.isNew() && (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole]))) {
         this.setupProjectUserListController();
         this.setupProjectAdminListController();
       }
@@ -1158,9 +1167,9 @@
       this.$('.bv_projectDetails').val(this.model.get('project details').get('value'));
       if (this.model.isNew()) {
         this.$('.bv_status').attr('disabled', 'disabled');
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        this.$('.bv_manageUserPermissions').hide();
+        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
           this.$('.bv_saveBeforeManagingPermissions').show();
-          this.$('.bv_manageUserPermissions').hide();
         }
       } else {
         this.updateEditable();
@@ -1192,7 +1201,12 @@
       }
       this.setupAttachFileListController();
       this.setupProjectLeaderListController();
-      if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+      this.adminRole = {
+        lsType: "Project",
+        lsKind: this.model.get('codeName'),
+        roleName: "Administrator"
+      };
+      if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
         this.setupProjectUserListController();
         this.setupProjectAdminListController();
       }
@@ -1442,7 +1456,7 @@
 
     ProjectController.prototype.updateEditable = function() {
       if (this.model.isEditable()) {
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
           this.enableAllInputs();
           this.$('.bv_projectCode').attr('disabled', 'disabled');
           this.$('.bv_manageUserPermissions').show();
@@ -1453,7 +1467,7 @@
         }
       } else {
         this.disableAllInputs();
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
           this.$('.bv_status').removeAttr('disabled', 'disabled');
           return this.$('.bv_manageUserPermissions').show();
         } else {
@@ -1479,8 +1493,25 @@
         delete this.model.attributes.codeName;
         return this.model.trigger('change');
       } else {
-        return this.model.set({
-          codeName: codeName
+        return $.ajax({
+          type: 'GET',
+          url: "/api/things/project/project/codename/" + codeName,
+          dataType: 'json',
+          error: (function(_this) {
+            return function(err) {
+              return _this.model.set({
+                codeName: codeName
+              });
+            };
+          })(this),
+          success: (function(_this) {
+            return function(json) {
+              _this.$('.bv_notUniqueModalTitle').html("Error: Project code is not unique");
+              _this.$('.bv_notUniqueModalBody').html("The entered project code is already used by another project. Please enter in a new code.");
+              _this.$('.bv_notUniqueModal').modal('show');
+              return _this.$('.bv_projectCode').val(_this.model.get('codeName'));
+            };
+          })(this)
         });
       }
     };
@@ -1581,7 +1612,7 @@
           })(this)
         });
       } else {
-        if (UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["Administrator"])) {
+        if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
           return this.updateProjectRoles();
         } else {
           return this.model.save(null, {

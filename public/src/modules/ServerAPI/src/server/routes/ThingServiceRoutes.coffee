@@ -59,7 +59,26 @@ exports.thingByCodeName = (req, resp) ->
 		else if req.query.stub
 			stub = "with=stub"
 			baseurl += "?#{stub}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.end JSON.stringify json
+			else
+				console.log 'got ajax error'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				if response? and response.statusCode == 404 and json?[0]? and json[0].errorLevel is "error" and json[0].message.indexOf("not found")>-1
+					resp.end JSON.stringify json
+				else
+					resp.end "Error getting thing by codeName"
+		)
+
 
 
 updateThing = (thing, testMode, callback) ->

@@ -612,7 +612,7 @@ class window.ProjectController extends AbstractFormController
 
 	events: ->
 		"change .bv_status": "handleStatusChanged"
-		"keyup .bv_projectCode": "handleProjectCodeNameChanged"
+		"change .bv_projectCode": "handleProjectCodeNameChanged"
 		"keyup .bv_projectName": "attributeChanged"
 		"keyup .bv_projectAlias": "attributeChanged"
 		"keyup .bv_startDate": "attributeChanged"
@@ -632,7 +632,7 @@ class window.ProjectController extends AbstractFormController
 						type: 'GET'
 						url: "/api/things/project/project/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
-						error: (err) ->
+						error: (err) =>
 							alert 'Could not get project for code in this URL, creating new one'
 							@completeInitialization()
 						success: (json) =>
@@ -667,7 +667,12 @@ class window.ProjectController extends AbstractFormController
 		@setupAttachFileListController()
 		@setupProjectLeaderListController()
 		@setupIsRestrictedCheckbox()
-		if !@model.isNew() and UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+		unless @model.isNew()
+			@adminRole =
+				lsType: "Project"
+				lsKind: @model.get('codeName')
+				roleName: "Administrator"
+		if !@model.isNew() and (UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole]))
 			@setupProjectUserListController()
 			@setupProjectAdminListController()
 		@render()
@@ -698,9 +703,9 @@ class window.ProjectController extends AbstractFormController
 
 		if @model.isNew()
 			@$('.bv_status').attr 'disabled', 'disabled'
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+			@$('.bv_manageUserPermissions').hide()
+			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole]
 				@$('.bv_saveBeforeManagingPermissions').show()
-				@$('.bv_manageUserPermissions').hide()
 		else
 			@updateEditable()
 		if @readOnly is true
@@ -725,7 +730,11 @@ class window.ProjectController extends AbstractFormController
 			@$('.bv_saving').hide()
 		@setupAttachFileListController()
 		@setupProjectLeaderListController()
-		if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+		@adminRole =
+			lsType: "Project"
+			lsKind: @model.get('codeName')
+			roleName: "Administrator"
+		if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 			@setupProjectUserListController()
 			@setupProjectAdminListController()
 		@render()
@@ -900,7 +909,7 @@ class window.ProjectController extends AbstractFormController
 
 	updateEditable: =>
 		if @model.isEditable()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 				@enableAllInputs()
 				@$('.bv_projectCode').attr 'disabled', 'disabled'
 				@$('.bv_manageUserPermissions').show()
@@ -910,7 +919,7 @@ class window.ProjectController extends AbstractFormController
 				@$('.bv_manageUserPermissions').hide()
 		else
 			@disableAllInputs()
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 				@$('.bv_status').removeAttr 'disabled', 'disabled'
 				@$('.bv_manageUserPermissions').show()
 			else
@@ -931,7 +940,20 @@ class window.ProjectController extends AbstractFormController
 			delete @model.attributes.codeName
 			@model.trigger 'change'
 		else
-			@model.set codeName: codeName
+			#validate codeName
+			$.ajax
+				type: 'GET'
+				url: "/api/things/project/project/codename/"+codeName
+				dataType: 'json'
+				error: (err) =>
+					#codename is new
+					@model.set codeName: codeName
+				success: (json) =>
+					#codeName is not unique
+					@$('.bv_notUniqueModalTitle').html "Error: Project code is not unique"
+					@$('.bv_notUniqueModalBody').html "The entered project code is already used by another project. Please enter in a new code."
+					@$('.bv_notUniqueModal').modal('show')
+					@$('.bv_projectCode').val @model.get 'codeName'
 
 	handleStartDateIconClicked: =>
 		@$( ".bv_startDate" ).datepicker( "show" )
@@ -1009,7 +1031,7 @@ class window.ProjectController extends AbstractFormController
 						@createRoleKindAndName()
 
 		else
-			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["Administrator"]
+			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 				@updateProjectRoles()
 			else
 				@model.save null,

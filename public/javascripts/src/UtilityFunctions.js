@@ -25,6 +25,27 @@
       return match;
     };
 
+    UtilityFunctions.prototype.testUserHasRoleTypeKindName = function(user, roleInfo) {
+      var i, j, len, len1, match, ref, role, userRole;
+      if (user.roles == null) {
+        return true;
+      }
+      match = false;
+      for (i = 0, len = roleInfo.length; i < len; i++) {
+        role = roleInfo[i];
+        ref = user.roles;
+        for (j = 0, len1 = ref.length; j < len1; j++) {
+          userRole = ref[j];
+          console.log("role");
+          console.log(role);
+          if (userRole.roleEntry.lsType === role.lsType && userRole.roleEntry.lsKind === role.lsKind && (userRole.roleEntry.roleName = role.roleName)) {
+            match = true;
+          }
+        }
+      }
+      return match;
+    };
+
     UtilityFunctions.prototype.showProgressModal = function(node) {
       node.modal({
         backdrop: "static"
