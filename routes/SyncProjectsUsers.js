@@ -17,7 +17,7 @@
       json: true
     }, (function(_this) {
       return function(error, response, body) {
-        var acasGroupsAndProjects, child, command, configJSON, groupsJSON, projectCodes, projectsJSON, serverError;
+        var acasGroupsAndProjects, caughtPythonErrors, child, command, configJSON, groupsJSON, projectsJSON, pythonErrors, serverError;
         serverError = error;
         acasGroupsAndProjects = body;
         groupsJSON = {};
@@ -58,70 +58,87 @@
             port: config.all.client.service.result.viewer.liveDesign.database.port
           }
         };
+        caughtPythonErrors = false;
+        pythonErrors = [];
         command = "python ./public/src/modules/ServerAPI/src/server/syncProjectsUsers/sync_projects.py ";
         command += "\'" + (JSON.stringify(configJSON)) + "\' " + "\'" + (JSON.stringify(projectsJSON)) + "\'";
         console.log("About to call python using command: " + command);
-        child = exec(command, function(error, stdout, stderr) {
-          var reportURL, reportURLPos;
+        return child = exec(command, function(error, stdout, stderr) {
+          var projectCodes, reportURL, reportURLPos;
           reportURLPos = stdout.indexOf(config.all.client.service.result.viewer.liveDesign.baseUrl);
           reportURL = stdout.substr(reportURLPos);
-          console.warn("stderr: " + stderr);
-          return console.log("stdout: " + stdout);
-        });
-        projectCodes = _.pluck(acasGroupsAndProjects.projects, 'code');
-        console.debug('project codes are:' + JSON.stringify(projectCodes));
-        cmpdRegRoutes.getProjects(req, function(projectResponse) {
-          var foundProjectCodes, foundProjects, i, len, newProjectCodes, newProjects, oldProject, projectToUpdate, projectsToUpdate;
-          foundProjects = JSON.parse(projectResponse);
-          foundProjectCodes = _.pluck(foundProjects, 'code');
-          console.debug('found projects are: ' + foundProjectCodes);
-          newProjectCodes = _.difference(projectCodes, foundProjectCodes);
-          newProjects = _.filter(acasGroupsAndProjects.projects, function(project) {
-            var ref;
-            return ref = project.code, indexOf.call(newProjectCodes, ref) >= 0;
-          });
-          projectsToUpdate = _.filter(acasGroupsAndProjects.projects, function(project) {
-            var found, unchanged;
-            found = (_.findWhere(foundProjects, {
-              code: project.code
-            })) != null;
-            unchanged = (_.findWhere(foundProjects, {
-              code: project.code,
-              name: project.name
-            })) != null;
-            return found && !unchanged;
-          });
-          if (((newProjects != null) && newProjects.length > 0) || ((projectsToUpdate != null) && projectsToUpdate.length > 0)) {
-            if ((newProjects != null) && newProjects.length > 0) {
-              console.debug('saving new projects with JSON: ' + JSON.stringify(newProjects));
-              return cmpdRegRoutes.saveProjects(newProjects, function(saveProjectsResponse) {});
-            } else {
-              for (i = 0, len = projectsToUpdate.length; i < len; i++) {
-                projectToUpdate = projectsToUpdate[i];
-                oldProject = _.findWhere(foundProjects, {
-                  code: projectToUpdate.code
-                });
-                projectToUpdate.id = oldProject.id;
-                projectToUpdate.version = oldProject.version;
-              }
-              console.debug('updating projects with JSON: ' + JSON.stringify(projectsToUpdate));
-              return cmpdRegRoutes.updateProjects(projectsToUpdate, function(updateProjectsResponse) {});
-            }
-          } else {
-            return console.debug('CmpdReg projects are up-to-date');
+          console.log("stdout: " + stdout);
+          if (error != null) {
+            caughtPythonErrors = true;
+            console.error(error);
+            pythonErrors.push(error);
           }
+          projectCodes = _.pluck(acasGroupsAndProjects.projects, 'code');
+          console.debug('project codes are:' + JSON.stringify(projectCodes));
+          return cmpdRegRoutes.getProjects(req, function(projectResponse) {
+            var foundProjectCodes, foundProjects, i, len, newProjectCodes, newProjects, oldProject, projectToUpdate, projectsToUpdate;
+            foundProjects = JSON.parse(projectResponse);
+            foundProjectCodes = _.pluck(foundProjects, 'code');
+            console.debug('found projects are: ' + foundProjectCodes);
+            newProjectCodes = _.difference(projectCodes, foundProjectCodes);
+            newProjects = _.filter(acasGroupsAndProjects.projects, function(project) {
+              var ref;
+              return ref = project.code, indexOf.call(newProjectCodes, ref) >= 0;
+            });
+            projectsToUpdate = _.filter(acasGroupsAndProjects.projects, function(project) {
+              var found, unchanged;
+              found = (_.findWhere(foundProjects, {
+                code: project.code
+              })) != null;
+              unchanged = (_.findWhere(foundProjects, {
+                code: project.code,
+                name: project.name
+              })) != null;
+              return found && !unchanged;
+            });
+            if (((newProjects != null) && newProjects.length > 0) || ((projectsToUpdate != null) && projectsToUpdate.length > 0)) {
+              if ((newProjects != null) && newProjects.length > 0) {
+                console.debug('saving new projects with JSON: ' + JSON.stringify(newProjects));
+                cmpdRegRoutes.saveProjects(newProjects, function(saveProjectsResponse) {});
+              } else {
+                for (i = 0, len = projectsToUpdate.length; i < len; i++) {
+                  projectToUpdate = projectsToUpdate[i];
+                  oldProject = _.findWhere(foundProjects, {
+                    code: projectToUpdate.code
+                  });
+                  projectToUpdate.id = oldProject.id;
+                  projectToUpdate.version = oldProject.version;
+                }
+                console.debug('updating projects with JSON: ' + JSON.stringify(projectsToUpdate));
+                cmpdRegRoutes.updateProjects(projectsToUpdate, function(updateProjectsResponse) {});
+              }
+            } else {
+              console.debug('CmpdReg projects are up-to-date');
+            }
+            command = "python ./public/src/modules/ServerAPI/src/server/syncProjectsUsers/ld_entitlements.py ";
+            command += "\'" + (JSON.stringify(configJSON.ld_server)) + "\' " + "\'" + (JSON.stringify(groupsJSON)) + "\'";
+            console.log("About to call python using command: " + command);
+            return child = exec(command, function(error, stdout, stderr) {
+              reportURLPos = stdout.indexOf(config.all.client.service.result.viewer.liveDesign.baseUrl);
+              reportURL = stdout.substr(reportURLPos);
+              console.log("stdout: " + stdout);
+              if (error != null) {
+                caughtPythonErrors = true;
+                console.error(error);
+                pythonErrors.push(error);
+              }
+              if (!caughtPythonErrors) {
+                resp.statusCode = 200;
+                console.log("Successfully synced projects and permissions with LiveDesign and Compound Reg");
+                return resp.end("Successfully synced projects and permissions with LiveDesign and Compound Reg");
+              } else {
+                resp.statusCode = 500;
+                console.log("An error has occurred trying to sync projects and permissions with LiveDesign and Compound Reg. Please contact an administrator.");
+                return resp.end("An error has occurred trying to sync projects and permissions with LiveDesign and Compound Reg. Please contact an administrator.");
+              }
+            });
+          });
         });
-        command = "python ./public/src/modules/ServerAPI/src/server/syncProjectsUsers/ld_entitlements.py ";
-        command += "\'" + (JSON.stringify(configJSON.ld_server)) + "\' " + "\'" + (JSON.stringify(groupsJSON)) + "\'";
-        console.log("About to call python using command: " + command);
-        child = exec(command, function(error, stdout, stderr) {
-          var reportURL, reportURLPos;
-          reportURLPos = stdout.indexOf(config.all.client.service.result.viewer.liveDesign.baseUrl);
-          reportURL = stdout.substr(reportURLPos);
-          console.warn("stderr: " + stderr);
-          return console.log("stdout: " + stdout);
-        });
-        return resp.end("Done");
       };
     })(this));
   };

@@ -255,7 +255,7 @@ class window.ProjectBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteProject").modal('hide')
 
 	handleEditProjectClicked: =>
-		window.open("/entity/edit/codeName/#{@projectController.model.get("codeName")}",'_blank');
+		window.open("/project/codeName/#{@projectController.model.get("codeName")}",'_blank');
 
 	handleDuplicateProjectClicked: =>
 		projectKind = @projectController.model.get('lsKind')

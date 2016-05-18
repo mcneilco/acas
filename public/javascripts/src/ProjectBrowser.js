@@ -378,7 +378,7 @@
     };
 
     ProjectBrowserController.prototype.handleEditProjectClicked = function() {
-      return window.open("/entity/edit/codeName/" + (this.projectController.model.get("codeName")), '_blank');
+      return window.open("/project/codeName/" + (this.projectController.model.get("codeName")), '_blank');
     };
 
     ProjectBrowserController.prototype.handleDuplicateProjectClicked = function() {
