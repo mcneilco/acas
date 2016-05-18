@@ -435,7 +435,9 @@ checkBatch_TestMode = (requestName) ->
 		else respId = requestName
 	return respId
 
-exports.createPlate = (request) ->
+exports.createPlate = (request, callback) ->
+	answer = null
+	callback answer, 200
 	console.debug "inside base customer specific server function createPlate"
 
 exports.updateWellContent = (request) ->

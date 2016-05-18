@@ -120,9 +120,9 @@ exports.createPlateInternal = (input, callCustom, callback) ->
 			callCustom  = callCustom != "0"
 			if callCustom && csUtilities.createPlate?
 				console.log "running customer specific server function createPlate"
-				csUtilities.createPlate input, (res) ->
-					console.log res
-					callback json, response.statusCode
+				csUtilities.createPlate input, (customerResponse, statusCode) ->
+					json = _.extend json, customerResponse
+					callback json, statusCode
 			else
 				console.warn "could not find customer specific server function createPlate so not running it"
 				callback json, response.statusCode

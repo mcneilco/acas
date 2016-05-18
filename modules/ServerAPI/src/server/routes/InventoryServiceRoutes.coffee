@@ -1133,7 +1133,8 @@ exports.cloneContainersInternal = (input, callback) ->
 							container.wells = wellContent
 						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 						compoundInventoryRoutes.createPlateInternal container, "1", (newContainer, statusCode) ->
-							container.codeName = newContainer.codeName
+							container = _.extend container, newContainer
+#							container.codeName = newContainer.codeName
 							exports.updateContainersByContainerCodesInternal [container], "1", (updatedContainer, statusCode) ->
 								outContainer = _.extend updatedContainer[0], newContainer
 								outputArray[index-1] = outContainer
@@ -1244,7 +1245,8 @@ exports.splitContainerInternal = (input, callback) ->
 								if statusCode == 200
 									quadrant = _.findWhere(input.quadrants, {"barcode": newContainer.barcode})
 									quadrant.newContainer = newContainer
-									quadrant.destinationContainer.codeName = newContainer.codeName
+#									quadrant.destinationContainer.codeName = newContainer.codeName
+									quadrant.destinationContainer = _.extend quadrant.destinationContainer, newContainer
 									quadrant.destinationContainer = _.omit quadrant.destinationContainer, ["wells", "definitionCodeName"]
 									exports.updateContainersByContainerCodesInternal [quadrant.destinationContainer], "1", (updatedContainer, statusCode) ->
 										quadrant = _.findWhere(input.quadrants, {"barcode": updatedContainer[0].barcode})
@@ -1355,7 +1357,8 @@ exports.mergeContainersInternal = (input, callback) ->
 						compoundInventoryRoutes = require '../routes/CompoundInventoryRoutes.js'
 						compoundInventoryRoutes.createPlateInternal input, "1", (newContainer, statusCode) ->
 							if statusCode == 200
-								input.codeName = newContainer.codeName
+								input = _.extend input, newContainer
+#								input.codeName = newContainer.codeName
 								containerToUpdate = _.omit input, ["wells", "definitionCodeName"]
 								exports.updateContainersByContainerCodesInternal [containerToUpdate], "1", (updatedContainer, statusCode) ->
 									if statusCode == 200
