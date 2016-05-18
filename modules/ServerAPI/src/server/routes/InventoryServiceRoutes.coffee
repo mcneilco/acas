@@ -1153,6 +1153,14 @@ exports.splitContainerInternal = (input, callback) ->
 	else
 		console.debug "incoming splitContainer request: #{JSON.stringify(input)}"
 		console.debug "calling getContainersByCodeNamesInternal"
+		_.map input.quadrants, (quadrant) ->
+			if typeof(quadrant.quadrant) != "number"
+				console.warn "provided quadrant #{quadrant.quadrant} is typeOf #{typeof(quadrant.quadrant)} but should be typeof of number"
+				quadrant.quadrant = Number(quadrant.quadrant)
+				if isNaN(quadrant.quadrant)
+					msg = "received #{quadrant.quadrant} when attempting to coerce quadrant"
+					console.error msg
+					callback msg, 400
 		exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal [input.codeName], (originContainer, statusCode) =>
 			if statusCode == 400
 				callback originContainer, statusCode
