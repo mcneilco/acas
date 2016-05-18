@@ -48,8 +48,6 @@ class window.ChildExperimentList extends Backbone.Collection
 	model: ChildExperiment
 
 	validateCollection: =>
-		console.log "validate collection - child experiment list"
-		console.log @
 		modelErrors = []
 		@each (model, index) ->
 		# note: can't call model.isValid() because if invalid, the function will trigger validationError,
@@ -88,9 +86,6 @@ class window.ChildExperimentController extends AbstractFormController
 			@$('.bv_childExperimentCodeLink').attr "href", "/entity/edit/codeName/#{@model.get('codeName')}"
 			@$('.bv_childExperimentCodeLink').html @model.get('codeName')
 			childExptName = @model.get('lsLabels').pickBestName()
-			console.log 'childExptName'
-			console.log childExptName
-			console.log @model
 			@$('.bv_childExperimentName').val childExptName.get('labelText')
 			@$('.bv_childExperimentName').attr 'disabled', 'disabled'
 		@
@@ -120,14 +115,11 @@ class window.ChildExperimentsListController extends Backbone.View
 		@$('.bv_childExperimentInfo').append controller.render().el
 
 	isValid: ->
-		console.log "@childExperimentsListController isValid"
-		console.log @collection
 		validCheck = true
 		errors = @collection.validateCollection()
 		if errors.length > 0
 			validCheck = false
 		@validationError(errors)
-		console.log errors
 		validCheck
 
 	validationError: (errors) =>
@@ -203,16 +195,13 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 
 	setupSavedChildExperiments: =>
 		$.ajax
-			type: 'GET'
-			url: "/api/getItxExptExptsByFirstExpt/"+@model.get('id')
+			type: 'POST'
+			url: "/api/getExptExptItxsToDisplay/"+@model.get('id')
 			success: (json) =>
-				console.log json
 				childExperiments = _.pluck json, 'secondExperiment'
 				@childExperiments = new ChildExperimentList childExperiments
-				console.log "existing child experiments"
-				console.log @childExperiments
 				@setupChildExperimentsListController()
-			error: (err) ->
+			error: (err) =>
 				alert 'got ajax error from getting protocol '+ code
 			dataType: 'json'
 
@@ -252,8 +241,6 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 		notebook = @model.getNotebook().get('stringValue')
 
 		_.each childProtocols, (protItx) =>
-			console.log "child prot"
-			console.log prot
 			prot = new PrimaryScreenProtocol protItx.secondProtocol
 			newChildExpt = new ChildExperiment
 				protocol: prot
@@ -347,8 +334,6 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 					currentVal.set ignored: true
 					currentVal = expt["get"+vKind]()
 				currentVal.set currentVal.get('lsType'), attrVal
-			console.log "updated child expt attr"
-			console.log JSON.stringify @childExperiments
 
 	updateEditable: =>
 		if @model.isNew()
@@ -394,13 +379,7 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 			@$('.bv_updateComplete').html "Update Complete"
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_saving').show()
-		console.log "model to post"
-		console.log @model
-		console.log "child expts to post"
-		console.log @childExperiments
-		#TODO: save file to parent and children experiments
 		if @model.isNew()
-			console.log "info to save for new model"
 			infoToSave =
 				parentExperiment: JSON.stringify @model
 				childExperiments: JSON.stringify @childExperiments
@@ -409,13 +388,10 @@ class window.ParentExperimentMetadataController extends ExperimentBaseController
 		@model.save(infoToSave)
 
 	isValid: =>
-		console.log "isValid meta controller"
 		validCheck = super()
-		console.log "expt base valid?" + console.log validCheck
 		if @childExperimentsListController?
 			unless @childExperimentsListController.isValid() is true
 				@$('.bv_save').attr 'disabled', 'disabled'
-				console.log "child expts invalid"
 				validCheck = false
 		if validCheck
 			@$('.bv_save').removeAttr 'disabled'

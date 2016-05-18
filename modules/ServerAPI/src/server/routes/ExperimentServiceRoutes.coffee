@@ -640,7 +640,7 @@ exports.postParentExperiment = (req, resp) ->
 								resp.json saveExptExptItxsResp
 							else
 								#return
-								resp.json saveExptExptItxsResp
+								resp.json saveParentExptResp
 
 
 bulkPostExperiments = (exptsArray, callback) ->
