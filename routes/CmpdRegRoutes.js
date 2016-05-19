@@ -28,7 +28,9 @@
     app.post('/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds);
     app.post('/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch);
     app.post('/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave);
-    return app.post('/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots);
+    app.post('/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots);
+    app.post('/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts);
+    return app.post('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes);
   };
 
   exports.cmpdRegIndex = function(req, res) {
@@ -477,6 +479,66 @@
           return resp.end(JSON.stringify(json));
         } else {
           console.log('got ajax error trying to do metalot save');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return resp.end(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.saveSalts = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/salts';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(req.body),
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          resp.setHeader('Content-Type', 'application/json');
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to do save salts');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return resp.end(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.saveIsotopes = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/isotopes';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(req.body),
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          resp.setHeader('Content-Type', 'application/json');
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to do save isotopes');
           console.log(error);
           console.log(json);
           console.log(response);

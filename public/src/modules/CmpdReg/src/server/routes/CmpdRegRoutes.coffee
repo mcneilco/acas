@@ -24,7 +24,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
 	app.post '/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots
-
+	app.post '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts
+	app.post '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -371,3 +372,50 @@ exports.metaLots = (req, resp) ->
 			console.log response
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
+
+exports.saveSalts = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/salts'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: JSON.stringify req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to do save salts'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
+exports.saveIsotopes = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/isotopes'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: JSON.stringify req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			console.log JSON.stringify json
+			resp.setHeader('Content-Type', 'application/json')
+			resp.end JSON.stringify json
+		else
+			console.log 'got ajax error trying to do save isotopes'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify {error: "something went wrong :("}
+	)
+
