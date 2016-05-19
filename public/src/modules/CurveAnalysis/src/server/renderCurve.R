@@ -15,7 +15,7 @@ renderCurve <- function(getParams) {
   # GET FIT DATA
   #fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
   fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
-  fitData <- fitData[!is.null(category) && category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
+  fitData <- fitData[!is.null(category) & category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
     responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
     list("fittedMax" = responseMean, "fittedMin" = responseMean)
   }, by = curveId]
