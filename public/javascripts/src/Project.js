@@ -1832,9 +1832,13 @@
       return $.ajax({
         type: 'GET',
         url: "/api/syncLiveDesignProjectsUsers",
-        error: function(err) {
-          return alert('error syncing live design project users');
-        },
+        error: (function(_this) {
+          return function(err) {
+            _this.$('.bv_syncProjectUsersErrorMessage').html(err.responseText);
+            _this.$('.bv_syncProjectUsersError').modal('show');
+            return _this.model.trigger('saveFailed');
+          };
+        })(this),
         success: (function(_this) {
           return function(json) {
             return console.log('successfully synced live design project users');

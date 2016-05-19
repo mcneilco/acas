@@ -1173,8 +1173,10 @@ class window.ProjectController extends AbstractFormController
 		$.ajax
 			type: 'GET'
 			url: "/api/syncLiveDesignProjectsUsers"
-			error: (err) -> #TODO: add real error handling
-				alert 'error syncing live design project users'
+			error: (err) =>
+				@$('.bv_syncProjectUsersErrorMessage').html err.responseText
+				@$('.bv_syncProjectUsersError').modal 'show'
+				@model.trigger 'saveFailed'
 			success: (json) =>
 				console.log 'successfully synced live design project users'
 
