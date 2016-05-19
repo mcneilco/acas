@@ -21,7 +21,7 @@ class window.UtilityFunctions
 			for userRole in user.roles
 				console.log "role"
 				console.log role
-				if userRole.roleEntry.lsType == role.lsType and userRole.roleEntry.lsKind == role.lsKind and userRole.roleEntry.roleName = role.roleName
+				if userRole.roleEntry.lsType == role.lsType and userRole.roleEntry.lsKind == role.lsKind and userRole.roleEntry.roleName == role.roleName
 					match = true
 
 		match
