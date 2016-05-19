@@ -1433,7 +1433,7 @@
     };
 
     ProjectController.prototype.setupIsRestrictedCheckbox = function() {
-      if (this.model.get('is restricted') === "false") {
+      if (this.model.get('is restricted').get('value') === "false") {
         return this.$('.bv_restrictedData').removeAttr('checked');
       } else {
         return this.$('.bv_restrictedData').attr('checked', 'checked');

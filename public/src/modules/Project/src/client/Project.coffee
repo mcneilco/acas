@@ -890,7 +890,7 @@ class window.ProjectController extends AbstractFormController
 					@checkFormValid()
 
 	setupIsRestrictedCheckbox: ->
-		if @model.get('is restricted') is "false"
+		if @model.get('is restricted').get('value') is "false"
 			@$('.bv_restrictedData').removeAttr 'checked'
 		else
 			@$('.bv_restrictedData').attr 'checked', 'checked'

@@ -38,7 +38,7 @@
           userRole = ref[j];
           console.log("role");
           console.log(role);
-          if (userRole.roleEntry.lsType === role.lsType && userRole.roleEntry.lsKind === role.lsKind && (userRole.roleEntry.roleName = role.roleName)) {
+          if (userRole.roleEntry.lsType === role.lsType && userRole.roleEntry.lsKind === role.lsKind && userRole.roleEntry.roleName === role.roleName) {
             match = true;
           }
         }
