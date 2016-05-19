@@ -315,6 +315,13 @@
 				name: "FLIPR"
 				ignored: false
 			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "generic plate"
+				name: "Generic Plate"
+				ignored: false
+			,
 				codeType: "reader data"
 				codeKind: "read name"
 				codeOrigin: "ACAS DDICT"

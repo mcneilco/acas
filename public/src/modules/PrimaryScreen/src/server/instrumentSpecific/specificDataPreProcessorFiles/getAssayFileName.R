@@ -13,6 +13,10 @@ getAssayFileName <- function(barcode="barcode text", filePath=".", tempFilePath)
   } else if (length(assayFileNames) > 1) { 
     if (barcode == "") {
       stopUser("Blank assay barcode found in plate association file.")
+    } else if (length(assayFileNames) == 2 & (grep("\\.xlsx$", assayFileNames)!=0) & (grep("\\.txt$", assayFileNames)!=0)) {
+      # Insert case where two files co-exist with the same name (i.e. plate barcode) but one is .txt and the other .xlsx format
+      # Allow this case and pass the right (.txt) file in variable assayFileNames
+      assayFileNames <- data.table(assayFileName=assayFileNames[grep("\\.txt$", assayFileNames)])
     } else {
       stopUser(paste0("Multiple assay files found for barcode: ", barcode))
       # save this for instrument specific file plateFormatMultiFile (and perhaps stat1stat2seq1 formats)
