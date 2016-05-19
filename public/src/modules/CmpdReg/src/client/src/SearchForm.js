@@ -138,7 +138,8 @@ $(function() {
                     (jQuery.trim(this.$('.percentSimilarity').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.percentSimilarity').val())),
                 chemist: this.chemistCodeController.getSelectedModel(),
-                molStructure: molecule
+                molStructure: molecule,
+                loggedInUser: window.appController.user.get("code")
             });
 
             return searchForm;
