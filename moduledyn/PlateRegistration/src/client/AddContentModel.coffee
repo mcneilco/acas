@@ -67,13 +67,19 @@ class AddContentModel extends Backbone.Model
       return "An identifier, concentration value, or amount must be specified"
 
   validateIdentifiers: (value, attr, computedState) ->
-    if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 0
-      if computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "sameIdentifier"
-        if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 1
-          return "Only one identifier may be entered when filling the region with the same identifier"
-      else
-        if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] > computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
-          return "The number of selected wells must be the same or less than the number of identifiers entered"
+    if computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "fillAllEmptyWells"
+      console.log "computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]"
+      console.log computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
+      unless computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] is 1
+        return "One Compound Batch ID must be provided"
+    else
+      if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 0
+        if computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] is "sameIdentifier"
+          if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS] > 1
+            return "Only one identifier may be entered when filling the region with the same identifier"
+        else if computedState[ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY] in ['random', 'inOrder']
+          if computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_CELLS_SELECTED] > computedState[ADD_CONTENT_MODEL_FIELDS.NUMBER_OF_IDENTIFIERS]
+            return "The number of selected wells must be the same or less than the number of identifiers entered"
 
   formatIdentifiersForBatchIdValidationService: ->
     identifiers = _.map(@get(ADD_CONTENT_MODEL_FIELDS.IDENTIFIERS), (identifier) ->

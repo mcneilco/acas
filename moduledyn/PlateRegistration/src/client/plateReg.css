@@ -17,7 +17,7 @@
 
 .editorCollapseButton {
   /*margin-top: 191px;*/
-  margin-top: 312px;
+  margin-top: 188px;
   padding-top: 6px;
   padding-bottom: 6px;
   width: 40px;
@@ -73,6 +73,12 @@
   padding-top: 32px;
 }
 
+.editorTabFillPatterns {
+  height: 124px;
+  /*padding-top: 48px;*/
+  padding-top: 32px;
+}
+
 .editorTabInfoLink {
   /*width: 50px;
   padding-bottom: 50px;*/
@@ -96,6 +102,14 @@
 }
 
 .editorTabSerialDilutionLink {
+  width: 90px;
+  padding-bottom: 40px;
+  /*
+  z-index: -1;
+  */
+}
+
+.editorTabFillPatternsLink {
   width: 90px;
   padding-bottom: 40px;
   /*

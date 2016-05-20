@@ -10,19 +10,21 @@ EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS =
 class EditorFormTabViewController extends Backbone.View
   template: require('html!./EditorFormTabView.tmpl')
   initialize: (options) ->
-    @tabSelectors = [".editorTabInfo", ".editorTabAddContent", ".editorTabTemplate", ".editorTabSerialDilution"]
-    @containerSelectors = ["div[name='info_form']", "div[name='add_content_form']", "div[name='template_form']", "div[name='serial_dilution_form']"]
+    @tabSelectors = [".editorTabInfo", ".editorTabAddContent", ".editorTabTemplate", ".editorTabSerialDilution", ".editorTabFillPatterns"]
+    @containerSelectors = ["div[name='info_form']", "div[name='add_content_form']", "div[name='template_form']", "div[name='serial_dilution_form']", "div[name='fill_patterns_form']"]
 
     @plateInfoController = options.plateInfoController
     @addContentController = options.addContentController
     @templateController = options.templateController
     @serialDilutionController = options.serialDilutionController
+    @fillPlateController = options.fillPlateController
 
   events:
     "click a[name='info_tab']": "handleInfoTabClick"
     "click a[name='add_content_tab']": "handleAddContentTabClick"
     "click a[name='template_tab']": "handleTemplateTabClick"
     "click a[name='serial_dilution_tab']": "handleSerialDilutionTabClick"
+    "click a[name='fill_patterns_tab']": "handleFillPatternsTabClick"
     "click .editorCollapseButton": "handleEditorCollapseButtonClick"
 
   render: =>
@@ -32,7 +34,7 @@ class EditorFormTabViewController extends Backbone.View
     @$("div[name='add_content_form']").html @addContentController.render().el
     @$("div[name='template_form']").html @templateController.render().el
     @$("div[name='serial_dilution_form']").html @serialDilutionController.render().el
-
+    @$("div[name='fill_patterns_form']").html @fillPlateController.render().el
     @handleInfoTabClick()
 
     @
@@ -65,6 +67,13 @@ class EditorFormTabViewController extends Backbone.View
     @hidePreviouslyDisplayedFormContainer()
     @$(".editorTabSerialDilution").addClass("tabSelected")
     @$("div[name='serial_dilution_form']").removeClass("hide")
+
+  handleFillPatternsTabClick: (e)=>
+    e.preventDefault()
+    @clearPreviouslySelectedTab()
+    @hidePreviouslyDisplayedFormContainer()
+    @$(".editorTabFillPatterns").addClass("tabSelected")
+    @$("div[name='fill_patterns_form']").removeClass("hide")
 
   clearPreviouslySelectedTab: =>
     _.each(@tabSelectors, (selector) =>

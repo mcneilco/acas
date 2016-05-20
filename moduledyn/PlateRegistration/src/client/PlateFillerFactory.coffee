@@ -4,22 +4,33 @@ PLATE_FILLER_STRATEGY_TYPES =
   RANDOM: 'random'
   IN_ORDER: 'inOrder'
   SAME_IDENTIFIER: 'sameIdentifier'
+  CHECKER_BOARD_1: 'checkerBoard1'
+  CHECKER_BOARD_2: 'checkerBoard2'
+  ALL_EMPTY: 'fillAllEmptyWells'
+
+CHECKER_BOARD_WIDTH = 4
+CHECKER_BOARD_HEIGHT = 2
 
 class PlateFillerFactory
-  getPlateFiller: (strategy, fillDirection, identifiers, selectedRegion) ->
+  getPlateFiller: (strategy, fillDirection, identifiers, selectedRegion, plateMetaData) ->
     plateFiller = null
     switch strategy
-      when PLATE_FILLER_STRATEGY_TYPES.IN_ORDER then plateFiller = new InOrderPlateFillerStrategy(identifiers, selectedRegion, fillDirection)
-      when PLATE_FILLER_STRATEGY_TYPES.RANDOM then plateFiller = new RandomPlateFillerStrategy(identifiers, selectedRegion)
-      when PLATE_FILLER_STRATEGY_TYPES.SAME_IDENTIFIER then plateFiller = new SameIdentifierPlateFillerStrategy(identifiers, selectedRegion)
+      when PLATE_FILLER_STRATEGY_TYPES.IN_ORDER then plateFiller = new InOrderPlateFillerStrategy(identifiers, selectedRegion, fillDirection, plateMetaData)
+      when PLATE_FILLER_STRATEGY_TYPES.RANDOM then plateFiller = new RandomPlateFillerStrategy(identifiers, selectedRegion, plateMetaData)
+      when PLATE_FILLER_STRATEGY_TYPES.SAME_IDENTIFIER then plateFiller = new SameIdentifierPlateFillerStrategy(identifiers, selectedRegion, plateMetaData)
+      when PLATE_FILLER_STRATEGY_TYPES.CHECKER_BOARD_1 then plateFiller = new CheckerBoard1PlateFillerStrategy(identifiers, selectedRegion, plateMetaData)
+      when PLATE_FILLER_STRATEGY_TYPES.CHECKER_BOARD_2 then plateFiller = new CheckerBoard2PlateFillerStrategy(identifiers, selectedRegion, plateMetaData)
+      when PLATE_FILLER_STRATEGY_TYPES.ALL_EMPTY then plateFiller = new FillAllEmptyPlateFillerStrategy(identifiers, selectedRegion, plateMetaData)
+
 
     plateFiller
 
 
 class PlateFillerStrategy
-  constructor: (identifiers, selectedRegionBoundries) ->
+  constructor: (identifiers, selectedRegionBoundries, plateMetaData) ->
     @identifiers = identifiers
     @selectedRegionBoundries = selectedRegionBoundries
+    @plateMetaData = plateMetaData
 
   getWells: ->
     throw "Method 'getWells' not implemented"
@@ -180,6 +191,165 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
       )
     )
 
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
+
+
+class CheckerBoard1PlateFillerStrategy extends PlateFillerStrategy
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = new WellsModel({allWells: wells})
+    rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
+    columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
+    plateWells = []
+    wellContentOverwritten = []
+    valueIdx = 0
+    identifiersToRemove = []
+
+    numberOfHorizontalCheckers = parseInt(_.size(columnIndexes) / CHECKER_BOARD_WIDTH)
+    numberOfVerticalCheckers = parseInt(_.size(rowIndexes) / CHECKER_BOARD_HEIGHT)
+
+    checkerRowIndexes = [0..numberOfVerticalCheckers]
+    checkerColIndexes = [0..numberOfHorizontalCheckers]
+    rowIsEven = true
+    _.each(checkerRowIndexes, (rowIdx) =>
+      if (rowIdx % 2) is 0
+        rowIsEven = true
+      else
+        rowIsEven = false
+      _.each(checkerColIndexes, (colIdx) =>
+        offsetRowIdx = (rowIdx * CHECKER_BOARD_HEIGHT) + @selectedRegionBoundries.rowStart
+        offsetColIdx = (colIdx * CHECKER_BOARD_WIDTH) + @selectedRegionBoundries.colStart
+        unless rowIsEven
+          offsetColIdx = offsetColIdx + 2
+        batchCode = @identifiers[0]
+
+
+        if (offsetRowIdx <= @selectedRegionBoundries.rowStop) and (offsetColIdx <= @selectedRegionBoundries.colStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx, offsetColIdx, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx, offsetColIdx, well]
+          wellsToUpdate.fillWellWithWellObject(offsetRowIdx, offsetColIdx, well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if ((offsetRowIdx + 1) <= @selectedRegionBoundries.rowStop) and (offsetColIdx <= @selectedRegionBoundries.colStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx + 1, offsetColIdx, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx + 1, offsetColIdx, well]
+          wellsToUpdate.fillWellWithWellObject((offsetRowIdx + 1), offsetColIdx, well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if (offsetColIdx + 1) <= @selectedRegionBoundries.colStop  and (offsetRowIdx <= @selectedRegionBoundries.rowStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx, offsetColIdx + 1, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx, offsetColIdx + 1, well]
+          wellsToUpdate.fillWellWithWellObject(offsetRowIdx, (offsetColIdx + 1), well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if ((offsetColIdx + 1) <= @selectedRegionBoundries.colStop) and ((offsetRowIdx + 1) <= @selectedRegionBoundries.rowStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx + 1, offsetColIdx + 1, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx + 1, offsetColIdx + 1, well]
+          wellsToUpdate.fillWellWithWellObject((offsetRowIdx + 1), (offsetColIdx + 1), well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        identifiersToRemove.push @identifiers[0]
+
+        valueIdx++
+      )
+
+    )
+    if _.size(wellContentOverwritten) is 0
+      wellContentOverwritten = null
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
+
+class CheckerBoard2PlateFillerStrategy extends PlateFillerStrategy
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = new WellsModel({allWells: wells})
+    rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
+    columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
+    plateWells = []
+    wellContentOverwritten = []
+    valueIdx = 0
+    identifiersToRemove = []
+
+    numberOfHorizontalCheckers = parseInt(_.size(columnIndexes) / CHECKER_BOARD_WIDTH)
+    numberOfVerticalCheckers = parseInt(_.size(rowIndexes) / CHECKER_BOARD_HEIGHT)
+
+    checkerRowIndexes = [0..numberOfVerticalCheckers]
+    checkerColIndexes = [0..numberOfHorizontalCheckers]
+    rowIsEven = true
+    _.each(checkerRowIndexes, (rowIdx) =>
+      if (rowIdx % 2) is 0
+        rowIsEven = true
+      else
+        rowIsEven = false
+      _.each(checkerColIndexes, (colIdx) =>
+        offsetRowIdx = (rowIdx * CHECKER_BOARD_HEIGHT) + @selectedRegionBoundries.rowStart
+        offsetColIdx = (colIdx * CHECKER_BOARD_WIDTH) + @selectedRegionBoundries.colStart
+        if rowIsEven
+          offsetColIdx = offsetColIdx + 2
+        batchCode = @identifiers[0]
+
+
+        if (offsetRowIdx <= @selectedRegionBoundries.rowStop) and (offsetColIdx <= @selectedRegionBoundries.colStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx, offsetColIdx, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx, offsetColIdx, well]
+          wellsToUpdate.fillWellWithWellObject(offsetRowIdx, offsetColIdx, well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if ((offsetRowIdx + 1) <= @selectedRegionBoundries.rowStop) and (offsetColIdx <= @selectedRegionBoundries.colStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx + 1, offsetColIdx, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx + 1, offsetColIdx, well]
+          wellsToUpdate.fillWellWithWellObject((offsetRowIdx + 1), offsetColIdx, well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if (offsetColIdx + 1) <= @selectedRegionBoundries.colStop  and (offsetRowIdx <= @selectedRegionBoundries.rowStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx, offsetColIdx + 1, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx, offsetColIdx + 1, well]
+          wellsToUpdate.fillWellWithWellObject(offsetRowIdx, (offsetColIdx + 1), well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        if ((offsetColIdx + 1) <= @selectedRegionBoundries.colStop) and ((offsetRowIdx + 1) <= @selectedRegionBoundries.rowStop)
+          [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx + 1, offsetColIdx + 1, batchConcentration, amount, batchCode)
+          plateWells.push [offsetRowIdx + 1, offsetColIdx + 1, well]
+          wellsToUpdate.fillWellWithWellObject((offsetRowIdx + 1), (offsetColIdx + 1), well)
+          if wco
+            wellContentOverwritten = wellContentOverwritten.concat(wco)
+
+        identifiersToRemove.push @identifiers[0]
+
+        valueIdx++
+      )
+
+    )
+    if _.size(wellContentOverwritten) is 0
+      wellContentOverwritten = null
+    [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
+
+class FillAllEmptyPlateFillerStrategy extends PlateFillerStrategy
+  getWells: (wells, batchConcentration, amount) ->
+    wellsToUpdate = new WellsModel({allWells: wells})
+    rowIndexes = [0..(@plateMetaData.numberOfRows - 1)]
+    columnIndexes = [0..(@plateMetaData.numberOfColumns - 1)]
+    plateWells = []
+    wellContentOverwritten = []
+    identifiersToRemove = []
+    batchCode = @identifiers[0]
+    _.each(rowIndexes, (rowIdx) =>
+      _.each(columnIndexes, (colIdx) =>
+        if wellsToUpdate.isWellAtRowIdxColIdxEmpty(rowIdx, colIdx)
+          [wco, well] = @populateWell(wellsToUpdate, rowIdx, colIdx, batchConcentration, amount, batchCode)
+          plateWells.push [rowIdx, colIdx, well]
+          wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, well)
+
+      )
+
+    )
+    identifiersToRemove.push @identifiers[0]
+    if _.size(wellContentOverwritten) is 0
+      wellContentOverwritten = null
     [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 

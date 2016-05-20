@@ -80,13 +80,21 @@ class SerialDilutionController extends Backbone.View
       @$("input[name='dilutionFactor']").prop("disabled", false)
     @setStateOfSubmitButton()
 
-  updateSelectedRegion: (selectedRegion) =>
+  updateSelectedRegion: (selectedRegion, lowestVolumeWell, allWellsHaveVolume, allWellsHaveConcentration) =>
+#    console.log "lowestVolumeWell"
+#    console.log lowestVolumeWell
     numberOfRowsSelected = Math.abs(selectedRegion.rowStart - selectedRegion.rowStop) + 1
     numberOfColumnsSelected = Math.abs(selectedRegion.colStart - selectedRegion.colStop) + 1
     @model.set(SERIAL_DILUTION_MODEL_FIELDS.SELECTED_COLUMN_IDX, selectedRegion.colStart)
     @model.set(SERIAL_DILUTION_MODEL_FIELDS.SELECTED_ROW_IDX, selectedRegion.rowStart)
     @model.set(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED, numberOfColumnsSelected)
     @model.set(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED, numberOfRowsSelected)
+    @model.set(SERIAL_DILUTION_MODEL_FIELDS.LOWEST_VOLUME_WELL, lowestVolumeWell)
+    @model.set(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_VOLUME, allWellsHaveVolume)
+    @model.set(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_CONCENTRATION, allWellsHaveConcentration)
+
+
+
     @setStateOfSubmitButton()
 
   setStateOfSubmitButton: =>

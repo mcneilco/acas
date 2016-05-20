@@ -19,6 +19,9 @@ SERIAL_DILUTION_MODEL_FIELDS =
   SELECTED_COLUMN_IDX: "selectedColumnIdx"
   MAX_NUMBER_OF_COLUMNS: "maxNumberOfColumns"
   MAX_NUMBER_OF_ROWS: "maxNumberOfRows"
+  LOWEST_VOLUME_WELL: "lowestVolumeWell"
+  ALL_WELLS_HAVE_VOLUME: "allWellsHaveVolume"
+  ALL_WELLS_HAVE_CONCENTRATION: "allWellsHaveConcentration"
 
 
 class SerialDilutionModel extends Backbone.Model
@@ -104,6 +107,7 @@ class SerialDilutionModel extends Backbone.Model
               else
                 @errorMessages.push "Please select a single column to perform a horizontal dilution"
 
+
     validRegionSelected
 
   validateNumberOfDoses: ->
@@ -122,8 +126,16 @@ class SerialDilutionModel extends Backbone.Model
 
   validateTransferVolume: ->
     valid = true
+    startingVolumeGreaterThanTransfer = @get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME) > @get(SERIAL_DILUTION_MODEL_FIELDS.LOWEST_VOLUME_WELL)
+
     if @get SERIAL_DILUTION_MODEL_FIELDS.IS_DILUTION_BY_VOLUME
-      if isNaN(@get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME))
+      if not @get(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_VOLUME)
+        @errorMessages.push "All wells must have a volume"
+        valid = false
+      else if not @get(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_CONCENTRATION)
+        @errorMessages.push "All wells must have a concentration value"
+        valid = false
+      else if isNaN(@get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME))
         @errorMessages.push "Please enter a numeric value for the transfer volume"
         valid = false
       else if $.trim(@get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME)) is ""
@@ -131,6 +143,9 @@ class SerialDilutionModel extends Backbone.Model
         valid = false
       else if @get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME) <= 0
         @errorMessages.push "The transfer volume must be greater than 0"
+        valid = false
+      else if @get(SERIAL_DILUTION_MODEL_FIELDS.TRANSFER_VOLUME) > @get(SERIAL_DILUTION_MODEL_FIELDS.LOWEST_VOLUME_WELL)
+        @errorMessages.push "The transfer volume must be less than the lowest volume well"
         valid = false
 
     valid
@@ -153,7 +168,13 @@ class SerialDilutionModel extends Backbone.Model
   validateDilutionFactor: ->
     valid = true
     unless @get SERIAL_DILUTION_MODEL_FIELDS.IS_DILUTION_BY_VOLUME
-      if isNaN(@get(SERIAL_DILUTION_MODEL_FIELDS.DILUTION_FACTOR))
+      if not @get(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_VOLUME)
+        @errorMessages.push "All wells must have a volume"
+        valid = false
+      else if not @get(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_CONCENTRATION)
+        @errorMessages.push "All wells must have a concentration value"
+        valid = false
+      else if isNaN(@get(SERIAL_DILUTION_MODEL_FIELDS.DILUTION_FACTOR))
         @errorMessages.push "Please enter a numeric value for the dilution factor"
         valid = false
       else if $.trim(@get(SERIAL_DILUTION_MODEL_FIELDS.DILUTION_FACTOR)) is ""
@@ -162,6 +183,7 @@ class SerialDilutionModel extends Backbone.Model
       else if @get(SERIAL_DILUTION_MODEL_FIELDS.DILUTION_FACTOR) < 1
         @errorMessages.push "The dilution factor must be greater than 0"
         valid = false
+
 
     valid
 

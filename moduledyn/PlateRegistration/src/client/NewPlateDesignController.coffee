@@ -15,6 +15,8 @@ EditorFormTabViewController = require('./EditorFormTabViewController.coffee').Ed
 EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS = require('./EditorFormTabViewController.coffee').EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS
 PlateInfoModel = require('./PlateInfoModel.coffee').PlateInfoModel
 
+FillPlateController = require('./FillPatternsController.coffee').FillPatternController
+
 $ = require('jquery')
 
 NEW_PLATE_DESIGN_CONTROLLER_EVENTS =
@@ -48,7 +50,12 @@ class NewPlateDesignController extends Backbone.View
     @templateController = new TemplateController()
     @serialDilutionController = new SerialDilutionController({model: new SerialDilutionModel()})
     @listenTo @serialDilutionController, SERIAL_DILUTION_CONTROLLER_EVENTS.APPLY_DILUTION, @handleApplyDilution
-    @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController})
+
+    @fillPlateController = new FillPlateController({model: new AddContentModel()})
+    @listenTo @fillPlateController, ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT, @handleAddContent
+    @listenTo @fillPlateController, ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, @handleAddContentNoValidation
+
+    @editorFormsTabView = new EditorFormTabViewController({plateInfoController: @plateInfoController, addContentController: @addContentController, templateController: @templateController, serialDilutionController: @serialDilutionController, fillPlateController: @fillPlateController})
     @listenTo @editorFormsTabView,  EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MAXIMIZED, @handleEditorFormsMaximized
     @listenTo @editorFormsTabView,  EDITOR_FORM_TABLE_VIEW_CONTROLLER_EVENTS.EDITOR_FORMS_MINIMIZED, @handleEditorFormsMinimized
 
@@ -57,6 +64,7 @@ class NewPlateDesignController extends Backbone.View
     #@plateInfoController.initializeSelectLists()
     @plateViewController.completeInitialization(plateAndWellData.wellContent, plateAndWellData.plateMetadata)
     @serialDilutionController.completeInitialization(plateAndWellData.plateMetadata)
+    @fillPlateController.completeInitialization(plateAndWellData.plateMetadata)
 
   render: =>
     $(@el).html @template
@@ -65,9 +73,10 @@ class NewPlateDesignController extends Backbone.View
 
     @
 
-  handleRegionSelected: (regionSelectedBoundries) =>
-    @serialDilutionController.updateSelectedRegion regionSelectedBoundries
-    @addContentController.updateSelectedRegion regionSelectedBoundries
+  handleRegionSelected: (updatedRegion) =>
+    @serialDilutionController.updateSelectedRegion updatedRegion.selectedRegionBoundries, updatedRegion.lowestVolumeWell, updatedRegion.allWellsHaveVolume, updatedRegion.allWellsHaveConcentration
+    @addContentController.updateSelectedRegion updatedRegion.selectedRegionBoundries
+    @fillPlateController.updateSelectedRegion updatedRegion.selectedRegionBoundries
 
   handleContentUpdated: (addContentModel) =>
     @trigger NEW_PLATE_DESIGN_CONTROLLER_EVENTS.ADD_IDENTIFIER_CONTENT_FROM_TABLE, addContentModel

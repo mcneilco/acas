@@ -58,6 +58,26 @@ class WellModel extends Backbone.Model
     else
       return false
 
+  isWellEmptyZeroVolumeZeroConcentration: ->
+    wellIsEmpty = true
+    if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CODE)) is "") or (@get(WELL_MODEL_FIELDS.BATCH_CODE) is null)
+      true
+    else
+      wellIsEmpty = false
+
+    if ($.trim(@get(WELL_MODEL_FIELDS.AMOUNT)) is "") or (@get(WELL_MODEL_FIELDS.AMOUNT) is null) or (@get(WELL_MODEL_FIELDS.AMOUNT) is 0)
+      true
+    else
+      wellIsEmpty = false
+
+    if ($.trim(@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION)) is "") or (@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION) is null) or (@get(WELL_MODEL_FIELDS.BATCH_CONCENTRATION) is 0)
+      true
+    else
+      wellIsEmpty = false
+
+    wellIsEmpty
+
+
   isWellValid: ->
     if @isWellEmpty()
       return true
@@ -181,6 +201,10 @@ class WellsModel extends Backbone.Model
       return memo
     , 0)
 
+  isWellAtRowIdxColIdxEmpty: (rowIdx, colIdx) =>
+    well = new WellModel(@getWellAtRowIdxColIdx(rowIdx, colIdx))
+    return well.isWellEmptyZeroVolumeZeroConcentration()
+
   getNumberOfInvalidWells: ->
     numberOfEmptyWells = _.reduce(@allWells, (memo, w) ->
       well = new WellModel(w)
@@ -188,6 +212,55 @@ class WellsModel extends Backbone.Model
         memo++
       return memo
     , 0)
+
+  getLowestVolumeForRegion: (region) ->
+    colRange = [region.colStart..region.colStop]
+    rowRange = [region.rowStart..region.rowStop]
+
+    lowestVolume = Infinity
+    _.each(colRange, (colIdx) =>
+      _.each(rowRange, (rowIdx) =>
+        well = @getWellAtRowIdxColIdx rowIdx, colIdx
+        if well.amount < lowestVolume
+          lowestVolume = well.amount
+      )
+    )
+
+    lowestVolume
+
+  allWellsInRegionHaveVolume: (region) ->
+    colRange = [region.colStart..region.colStop]
+    rowRange = [region.rowStart..region.rowStop]
+    allWellsHaveVolume = true
+    _.each(colRange, (colIdx) =>
+      _.each(rowRange, (rowIdx) =>
+        well = @getWellAtRowIdxColIdx rowIdx, colIdx
+        if well.amount?
+          if well.amount is ""
+            allWellsHaveVolume = false
+        else
+          allWellsHaveVolume = false
+      )
+    )
+
+    allWellsHaveVolume
+
+  allWellsInRegionHaveConcentration: (region) ->
+    colRange = [region.colStart..region.colStop]
+    rowRange = [region.rowStart..region.rowStop]
+    allWellsHaveConcentration = true
+    _.each(colRange, (colIdx) =>
+      _.each(rowRange, (rowIdx) =>
+        well = @getWellAtRowIdxColIdx rowIdx, colIdx
+        if well.batchConcentration?
+          if well.batchConcentration is ""
+            allWellsHaveConcentration = false
+        else
+          allWellsHaveConcentration = false
+      )
+    )
+
+    allWellsHaveConcentration
 
   getLongestStringByFieldName: (fieldName) ->
     longestString = ""

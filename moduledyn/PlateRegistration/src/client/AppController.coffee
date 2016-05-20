@@ -47,7 +47,7 @@ class AppController extends Backbone.View
     #@newPlateDesignController.completeInitialization()
 
   handleCreatePlate: (plateModel) =>
-    @dataServiceController.setupService(new CreatePlateSaveController({plateModel: plateModel, successCallback: @createPlateController.handleSuccessfulSave}))
+    @dataServiceController.setupService(new CreatePlateSaveController({plateModel: plateModel, successCallback: @createPlateController.handleSuccessfulSave, failureCallback: @createPlateController.handleError}))
     @dataServiceController.doServiceCall()
 
   handleAddContent: (addContentModel) =>
@@ -75,11 +75,13 @@ class AppController extends Backbone.View
     @resetCurrentlyDisplayedForm()
     plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
     plateTypeFetchPromise.complete(() =>
+      @createPlateController.model.reset()
       @createPlateController.plateDefinitions.convertLabelsToNumeric()
       @createPlateController.plateDefinitions.comparator = "numericPlateName"
       @createPlateController.plateDefinitions.sort()
       @$("div[name='formContainer']").html @createPlateController.render().el
       @currentFormController = @createPlateController
+      @currentFormController.delegateEvents()
       #@createPlateController.completeInitialization()
     )
 
@@ -106,7 +108,8 @@ class AppController extends Backbone.View
       success: () =>
         usersDeferred.resolve()
     })
-    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
+    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
+    #  $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
       @plateSearchController.plateDefinitions.convertLabelsToNumeric()
       @plateSearchController.plateDefinitions.comparator = "numericPlateName"
       @plateSearchController.plateDefinitions.sort()
