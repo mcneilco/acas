@@ -88,7 +88,10 @@ getCompoundAssignmentsFromFile <- function(fileName, folderToParse) {
   splitBatch <- strsplit(compoundVector, batchSep)
   batchNumber <- vapply(splitBatch, tail, "", n=1)
   batchNumber[batchNumber==compoundVector] <- NA
-  compoundName <- vapply(lapply(splitBatch, tail, n=-1), paste, "", collapse=batchSep)
+  # Remove last section to get compound name
+  compoundName <- vapply(lapply(splitBatch, function(x) {
+    head(x, n=length(x)-1)
+  }), paste, "", collapse=batchSep)
   compoundName[compoundName==""] <- compoundVector[compoundName==""]
   output <- data.frame(plateType=NA,
                        assayBarcode=headerInfo$"Assay Barcode",
