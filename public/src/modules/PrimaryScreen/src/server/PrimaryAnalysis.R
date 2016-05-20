@@ -2648,7 +2648,7 @@ changeColNameReadability <- function(inputTable, readabilityChange, parameters) 
 
 selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   
-  for(name in colNameChangeTable$oldColName) {
+  for(name in colNameChangeTable$oldColNames) {
     columnCount <- 0
     for(currentName in currentColNames) {
       if(name == currentName) {
