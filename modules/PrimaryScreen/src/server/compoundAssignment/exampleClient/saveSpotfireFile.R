@@ -8,7 +8,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
     PC = "Positive Control",
     NC = "Negative Control",
     BLANK = "Blank")
-  inputTable[, wellType := unlist(translationList[wellType])]
+  inputTable[wellType %in% names(translationList), wellType := unlist(translationList[wellType])]
  
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
 
@@ -39,7 +39,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   
   setcolorder(inputTable, requiredColumns)
   
-  fileLocation <- file.path(saveLocation,"spotfire-DRAFT.txt")
+  fileLocation <- getUploadedFilePath(file.path(saveLocation,"spotfire-DRAFT.txt"))
   write.table(inputTable, file=fileLocation, quote=FALSE, na="", row.names=FALSE, sep="\t")
   
   fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)

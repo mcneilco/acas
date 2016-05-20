@@ -409,7 +409,7 @@
 				codeKind: "standard type"
 				codeOrigin: "ACAS DDICT"
 				code: "PC"
-				name: "PositiveControl"
+				name: "Positive Control"
 				ignored: false
 			,
 				codeType: "analysis parameter"
