@@ -108,8 +108,8 @@ class AppController extends Backbone.View
       success: () =>
         usersDeferred.resolve()
     })
-    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
-    #  $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
+    #$.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
+    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
       @plateSearchController.plateDefinitions.convertLabelsToNumeric()
       @plateSearchController.plateDefinitions.comparator = "numericPlateName"
       @plateSearchController.plateDefinitions.sort()
