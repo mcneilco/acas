@@ -1,16 +1,13 @@
 performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun, normalizationDataFrame, standardsDataFrame) {
-  # Load stats to avoid issues with recognizing 'sd' in Line 13 below
   library(stats)
   
-  # Expand the set of arguments and pass normalizationDataFrame as an argument within normalizeData()
-  # exampleClient
   resultTable <- normalizeData(resultTable, parameters, normalizationDataFrame)
   
   # get transformed columns
   transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
-  transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
-  for (transformation in transformationList) {
-    resultTable[ , paste0("transformed_",transformation) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun)]
+  #transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
+  for (transformation in parameters$transformationRuleList) {
+    resultTable[ , paste0("transformed_",transformation$transformationRule) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame)]
   }
   
   # compute Z' and Z' by plate
@@ -203,176 +200,131 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
   #switch on transformation
   # based on transformation (custom code for each), responds with a vector of the new transformation
   # Inputs:
-  #   transformation: string
   #   mainData: data.table
+  #   transformation: list with transformationRule and transformationParameters
   #   parameters: list
+  #   experimentCodename: string
+  #   dryRun: boolean
+  #   standardsDataFrame: data.frame (gets converted to data.table if not already)
+  standardsDT <- as.data.table(standardsDataFrame)
+  transformationRule <- transformation$transformationRule
+  tParams <- transformation$transformationParameters
   
-  # Structure the data frame that holds information about transformation controls, as defined in the GUI
-  transformationDataFrame <- as.data.frame(rbind(parameters$transformationRuleList[[1]]$transformationParameters$positiveControl,
-                                                 parameters$transformationRuleList[[1]]$transformationParameters$negativeControl))
-  
-  #setnames(transformationDataFrame, c('standardNumber','defaultValue'))
-  transformationDataFrame$standardType <- c('PC', 'NC')
-  
-  # Replace "" by NA to avoid NA coersion warnings when turning the defaultValues of transformationDataFrame to numerical values
-  transformationDataFrame$defaultValue[transformationDataFrame$defaultValue==""] <- NA
-  transformationDataFrame$defaultValue <- as.numeric(transformationDataFrame$defaultValue)
-  
-  
-  # For the two transformation options available in the GUI, check if there are any 'unassigned' PC, NC
-  if (transformation == "percent efficacy" | transformation == "sd") {
-    if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'unassigned' |
-        transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'unassigned') {
+  if (transformationRule == "percent efficacy") {
+    positiveControlNum <- tParams$positiveControl$standardNumber
+    negativeControlNum <- tParams$negativeControl$standardNumber
+    positiveDefault <- tParams$positiveControl$defaultValue
+    negativeDefault <- tParams$negativeControl$defaultValue
+    # For the two transformation options available in the GUI, check if there are any 'unassigned' PC, NC
+    if (positiveControlNum == 'unassigned' | negativeControlNum == 'unassigned') {
       stopUser("In the transformation section, at least one of the Positive or Negative Controls was not defined.
-                Selecting a Standard, or alternatively, setting an Input Value for Positive and Negative Control is required
-                for transformation calculations.")
+                 Selecting a Standard, or alternatively, setting an Input Value for Positive and Negative Control is required
+                 for transformation calculations.")
     }
     
     # If tranformation-related PC OR NC are defined as input value but are missing the numeric value, prompt the user with an error
-    if ((transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'input value' &
-         is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'])) |
-        (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value' &
-         is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC']))) {
+    if ((positiveControlNum == 'input value' & positiveDefault == '') |
+        (negativeControlNum == 'input value' & negativeDefault == '')) {
       stopUser("In the transformation section, an Input Value was selected for at least one of the Positive or Negative Controls
-                however no actual numeric value was defined. Selecting a Standard, or alternatively setting an Input Value, for
-                Positive and Negative Control is required for transformation calculations.")
+                 however no actual numeric value was defined. Selecting a Standard, or alternatively setting an Input Value, for
+                 Positive and Negative Control is required for transformation calculations.")
     }
     
     # If tranformation-related PC OR NC are defined as the exact same standard, prompt the user with an error
-    if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] != 'unassigned' &
-        transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] != 'input value' &
-        transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] != 'unassigned' &
-        transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] != 'input value') {
-      if (identical(transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'],
-                    transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'])) {
-        stopUser("The same Standard was defined for both Positive Control and Negative Control in the tranformation section.
-                  Different Standards for Positive and Negative Controls are required for tranformation calculations.")
+    if (positiveControlNum != 'input value' & negativeControlNum != 'input value' && positiveControlNum == negativeControlNum) {
+      stopUser("The same Standard was defined for both Positive Control and Negative Control in the tranformation section.
+                   Different Standards for Positive and Negative Controls are required for tranformation calculations.")
+    }
+      
+      # If tranformation-related PC OR NC are defined as input value but have the exact same numeric value, prompt the user with an error
+      if (positiveControlNum == 'input value' && negativeControlNum == 'input value' && positiveDefault == negativeDefault) {
+        stopUser("In the transformation section, Input Values were selected for both Positive and Negative Controls
+                 which appear to be exactly identical for both controls. Selecting different Input Values for
+                 Positive and Negative Control is required for proper transformation calculations.")
       }
-    }
-    
-    # If tranformation-related PC OR NC are defined as input value but have the exact same numeric value, prompt the user with an error
-    if ((transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'input value' &
-         !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'])) &
-        (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value' &
-         !is.na(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) &
-        identical(transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC'],
-                  transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC'])) {
-      stopUser("In the transformation section, Input Values were selected for both Positive and Negative Controls
-                which appear to be exactly identical for both controls. Selecting different Input Values for
-                Positive and Negative Control is required for proper transformation calculations.")
-    }
-  }
-  
-  
-  if (transformation == "percent efficacy") {
     
     # Use the transformation-related PC to calculate aggregatePosControl in the two possible scenarios below, where a default value has been
     # defined OR a standard is defined
-    if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC'] == 'input value') {
-      aggregatePosControl <- transformationDataFrame$defaultValue[transformationDataFrame$standardType=='PC']
+    if (positiveControlNum == 'input value') {
+      aggregatePosControl <- positiveDefault
     } else {
-      # Find the standard number for PC from transformationDataFrame
-      transfStandardNumberPC <- transformationDataFrame$standardNumber[transformationDataFrame$standardType=='PC']
-      # Find the label ("PC", "PC-S2", "NC-S3", etc) that corresponds to the transformation-related PC standard from standardsDataFrame
-      enumeratedTransfPC <- standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber == transfStandardNumberPC]
+      # Find the label ("PC", "PC-S2", "NC-S3", etc) that corresponds to the transformation-related PC standard from standardsDT
+      enumeratedTransfPC <- standardsDT[standardNumber == positiveControlNum, standardTypeEnumerated]
       # If at least one entry of the transformation-related PC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
-      if (nrow(mainData[wellType == enumeratedTransfPC & is.na(flag)]) == 0) {
+      controlWells <- mainData[wellType == enumeratedTransfPC & is.na(flag)]
+      if (nrow(controlWells) == 0) {
         stopUser("Either there are no wells with the Positive Control defined in the transformation section or all wells with
                   that Positive Control are flagged. Please check the data or alternatively select an Input Value for Positive Control
                   in the transformation section.")
       } else {
-        aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == enumeratedTransfPC & is.na(flag)]$normalizedActivity), parameters)
+        aggregatePosControl <- useAggregationMethod(as.numeric(controlWells$normalizedActivity), parameters)
       }
     }
     
     # Use the transformation-related NC to calculate aggregateVehControl in the two possible scenarios below, where a default value has been
     # defined OR a standard is defined
-    if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value') {
-      aggregateVehControl <- transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC']
+    if (negativeControlNum == 'input value') {
+      aggregateVehControl <- negativeDefault
     } else {
-      # Find the standard number for NC from transformationDataFrame
-      transfStandardNumberNC <- transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC']
-      # Find the label ("NC", "NC-S2", "PC-S4", "VC-S5", etc) that corresponds to the transformation-related NC standard from standardsDataFrame
-      enumeratedTransfNC <- standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber == transfStandardNumberNC]
-      # If at least one entry of the transformation-related NC standard exists that is not flagged then calculate aggregatePosControl
+      # Find the label ("PC", "PC-S2", "NC-S3", etc) that corresponds to the transformation-related PC standard from standardsDT
+      enumeratedTransfNC <- standardsDT[standardNumber == negativeControlNum, standardTypeEnumerated]
+      # If at least one entry of the transformation-related PC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
-      if (nrow(mainData[wellType == enumeratedTransfNC & is.na(flag)]) == 0) {
+      controlWells <- mainData[wellType == enumeratedTransfNC & is.na(flag)]
+      if (nrow(controlWells) == 0) {
         stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with
                   that Negative Control are flagged. Please check the data or alternatively select an Input Value for Negative Control
                   in the transformation section.")
       } else {
-        aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == enumeratedTransfNC & is.na(flag)]$normalizedActivity), parameters)
+        aggregateVehControl <- useAggregationMethod(as.numeric(controlWells$normalizedActivity), parameters)
       }
     }
     
-    #aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
-    ## Use Negative Control if Vehicle Control is not defined
-    #if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-    #  aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
-    #} else {
-    #  aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
-    #}
     return(
       (1
        - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
        /(aggregateVehControl-aggregatePosControl)) * 100)
-  } else if (transformation == "sd") {
-    
-    # Note: Transformation-related PC in the case where transformation=="sd" is not used in any calculations!
-    
+  } else if (transformationRule == "sd") {
+    negativeControlNum <- tParams$negativeControl$standardNumber
+    negativeDefault <- tParams$negativeControl$defaultValue
     # Use the transformation-related NC to calculate aggregateVehControl and stdevVehControl in the two possible scenarios below,
     # where a default value has been defined OR a standard is defined
-    if (transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC'] == 'input value') {
-      aggregateVehControl <- transformationDataFrame$defaultValue[transformationDataFrame$standardType=='NC']
-      stdevVehControl <- 0
+    if (negativeControlNum == 'input value') {
+      aggregateVehControl <- negativeDefault
+      stdevVehControl <- Inf
     } else {
-      # Find the standard number for NC from transformationDataFrame
-      transfStandardNumberNC <- transformationDataFrame$standardNumber[transformationDataFrame$standardType=='NC']
       # Find the label ("NC", "NC-S2", "PC-S4", "VC-S5", etc) that corresponds to the transformation-related NC standard from standardsDataFrame
-      enumeratedTransfNC <- standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber == transfStandardNumberNC]
+      enumeratedTransfNC <- standardsDT[standardNumber == negativeControlNum, standardTypeEnumerated]
       # If at least one entry of the transformation-related NC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
-      if (nrow(mainData[wellType == enumeratedTransfNC & is.na(flag)]) == 0) {
+      controlWells <- mainData[wellType == enumeratedTransfNC & is.na(flag)]
+      if (nrow(controlWells) == 0) {
         stopUser("Either there are no wells with the Negative Control defined in the transformation section or all wells with
                   that Negative Control are flagged. Please check the data or alternatively select an Input Value for Negative Control
                   in the transformation section.")
       } else {
-        aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == enumeratedTransfNC & is.na(flag)]$normalizedActivity), parameters)
-        stdevVehControl <- sd(as.numeric(mainData[wellType == enumeratedTransfNC & is.na(flag)]$normalizedActivity))
+        aggregateVehControl <- useAggregationMethod(as.numeric(controlWells$normalizedActivity), parameters)
+        stdevVehControl <- sd(as.numeric(controlWells$normalizedActivity))
       }
     }
     
-    ## Use Negative Control if Vehicle Control is not defined
-    #if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-    #  aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
-    #} else {
-    #  aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
-    #}
-    
-    ## Use Negative Control if Vehicle Control is not defined
-    #if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
-    #  stdevVehControl <- sd(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity))
-    #} else {
-    #  stdevVehControl <- sd(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity))
-    #}
-    
-    # Determine if signal direction is decreasing or increasing
+    # If signal direction is decreasing, sign of sd is reversed
     if (parameters$signalDirectionRule == "increasing") {
       return((as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
     } else if (parameters$signalDirectionRule == "decreasing") {
       return(-(as.numeric(mainData$normalizedActivity) - aggregateVehControl)/(stdevVehControl))
     } else {
-      stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please see your system administrator.")
+      stopUser("Signal Direction (",parameters$signalDirectionRule,")is not defined in the system. Please contact your system administrator.")
     }
-  } else if (transformation == "normalize by R3") {
+  } else if (transformationRule == "normalize by R3") {
     R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
     aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
     aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
     return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
-  } else if (transformation == "noAgonist") {
+  } else if (transformationRule == "noAgonist") {
     return(getNoAgonist(parameters, mainData))
-  } else if (transformation == "enhancement") {
+  } else if (transformationRule == "enhancement") {
     groupBy <- getGroupBy(parameters)
     neededColumns <- c(groupBy, "normalizedActivity", "flag", "transformed_noAgonist")
     if (!("transformed_noAgonist" %in% names(mainData))) {
@@ -382,7 +334,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     # users expect this to group by assayBarcode, could look at allowing full groupBy later
     mainCopy[, NCMean := mean(normalizedActivity[wellType == "NC" & is.na(flag)]), by = "assayBarcode"]
     return(mainCopy[, V1 := normalizedActivity - (transformed_noAgonist + NCMean)]$V1)
-  } else if (transformation == "enhancementRatio") {
+  } else if (transformationRule == "enhancementRatio") {
     groupBy <- getGroupBy(parameters)
     neededColumns <- c(groupBy, "normalizedActivity", "flag", "transformed_noAgonist")
     if (!("transformed_noAgonist" %in% names(mainData))) {
@@ -396,7 +348,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       stopUser("Cannot use enhancementRatio if any of the noAgonist + NCMean = 0")
     }
     return(mainCopy[, V1 := normalizedActivity / (transformed_noAgonist + NCMean)]$V1)
-  } else if (transformation == "enhancementGraph") {
+  } else if (transformationRule == "enhancementGraph") {
     if (!("transformed_noAgonist" %in% names(mainData))) {
       mainData[, transformed_noAgonist:=getNoAgonist(parameters, .SD)]
     }
@@ -413,9 +365,9 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       file.path(filePath, paste0(mainData$assayBarcode, "_", mainData$batchCode, ".png")),
       NA_character_)
     return(filePaths)
-  } else if (transformation == "none") {
+  } else if (transformationRule == "none") {
     return(mainData$activity)
-  } else if (transformation == "null" || transformation == "") {
+  } else if (transformationRule == "null" || transformation == "") {
     warnUser("No transformation applied to activity.")
     return(mainData$activity)
   } else {
