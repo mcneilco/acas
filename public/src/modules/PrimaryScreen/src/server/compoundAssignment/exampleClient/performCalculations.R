@@ -197,7 +197,20 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       (1
        - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
        /(aggregateVehControl-aggregatePosControl)) * 100)
-  } else if (transformation == "sd") {
+  } else if (transformation == "percent activity") {
+    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag)]$normalizedActivity), parameters)
+
+    # Use Negative Control if Vehicle Control is not defined
+    if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
+      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag)]$normalizedActivity), parameters)
+    } else {
+      aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "VC" & is.na(flag)]$normalizedActivity), parameters)
+    }
+    return(
+      (1
+       - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
+       /(aggregateVehControl-aggregatePosControl)) * 100)
+  }else if (transformation == "sd") {
     
     # Use Negative Control if Vehicle Control is not defined
     if(length(mainData[wellType == "VC"]$normalizedActivity) == 0) {
