@@ -19,7 +19,7 @@ class PlateSearchController extends Backbone.View
     "click button[name='search']": "handleSearchClicked"
     "click button[name='clonePlate']": "handleClonePlateClicked"
     "click button[name='tryClonePlateAgain']": "handleTryCloneAgainClicked"
-    "change input": "handleInputChanged"
+    "keyup input": "handleInputChanged"
     "change select": "handleInputChanged"
 
   initialize: (options) ->

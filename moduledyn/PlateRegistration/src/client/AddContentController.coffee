@@ -36,7 +36,6 @@ class AddContentController extends Backbone.View
     @model = options.model
     #@listenTo @model, "change", @render
     @selectedRegionBoundries = {}
-    @plateFillerFactory = new PlateFillerFactory()
 
   events:
     "change textarea[name='identifiers']": "handleIdentifiersChanged"
@@ -162,7 +161,6 @@ class AddContentController extends Backbone.View
 
   handleIdentifierTypeChanged: (e) =>
     @model.set ADD_CONTENT_MODEL_FIELDS.IDENTIFIER_TYPE, e.currentTarget.value
-    #@render()
     @setStatusOfSubmitButton()
 
   handleFillStrategyChanged: (e) =>

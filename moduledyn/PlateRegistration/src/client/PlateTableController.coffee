@@ -105,13 +105,61 @@ class PlateTableController extends Backbone.View
         autoWrapRow: true
         allowInsertColumn: false
         allowInsertRow: false
-        #viewportRowRenderingOffset: 0
         stretchH: 'all'
+        #beforeAutofill: @handleBeforeAutofill
       })
 
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
     @addContent(hotData)
     @fitToScreen()
+
+#  handleBeforeAutofill: (start, end, data) =>
+##    console.log "handleBeforeAutofill"
+##    rowIndexes = [start.row..end.row]
+##    colIndexes = [start.col..end.col]
+##    @wellsToUpdate.resetWells()
+##    _.each(rowIndexes, (rowIdx) =>
+##      _.each(colIndexes, (colIdx) =>
+##        #cell = @handsOnTable.getCell(@wellToCopy.rowIndex - 1, @wellToCopy.columnIndex - 1)
+##        autoFillAcrossColumns = false
+##        wellsInSameRow = _.filter(@selectedWells, (well) =>
+##          return (well.rowIndex - 1) is rowIdx
+##        )
+##
+##        if _.size(wellsInSameRow) > 0
+##          wellsInSameRow = _.sortBy(wellsInSameRow, "columnIndex")
+##          lookUpColIdx = (colIdx - start.col) % _.size(wellsInSameRow)
+##          @wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, wellsInSameRow[lookUpColIdx])
+##        else
+##          wellsInSameColumn = _.filter(@selectedWells, (well) =>
+##            return (well.columnIndex - 1) is colIdx
+##          )
+##          wellsInSameColumn = _.sortBy(wellsInSameColumn, "rowIndex")
+##
+##          lookUpRowIdx = (rowIdx - start.row) % _.size(wellsInSameColumn)
+##          @wellsToUpdate.fillWellWithWellObject(rowIdx, colIdx, wellsInSameColumn[lookUpRowIdx])
+##
+##        @updateColorByNoReRender()
+##        if @displayToolTips
+##          @updateTooltip(cell, @wellToCopy)
+##        @handsOnTable.render()
+##      )
+##    )
+#    @wellsToUpdate.save()
+#    @updateEmptyAndInvalidWellCount()
+#    #@trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
+
+
+  handleAfterDocumentKeyDown: (event) =>
+    console.log "handleAfterDocumentKeyDown"
+    #console.log event.realTarget.hasClass "copyPaste"
+    if $(event.realTarget).hasClass("copyPaste")
+      console.log "doing a copy"
+      @copiedSelectedRegion = true
+    window.REALTARGET = event.realTarget
+
+    event
+
 
   increaseFontSize: =>
     @fontSize = @fontSize + 2
@@ -300,7 +348,9 @@ class PlateTableController extends Backbone.View
 
   handleContentAdded: (addContentModel) =>
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-    plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries)
+    console.log "@selectedRegionBoundries"
+    console.log @selectedRegionBoundries
+    plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries, @plateMetaData)
     wellContentOverwritten = []
     @identifiersToRemove = []
     [@plateWells, @identifiersToRemove, @wellsToUpdate, wellContentOverwritten] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
@@ -344,8 +394,15 @@ class PlateTableController extends Backbone.View
       colStart: colStart
       rowStop:  rowStop
       colStop: colStop
-
-    @trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, @selectedRegionBoundries
+    @selectedWells = []
+    rowIndexes = [rowStart..rowStop]
+    colIndexes = [colStart..colStop]
+    _.each(rowIndexes, (rowIdx) =>
+      _.each(colIndexes, (colIdx) =>
+        @selectedWells.push(@wellsToUpdate.getWellAtRowIdxColIdx(rowIdx, colIdx))
+      )
+    )
+    @trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, {selectedRegionBoundries: @selectedRegionBoundries, lowestVolumeWell: @wellsToUpdate.getLowestVolumeForRegion(@selectedRegionBoundries), allWellsHaveVolume: @wellsToUpdate.allWellsInRegionHaveVolume(@selectedRegionBoundries), allWellsHaveConcentration: @wellsToUpdate.allWellsInRegionHaveConcentration(@selectedRegionBoundries)}
 
   validatePasteContentRowRange: (changes, numberOfRows) =>
     rowsExceedingRowRange = _.filter(changes, (change) ->
@@ -360,17 +417,20 @@ class PlateTableController extends Backbone.View
     colsExceedingRowRange
 
   handleTableChangeRangeValidation: (changes, source) =>
-    if source is HANDS_ON_TABLE_EVENTS.PASTE
-      @pendingChanges = []
-      invalidRows = @validatePasteContentRowRange changes, @plateMetaData.numberOfRows
-      invalidCols = @validatePasteContentColumnRange changes, @plateMetaData.numberOfColumns
-      invalidEntries = _.union(invalidRows, invalidCols)
-      validEntries = _.difference(changes, invalidEntries)
-      if _.size(invalidEntries) > 0
-        @pendingChanges = validEntries
-        $("div[name='handsontablePasteError']").modal('show')
+    if @dataFieldToDisplay is "masterView"
+      return false
+    else
+      if source is HANDS_ON_TABLE_EVENTS.PASTE
+        @pendingChanges = []
+        invalidRows = @validatePasteContentRowRange changes, @plateMetaData.numberOfRows
+        invalidCols = @validatePasteContentColumnRange changes, @plateMetaData.numberOfColumns
+        invalidEntries = _.union(invalidRows, invalidCols)
+        validEntries = _.difference(changes, invalidEntries)
+        if _.size(invalidEntries) > 0
+          @pendingChanges = validEntries
+          $("div[name='handsontablePasteError']").modal('show')
 
-        return false
+          return false
 
   handleContentUpdated: (changes, source) =>
     if source in ["edit", "autofill", "paste"]

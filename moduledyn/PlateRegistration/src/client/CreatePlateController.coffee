@@ -36,7 +36,7 @@ class CreatePlateController extends Backbone.View
 
   initialize: (options) ->
     @model = options.model
-    @model.set PLATE_MODEL_FIELDS.RECORDED_BY, AppLaunchParams.loginUserName
+
     @plateDefinitions = options.plateDefinitions
     @selectLists = [
       containerSelector: "select[name='definition']"
@@ -118,8 +118,8 @@ class CreatePlateController extends Backbone.View
 
   handleClickStart: =>
     createdDate = new Date()
-    @model.set "createdDate", createdDate.getTime()
-    @model.set "recordedBy", AppLaunchParams.loginUserName
+    @model.set PLATE_MODEL_FIELDS.CREATED_DATE, createdDate.getTime()
+    @model.set PLATE_MODEL_FIELDS.RECORDED_BY, AppLaunchParams.loginUserName
     @trigger CREATE_PLATE_CONTROLLER_EVENTS.CREATE_PLATE, @model
 
   handleSuccessfulSave: (updatedModel) =>

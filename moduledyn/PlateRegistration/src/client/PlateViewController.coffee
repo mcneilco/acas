@@ -56,6 +56,7 @@ class PlateViewController extends Backbone.View
     e.preventDefault()
     @updateSelectedView "Master View <span class='caret'></span>"
     @updateSelectedColorBy "Color By Status  <span class='caret'></span>"
+    @updateSelectedTableFitMode "Fit to Screen <span class='caret'></span>"
     @$("button[name='displayToolTips']").addClass("active")
     @plateTableController.updateDataDisplayed "masterView"
     @trigger PLATE_VIEW_CONTROLLER_EVENTS.MASTER_VIEW_SELECTED

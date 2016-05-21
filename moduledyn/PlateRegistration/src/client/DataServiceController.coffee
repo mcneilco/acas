@@ -42,7 +42,10 @@ class DataServiceController extends Backbone.View
       @serviceController.handleSuccessCallback(data, textStatus, jqXHR)
     )
     .fail((jqXHR, textStatus, errorThrown) =>
-      @displayServerErrorMessage()
+      if @serviceController.handleError?
+        @serviceController.handleError()
+      else
+        @displayServerErrorMessage()
     )
 
   doServiceCalls: =>
@@ -66,7 +69,8 @@ class DataServiceController extends Backbone.View
           @serviceController.handleSuccessCallback()
       )
       .fail((jqXHR, textStatus, errorThrown) =>
-        @displayServerErrorMessage()
+
+          @displayServerErrorMessage()
       )
     )
 

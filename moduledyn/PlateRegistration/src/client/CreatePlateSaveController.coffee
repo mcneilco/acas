@@ -36,6 +36,7 @@ class CreatePlateSaveController extends Backbone.View
       @trigger "SaveSuccess"
 
   handleError: (errors) =>
+    @trigger "SaveSuccess"
     @$("div[name='errorMessages']").removeClass "hide"
     @$("a[name='barcode']").prop("href", "#plateDesign/#{@plateModel.get('barcode')}")
     @$("a[name='barcode']").html @plateModel.get("barcode")

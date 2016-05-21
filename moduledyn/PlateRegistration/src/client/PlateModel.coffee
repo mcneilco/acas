@@ -16,6 +16,7 @@ PLATE_MODEL_FIELDS =
   NUMBER_OF_COLUMNS: "numberOfColumns"
   NUMBER_OF_ROWS: "numberOfRows"
   PLATE_SIZE: "plateSize"
+  CREATED_DATE: "createdDate"
 
 MAX_BARCODE_LENGTH = 40
 MAX_DESCRIPTION_LENGTH = 255
@@ -29,7 +30,7 @@ class PlateModel extends Backbone.Model
     "description": ""
     "template": null
     "recordedBy": ""
-    "supplier": ""
+    "supplier": "heres a default value"
     "createdDate": ""
     "physicalState": "liquid"
     "batchConcentrationUnits": "mM"
