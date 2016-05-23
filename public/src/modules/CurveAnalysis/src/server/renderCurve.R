@@ -50,7 +50,7 @@ renderCurve <- function(getParams) {
   #Retrieve rendering hint parameters
   renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
   logDose <- TRUE
-  if(fitData[1]$renderingHint == "Michaelis-Menten") logDose <- FALSE
+  if(fitData[1]$renderingHint %in% c("Michaelis-Menten", "Substrate Inhibition")) logDose <- FALSE
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=\"",getParams$curveIds,"\""))
   t <- tempfile()
