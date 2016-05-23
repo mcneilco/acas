@@ -28,10 +28,10 @@
 
 			// the export button
 			$("#btn-export").on("click", function (e) {
-				var settings = {
-						'width' : 150,
-						'height' : 150
-				};
+				var settings = marvinSketcherInstance.getDisplaySettings(); 
+				settings.width = 420;
+				settings.height = 420;
+				settings.backgroundColor = "#ffffff";
 				marvinSketcherInstance.exportStructure("jpeg", settings).then(function(source) {
 					exportImage(source);
 				}, function(error) {
@@ -87,10 +87,10 @@
 
 			// the export button
 			$("#btn-export").on("click", function (e) {
-				var settings = {
-						'width' : 150,
-						'height' : 150
-				};
+				var settings = marvinSketcherInstance.getDisplaySettings(); 
+				settings.width = 420;
+				settings.height = 420;
+				settings.backgroundColor = "#ffffff";
 				marvinSketcherInstance.exportStructure("jpeg", settings).then(function(source) {
 					exportImage(source);
 				}, function(error) {
