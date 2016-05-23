@@ -131,16 +131,17 @@ class window.Experiment extends BaseEntity
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
 		if attrs.subclass?
-			reqProject = window.conf.include.project
-			unless reqProject?
-				reqProject = "true"
-			reqProject = reqProject.toLowerCase()
-			unless reqProject is "false"
-				projectCode = @getProjectCode().get('codeValue')
-				if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-					errors.push
-						attribute: 'projectCode'
-						message: "Project must be set"
+			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+				reqProject = window.conf.include.project
+				unless reqProject?
+					reqProject = "true"
+				reqProject = reqProject.toLowerCase()
+				unless reqProject is "false"
+					projectCode = @getProjectCode().get('codeValue')
+					if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+						errors.push
+							attribute: 'projectCode'
+							message: "Project must be set"
 			cDate = @getCompletionDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
@@ -362,7 +363,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupScientistSelect()
 		@setupTagList()
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
-		@setupProjectSelect()
+		if window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_group_projectCode').hide()
+		else
+			@setupProjectSelect()
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		@render()
@@ -375,7 +379,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model = new Experiment()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
-		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );

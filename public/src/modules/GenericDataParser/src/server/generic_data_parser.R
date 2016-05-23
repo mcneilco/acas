@@ -910,7 +910,7 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                                 "Units" = fillerArray, "Conc" = fillerArray, 
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  returnDataFrame$valueKind <- getResultKindWithoutExtras(dataColumns)
   returnDataFrame$Units <-  getUnitFromParentheses(dataColumns)
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   concUnitList <- getNumberAndUnit(concAndUnits)
@@ -1099,7 +1099,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       # default list
       doseResponseKinds <- list(
         "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-        "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+        "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
         "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
         "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
       )
@@ -1119,7 +1119,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     # This list is a copy of the Dose Response kinds, because both use the same fitter. Update later.
     timeResultKinds <- list(
       "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
       "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
       "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
     )
@@ -1639,7 +1639,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   protocol <- saveProtocol(protocol)
 }
-createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList, replacedExperimentCodes, additionalStates = NULL) {
+createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList, replacedExperimentCodes, additionalStates = NULL, modelFitTransformation = NULL) {
   # creates an experiment using the metaData
   # 
   # Args:
@@ -1651,6 +1651,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   #   configList:             Also known as racas::applicationSettings
   #   replacedExperimentCodes: Used to create a state noting what the experiment code used to be
   #   additionalStates:       Used to add additional states like custom experiment meta data
+  #   modelFitTransformation: String of y column for Dose Response, may be NULL
   #
   # Returns:
   #  A list that is an experiment
@@ -1688,11 +1689,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeType = "assay",
     codeKind = "scientist",
     lsTransaction= lsTransaction)
+  experimentStatus <- applicationSettings$server.sel.experimentStatus
+  if (is.null(experimentStatus) || experimentStatus == "") {
+    experimentStatus <- "approved"
+  }
   experimentValues[[length(experimentValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
     lsKind = "experiment status",
-    codeValue = "approved",
+    codeValue = experimentStatus,
     codeType = "experiment",
     codeKind = "status",
     codeOrigin = "ACAS DDICT",
@@ -1723,6 +1728,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                          codeValue = experimentCode,
                                                                          lsTransaction= lsTransaction)
     }
+  }
+  if(!is.null(modelFitTransformation)) {
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                       lsKind = "model fit transformation",
+                                                                       stringValue = modelFitTransformation,
+                                                                       lsTransaction= lsTransaction)
+    modelFitTransformation
   }
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
@@ -2545,6 +2557,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
   subjectData <- subjectAndTreatmentData$subjectData
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
+  modelFitTransformation <- subjectAndTreatmentData$modelFitTransformation
   validateSubjectData(subjectData, dryRun)
   
   # If there are errors, do not allow an upload
@@ -2605,7 +2618,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   if (!dryRun && errorFree && !useExistingExperiment) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
-                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates)
+                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
+                                      modelFitTransformation)
     
     # If an error occurs, this allows the experiment to still be accessed
     assign(x="experiment", value=experiment, envir=parent.frame())
@@ -3151,11 +3165,10 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
     groupByColumns <- c(subjectData[2, 2], 'link')
     groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
     
-    keepColumn <- "Response"
-    excludedRowKinds <- "flag"
-    
     link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
     if (!is.null(subjectData)) {
+      
+      excludedRowKinds <- "flag"
       
       if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
         stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
@@ -3163,6 +3176,8 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       if (subjectData[2, 1] != "curve id") {
         stopUser("The second row in Raw Results must start with curve id")
       }
+      
+      yColumn <- getResultKindWithoutExtras(subjectData[2, 3]) # usually "Response"
       
       subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
       
@@ -3183,14 +3198,14 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       
       
       stateAssignments <- data.frame(
-        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        valueKind = c("Dose", yColumn, "flag", "flag status", "flag cause", "flag observation"), 
         stateType = c("data", "data", "data", "data", "data", "data"), 
         stateKind = c("results", "results", "preprocess flag", "preprocess flag", "preprocess flag", "preprocess flag"),
         stringsAsFactors = FALSE
       )
       
       codeAssignments <- data.frame(
-        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        valueKind = c("Dose", yColumn, "flag", "flag status", "flag cause", "flag observation"), 
         codeType = c(NA, NA, NA, rep("preprocess well flags", 3)), 
         codeKind = c(NA, NA, NA, "flag status", "flag cause", "flag observation"),
         codeOrigin = c(NA, NA, NA, rep("ACAS DDICT", 3)),
@@ -3200,7 +3215,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       # list(subjectData, treatmentGroupData)
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
-        link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
+        link, precise, stateAssignments, yColumn, errorEnv=errorEnv, 
         formatParameters = formatParameters, concColumn = subjectData[2,2],# 2,2 is usually Dose (uM)
         codeAssignments = codeAssignments)
       
@@ -3210,6 +3225,11 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Dose"] <- "concentration"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "efficacy"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "flag"] <- "comment"
+      if (yColumn == "Response") {
+        intermedList$modelFitTransformation <- "efficacy"
+      } else {
+        intermedList$modelFitTransformation <- yColumn
+      }
     }
   }
   return(intermedList)
@@ -3225,6 +3245,10 @@ validateSubjectData <- function(subjectData, dryRun) {
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
   gsub(".*\\((.*)\\).*||(.*)", "\\1", columnHeaders)
+}
+getResultKindWithoutExtras <- function(columnHeaders) {
+  # gets result kind without sections in parentheses, brackets, and square brackets
+  trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",columnHeaders))))
 }
 external.parseGenericData <- function(request) {
   # Not in use yet, see ?messenger for future standard

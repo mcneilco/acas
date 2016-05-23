@@ -227,7 +227,7 @@ removeAgonist <- function(agonist, wellTable) {
   
   agonistRows <- wellTable$BATCH_CODE == agonist$batchCode
   #wellTable$CONCENTRATION <= agonist$concentration & wellTable$CONCENTRATION_UNIT == agonist$concentrationUnits
-  compoundCount <- ddply(wellTable, "WELL_ID", summarise, count = length(BATCH_CODE))
+  compoundCount <- ddply(wellTable[!is.na(wellTable$WELL_ID), ], "WELL_ID", summarise, count = length(BATCH_CODE))
   hasMoreThanOneCompound <- compoundCount$WELL_ID[compoundCount$count > 1]
   agonistIds <- wellTable$ID[agonistRows & wellTable$WELL_ID %in% hasMoreThanOneCompound]
   wellTable <- wellTable[!(wellTable$ID %in% agonistIds), ]

@@ -226,6 +226,9 @@
 				kindName: "curve id"
 				typeName: "stringValue"
 			,
+				kindName: "curve name"
+				typeName: "stringValue"
+			,
 				kindName: "Dose"
 				typeName: "numericValue"
 			,

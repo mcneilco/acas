@@ -146,13 +146,17 @@
     };
 
     DoseResponsePlotController.prototype.initJSXGraph = function(points, curve, plotWindow, divID, plotCurveClass) {
-      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, curvePlot, flagLabels, getMouseCoords, ii, includePoints, log10, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
+      var algorithmFlagCause, algorithmFlagComment, algorithmFlagStatus, brd, color, createSelection, curvePlot, flagLabels, getMouseCoords, ii, includePoints, log10, logDose, p1, preprocessFlagCause, preprocessFlagComment, preprocessFlagStatus, promptForKnockout, t, userFlagCause, userFlagComment, userFlagStatus, x, y;
       this.points = points;
       log10 = this.log10;
+      logDose = true;
+      if (curve.type === "Michaelis-Menten") {
+        logDose = false;
+      }
       if (typeof brd === "undefined") {
         brd = JXG.JSXGraph.initBoard(divID, {
           boundingbox: plotWindow,
-          axis: false,
+          axis: !logDose,
           showCopyright: false,
           zoom: {
             wheel: false
@@ -188,7 +192,7 @@
         })(this);
         ii = 0;
         while (ii < points.length) {
-          x = log10(points[ii].dose);
+          x = logDose ? log10(points[ii].dose) : points[ii].dose;
           y = points[ii].response;
           userFlagStatus = points[ii].userFlagStatus;
           preprocessFlagStatus = points[ii].preprocessFlagStatus;
@@ -291,19 +295,21 @@
           };
           ii++;
         }
-        x = brd.create("line", [[0, 0], [1, 0]], {
-          strokeColor: "#888888"
-        });
-        y = brd.create("axis", [[plotWindow[0], 0], [plotWindow[0], 1]]);
-        x.isDraggable = false;
-        t = brd.create("ticks", [x, 1], {
-          drawLabels: true,
-          drawZero: true,
-          generateLabelValue: function(tick) {
-            p1 = this.line.point1;
-            return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
-          }
-        });
+        if (logDose) {
+          x = brd.create("line", [[0, 0], [1, 0]], {
+            strokeColor: "#888888"
+          });
+          y = brd.create("axis", [[plotWindow[0], 0], [plotWindow[0], 1]]);
+          x.isDraggable = false;
+          t = brd.create("ticks", [x, 1], {
+            drawLabels: true,
+            drawZero: true,
+            generateLabelValue: function(tick) {
+              p1 = this.line.point1;
+              return Math.pow(10, tick.usrCoords[1] - p1.coords.usrCoords[1]);
+            }
+          });
+        }
       } else {
         if (typeof window.curve !== "undefined") {
           brd.removeObject(window.curve);

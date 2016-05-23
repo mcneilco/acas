@@ -15,7 +15,7 @@ renderCurve <- function(getParams) {
   # GET FIT DATA
   #fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds)
   fitData <- racas::get_fit_data_curve_id(parsedParams$curveIds, globalConnect = TRUE)
-  fitData <- fitData[!is.null(category) && category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
+  fitData <- fitData[!is.null(category) & category %in% c("inactive","potent"), c("fittedMax", "fittedMin") := {
     responseMean <- mean(points[[1]][userFlagStatus!="knocked out" & preprocessFlagStatus!="knocked out" & algorithmFlagStatus!="knocked out" & tempFlagStatus!="knocked out",]$response)
     list("fittedMax" = responseMean, "fittedMin" = responseMean)
   }, by = curveId]
@@ -49,11 +49,12 @@ renderCurve <- function(getParams) {
 
   #Retrieve rendering hint parameters
   renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
-
+  logDose <- TRUE
+  if(fitData[1]$renderingHint == "Michaelis-Menten") logDose <- FALSE
   setContentType("image/png")
   setHeader("Content-Disposition", paste0("filename=\"",getParams$curveIds,"\""))
   t <- tempfile()
-  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = TRUE, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = "green", axes = parsedParams$axes)
+  racas::plotCurve(curveData = data$points, drawIntercept = renderingOptions$drawIntercept, params = data$parameters, fitFunction = renderingOptions$fct, paramNames = renderingOptions$paramNames, drawCurve = TRUE, logDose = logDose, logResponse = FALSE, outFile = t, ymin=parsedParams$yMin, ymax=parsedParams$yMax, xmin=parsedParams$xMin, xmax=parsedParams$xMax, height=parsedParams$height, width=parsedParams$width, showGrid = parsedParams$showGrid, showAxes = parsedParams$showAxes, labelAxes = parsedParams$labelAxes, showLegend=parsedParams$legend, mostRecentCurveColor = "green", axes = parsedParams$axes)
   sendBin(readBin(t,'raw',n=file.info(t)$size))
   unlink(t)
   DONE

@@ -223,9 +223,15 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     }
   } else if (transformation == "normalize by R3") {
     R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
-    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
-    aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
-    return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
+    
+    neededColumns <- c("assayBarcode", "activity", "wellType", "flag", R3Col)
+    mainCopy <- mainData[, neededColumns, with=FALSE]
+    computeNormalizeByR3 <- function(activity, wellType, flag, R3Column) {
+      aggregatePosControl <- useAggregationMethod(as.numeric(R3Column[wellType == "PC" & is.na(flag)]), parameters)
+      aggregateVehControl <- useAggregationMethod(as.numeric(R3Column[wellType == "NC" & is.na(flag)]), parameters)
+      return((activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
+    }
+    return(mainCopy[, V1:=computeNormalizeByR3(activity, wellType, flag, get(R3Col)), by=assayBarcode]$V1)
   } else if (transformation == "noAgonist") {
     return(getNoAgonist(parameters, mainData))
   } else if (transformation == "enhancement") {

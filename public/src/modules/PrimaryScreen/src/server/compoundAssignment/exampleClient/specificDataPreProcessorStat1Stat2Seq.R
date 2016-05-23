@@ -71,8 +71,11 @@ parseSeqFile <- function(fileName) {
   # Returns:
   #   A data.frame with a column for each well
   
-  inputData <- read.delim(file=fileName, as.is=TRUE, stringsAsFactors = FALSE)
-  intermediateMatrix <- t(inputData[5:75])
+  startColumn <- 5  # First data column for these files
+  
+  inputData <- read.delim(file = fileName, check.names = FALSE, stringsAsFactors = FALSE)
+  lastColumn <- tail(which(names(inputData)!=""), 1)
+  intermediateMatrix <- t(inputData[startColumn:lastColumn])
   outputData <- as.data.frame(intermediateMatrix[1:nrow(intermediateMatrix)>1,], stringsAsFactors = FALSE)
   names(outputData) <- normalizeWellNames(intermediateMatrix[1,])
   outputData[] <- lapply(outputData, as.numeric)

@@ -3,13 +3,28 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		smartMode: true
 		inactiveThresholdMode: true
 		inactiveThreshold: 20
+		theoreticalMaxMode: false
+		theoreticalMax: null
 		inverseAgonistMode: false
 		max: new Backbone.Model limitType: 'none'
 		min: new Backbone.Model limitType: 'none'
 		slope: new Backbone.Model limitType: 'none'
 
-	initialize: ->
+	initialize: (options) ->
+		if options?
+			if(typeof(options.inactiveThreshold) == "undefined")
+				@set 'inactiveThreshold', null
+			else
+				@set 'inactiveThreshold', options.inactiveThreshold
+
+			if(typeof(options.theoreticalMax) == "undefined")
+				@set 'theoreticalMax', null
+			else
+				@set 'theoreticalMax', options.theoreticalMax
+
 		@fixCompositeClasses()
+		@on 'change:inactiveThreshold', @handleInactiveThresholdChanged
+		@on 'change:theoreticalMax', @handleTheoreticalMaxChanged
 
 	fixCompositeClasses: =>
 		if @get('max') not instanceof Backbone.Model
@@ -19,6 +34,18 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 		if @get('slope') not instanceof Backbone.Model
 			@set slope: new Backbone.Model(@get('slope'))
 
+
+	handleInactiveThresholdChanged: =>
+		if _.isNaN(@get('inactiveThreshold')) or @get('inactiveThreshold') == null
+			@set 'inactiveThresholdMode': false
+		else
+			@set 'inactiveThresholdMode': true
+
+	handleTheoreticalMaxChanged: =>
+		if _.isNaN(@get('theoreticalMax')) or @get('theoreticalMax') == null
+			@set 'theoreticalMaxMode': false
+		else
+			@set 'theoreticalMaxMode': true
 
 	validate: (attrs) ->
 		errors = []
@@ -37,10 +64,14 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'slope_value'
 				message: "Slope threshold value must be set when limit type is pin or limit"
-		if  _.isNaN(attrs.inactiveThreshold)
+		if  attrs.inactiveThresholdMode &&_.isNaN(attrs.inactiveThreshold)
 			errors.push
 				attribute: 'inactiveThreshold'
 				message: "Inactive threshold value must be set to a number"
+		if  attrs.theoreticalMaxMode && _.isNaN(attrs.theoreticalMax)
+			errors.push
+				attribute: 'theoreticalMax'
+				message: "Theoretical max value must be set to a number"
 		if errors.length > 0
 			return errors
 		else
@@ -53,7 +84,6 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	events:
 		"change .bv_smartMode": "handleSmartModeChanged"
 		"change .bv_inverseAgonistMode": "handleInverseAgonistModeChanged"
-		"change .bv_inactiveThresholdMode": "handleInactiveThresholdModeChanged"
 		"click .bv_max_limitType_none": "handleMaxLimitTypeChanged"
 		"click .bv_max_limitType_pin": "handleMaxLimitTypeChanged"
 		"click .bv_max_limitType_limit": "handleMaxLimitTypeChanged"
@@ -66,6 +96,8 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 		"change .bv_max_value": "attributeChanged"
 		"change .bv_min_value": "attributeChanged"
 		"change .bv_slope_value": "attributeChanged"
+		"change .bv_inactiveThreshold": "attributeChanged"
+		"change .bv_theoreticalMax": "attributeChanged"
 
 	initialize: ->
 		$(@el).html @template()
@@ -75,33 +107,9 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 	render: =>
 		@$('.bv_autofillSection').empty()
 		@$('.bv_autofillSection').html @autofillTemplate($.parseJSON(JSON.stringify(@model)))
-		@$('.bv_inactiveThreshold').slider
-			value: @model.get('inactiveThreshold')
-			min: 0
-			max: 100
-		@$('.bv_inactiveThreshold').on 'slide', @handleInactiveThresholdMoved
-		@$('.bv_inactiveThreshold').on 'slidestop', @handleInactiveThresholdChanged
-		@updateThresholdDisplay(@model.get 'inactiveThreshold')
 		@setFormTitle()
-		@setThresholdModeEnabledState()
 		@setInverseAgonistModeEnabledState()
 		@
-
-	updateThresholdDisplay: (val)->
-		@$('.bv_inactiveThresholdDisplay').html val
-
-	setThresholdModeEnabledState: ->
-		if @model.get 'smartMode'
-			@$('.bv_inactiveThresholdMode').removeAttr('disabled')
-		else
-			@$('.bv_inactiveThresholdMode').attr('disabled','disabled')
-		@setThresholdSliderEnabledState()
-
-	setThresholdSliderEnabledState: ->
-		if @model.get('inactiveThresholdMode') and @model.get('smartMode')
-			@$('.bv_inactiveThreshold').slider('enable')
-		else
-			@$('.bv_inactiveThreshold').slider('disable')
 
 	setInverseAgonistModeEnabledState: ->
 		if @model.get 'smartMode'
@@ -116,30 +124,30 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_min_value'))
 		@model.get('slope').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_slope_value'))
-		@model.set inactiveThresholdMode: @$('.bv_inactiveThresholdMode').is(":checked"),
+		@model.set
+			inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked")
+			smartMode: @$('.bv_smartMode').is(":checked")
+			inactiveThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_inactiveThreshold'))
+			theoreticalMax: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_theoreticalMax'))
+			,
 			silent: true
-		@model.set inverseAgonistMode: @$('.bv_inverseAgonistMode').is(":checked"),
-			silent: true
-		@model.set smartMode: @$('.bv_smartMode').is(":checked"),
-			silent: true
-		@setThresholdModeEnabledState()
+
+
 		@setInverseAgonistModeEnabledState()
 		@model.trigger 'change'
 		@trigger 'updateState'
 
 	handleSmartModeChanged: =>
+		if @$('.bv_smartMode').is(":checked")
+			@$('.bv_inactiveThreshold').removeAttr 'disabled'
+			@$('.bv_theoreticalMax').removeAttr 'disabled'
+		else
+			@$('.bv_inactiveThreshold').attr 'disabled', 'disabled'
+			@$('.bv_inactiveThreshold').val ""
+			@$('.bv_theoreticalMax').attr 'disabled', 'disabled'
+			@$('.bv_theoreticalMax').val ""
+
 		@attributeChanged()
-
-	handleInactiveThresholdModeChanged: =>
-		@attributeChanged()
-
-	handleInactiveThresholdChanged: (event, ui) =>
-		@model.set 'inactiveThreshold': ui.value
-		@updateThresholdDisplay(@model.get 'inactiveThreshold')
-		@attributeChanged
-
-	handleInactiveThresholdMoved: (event, ui) =>
-		@updateThresholdDisplay(ui.value)
 
 	handleInverseAgonistModeChanged: =>
 		@attributeChanged()
