@@ -151,10 +151,8 @@ class PlateTableController extends Backbone.View
 
 
   handleAfterDocumentKeyDown: (event) =>
-    console.log "handleAfterDocumentKeyDown"
     #console.log event.realTarget.hasClass "copyPaste"
     if $(event.realTarget).hasClass("copyPaste")
-      console.log "doing a copy"
       @copiedSelectedRegion = true
     window.REALTARGET = event.realTarget
 
@@ -351,6 +349,7 @@ class PlateTableController extends Backbone.View
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries, @plateMetaData)
     wellContentOverwritten = []
     @identifiersToRemove = []
+    @wellsToUpdate.resetWells()
     [@plateWells, @identifiersToRemove, @wellsToUpdate, wellContentOverwritten] = plateFiller.getWells(@wells, addContentModel.get("batchConcentration"), addContentModel.get("amount"))
     if wellContentOverwritten
       $("div[name='overwrittingWellContentsWarning']").modal('show')
