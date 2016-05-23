@@ -348,8 +348,6 @@ class PlateTableController extends Backbone.View
 
   handleContentAdded: (addContentModel) =>
     validatedIdentifiers = addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALIDATED_IDENTIFIERS)
-    console.log "@selectedRegionBoundries"
-    console.log @selectedRegionBoundries
     plateFiller = @plateFillerFactory.getPlateFiller(addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_STRATEGY), addContentModel.get(ADD_CONTENT_MODEL_FIELDS.FILL_DIRECTION),  validatedIdentifiers, @selectedRegionBoundries, @plateMetaData)
     wellContentOverwritten = []
     @identifiersToRemove = []

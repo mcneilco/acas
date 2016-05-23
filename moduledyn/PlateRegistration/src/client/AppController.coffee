@@ -152,6 +152,20 @@ class AppController extends Backbone.View
 
     @
 
+handleKeyDown = (e) =>
+  # ensure event is not null
+  e = e || window.event
+  if ((e.which == 90 || e.keyCode == 90) && e.ctrlKey)
+    e.preventDefault()
+  else if ((e.which == 90 || e.keyCode == 90) && e.metaKey)
+    e.preventDefault()
+  else if ((e.which == 89 || e.keyCode == 89) && e.ctrlKey)
+    e.preventDefault()
+  else if ((e.which == 89 || e.keyCode == 89) && e.metaKey)
+    e.preventDefault()
+
+# disable undo / redo keyboard shortcuts for entire app
+document.onkeydown = handleKeyDown
 
 
 module.exports =

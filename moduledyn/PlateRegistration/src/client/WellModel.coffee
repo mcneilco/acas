@@ -266,8 +266,12 @@ class WellsModel extends Backbone.Model
     longestString = ""
     _.each(@allWells, (well) ->
       if well[fieldName]?
-        if well[fieldName].length > longestString.length
-          longestString = well[fieldName]
+        if well[fieldName].length?
+          if well[fieldName].length > longestString.length
+            longestString = well[fieldName]
+        else
+          if well[fieldName].toString().length > longestString.length
+            longestString = well[fieldName].toString()
     )
 
     longestString

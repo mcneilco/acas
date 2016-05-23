@@ -1,5 +1,5 @@
 SERIAL_DILUTION_MODEL_FIELDS = require('./SerialDilutionModel.coffee').SERIAL_DILUTION_MODEL_FIELDS
-SIGNIFICANT_FIGS = 4
+SIGNIFICANT_FIGS = 8
 WellsModel = require('./WellModel.coffee').WellsModel
 
 class SerialDilutionFactory
