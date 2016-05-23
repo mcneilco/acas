@@ -93,6 +93,7 @@ class PlateFillerStrategy
 class RandomPlateFillerStrategy extends PlateFillerStrategy
   getWells: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -118,6 +119,7 @@ class RandomPlateFillerStrategy extends PlateFillerStrategy
 class SameIdentifierPlateFillerStrategy extends PlateFillerStrategy
   getWells: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -152,6 +154,7 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
 
   getWellsColumnMajor: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -173,7 +176,9 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
 
 
   getWellsRowMajor: (wells, batchConcentration, amount) ->
+
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -190,13 +195,13 @@ class InOrderPlateFillerStrategy extends PlateFillerStrategy
         valueIdx++
       )
     )
-
     [plateWells, identifiersToRemove, wellsToUpdate, wellContentOverwritten]
 
 
 class CheckerBoard1PlateFillerStrategy extends PlateFillerStrategy
   getWells: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -264,6 +269,7 @@ class CheckerBoard1PlateFillerStrategy extends PlateFillerStrategy
 class CheckerBoard2PlateFillerStrategy extends PlateFillerStrategy
   getWells: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [@selectedRegionBoundries.rowStart..@selectedRegionBoundries.rowStop]
     columnIndexes = [@selectedRegionBoundries.colStart..@selectedRegionBoundries.colStop]
     plateWells = []
@@ -331,6 +337,7 @@ class CheckerBoard2PlateFillerStrategy extends PlateFillerStrategy
 class FillAllEmptyPlateFillerStrategy extends PlateFillerStrategy
   getWells: (wells, batchConcentration, amount) ->
     wellsToUpdate = new WellsModel({allWells: wells})
+    wellsToUpdate.resetWells()
     rowIndexes = [0..(@plateMetaData.numberOfRows - 1)]
     columnIndexes = [0..(@plateMetaData.numberOfColumns - 1)]
     plateWells = []
