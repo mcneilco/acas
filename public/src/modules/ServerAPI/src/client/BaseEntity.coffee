@@ -281,7 +281,7 @@ class window.BaseEntityController extends AbstractFormController
 		@updateEditable()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
-		if @readOnly is true or !@hasEditingRole()
+		if @readOnly is true or !@canEdit()
 			@displayInReadOnlyMode()
 
 		@
@@ -300,20 +300,23 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_cancel').removeAttr('disabled')
 		@$('.bv_cancelComplete').hide()
 
-	hasEditingRole: ->
-		if window.conf.entity?.editingRoles?
-			rolesToTest = []
-			for role in window.conf.entity.editingRoles.split(",")
-				if role is 'entityScientist'
-					if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
-						return true
-				else
-					rolesToTest.push $.trim(role)
-			if rolesToTest.length is 0
-				return false
-			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
-				return false
-		return true
+	canEdit: ->
+		if @model.isNew() or @model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
+							return true
+					else
+						rolesToTest.push $.trim(role)
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
 
 	setupStatusSelect: ->
 		statusState = @model.getStatus()
@@ -533,7 +536,7 @@ class window.BaseEntityController extends AbstractFormController
 
 	checkDisplayMode: =>
 		status = @model.getStatus().get('codeValue')
-		if @readOnly is true or !@hasEditingRole()
+		if @readOnly is true or !@canEdit()
 			@displayInReadOnlyMode()
 		else if status is "deleted" or status is "approved" or status is "rejected"
 			@disableAllInputs()

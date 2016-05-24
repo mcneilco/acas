@@ -90,7 +90,7 @@
     };
 
     Experiment.prototype.copyProtocolAttributes = function(protocol) {
-      var dap, dapVal, eExptMeta, mfp, mfpVal, mft, mftVal, pExptMeta, pstates;
+      var dap, dapVal, eExptMeta, mfp, mfpVal, mft, mftVal, mftrans, mftransVal, mftu, mftuVal, pExptMeta, pstates;
       pstates = protocol.get('lsStates');
       pExptMeta = pstates.getStatesByTypeAndKind("metadata", "experiment metadata");
       if (pExptMeta.length > 0) {
@@ -137,6 +137,34 @@
         mft.unset('id');
         mft.unset('lsTransaction');
         eExptMeta[0].get('lsValues').add(mft);
+        mftransVal = eExptMeta[0].getValuesByTypeAndKind("stringValue", "model fit transformation");
+        if (mftransVal.length > 0) {
+          if (mftransVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mftransVal[0]);
+          } else {
+            mftransVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mftrans = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit transformation")).attributes);
+        mftrans.unset('id');
+        mftrans.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mftrans);
+        mftuVal = eExptMeta[0].getValuesByTypeAndKind("codeValue", "model fit transformation units");
+        if (mftuVal.length > 0) {
+          if (mftuVal[0].isNew()) {
+            eExptMeta[0].get('lsValues').remove(mftuVal[0]);
+          } else {
+            mftuVal[0].set({
+              ignored: true
+            });
+          }
+        }
+        mftu = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit transformation units")).attributes);
+        mftu.unset('id');
+        mftu.unset('lsTransaction');
+        eExptMeta[0].get('lsValues').add(mftu);
         this.getDryRunStatus().set({
           ignored: true
         });
@@ -386,6 +414,12 @@
         }, {
           type: 'stringValue',
           kind: 'hts format'
+        }, {
+          type: 'stringValue',
+          kind: 'model fit transformation'
+        }, {
+          type: 'codeValue',
+          kind: 'model fit transformation units'
         }
       ];
       if (!this.isNew()) {

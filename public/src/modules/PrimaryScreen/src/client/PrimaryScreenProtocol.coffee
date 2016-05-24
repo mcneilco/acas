@@ -180,6 +180,23 @@ class window.PrimaryScreenProtocol extends Protocol
 
 		type
 
+	getModelFitTransformation: ->
+		trans = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit transformation"
+		if !trans.has('stringValue')
+			trans.set stringValue: "Select Fit Transformation"
+
+		trans
+
+	getModelFitTransformationUnits: ->
+		tu = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit transformation units"
+		if !tu.has('codeValue')
+			tu.set codeValue: "%"
+			tu.set codeType: "model fit"
+			tu.set codeKind: "transformation units"
+			tu.set codeOrigin: "ACAS DDICT"
+
+		tu
+
 class window.PrimaryScreenProtocolParametersController extends AbstractFormController
 	template: _.template($("#PrimaryScreenProtocolParametersView").html())
 	autofillTemplate: _.template($("#PrimaryScreenProtocolParametersAutofillView").html())
@@ -588,6 +605,8 @@ class window.AbstractPrimaryScreenProtocolModuleController extends AbstractFormC
 		@primaryScreenAnalysisParametersController = new PrimaryScreenAnalysisParametersController
 			model: @model.getAnalysisParameters()
 			el: @$('.bv_primaryScreenAnalysisParameters')
+		@primaryScreenAnalysisParametersController.model.on "transformationRuleChanged", =>
+			@modelFitTypeController.handleTransformationRuleChanged(@primaryScreenAnalysisParametersController.model.get('transformationRuleList'))
 		@primaryScreenAnalysisParametersController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@primaryScreenAnalysisParametersController.on 'amClean', =>

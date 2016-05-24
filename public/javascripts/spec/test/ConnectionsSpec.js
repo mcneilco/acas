@@ -18,11 +18,11 @@
   config = require('../../../../conf/compiled/conf.js');
 
   parseResponse = function(jsonStr) {
-    var error, error1;
+    var error;
     try {
       return JSON.parse(jsonStr);
-    } catch (error1) {
-      error = error1;
+    } catch (_error) {
+      error = _error;
       console.log("response unparsable: " + error);
       return null;
     }
@@ -81,10 +81,9 @@
             })(this));
           });
           return it("that can be parsed", function() {
-            var error1;
             try {
               return parseResponse(this.responseJSON);
-            } catch (error1) {
+            } catch (_error) {
               return assert(false, "Unable to parse the JSON response, check connection between roo and the database and that client.service.persistence.port and client.service.persistence.host");
             }
           });
@@ -111,10 +110,9 @@
           })(this));
         });
         return it("should return something that can be parsed", function() {
-          var error1;
           try {
             return parseResponse(this.responseJSON)[0];
-          } catch (error1) {
+          } catch (_error) {
             return assert(false, "Unable to parse the JSON response, check connection between tomcat and the database and that server.nodeapi.port is set correctly.");
           }
         });
