@@ -269,6 +269,8 @@ class window.ProtocolBrowserController extends Backbone.View
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+		else if protocolKind is "Parent Bio Activity"
+			window.open("/entity/copy/parent_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
 
@@ -276,6 +278,8 @@ class window.ProtocolBrowserController extends Backbone.View
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+		if protocolKind is "Parent Bio Activity"
+			window.open("/parent_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 		else
 			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 

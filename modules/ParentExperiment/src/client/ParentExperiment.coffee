@@ -409,32 +409,42 @@ class window.ParentExperimentModuleController extends Backbone.View
 		else
 			if window.AppLaunchParams.moduleLaunchParams?
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
-					$.ajax
-						type: 'GET'
-						url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
-						dataType: 'json'
-						error: (err) ->
-							alert 'Could not get experiment for code in this URL, creating new one'
-							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
+					if window.AppLaunchParams.moduleLaunchParams.createFromOtherEntity
+						@createExperimentFromProtocol(window.AppLaunchParams.moduleLaunchParams.code)
+					else
+						$.ajax
+							type: 'GET'
+							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+							dataType: 'json'
+							error: (err) ->
 								alert 'Could not get experiment for code in this URL, creating new one'
-							else
-								lsKind = json.lsKind
-								if lsKind is "Parent Bio Activity"
-									expt = new ParentExperiment json
-									expt.set expt.parse(expt.attributes)
-									if window.AppLaunchParams.moduleLaunchParams.copy
-										@model = expt.duplicateEntity()
-									else
-										@model = expt
+								@completeInitialization()
+							success: (json) =>
+								if json.length == 0
+									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									alert 'Could not get experiment for code in this URL. Creating new experiment'
-							@completeInitialization()
+									lsKind = json.lsKind
+									if lsKind is "Parent Bio Activity"
+										expt = new ParentExperiment json
+										expt.set expt.parse(expt.attributes)
+										if window.AppLaunchParams.moduleLaunchParams.copy
+											@model = expt.duplicateEntity()
+										else
+											@model = expt
+									else
+										alert 'Could not get experiment for code in this URL. Creating new experiment'
+								@completeInitialization()
 				else
 					@completeInitialization()
 			else
 				@completeInitialization()
+
+	createExperimentFromProtocol: (code) ->
+		@model = new ParentExperiment()
+		@model.set protocol: new ParentProtocol
+			codeName: code
+		@completeInitialization()
+		@experimentMetadataController.getAndSetProtocol(code, true)
 
 	completeInitialization: =>
 		@errorOwnerName = 'ParentExperimentModuleController'
