@@ -2849,6 +2849,9 @@ getColNameChangeDataTables <- function(parameters) {
 }
 getActivityFullName <- function(parameters) {
   # Gets a full activity name with read name and position included
+  if (is.null(parameters$primaryAnalysisReadList)) {
+    return("NotActivity")
+  }
   rot <- getReadOrderTable(parameters$primaryAnalysisReadList)
   activityReadName <- rot[rot$activity, paste0("R", userReadOrder, " {", readName, "}")]
   return(paste0("Activity - ", activityReadName))

@@ -1,5 +1,6 @@
 runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, inputParameters, 
                                         primaryExperimentCodes, confirmationExperimentCodes) {
+  summaryFile <- list()
   experiment <- getExperimentByCodeName("EXPT-00014365")
   primaryExperimentCodes <- fromJSON("[\"EXPT-00012918\",\"EXPT-00012374\"]")
   confirmationExperimentCodes <- fromJSON("[]")
@@ -30,7 +31,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   setnames(allData1, toupper(names(allData1)))
   allData1[, combinedTypeAndKind := paste0(SUB_STATE_TYPE_AND_KIND, "_", VALUE_KIND)]
   
-  # TODO: pivot data, makeWideData is close to what to do
+  # pivot data
   wideData1 <- makeWideData(allData1)
   
   # ACASDEV-764: get data for confirmation
@@ -41,10 +42,25 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   
   
   # ACASDEV-759: get plate order
-#   plateOrderVector <- lapply(primaryExperimentCodes, getPlateOrderForExperiment)
-#   addPlateOrder(allData, plateOrderVector)
+  plateOrderFrame <- ldply(primaryExperimentCodes, getPlateOrderForExperiment)
+  wideDataAll <- merge(wideData1, as.data.table(plateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
   
   # ACASDEV-763: make spotfire file, see saveReports.R for inspiration
+  dir.create(getUploadedFilePath(file.path("experiments", experiment$codeName)), showWarnings = FALSE)
+  reportLocation <- file.path("experiments", experiment$codeName, "analysis")
+  dir.create(getUploadedFilePath(reportLocation), showWarnings = FALSE)
+  source("src/r/ServerAPI/customFunctions.R", local = TRUE)
+  source("src/r/PrimaryScreen/compoundAssignment/exampleClient/saveReports.R", local = TRUE)
+  source("src/r/PrimaryScreen/compoundAssignment/exampleClient/saveSpotfireFile.R", local = TRUE)
+  source("src/r/PrimaryScreen/PrimaryAnalysis.R", local = TRUE)
+  library(RCurl)
+  summaryInfo$reports <- saveReports(NULL, copy(wideDataAll), saveLocation=reportLocation, experiment, inputParameters, user, 
+                                           customSourceFileMove=customSourceFileMove)
+  for (singleReport in summaryInfo$reports) {
+    summaryInfo$info[[singleReport$title]] <- paste0(
+      '<a href="', singleReport$link, '" target="_blank" ',
+      ifelse(singleReport$download, 'download', ''), '>', singleReport$title, '</a>')
+  }
   
   # ACASDEV-765: find list of confirmed compounds, looking at existing code for screening campaigns
   
@@ -52,28 +68,12 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   
   # ACASDEV-767: draw confirmation graph
   
-  
-  summaryInfo <- list(
-    info = list(
-      "Stuff done" = "Yes",
-      "Primary Experiment Codes" = "Test"
-    ), experiment = experiment
+  summaryInfo$experiment <- experiment
+  summaryInfo$info <- list(
+    "Stuff done" = "Yes",
+    "Primary Experiment Codes" = "Test"
   )
 }
-
-getPlateOrderForExperiment <- function(experiment) {
-  # In progress
-  experiment <- getExperimentByCodeName(experiment)
-  metadataStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")
-  sourceFileValues <- getValuesByTypeAndKind(metadataStates[1], "codeValue_source file")
-  fileLink <- getAcasFileLink(sourceFileValues[1])
-  zipFile <- tempfile()
-  download.file(fileLink, zipFile)
-  targetFolder <- tempdir()
-  unzip(exdir = targetFolder, zipfile = zipFile)
-  # Then get plate order like it is done in PrimaryAnalysis.R and return
-}
-
 makeWideData <- function(exptDT) {
   # Changes from database input to input for fitting as a data.table
   library('reshape2')
@@ -111,19 +111,46 @@ makeWideData <- function(exptDT) {
 }
 
 getPlateOrderForExperiment <- function(experimentCode) {
+  experiment <- getExperimentByCodeName(experimentCode)
   
+  experimentStates <- getStatesByTypeAndKind(experiment, "metadata_experiment metadata")[[1]]
+  experimentClobValues <- getValuesByTypeAndKind(experimentStates, "clobValue_data analysis parameters")[[1]]
+  sourceFileValues <- getValuesByTypeAndKind(experimentStates, "fileValue_source file")
+  sourceFileValue <- Find(function(x) {x$ignored == FALSE}, sourceFileValues)
+  sourceFilePath <- downloadAcasFile(sourceFileValue)
   
-  #download.file(getAcasFileLink(experimentFolderPath$fileValue), newPath)
+  targetFolder <- tempdir()
+  unzip(zipfile = sourceFilePath, exdir = targetFolder)
+  csvFiles <- list.files(path=targetFolder, pattern=".csv")
+  if (length(csvFiles == 1)) {
+    plateAssociationFile <- file.path(targetFolder, csvFiles[1])
+    plateAssoc <- read.csv(plateAssociationFile, header = FALSE)
+    plateOrder <- data.frame(experimentCode = experimentCode, assayBarcode = plateAssoc[[1]], plateOrder = 1:nrow(plateAssoc))
+    return(plateOrder)
+  } else {
+    return(data.frame(experimentCode = character(), assayBarcode = character(), plateOrder = numeric()))
+  }
 }
 
-downloadAcasFile <- function(fileValue, newFilePath) {
-  newPath <- tempfile("plateAnalysisInput", fileext = ".zip")
-  if (exists(customFileDownload)) {
-    fileInfo <- fromJSON(getURLcheckStatus(paste0(getAcasFileLink(experimentFolderPath$fileValue), "/metadata.json")))
-    file.copy(fileInfo[[1]]$dnsFile$path, newPath)
+downloadAcasFile <- function(fileValue) {
+  # fileValue is list (ACAS fileValue) with fileValue and comment
+  # newFilePath is the target folder for the file
+  tempPath <- tempdir()
+  newFileName <- fileValue$comments
+  if (is.null(newFileName)) {
+    newFilePath <- tempfile(tmpdir = tempPath)
   } else {
-    download.file(getAcasFileLink(experimentFolderPath$fileValue), newPath)
+    newFilePath <- file.path(tempPath, newFileName)
   }
+  # TODO: update after creating customFileDownload function
+  if (FALSE) {
+  # if (exists(customFileDownload)) {
+    fileInfo <- fromJSON(getURLcheckStatus(paste0(getAcasFileLink(fileValue$fileValue), "/metadata.json")))
+    file.copy(fileInfo[[1]]$dnsFile$path, tempPath)
+  } else {
+    download.file(getAcasFileLink(fileValue$fileValue), newFilePath)
+  }
+  return(newFilePath)
 }
 
 analyzeScreeningCampaign <- function(request) {

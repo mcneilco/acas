@@ -4,8 +4,6 @@ performCalculations <- function(resultTable, parameters, experimentCodeName, dry
   resultTable <- normalizeData(resultTable, parameters, normalizationDataFrame)
   
   # get transformed columns
-  transformationList <- vapply(parameters$transformationRuleList, getElement, "", "transformationRule")
-  #transformationList <- union(transformationList, c("percent efficacy", "sd")) # force "percent efficacy" and "sd" to be included for spotfire
   for (transformation in parameters$transformationRuleList) {
     resultTable[ , paste0("transformed_",transformation$transformationRule) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame)]
   }
