@@ -113,7 +113,11 @@ class window.DoseResponseFitController extends Backbone.View
 			dataType: 'json'
 
 	fitReturnSuccess: (json) =>
-		@$('.bv_modelFitResultsHTML').html(json.results.htmlSummary)
+		if json.results?.htmlSummary?
+			htmlSummary = json.results.htmlSummary
+		else
+			htmlSummary = "Internal error please contact your administrator"
+		@$('.bv_modelFitResultsHTML').html(htmlSummary)
 		@$('.bv_resultsContainer').show()
 		@$('.bv_fitModelButton').hide()
 		@$('.bv_fitOptionWrapper').hide()

@@ -88,7 +88,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 		@points = points
 		log10 = @log10
 		logDose = true
-		if curve.type == "Michaelis-Menten"
+		if curve.type in ["Michaelis-Menten", "Substrate Inhibition"]
 			logDose = false
 
 		if typeof (brd) is "undefined"
