@@ -127,26 +127,24 @@
 	routeSet_26.setupRoutes(app, loginRoutes);
 	routeSet_27 = require("./routes/PrimaryScreenRoutes.js");
 	routeSet_27.setupRoutes(app, loginRoutes);
-	routeSet_28 = require("./routes/ProjectModuleServiceRoutes.js");
+	routeSet_28 = require("./routes/ProjectServiceRoutes.js");
 	routeSet_28.setupRoutes(app, loginRoutes);
-	routeSet_29 = require("./routes/ProjectServiceRoutes.js");
+	routeSet_29 = require("./routes/ProtocolServiceRoutes.js");
 	routeSet_29.setupRoutes(app, loginRoutes);
-	routeSet_30 = require("./routes/ProtocolServiceRoutes.js");
+	routeSet_30 = require("./routes/RunPrimaryAnalysisRoutes.js");
 	routeSet_30.setupRoutes(app, loginRoutes);
-	routeSet_31 = require("./routes/RunPrimaryAnalysisRoutes.js");
+	routeSet_31 = require("./routes/SarRenderingServiceRoutes.js");
 	routeSet_31.setupRoutes(app, loginRoutes);
-	routeSet_32 = require("./routes/SarRenderingServiceRoutes.js");
+	routeSet_32 = require("./routes/ServerUtilityFunctions.js");
 	routeSet_32.setupRoutes(app, loginRoutes);
-	routeSet_33 = require("./routes/ServerUtilityFunctions.js");
+	routeSet_33 = require("./routes/SetupRoutes.js");
 	routeSet_33.setupRoutes(app, loginRoutes);
-	routeSet_34 = require("./routes/SetupRoutes.js");
+	routeSet_34 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
 	routeSet_34.setupRoutes(app, loginRoutes);
-	routeSet_35 = require("./routes/TestedEntityPropertiesServicesRoutes.js");
+	routeSet_35 = require("./routes/ThingServiceRoutes.js");
 	routeSet_35.setupRoutes(app, loginRoutes);
-	routeSet_36 = require("./routes/ThingServiceRoutes.js");
+	routeSet_36 = require("./routes/ValidateCloneNameService.js");
 	routeSet_36.setupRoutes(app, loginRoutes);
-	routeSet_37 = require("./routes/ValidateCloneNameService.js");
-	routeSet_37.setupRoutes(app, loginRoutes);
 
     if (!config.all.client.use.ssl) {
       http.createServer(app).listen(app.get('port'), function() {

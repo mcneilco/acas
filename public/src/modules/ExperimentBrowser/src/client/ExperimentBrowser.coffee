@@ -335,15 +335,47 @@ class window.ExperimentBrowserController extends Backbone.View
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
 			@formatOpenInQueryToolButton()
-			@$('.bv_editExperiment').show()
-			@$('.bv_deleteExperiment').show()
-			#TODO: make deleting experiment privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteExperiment').hide()
+			if @canEdit()
+				@$('.bv_editExperiment').show()
+			else
+				@$('.bv_editExperiment').hide()
+			if @canDelete()
+				@$('.bv_deleteExperiment').show()
+			else
+				@$('.bv_deleteExperiment').hide()
+
+	canEdit: ->
+		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+							return true
+					else
+						rolesToTest.push $.trim(role)
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+						return true
+				else
+					rolesToTest.push $.trim(role)
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")

@@ -406,6 +406,7 @@
       this.handleShortDescriptionChanged = bind(this.handleShortDescriptionChanged, this);
       this.handleScientistChanged = bind(this.handleScientistChanged, this);
       this.setupAttachFileListController = bind(this.setupAttachFileListController, this);
+      this.editStatusOptions = bind(this.editStatusOptions, this);
       this.modelChangeCallback = bind(this.modelChangeCallback, this);
       this.modelSyncCallback = bind(this.modelSyncCallback, this);
       this.render = bind(this.render, this);
@@ -537,16 +538,48 @@
       }
     };
 
+    BaseEntityController.prototype.canDelete = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.deletingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.deletingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else {
+            rolesToTest.push($.trim(role));
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     BaseEntityController.prototype.setupStatusSelect = function() {
       var statusState;
       statusState = this.model.getStatus();
       this.statusList = new PickListList();
       this.statusList.url = "/api/codetables/" + statusState.get('codeType') + "/" + statusState.get('codeKind');
-      return this.statusListController = new PickListSelectController({
+      this.statusListController = new PickListSelectController({
         el: this.$('.bv_status'),
         collection: this.statusList,
         selectedCode: statusState.get('codeValue')
       });
+      return this.listenTo(this.statusList, 'sync', this.editStatusOptions);
+    };
+
+    BaseEntityController.prototype.editStatusOptions = function() {
+      if (!this.canDelete()) {
+        return this.$(".bv_status option[value='deleted']").attr('disabled', 'disabled');
+      }
     };
 
     BaseEntityController.prototype.setupScientistSelect = function() {
