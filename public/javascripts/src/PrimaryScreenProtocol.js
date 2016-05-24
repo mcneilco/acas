@@ -309,6 +309,37 @@
       return type;
     };
 
+    PrimaryScreenProtocol.prototype.getModelFitTransformation = function() {
+      var trans;
+      trans = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "stringValue", "model fit transformation");
+      if (!trans.has('stringValue')) {
+        trans.set({
+          stringValue: "Select Fit Transformation"
+        });
+      }
+      return trans;
+    };
+
+    PrimaryScreenProtocol.prototype.getModelFitTransformationUnits = function() {
+      var tu;
+      tu = this.get('lsStates').getOrCreateValueByTypeAndKind("metadata", "experiment metadata", "codeValue", "model fit transformation units");
+      if (!tu.has('codeValue')) {
+        tu.set({
+          codeValue: "%"
+        });
+        tu.set({
+          codeType: "model fit"
+        });
+        tu.set({
+          codeKind: "transformation units"
+        });
+        tu.set({
+          codeOrigin: "ACAS DDICT"
+        });
+      }
+      return tu;
+    };
+
     return PrimaryScreenProtocol;
 
   })(Protocol);
@@ -912,6 +943,11 @@
         model: this.model.getAnalysisParameters(),
         el: this.$('.bv_primaryScreenAnalysisParameters')
       });
+      this.primaryScreenAnalysisParametersController.model.on("transformationRuleChanged", (function(_this) {
+        return function() {
+          return _this.modelFitTypeController.handleTransformationRuleChanged(_this.primaryScreenAnalysisParametersController.model.get('transformationRuleList'));
+        };
+      })(this));
       this.primaryScreenAnalysisParametersController.on('amDirty', (function(_this) {
         return function() {
           return _this.trigger('amDirty');

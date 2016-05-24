@@ -298,26 +298,77 @@
     extend(ModelFitTypeController, superClass);
 
     function ModelFitTypeController() {
+      this.clearValidationErrorStyles = bind(this.clearValidationErrorStyles, this);
+      this.validationError = bind(this.validationError, this);
       this.updateModel = bind(this.updateModel, this);
+      this.handleTransformationRuleChanged = bind(this.handleTransformationRuleChanged, this);
+      this.handleTransformationUnitsChanged = bind(this.handleTransformationUnitsChanged, this);
+      this.handleFitTransformationChanged = bind(this.handleFitTransformationChanged, this);
       this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
       this.setupParameterController = bind(this.setupParameterController, this);
+      this.setupTransformationUnitsSelect = bind(this.setupTransformationUnitsSelect, this);
+      this.setupFitTransformationSelect = bind(this.setupFitTransformationSelect, this);
       this.setupModelFitTypeSelect = bind(this.setupModelFitTypeSelect, this);
       this.render = bind(this.render, this);
+      this.initialize = bind(this.initialize, this);
       return ModelFitTypeController.__super__.constructor.apply(this, arguments);
     }
 
     ModelFitTypeController.prototype.template = _.template($("#ModelFitTypeView").html());
 
     ModelFitTypeController.prototype.events = {
-      "change .bv_modelFitType": "handleModelFitTypeChanged"
+      "change .bv_modelFitType": "handleModelFitTypeChanged",
+      "change .bv_fitTransformation": "handleFitTransformationChanged",
+      "change .bv_transformationUnits": "handleTransformationUnitsChanged"
+    };
+
+    ModelFitTypeController.prototype.initialize = function() {
+      $(this.el).empty();
+      $(this.el).html(this.template());
+      return $.ajax({
+        type: 'GET',
+        url: '/api/codetables/analysis parameter/transformation',
+        dataType: 'json',
+        error: function(err) {
+          return alert('Could not get list of transformation options');
+        },
+        success: (function(_this) {
+          return function(json) {
+            var fitTransformationList, transformationRuleList;
+            if (json.length === 0) {
+              return alert('Returned empty list of transformation options');
+            } else {
+              _this.transformationFitOptions = new PickListList(json);
+              transformationRuleList = _this.model.getAnalysisParameters().get('transformationRuleList');
+              fitTransformationList = new PickListList();
+              transformationRuleList.each(function(rule) {
+                if (rule.get('transformationRule') !== "unassigned") {
+                  rule = _this.transformationFitOptions.where({
+                    code: rule.get('transformationRule')
+                  })[0];
+                  return fitTransformationList.add(new PickList({
+                    code: rule.get('name'),
+                    name: rule.get('name')
+                  }));
+                }
+              });
+              return _this.setupFitTransformationSelect(fitTransformationList);
+            }
+          };
+        })(this)
+      });
     };
 
     ModelFitTypeController.prototype.render = function() {
       var modelFitType;
-      $(this.el).empty();
-      $(this.el).html(this.template());
       this.setupModelFitTypeSelect();
+      this.setupTransformationUnitsSelect();
       modelFitType = this.model.getModelFitType().get('codeValue');
+      if (modelFitType === "unassigned") {
+        this.$('.bv_modelFitTransformationWrapper').hide();
+      } else {
+        this.$('.bv_modelFitTransformationWrapper').show();
+      }
       return this.setupParameterController(modelFitType);
     };
 
@@ -334,6 +385,38 @@
           name: "Select Model Fit Type"
         }),
         selectedCode: modelFitType
+      });
+    };
+
+    ModelFitTypeController.prototype.setupFitTransformationSelect = function(fitTransformationList) {
+      if (this.fitTransformationListController != null) {
+        this.fitTransformationListController.undelegateEvents();
+      }
+      return this.fitTransformationListController = new PickListSelectController({
+        el: this.$('.bv_fitTransformation'),
+        collection: fitTransformationList,
+        autoFetch: false,
+        insertFirstOption: new PickList({
+          code: "Select Fit Transformation",
+          name: "Select Fit Transformation"
+        }),
+        selectedCode: this.model.getModelFitTransformation().get('stringValue')
+      });
+    };
+
+    ModelFitTypeController.prototype.setupTransformationUnitsSelect = function() {
+      var transformationUnits;
+      transformationUnits = this.model.getModelFitTransformationUnits().get('codeValue');
+      this.transformationUnitsList = new PickListList();
+      this.transformationUnitsList.url = "/api/codetables/model fit/transformation units";
+      return this.transformationUnitsListController = new PickListSelectController({
+        el: this.$('.bv_transformationUnits'),
+        collection: this.transformationUnitsList,
+        insertFirstOption: new PickList({
+          code: "unassigned",
+          name: "Select Transformation Unit"
+        }),
+        selectedCode: transformationUnits
       });
     };
 
@@ -396,9 +479,47 @@
     ModelFitTypeController.prototype.handleModelFitTypeChanged = function() {
       var modelFitType;
       modelFitType = this.$('.bv_modelFitType').val();
+      if (modelFitType === "unassigned") {
+        this.$('.bv_modelFitTransformationWrapper').hide();
+        this.fitTransformationListController.setSelectedCode("Select Fit Transformation");
+        this.transformationUnitsListController.setSelectedCode("unassigned");
+        this.updateModel();
+      } else {
+        this.$('.bv_modelFitTransformationWrapper').show();
+      }
       this.setupParameterController(modelFitType);
       this.updateModel();
       return this.modelFitTypeListController.trigger('change');
+    };
+
+    ModelFitTypeController.prototype.handleFitTransformationChanged = function() {
+      this.updateModel();
+      return this.trigger('change');
+    };
+
+    ModelFitTypeController.prototype.handleTransformationUnitsChanged = function() {
+      this.updateModel();
+      return this.trigger('change');
+    };
+
+    ModelFitTypeController.prototype.handleTransformationRuleChanged = function(transformationRuleList) {
+      var fitTransformationList;
+      fitTransformationList = new PickListList();
+      transformationRuleList.each((function(_this) {
+        return function(rule) {
+          if (rule.get('transformationRule') !== "unassigned") {
+            rule = _this.transformationFitOptions.where({
+              code: rule.get('transformationRule')
+            })[0];
+            return fitTransformationList.add(new PickList({
+              code: rule.get('name'),
+              name: rule.get('name')
+            }));
+          }
+        };
+      })(this));
+      this.model.getModelFitTransformation().set('stringValue', 'Select Fit Transformation');
+      return this.setupFitTransformationSelect(fitTransformationList);
     };
 
     ModelFitTypeController.prototype.updateModel = function() {
@@ -407,7 +528,67 @@
         recordedBy: window.AppLaunchParams.loginUser.username,
         recordedDate: new Date().getTime()
       });
+      this.model.getModelFitTransformation().set({
+        stringValue: this.fitTransformationListController.getSelectedModel().get('name'),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
+      this.model.getModelFitTransformationUnits().set({
+        codeValue: this.transformationUnitsListController.getSelectedCode(),
+        recordedBy: window.AppLaunchParams.loginUser.username,
+        recordedDate: new Date().getTime()
+      });
       return this.model.trigger('change');
+    };
+
+    ModelFitTypeController.prototype.isValid = function() {
+      var errors, validCheck;
+      validCheck = true;
+      errors = [];
+      errors.push.apply(errors, this.parameterController.model.validationError);
+      errors.push.apply(errors, this.model.validateModelFitParams());
+      if (errors.length > 0) {
+        validCheck = false;
+      }
+      this.validationError(errors);
+      return validCheck;
+    };
+
+    ModelFitTypeController.prototype.validationError = function(errors) {
+      this.clearValidationErrorStyles();
+      return _.each(errors, (function(_this) {
+        return function(err) {
+          if (_this.$('.bv_' + err.attribute).attr('disabled') !== 'disabled') {
+            _this.$('.bv_group_' + err.attribute).attr('data-toggle', 'tooltip');
+            _this.$('.bv_group_' + err.attribute).attr('data-placement', 'bottom');
+            _this.$('.bv_group_' + err.attribute).attr('data-original-title', err.message);
+            _this.$("[data-toggle=tooltip]").tooltip();
+            _this.$("body").tooltip({
+              selector: '.bv_group_' + err.attribute
+            });
+            _this.$('.bv_group_' + err.attribute).addClass('input_error error');
+            return _this.trigger('notifyError', {
+              owner: _this.errorOwnerName,
+              errorLevel: 'error',
+              message: err.message
+            });
+          }
+        };
+      })(this));
+    };
+
+    ModelFitTypeController.prototype.clearValidationErrorStyles = function() {
+      var errorElms;
+      errorElms = this.$('.input_error');
+      return _.each(errorElms, (function(_this) {
+        return function(ee) {
+          $(ee).removeAttr('data-toggle');
+          $(ee).removeAttr('data-placement');
+          $(ee).removeAttr('title');
+          $(ee).removeAttr('data-original-title');
+          return $(ee).removeClass('input_error error');
+        };
+      })(this));
     };
 
     return ModelFitTypeController;
@@ -422,6 +603,7 @@
       this.launchFit = bind(this.launchFit, this);
       this.paramsInvalid = bind(this.paramsInvalid, this);
       this.paramsValid = bind(this.paramsValid, this);
+      this.validateModelFitTab = bind(this.validateModelFitTab, this);
       this.handleModelFitTypeChanged = bind(this.handleModelFitTypeChanged, this);
       this.handleModelStatusChanged = bind(this.handleModelStatusChanged, this);
       this.handleStatusChanged = bind(this.handleStatusChanged, this);
@@ -532,11 +714,21 @@
         model: this.model,
         el: this.$('.bv_analysisParameterForm')
       });
+      this.modelFitTypeController.on('change', (function(_this) {
+        return function() {
+          return _this.validateModelFitTab();
+        };
+      })(this));
       this.modelFitTypeController.render();
       this.parameterController = this.modelFitTypeController.parameterController;
       this.modelFitTypeController.modelFitTypeListController.on('change', (function(_this) {
         return function() {
           return _this.handleModelFitTypeChanged();
+        };
+      })(this));
+      this.parameterController.model.on('change', (function(_this) {
+        return function() {
+          return _this.validateModelFitTab();
         };
       })(this));
       modelFitType = this.model.getModelFitType().get('codeValue');
@@ -552,20 +744,26 @@
       modelFitType = this.modelFitTypeController.modelFitTypeListController.getSelectedCode();
       if (modelFitType === "unassigned") {
         this.$('.bv_fitModelButton').hide();
+        this.$('.bv_modelFitTransformationWrapper').hide();
         if (this.modelFitTypeController.parameterController != null) {
           return this.modelFitTypeController.parameterController.undelegateEvents();
         }
       } else {
         this.$('.bv_fitModelButton').show();
+        this.$('.bv_modelFitTransformationWrapper').show();
         if (this.modelFitTypeController.parameterController != null) {
-          this.modelFitTypeController.parameterController.on('valid', this.paramsValid);
-          this.modelFitTypeController.parameterController.on('invalid', this.paramsInvalid);
-          if (this.modelFitTypeController.parameterController.isValid() === true) {
-            return this.paramsValid();
-          } else {
-            return this.paramsInvalid();
-          }
+          this.modelFitTypeController.parameterController.on('valid', this.validateModelFitTab);
+          this.modelFitTypeController.parameterController.on('invalid', this.validateModelFitTab);
+          return this.validateModelFitTab();
         }
+      }
+    };
+
+    DoseResponseAnalysisController.prototype.validateModelFitTab = function() {
+      if (this.modelFitTypeController.isValid() && this.modelFitTypeController.parameterController.isValid()) {
+        return this.paramsValid();
+      } else {
+        return this.paramsInvalid();
       }
     };
 
@@ -575,6 +773,10 @@
 
     DoseResponseAnalysisController.prototype.paramsInvalid = function() {
       return this.$('.bv_fitModelButton').attr('disabled', 'disabled');
+    };
+
+    DoseResponseAnalysisController.prototype.handleTransformationRuleChanged = function(transformationRuleList) {
+      return this.modelFitTypeController.handleTransformationRuleChanged(transformationRuleList);
     };
 
     DoseResponseAnalysisController.prototype.launchFit = function() {
@@ -593,7 +795,9 @@
         user: window.AppLaunchParams.loginUserName,
         experimentCode: this.model.get('codeName'),
         modelFitType: this.modelFitTypeController.modelFitTypeListController.getSelectedCode(),
-        testMode: false
+        testMode: false,
+        modelFitTransformation: JSON.stringify(this.model.getModelFitTransformation()),
+        modelFitTransformationUnits: JSON.stringify(this.model.getModelFitTransformationUnits())
       };
       return $.ajax({
         type: 'POST',

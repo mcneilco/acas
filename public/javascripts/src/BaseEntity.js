@@ -484,7 +484,7 @@
       this.updateEditable();
       this.$('.bv_save').attr('disabled', 'disabled');
       this.$('.bv_cancel').attr('disabled', 'disabled');
-      if (this.readOnly === true || !this.hasEditingRole()) {
+      if (this.readOnly === true || !this.canEdit()) {
         this.displayInReadOnlyMode();
       }
       return this;
@@ -509,29 +509,33 @@
       return this.$('.bv_cancelComplete').hide();
     };
 
-    BaseEntityController.prototype.hasEditingRole = function() {
+    BaseEntityController.prototype.canEdit = function() {
       var i, len, ref, ref1, role, rolesToTest;
-      if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
-        rolesToTest = [];
-        ref1 = window.conf.entity.editingRoles.split(",");
-        for (i = 0, len = ref1.length; i < len; i++) {
-          role = ref1[i];
-          if (role === 'entityScientist') {
-            if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
-              return true;
+      if (this.model.isNew() || this.model.getScientist().get('codeValue') === "unassigned") {
+        return true;
+      } else {
+        if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
+          rolesToTest = [];
+          ref1 = window.conf.entity.editingRoles.split(",");
+          for (i = 0, len = ref1.length; i < len; i++) {
+            role = ref1[i];
+            if (role === 'entityScientist') {
+              if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
+                return true;
+              }
+            } else {
+              rolesToTest.push($.trim(role));
             }
-          } else {
-            rolesToTest.push($.trim(role));
+          }
+          if (rolesToTest.length === 0) {
+            return false;
+          }
+          if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+            return false;
           }
         }
-        if (rolesToTest.length === 0) {
-          return false;
-        }
-        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
-          return false;
-        }
+        return true;
       }
-      return true;
     };
 
     BaseEntityController.prototype.setupStatusSelect = function() {
@@ -841,7 +845,7 @@
     BaseEntityController.prototype.checkDisplayMode = function() {
       var status;
       status = this.model.getStatus().get('codeValue');
-      if (this.readOnly === true || !this.hasEditingRole()) {
+      if (this.readOnly === true || !this.canEdit()) {
         return this.displayInReadOnlyMode();
       } else if (status === "deleted" || status === "approved" || status === "rejected") {
         this.disableAllInputs();

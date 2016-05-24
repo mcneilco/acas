@@ -16,11 +16,11 @@
   thingServiceTestJSON = require('../../../../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js');
 
   parseResponse = function(jsonStr) {
-    var error, error1;
+    var error;
     try {
       return JSON.parse(jsonStr);
-    } catch (error1) {
-      error = error1;
+    } catch (_error) {
+      error = _error;
       console.log("response unparsable: " + error);
       return null;
     }
