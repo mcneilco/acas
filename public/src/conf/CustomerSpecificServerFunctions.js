@@ -249,6 +249,35 @@
     })(this));
   };
 
+  exports.getProjectStubs = function(req, resp) {
+    return exports.getProjectStubsInternal((function(_this) {
+      return function(statusCode, response) {
+        resp.statusCode = statusCode;
+        return resp.json(response);
+      };
+    })(this));
+  };
+
+  exports.getProjectStubsInternal = function(callback) {
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
+    request = require('request');
+    return request.get({
+      url: config.all.client.service.persistence.fullpath + "authorization/groupsAndProjects",
+      json: true
+    }, (function(_this) {
+      return function(error, response, body) {
+        var acasGroupsAndProjects, serverError;
+        serverError = error;
+        acasGroupsAndProjects = body;
+        _.each(acasGroupsAndProjects.projects, function(project) {
+          return delete project.groups;
+        });
+        return callback(response.statusCode, acasGroupsAndProjects.projects);
+      };
+    })(this));
+  };
+
   exports.makeServiceRequestHeaders = function(user) {
     var headers, username;
     username = user != null ? user.username : "testmode";

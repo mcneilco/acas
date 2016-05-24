@@ -187,6 +187,26 @@ exports.getProjectsInternal = (req, callback) ->
 			callback response.statusCode, json
 	)
 
+exports.getProjectStubs = (req, resp) ->
+	exports.getProjectStubsInternal (statusCode, response) =>
+		resp.statusCode = statusCode
+		resp.json response
+
+exports.getProjectStubsInternal = (callback) ->
+	config = require '../../../conf/compiled/conf.js'
+	request = require 'request'
+	request.get
+		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
+		json: true
+	, (error, response, body) =>
+
+		serverError = error
+		acasGroupsAndProjects = body
+		#remove groups attribute
+		_.each acasGroupsAndProjects.projects, (project) ->
+			delete project.groups
+		callback response.statusCode, acasGroupsAndProjects.projects
+
 exports.makeServiceRequestHeaders = (user) ->
 	username = if user? then user.username else "testmode"
 
