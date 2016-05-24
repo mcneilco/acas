@@ -183,12 +183,12 @@
 
   exports.loginStrategy = function(username, password, done) {
     return exports.authCheck(username, password, function(results) {
-      var error;
+      var error, error1, error2, error3;
       if (results.indexOf("login_error") >= 0) {
         try {
           exports.logUsage("User failed login: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error1) {
+          error = error1;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -197,8 +197,8 @@
       } else if (results.indexOf("connection_error") >= 0) {
         try {
           exports.logUsage("Connection to authentication service failed: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error2) {
+          error = error2;
           console.log("Exception trying to log:" + error);
         }
         return done(null, false, {
@@ -207,8 +207,8 @@
       } else {
         try {
           exports.logUsage("User logged in succesfully: ", "", username);
-        } catch (_error) {
-          error = _error;
+        } catch (error3) {
+          error = error3;
           console.log("Exception trying to log:" + error);
         }
         return exports.getUser(username, done);
