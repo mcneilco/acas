@@ -1460,20 +1460,20 @@
           this.enableAllInputs();
           this.$('.bv_projectCode').attr('disabled', 'disabled');
           this.$('.bv_manageUserPermissions').show();
-          return this.$('.bv_saveBeforeManagingPermissions').hide();
+          this.$('.bv_saveBeforeManagingPermissions').hide();
         } else {
           this.enableLimitedEditing();
-          return this.$('.bv_manageUserPermissions').hide();
+          this.$('.bv_manageUserPermissions').hide();
         }
       } else {
         this.disableAllInputs();
         if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [this.adminRole]) || UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])) {
-          this.$('.bv_status').removeAttr('disabled', 'disabled');
-          return this.$('.bv_manageUserPermissions').show();
+          this.$('.bv_manageUserPermissions').show();
         } else {
-          return this.$('.bv_manageUserPermissions').hide();
+          this.$('.bv_manageUserPermissions').hide();
         }
       }
+      return this.$('.bv_status').attr('disabled', 'disabled');
     };
 
     ProjectController.prototype.enableLimitedEditing = function() {

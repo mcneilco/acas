@@ -920,10 +920,10 @@ class window.ProjectController extends AbstractFormController
 		else
 			@disableAllInputs()
 			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
-				@$('.bv_status').removeAttr 'disabled', 'disabled'
 				@$('.bv_manageUserPermissions').show()
 			else
 				@$('.bv_manageUserPermissions').hide()
+		@$('.bv_status').attr 'disabled', 'disabled' #for now, don't allow status editing
 
 	enableLimitedEditing: ->
 		@disableAllInputs()
