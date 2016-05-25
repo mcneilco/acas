@@ -17,7 +17,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/physicalStates', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/operators', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
-	app.get '/cmpdReg/structureimage/parent/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
+	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
 	app.get '/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
 	app.post '/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds
