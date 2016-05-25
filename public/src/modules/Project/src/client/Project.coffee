@@ -630,23 +630,39 @@ class window.ProjectController extends AbstractFormController
 				if window.AppLaunchParams.moduleLaunchParams.moduleName == @moduleLaunchName
 					$.ajax
 						type: 'GET'
-						url: "/api/things/project/project/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+						url: "/api/projects"
 						dataType: 'json'
 						error: (err) =>
-							alert 'Could not get project for code in this URL, creating new one'
+							alert 'Could not get projects for this user. Creating a new project'
 							@completeInitialization()
-						success: (json) =>
-							if json.length == 0
-								alert 'Could not get project for code in this URL, creating new one'
+						success: (projectsList) =>
+							if _.where(projectsList, {code: window.AppLaunchParams.moduleLaunchParams.code}).length > 0
+								@getProject()
 							else
-								proj = new Project json
-								proj.set proj.parse(proj.attributes)
-								@model = proj
-							@completeInitialization()
+								alert 'Could not get project for code in this URL, creating new one'
+								@completeInitialization()
 				else
 					@completeInitialization()
 			else
 				@completeInitialization()
+
+	getProject: =>
+		$.ajax
+			type: 'GET'
+			url: "/api/things/project/project/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+			dataType: 'json'
+			error: (err) =>
+				alert 'Could not get project for code in this URL, creating new one'
+				@completeInitialization()
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get project for code in this URL, creating new one'
+				else
+					proj = new Project json
+					proj.set proj.parse(proj.attributes)
+					@model = proj
+				@completeInitialization()
+
 
 	completeInitialization: =>
 		unless @model?

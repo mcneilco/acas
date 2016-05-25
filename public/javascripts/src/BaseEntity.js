@@ -538,6 +538,31 @@
       }
     };
 
+    BaseEntityController.prototype.canDelete = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.deletingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.deletingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else {
+            rolesToTest.push($.trim(role));
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
+    };
+
     BaseEntityController.prototype.setupStatusSelect = function() {
       var statusState;
       statusState = this.model.getStatus();
@@ -556,8 +581,11 @@
       if (((ref = window.conf.entity) != null ? ref.approvalRole : void 0) != null) {
         if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, window.conf.entity.approvalRole)) {
           this.$(".bv_status option[value='approved']").attr('disabled', 'disabled');
-          return this.$(".bv_status option[value='rejected']").attr('disabled', 'disabled');
+          this.$(".bv_status option[value='rejected']").attr('disabled', 'disabled');
         }
+      }
+      if (!this.canDelete()) {
+        return this.$(".bv_status option[value='deleted']").attr('disabled', 'disabled');
       }
     };
 

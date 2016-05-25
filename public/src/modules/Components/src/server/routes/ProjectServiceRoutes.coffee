@@ -1,5 +1,5 @@
 exports.setupAPIRoutes = (app) ->
-  app.get '/api/projects/:username', exports.getProjects
+	app.get '/api/projects/:username', exports.getProjects
 	app.get '/api/projects/getAllProjects/stubs', exports.getProjectStubs
 
 

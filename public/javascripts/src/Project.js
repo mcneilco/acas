@@ -1039,6 +1039,7 @@
       this.handleSaveFailed = bind(this.handleSaveFailed, this);
       this.render = bind(this.render, this);
       this.completeInitialization = bind(this.completeInitialization, this);
+      this.getProject = bind(this.getProject, this);
       return ProjectController.__super__.constructor.apply(this, arguments);
     }
 
@@ -1069,25 +1070,24 @@
           if (window.AppLaunchParams.moduleLaunchParams.moduleName === this.moduleLaunchName) {
             return $.ajax({
               type: 'GET',
-              url: "/api/things/project/project/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+              url: "/api/projects",
               dataType: 'json',
               error: (function(_this) {
                 return function(err) {
-                  alert('Could not get project for code in this URL, creating new one');
+                  alert('Could not get projects for this user. Creating a new project');
                   return _this.completeInitialization();
                 };
               })(this),
               success: (function(_this) {
-                return function(json) {
-                  var proj;
-                  if (json.length === 0) {
-                    alert('Could not get project for code in this URL, creating new one');
+                return function(projectsList) {
+                  if (_.where(projectsList, {
+                    code: window.AppLaunchParams.moduleLaunchParams.code
+                  }).length > 0) {
+                    return _this.getProject();
                   } else {
-                    proj = new Project(json);
-                    proj.set(proj.parse(proj.attributes));
-                    _this.model = proj;
+                    alert('Could not get project for code in this URL, creating new one');
+                    return _this.completeInitialization();
                   }
-                  return _this.completeInitialization();
                 };
               })(this)
             });
@@ -1098,6 +1098,33 @@
           return this.completeInitialization();
         }
       }
+    };
+
+    ProjectController.prototype.getProject = function() {
+      return $.ajax({
+        type: 'GET',
+        url: "/api/things/project/project/codename/" + window.AppLaunchParams.moduleLaunchParams.code,
+        dataType: 'json',
+        error: (function(_this) {
+          return function(err) {
+            alert('Could not get project for code in this URL, creating new one');
+            return _this.completeInitialization();
+          };
+        })(this),
+        success: (function(_this) {
+          return function(json) {
+            var proj;
+            if (json.length === 0) {
+              alert('Could not get project for code in this URL, creating new one');
+            } else {
+              proj = new Project(json);
+              proj.set(proj.parse(proj.attributes));
+              _this.model = proj;
+            }
+            return _this.completeInitialization();
+          };
+        })(this)
+      });
     };
 
     ProjectController.prototype.completeInitialization = function() {
