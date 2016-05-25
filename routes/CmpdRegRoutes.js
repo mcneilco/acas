@@ -393,13 +393,56 @@
   };
 
   exports.getMetaLot = function(req, resp) {
-    var cmpdRegCall, config, endOfUrl, request;
+    var _, cmpdRegCall, config, endOfUrl, request;
     request = require('request');
+    _ = require('underscore');
     config = require('../conf/compiled/conf.js');
     endOfUrl = req.originalUrl.replace(/\/cmpdreg\/metalots/, "");
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl;
     console.log(cmpdRegCall);
-    return req.pipe(request(cmpdRegCall)).pipe(resp);
+    return request({
+      method: 'GET',
+      url: cmpdRegCall,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        var projectCode, ref, ref1;
+        console.log("metalot return");
+        console.log(error);
+        console.log(response);
+        console.log(json);
+        if (!error) {
+          if ((json != null ? (ref = json.lot) != null ? (ref1 = ref.project) != null ? ref1.code : void 0 : void 0 : void 0) != null) {
+            projectCode = json.lot.project.code;
+            return exports.getACASProjects(req, function(statusCode, acasProjectsForUsers) {
+              if (statusCode !== 200) {
+                resp.statusCode = statusCode;
+                resp.end(JSON.stringify(acasProjectsForUsers));
+              }
+              if (_.where(acasProjectsForUsers, {
+                code: projectCode
+              }).length > 0) {
+                return resp.json(json);
+              } else {
+                console.log("user does not have permissions to the lot's project");
+                resp.statusCode = 500;
+                return resp.end(JSON.stringify("Lot does not exist"));
+              }
+            });
+          } else {
+            console.log("could not find lot");
+            resp.statusCode = 500;
+            return resp.end(JSON.stringify("Could not find lot"));
+          }
+        } else {
+          console.log('got ajax error trying to get CmpdReg MetaLot');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return resp.end(JSON.stringify(error));
+        }
+      };
+    })(this));
   };
 
   exports.regSearch = function(req, resp) {

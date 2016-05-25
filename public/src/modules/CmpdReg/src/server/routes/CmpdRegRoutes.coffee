@@ -299,11 +299,45 @@ exports.getStructureImage = (req, resp) ->
 
 exports.getMetaLot = (req, resp) ->
 	request = require 'request'
+	_ = require 'underscore'
 	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
-	req.pipe(request(cmpdRegCall)).pipe(resp)
+	request(
+		method: 'GET'
+		url: cmpdRegCall
+		json: true
+	, (error, response, json)=>
+		console.log "metalot return"
+		console.log error
+		console.log response
+		console.log json
+
+		if !error
+			if json?.lot?.project?.code?
+				projectCode = json.lot.project.code
+				exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
+					if statusCode != 200
+						resp.statusCode = statusCode
+						resp.end JSON.stringify acasProjectsForUsers
+					if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
+						resp.json json
+					else
+						console.log "user does not have permissions to the lot's project"
+						resp.statusCode = 500
+						resp.end JSON.stringify "Lot does not exist"
+			else
+				console.log "could not find lot"
+				resp.statusCode = 500
+				resp.end JSON.stringify "Could not find lot"
+		else
+			console.log 'got ajax error trying to get CmpdReg MetaLot'
+			console.log error
+			console.log json
+			console.log response
+			resp.end JSON.stringify error
+	)
 
 exports.regSearch = (req, resp) ->
 	request = require 'request'

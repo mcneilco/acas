@@ -25,6 +25,10 @@
 
 		<div class="ErrrorNotificationListView"></div>
 
+		<div class="GetCmpdError hide" style="text-align: center;">
+			<h1>Compound does not exist.</h1>
+		</div>
+
 	</div>
 
 	<div id="footer"><p>&#169; 2011-2015 John McNeil & Co., Inc.</p></div>

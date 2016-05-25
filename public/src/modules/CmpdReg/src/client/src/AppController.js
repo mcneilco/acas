@@ -142,16 +142,25 @@ $(function () {
                 url,
                 {},
                 function(ajaxReturn) {
-                    self.metaLot = new MetaLot({json: ajaxReturn});         
+                    self.metaLot = new MetaLot({json: ajaxReturn});
                     self.setupMetaLotController();                    
                 }
             )
             .error(function(error) {
                 var resp = $.parseJSON(error.responseText);
-                _.each(resp.errors, function(err) {
-                    self.trigger('notifyError', {owner: "AppController", errorLevel: err.level, message: err.message});
-                    self.searchResultsController.show();                 
-                });
+                if(resp.errors != null) {
+                    _.each(resp.errors, function (err) {
+                        self.trigger('notifyError', {
+                            owner: "AppController",
+                            errorLevel: err.level,
+                            message: err.message
+                        });
+                        self.searchResultsController.show();
+                    });
+                }
+                else {
+                    self.$('.GetCmpdError').show()
+                }
             });
             this.hideControls();
         },
@@ -190,6 +199,7 @@ $(function () {
             this.eNotiList.reset();
             this.showControls();
             this.router.navigate('');
+            this.$('.GetCmpdError').hide();
 /*             this.setDocumentTitle(); */
 //			window.location.reload();
         },
