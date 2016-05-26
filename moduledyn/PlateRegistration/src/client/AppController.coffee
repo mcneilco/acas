@@ -26,6 +26,9 @@ PlateTableIdentifierValidationController = require('./IdentifierValidationContro
 LoadPlateController = require('./LoadPlateController.coffee').LoadPlateController
 PlateSearchController = require('./PlateSearchController.coffee').PlateSearchController
 
+SplitPlatesController = require('./SplitPlateController.coffee').SplitPlatesController
+MergePlatesController = require('./MergePlateController.coffee').MergePlatesController
+
 APP_CONTROLLER_EVENTS = {}
 
 class AppController extends Backbone.View
@@ -73,8 +76,13 @@ class AppController extends Backbone.View
 
   displayCreatePlateForm: =>
     @resetCurrentlyDisplayedForm()
-    plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
-    plateTypeFetchPromise.complete(() =>
+    plateDefinitionsDeferred = $.Deferred()
+    #plateTypeFetchPromise = @createPlateController.plateDefinitions.fetch()
+    @createPlateController.plateDefinitions.fetch({
+      success: () =>
+        plateDefinitionsDeferred.resolve()
+    })
+    $.when(plateDefinitionsDeferred).done(() =>
       @createPlateController.model.reset()
       @createPlateController.plateDefinitions.convertLabelsToNumeric()
       @createPlateController.plateDefinitions.comparator = "numericPlateName"
@@ -108,14 +116,15 @@ class AppController extends Backbone.View
       success: () =>
         usersDeferred.resolve()
     })
-    #$.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
-    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
+    $.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred).done(() =>
+    #$.when(plateStatusesDeferred, plateTypesDeferred, plateDefinitionsDeferred, usersDeferred).done(() =>
       @plateSearchController.plateDefinitions.convertLabelsToNumeric()
       @plateSearchController.plateDefinitions.comparator = "numericPlateName"
       @plateSearchController.plateDefinitions.sort()
       @currentFormController = @plateSearchController
       @$("div[name='formContainer']").html @plateSearchController.render().el
       @plateSearchController.completeInitialize()
+      @trigger "displayPlateSearchRendered"
     )
 
   displayPlateDesignForm: (plateBarcode) =>
@@ -129,6 +138,18 @@ class AppController extends Backbone.View
     @currentFormController = @mergeOrSplitPlatesController
     @$("div[name='formContainer']").html @mergeOrSplitPlatesController.render().el
   
+  displayMergePlatesForm: =>
+    @resetCurrentlyDisplayedForm()
+    @mergePlatesController = new MergePlatesController()
+    @currentFormController = @mergePlatesController
+    @$("div[name='formContainer']").html @mergePlatesController.render().el
+
+  displaySplitPlatesForm: =>
+    @resetCurrentlyDisplayedForm()
+    @splitPlatesController = new SplitPlatesController()
+    @currentFormController = @splitPlatesController
+    @$("div[name='formContainer']").html @splitPlatesController.render().el
+
   handleAllDataLoadedForPlateDesignForm: (plateAndWellData) =>
     plateStatusesDeferred = $.Deferred()
     plateTypesDeferred = $.Deferred()

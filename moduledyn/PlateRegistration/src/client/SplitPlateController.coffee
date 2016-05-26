@@ -1,3 +1,4 @@
+Backbone = require('backbone')
 MINIMUM_PLATE_SIZE = 384
 
 class SplitPlatesController extends Backbone.View

@@ -7,7 +7,7 @@ $ = require('jquery')
 _ = require('lodash')
 
 
-describe "PlateTableController", ->
+xdescribe "PlateTableController", ->
   beforeEach ->
     fixture = '<div id="fixture"></div>';
     document.body.insertAdjacentHTML('afterbegin', fixture)
@@ -21,7 +21,7 @@ describe "PlateTableController", ->
       @plateTable = new PlateTableController(@startUpParams)
       $("#fixture").html @plateTable.render().el
       @plateTable.completeInitialization(plateWellContent, plateMetaData)
-    describe "completeInitialization", ->
+    xdescribe "completeInitialization", ->
       it "should set the number of columns in the table based on the  plateAndWellData.plateMetadata object passed in", ->
         tableSettings = @plateTable.handsOnTable.getSettings()
         expect(tableSettings.startCols).toEqual plateMetaData.numberOfColumns

@@ -10,7 +10,7 @@ $ = require('jquery')
 _ = require('lodash')
 
 
-describe "PlateInfoController", ->
+xdescribe "PlateInfoController", ->
   beforeEach ->
     fixture = '<div id="fixture"></div>';
     document.body.insertAdjacentHTML('afterbegin', fixture)

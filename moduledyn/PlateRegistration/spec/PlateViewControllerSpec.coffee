@@ -1,4 +1,7 @@
 PlateViewController = require('../src/client/PlateViewController.coffee').PlateViewController
+
+plateMetaData = require('./testFixtures/PlateTableControllerFixtures.coffee').plateMetaData
+plateWellContent = require('./testFixtures/PlateTableControllerFixtures.coffee').plateWellContent
 #PLATE_INFO_CONTROLLER_EVENTS = require('../src/client/PlateInfoController.coffee').PLATE_INFO_CONTROLLER_EVENTS
 
 PlateTableController = require('../src/client/PlateTableController.coffee').PlateTableController
@@ -68,23 +71,3 @@ describe "PlateViewController", ->
 #        done()
 #
 #      @plateInfo.handleDeleteClick()
-
-  describe "events", ->
-    beforeEach ->
-      @plateView = new PlateViewController(@startUpParams)
-      $("#fixture").html @plateView.render().el
-      @plateView.completeInitialization()
-
-    describe "REGION_SELECTED", ->
-      it "should call bubble up / trigger REGION_SELECTED event when plateTableController triggers 'REGION_SELECTED' event", (done) ->
-        #spyOn(@plateView, 'handleRegionSelected')
-        #@plateView.delegateEvents()
-        @plateView.on PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED, ->
-          expect(true).toBeTruthy()
-          done()
-
-        @plateView.plateTableController.trigger PLATE_TABLE_CONTROLLER_EVENTS.REGION_SELECTED
-#        _.defer( =>
-#          expect(@plateView.handleRegionSelected).toHaveBeenCalled()
-#          done()
-#        )

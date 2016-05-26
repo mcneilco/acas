@@ -88,13 +88,16 @@ describe "SerialDilutionController", ->
     it "should initially be disabled", ->
       expect(@serialDilutionController.$("button[name='applyDilution']").prop("disabled")).toBeTruthy()
 
-    it "should be enabled when the required fields are entered and the user has selected a valid region", ->
+    xit "should be enabled when the required fields are entered and the user has selected a valid region", ->
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_DOSES, 5)
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_COLUMNS_SELECTED, 2)
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.NUMBER_OF_ROWS_SELECTED, 1)
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.SELECTED_COLUMN_IDX, 1)
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.SELECTED_ROW_IDX, 1)
       @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.DIRECTION, "diluteDown")
+      @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.LOWEST_VOLUME_WELL, 5)
+      @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_VOLUME, true)
+      @serialDilutionController.model.set(SERIAL_DILUTION_MODEL_FIELDS.ALL_WELLS_HAVE_CONCENTRATION, true)
       @serialDilutionController.setStateOfSubmitButton()
       expect(@serialDilutionController.$("button[name='applyDilution']").prop("disabled")).toBeFalsy()
 

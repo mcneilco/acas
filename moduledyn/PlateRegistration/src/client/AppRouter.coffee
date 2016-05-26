@@ -15,6 +15,8 @@ class AppRouter extends Backbone.Router
     "plateDesign/:plateCodeName": "plateDesignRoute"
     "plateSearch": "plateSearchRoute"
     "mergeOrSplitPlates": "mergeOrSplitPlates"
+    "mergePlates": "mergePlates"
+    "splitPlates": "splitPlates"
 
   plateDesignRoute: (plateBarcode) ->
     appController.displayPlateDesignForm(plateBarcode)
@@ -27,6 +29,12 @@ class AppRouter extends Backbone.Router
 
   mergeOrSplitPlates: ->
     appController.displayMergeOrSplitPlatesForm()
+
+  mergePlates: ->
+    appController.displayMergePlatesForm()
+
+  splitPlates: ->
+    appController.displaySplitPlatesForm()
 
 module.exports =
   AppRouter: AppRouter

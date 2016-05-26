@@ -88,6 +88,7 @@ class NewPlateDesignController extends Backbone.View
     @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, addContentModel
 
   handleAddContentSuccessCallback: (addContentModel) =>
+    console.log "handleAddContentSuccessCallback"
     @plateViewController.addContent addContentModel
     #@addContentController.handleIdentifiersAdded addContentModel.get(ADD_CONTENT_MODEL_FIELDS.VALID_IDENTIFIERS)
 

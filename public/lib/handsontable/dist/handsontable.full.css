@@ -101,6 +101,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 .handsontable th,
 .handsontable td {
+  border-top-width: 0;
+  border-left-width: 0;
   border-right: 1px solid #CCC;
   border-bottom: 1px solid #CCC;
   height: 22px;
@@ -226,6 +228,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .handsontable .manualColumnMoverGuide.active,
 .handsontable .manualRowMoverGuide.active {
   display: block;
+  z-index: 199;
 }
 
 .handsontable .manualColumnMover:hover,
@@ -287,6 +290,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 .handsontable .manualColumnResizerGuide.active,
 .handsontable .manualRowResizerGuide.active {
   display: block;
+  z-index: 199;
 }
 
 .handsontable .columnSorting {
@@ -1139,6 +1143,7 @@ thead .htCollapseButton:after {
   border-top: 1px solid #bbb;
   height: 0;
   padding: 0;
+  cursor: default;
 }
 
 .htContextMenu table tbody tr td.htDisabled {

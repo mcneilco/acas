@@ -77,6 +77,23 @@ describe('Core_view', function () {
     expect(getSelected()).toEqual([3, 0, 3, 0]); //test whether it is selected
   });
 
+  it('should scroll viewport without cell selection', function() {
+    this.$container[0].style.width = '400px';
+
+    var hot1 = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(20, 20),
+      height: 100
+    });
+
+    hot1.scrollViewportTo(10, 10);
+
+    var wtHolder = this.$container.find('.ht_master .wtHolder');
+
+    expect(wtHolder[0].scrollTop).toEqual(230);
+    expect(wtHolder[0].scrollLeft).toEqual(500);
+
+  });
+
   xit('should scroll viewport, respecting fixed rows', function () {
     this.$container[0].style.width = '200px';
     this.$container[0].style.height = '100px';
@@ -207,7 +224,6 @@ describe('Core_view', function () {
     expect(leftClone.find('tr:eq(1) td:eq(0)').html()).toEqual("A2");
     expect(leftClone.find('tr:eq(2) td:eq(0)').html()).toEqual("A3");
 
-
   });
 
   it('should enable to change fixedColumnsLeft with updateSettings', function () {
@@ -251,8 +267,6 @@ describe('Core_view', function () {
     expect(leftClone.find('tr:eq(1) td:eq(1)').html()).toEqual("B2");
     expect(leftClone.find('tr:eq(2) td:eq(0)').html()).toEqual("A3");
     expect(leftClone.find('tr:eq(2) td:eq(1)').html()).toEqual("B3");
-
-
 
   });
 
@@ -386,7 +400,30 @@ describe('Core_view', function () {
     waitsFor(function(){
       return afterRenderCallback.calls.length > 0;
     }, 'afterRender event to fire', 1000);
+  });
 
+  it("should fire afterRender event after table physically rendered", function () {
+    this.$container[0].style.width = '400px';
+    this.$container[0].style.height = '60px';
+    this.$container[0].style.overflow = 'hidden';
+
+    var hot = handsontable({
+      data: Handsontable.helper.createSpreadsheetData(20, 3)
+    });
+
+    hot.addHook('afterRender', function() {
+      hot.view.wt.wtTable.holder.style.overflow = 'scroll';
+      hot.view.wt.wtTable.holder.style.width = '220px';
+    });
+
+    this.$container.find(".ht_master .wtHolder").first().scrollTop(1000);
+
+    waits(100);
+    runs(function() {
+      // after afterRender hook triggered element style shouldn't changed
+      expect(hot.view.wt.wtTable.holder.style.overflow).toBe('scroll');
+      expect(hot.view.wt.wtTable.holder.style.width).toBe('220px');
+    })
   });
 
   //TODO fix these tests - https://github.com/handsontable/handsontable/issues/1559
@@ -615,13 +652,65 @@ describe('Core_view', function () {
       expect(overlayTH[0].offsetWidth).toEqual(50);
 
 
-      expect(masterTH[1].offsetWidth).toBeInArray([86, 87, 88]);
-      expect(overlayTH[1].offsetWidth).toBeInArray([86, 87, 88]); //if you get 90, it means it is calculated before scrollbars were applied
+      expect(masterTH[1].offsetWidth).toBeInArray([86, 87, 88, 90]);
+      expect(overlayTH[1].offsetWidth).toBeInArray([86, 87, 88, 90]); //if you get 90, it means it is calculated before scrollbars were applied, or show scroll on scrolling is enabled
 
       expect(masterTH[2].offsetWidth).toEqual(overlayTH[2].offsetWidth);
       expect(masterTH[3].offsetWidth).toEqual(overlayTH[3].offsetWidth);
       expect(masterTH[4].offsetWidth).toEqual(overlayTH[4].offsetWidth);
       expect(masterTH[5].offsetWidth).toEqual(overlayTH[5].offsetWidth);
+    });
+
+    it("should respect stretched widths returned in beforeStretchingColumnWidth hook", function() {
+      this.$container[0].style.width = '501px';
+      this.$container[0].style.height = '100px';
+      this.$container[0].style.overflow = 'hidden';
+
+      var callbackSpy = jasmine.createSpy();
+
+      callbackSpy.andCallFake(function(width, column) {
+        if (column === 1) {
+          return 150;
+        }
+
+        return width;
+      });
+
+      var hot = handsontable({
+        startRows: 2,
+        startCols: 5,
+        rowHeaders: true,
+        colHeaders: true,
+        stretchH: 'all',
+        beforeStretchingColumnWidth: callbackSpy
+      });
+
+      var $columnHeaders = this.$container.find('thead tr:eq(0) th');
+
+      expect($columnHeaders.eq(0).width()).toEqual(48);
+      expect($columnHeaders.eq(1).width()).toEqual(73);
+      expect($columnHeaders.eq(2).width()).toEqual(149);
+      expect($columnHeaders.eq(3).width()).toEqual(74);
+      expect($columnHeaders.eq(4).width()).toEqual(74);
+
+      expect(callbackSpy).toHaveBeenCalled();
+      // First cycle to check what columns has permanent width
+      expect(callbackSpy.calls[0].args[0]).not.toBeDefined();
+      expect(callbackSpy.calls[0].args[1]).toBe(0);
+      expect(callbackSpy.calls[1].args[0]).not.toBeDefined();
+      expect(callbackSpy.calls[1].args[1]).toBe(1);
+      expect(callbackSpy.calls[2].args[0]).not.toBeDefined();
+      expect(callbackSpy.calls[2].args[1]).toBe(2);
+      expect(callbackSpy.calls[3].args[0]).not.toBeDefined();
+      expect(callbackSpy.calls[3].args[1]).toBe(3);
+      expect(callbackSpy.calls[4].args[0]).not.toBeDefined();
+      expect(callbackSpy.calls[4].args[1]).toBe(4);
+      // Second cycle retrieve stretched width or permanent width
+      expect(callbackSpy.calls[5].args[0]).toBe(75);
+      expect(callbackSpy.calls[6].args[0]).toBe(75);
+      expect(callbackSpy.calls[7].args[0]).toBe(75);
+      expect(callbackSpy.calls[8].args[0]).toBe(75);
+      expect(callbackSpy.calls[9].args[0]).toBe(75);
     });
 
   });

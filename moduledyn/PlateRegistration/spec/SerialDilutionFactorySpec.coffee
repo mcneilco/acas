@@ -2,7 +2,7 @@ $ = require('jquery')
 _ = require('lodash')
 
 SerialDilutionFactory = require('../src/client/SerialDilutionFactory.coffee').SerialDilutionFactory
-SerialDilutionByVolume = require('../src/client/SerialDilutionFactory.coffee').SerialDilutionByVolume
+SerialDilutionByVolume = require('../src/client/SerialDilutionFactory.coffee').SerialDilutionFactory
 SerialDilutionModel = require('../src/client/SerialDilutionModel.coffee').SerialDilutionModel
 SERIAL_DILUTION_MODEL_FIELDS = require('../src/client/SerialDilutionModel.coffee').SERIAL_DILUTION_MODEL_FIELDS
 
@@ -16,8 +16,14 @@ describe "SerialDilutionFactory", ->
   describe "getSerialDilutionStrategy", ->
     describe "should return the correct SerialDilutionStrategy based on the input SerialDultionModel", ->
       describe "when dilutionModel.isDilutionByVolume is true", ->
-        it "should return a SerialDilutionStrategy of type SerialDilutionByVolume", ->
+        it "should return a SerialDilutionStrategy of type DiluteByVolumeRight", ->
           sdm = new SerialDilutionModel()
           sdm.set SERIAL_DILUTION_MODEL_FIELDS.IS_DILUTION_BY_VOLUME, true
-          sds = @sdf.getSerialDilutionStrategy sdm
-          expect(sds instanceof SerialDilutionByVolume).toBeTruthy()
+          seletedRegion =
+            rowStart: 1
+            rowStop: 10
+            colStart: 1
+            colStop: 10
+          sds = @sdf.getSerialDilutionStrategy sdm, seletedRegion
+
+          expect(sds.constructor.name).toEqual('DiluteByVolumeRight')
