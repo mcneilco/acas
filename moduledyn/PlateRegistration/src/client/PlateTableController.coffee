@@ -67,7 +67,7 @@ class PlateTableController extends Backbone.View
   renderHandsOnTable: =>
     container = document.getElementsByName("handsontablecontainer")[0]
     columnHeaders = [1..@plateMetaData.numberOfColumns]
-    rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'W', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
+    rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
 
     if @displayToolTips
       @handsOnTable = new Handsontable(container, {
