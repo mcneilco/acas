@@ -806,19 +806,7 @@ class PlateTableController extends Backbone.View
 
   fitToContents: =>
     @shouldFitToScreen = false
-    columnWidth = @getContentWidth()
-    height = $(".editorHandsontable").height()
-
-    rowHeight = (height - 50) / @plateMetaData.numberOfRows
-
-    if columnWidth < 60
-      columnWidth = null
-    @handsOnTable.updateSettings({
-      colWidths: columnWidth,
-      rowHeights: rowHeight
-    })
-    #@handsOnTable.init()
-    @handsOnTable.render()
+    @calculateLayout()
 
   fitToScreen: =>
     @shouldFitToScreen = true
