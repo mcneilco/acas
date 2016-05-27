@@ -88,7 +88,8 @@ class PlateTableController extends Backbone.View
         allowInsertRow: false
         stretchH: 'all'
         preventOverflow: 'horizontal'
-        wordWrap: false
+        wordWrap: false,
+        undo: false
       })
     else
       @handsOnTable = new Handsontable(container, {
@@ -109,7 +110,8 @@ class PlateTableController extends Backbone.View
         allowInsertRow: false
         stretchH: 'all'
         preventOverflow: 'horizontal'
-        wordWrap: false
+        wordWrap: false,
+        undo: false
       })
 
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
