@@ -55,6 +55,36 @@ describe('CheckboxRenderer', function () {
     expect($(getRenderedContent(2, 0)).prop('checked')).toBe(true);
   });
 
+  it('should select cell after checkbox click', function () {
+    var hot = handsontable({
+      data: [[true],[false],[true]],
+      columns: [
+        {type: 'checkbox'}
+      ]
+    });
+
+    hot.selectCell(0, 0);
+
+    this.$container.find(':checkbox').eq(2).simulate('mousedown');
+
+    expect(hot.getSelected()).toEqual([2, 0, 2, 0]);
+  });
+
+  it('should select cell after label click', function () {
+    var hot = handsontable({
+      data: [[true],[false],[true]],
+      columns: [
+        {type: 'checkbox', label: {position: 'before', value: 'Sure? '}}
+      ]
+    });
+
+    hot.selectCell(0, 0);
+
+    this.$container.find('td label').eq(2).simulate('mousedown');
+
+    expect(hot.getSelected()).toEqual([2, 0, 2, 0]);
+  });
+
   it('should reverse selection in checkboxes', function () {
     handsontable({
       data  :  [[true],[false],[true]],
@@ -473,6 +503,29 @@ describe('CheckboxRenderer', function () {
     expect(getData()).toEqual([['foo'], ['bar']]);
 
     expect(afterChangeCallback.calls.length).toEqual(0);
+  });
+
+  it("shouldn't change checkbox state after hitting other keys then SPACE, ENTER, DELETE or BACKSPACE", function () {
+    handsontable({
+      data: [[false], [true], [true]],
+      columns: [
+        {type: 'checkbox'}
+      ]
+    });
+
+    var afterChangeCallback = jasmine.createSpy('afterChangeCallback');
+    addHook('afterChange', afterChangeCallback);
+
+    selectCell(0, 0);
+    keyDown('space');
+
+    expect(getDataAtCell(0, 0)).toBe(true);
+
+    selectCell(0, 0);
+    keyDown('c');
+
+    expect(getDataAtCell(0, 0)).toBe(true);
+    expect(afterChangeCallback.calls.length).toEqual(1);
   });
 
   it("should add label on the beginning of a checkbox element", function () {

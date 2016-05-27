@@ -43,7 +43,7 @@ class PlateTableController extends Backbone.View
     @dataFieldToColorBy = "noColor"
     @listOfBatchCodes = {}
     @fontSize = INITIAL_FONT_SIZE
-    @shouldFitToScreen = false
+    @shouldFitToScreen = true
 
   render: =>
     $(@el).html @template()
@@ -67,7 +67,7 @@ class PlateTableController extends Backbone.View
   renderHandsOnTable: =>
     container = document.getElementsByName("handsontablecontainer")[0]
     columnHeaders = [1..@plateMetaData.numberOfColumns]
-    rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'W', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
+    rowHeaders = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF']
 
     if @displayToolTips
       @handsOnTable = new Handsontable(container, {
@@ -87,6 +87,8 @@ class PlateTableController extends Backbone.View
         allowInsertColumn: false
         allowInsertRow: false
         stretchH: 'all'
+        preventOverflow: 'horizontal'
+        wordWrap: false
       })
     else
       @handsOnTable = new Handsontable(container, {
@@ -106,12 +108,14 @@ class PlateTableController extends Backbone.View
         allowInsertColumn: false
         allowInsertRow: false
         stretchH: 'all'
-        #beforeAutofill: @handleBeforeAutofill
+        preventOverflow: 'horizontal'
+        wordWrap: false
       })
 
     hotData = @convertWellsDataToHandsonTableData(@dataFieldToDisplay)
     @addContent(hotData)
-    @fitToScreen()
+    #@fitToScreen()
+    @calculateLayout()
 
 #  handleBeforeAutofill: (start, end, data) =>
 ##    console.log "handleBeforeAutofill"
@@ -373,6 +377,8 @@ class PlateTableController extends Backbone.View
 
   addContent: (data) =>
     @handsOnTable.setDataAtCell data, 'programaticEdit'
+    console.log "data"
+    console.log data
     @updateColorByNoReRender()
     @handsOnTable.render()
 
@@ -380,6 +386,12 @@ class PlateTableController extends Backbone.View
     hotData = []
     _.each(data, (d) =>
       hotData.push([d[0], d[1], d[2][@dataFieldToDisplay]])
+      well = @wellsToUpdate.getWellAtRowIdxColIdx(d[0], d[1])
+      cell = @handsOnTable.getCell(well.rowIndex - 1, well.columnIndex - 1)
+
+      #@updateColorByNoReRender()
+      if @displayToolTips
+        @updateTooltip(cell, well)
     )
     @handsOnTable.setDataAtCell hotData, 'programaticEdit'
     @updateColorByNoReRender()
@@ -794,19 +806,7 @@ class PlateTableController extends Backbone.View
 
   fitToContents: =>
     @shouldFitToScreen = false
-    columnWidth = @getContentWidth()
-    height = $(".editorHandsontable").height()
-
-    rowHeight = (height - 50) / @plateMetaData.numberOfRows
-
-    if columnWidth < 60
-      columnWidth = null
-    @handsOnTable.updateSettings({
-      colWidths: columnWidth,
-      rowHeights: rowHeight
-    })
-    #@handsOnTable.init()
-    @handsOnTable.render()
+    @calculateLayout()
 
   fitToScreen: =>
     @shouldFitToScreen = true

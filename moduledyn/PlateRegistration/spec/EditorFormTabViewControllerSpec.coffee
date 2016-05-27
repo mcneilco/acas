@@ -9,7 +9,6 @@ SerialDilutionController = require('../src/client/SerialDilutionController.coffe
 
 describe "EditorFormTabViewController", ->
   beforeEach ->
-    #@editorFormTabViewController = new EditorFormTabViewController({plateInfoController: new PlateInfoController, addContentController: new AddContentController(), templateController: new TemplateController(), serialDilutionController: new SerialDilutionController()})
     @editorFormTabViewController = new EditorFormTabViewController({plateInfoController: {}, addContentController: {}, templateController: {}, serialDilutionController: {}})
 
   it "should exist", ->

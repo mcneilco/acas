@@ -1,4 +1,6 @@
 Backbone = require('backbone')
+$ = require('jquery')
+_ = require('lodash')
 
 class ClonePlateController extends Backbone.View
   tagName: 'tr'

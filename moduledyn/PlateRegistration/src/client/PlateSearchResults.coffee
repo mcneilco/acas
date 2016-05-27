@@ -32,7 +32,7 @@ class SearchResultTable extends Backbone.View
       <tr>
           <th>Barcode</th>
           <th>Wells</th>
-          <th>User</th>
+          <th>Scientist</th>
           <th>Description</th>
           <th>Status</th>
           <th>Type</th>

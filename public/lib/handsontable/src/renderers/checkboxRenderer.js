@@ -1,4 +1,3 @@
-
 import {empty, addClass, hasClass} from './../helpers/dom/element';
 import {equalsIgnoreCase} from './../helpers/string';
 import {EventManager} from './../eventManager';
@@ -7,13 +6,13 @@ import {KEY_CODES} from './../helpers/unicode';
 import {stopPropagation, stopImmediatePropagation, isImmediatePropagationStopped} from './../helpers/dom/event';
 
 const isListeningKeyDownEvent = new WeakMap();
+const isCheckboxListenerAdded = new WeakMap();
 const BAD_VALUE_CLASS = 'htBadValue';
 
 /**
  * Checkbox renderer
  *
  * @private
- * @renderer CheckboxRenderer
  * @param {Object} instance Handsontable instance
  * @param {Element} TD Table cell where to render
  * @param {Number} row
@@ -34,6 +33,7 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
   if (typeof cellProperties.uncheckedTemplate === 'undefined') {
     cellProperties.uncheckedTemplate = false;
   }
+
   empty(TD); // TODO identify under what circumstances this line can be removed
 
   if (value === cellProperties.checkedTemplate || equalsIgnoreCase(value, cellProperties.checkedTemplate)) {
@@ -50,6 +50,10 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
     addClass(input, BAD_VALUE_CLASS);
     badValue = true;
   }
+
+  input.setAttribute('data-row', row);
+  input.setAttribute('data-col', col);
+
   if (!badValue && labelOptions) {
     let labelText = '';
 
@@ -68,20 +72,23 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
     }
     input = label;
   }
+
   TD.appendChild(input);
 
   if (badValue) {
     TD.appendChild(document.createTextNode('#bad-value#'));
   }
 
-  if (cellProperties.readOnly) {
-    eventManager.addEventListener(input, 'click', preventDefault);
-  } else {
-    eventManager.addEventListener(input, 'mousedown', stopPropagation);
-    eventManager.addEventListener(input, 'mouseup', stopPropagation);
-    eventManager.addEventListener(input, 'change', (event) => {
-      instance.setDataAtRowProp(row, prop, event.target.checked ? cellProperties.checkedTemplate : cellProperties.uncheckedTemplate);
-    });
+  if (!isCheckboxListenerAdded.has(instance)) {
+    if (cellProperties.readOnly) {
+      eventManager.addEventListener(instance.rootElement, 'click', preventDefault);
+    } else {
+      eventManager.addEventListener(instance.rootElement, 'mouseup', (event) => onMouseUp(event, instance));
+      eventManager.addEventListener(instance.rootElement, 'change', (event) => onChange(event, instance));
+
+    }
+
+    isCheckboxListenerAdded.set(instance, true);
   }
 
   if (!isListeningKeyDownEvent.has(instance)) {
@@ -109,10 +116,10 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
         event.preventDefault();
       });
     }
-    if (event.keyCode == KEY_CODES.SPACE || event.keyCode == KEY_CODES.ENTER) {
+    if (event.keyCode === KEY_CODES.SPACE || event.keyCode === KEY_CODES.ENTER) {
       toggleSelected();
     }
-    if (event.keyCode == KEY_CODES.DELETE || event.keyCode == KEY_CODES.BACKSPACE) {
+    if (event.keyCode === KEY_CODES.DELETE || event.keyCode === KEY_CODES.BACKSPACE) {
       toggleSelected(false);
     }
   }
@@ -159,6 +166,10 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
    */
   function eachSelectedCheckboxCell(callback) {
     const selRange = instance.getSelectedRange();
+
+    if (!selRange) {
+      return;
+    }
     const topLeft = selRange.getTopLeftCorner();
     const bottomRight = selRange.getBottomRightCorner();
 
@@ -176,10 +187,6 @@ function checkboxRenderer(instance, TD, row, col, prop, value, cellProperties) {
   }
 }
 
-export {checkboxRenderer};
-
-registerRenderer('checkbox', checkboxRenderer);
-
 /**
  * Create input element.
  *
@@ -191,6 +198,7 @@ function createInput() {
   input.className = 'htCheckboxRendererInput';
   input.type = 'checkbox';
   input.setAttribute('autocomplete', 'off');
+  input.setAttribute('tabindex', '-1');
 
   return input.cloneNode(false);
 }
@@ -209,6 +217,61 @@ function createLabel(text) {
   return label.cloneNode(true);
 }
 
+/**
+ * If the event target matches the checkbox selector, prevent the default event action.
+ *
+ * @private
+ * @param event
+ */
 function preventDefault(event) {
-  event.preventDefault();
+  if (isCheckboxInput(event.target)) {
+    event.preventDefault();
+  }
 }
+
+/**
+ * `mouseup` callback.
+ *
+ * @private
+ * @param {Event} event `mouseup` event.
+ * @param {Object} instance Handsontable instance.
+ */
+function onMouseUp(event, instance) {
+  if (isCheckboxInput(event.target)) {
+    setTimeout(instance.listen, 10);
+  }
+}
+
+/**
+ * `change` callback.
+ *
+ * @param {Event} event `change` event.
+ * @param {Object} instance Handsontable instance.
+ * @param {Object} cellProperties Reference to cell properties.
+ * @returns {Boolean}
+ */
+function onChange(event, instance) {
+  if (!isCheckboxInput(event.target)) {
+    return false;
+  }
+
+  let row = parseInt(event.target.getAttribute('data-row'), 10);
+  let col = parseInt(event.target.getAttribute('data-col'), 10);
+  let cellProperties = instance.getCellMeta(row, col);
+
+  instance.setDataAtCell(row, col, event.target.checked ? (cellProperties.checkedTemplate || true) : (cellProperties.uncheckedTemplate || false));
+}
+
+/**
+ * Check if the provided element is the checkbox input.
+ *
+ * @private
+ * @param {HTMLElement} element The element in question.
+ * @returns {Boolean}
+ */
+function isCheckboxInput(element) {
+  return element.tagName === 'INPUT' && element.getAttribute('type') === 'checkbox';
+}
+
+export {checkboxRenderer};
+registerRenderer('checkbox', checkboxRenderer);

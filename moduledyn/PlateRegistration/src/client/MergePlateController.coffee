@@ -1,3 +1,5 @@
+Backbone = require('backbone')
+
 MAX_PLATE_SIZE = 384
 
 class MergePlatesController extends Backbone.View

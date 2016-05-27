@@ -1,4 +1,5 @@
 _ = require('lodash')
+$ = require('jquery')
 Backbone = require('backbone')
 BackboneValidation = require('backbone-validation')
 
