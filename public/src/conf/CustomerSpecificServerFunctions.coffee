@@ -501,3 +501,45 @@ exports.checkRoles = (user, retFun) ->
 			retFun 'login_error'
 		else
 			retFun 'success'
+
+exports.getExternalProjectCodes = (displayName, requests, callback) ->
+	if displayName == "Corporate Batch ID"
+		console.log "looking up compound batches"
+		exports.getBatchProjects requests, (response) ->
+			console.log "getExternalProjectCodes response"
+			console.log response
+			callback response
+	else
+		callback "failed: problem with external preferred Code request: code type and kind are unknown to system"
+
+exports.getBatchProjects = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.projectCode = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.projectCode = "DNS000001234::7"
+			else
+				res.projectCode = checkBatch_TestMode(req.requestName)
+			results.push res
+		response = results
+
+		callback response
+	else #not spec mode
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.client.service.cmpdReg.persistence.fullpath+"projects/getBatchProjects"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null

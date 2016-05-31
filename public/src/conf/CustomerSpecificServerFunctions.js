@@ -666,4 +666,60 @@
     });
   };
 
+  exports.getExternalProjectCodes = function(displayName, requests, callback) {
+    if (displayName === "Corporate Batch ID") {
+      console.log("looking up compound batches");
+      return exports.getBatchProjects(requests, function(response) {
+        console.log("getExternalProjectCodes response");
+        console.log(response);
+        return callback(response);
+      });
+    } else {
+      return callback("failed: problem with external preferred Code request: code type and kind are unknown to system");
+    }
+  };
+
+  exports.getBatchProjects = function(requests, callback) {
+    var config, k, len, req, request, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.projectCode = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.projectCode = "DNS000001234::7";
+        } else {
+          res.projectCode = checkBatch_TestMode(req.requestName);
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.client.service.cmpdReg.persistence.fullpath + "projects/getBatchProjects",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
+    }
+  };
+
 }).call(this);

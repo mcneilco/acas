@@ -436,4 +436,33 @@
     }
   };
 
+  exports.getProjectCodesFromNamesOrCodes = function(codeRequest, callback) {
+    var i, len, ref, req, res, response, results;
+    console.log("got to getProjectCodesFromNamesOrCodes");
+    results = [];
+    ref = codeRequest.requests;
+    for (i = 0, len = ref.length; i < len; i++) {
+      req = ref[i];
+      res = {
+        requestName: req.requestName
+      };
+      if (req.requestName.indexOf("ambiguous") > -1) {
+        res.projectCode = "";
+      } else if (req.requestName.indexOf("name") > -1) {
+        res.projectCode = "GENE1111";
+      } else if (req.requestName.indexOf("1111") > -1) {
+        res.projectCode = "GENE1111";
+      } else {
+        res.projectCode = "";
+      }
+      results.push(res);
+    }
+    response = {
+      thingType: codeRequest.thingType,
+      thingKind: codeRequest.thingKind,
+      results: results
+    };
+    return callback(response);
+  };
+
 }).call(this);

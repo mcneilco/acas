@@ -352,3 +352,25 @@ exports.genericThingSearch = (req, resp) ->
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getProjectCodesFromNamesOrCodes = (codeRequest, callback) ->
+	#TODO: real implementation
+	console.log "got to getProjectCodesFromNamesOrCodes"
+	results = []
+	for req in codeRequest.requests
+		res = requestName: req.requestName
+		if req.requestName.indexOf("ambiguous") > -1
+			res.projectCode = ""
+		else if req.requestName.indexOf("name") > -1
+			res.projectCode = "GENE1111"
+		else if req.requestName.indexOf("1111") > -1
+			res.projectCode = "GENE1111"
+		else
+			res.projectCode = ""
+		results.push res
+	response =
+		thingType: codeRequest.thingType
+		thingKind: codeRequest.thingKind
+		results: results
+
+	callback response
