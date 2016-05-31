@@ -1,50 +1,23 @@
 runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, inputParameters, 
                                         primaryExperimentCodes, confirmationExperimentCodes) {
-  summaryFile <- list()
+  
   experiment <- getExperimentByCodeName("EXPT-00014365")
   primaryExperimentCodes <- fromJSON("[\"EXPT-00012918\",\"EXPT-00012374\"]")
-  confirmationExperimentCodes <- fromJSON("[]")
+  confirmationExperimentCodes <- fromJSON("[\"EXPT-00014387\"]")
   inputParameters <- fromJSON("{\"signalDirectionRule\":\"decreasing\",\"aggregateBy\":\"entire assay\",\"aggregationMethod\":\"mean\",\"normalization\":{\"normalizationRule\":\"none\"},\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"}],\"hitEfficacyThreshold\":null,\"hitSDThreshold\":null,\"thresholdType\":null,\"useOriginalHits\":false,\"autoHitSelection\":false}")
   
   # ACASDEV-758: get data for linked experiments
   library(plyr)
   library(data.table)
-  allData1 <- ldply(primaryExperimentCodes, function(codeName) {
-    exptQuery <- paste0("select e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
-    ss.ls_type_and_kind as SUB_STATE_TYPE_AND_KIND, sv.id as SUB_VALUE_ID, sv.ls_kind as VALUE_KIND, sv.ls_type as VALUE_TYPE, 
-                        sv.code_value, sv.numeric_value, sv.string_value, 
-                        sv.unit_kind, sv.concentration, sv.conc_unit
-                        from experiment e
-                        JOIN experiment_analysisgroup eag ON eag.experiment_id=e.id
-                        left outer join analysis_group ag on ag.id = eag.ANALYSIS_GROUP_ID and ag.ignored = '0'
-                        left outer join analysisgroup_treatmentgroup atg on atg.ANALYSIS_GROUP_ID = ag.id
-                        left outer join treatment_group tg on tg.id = atg.treatment_group_id and tg.ignored = '0'
-                        left outer join treatmentgroup_subject tgs on tgs.treatment_group_id = tg.id
-                        left outer join subject s on s.id = tgs.subject_id and s.ignored = '0'
-                        left outer join subject_state ss on ss.subject_id = s.id and ss.ignored = '0'
-                        left outer join subject_value sv on sv.subject_state_id = ss.id and sv.ignored = '0'
-                        where e.code_name ='", codeName, "'")
-    return(query(exptQuery))
-  })
-  
-  allData1 <- as.data.table(allData1)
-  setnames(allData1, toupper(names(allData1)))
-  allData1[, combinedTypeAndKind := paste0(SUB_STATE_TYPE_AND_KIND, "_", VALUE_KIND)]
-  
-  # pivot data
-  wideData1 <- makeWideData(allData1)
-  
-  # ACASDEV-764: get data for confirmation
-#   allData2 <- ldply(confirmationExperimentCodes, function(code) {
-#     query("select data from table1 join table2")
-#   })
-  # allData <- rbind(allData1, allData2)
-  
+
+  wideDataPrimary <- getExperimentData(primaryExperimentCodes)
+  wideDataConf <- getExperimentData(confirmationExperimentCodes)
   
   # ACASDEV-759: get plate order
   plateOrderFrame <- ldply(primaryExperimentCodes, getPlateOrderForExperiment)
-  wideDataAll <- merge(wideData1, as.data.table(plateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
+  wideDataAll <- merge(wideDataPrimary, as.data.table(plateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
   
+  summaryInfo <- list()
   # ACASDEV-763: make spotfire file, see saveReports.R for inspiration
   dir.create(getUploadedFilePath(file.path("experiments", experiment$codeName)), showWarnings = FALSE)
   reportLocation <- file.path("experiments", experiment$codeName, "analysis")
@@ -56,6 +29,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   library(RCurl)
   summaryInfo$reports <- saveReports(NULL, copy(wideDataAll), saveLocation=reportLocation, experiment, inputParameters, user, 
                                            customSourceFileMove=customSourceFileMove)
+  summaryInfo$reports[[1]]$fileText <- NULL  # clear up memory
   for (singleReport in summaryInfo$reports) {
     summaryInfo$info[[singleReport$title]] <- paste0(
       '<a href="', singleReport$link, '" target="_blank" ',
@@ -63,20 +37,93 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   }
   
   # ACASDEV-765: find list of confirmed compounds, looking at existing code for screening campaigns
+  if (length(confirmationExperimentCodes) > 0) {
+    wideDataConf <- as.data.table(wideDataConf)
+    wideDataConf[, compoundName := vapply(strsplit(batchCode, "::"), head, character(1), n=1)] # TODO: replace with common function
+    # Remove flagged points and get mean per compound and concentration
+    confThreshDT <- wideDataConf[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
+                                 list(SD = mean(transformed_sd, na.rm = TRUE), 
+                                      efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
+                                 by=list(compoundName, concentration)]
+    
+    wideDataPrimary <- as.data.table(wideDataPrimary)
+    wideDataPrimary[, compoundName := vapply(strsplit(batchCode, "::"), head, FUN.VALUE = character(1), n=1)] # TODO: replace with common function
+    # Remove flagged points and get mean per compound and concentration
+    primaryThreshDT <- wideDataPrimary[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
+                                       list(SD = mean(transformed_sd, na.rm = TRUE), 
+                                            efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
+                                       by=list(compoundName, concentration)]
+    
+    # Get max for each compound (could be at any concentration)
+    maxConfThreshDT <- confThreshDT[, SD=max(SD), efficacy=max(efficacy), by = compoundName]
+    maxPrimaryThreshDT <- primaryThreshDT[, SD=max(SD), efficacy=max(efficacy), by = compoundName]
+    
+    combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="compoundName")
+    if (is.null(inputParameters$thresholdType)) {
+      confThreshDT[, hit := FALSE]
+      xLabel <- "Efficacy Primary"
+      yLabel <- "Efficacy Confirmation"
+      xValues <- combinedDT$efficacy.x
+      yValues <- combinedDT$efficacy.y
+      threshold <- NA
+    } else if (inputParameters$thresholdType == "sd") {
+      confThreshDT[, hit := SD > inputParameters$hitSDThreshold]
+      xLabel <- "SD Primary"
+      yLabel <- "SD Confirmation"
+      xValues <- combinedDT$SD.x
+      yValues <- combinedDT$SD.y
+      threshold <- inputParameters$hitSDThreshold
+    } else if (inputParameters$thresholdType == "efficacy") {
+      confThreshDT[, hit := efficacy > inputParameters$hitEfficacyThreshold]
+      xLabel <- "Efficacy Primary"
+      yLabel <- "Efficacy Confirmation"
+      xValues <- combinedDT$efficacy.x
+      yValues <- combinedDT$efficacy.y
+      threshold <- inputParameters$hitEfficacyThreshold
+    }
+    
+    # ACASDEV-766: calculate confirmation rate out of set tested
+    # Get number of compounds confirmed
+    totalTested <- length(unique(wideDataPrimary$compoundName))
+    totalConfirmed <- length(unique(maxConfThreshDT[hit, compoundName]))
+    totalRetested <- length(intersect(wideDataPrimary$compoundName, confThreshDT$compoundName))
+    confirmationRate <- totalConfirmed / totalRetested * 100  # convert to percent
+    
+    # ACASDEV-767: draw confirmation graph
+    # Each compound has an average for each concentration used, and then the max of those is chosen for the graph
+    # The graph simply shows the max efficacy for SD
+    plotTitle <- paste(confirmationExperimentCodes, collapse = ", ")
+    xLim <- c(min(xValues), max(xValues))
+    plot(xValues, yValues, main = plotTitle, xlab = xLabel, ylab = yLabel, 
+         frame.splot = F, col="blue", pch=15, cex=0.8)
+    if (!is.na(threshold)) {
+      lines(xLim, rep(threshold, 2), col = "green")
+    }
+  }
   
-  # ACASDEV-766: calculate confirmation rate out of set tested
-  
-  # ACASDEV-767: draw confirmation graph
+  primaryHitList <- unique(wideDataPrimary[flagType=="hit", batchCode])
+  tempFile <- paste0(experimentCode, "primaryHits.csv")
+  writeLines(primaryHitList, getUploadedFilePath(tempFile))
+  primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", "primary hit list")
   
   summaryInfo$experiment <- experiment
   summaryInfo$info <- list(
-    "Stuff done" = "Yes",
-    "Primary Experiment Codes" = "Test"
+    "Compounds Tested in Primary" = totalTested,
+    "Primary Experiment Codes" = paste(primaryExperimentCodes, collapse = ", "),
+    "Primary Hits" <- paste0('<a href="', getAcasFileLink(primaryHitFile), '" target="_blank">Primary Hits</a>')
   )
+  if (length(confirmationExperimentCodes) > 0) {
+    extraInfo <- list(
+      "Compounds Retested in Confirmation" = totalRetested,
+      "Confirmation Rate" = paste0(round(confirmationRate, 2), "%"),
+      "Confirmation Experiment Codes" = paste(confirmationExperimentCodes, collapse = ", ")
+    )
+    summaryInfo$info <- c(summaryInfo$info, extraInfo)
+  }
 }
 makeWideData <- function(exptDT) {
   # Changes from database input to input for fitting as a data.table
-  library('reshape2')
+  library('stats')
   
   neededDT <- exptDT[, list(EXPT_CODE, combinedTypeAndKind, SUBJECT_ID, VALUE_TYPE, VALUE_KIND, CODE_VALUE, NUMERIC_VALUE, STRING_VALUE, CONCENTRATION, CONC_UNIT)]
   
@@ -85,10 +132,10 @@ makeWideData <- function(exptDT) {
   codeRows <- neededDT[VALUE_TYPE == "codeValue" & VALUE_KIND != "batch code", list(EXPT_CODE, SUBJECT_ID, combinedTypeAndKind, CODE_VALUE)]
   batchCodeRows <- neededDT[VALUE_TYPE == "codeValue" & VALUE_KIND == "batch code", list(EXPT_CODE, SUBJECT_ID, combinedTypeAndKind, CODE_VALUE, CONCENTRATION, CONC_UNIT)]
   
-  wideNumeric <- reshape(numericRows, v.names = "NUMERIC_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
-  wideString <- reshape(stringRows, v.names = "STRING_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
-  wideCode <- reshape(codeRows, v.names = "CODE_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
-  wideBatchCode <- reshape(batchCodeRows, v.names = "CODE_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
+  wideNumeric <- stats::reshape(numericRows, v.names = "NUMERIC_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
+  wideString <- stats::reshape(stringRows, v.names = "STRING_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
+  wideCode <- stats::reshape(codeRows, v.names = "CODE_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
+  wideBatchCode <- stats::reshape(batchCodeRows, v.names = "CODE_VALUE", idvar = "SUBJECT_ID", timevar = "combinedTypeAndKind", direction = "wide")
   
   combined <- merge(wideNumeric, wideString, by = c("SUBJECT_ID", "EXPT_CODE"))
   combined <- merge(combined, wideCode, by = c("SUBJECT_ID", "EXPT_CODE"))
@@ -109,7 +156,6 @@ makeWideData <- function(exptDT) {
              "autoFlagReason", "flagType", "flagObseration", "flagReason", "concentration", "concUnit", "batchCode"))
   return(as.data.table(combined))
 }
-
 getPlateOrderForExperiment <- function(experimentCode) {
   experiment <- getExperimentByCodeName(experimentCode)
   
@@ -131,7 +177,37 @@ getPlateOrderForExperiment <- function(experimentCode) {
     return(data.frame(experimentCode = character(), assayBarcode = character(), plateOrder = numeric()))
   }
 }
-
+getExperimentData <- function (experimentCodes) {
+  # Accepts a list of experiment codes, returns a data.table
+  library(data.table)
+  
+  getDataString <- "select e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
+    ss.ls_type_and_kind as SUB_STATE_TYPE_AND_KIND, sv.id as SUB_VALUE_ID, sv.ls_kind as VALUE_KIND, sv.ls_type as VALUE_TYPE, 
+    sv.code_value, sv.numeric_value, sv.string_value, 
+    sv.unit_kind, sv.concentration, sv.conc_unit
+    from experiment e
+    JOIN experiment_analysisgroup eag ON eag.experiment_id=e.id
+    left outer join analysis_group ag on ag.id = eag.ANALYSIS_GROUP_ID and ag.ignored = '0'
+    left outer join analysisgroup_treatmentgroup atg on atg.ANALYSIS_GROUP_ID = ag.id
+    left outer join treatment_group tg on tg.id = atg.treatment_group_id and tg.ignored = '0'
+    left outer join treatmentgroup_subject tgs on tgs.treatment_group_id = tg.id
+    left outer join subject s on s.id = tgs.subject_id and s.ignored = '0'
+    left outer join subject_state ss on ss.subject_id = s.id and ss.ignored = '0'
+    left outer join subject_value sv on sv.subject_state_id = ss.id and sv.ignored = '0'
+    where e.code_name ='"
+  
+  allDataPrimary <- ldply(experimentCodes, function(codeName) {
+    exptQuery <- paste0(getDataString, codeName, "'")
+    return(query(exptQuery))
+  })
+  
+  allDataPrimary <- as.data.table(allDataPrimary)
+  setnames(allDataPrimary, toupper(names(allDataPrimary)))
+  allDataPrimary[, combinedTypeAndKind := paste0(SUB_STATE_TYPE_AND_KIND, "_", VALUE_KIND)]
+  
+  # pivot data
+  return(makeWideData(allDataPrimary))
+}
 downloadAcasFile <- function(fileValue) {
   # fileValue is list (ACAS fileValue) with fileValue and comment
   # newFilePath is the target folder for the file
