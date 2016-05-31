@@ -3,6 +3,7 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   require('data.table')
   require('reshape')
   require('gplots')
+  library('grid')
   require('gridExtra')
   source("src/r/PrimaryScreen/primaryAnalysisPlots.R", local = TRUE)
   
@@ -37,7 +38,7 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   
   print(createGGComparison(graphTitle = "Plate Comparison", xColumn=resultTable$plateOrder,
                            wellType = resultTable$wellType, dataRow = resultTable$normalizedActivity, xLabel = "Plate Order", yLabel=activityName,
-                           margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")))
+                           margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")))  # #4eb02e is green
  
   if(!is.null(resultTable$"transformed_percent efficacy")) {
     print(createGGComparison(graphTitle = "Efficacy by Compound Barcode", xColumn=resultTable$batchCode,
@@ -55,6 +56,18 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   if(!any(is.na(resultTable$zPrimeByPlate))) {
     createZPrimeByPlatePlot(resultTable)
   }
+  
+  # Graph all other possible control options
+  standardType <- vapply(parameters$standardCompoundList, getElement, character(1), "standardType")
+  posStandards <- which(standardType=="PC")
+  negStandards <- which(standardType=="NC")
+  combinations <- expand.grid(posStandard=posStandards, negStandard=negStandards)
+  plotList <- apply(combinations, MARGIN = 1, getNewControlPlot, 
+                    standardList=parameters$standardCompoundList, batchCodes=resultTable$batchCode, 
+                    flags=resultTable$flag, concentrations=resultTable$cmpdConc,
+                    normalizedActivities=resultTable$normalizedActivity, plateOrder=resultTable$plateOrder,
+                    activityName=activityName)
+  print(marrangeGrob(unlist(plotList, recursive = F), nrow=3, ncol=2, top="Control Options"))
   
   plateDataTable <- data.table(normalizedActivity = resultTable$normalizedActivity, 
                                wellReference = resultTable$well)
@@ -154,7 +167,39 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   
   return(pdfLocation)
 }
-
+calculateNewWellType <- function(batchCode, cmpdConc, posStandard, negStandard) {
+  # calculates new well types for a set of batchCodes and cmpdConcentrations
+  wellType <- ifelse(batchCode==posStandard$batchCode & cmpdConc==posStandard$concentration, "PC", "test")
+  wellType[batchCode==negStandard$batchCode & cmpdConc==negStandard$concentration] <- "NC"
+  return(wellType)
+}
+getNewControlPlot <- function(controlPair, standardList, batchCodes, concentrations, flags, normalizedActivities, plateOrder, activityName) {
+  # controlPair is a named numeric vector, pulled from a row of a data.frame
+  # standardList is a list of lists from parameters
+  # batchCodes, flags, and normalizedActivity are vectors from resultTable
+  # returns a list of two plot objects, one graphic plot and one text plot
+  
+  library(grid)
+  library(data.table)
+  source("src/r/PrimaryScreen/primaryAnalysisPlots.R", local = TRUE)
+  
+  controlPair <- as.list(controlPair)
+  posStandard <- standardList[[controlPair$posStandard]]
+  negStandard <- standardList[[controlPair$negStandard]]
+  newWellType <- calculateNewWellType(batchCodes, concentrations, posStandard, negStandard)
+  newPlot <- createGGComparison(graphTitle = "Plate Comparison", xColumn=plateOrder,
+                                wellType = newWellType, dataRow = normalizedActivities, xLabel = "Plate Order", yLabel=activityName,
+                                margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")) #4eb02e is green
+  negStandardText <- paste0("Neg Control: S", negStandard$standardNumber, " ", 
+                            negStandard$batchCode, " @ ", negStandard$concentration, negStandard$concentrationUnits)
+  posStandardText <- paste0("Pos Control: S", posStandard$standardNumber, " ", 
+                            posStandard$batchCode, " @ ", posStandard$concentration, posStandard$concentrationUnits)
+  newZPrime <- computeZPrime(normalizedActivities[newWellType == "PC" & is.na(flags)],
+                             normalizedActivities[newWellType == "NC" & is.na(flags)])
+  newZPrimeText <- paste("Z':", format(newZPrime, digits=3, nsmall=3))
+  textPlot <- grid::textGrob(paste(negStandardText, posStandardText, newZPrimeText, sep = "\n"))
+  return(list(newPlot, textPlot))
+}
 # createPDFStat1Stat2Seq <- function(resultTable, parameters, summaryInfo, threshold, experiment, dryRun=F, activityName) {
 #   require('gplots')
 #   require('gridExtra')

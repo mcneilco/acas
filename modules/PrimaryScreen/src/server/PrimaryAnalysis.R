@@ -2355,7 +2355,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     #                                 stateKind=c("plate information", "plate information", "plate information", "results", "results", "results"),
     #                                 stringsAsFactors=FALSE)
     #
-    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "public/src/modules/PrimaryScreen/src/conf/savingSettings.csv"))
+    resultTypes <- fread(file.path(racas::applicationSettings$appHome, "src/r/PrimaryScreen/conf/savingSettings.csv"))
 
     #       resultTypes <- data.table(valueKind=c("barcode", "well name", "well type", "normalized activity","transformed efficacy", "transformed standard deviation"),
     #                                 valueType=c("codeValue", "stringValue", "stringValue", "numericValue", "numericValue", "numericValue"),
