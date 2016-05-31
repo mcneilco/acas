@@ -1039,6 +1039,7 @@ exports.moveToLocationInternal = (input, callback) ->
 			url: baseurl
 			body: input
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			console.debug "response statusCode: #{response.statusCode}"
