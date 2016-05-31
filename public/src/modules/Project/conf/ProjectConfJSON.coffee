@@ -91,6 +91,9 @@
 			,
 				typeName: "System"
 				kindName: "CmpdReg"
+			,
+				typeName: "LDAP"
+				kindName: "Auto"
 			]
 
 		lsroles:
