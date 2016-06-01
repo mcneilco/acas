@@ -28,6 +28,8 @@ exports.getCurveStubs = (req, resp) ->
 				resp.end JSON.stringify json
 			else if !error && response.statusCode == 404
 				resp.send "Experiment code not found", 404
+			else if !error && response.statusCode == 400
+				resp.send json, 400
 			else
 				console.log 'got ajax error trying to retrieve curve stubs'
 				console.log error
