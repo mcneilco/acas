@@ -192,18 +192,51 @@ class window.ProtocolBrowserController extends Backbone.View
 			@$('.bv_deleteProtocol').hide()
 			@$('.bv_editProtocol').hide()
 			@$('.bv_duplicateProtocol').hide()
+			@$('.bv_createExperiment').show()
 		else
-			@$('.bv_editProtocol').show()
 			@$('.bv_duplicateProtocol').show()
-			@$('.bv_deleteProtocol').show()
-	#TODO: make deleting protocol privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteProtocol').show()
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteProtocol').hide()
+			@$('.bv_createExperiment').show()
+			if @canEdit()
+				@$('.bv_editProtocol').show()
+			else
+				@$('.bv_editProtocol').hide()
+			if @canDelete()
+				@$('.bv_deleteProtocol').show()
+			else
+				@$('.bv_deleteProtocol').hide()
 
+	canEdit: ->
+		if @protocolController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
+							return true
+					else
+						rolesToTest.push $.trim(role)
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
+						return true
+				else
+					rolesToTest.push $.trim(role)
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteProtocolClicked: =>
 		@$(".bv_protocolCodeName").html @protocolController.model.get("codeName")

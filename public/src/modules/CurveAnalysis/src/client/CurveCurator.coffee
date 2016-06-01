@@ -909,13 +909,16 @@ class window.CurveCuratorController extends Backbone.View
 			success: =>
 				@trigger 'getCurvesSuccessful'
 				@render()
-			error: =>
-				@$('.bv_badExperimentCode').modal
-					backdrop: "static"
-				@$('.bv_badExperimentCode').modal "show"
+			error: (model, response, options) =>
+				@showBadExperimentModal(response.responseText)
 
-	showBadExperimentModal: ->
+	showBadExperimentModal: (text)->
 		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		console.log text
+		console.log $('.bv_badExperimentCode .modal-body')
+		console.log $('.bv_badExperimentCode').find('.modal-body').html()
+		if text?
+			@$('.bv_badExperimentCode').find('.modal-body').html(text+'<div><br></div>')
 		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')
 
 	handleWarnUserLockedExperiment: (exptCode, curveID)->

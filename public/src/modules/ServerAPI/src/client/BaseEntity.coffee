@@ -318,6 +318,21 @@ class window.BaseEntityController extends AbstractFormController
 					return false
 			return true
 
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
+						return true
+				else
+					rolesToTest.push $.trim(role)
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
+
 	setupStatusSelect: ->
 		statusState = @model.getStatus()
 		@statusList = new PickListList()
@@ -326,6 +341,11 @@ class window.BaseEntityController extends AbstractFormController
 			el: @$('.bv_status')
 			collection: @statusList
 			selectedCode: statusState.get 'codeValue'
+		@listenTo @statusList, 'sync', @editStatusOptions
+
+	editStatusOptions: =>
+		if !@canDelete()
+			@$(".bv_status option[value='deleted']").attr 'disabled', 'disabled'
 
 	setupScientistSelect: ->
 		@scientistList = new PickListList()

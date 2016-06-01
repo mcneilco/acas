@@ -13,16 +13,22 @@ handle_response <- function(http_response_code, response) {
       cat(response)
       return_code <- switch(http_response_code,
             HTTP_INTERNAL_SERVER_ERROR = DONE,
+            HTTP_BAD_REQUEST = HTTP_BAD_REQUEST,
+            HTTP_NOT_FOUND = OK,
             OK)
       return(return_code)
 }
 
-get_curve_stubs <- function() {
+get_curve_stubs <- function(myMessenger) {
   myMessenger$logger$info(paste0("curve stubs initiated with: ", GET))
   myMessenger$capture_output("stubs <- racas::api_doseResponse_get_curve_stubs(GET)", userError = paste0("There was an error retrieving curves for '", GET, "'"))
   if(myMessenger$hasErrors()) {
-    if(myMessenger$errors == "no experiment results found") {
+    if(myMessenger$errors[[1]]$message == "no experiment results found") {
       return(handle_response(HTTP_NOT_FOUND , "no experiment results found"))
+    } else if (myMessenger$errors[[1]]$message == "experiment not fit") {
+      return(handle_response(HTTP_BAD_REQUEST, "Experiment has not been not fit"))
+    } else if (myMessenger$errors[[1]]$message == "experiment has been deleted") {
+      return(handle_response(HTTP_BAD_REQUEST, "Experiment has been deleted"))
     } else {
       myMessenger$logger$error(paste0("unknown r error: ", myMessenger$toJSON()))
       return(handle_response(HTTP_INTERNAL_SERVER_ERROR, myMessenger$toJSON()))
@@ -36,4 +42,4 @@ get_curve_stubs <- function() {
   }
 }
 
-get_curve_stubs()
+get_curve_stubs(myMessenger)
