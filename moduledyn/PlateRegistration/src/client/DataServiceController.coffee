@@ -29,6 +29,7 @@ class DataServiceController extends Backbone.View
   doServiceCall: =>
     @setupMessageFields()
     @hideSuccessFields()
+    @hideServerErrorMessage()
     @openModal()
 
     $.ajax(
@@ -43,6 +44,7 @@ class DataServiceController extends Backbone.View
     )
     .fail((jqXHR, textStatus, errorThrown) =>
       if @serviceController.handleError?
+        @handleError()
         @serviceController.handleError()
       else
         @displayServerErrorMessage()
@@ -51,6 +53,7 @@ class DataServiceController extends Backbone.View
   doServiceCalls: =>
     @setupMessageFields()
     @hideSuccessFields()
+    @hideServerErrorMessage()
     @openModal()
     numberOfServiceCalls = _.size(@serviceController.url)
     numberOfCompletedServiceCalls = 0
@@ -69,7 +72,10 @@ class DataServiceController extends Backbone.View
           @serviceController.handleSuccessCallback()
       )
       .fail((jqXHR, textStatus, errorThrown) =>
-
+        if @serviceController.handleError?
+          @handleError()
+          @serviceController.handleError()
+        else
           @displayServerErrorMessage()
       )
     )
@@ -78,6 +84,10 @@ class DataServiceController extends Backbone.View
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"
     @$("div[name='serverErrorMessage']").removeClass "hide"
     @$("div[name='serverErrorButtons']").removeClass "hide"
+
+  hideServerErrorMessage: =>
+    @$("div[name='serverErrorMessage']").addClass "hide"
+    @$("div[name='serverErrorButtons']").addClass "hide"
 
   displaySuccessFields: =>
     @$("div[name='serviceCallProgressFeedback']").addClass "hide"

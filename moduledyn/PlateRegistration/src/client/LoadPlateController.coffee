@@ -17,14 +17,14 @@ class LoadPlateController extends Backbone.View
 
   initialize: (options)->
     @serviceCallProgressText = "Loading Plate"
-    plateBarcode = options.plateBarcode
+    @plateBarcode = options.plateBarcode
     @url = [
-      url: LOAD_PLATE_CONTROLLER_PROPERTIES.PLATE_META_INFO_URL + plateBarcode
+      url: LOAD_PLATE_CONTROLLER_PROPERTIES.PLATE_META_INFO_URL + @plateBarcode
       callback: @handlePlateMetaDataInfoCallback
       ajaxMethod: 'GET'
       data: ''
     ,
-      url: LOAD_PLATE_CONTROLLER_PROPERTIES.WELL_CONTENT_URL + plateBarcode
+      url: LOAD_PLATE_CONTROLLER_PROPERTIES.WELL_CONTENT_URL + @plateBarcode
       callback: @handleWellContentCallback
       ajaxMethod: 'GET'
       data: ''
@@ -44,6 +44,8 @@ class LoadPlateController extends Backbone.View
     @trigger DATA_SERVICE_CONTROLLER_EVENTS.CLOSE_MODAL
 
   handleError: (errors) =>
+    $("div[name='errorMessages']").removeClass "hide"
+    $("span[name='plateBarcode']").html @plateBarcode
     console.log "handleError"
 
   handleWarning: (warnings) =>

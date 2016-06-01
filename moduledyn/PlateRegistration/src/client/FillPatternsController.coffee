@@ -72,6 +72,11 @@ class FillPatternController extends Backbone.View
 
   handleAddClick: =>
     hasIdentifiersToValidate = false
+
+    console.log '@model.get("identifiers")'
+    console.log @model.get("identifiers")
+
+
     if _.size(@model.get("identifiers")) > 0
       hasIdentifiersToValidate = true
     else
@@ -90,7 +95,7 @@ class FillPatternController extends Backbone.View
 
       @trigger ADD_CONTENT_CONTROLLER_EVENTS.ADD_CONTENT_NO_VALIDATION, @model
 
-    @model.set("identifiers", "")
+    #@model.set("identifiers", "")
 
   handleFormFieldUpdate: (evt) ->
     target = $(evt.currentTarget)
