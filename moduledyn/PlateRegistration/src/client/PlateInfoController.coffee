@@ -80,6 +80,10 @@ class PlateInfoController extends Backbone.View
 
   render: =>
     $(@el).html @template(@model.toJSON())
+    # @model.toJSON parses strings in a way that causes any double quote characters to be ommited, along with everything after the first double quote
+    # manually setting the fields fixes the issue
+    $("input[name='supplier']").val @model.get "supplier"
+    $("input[name='description']").val @model.get "description"
 
     @$("input[name='createdDate']").datepicker()
     if @model.get "createdDate"

@@ -379,8 +379,6 @@ class PlateTableController extends Backbone.View
 
   addContent: (data) =>
     @handsOnTable.setDataAtCell data, 'programaticEdit'
-    console.log "data"
-    console.log data
     @updateColorByNoReRender()
     @handsOnTable.render()
 
@@ -400,6 +398,15 @@ class PlateTableController extends Backbone.View
     @handsOnTable.render()
 
   handleRegionSelected: (rowStart, colStart, rowStop, colStop) =>
+    if rowStart > rowStop
+      tmpRowStart = rowStart
+      rowStart = rowStop
+      rowStop = tmpRowStart
+    if colStart > colStop
+      tmpColStart = colStart
+      colStart = colStop
+      colStop = tmpColStart
+
     @selectedRegionBoundries =
       rowStart: rowStart
       colStart: colStart
