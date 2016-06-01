@@ -227,7 +227,6 @@ class CheckerBoard1PlateFillerStrategy extends PlateFillerStrategy
           offsetColIdx = offsetColIdx + 2
         batchCode = @identifiers[0]
 
-
         if (offsetRowIdx <= @selectedRegionBoundries.rowStop) and (offsetColIdx <= @selectedRegionBoundries.colStop)
           [wco, well] = @populateWell(wellsToUpdate, offsetRowIdx, offsetColIdx, batchConcentration, amount, batchCode)
           plateWells.push [offsetRowIdx, offsetColIdx, well]
