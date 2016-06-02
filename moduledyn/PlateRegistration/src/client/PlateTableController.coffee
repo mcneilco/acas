@@ -450,6 +450,7 @@ class PlateTableController extends Backbone.View
 
   handleContentUpdated: (changes, source) =>
     if source in ["edit", "autofill", "paste"]
+
       listOfIdentifiers = []
       @resetCellColoring(changes)
       changes = @removeNonChangedValues(changes)
@@ -487,12 +488,14 @@ class PlateTableController extends Backbone.View
                 @wellsToUpdate.fillWellWithWellObject(updatedValue.rowIdx, updatedValue.colIdx, well)
                 well.status = "valid"
                 $(cell).removeClass "invalidIdentifierCell"
-              @updateColorByNoReRender()
+
               if @displayToolTips
                 @updateTooltip(cell, well)
               #@applyBackgroundColorToCell(cell, well)
-              @handsOnTable.render()
+
             )
+            @updateColorByNoReRender()
+            @handsOnTable.render()
             @wellsToUpdate.save()
             @updateEmptyAndInvalidWellCount()
             @trigger PLATE_TABLE_CONTROLLER_EVENTS.PLATE_CONTENT_UPADATED, addContentModel
@@ -522,13 +525,15 @@ class PlateTableController extends Backbone.View
 
                 well.status = "valid"
                 $(cell).removeClass "invalidIdentifierCell"
-              @updateColorByNoReRender()
+              #@updateColorByNoReRender()
               if @displayToolTips
                 @updateTooltip(cell, well)
               #@applyBackgroundColorToCell(cell, well)
-              @handsOnTable.render()
+              #@handsOnTable.render()
 
             )
+            @updateColorByNoReRender()
+            @handsOnTable.render()
             if hasNonNumericValues
               $("div[name='enteringNonNumericConcentrationError']").modal("show")
             @wellsToUpdate.save()
@@ -741,6 +746,14 @@ class PlateTableController extends Backbone.View
           td.style.background = @listOfBatchCodes[well.batchCode].backgroundColor
           td.style.color = @listOfBatchCodes[well.batchCode].fontColor
     else if @dataFieldToColorBy is "status"
+#      console.log "well"
+#      console.log well
+#      console.log "well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]"
+#      console.log well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]
+#      console.log "@listWellStatusColors"
+#      console.log @listWellStatusColors
+#      console.log "@listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]]"
+#      console.log @listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]]
       td.style.background = @listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]].backgroundColor
       td.style.color = @listWellStatusColors[well[WELL_MODEL_FIELDS.CONTAINER_CODE_NAME]].fontColor
     else if @dataFieldToColorBy is "batchConcentration"
