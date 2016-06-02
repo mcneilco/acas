@@ -160,6 +160,7 @@ updateCronScriptRunner = (code, newSpec, callback) ->
 		delete cronJob.job
 	persistenceURL = config.all.client.service.persistence.fullpath + "cronjobs/"
 	#Skip if cron defined in config
+	delete cronJob.spec.running
 	if code.indexOf CRON_CONFIG_PREFIX < 0
 		request.put
 			url: persistenceURL + code
@@ -189,11 +190,15 @@ setupNewCron = (cron) ->
 launchRScript = (spec) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	jobStart = new Date()
-	console.log 'started cron r script ' + spec.codeName
-	serverUtilityFunctions.runRFunctionOutsideRequest spec.user, JSON.parse(spec.scriptJSONData), spec.scriptFile, spec.functionName, (rReturn) ->
-		console.log 'finished cron r script ' + spec.codeName
-		duration = new Date() - jobStart
-		scriptComplete spec.codeName, jobStart.getTime(), duration, rReturn
+	if spec.running? && spec.running
+		console.log "#{spec.codeName} already running, skipping this run"
+	else
+		spec.running = true
+		console.log 'started cron r script ' + spec.codeName
+		serverUtilityFunctions.runRFunctionOutsideRequest spec.user, JSON.parse(spec.scriptJSONData), spec.scriptFile, spec.functionName, (rReturn) ->
+			console.log 'finished cron r script ' + spec.codeName
+			duration = new Date() - jobStart
+			scriptComplete spec.codeName, jobStart.getTime(), duration, rReturn
 
 scriptComplete = (codeName, startTime, duration, resultJSON) ->
 	cronJob = global.cronJobs[codeName]
