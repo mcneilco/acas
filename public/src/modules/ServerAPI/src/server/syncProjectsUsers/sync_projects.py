@@ -23,20 +23,20 @@ class SyncProjectsController:
 
     def check_projects_exist(self):
         print "Checking for projects:"
-        check_project_exists_sql = "SELECT * FROM syn_project WHERE project_name = %s;"
+        check_project_exists_sql = "SELECT * FROM syn_project WHERE alternate_id = %s;"
         self.new_projects=[]
         self.projects_to_update=[]
         for project in self.projects['projects']:
             self.lock.acquire()
             cur=self.livedesign_db_conn.cursor()
             #cur.execute("set bytea_output = 'hex'")
-            cur.execute(check_project_exists_sql,(project['name'],))
+            cur.execute(check_project_exists_sql,(project['code'],))
             project_check_results=cur.fetchall()
             self.lock.release()
             if len(project_check_results)>0:
                 print "Project "+project['name']+" exists."
                 found_project = project_check_results[0]
-                if project['active'] != found_project[1] or project['is_restricted'] != found_project[6]:
+                if project['active'] != found_project[1] or project['is_restricted'] != found_project[6] or project['name'] != found_project[4]:
                     self.projects_to_update.append(project)
             else:
                 print "Project "+project['name']+" does not exist."
@@ -51,7 +51,7 @@ class SyncProjectsController:
             self.lock.acquire()
             cur=self.livedesign_db_conn.cursor()
             #cur.execute("set bytea_output = 'hex'")
-            cur.execute(add_project_sql,(project['id'],project['active'],project['name'],project['is_restricted'],project['project_desc'],project['name']))
+            cur.execute(add_project_sql,(project['id'],project['active'],project['code'],project['is_restricted'],project['project_desc'],project['name']))
             add_project_results=cur.fetchall()
             self.livedesign_db_conn.commit()
             self.lock.release()
@@ -62,12 +62,12 @@ class SyncProjectsController:
     def update_projects(self):
         if len(self.projects_to_update) > 0:
             print "Updating projects:"
-            update_project_sql = "UPDATE syn_project SET active = %s , is_restricted = %s where project_name = %s returning *;"
+            update_project_sql = "UPDATE syn_project SET active = %s , is_restricted = %s, project_name = %s where alternate_id = %s returning *;"
         for project in self.projects_to_update:
             self.lock.acquire()
             cur=self.livedesign_db_conn.cursor()
             #cur.execute("set bytea_output = 'hex'")
-            cur.execute(update_project_sql,(project['active'],project['is_restricted'],project['name']))
+            cur.execute(update_project_sql,(project['active'],project['is_restricted'],project['name'],project['code']))
             update_project_results=cur.fetchall()
             self.livedesign_db_conn.commit()
             self.lock.release()
