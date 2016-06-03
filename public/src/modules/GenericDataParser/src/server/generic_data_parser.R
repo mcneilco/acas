@@ -1839,15 +1839,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   return(experiment)
 }
 validateProject <- function(projectName, configList, username, errorEnv) {
-  # checks with Roo services to ensure that a project is available and correct
+  # checks with Roo services to ensure that a project is available and correct. Converts names to codes.
   # 
   # Args:
-  #   projectName:         A string naming the project
+  #   projectName:         A string naming the project, either the name or the code
   #   configList:          Also known as racas::applicationSettings
   #   username:            A string containing a username, carried by 'recordedBy' two function levels higher  
   #
   # Returns:
-  #  The projectName if validation was successful, or the empty string if it was not
+  #  The project code if validation was successful, or the empty string if it was not
   require('RCurl')
   require('rjson')
   tryCatch({
@@ -1861,15 +1861,26 @@ validateProject <- function(projectName, configList, username, errorEnv) {
     addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
-  projectNames <- sapply(projectList, function(x) x$code)
-  #projectNames <- sapply(projectList, function(x) x$name)
-  if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
-  if (projectName %in% projectNames) {
+  projectCodes <- vapply(projectList, getElement, character(1), 'code')
+  if(length(projectCodes) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
+  projectNames <- list()
+  # Get a vector of project names if available
+  if (!is.null(projectList[[1]]$name)) {
+    projectNames <- vapply(projectList, getElement, character(1), 'name')
+  }
+  if (projectName %in% projectCodes) {
     return(projectName)
+  } else if (length(projectNames) > 0 && projectName %in% projectNames) {
+    return(projectCodes[projectName == projectNames][1])
   } else {
     configText <- toJSON(configList)
+    if (length(projectNames) > 0) {
+      projectAvailableList <- paste(projectNames, collapse = "', '")
+    } else {
+      projectAvailableList <- paste(projectCodes, collapse = "', '")
+    }
     addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectNames, collapse = "', '"), "'."), errorEnv=errorEnv)
+                    projectAvailableList, "'."))
     return("")
   }
 }
