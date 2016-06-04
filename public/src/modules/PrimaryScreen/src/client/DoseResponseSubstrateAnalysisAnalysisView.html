@@ -18,7 +18,7 @@
 
                 <div class="bv_group_vmax" style="margin-bottom:10px;">
                     <div class="form form-inline">
-                        <span style="margin-right:26px;"><strong>VMax:</strong></span>
+                        <span style="margin-right:15px;"><strong>VMax:</strong></span>
                         <input type="radio" name="bv_vmax_limitType" class="bv_vmax_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (vmax.limitType=="none"){%>checked="checked"<%}%>  />
                         <label class="control-label" style="margin-right:15px;">None</label>
                         <input type="radio" name="bv_vmax_limitType" class="bv_vmax_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (vmax.limitType=="pin"){%>checked="checked"<%}%>  />
@@ -32,7 +32,7 @@
                 </div>
                <div class="bv_group_km" style="margin-bottom:10px;">
                     <div class="form form-inline">
-                        <span style="margin-right:26px;"><strong>Km:</strong></span>
+                        <span style="margin-right:28px;"><strong>Km:</strong></span>
                         <input type="radio" name="bv_km_limitType" class="bv_km_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (km.limitType=="none"){%>checked="checked"<%}%>  />
                         <label class="control-label" style="margin-right:15px;">None</label>
                         <input type="radio" name="bv_km_limitType" class="bv_km_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (km.limitType=="pin"){%>checked="checked"<%}%>  />
@@ -46,7 +46,7 @@
                 </div>
                <div class="bv_group_ki" style="margin-bottom:10px;">
                     <div class="form form-inline">
-                <span style="margin-right:26px;"><strong>Ki:</strong></span>
+                <span style="margin-right:36px;"><strong>Ki:</strong></span>
                 <input type="radio" name="bv_ki_limitType" class="bv_ki_limitType_none" value="none" style="margin-right:5px;margin-bottom:5px;" <%if (ki.limitType=="none"){%>checked="checked"<%}%>  />
                 <label class="control-label" style="margin-right:15px;">None</label>
                 <input type="radio" name="bv_ki_limitType" class="bv_ki_limitType_pin" value="pin" style="margin-right:5px;margin-bottom:5px;" <%if (ki.limitType=="pin"){%>checked="checked"<%}%>  />
@@ -66,11 +66,11 @@
                 </div>
 
             </div>
-            <div class="form form-inline" style="margin-bottom:5px;">
+            <div class="form form-inline hide" style="margin-bottom:5px;">
                 <input type="checkbox" class="bv_inverseAgonistMode" style="margin-right:5px;margin-bottom:5px;" <%if (inverseAgonistMode){%>checked="checked"<%}%> />
                 <span>Inverse Agonist Mode</span>
             </div>
-            <div class="form form-inline">
+            <div class="form form-inline hide">
                 <div class="bv_group_inactiveThreshold span2" style="margin-left:0;width:175px;">
                     <label class="control-label" style="margin-right:5px;">Inactive Threshold</label>
                     <input type="text" class="bv_inactiveThreshold" style="width:35px;margin-bottom:0;" value="<%= inactiveThreshold%>" />
