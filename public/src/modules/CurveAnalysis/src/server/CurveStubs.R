@@ -19,7 +19,7 @@ handle_response <- function(http_response_code, response) {
       return(return_code)
 }
 
-get_curve_stubs <- function(myMessenger) {
+get_curve_stubs <- function(myMessenger, GET) {
   myMessenger$logger$info(paste0("curve stubs initiated with: ", GET))
   myMessenger$capture_output("stubs <- racas::api_doseResponse_get_curve_stubs(GET)", userError = paste0("There was an error retrieving curves for '", GET, "'"))
   if(myMessenger$hasErrors()) {
@@ -42,4 +42,4 @@ get_curve_stubs <- function(myMessenger) {
   }
 }
 
-get_curve_stubs(myMessenger)
+get_curve_stubs(myMessenger, GET)
