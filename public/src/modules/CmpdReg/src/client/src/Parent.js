@@ -1,0 +1,270 @@
+$(function() {
+
+	window.Parent = Backbone.Model.extend({
+		defaults: {
+            stereoCategory: null,
+            stereoComment: '',
+            commonName: '',
+            molStructure: '',
+            corpName: '',
+            chemist: null
+		},
+
+		initialize: function() {
+
+			// If this was saved, we'll initialize from a json object
+			// that is part of the wrapping object
+			if (this.has('json') ) {
+				var js = this.get('json');
+				this.set({
+					id: js.id,
+                    corpName: js.corpName,
+                    molStructure: js.molStructure,
+                    stereoCategory: new PickList(js.stereoCategory),
+                    stereoComment: js.stereoComment,
+                    commonName: js.commonName,
+                    molWeight: js.molWeight,
+                    molFormula: js.molFormula,
+                    chemist: new PickList(js.chemist),
+					parentAliases: new AliasCollection(js.parentAliases)
+				}, {silent: true});
+			}
+		},
+
+		validate: function(attr) {
+			var errors = new Array();
+//			if (attr.stereoCategory != null) {
+//				if(!/\S/g.test(attr.stereoCategory)) {
+//					errors.push({attribute: 'stereoCategory', message: "Stereo Category must be set"});
+//				}
+//			}
+			if (attr.corpName != null) {
+				if(!/\S/g.test(attr.corpName)) {
+					errors.push({attribute: 'corpName', message: "Corp Name must be set"});
+				}
+			}
+			if (attr.molStructure != null) {
+				if(!/\S/g.test(attr.molStructure)) {
+					errors.push({attribute: 'molStructure', message: "Structure must be set"});
+				}
+			}
+			if (attr.stereoCategory != null && attr.stereoComment !=null) {
+                if (attr.stereoCategory.get('code')=='see_comments' && attr.stereoComment=='') {
+                    errors.push({attribute: 'stereoComment', message: "Is stereo category is see comments, a comment must be supplied"});
+                }
+            }
+			if (attr.stereoCategory != null) {
+                if (attr.stereoCategory.get('code')=='not_set') {
+                    errors.push({attribute: 'stereoCategoryCode', message: "Stereo category must be supplied"});
+                }
+            }
+			if (errors.length > 0) {return errors;}
+		},
+
+		getModelForSave: function() {
+			var mts = new Backbone.Model(this.attributes);
+            mts.unset('json');
+            mts.unset('molWeight');
+            mts.unset('molFormula');
+            mts.unset('molImage');
+			return mts;
+		}
+
+	});
+
+
+
+	window.ParentController = Backbone.View.extend({
+		template: _.template($('#LotForm_ParentView_template').html()),
+
+		events: {
+		},
+
+		initialize: function() {
+			_.bindAll(this, 'validationError', 'setAliasToReadOnly', 'setAliasToEdit', 'render');
+			this.model.bind('error',  this.validationError);
+			this.valid = true;
+			this.readMode = false;
+			if (this.options.readMode) {
+				this.readMode = this.options.readMode;
+			}
+			this.step = null
+			if (this.options.step) {
+				this.step = this.options.step;
+			}
+
+            if (this.options.errorNotifList!=null) {
+				var eNoti = this.options.errorNotifList;
+				if (this.model.isNew()) {
+					this.bind('notifyError', eNoti.add);
+					this.bind('clearErrors', eNoti.removeMessagesForOwner);
+				}
+			} else {
+				var eNoti = null;
+			}
+
+		},
+
+		render: function() {
+			$(this.el).html(this.template());
+            this.$('.radioWrapper').hide();
+
+            if (window.configuration.metaLot.showSelectCategoryOption) {
+	            var optionToInsert = new PickList({"code":"not_set","id":5,"name":"Select Category","version":0});
+            } else {
+	            var optionToInsert = null;
+            }
+            this.stereoCategoryCodeController =
+                this.setupCodeController('stereoCategoryCode', 'stereoCategorys', 'stereoCategory', optionToInsert);
+
+            this.$('.stereoComment').val(this.model.get('stereoComment'));
+            this.$('.commonName').val(this.model.get('commonName'));
+            this.$('.molWeight').val(this.model.get('molWeight'));
+            this.$('.molFormula').val(this.model.get('molFormula'));
+
+			this.aliasController = new AliasesController({collection: this.model.get('parentAliases'), readMode: this.readMode, step: this.step})
+			this.$('.bv_aliasesContainer').html(this.aliasController.render().el );
+			if (!this.model.isNew()) {
+                this.$('.stereoCategoryCode').attr('disabled', true);
+                this.$('.stereoComment').attr('disabled', true);
+                this.$('.commonName').attr('disabled', true);
+
+            }
+			if (this.readMode) {
+				this.setAliasToReadOnly();
+			} else {
+				this.setAliasToEdit();
+			}
+			if(window.configuration.clientUILabels.commonNameLabel) {
+                this.$('.commonNameLabel').html(window.configuration.clientUILabels.commonNameLabel);
+            }
+
+            if (this.model.get('molWeight') != null) {
+                this.$('.molWeight').val(
+                    parseFloat(this.model.get('molWeight')).toFixed(2)
+                );
+            }
+			if (this.model.get('molStructure') != null ) {
+				this.$('.copyButtonWrapper').show();
+			} else {
+				this.$('.copyButtonWrapper').hide();
+			}
+
+			this.renderStruct();
+
+            return this;
+		},
+
+        setupCodeController: function(elClass, type, attribute, optionToInsert) {
+            var tcode = '';
+            if(this.model.get(attribute)) {
+                tcode = this.model.get(attribute).get('code');
+            }
+			return new PickListSelectController({
+				el: this.$('.'+elClass),
+				type: type,
+                selectedCode: tcode,
+                insertFirstOption: optionToInsert
+			})
+        },
+		setAliasToReadOnly: function() {
+			this.aliasController.setToReadOnly();
+		},
+		setAliasToEdit: function() {
+			this.aliasController.setToEditMode();
+		},
+        updateModel: function() {
+			this.clearValidationErrors();
+
+            this.model.set({
+                stereoComment: this.$('.stereoComment').val(),
+                stereoCategory: this.stereoCategoryCodeController.getSelectedModel(),
+                commonName: this.$('.commonName').val(),
+				parentAliases: this.aliasController.collection.toJSON()
+            });
+		},
+
+		isValid: function() {
+			return this.valid;
+		},
+
+		validationError: function(model, errors) {
+			this.clearValidationErrors();
+			var self = this;
+			_.each(errors, function(err) {
+				self.$('.'+err.attribute).addClass('input_error');
+				self.trigger('notifyError', {owner: "ParentController", errorLevel: 'error', message: err.message});
+				self.valid = false;
+			});
+		},
+
+		clearValidationErrors: function() {
+			var errorElms = this.$('.input_error');
+			this.trigger('clearErrors', "ParentController");
+			this.valid = true;
+
+			_.each(errorElms, function(ee) {
+				$(ee).removeClass('input_error');
+			});
+		},
+ 		renderStruct: function(){
+		    if (this.model.isNew()) {
+			    var structImage = new Backbone.Model({
+				    molImage: this.model.get('molImage'),
+				    molStructure: this.model.get('molStructure')
+			    })
+		    } else {
+			    var structImage =  new Backbone.Model({
+				    corpName: this.model.get('corpName'),
+				    corpNameType: "Parent",
+				    molStructure: this.model.get('molStructure')
+			    })
+		    }
+		    this.structImage = new StructureImageController({
+			    el: this.$('.parentImageWrapper'),
+			    model: structImage
+		    });
+		    this.structImage.render();
+		}
+	});
+
+    window.RegParentController = ParentController.extend({
+        setupForRegSelect: function(saltForms) {
+            this.$('.regPick').val(this.model.get('corpName'));
+            this.$('.corpName').html(this.model.get('corpName'));
+            var lisb = window.configuration.metaLot.lotCalledBatch;
+            this.$('.lotOrBatch').html(lisb?'batch':'lot');
+            this.$('.radioWrapper').show();
+            if (saltForms != null) {
+                this.saltFormSelectCont = new SaltFormSelectController({
+                    el: this.$('.saltFormCorpNames'),
+                    collection: saltForms
+                });
+                this.saltFormSelectCont.render();
+            } else {
+                this.saltFormSelectCont = null;
+                this.$('.saltFormCorpNames').hide();
+            }
+
+        },
+
+        getSelectedMetaLot: function() {
+            if (this.saltFormSelectCont != null) {
+                var sf = this.saltFormSelectCont.getSelectedSaltForm();
+            } else {
+                var sf = null;
+            }
+            if ( sf==null ) {sf = new SaltForm();}
+            return new MetaLot({
+                    saltForm: sf,
+                    parent: this.model,
+                    lot: new Lot()
+            });
+        }
+
+    });
+
+
+
+
+});

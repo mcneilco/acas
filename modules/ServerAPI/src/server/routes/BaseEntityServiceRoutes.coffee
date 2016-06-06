@@ -8,5 +8,5 @@ exports.getAuthors = (req, resp) ->
 		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
 	else
 		csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-		csUtilities.getAuthors resp
+		csUtilities.getAuthors req, resp
 

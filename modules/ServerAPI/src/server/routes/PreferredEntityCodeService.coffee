@@ -4,6 +4,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute
+	app.post '/api/entitymeta/projectCodes/:csv?', exports.projectCodesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/entitymeta/configuredEntityTypes/:asCodes?', loginRoutes.ensureAuthenticated, exports.getConfiguredEntityTypesRoute
@@ -11,6 +12,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute
 	app.post '/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
+	app.post '/api/entitymeta/projectCodes/:csv?', loginRoutes.ensureAuthenticated, exports.projectCodesRoute
 
 configuredEntityTypes = require '../src/javascripts/ServerAPI/ConfiguredEntityTypes.js'
 _ = require 'underscore'
@@ -285,6 +287,16 @@ formatBestLabelsAsCSV = (prefResp) ->
 
 	return outStr
 
+formatProjectCodesArrayAsCSV = (prefResp) ->
+	preferreds = prefResp
+	outStr =  "Requested Name,Project Code\n"
+	if prefResp?
+		for pref in preferreds
+			outStr += pref.requestName + ',' + pref.projectCode + '\n'
+	else
+		outStr += ',\n'
+	return outStr
+
 # Needed to make names match spec
 formatJSONReferenceCode = (prefResp,referenceCodeLocation) ->
 	out = []
@@ -301,3 +313,90 @@ formatJSONBestLabel = (prefResp,referenceCodeLocation) ->
 			requestName: pref.requestName
 			bestLabel: pref[referenceCodeLocation]
 	return out
+
+formatJSONProjectCode = (prefResp,projectCodeLocation) ->
+	out = []
+	for pref in prefResp
+		out.push
+			requestName: pref.requestName
+			projectCode: pref[projectCodeLocation]
+	return out
+
+####################################################################
+#   PROJECT CODES
+####################################################################
+
+exports.projectCodesRoute = (req, resp) ->
+	requestData =
+		displayName: req.body.displayName
+
+	if req.params.csv == "csv"
+		csv = true
+		requestData.entityIdStringLines = req.body.entityIdStringLines
+	else
+		csv = false
+		requestData.requests = req.body.requests
+
+	exports.projectCodes requestData, csv, (json) ->
+		if typeof json is "string" and json.indexOf("failed") > -1
+			resp.statusCode = 500
+			resp.json json
+		resp.json json
+
+exports.projectCodes = (requestData, csv, callback) ->
+	console.log "stubs mode is: "+global.specRunnerTestmode 	#Note specRunnerTestMode is handled within functions called from here
+	console.log("csv is " + csv)
+	console.log "requestData.displayName is " + requestData.displayName
+
+	# convert displayName to type and kind
+	exports.getSpecificEntityType requestData.displayName, (json) ->
+		requestData.type = json.type
+		requestData.kind = json.kind
+		requestData.sourceExternal = json.sourceExternal
+
+	if csv
+		reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines)
+	else
+		reqList = requestData.requests
+
+	if requestData.sourceExternal
+		console.log("looking up external entity")
+		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities.getExternalProjectCodes requestData.displayName, reqList, (prefResp) ->
+			if typeof prefResp is "string" and prefResp.indexOf("failed") > -1
+				callback prefResp
+			if csv
+				callback
+					displayName: requestData.displayName
+					resultCSV: formatProjectCodesArrayAsCSV(prefResp)
+			else
+				callback
+					displayName: requestData.displayName
+					results: formatJSONProjectCode(prefResp, "projectCode")
+		return
+
+	else  # internal source
+		entityType = configuredEntityTypes.entityTypes[requestData.displayName]
+		console.log "entityType: " + entityType
+		if entityType.codeOrigin is "ACAS LsThing"
+			preferredThingService = require "./ThingServiceRoutes.js"
+			reqHashes =
+				thingType: entityType.type
+				thingKind: entityType.kind
+				requests: reqList
+			preferredThingService.getProjectCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+				if csv
+					out = for res in codeResponse.results
+						res.requestName + "," + res.projectCode
+					outStr =  "Requested Name,Project Code\n"+out.join('\n')
+					callback
+						displayName: requestData.displayName
+						resultCSV: outStr
+				else
+					callback
+						displayName: requestData.displayName
+						results: formatJSONProjectCode(codeResponse.results, "projectCode")
+			return
+		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
+		callback.statusCode = 500
+		callback "problem with internal preferred Code request: code type and kind are unknown to system"

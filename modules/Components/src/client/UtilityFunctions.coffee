@@ -13,6 +13,18 @@ class window.UtilityFunctions
 
 		match
 
+	testUserHasRoleTypeKindName: (user, roleInfo) ->
+		#roleInfo = list of objects with role type, kind, and name
+		if not user.roles? then return true
+		match = false
+		for role in roleInfo
+			for userRole in user.roles
+				console.log "role"
+				console.log role
+				if userRole.roleEntry.lsType == role.lsType and userRole.roleEntry.lsKind == role.lsKind and userRole.roleEntry.roleName == role.roleName
+					match = true
+
+		match
 
 	showProgressModal: (node) ->
 		node.modal

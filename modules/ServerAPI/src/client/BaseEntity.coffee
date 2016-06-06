@@ -344,6 +344,10 @@ class window.BaseEntityController extends AbstractFormController
 		@listenTo @statusList, 'sync', @editStatusOptions
 
 	editStatusOptions: =>
+		if window.conf.entity?.approvalRole?
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, window.conf.entity.approvalRole
+				@$(".bv_status option[value='approved']").attr 'disabled', 'disabled'
+				@$(".bv_status option[value='rejected']").attr 'disabled', 'disabled'
 		if !@canDelete()
 			@$(".bv_status option[value='deleted']").attr 'disabled', 'disabled'
 
