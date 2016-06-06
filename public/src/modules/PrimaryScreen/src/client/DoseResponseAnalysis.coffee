@@ -130,7 +130,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			inactiveThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_inactiveThreshold'))
 			theoreticalMax: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_theoreticalMax'))
 			,
-			silent: true
+				silent: true
 
 
 		@setInverseAgonistModeEnabledState()
