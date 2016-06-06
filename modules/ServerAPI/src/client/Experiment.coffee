@@ -86,6 +86,29 @@ class window.Experiment extends BaseEntity
 			mft.unset 'id'
 			mft.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mft
+
+			mftransVal = eExptMeta[0].getValuesByTypeAndKind "stringValue", "model fit transformation"
+			if mftransVal.length > 0
+				if mftransVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftransVal[0]
+				else
+					mftransVal[0].set ignored: true
+			mftrans = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit transformation").attributes)
+			mftrans.unset 'id'
+			mftrans.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mftrans
+
+			mftuVal = eExptMeta[0].getValuesByTypeAndKind "codeValue", "model fit transformation units"
+			if mftuVal.length > 0
+				if mftuVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftuVal[0]
+				else
+					mftuVal[0].set ignored: true
+			mftu = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit transformation units").attributes)
+			mftu.unset 'id'
+			mftu.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mftu
+
 # 		commented because experiment base does not have these values
 #			@getDryRunStatus().set ignored: true
 #			@getDryRunStatus().set codeValue: 'not started'
@@ -135,16 +158,17 @@ class window.Experiment extends BaseEntity
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
 		if attrs.subclass?
-			reqProject = window.conf.include.project
-			unless reqProject?
-				reqProject = "true"
-			reqProject = reqProject.toLowerCase()
-			unless reqProject is "false"
-				projectCode = @getProjectCode().get('codeValue')
-				if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-					errors.push
-						attribute: 'projectCode'
-						message: "Project must be set"
+			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+				reqProject = window.conf.include.project
+				unless reqProject?
+					reqProject = "true"
+				reqProject = reqProject.toLowerCase()
+				unless reqProject is "false"
+					projectCode = @getProjectCode().get('codeValue')
+					if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+						errors.push
+							attribute: 'projectCode'
+							message: "Project must be set"
 			cDate = @getCompletionDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
@@ -264,6 +288,12 @@ class window.Experiment extends BaseEntity
 		,
 			type: 'stringValue'
 			kind: 'hts format'
+		,
+			type: 'stringValue'
+			kind: 'model fit transformation'
+		,
+			type: 'codeValue'
+			kind: 'model fit transformation units'
 		]
 		unless @isNew()
 			expState = @get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0]
@@ -366,7 +396,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupScientistSelect()
 		@setupTagList()
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
-		@setupProjectSelect()
+		if window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_group_projectCode').hide()
+		else
+			@setupProjectSelect()
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		@render()
@@ -379,7 +412,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model = new Experiment()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
-		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
@@ -479,14 +513,6 @@ class window.ExperimentBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
-
-	setupStatusSelect: ->
-		@statusList = new PickListList()
-		@statusList.url = "/api/codetables/experiment/status"
-		@statusListController = new PickListSelectController
-			el: @$('.bv_status')
-			collection: @statusList
-			selectedCode: @model.getStatus().get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""

@@ -289,7 +289,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
-		"click .bv_openInQueryTool": "handleOpenInQueryToolClicked"
+		"click .bv_openInQueryToolButton": "handleOpenInQueryToolClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -302,7 +302,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
-		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+#		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
@@ -353,15 +353,48 @@ class window.ExperimentBrowserController extends Backbone.View
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
-			@$('.bv_editExperiment').show()
-			@$('.bv_deleteExperiment').show()
-			#TODO: make deleting experiment privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteExperiment').hide()
+			@formatOpenInQueryToolButton()
+			if @canEdit()
+				@$('.bv_editExperiment').show()
+			else
+				@$('.bv_editExperiment').hide()
+			if @canDelete()
+				@$('.bv_deleteExperiment').show()
+			else
+				@$('.bv_deleteExperiment').hide()
+
+	canEdit: ->
+		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+							return true
+					else
+						rolesToTest.push $.trim(role)
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+						return true
+				else
+					rolesToTest.push $.trim(role)
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")
@@ -410,7 +443,28 @@ class window.ExperimentBrowserController extends Backbone.View
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
 	handleOpenInQueryToolClicked: =>
-		window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
+			window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+
+	formatOpenInQueryToolButton: =>
+		@$('.bv_viewerOptions').empty()
+		configuredViewers = window.conf.service.result.viewer.configuredViewers
+		if configuredViewers?
+			configuredViewers = configuredViewers.split(",")
+		if configuredViewers? and configuredViewers.length>1
+			for viewer in configuredViewers
+				viewerName = $.trim viewer
+				href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{@experimentController.model.get("codeName")}','_blank'"
+				if @experimentController.model.getStatus().get('codeValue') != "approved" and viewerName is "LiveDesign"
+					@$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'
+				else
+					@$('.bv_viewerOptions').append '<li><a href='+href+' target="_blank">'+viewerName+'</a></li>'
+		else
+			@$('.bv_openInQueryToolButton').removeAttr 'data-toggle', 'dropdown'
+			@$('.bv_openInQueryToolButton').removeClass 'dropdown-toggle'
+			@$('.bv_openInQueryToolButton .caret').hide()
+			@$('.bv_openInQueryToolButton').html("Open In " + window.conf.service.result.viewer.displayName)
+			@$('.bv_openInQueryTool').removeClass "btn-group"
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?

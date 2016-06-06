@@ -395,6 +395,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				resp.transformationRuleList = new TransformationRuleWithParametersList(resp.transformationRuleList)
 			resp.transformationRuleList.on 'change', =>
 				@trigger 'change'
+				@trigger 'transformationRuleChanged'
 			resp.transformationRuleList.on 'amDirty', =>
 				@trigger 'amDirty'
 		if resp.standardCompoundList?
@@ -526,6 +527,24 @@ class window.PrimaryScreenExperiment extends Experiment
 		@.set lsType: "Biology"
 		@.set lsKind: "Bio Activity"
 
+	validateModelFitParams: =>
+		errors = []
+		fitTrans = @getModelFitTransformation().get('stringValue')
+		if fitTrans is "Select Fit Transformation" or fitTrans is undefined or fitTrans is null
+			errors.push
+				attribute: 'fitTransformation'
+				message: "Fit transformation must be set"
+		transUnits = @getModelFitTransformationUnits().get('codeValue')
+		if transUnits is "unassigned" or transUnits is undefined or transUnits is null
+			errors.push
+				attribute: 'transformationUnits'
+				message: "Transformation units must be set"
+
+		if errors.length > 0
+			return errors
+		else
+			return null
+
 	getDryRunStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
 		if !status.has('codeValue')
@@ -574,6 +593,23 @@ class window.PrimaryScreenExperiment extends Experiment
 			type.set codeOrigin: "ACAS DDICT"
 
 		type
+
+	getModelFitTransformation: ->
+		trans = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit transformation"
+		if !trans.has('stringValue')
+			trans.set stringValue: "Select Fit Transformation"
+
+		trans
+
+	getModelFitTransformationUnits: ->
+		tu = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit transformation units"
+		if !tu.has('codeValue')
+			tu.set codeValue: "%"
+			tu.set codeType: "model fit"
+			tu.set codeKind: "transformation units"
+			tu.set codeOrigin: "ACAS DDICT"
+
+		tu
 
 	copyProtocolAttributes: (protocol) =>
 #		modelFitStatus = @getModelFitStatus().get('codeValue')
@@ -1850,6 +1886,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
+		@analysisParameterController.model.on "transformationRuleChanged", =>
+			@trigger 'transformationRuleChanged', @analysisParameterController.model.get('transformationRuleList')
 		@completeInitialization()
 
 class window.PrimaryScreenAnalysisController extends Backbone.View
@@ -2054,6 +2092,8 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
+		@dataAnalysisController.on 'transformationRuleChanged', (transformationRuleList) =>
+			@trigger 'transformationRuleChanged', transformationRuleList
 		@dataAnalysisController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
@@ -2151,6 +2191,8 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@fetchModel()
+		@analysisController.on 'transformationRuleChanged', (transformationRuleList) =>
+			@modelFitController.handleTransformationRuleChanged(transformationRuleList)
 		@$('.bv_primaryScreenDataAnalysisTab').on 'shown', (e) =>
 			if @model.getAnalysisStatus().get('codeValue') is "not started"
 				@analysisController.checkForSourceFile()

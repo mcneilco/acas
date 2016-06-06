@@ -118,6 +118,12 @@
 			,
 				typeName: "codeValue"
 				kindName: "model fit type"
+			,
+				typeName: "stringValue"
+				kindName: "model fit transformation"
+			,
+				typeName: "codeValue"
+				kindName: "model fit transformation units"
 			]
 
 		labeltypes:
@@ -206,6 +212,9 @@
 			,
 				typeName: "model fit"
 				kindName: "type"
+			,
+				typeName: "model fit"
+				kindName: "transformation units"
 			]
 
 		codetables:
@@ -315,6 +324,13 @@
 				name: "FLIPR"
 				ignored: false
 			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "generic plate"
+				name: "Generic Plate"
+				ignored: false
+			,
 				codeType: "reader data"
 				codeKind: "read name"
 				codeOrigin: "ACAS DDICT"
@@ -383,6 +399,20 @@
 				codeOrigin: "ACAS DDICT"
 				code: "4 parameter D-R"
 				name: "EC50"
+				ignored: false
+			,
+				codeType: "model fit"
+				codeKind: "transformation units"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "None"
+				ignored: false
+			,
+				codeType: "model fit"
+				codeKind: "transformation units"
+				codeOrigin: "ACAS DDICT"
+				code: "%"
+				name: "%"
 				ignored: false
 			]
 

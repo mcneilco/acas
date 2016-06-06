@@ -62,14 +62,14 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   posStandards <- which(standardType=="PC")
   negStandards <- which(standardType=="NC")
   combinations <- expand.grid(posStandard=posStandards, negStandard=negStandards)
-  plotList <- apply(combinations, MARGIN = 1, getNewControlPlot, 
-                    standardList=parameters$standardCompoundList, batchCodes=resultTable$batchCode, 
+  plotList <- apply(combinations, MARGIN = 1, getNewControlPlot,
+                    standardList=parameters$standardCompoundList, batchCodes=resultTable$batchCode,
                     flags=resultTable$flag, concentrations=resultTable$cmpdConc,
                     normalizedActivities=resultTable$normalizedActivity, plateOrder=resultTable$plateOrder,
                     activityName=activityName)
   print(marrangeGrob(unlist(plotList, recursive = F), nrow=3, ncol=2, top="Control Options"))
-  
-  plateDataTable <- data.table(normalizedActivity = resultTable$normalizedActivity, 
+
+  plateDataTable <- data.table(normalizedActivity = resultTable$normalizedActivity,
                                wellReference = resultTable$well)
   rowVector <- gsub("\\d", "", resultTable$well)
   columnVector <- gsub("\\D", "", resultTable$well)
@@ -132,7 +132,6 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
     title(main=paste0(barcode, " : ", well, "\n", batchCode))
     mtext(title, 3, line=0, adj=0.5, cex=1.2, outer=TRUE)
   }
-  
   plotWells <- function(wellType, wellTypeName) {
     # wellType could be fluorescentWells, and then wellTypeName would be "Fluorescent Wells"
     if(nrow(wellType) > 0) {
@@ -152,10 +151,10 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   plotWells(hitWells, "Hit Wells")
   plotWells(flaggedWells, "Flagged Wells")
 
-  # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs) 
-  missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))) & 
+  # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs)
+  missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))) &
                                (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))))
-  
+
   # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
   if (!missingDataForControls) {
     plotWells(positiveControlWells, "Positive Control Wells")
@@ -178,11 +177,11 @@ getNewControlPlot <- function(controlPair, standardList, batchCodes, concentrati
   # standardList is a list of lists from parameters
   # batchCodes, flags, and normalizedActivity are vectors from resultTable
   # returns a list of two plot objects, one graphic plot and one text plot
-  
+
   library(grid)
   library(data.table)
   source("src/r/PrimaryScreen/primaryAnalysisPlots.R", local = TRUE)
-  
+
   controlPair <- as.list(controlPair)
   posStandard <- standardList[[controlPair$posStandard]]
   negStandard <- standardList[[controlPair$negStandard]]
@@ -190,9 +189,9 @@ getNewControlPlot <- function(controlPair, standardList, batchCodes, concentrati
   newPlot <- createGGComparison(graphTitle = "Plate Comparison", xColumn=plateOrder,
                                 wellType = newWellType, dataRow = normalizedActivities, xLabel = "Plate Order", yLabel=activityName,
                                 margins = c(4,2,20,4), rotateXLabel = FALSE, test = FALSE, colourPalette = c("blue","#4eb02e")) #4eb02e is green
-  negStandardText <- paste0("Neg Control: S", negStandard$standardNumber, " ", 
+  negStandardText <- paste0("Neg Control: S", negStandard$standardNumber, " ",
                             negStandard$batchCode, " @ ", negStandard$concentration, negStandard$concentrationUnits)
-  posStandardText <- paste0("Pos Control: S", posStandard$standardNumber, " ", 
+  posStandardText <- paste0("Pos Control: S", posStandard$standardNumber, " ",
                             posStandard$batchCode, " @ ", posStandard$concentration, posStandard$concentrationUnits)
   newZPrime <- computeZPrime(normalizedActivities[newWellType == "PC" & is.na(flags)],
                              normalizedActivities[newWellType == "NC" & is.na(flags)])

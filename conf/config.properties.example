@@ -51,8 +51,8 @@
 # logging.logtoconsole=true
 # server.security.authstrategy=database
 # client.service.control.tolerance.percentage=0.01
-# New optional configuration additions
-# client.moduleMenus.headerName=ACAS
+# New optional configuration additions, formerly called client.moduleMenus.headerName
+# client.moduleMenus.logoText=ACAS
 # client.moduleMenus.homePageMessage=Welcome to ACAS
 # client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2015
 # server.service.persistence.filePath=${ACAS_HOME}/${server.datafiles.relative_path}
@@ -232,12 +232,15 @@ server.log.level=DEBUG
 
 server.log.path=/home/runner/logs
 
+#config for whether project is required
 client.include.project=FALSE
+# config for whether project attribute is saved as part of an experiment
+client.save.project=FALSE
 client.path=
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.configuredViewers=DataViewer,LiveDesign
 client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.liveDesign.baseUrl=
 client.service.result.viewer.liveDesign.username=
@@ -281,6 +284,7 @@ server.service.external.file.service.url=
 # options for preferred batchid type are: SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
 server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.separator=-
 server.service.external.project.url=
 server.service.external.report.registration.url=
 server.service.external.user.authentication.url=
@@ -288,8 +292,8 @@ server.service.external.user.information.url=
 server.service.external.logging.url=
 
 # Required if using Spotfire
-client.service.spotfire.host=dsantsptdxp
-client.service.spotfire.path=/Lead Discovery/HTSWells
+client.service.spotfire.host=
+client.service.spotfire.path=
 
 # Used by custom code for accessing inventory
 server.service.external.inventory.database.host=
@@ -347,8 +351,11 @@ client.cmpdReg.showFileDate=true
 # Example: client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"public/src/modules/CurveAnalysis/src/server/ll4.R"}, \
 #                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
 #
-client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R"}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R"}]
+client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/src/server/ll4.R"}, \
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/src/server/ki.R"}, \
+                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/src/server/ll4IC50.R"},\
+                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/src/server/mm2.R"},\
+                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/src/server/substrateInhibition.R"}]
 
 # Lock when approved filter
 #
@@ -361,6 +368,12 @@ client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
 
+# client.entity.editingRoles/deletingRoles determine which users can edit/delete protocols/expts. Leave config empty if all users can edit/delete
+# use 'entityScientist' if want to restrict privileges to user saved in the scientist value
+# Example for restricting editing privs to user in entity's scientist value and users with admin role: client.entity.editingRoles=entityScientist,admin
+client.entity.editingRoles=entityScientist,admin
+client.entity.deletingRoles=entityScientist,admin
+
 client.protocol.showAssayTreeRule=false
 
 ## Cmpd Reg Bulk Loader Options
@@ -370,6 +383,9 @@ client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.pers
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
+
+# Default status for experiments loaded thorugh experiment loader
+server.sel.experimentStatus=approved
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
@@ -383,7 +399,7 @@ server.temp.file.server.path=privateTempFiles
 server.service.persistence.jdbc.validation.query=select version()
 
 # Mark whether using internal plate registration for plate analysis
-server.service.internalPlateRegistration=true
+server.service.internalPlateRegistration=false
 
 #TODO: remove later, support both
 server.service.genericSpecificPreProcessor=false
@@ -406,3 +422,6 @@ server.rapache.conf.serveradmin=root@localhost
 server.rapache.conf.serversignature=On
 server.rapache.conf.logformat='"%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined'
 server.rapache.conf.rewriteengine=On
+
+server.curveCurator.onRejectMakeReportedValuesNonPublic=false
+server.curveRender.drawPointsForRejectedCurve=true

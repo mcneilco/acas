@@ -1,6 +1,6 @@
 performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun, normalizationDataFrame, standardsDataFrame) {
   library(stats)
-  
+
   resultTable <- normalizeData(resultTable, parameters, normalizationDataFrame)
   
   # get transformed columns
@@ -80,7 +80,7 @@ normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
   } else {
     overallMinLevel <- normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="NC"]
   }
-  
+
   #find max of dataset (aggregationMethod of unflagged Positive Controls)
   # otherwise if no PC exists use the default value selected in lieu of PC standard
   if (nrow(resultTable[(wellType == 'PC' & is.na(flag))]) != 0) {
@@ -88,7 +88,7 @@ normalizeData <- function(resultTable, parameters, normalizationDataFrame) {
   } else {
     overallMaxLevel <- normalizationDataFrame$defaultValue[normalizationDataFrame$standardType=="PC"]
   }
-  
+
   
   if (normalization == "plate order only") {
     resultTable[,normalizedActivity:=computeNormalized(activity,wellType,flag,
@@ -207,7 +207,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
   standardsDT <- as.data.table(standardsDataFrame)
   transformationRule <- transformation$transformationRule
   tParams <- transformation$transformationParameters
-  
+
   if (transformationRule == "percent efficacy") {
     positiveControlNum <- tParams$positiveControl$standardNumber
     negativeControlNum <- tParams$negativeControl$standardNumber
@@ -227,20 +227,20 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
                  however no actual numeric value was defined. Selecting a Standard, or alternatively setting an Input Value, for
                  Positive and Negative Control is required for transformation calculations.")
     }
-    
+
     # If tranformation-related PC OR NC are defined as the exact same standard, prompt the user with an error
     if (positiveControlNum != 'input value' & negativeControlNum != 'input value' && positiveControlNum == negativeControlNum) {
       stopUser("The same Standard was defined for both Positive Control and Negative Control in the tranformation section.
                    Different Standards for Positive and Negative Controls are required for tranformation calculations.")
     }
-      
+
       # If tranformation-related PC OR NC are defined as input value but have the exact same numeric value, prompt the user with an error
       if (positiveControlNum == 'input value' && negativeControlNum == 'input value' && positiveDefault == negativeDefault) {
         stopUser("In the transformation section, Input Values were selected for both Positive and Negative Controls
                  which appear to be exactly identical for both controls. Selecting different Input Values for
                  Positive and Negative Control is required for proper transformation calculations.")
       }
-    
+
     # Use the transformation-related PC to calculate aggregatePosControl in the two possible scenarios below, where a default value has been
     # defined OR a standard is defined
     if (positiveControlNum == 'input value') {
@@ -259,7 +259,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
         aggregatePosControl <- useAggregationMethod(as.numeric(controlWells$normalizedActivity), parameters)
       }
     }
-    
+
     # Use the transformation-related NC to calculate aggregateVehControl in the two possible scenarios below, where a default value has been
     # defined OR a standard is defined
     if (negativeControlNum == 'input value') {
@@ -278,7 +278,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
         aggregateVehControl <- useAggregationMethod(as.numeric(controlWells$normalizedActivity), parameters)
       }
     }
-    
+
     return(
       (1
        - (as.numeric(mainData$normalizedActivity) - aggregatePosControl)
@@ -317,10 +317,16 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
     }
   } else if (transformationRule == "normalize by R3") {
     R3Col <- names(mainData)[grepl("^R3 .*", names(mainData))]
-    aggregatePosControl <- useAggregationMethod(as.numeric(mainData[wellType == "PC" & is.na(flag), get(R3Col)]), parameters)
-    aggregateVehControl <- useAggregationMethod(as.numeric(mainData[wellType == "NC" & is.na(flag), get(R3Col)]), parameters)
-    return((mainData$activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
-  } else if (transformationRule == "noAgonist") {
+
+    neededColumns <- c("assayBarcode", "activity", "wellType", "flag", R3Col)
+    mainCopy <- mainData[, neededColumns, with=FALSE]
+    computeNormalizeByR3 <- function(activity, wellType, flag, R3Column) {
+      aggregatePosControl <- useAggregationMethod(as.numeric(R3Column[wellType == "PC" & is.na(flag)]), parameters)
+      aggregateVehControl <- useAggregationMethod(as.numeric(R3Column[wellType == "NC" & is.na(flag)]), parameters)
+      return((activity - aggregateVehControl) / (aggregatePosControl - aggregateVehControl) * 100)
+    }
+    return(mainCopy[, V1:=computeNormalizeByR3(activity, wellType, flag, get(R3Col)), by=assayBarcode]$V1)
+  } else if (transformation == "noAgonist") {
     return(getNoAgonist(parameters, mainData))
   } else if (transformationRule == "enhancement") {
     groupBy <- getGroupBy(parameters)

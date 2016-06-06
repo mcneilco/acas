@@ -38,13 +38,20 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 			errorMessages: []
 			results: results
 	else if serviceType == "SeuratCmpdReg" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
-		serverUtilityFunctions.runRFunction(
+		req =
+			testMode: false
+			requests: requests
+			user: ""
+		serverUtilityFunctions.runRFunctionOutsideRequest(
+			"",
 			req,
 			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
-		(rReturn) ->
-			callback rReturn
+			(rReturn) ->
+				callback rReturn
+			,
+			null,
+			false
 		)
 	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function

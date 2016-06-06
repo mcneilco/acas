@@ -44,7 +44,6 @@
 source("src/r/ServerAPI/customFunctions.R", local=TRUE)
 # TODO: Test structure, probably removing this folder eventually
 clientName <- "exampleClient"
-# END: Test structure
 
 # Source the client specific compound assignment functions
 compoundAssignmentFilePath <- file.path("src/r/PrimaryScreen/compoundAssignment",
@@ -1697,7 +1696,6 @@ autoFlagWells <- function(resultTable, parameters) {
   }
 
 
-
   # Flag HITs
   if(!parameters$autoHitSelection) {
     return(resultTable)
@@ -1865,7 +1863,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   } else {
     experiment <- list(id = experimentId, codeName = "test", version = 0)
   }
-  
+
   parameters <- getExperimentParameters(inputParameters)
 
   if(parameters$autoHitSelection) {
@@ -2027,12 +2025,19 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     load(file.path(parsedInputFileLocation,"primaryAnalysis-resultTable.Rda"))
   } else {
     ## if this is not a spotfire reanalysis and/or the saved .Rda is not found
-    
+
     # GREEN (instrument-specific)
-    instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
-    
-    # TODO: add config server.service.genericSpecificPreProcessor
-    if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
+    if (parameters$instrumentReader == 'generic plate') {
+      # For the case where no instrument files (.txt) are uploaded through a
+      # zipped folder. In that case, function specificDataPreProcessor is not
+      # executed to populate instrumentData, which leads to table instrumentData
+      # being constructed with the information entered through the plate files
+      # (.xlsx) in the uploaded zipped file
+      instrumentData <- genericPlateDataPreProcessor(parameters=parameters,
+                                                     folderToParse=fullPathToParse,
+                                                     tempFilePath=specDataPrepFileLocation)
+    } else if (as.logical(racas::applicationSettings$server.service.genericSpecificPreProcessor)) {
+      instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
       instrumentData <- specificDataPreProcessor(parameters=parameters,
                                                  folderToParse=fullPathToParse,
                                                  errorEnv=errorEnv,
@@ -2041,6 +2046,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                  testMode=testMode,
                                                  tempFilePath=specDataPrepFileLocation)
     } else {
+      instrumentReadParams <- loadInstrumentReadParameters(parameters$instrumentReader)
       instrumentData <- specificDataPreProcessorStat1Stat2Seq(parameters=parameters,
                                                               folderToParse=fullPathToParse,
                                                               errorEnv=errorEnv,
@@ -2050,11 +2056,14 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                                               tempFilePath=specDataPrepFileLocation)
     }
     
+
     # RED (client-specific)
     # getCompoundAssignments
-    
+
     # exampleClient is set at the head of runMain function
-    if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
+    if (checkPlateContentInFiles(fullPathToParse)) {
+      resultTable <- getCompoundAssignmentsFromFiles(fullPathToParse, instrumentData, parameters)
+    } else if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
       resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData,
                                                     testMode, parameters)
     } else {
@@ -2062,16 +2071,13 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
                                             testMode, parameters,
                                             tempFilePath=specDataPrepFileLocation)
     }
-    
+
     # this also performs any calculations from the GUI
     source("src/r/PrimaryScreen/instrumentSpecific/specificDataPreProcessorFiles/adjustColumnsToUserInput.R", local = TRUE)
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
-    #rm(instrumentData)
-    #gc()
-
-    resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc, 
+    resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc,
                                          concentrationUnits=resultTable$concUnit,
                                          positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
                                          vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame, normalizationDataFrame)
@@ -2081,12 +2087,12 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     checkControls(resultTable, normalizationDataFrame)
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
-
+    
     # instrumentData is still needed, but pulling out assayData could let us clean it up
     #rm(instrumentData)
     #gc()
   }
-  
+
   ## User Well Flagging Here
   
   # user well flagging
@@ -2755,7 +2761,7 @@ changeColNameReadability <- function(inputTable, readabilityChange, parameters) 
 
 selectColNamesToChange <- function(currentColNames, colNameChangeTable) {
   
-  for(name in colNameChangeTable$oldColName) {
+  for(name in colNameChangeTable$oldColNames) {
     columnCount <- 0
     for(currentName in currentColNames) {
       if(name == currentName) {
@@ -3164,7 +3170,7 @@ runPrimaryAnalysis <- function(request, externalFlagging=FALSE) {
   globalMessenger <- messenger()$reset()
   globalMessenger$devMode <- FALSE
   options("scipen"=15)
-#save(request, file="request.Rda")
+  #save(request, file="request.Rda")
 
   request <- as.list(request)
   experimentId <- request$primaryAnalysisExperimentId

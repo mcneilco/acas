@@ -71,8 +71,11 @@ parseSeqFile <- function(fileName) {
   # Returns:
   #   A data.frame with a column for each well
   
-  inputData <- read.delim(file=fileName, as.is=TRUE, stringsAsFactors = FALSE)
-  intermediateMatrix <- t(inputData[5:75])
+  startColumn <- 5  # First data column for these files
+  
+  inputData <- read.delim(file = fileName, check.names = FALSE, stringsAsFactors = FALSE)
+  lastColumn <- tail(which(names(inputData)!=""), 1)
+  intermediateMatrix <- t(inputData[startColumn:lastColumn])
   outputData <- as.data.frame(intermediateMatrix[1:nrow(intermediateMatrix)>1,], stringsAsFactors = FALSE)
   names(outputData) <- normalizeWellNames(intermediateMatrix[1,])
   outputData[] <- lapply(outputData, as.numeric)
@@ -246,7 +249,7 @@ makeDataFrameOfWellsGrid <- function(allData, barcode, valueName) {
 # Sets column names included in input parameters to the format of Rn {acivity}
 # Inputs: readsTable (data.table with columns readOrder, readNames, activity)
 #         activityColNames (assayData) (from instrument files)
-# Output: data table that can be used as a reference. Columns: readPosition, readName, ativityColName, newActivityColName, activity
+# Output: data table that can be used as a reference. Columns: readPosition, readName, activityColName, newActivityColName, activity
 
 formatUserInputActivityColumns <- function(readsTable, activityColNames, tempFilePath, matchNames) {
   
