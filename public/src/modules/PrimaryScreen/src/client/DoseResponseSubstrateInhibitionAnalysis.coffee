@@ -1,8 +1,8 @@
 class window.DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.Model
 	defaults:
 		smartMode: true
-		inactiveThresholdMode: true
-		inactiveThreshold: 20
+		inactiveThresholdMode: false
+		inactiveThreshold: null
 		theoreticalMaxMode: false
 		theoreticalMax: null
 		inverseAgonistMode: false
