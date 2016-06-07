@@ -1030,6 +1030,7 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 		)
 
 exports.moveToLocation = (req, resp) ->
+	req.setTimeout 86400000
 	exports.moveToLocationInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
