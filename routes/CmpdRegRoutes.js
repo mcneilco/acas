@@ -16,6 +16,8 @@
     app.get('/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
+    app.get('/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
+    app.get('/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects);
     app.get('/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);

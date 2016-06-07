@@ -28,6 +28,10 @@
         "sortSaltsByAbbrev": true,
         "sortIsotopesByAbbrev": true,
         "showSelectCategoryOption": true,
+        "showSelectCompoundTypeOption": true,
+        "showSelectParentAnnotationOption": true,
+        "showSelectCompoundTypeList": false,
+        "showSelectParentAnnotationList": false,
 	    "fileSaveDirNamedForBatchName": true,
 	    "useExactMass": true,
 	"disableAliasEdit": true

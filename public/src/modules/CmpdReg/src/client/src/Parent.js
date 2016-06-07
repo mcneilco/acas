@@ -4,8 +4,11 @@ $(function() {
 		defaults: {
             stereoCategory: null,
             stereoComment: '',
-            commonName: '',
+            //commonName: '',
+            compoundType: null,
+            parentAnnotation: null,
             molStructure: '',
+            comment: '',
             corpName: '',
             chemist: null
 		},
@@ -22,9 +25,13 @@ $(function() {
                     molStructure: js.molStructure,
                     stereoCategory: new PickList(js.stereoCategory),
                     stereoComment: js.stereoComment,
-                    commonName: js.commonName,
+                    //commonName: js.commonName,
+                    compoundType: new PickList(js.compoundType),
+                    parentAnnotation: new PickList(js.parentAnnotation),
                     molWeight: js.molWeight,
+					exactMass: js.exactMass,
                     molFormula: js.molFormula,
+					comment: js.comment,
                     chemist: new PickList(js.chemist),
 					parentAliases: new AliasCollection(js.parentAliases)
 				}, {silent: true});
@@ -56,6 +63,11 @@ $(function() {
 			if (attr.stereoCategory != null) {
                 if (attr.stereoCategory.get('code')=='not_set') {
                     errors.push({attribute: 'stereoCategoryCode', message: "Stereo category must be supplied"});
+                }
+            }
+			if (window.configuration.metaLot.showSelectCompoundTypeOption && attr.compoundType != null) {
+                if (attr.compoundType.get('code')=='not_set') {
+                    errors.push({attribute: 'compoundTypeCode', message: "Compound type must be supplied"});
                 }
             }
 			if (errors.length > 0) {return errors;}
@@ -117,8 +129,44 @@ $(function() {
             this.stereoCategoryCodeController =
                 this.setupCodeController('stereoCategoryCode', 'stereoCategorys', 'stereoCategory', optionToInsert);
 
+			if (window.configuration.metaLot.showSelectCompoundTypeList) {
+				if (window.configuration.metaLot.showSelectCompoundTypeOption) {
+					var optionToInsert = new PickList({
+						"code": "not_set",
+						"id": 6,
+						"name": "Select Compound Type",
+						"version": 0
+					});
+				} else {
+					var optionToInsert = null;
+				}
+				this.compoundTypeCodeController =
+					this.setupCodeController('compoundTypeCode', 'compoundTypes', 'compoundType', optionToInsert);
+
+			} else {
+				this.$('.bv_compoundTypeContainer').hide();
+			}
+
+			if (window.configuration.metaLot.showSelectParentAnnotationList) {
+				if (window.configuration.metaLot.showSelectParentAnnotationOption) {
+					var optionToInsert = new PickList({
+						"code": null,
+						"id": 7,
+						"name": "Select High Value Annotation",
+						"version": 0
+					});
+				} else {
+					var optionToInsert = null;
+				}
+				this.parentAnnotationCodeController =
+					this.setupCodeController('parentAnnotationCode', 'parentAnnotations', 'parentAnnotation', optionToInsert);
+
+			} else {
+				this.$('.bv_parentAnnotationContainer').hide();
+			}
+
             this.$('.stereoComment').val(this.model.get('stereoComment'));
-            this.$('.commonName').val(this.model.get('commonName'));
+            //this.$('.commonName').val(this.model.get('commonName'));
             this.$('.molWeight').val(this.model.get('molWeight'));
             this.$('.molFormula').val(this.model.get('molFormula'));
 
@@ -127,7 +175,11 @@ $(function() {
 			if (!this.model.isNew()) {
                 this.$('.stereoCategoryCode').attr('disabled', true);
                 this.$('.stereoComment').attr('disabled', true);
-                this.$('.commonName').attr('disabled', true);
+                this.$('.compoundTypeCode').attr('disabled', true);
+                this.$('.parentAnnotationCode').attr('disabled', true);
+                this.$('.parentAnnotationCode').attr('disabled', true);
+                this.$('.comment').attr('disabled', true);
+                //this.$('.commonName').attr('disabled', true);
 
             }
 			if (this.readMode) {
@@ -135,9 +187,9 @@ $(function() {
 			} else {
 				this.setAliasToEdit();
 			}
-			if(window.configuration.clientUILabels.commonNameLabel) {
-                this.$('.commonNameLabel').html(window.configuration.clientUILabels.commonNameLabel);
-            }
+            //if(window.configuration.clientUILabels.commonNameLabel) {
+            //    this.$('.commonNameLabel').html(window.configuration.clientUILabels.commonNameLabel);
+            //}
 
             if (this.model.get('molWeight') != null) {
                 this.$('.molWeight').val(
@@ -179,9 +231,16 @@ $(function() {
             this.model.set({
                 stereoComment: this.$('.stereoComment').val(),
                 stereoCategory: this.stereoCategoryCodeController.getSelectedModel(),
-                commonName: this.$('.commonName').val(),
+                //commonName: this.$('.commonName').val(),
 				parentAliases: this.aliasController.collection.toJSON()
             });
+
+			if(this.compoundTypeCodeController != null){
+				this.model.set({compoundType: this.compoundTypeCodeController.getSelectedModel()})
+			};
+			if(this.parentAnnotationCodeController != null){
+				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()})
+			};
 		},
 
 		isValid: function() {
