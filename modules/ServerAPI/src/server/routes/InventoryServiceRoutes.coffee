@@ -38,6 +38,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/mergeContainers', exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
+	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -74,6 +75,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
+	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -588,6 +590,13 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 				console.error response
 				callback JSON.stringify "getWellCodesByContainerCodes failed"
 		)
+
+exports.getWellContentByContainerCodes = (req, resp) ->
+	exports.getWellContentByContainerCodesInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
 
 exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) ->
 	if global.specRunnerTestmode
