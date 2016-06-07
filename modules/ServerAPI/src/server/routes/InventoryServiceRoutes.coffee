@@ -604,7 +604,8 @@ exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) 
 		resp.json inventoryServiceTestJSON.getWellContentByContainerCodesResponse
 	else
 		console.debug 'requesting well codes from container codes'
-		exports.getWellCodesByContainerCodesInternal containerCodeNames, (wellCodesResponse) ->
+		uniqueCodeNames = _.uniq containerCodeNames
+		exports.getWellCodesByContainerCodesInternal uniqueCodeNames, (wellCodesResponse) ->
 			wellCodes = _.map wellCodesResponse, (wellCode) ->
 				_.map wellCode.wellCodeNames, (codeName) ->
 					{containerCode: wellCode.requestCodeName, wellCode: codeName}
