@@ -79,7 +79,7 @@ getCompoundAssignmentsFromFile <- function(fileName, folderToParse) {
   compoundVector <- as.vector(t(plateSection[rowRange, columnRange]))
   
   concDataFrame <- readWorksheetFromFile(pathToExcelFile, sheet="PlateConc", header=FALSE)
-  headerInfo <- getSection(concDataFrame, "Plate Information", transpose = TRUE, required = TRUE)
+  concHeaderInfo <- getSection(concDataFrame, "Plate Information", transpose = TRUE, required = TRUE)
   plateSection <- getSection(concDataFrame, "^Plate$", required = TRUE)
   concVector <- as.vector(t(plateSection[rowRange, columnRange]))
   

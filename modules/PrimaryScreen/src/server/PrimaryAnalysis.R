@@ -187,11 +187,10 @@ removeControls <- function(validatedFlagData) {
   
   return(testOnly)
 }
-getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiveControl, negativeControl, vehicleControl, testMode=F,
-                         standardsDataFrame, normalizationDataFrame) {
+getWellTypes <- function(batchNames, concentrations, concentrationUnits, testMode=F,
+                         standardsDT, normalizationRule) {
   # Takes vectors of batchNames, concentrations, and concunits 
   # and compares to named lists of the same for positive and negative controls
-  # TODO: get client to send "infinite" as text for the negative control
   wellTypes <- rep.int("test", length(batchNames))
 
   toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage # percent
@@ -203,31 +202,34 @@ getWellTypes <- function(batchNames, concentrations, concentrationUnits, positiv
 
 
   # Throw an error if absolutely no standards are defined in the GUI
-  if (is.null(length(standardsDataFrame$standardTypeEnumerated)) | length(standardsDataFrame$standardTypeEnumerated)==0) {
+  if (nrow(standardsDT)==0) {
     stopUser("No Standards were defined whatsoever.")
   }
   # Throw an error if no negative controls are defined in the GUI
-  if (is.null(length(grep("NC", standardsDataFrame$standardTypeEnumerated))) | length(grep("NC", standardsDataFrame$standardTypeEnumerated))==0) {
-    stopUser("No Negative Control Standards were defined.")
+  if (!any(standardsDT$standardType=='NC') && normalizationRule != "none") {
+    stopUser("No Negative Control Standards were defined. Either set negative controls, or use normalization of 'none'.")
   }
   # Throw an error if no positive controls are defined in the GUI
-  if (is.null(length(grep("PC", standardsDataFrame$standardTypeEnumerated))) | length(grep("PC", standardsDataFrame$standardTypeEnumerated))==0) {
-    stopUser("No Positive Control Standards were defined.")
+  if (!any(standardsDT$standardType=='PC') && normalizationRule != "none") {
+    stopUser("No Positive Control Standards were defined. Either set negative controls, or use normalization of 'none'.")
   }
   # Throw an error if any of the standards was left unassigned in the GUI
-  if (any(standardsDataFrame$standardType=="unassigned")) {
+  if (any(standardsDT$standardType=="unassigned")) {
     stopUser("The standard type for at least one Standard was not defined. Please select a type: Positive Control, Negative Control, or Vehicle Control")
   }
   
-  # Cycling through all the standards (PC, NC, VC) and update well types accordingly, also confirming that each standard is within tolerance
-  #from the corresponding concentrations (as defined in the standards section of the GUI)
-  for (targetStandard in standardsDataFrame$standardTypeEnumerated) {
-    targetConc <- (standardsDataFrame$concentration[standardsDataFrame$standardTypeEnumerated==targetStandard])
-    currentStandardFilter <- batchNames==standardsDataFrame$batchCode[standardsDataFrame$standardTypeEnumerated==targetStandard]
-    currentStandardFilterConcConfirmed <- currentStandardFilter & (abs(concentrations-targetConc) <= (targetConc * toleranceRange)/100)
-    wellTypes[currentStandardFilterConcConfirmed] <- targetStandard
+  # Cycling through all the standards, update well types accordingly, checking each standard within tolerance
+  # from the corresponding concentrations (as defined in the standards section of the GUI)
+  for (row in 1:nrow(standardsDT)) {
+    targetConc <- standardsDT$concentration[row]
+    targetBatchCode <- standardsDT$batchCode[row]
+    concFilter <- TRUE
+    if (!is.na(targetConc)) {
+      concFilter <- abs(concentrations-targetConc) <= (targetConc * toleranceRange)/100
+    }
+    wellTypes[batchNames==targetBatchCode & concFilter] <- standardsDT$standardTypeEnumerated[row]
   }
-
+  
   return(wellTypes)
 }
 getAnalysisGroupColumns <- function(replicateType) {
@@ -1843,7 +1845,6 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   #               and no wells are flagged. Also may include information to flag analysis groups.
   # flaggingStage: a string indicating whether the user intends to modify "wellFlags" or
   #                       "analysisGroupFlags" or spotfire "KOandHit"
-  
   library("data.table")
   library("plyr")
 
@@ -1878,7 +1879,9 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
 
   # Define the data frame that holds information about multiple standards, as defined in the GUI
-  standardsDataFrame <- rbindlist(parameters$standardCompoundList)
+  standardsDT <- rbindlist(parameters$standardCompoundList)
+  standardsDT[concentration=="", concentration:=NA_character_]
+  standardsDT[, concentration:=as.numeric(concentration)]
 
   # Define the data frame that holds information about normalization controls, as defined in the GUI
   normalizationDataFrame <- as.data.frame(rbind(parameters$normalization$positiveControl,
@@ -1963,42 +1966,23 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
   }
 
   # Add a column to the data frame that holds information about multiple standards, enumerating all available standards
-  standardsDataFrame$standardTypeEnumerated <- paste0(standardsDataFrame$standardType, "-S", standardsDataFrame$standardNumber)
+  standardsDT[, standardTypeEnumerated:=paste0(standardType, "-S", standardNumber)]
 
 
   # If a normalization-related PC is defined then mark it separately in the standards database
   normalizationPC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='PC']
   if (normalizationPC != 'input value') {
-    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationPC] <- 'PC'
+    standardsDT[standardNumber==normalizationPC, standardTypeEnumerated:='PC']
   }
 
   # If a normalization-related NC is defined then mark it separately in the standards database
   normalizationNC <- normalizationDataFrame$standardNumber[normalizationDataFrame$standardType=='NC']
   if (normalizationNC != 'input value') {
-    standardsDataFrame$standardTypeEnumerated[standardsDataFrame$standardNumber==normalizationNC] <- 'NC'
+    standardsDT[standardNumber==normalizationNC, standardTypeEnumerated:='NC']
   }
 
   # Validate all the batchcodes entered for multiple standards in the GUI
-  standardsDataFrame$batchCode <- validateBatchCodes(standardsDataFrame$batchCode)
-
-  # Throw an error if there is a standard defined in the GUI that is not a PC, NC, or VC, or if its concentration was not defined
-  if (any(standardsDataFrame$standardType=="null")) {
-    stopUser("Please check Data Analysis entries - At least one of the standards was defined beyond the allowable options of Positive, Negative, and Vehicle Control.")
-  }
-  if (any(standardsDataFrame$concentration=="")) {
-    stopUser("Please check Data Analysis entries - At least one of the standards was defined without adding its concentration.")
-  }
-
-
-  ##parameters$positiveControl$batchCode <- validateBatchCodes(parameters$positiveControl$batchCode)
-  ##parameters$negativeControl$batchCode <- validateBatchCodes(parameters$negativeControl$batchCode)
-  
-  ## TODO: test structure for integration 2014-10-06 kcarr
-  # parameters <- parameters$primaryScreenAnalysisParameters
-  ## END test structure
-
-  # TODO in 1.6: store this in protocol
-  # parameters$latePeakTime <- 80
+  standardsDT[, batchCode:=validateBatchCodes(batchCode)]
 
   dir.create(racas::getUploadedFilePath("experiments"), showWarnings = FALSE)
   dir.create(paste0(racas::getUploadedFilePath("experiments"),"/",experiment$codeName), showWarnings = FALSE)
@@ -2077,11 +2061,10 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # TODO: break this function into customer-specific usable parts
     resultTable <- adjustColumnsToUserInput(inputColumnTable=instrumentData$userInputReadTable, inputDataTable=resultTable)
 
-    resultTable$wellType <- getWellTypes(batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc,
-                                         concentrationUnits=resultTable$concUnit,
-                                         positiveControl=parameters$positiveControl, negativeControl=parameters$negativeControl, 
-                                         vehicleControl=parameters$vehicleControl, testMode=testMode, standardsDataFrame, normalizationDataFrame)
-
+    resultTable$wellType <- getWellTypes(
+      batchNames=resultTable$batchCode, concentrations=resultTable$cmpdConc,
+      concentrationUnits=resultTable$concUnit, testMode=testMode, standardsDT=standardsDT, 
+      parameters$normalization$normalizationRule)
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
     checkControls(resultTable, normalizationDataFrame)
@@ -2113,7 +2096,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
               c("flag", "flagType", "flagObservation", "flagReason") := list("KO", "knocked out", "empty well", "reader")]
 
   # Perform calculations related to normalization and transformation (performCalculationsStat1Stat2Seq() is no longer relevant)
-  resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDataFrame)
+  resultTable <- performCalculations(resultTable, parameters, experiment$codeName, dryRun, normalizationDataFrame, standardsDT)
 
 
   if(length(unique(resultTable$normalizedActivity)) == 1 && unique(resultTable$normalizedActivity) == "NaN") {

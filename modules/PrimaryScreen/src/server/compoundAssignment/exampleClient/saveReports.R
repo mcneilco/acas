@@ -28,7 +28,7 @@ saveCsvReport <- function(inputTable, saveLocation, experiment, parameters, reco
     PC = "Positive Control",
     NC = "Negative Control",
     BLANK = "Blank")
-  inputTable[, wellType := unlist(translationList[wellType])]
+  inputTable[wellType %in% names(translationList), wellType := unlist(translationList[wellType])]
   
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
   inputTable <- data.table(inputTable)

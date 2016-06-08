@@ -150,20 +150,14 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   plotWells(latePeakWells, "Late Peak Wells")
   plotWells(hitWells, "Hit Wells")
   plotWells(flaggedWells, "Flagged Wells")
-
-  # Define scenario missingDataForControls is TRUE if at least one pair of T_timePoints, T_sequence corresponding to a PC, NC standard is NA (ignore VCs)
-  missingDataForControls <- ((any(is.na(allResultTable$T_timePoints[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))) &
-                               (any(is.na(allResultTable$T_sequence[allResultTable$wellType!="test" & !(grepl("^VC",resultTable$wellType))]))))
-
+  
   # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
-  if (!missingDataForControls) {
+  if (nrow(allResultTable[wellType %in% c("PC", "NC") & (is.na(T_timePoints) | is.na(T_timePoints))]) == 0) {
     plotWells(positiveControlWells, "Positive Control Wells")
     plotWells(negativeControlWells, "Negative Control Wells")
   }
   
   dev.off()
-  
-  
   return(pdfLocation)
 }
 calculateNewWellType <- function(batchCode, cmpdConc, posStandard, negStandard) {

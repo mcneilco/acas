@@ -1,11 +1,11 @@
-performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun, normalizationDataFrame, standardsDataFrame) {
+performCalculations <- function(resultTable, parameters, experimentCodeName, dryRun, normalizationDataFrame, standardsDT) {
   library(stats)
 
   resultTable <- normalizeData(resultTable, parameters, normalizationDataFrame)
   
   # get transformed columns
   for (transformation in parameters$transformationRuleList) {
-    resultTable[ , paste0("transformed_",transformation$transformationRule) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame)]
+    resultTable[ , paste0("transformed_",transformation$transformationRule) := computeTransformedResults(.SD, transformation, parameters, experimentCodeName, dryRun, standardsDT)]
   }
   
   # compute Z' and Z' by plate
@@ -194,7 +194,7 @@ computeNormalized  <- function(values, wellType, flag, overallMinLevel, overallM
     + overallMaxLevel)
 }
 
-computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun, standardsDataFrame) {
+computeTransformedResults <- function(mainData, transformation, parameters, experimentCodeName, dryRun, standardsDT) {
   #switch on transformation
   # based on transformation (custom code for each), responds with a vector of the new transformation
   # Inputs:
@@ -203,8 +203,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
   #   parameters: list
   #   experimentCodename: string
   #   dryRun: boolean
-  #   standardsDataFrame: data.frame (gets converted to data.table if not already)
-  standardsDT <- as.data.table(standardsDataFrame)
+  #   standardsDT: data.table
   transformationRule <- transformation$transformationRule
   tParams <- transformation$transformationParameters
 
@@ -292,7 +291,7 @@ computeTransformedResults <- function(mainData, transformation, parameters, expe
       aggregateVehControl <- negativeDefault
       stdevVehControl <- Inf
     } else {
-      # Find the label ("NC", "NC-S2", "PC-S4", "VC-S5", etc) that corresponds to the transformation-related NC standard from standardsDataFrame
+      # Find the label ("NC", "NC-S2", "PC-S4", "VC-S5", etc) that corresponds to the transformation-related NC standard from standardsDT
       enumeratedTransfNC <- standardsDT[standardNumber == negativeControlNum, standardTypeEnumerated]
       # If at least one entry of the transformation-related NC standard exists that is not flagged then calculate aggregatePosControl
       # otherwise prompt the user with an error
