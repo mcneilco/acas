@@ -109,15 +109,21 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   tempFile <- paste0(experimentCode, "primaryHits.csv")
   writeLines(primaryHitList, getUploadedFilePath(tempFile))
   lsTransaction <- createLsTransaction()$id
-  primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
-                                             "primary hit list", user, lsTransaction)
+  if (dryRun) {
+    primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
+                                               "dryrun primary hit list", user, lsTransaction)
+  } else {
+    primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
+                                               "primary hit list", user, lsTransaction)
+  }
   
   summaryInfo$experiment <- experiment
-  summaryInfo$info <- list(
+  primaryInfo <- list(
     "Compounds Tested in Primary" = totalTested,
     "Primary Experiment Codes" = paste(primaryExperimentCodes, collapse = ", "),
-    "Primary Hits" = paste0('<a href="', getAcasFileLink(primaryHitFile), '" target="_blank">Primary Hits</a>')
+    "Primary Hits" = paste0('<a href="', getAcasFileLink(primaryHitFile, login = TRUE), '" target="_blank">Primary Hits</a>')
   )
+  summaryInfo$info <- c(summaryInfo$info, primaryInfo)
   if (length(confirmationExperimentCodes) > 0) {
     extraInfo <- list(
       "Compounds Retested in Confirmation" = totalRetested,
