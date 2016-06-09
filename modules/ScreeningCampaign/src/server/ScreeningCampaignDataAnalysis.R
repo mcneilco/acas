@@ -1,10 +1,14 @@
 runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, inputParameters, 
                                         primaryExperimentCodes, confirmationExperimentCodes) {
   
-  experiment <- getExperimentByCodeName("EXPT-00014365")
-  primaryExperimentCodes <- fromJSON("[\"EXPT-00012918\",\"EXPT-00012374\"]")
-  confirmationExperimentCodes <- fromJSON("[\"EXPT-00014387\"]")
-  inputParameters <- fromJSON("{\"signalDirectionRule\":\"decreasing\",\"aggregateBy\":\"entire assay\",\"aggregationMethod\":\"mean\",\"normalization\":{\"normalizationRule\":\"none\"},\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"}],\"hitEfficacyThreshold\":null,\"hitSDThreshold\":null,\"thresholdType\":null,\"useOriginalHits\":false,\"autoHitSelection\":false}")
+  experiment <- getExperimentByCodeName(experimentCode)
+  primaryExperimentCodes <- fromJSON(primaryExperimentCodes)
+  confirmationExperimentCodes <- fromJSON(confirmationExperimentCodes)
+  inputParameters <- fromJSON(inputParameters)
+  #experiment <- getExperimentByCodeName("EXPT-00014365")
+  #primaryExperimentCodes <- fromJSON("[\"EXPT-00012918\",\"EXPT-00012374\"]")
+  #confirmationExperimentCodes <- fromJSON("[\"EXPT-00014387\"]")
+  #inputParameters <- fromJSON("{\"signalDirectionRule\":\"decreasing\",\"aggregateBy\":\"entire assay\",\"aggregationMethod\":\"mean\",\"normalization\":{\"normalizationRule\":\"none\"},\"transformationRuleList\":[{\"transformationRule\":\"percent efficacy\"}],\"hitEfficacyThreshold\":null,\"hitSDThreshold\":null,\"thresholdType\":null,\"useOriginalHits\":false,\"autoHitSelection\":false}")
   
   # ACASDEV-758: get data for linked experiments
   library(plyr)
@@ -55,26 +59,26 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
                                        by=list(compoundName, concentration)]
     
     # Get max for each compound (could be at any concentration)
-    maxConfThreshDT <- confThreshDT[, SD=max(SD), efficacy=max(efficacy), by = compoundName]
-    maxPrimaryThreshDT <- primaryThreshDT[, SD=max(SD), efficacy=max(efficacy), by = compoundName]
+    maxConfThreshDT <- confThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = compoundName]
+    maxPrimaryThreshDT <- primaryThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = compoundName]
     
     combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="compoundName")
     if (is.null(inputParameters$thresholdType)) {
-      confThreshDT[, hit := FALSE]
+      maxConfThreshDT[, hit := FALSE]
       xLabel <- "Efficacy Primary"
       yLabel <- "Efficacy Confirmation"
       xValues <- combinedDT$efficacy.x
       yValues <- combinedDT$efficacy.y
       threshold <- NA
     } else if (inputParameters$thresholdType == "sd") {
-      confThreshDT[, hit := SD > inputParameters$hitSDThreshold]
+      maxConfThreshDT[, hit := SD > inputParameters$hitSDThreshold]
       xLabel <- "SD Primary"
       yLabel <- "SD Confirmation"
       xValues <- combinedDT$SD.x
       yValues <- combinedDT$SD.y
       threshold <- inputParameters$hitSDThreshold
     } else if (inputParameters$thresholdType == "efficacy") {
-      confThreshDT[, hit := efficacy > inputParameters$hitEfficacyThreshold]
+      maxConfThreshDT[, hit := efficacy > inputParameters$hitEfficacyThreshold]
       xLabel <- "Efficacy Primary"
       yLabel <- "Efficacy Confirmation"
       xValues <- combinedDT$efficacy.x
@@ -85,7 +89,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     # ACASDEV-766: calculate confirmation rate out of set tested
     # Get number of compounds confirmed
     totalTested <- length(unique(wideDataPrimary$compoundName))
-    totalConfirmed <- length(unique(maxConfThreshDT[hit, compoundName]))
+    totalConfirmed <- length(unique(maxConfThreshDT[hit == TRUE, compoundName]))
     totalRetested <- length(intersect(wideDataPrimary$compoundName, confThreshDT$compoundName))
     confirmationRate <- totalConfirmed / totalRetested * 100  # convert to percent
     
@@ -95,7 +99,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     plotTitle <- paste(confirmationExperimentCodes, collapse = ", ")
     xLim <- c(min(xValues), max(xValues))
     plot(xValues, yValues, main = plotTitle, xlab = xLabel, ylab = yLabel, 
-         frame.splot = F, col="blue", pch=15, cex=0.8)
+         frame.plot = F, col="blue", pch=15, cex=0.8)
     if (!is.na(threshold)) {
       lines(xLim, rep(threshold, 2), col = "green")
     }
@@ -104,13 +108,15 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   primaryHitList <- unique(wideDataPrimary[flagType=="hit", batchCode])
   tempFile <- paste0(experimentCode, "primaryHits.csv")
   writeLines(primaryHitList, getUploadedFilePath(tempFile))
-  primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", "primary hit list")
+  lsTransaction <- createLsTransaction()$id
+  primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
+                                             "primary hit list", user, lsTransaction)
   
   summaryInfo$experiment <- experiment
   summaryInfo$info <- list(
     "Compounds Tested in Primary" = totalTested,
     "Primary Experiment Codes" = paste(primaryExperimentCodes, collapse = ", "),
-    "Primary Hits" <- paste0('<a href="', getAcasFileLink(primaryHitFile), '" target="_blank">Primary Hits</a>')
+    "Primary Hits" = paste0('<a href="', getAcasFileLink(primaryHitFile), '" target="_blank">Primary Hits</a>')
   )
   if (length(confirmationExperimentCodes) > 0) {
     extraInfo <- list(
@@ -120,6 +126,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     )
     summaryInfo$info <- c(summaryInfo$info, extraInfo)
   }
+  return(summaryInfo)
 }
 makeWideData <- function(exptDT) {
   # Changes from database input to input for fitting as a data.table
@@ -142,18 +149,30 @@ makeWideData <- function(exptDT) {
   combined <- merge(combined, wideBatchCode, by = c("SUBJECT_ID", "EXPT_CODE"))
   setnames(combined, 
            c("EXPT_CODE", "NUMERIC_VALUE.data_results_normalized activity", 
-             "NUMERIC_VALUE.data_results_transformed standard deviation", 
-             "NUMERIC_VALUE.data_results_efficacy", "STRING_VALUE.metadata_plate information_well name", 
+             "STRING_VALUE.metadata_plate information_well name", 
              "STRING_VALUE.metadata_plate information_well type",
-             "STRING_VALUE.data_user flag_comment", 
-             "CODE_VALUE.metadata_plate information_barcode", "CODE_VALUE.data_auto flag_flag status", 
-             "CODE_VALUE.data_auto flag_flag observation", "CODE_VALUE.data_auto flag_flag cause", 
-             "CODE_VALUE.data_user flag_flag status", 
-             "CODE_VALUE.data_user flag_flag observation", "CODE_VALUE.data_user flag_flag cause", 
+             "CODE_VALUE.metadata_plate information_barcode", 
              "CONCENTRATION", "CONC_UNIT", "CODE_VALUE.data_results_batch code"), 
-           c("experimentCode", "normalizedActivity", "transformed_sd", "transformed_percent efficacy", 
-             "well", "wellType", "flagComment", "assayBarcode", "autoFlagType", "autoFlagObservation", 
-             "autoFlagReason", "flagType", "flagObseration", "flagReason", "concentration", "concUnit", "batchCode"))
+           c("experimentCode", "normalizedActivity", 
+             "well", "wellType", "assayBarcode", "concentration", "concUnit", "batchCode"))
+  optionalNames <- data.frame(
+    old=c("STRING_VALUE.data_user flag_comment", "CODE_VALUE.data_auto flag_flag status", 
+          "CODE_VALUE.data_auto flag_flag observation", "CODE_VALUE.data_auto flag_flag cause", 
+          "CODE_VALUE.data_user flag_flag status", 
+          "CODE_VALUE.data_user flag_flag observation", "CODE_VALUE.data_user flag_flag cause", 
+          "NUMERIC_VALUE.data_results_transformed standard deviation", 
+          "NUMERIC_VALUE.data_results_efficacy"),
+    new=c("flagComment", "autoFlagType", "autoFlagObservation", 
+          "autoFlagReason", "flagType", "flagObseration", "flagReason", 
+          "transformed_sd", "transformed_percent efficacy"),
+    stringsAsFactors = FALSE)
+  for (i in 1:nrow(optionalNames)) {
+    if (optionalNames$old[i] %in% names(combined)) {
+      setnames(combined, optionalNames$old[i], optionalNames$new[i])
+    } else {
+      combined[, (optionalNames$new[i]) := NA]
+    }
+  }
   return(as.data.table(combined))
 }
 getPlateOrderForExperiment <- function(experimentCode) {
@@ -239,7 +258,7 @@ analyzeScreeningCampaign <- function(request) {
   
   request <- as.list(request)
   
-  experimentCode <- request$experimentCode
+  experimentCode <- request$exptCode
   inputParameters <- request$inputParameters
   primaryExperimentCodes <- request$primaryExperimentCodes
   confirmationExperimentCodes <- request$confirmationExperimentCodes

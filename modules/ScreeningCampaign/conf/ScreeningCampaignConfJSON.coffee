@@ -39,6 +39,11 @@
 				typeName: "has member"
 				kindName: "parent_primary child"
 			]
+		valuekinds:
+			[
+				kindName: "primary hit list"
+				typeName: "fileValue"
+			]
 ) (if (typeof process is "undefined" or not process.versions) then window.screeningCampaignExperimentConfJSON = window.screeningCampaignExperimentConfJSON or {} else exports)
 
 
