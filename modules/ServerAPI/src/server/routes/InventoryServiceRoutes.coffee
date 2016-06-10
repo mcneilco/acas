@@ -38,6 +38,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/mergeContainers', exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
+	app.post '/api/containerLogs', exports.containerLogs
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -74,6 +75,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
+	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
 
 exports.getContainersInLocation = (req, resp) ->
 	if global.specRunnerTestmode
@@ -1455,3 +1457,71 @@ exports.searchContainersInternal = (input, callback) ->
 				callback JSON.stringify("searchContainers failed"), 500
 		)
 
+exports.containerLogs = (req, resp) ->
+	exports.containerLogsInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.containerLogsInternal = (inputs, callback) ->
+	validateContainerLogsInput inputs, (inputs, error) ->
+		if error == true
+			statusCode = 400
+			callback inputs, statusCode
+		else
+			exports.addContainerLogs inputs, (json, statusCode) ->
+				callback json, statusCode
+
+exports.addContainerLogs = (inputs, callback) ->
+	codeNames = _.uniq(_.pluck(inputs, "codeName"))
+	exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+		containerModels = getContainerModels(containers)
+		containersToSave = []
+		for containerModel in containerModels
+			modelInputLogs = _.filter(inputs, (input) -> input.codeName == containerModel.get("codeName"));
+			containerModel.addNewLogStates(modelInputLogs)
+			containerModel.prepareToSave "acas"
+			containerModel.reformatBeforeSaving()
+			containersToSave.push containerModel
+		containers = JSON.stringify(containersToSave)
+		exports.updateContainersInternal containers, (json, statusCode) ->
+			callback json, statusCode
+
+getContainerModels = (containers) ->
+	outputs = []
+	for container in containers
+		preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.container.lsType, container.container.lsKind, "ACAS Container"
+		if _.isEmpty preferredEntity
+			message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+			console.error message
+			console.debug "here are the configured entity types"
+			preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+				console.debug types
+			callback message, 400
+			return
+		outputs.push new preferredEntity.model(container.container)
+	return outputs
+
+validateContainerLogsInput = (inputs, callback) ->
+	@err = false
+	output = _.map inputs, (input) =>
+		validateContainerLogInput input, (output, error) =>
+			@err = @err || error
+			output
+	callback output, @err
+
+validateContainerLogInput = (input, callback) ->
+	errors = []
+	if !input.codeName?
+		errors.push "must have codeName"
+	if !input.entryType?
+		errors.push "must have entryType"
+	if input.entryType? && input.entryType == ""
+		errors.push "entryType cannot be \"\""
+	if !input.recordedBy?
+		errors.push "must have recordedBy"
+	if !input.recordedDate?
+		input.recordedDate = new Date().getTime()
+	error = errors.length > 0
+	output = input
+	output.errors = errors
+	callback output, error

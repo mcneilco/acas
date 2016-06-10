@@ -1272,8 +1272,51 @@ class Container extends Backbone.Model
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
 
-##END COPY PASTE
+	addNewLogStates: (inputs) ->
+		for input in inputs
+			valueList = new ValueList
+			valueList.add new Value
+				lsType: "codeValue"
+				lsKind: "entry type"
+				codeValue: input.entryType
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			valueList.add new Value
+				lsType: "clobValue"
+				lsKind: "entry"
+				clobValue: input.entry
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			if input.additionalValues?
+				for additionalValue in input.additionalValues
+					valueList.add	new Value
+						lsType : additionalValue.lsType
+						lsKind : additionalValue.lsKind
+						numericValue: additionalValue.numericValue
+						stringValue: additionalValue.stringValue
+						stringValue: additionalValue.stringValue
+						codeValue: additionalValue.codeValue
+						dateValue: additionalValue.dateValue
+						clobValue: additionalValue.clobValue
+						fileValue: additionalValue.fileValue
+						unitKind: additionalValue.unitKind
+						codeType: additionalValue.codeType
+						codeKind: additionalValue.codeKind
+						codeOrigin: additionalValue.codeOrigin
+						recordedDate: input.recordedDate
+						recordedBy: input.recordedBy
+						lsTransaction: input.lsTransaction
+			@get('lsStates').add new State
+				lsType: "metadata"
+				lsKind: "log"
+				lsValues: valueList
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
 
+		@
 
 class ContainerPlate extends Container
 	urlRoot: "/api/containers"
