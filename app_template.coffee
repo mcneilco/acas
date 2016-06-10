@@ -107,12 +107,13 @@ startApp = ->
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
 	options = if stubsMode then ["stubsMode"] else []
+	options.push ['--color']
 	forever = require("forever-monitor")
 	child = new (forever.Monitor)("app_api.js",
 		max: 3
 		silent: false
 		options: options
-		args: ['--color']
+		args: options
 	)
 
 	child.on "exit", ->
