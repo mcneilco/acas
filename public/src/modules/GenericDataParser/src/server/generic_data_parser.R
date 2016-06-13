@@ -442,7 +442,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -453,6 +453,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   mainCode:                 A string, normally the corporate batch ID
   #   inputFormat:              The format of the input file
+  #   projectCode:              Project code entered
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
@@ -549,8 +550,61 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
   
+  
+  ### ================== Check batch projects ========================================================
+  if (!is.null(projectCode)) {
+    # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
+    projectList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+    currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
+    projectDF <- do.call(rbind, lapply(projectList, as.data.frame)) 
+    if (length(currentProjList) > 0) {
+      currentProj <- currentProjList[[1]]
+      if (currentProj$isRestricted) {
+        # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
+        batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
+        batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
+        # Compounds in a restricted project may not be entered into another project
+        rCompounds <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode, "Requested.Name"]
+        if (length(rCompounds) > 0) {
+          addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"), 
+                          "' are in a restricted project that does not match the one entered for this experiment."))
+        }
+      }
+    }
+  }
+
+  
   # Return the validated results
   return(calculatedResults)
+}
+getProjectForBatch <- function (entityIds, displayName) {
+  # Gets a data.frame from roo with columns "Project.Code" and "Requested.Name",
+  # where the Requested.Name matches the entityIds.
+  # displayName must be "Corporate Batch ID" for now, others may be supported later.
+  batchProjectService <- paste0(racas::applicationSettings$server.nodeapi.path, 
+                                "/api/entitymeta/projectCodes/csv")
+  
+  if (length(entityIds) > 500) {
+    return(rbind(getProjectForBatch(entityIds[1:500], displayName),
+                 getProjectForBatch(entityIds[501:length(entityIds)], displayName)))
+  } else {
+    requestIds <- list()
+    
+    requestIds$displayName <- displayName
+    requestIds$entityIdStringLines <- paste(entityIds, collapse = "\n")
+    
+    # Get the preferred ids from the server
+    response <- list(error=FALSE)
+    response <- postURLcheckStatus(batchProjectService, toJSON(requestIds), requireJSON = TRUE)
+    tryCatch({
+      response <- fromJSON(response)
+    }, error = function(e) {
+      stopUser(paste0("The loader was unable to parse the response it got from the batch project ID service: ", response))
+    })
+    
+    # Return the useful part
+    return(read.csv(text=response$resultCSV, stringsAsFactors=FALSE))
+  }
 }
 getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
@@ -1785,15 +1839,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   return(experiment)
 }
 validateProject <- function(projectName, configList, username, errorEnv) {
-  # checks with Roo services to ensure that a project is available and correct
+  # checks with Roo services to ensure that a project is available and correct. Converts names to codes.
   # 
   # Args:
-  #   projectName:         A string naming the project
+  #   projectName:         A string naming the project, either the name or the code
   #   configList:          Also known as racas::applicationSettings
   #   username:            A string containing a username, carried by 'recordedBy' two function levels higher  
   #
   # Returns:
-  #  The projectName if validation was successful, or the empty string if it was not
+  #  The project code if validation was successful, or the empty string if it was not
   require('RCurl')
   require('rjson')
   tryCatch({
@@ -1807,15 +1861,26 @@ validateProject <- function(projectName, configList, username, errorEnv) {
     addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
-  projectNames <- sapply(projectList, function(x) x$code)
-  #projectNames <- sapply(projectList, function(x) x$name)
-  if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
-  if (projectName %in% projectNames) {
+  projectCodes <- vapply(projectList, getElement, character(1), 'code')
+  if(length(projectCodes) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
+  projectNames <- list()
+  # Get a vector of project names if available
+  if (!is.null(projectList[[1]]$name)) {
+    projectNames <- vapply(projectList, getElement, character(1), 'name')
+  }
+  if (projectName %in% projectCodes) {
     return(projectName)
+  } else if (length(projectNames) > 0 && projectName %in% projectNames) {
+    return(projectCodes[projectName == projectNames][1])
   } else {
     configText <- toJSON(configList)
+    if (length(projectNames) > 0) {
+      projectAvailableList <- paste(projectNames, collapse = "', '")
+    } else {
+      projectAvailableList <- paste(projectCodes, collapse = "', '")
+    }
     addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectNames, collapse = "', '"), "'."), errorEnv=errorEnv)
+                    projectAvailableList, "'."))
     return("")
   }
 }
@@ -2550,8 +2615,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
-    calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode, 
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat)
+    calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat, 
+    projectCode = validatedMetaData$Project)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
