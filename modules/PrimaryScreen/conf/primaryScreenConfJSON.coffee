@@ -32,6 +32,12 @@
 			,
 				kindName: "dryrun flag file"
 				typeName: "fileValue"
+			,
+				kindName: "plate order"
+				typeName: "stringValue"
+			,
+				kindName: "compound barcodes"
+				typeName: "stringValue"
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.genericDataParserConfJSON = window.genericDataParserConfJSON or {} else exports)

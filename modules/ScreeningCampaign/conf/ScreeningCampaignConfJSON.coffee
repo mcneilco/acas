@@ -43,6 +43,15 @@
 			[
 				kindName: "primary hit list"
 				typeName: "fileValue"
+			,
+				kindName: "dryrun primary hit list"
+				typeName: "fileValue"
+			,
+				kindName: "confirmation graph"
+				typeName: "fileValue"
+			,
+				kindName: "dryrun confirmation graph"
+				typeName: "fileValue"
 			]
 ) (if (typeof process is "undefined" or not process.versions) then window.screeningCampaignExperimentConfJSON = window.screeningCampaignExperimentConfJSON or {} else exports)
 

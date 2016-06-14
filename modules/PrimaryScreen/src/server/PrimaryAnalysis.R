@@ -2329,8 +2329,15 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
         '<a href="', getAcasFileLink(serverFlagFileLocation, login=T), '" target="_blank">Original Flag File</a>')
     }
     
+    # Save plate order and compound plate order
+    plateOrderDT <- unique(resultTable[, list(cmpdBarcode, assayBarcode, plateOrder)])
+    setkey(plateOrderDT, plateOrder)
+    # Save to experiment for screening campaigns
+    updateValueByTypeAndKind(paste(plateOrderDT$assayBarcode, collapse = ","), "experiment", experiment$id, 
+                             "metadata", "experiment metadata", "stringValue", "plate order")
+    updateValueByTypeAndKind(paste(plateOrderDT$cmpdBarcode, collapse = ","), "experiment", experiment$id, 
+                             "metadata", "experiment metadata", "stringValue", "compound barcodes")
     
-
     # TODO: move to correct location
     # Removes rows that have no compound data
     analysisGroupData <- analysisGroupData[ analysisGroupData$batchCode != "NA::NA", ]

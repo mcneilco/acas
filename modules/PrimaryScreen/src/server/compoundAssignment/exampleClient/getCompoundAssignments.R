@@ -21,8 +21,9 @@ getCompoundAssignments <- function(folderToParse, instrumentData, testMode, para
   # TODO: Check concUnit prior to making this adjustment
   resultTable[ , cmpdConc := cmpdConc * 1000]
   
-  resultTable[, batchCode := paste0(corp_name,"::",batch_number)]
-  resultTable[batchCode == "NA::NA", batchCode := "::"]
+  batchSep <- racas::applicationSettings$server.service.external.preferred.batchid.separator
+  resultTable[, batchCode := paste0(corp_name, batchSep, batch_number)]
+  resultTable[batchCode == paste0("NA", batchSep, "NA"), batchCode := batchSep]
   #   setnames(resultTable, c("wellReference", "assayBarcode", "cmpdConc", "corp_name"), c("well", "barcode", "concentration", "batchName"))
   setnames(resultTable, c("wellReference","rowName", "colName", "corp_name"), c("well","row", "column", "batchName"))
   
