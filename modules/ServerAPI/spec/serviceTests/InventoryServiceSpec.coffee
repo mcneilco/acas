@@ -1,32 +1,44 @@
 assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
-inventoryServiceTestJSON = require '../../../../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+acasHome = '../../../..'
+inventoryServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js"
+
 fs = require 'fs'
-config = require '../../../../conf/compiled/conf.js'
+config = require "#{acasHome}/conf/compiled/conf.js"
+
+
+getOrCreateContainer = (container, callback) ->
+	label = container.lsLabels[0].labelText
+	request.post
+		url: "http://localhost:"+config.all.server.nodeapi.port+"/api/getContainersByLabels?containerType=#{container.lsType}&containerKind=#{container.lsKind}"
+		json: true
+		body: [label]
+	, (error, response, body) =>
+		if !body[0].codeName?
+			request.post
+				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/containers"
+				json: true
+				body: container
+			, (error, response, body) =>
+				console.log "      ✓ registered container lsType:'#{body.lsType}' lsKind:'#{body.lsKind}' labelText:'#{body.lsLabels[0].labelText}'"
+				callback body
+		else
+			console.log "      ✓ alredy registered container lsType:'#{body[0].container.lsType}' lsKind:'#{body[0].container.lsKind}' labelText:'#{body[0].container.lsLabels[0].labelText}'"
+			callback body[0].container
 
 describe "Inventory Service testing", ->
-	describe "Post Container (load_definition_containers)", ->
-		before (done) ->
-			i = 0
+	describe "Get or create definition containers (load_definition_containers)", ->
+		@definitionContainers = _.flatten inventoryServiceTestJSON.definitionContainers
+		before (done) =>
 			@responses = []
-			@definitionContainers = _.flatten inventoryServiceTestJSON.definitionContainers
-			for container in @definitionContainers
-				request.post
-					url: "http://localhost:"+config.all.server.nodeapi.port+"/api/containers"
-					json: true
-					body: container
-				, (error, response, body) =>
-					i = i+1
-					@responses.push body
-					if i == @definitionContainers.length
+			@definitionContainers.forEach (definitionContainer) =>
+				getOrCreateContainer definitionContainer, (response) =>
+					@responses.push response
+					if @responses.length == @definitionContainers.length
 						done()
-		it "should return a container", ->
-			assert.equal @responses.length == @definitionContainers.length, true
-			_.map @responses, (response) ->
-				if response.codeName?
-					console.log "      ✓ successfully registered container lsType:'#{response.lsType}' lsKind:'#{response.lsKind}' labelText:'#{response.lsLabels[0].labelText}'"
-				assert.equal true, response.codeName?
+		it "should return definition containers", =>
+			assert.equal @responses.length, @definitionContainers.length
 	describe "Container_Logs", ->
 		before (done) ->
 			@postToLogService = (containerCode, callback) =>
