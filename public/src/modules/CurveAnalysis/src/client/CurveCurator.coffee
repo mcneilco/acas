@@ -344,7 +344,10 @@ class window.CurveDetail extends Backbone.Model
 		if curveFitClasses?
 			parametersClass =  curveFitClasses.get 'parametersClass'
 			drapType = window[parametersClass]
-		if resp.fitSettings not instanceof drapType
+		if drapType?
+			if resp.fitSettings not instanceof drapType
+				resp.fitSettings = new drapType(resp.fitSettings)
+		else
 			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
@@ -599,9 +602,9 @@ class window.CurveSummaryController extends Backbone.View
 		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
 		curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curveAttributes').renderingHint})
 		renderCurvePath =  curveFitClasses.get 'renderCurvePath'
-		console.log renderCurvePath
+#		console.log renderCurvePath
 		if renderCurvePath?
-			console.log renderCurvePath
+#			console.log renderCurvePath
 			@renderCurvePath = renderCurvePath
 		else
 			@renderCurvePath = 'dr'
@@ -914,9 +917,9 @@ class window.CurveCuratorController extends Backbone.View
 
 	showBadExperimentModal: (text)->
 		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
-		console.log text
-		console.log $('.bv_badExperimentCode .modal-body')
-		console.log $('.bv_badExperimentCode').find('.modal-body').html()
+#		console.log text
+#		console.log $('.bv_badExperimentCode .modal-body')
+#		console.log $('.bv_badExperimentCode').find('.modal-body').html()
 		if text?
 			@$('.bv_badExperimentCode').find('.modal-body').html(text+'<div><br></div>')
 		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')
