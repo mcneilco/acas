@@ -510,6 +510,9 @@ div {
 }
 .RegistrationSearchView input.corpName {
     width: 150px;
+    border-color: #d2d2d2;
+    border-style: solid;
+    border-width: 1px;
 }
 .RegistrationSearchView label {
     font-weight: bold;
@@ -624,6 +627,9 @@ div {
 
 .RegSearchResultsView input.asDrawnMolWeight, .asDrawnMolFormula {
     width: 96px;
+    border-color: #d2d2d2;
+    border-style: solid;
+    border-width: 1px;
 }
 /* .RegSearchResults_ParentListView  */input.stereoComment {
                                            width: 86px;
@@ -742,6 +748,13 @@ div {
     margin-left: 30px !important;
 }
 
+.LotForm_ParentView .parentComments {
+    width:800px;
+}
+.LotForm_ParentView .parentComments .FormInput {
+    border-color:#d2d2d2;
+}
+
 .MetaLotView .rightPane {
     /*    position: absolute;
         bottom: 380px;
@@ -800,9 +813,38 @@ div {
     margin: 5px 0 0;
     text-align: right;
 }
+
+.MetaLotView .VialBarcodeAttr, .MetaLotView .LotCommentsAttr {
+    display: block;
+    float: left;
+    padding: 0 10px 0 0;
+    margin: 0px 0 0;
+    text-align: right;
+}
 .MetaLotView .FormInput {
     margin: 5px 0 0;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #d2d2d2;
 }
+
+.MetaLotView .VialBarcodeFormInput {
+    width: 472px;
+    /*border-color: yellow;*/
+    border-style: solid;
+    border-color: #d2d2d2;
+    border-width: 1px;
+}
+
+.MetaLotView .LotCommentsFormInput {
+    width: 472px;
+    border-color: #d2d2d2;
+}
+
+.MetaLotView .vialBarcodeContainer, .MetaLotView .lotCommentsContainer {
+    width: 800px;
+}
+
 .MetaLotView .saltFormImage {
     border-style: solid;
     border-width: 2px;
@@ -893,8 +935,8 @@ input.casNumber {
 select.FormInput.chemist, .physicalStateCode {
     width: 160px;
 }
-input.FormInput.supplier, .supplierID, .comments, .percentEE, .lotNumber {
-    width: 153px;
+input.FormInput.supplier, .supplierID, .percentEE, .lotNumber {
+    width: 155px;
 }
 .MetaLotView .notForVirtual3 {
     clear:both;
@@ -906,10 +948,10 @@ input.FormInput.supplier, .supplierID, .comments, .percentEE, .lotNumber {
     margin-top: 13px;
 }
 input.FormInput .hasDatepicker, .color {
-    width: 153px;
+    width: 155px;
 }
 input.FormInput.amount, .retain, .purity, .solutionAmount {
-    width: 102px;
+    width: 104px;
 }
 select.FormInput.purityMeasuredByCode, .vendorCode {
     width: 160px;
@@ -1125,7 +1167,10 @@ div.MetaLotViewButtons.buttons {
     margin-left: 115px;
 }
 .SearchFormView input.FormInput.corpNameFrom, input.FormInput.corpNameTo, .alias, input.FormInput.dateTo.hasDatepicker, input.FormInput.dateFrom.hasDatepicker {
-    width: 96px;
+    width: 101px;
+    border-color: #d2d2d2;
+    border-style: solid;
+    border-width: 1px;
 }
 
 .SearchFormView .corpNameLabel {
@@ -1153,6 +1198,9 @@ div.MetaLotViewButtons.buttons {
 }
 .SearchFormView .percentSimilarity {
     width: 30px;
+    border-color: #d2d2d2;
+    border-style: solid;
+    border-width: 1px;
 }
 .SearchFormView a.searchButton {
     background: no-repeat url('../images/search.png');

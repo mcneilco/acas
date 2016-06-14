@@ -51,9 +51,9 @@
 			<input type="textfield" class="FormInput molFormula" disabled=true></input>
 		</div>
 
-		<div class="row5">
+		<div class="row5 parentComments">
 			<label class="FormLabel2">Parent Comments:</label>
-			<input type="textfield" class="FormInput comment"></input>
+			<textarea rows="3" class="FormInput comment" style="resize:none; width:515px;"></textarea>
 		</div>
 		<div style="clear: both;">
 		</div>
