@@ -347,8 +347,6 @@ class window.CurveDetail extends Backbone.Model
 		if drapType?
 			if resp.fitSettings not instanceof drapType
 				resp.fitSettings = new drapType(resp.fitSettings)
-		else
-			resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
 class window.CurveEditorController extends Backbone.View
