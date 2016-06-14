@@ -32,7 +32,11 @@
     app.post('/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave);
     app.post('/cmpdReg/metalots', loginRoutes.ensureAuthenticated, exports.metaLots);
     app.post('/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.saveSalts);
-    return app.post('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes);
+    app.post('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.saveIsotopes);
+    app.post('/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert);
+    app.post('/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    app.post('/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    return app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
   };
 
   exports.cmpdRegIndex = function(req, res) {
@@ -584,6 +588,68 @@
           return resp.end(JSON.stringify(json));
         } else {
           console.log('got ajax error trying to do save isotopes');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return resp.end(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.molConvert = function(req, resp) {
+    var cmpdRegCall, config, endOfUrl, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    endOfUrl = req.originalUrl.replace(/\/cmpdreg\//, "");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" + endOfUrl;
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(req.body),
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(JSON.stringify(json));
+          resp.setHeader('Content-Type', 'application/json');
+          return resp.end(JSON.stringify(json));
+        } else {
+          console.log('got ajax error trying to do generic structure service');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return resp.end(JSON.stringify({
+            error: "something went wrong :("
+          }));
+        }
+      };
+    })(this));
+  };
+
+  exports.genericStructureService = function(req, resp) {
+    var cmpdRegCall, config, endOfUrl, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    endOfUrl = req.originalUrl.replace(/\/cmpdreg\//, "");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" + endOfUrl;
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: JSON.stringify(req.body),
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          console.log(json);
+          resp.setHeader('Content-Type', 'plain/text');
+          return resp.end(json);
+        } else {
+          console.log('got ajax error trying to do generic structure service');
           console.log(error);
           console.log(json);
           console.log(response);

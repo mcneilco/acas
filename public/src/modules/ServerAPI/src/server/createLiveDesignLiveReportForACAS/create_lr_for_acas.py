@@ -23,6 +23,7 @@ import ldclient
 from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
 from ldclient.models import ViewSelection
+from ldclient.models import Project
 
 def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId, ldClientVersion):
 
@@ -137,7 +138,10 @@ def main():
         ld_client_version=float(7.3)
     print "LDClient version is:"+str(ld_client_version)
     try:
-    	projectId = api.get_project_id_by_name(project)
+#    	projectId = api.get_project_id_by_name(project)
+        matching_projects = filter(lambda p: p.alternate_id == project, api.projects())
+        projectId = int(matching_projects[0].id.encode('ascii'))
+        print "Project " + project + " found with id: " + str(projectId)
     except:
     	projectId = 0
     if type(projectId) is not int:
