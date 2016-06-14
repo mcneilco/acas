@@ -24,21 +24,20 @@ getOrCreateContainer = (container, callback) ->
 				console.log "      ✓ registered container lsType:'#{body.lsType}' lsKind:'#{body.lsKind}' labelText:'#{body.lsLabels[0].labelText}'"
 				callback body
 		else
-			console.log "      ✓ alredy registered container lsType:'#{body[0].container.lsType}' lsKind:'#{body[0].container.lsKind}' labelText:'#{body[0].container.lsLabels[0].labelText}'"
+#			console.log "      ✓ alredy registered container lsType:'#{body[0].container.lsType}' lsKind:'#{body[0].container.lsKind}' labelText:'#{body[0].container.lsLabels[0].labelText}'"
 			callback body[0].container
-
 describe "Inventory Service testing", ->
-	describe "Get or create definition containers (load_definition_containers)", ->
-		@definitionContainers = _.flatten inventoryServiceTestJSON.definitionContainers
-		before (done) =>
-			@responses = []
-			@definitionContainers.forEach (definitionContainer) =>
-				getOrCreateContainer definitionContainer, (response) =>
-					@responses.push response
-					if @responses.length == @definitionContainers.length
-						done()
+	before (done) =>
+		@definitionContainersRequest = _.flatten inventoryServiceTestJSON.definitionContainers
+		@definitionContainers = []
+		@definitionContainersRequest.forEach (definitionContainer) =>
+			getOrCreateContainer definitionContainer, (response) =>
+				@definitionContainers.push response
+				if @definitionContainers.length == @definitionContainersRequest.length
+					done()
+	describe "Get or create definition containers (load_definition_containers)", =>
 		it "should return definition containers", =>
-			assert.equal @responses.length, @definitionContainers.length
+			assert.equal @definitionContainers.length, @definitionContainersRequest.length
 	describe "Container_Logs", ->
 		before (done) ->
 			@postToLogService = (containerCode, callback) =>
