@@ -146,13 +146,13 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
   positiveControlWells <- allResultTable[allResultTable$wellType == "PC", ]
   negativeControlWells <- allResultTable[allResultTable$wellType == "NC", ]
   
-  plotWells(fluorescentWells, "Fluorescent Wells")
-  plotWells(latePeakWells, "Late Peak Wells")
-  plotWells(hitWells, "Hit Wells")
-  plotWells(flaggedWells, "Flagged Wells")
-  
-  # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
-  if (nrow(allResultTable[wellType %in% c("PC", "NC") & (is.na(T_timePoints) | is.na(T_timePoints))]) == 0) {
+  if (nrow(allResultTable[is.na(T_timePoints) | is.na(T_timePoints)]) == 0) {
+    plotWells(fluorescentWells, "Fluorescent Wells")
+    plotWells(latePeakWells, "Late Peak Wells")
+    plotWells(hitWells, "Hit Wells")
+    plotWells(flaggedWells, "Flagged Wells")
+    
+    # Plot PC, NC only if all PC, NC standards have data in their corresponding T_timePoints and T_sequence
     plotWells(positiveControlWells, "Positive Control Wells")
     plotWells(negativeControlWells, "Negative Control Wells")
   }
