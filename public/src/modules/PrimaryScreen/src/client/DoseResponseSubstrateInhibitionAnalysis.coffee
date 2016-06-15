@@ -1,12 +1,14 @@
-class window.DoseResponseKmAnalysisParameters extends Backbone.Model
+class window.DoseResponseSubstrateInhibitionAnalysisParameters extends Backbone.Model
 	defaults:
 		smartMode: true
-		inactiveThresholdMode: true
-		inactiveThreshold: 20
+		inactiveThresholdMode: false
+		inactiveThreshold: null
 		theoreticalMaxMode: false
 		theoreticalMax: null
 		inverseAgonistMode: false
 		vmax: new Backbone.Model limitType: 'none'
+		km: new Backbone.Model limitType: 'none'
+		ki: new Backbone.Model limitType: 'none'
 		et: new Backbone.Model
 
 	initialize: (options) ->
@@ -28,6 +30,10 @@ class window.DoseResponseKmAnalysisParameters extends Backbone.Model
 	fixCompositeClasses: =>
 		if @get('vmax') not instanceof Backbone.Model
 			@set vmax: new Backbone.Model(@get('vmax'))
+		if @get('km') not instanceof Backbone.Model
+			@set km: new Backbone.Model(@get('km'))
+		if @get('ki') not instanceof Backbone.Model
+			@set ki: new Backbone.Model(@get('ki'))
 		if @get('et') not instanceof Backbone.Model
 			@set et: new Backbone.Model(@get('et'))
 
@@ -51,6 +57,16 @@ class window.DoseResponseKmAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'vmax_value'
 				message: "VMax threshold value must be set when limit type is pin or limit"
+		limitType = attrs.km.get('limitType')
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.km.get('value')) or attrs.km.get('value') == null)
+			errors.push
+				attribute: 'km_value'
+				message: "Km threshold value must be set when limit type is pin or limit"
+		limitType = attrs.ki.get('limitType')
+		if (limitType == "pin" || limitType == "limit") && (_.isNaN(attrs.ki.get('value')) or attrs.ki.get('value') == null)
+			errors.push
+				attribute: 'ki_value'
+				message: "Ki threshold value must be set when limit type is pin or limit"
 		if (_.isNaN(attrs.et.get('value')))
 			errors.push
 				attribute: 'et_value'
@@ -68,9 +84,9 @@ class window.DoseResponseKmAnalysisParameters extends Backbone.Model
 		else
 			return null
 
-class window.DoseResponseKmAnalysisParametersController extends AbstractFormController
-	template: _.template($("#DoseResponseKmAnalysisParametersView").html())
-	autofillTemplate: _.template($("#DoseResponseKmAnalysisParametersAutofillView").html())
+class window.DoseResponseSubstrateInhibitionAnalysisParametersController extends AbstractFormController
+	template: _.template($("#DoseResponseSubstrateInhibitionAnalysisParametersView").html())
+	autofillTemplate: _.template($("#DoseResponseSubstrateInhibitionAnalysisParametersAutofillView").html())
 
 	events:
 		"change .bv_smartMode": "handleSmartModeChanged"
@@ -79,6 +95,14 @@ class window.DoseResponseKmAnalysisParametersController extends AbstractFormCont
 		"click .bv_vmax_limitType_pin": "handleMaxLimitTypeChanged"
 		"click .bv_vmax_limitType_limit": "handleMaxLimitTypeChanged"
 		"change .bv_vmax_value": "attributeChanged"
+		"click .bv_km_limitType_none": "handleKmLimitTypeChanged"
+		"click .bv_km_limitType_pin": "handleKmLimitTypeChanged"
+		"click .bv_km_limitType_limit": "handleKmLimitTypeChanged"
+		"change .bv_km_value": "attributeChanged"
+		"click .bv_ki_limitType_none": "handleKiLimitTypeChanged"
+		"click .bv_ki_limitType_pin": "handleKiLimitTypeChanged"
+		"click .bv_ki_limitType_limit": "handleKiLimitTypeChanged"
+		"change .bv_ki_value": "attributeChanged"
 		"change .bv_et_value": "attributeChanged"
 		"change .bv_inactiveThreshold": "attributeChanged"
 		"change .bv_theoreticalMax": "attributeChanged"
@@ -104,6 +128,10 @@ class window.DoseResponseKmAnalysisParametersController extends AbstractFormCont
 	updateModel: =>
 		@model.get('vmax').set
 			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_vmax_value'))
+		@model.get('km').set
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_km_value'))
+		@model.get('ki').set
+			value: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_ki_value'))
 		if UtilityFunctions::getTrimmedInput(@$('.bv_et_value')) == ""
 			et = null
 		else
@@ -147,6 +175,24 @@ class window.DoseResponseKmAnalysisParametersController extends AbstractFormCont
 			@$('.bv_vmax_value').removeAttr('disabled')
 		@attributeChanged()
 
+	handleKmLimitTypeChanged: =>
+		radioValue = @$("input[name='bv_km_limitType']:checked").val()
+		@model.get('km').set limitType: radioValue, silent: true
+		if radioValue == 'none'
+			@$('.bv_km_value').attr('disabled','disabled')
+		else
+			@$('.bv_km_value').removeAttr('disabled')
+		@attributeChanged()
+
+	handleKiLimitTypeChanged: =>
+		radioValue = @$("input[name='bv_ki_limitType']:checked").val()
+		@model.get('ki').set limitType: radioValue, silent: true
+		if radioValue == 'none'
+			@$('.bv_ki_value').attr('disabled','disabled')
+		else
+			@$('.bv_ki_value').removeAttr('disabled')
+		@attributeChanged()
+
 	setFormTitle: (title) ->
 		if title?
 			@formTitle = title
@@ -157,23 +203,17 @@ class window.DoseResponseKmAnalysisParametersController extends AbstractFormCont
 			@formTitle = @$(".bv_formTitle").html()
 
 
-class window.DoseResponsePlotCurveKm extends Backbone.Model
+class window.DoseResponsePlotCurveSubstrateInhibition extends Backbone.Model
 
 	log10: (val) ->
-		Math.log(val) / Math.LN10
+		if val != 0
+			return Math.log(val) / Math.LN10
+		else
+			return val
 
 	render: (brd, curve, plotWindow) =>
 		log10 = @log10
 		fct = (x) ->
-			(x/(x+curve.km))*curve.vmax
+#			x = Math.pow(10,x)
+			(curve.vmax*x)/(curve.km+x*(1+x/curve.ki))
 		brd.create('functiongraph', [fct, plotWindow[0], plotWindow[2]], {strokeWidth:2});
-#		if curve.curveAttributes.Km?
-#			intersect = fct(curve.curveAttributes.Km)
-#			if curve.curveAttributes.Operator?
-#				color = '#ff0000'
-#			else
-#				color = '#808080'
-#			#				Horizontal Line
-#			brd.create('line',[[plotWindow[0],intersect],[curve.curveAttributes.Km,intersect]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});
-#			#				Vertical Line
-#			brd.create('line',[[curve.curveAttributes.Km,intersect],[curve.curveAttributes.Km,0]], {fixed: true, straightFirst:false, straightLast:false, strokeWidth:2, dash: 3, strokeColor: color});

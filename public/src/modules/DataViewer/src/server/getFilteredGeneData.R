@@ -366,7 +366,7 @@ modifyCurveValues <- function(curveIdCol){
   if (!exportCSV){
     sapply(curveIdCol, function(x) list(c(paste0('<a href="http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=240&width=500&curveIds=',x[1],'&showAxes=true&labelAxes=true" target="_blank"><img src="http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"></a>'),x[2])))
   }else{
-    sapply(curveIdCol, function(x) paste0('http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true" height="180" width="375"'))
+    sapply(curveIdCol, function(x) paste0('http://',configList$client.host,':',configList$client.port,'/api/curve/render/dr/?legend=false&showGrid=false&height=180&width=375&curveIds=',x[1],'&showAxes=true&labelAxes=true&height="180"&width="375"'))
   }
 }
 
@@ -847,10 +847,16 @@ myLogger$info(postData)
 #exportCSV <- TRUE
 #onlyPublicData <- "true"
 
+## temp work around
+configList$server.sar.csvLabel <- "bestLabel"
+configList$server.sar.exportOnlyPublicData <- "true"
+onlyPublicData <- "true"
+
+
 processData(postData, exportCSV, onlyPublicData)
 
 rm(postData)
-
+DONE
 
 # #stops timing the code profiling
 # Rprof(NULL)

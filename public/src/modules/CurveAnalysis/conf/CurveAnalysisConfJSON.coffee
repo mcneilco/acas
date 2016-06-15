@@ -341,6 +341,13 @@
 				name: "Michaelis-Menten"
 				ignored: false
 			,
+				codeType: "model fit"
+				codeKind: "type"
+				codeOrigin: "ACAS DDICT"
+				code: "Substrate Inhibition"
+				name: "Substrate Inhibition"
+				ignored: false
+			,
 				codeType: "user flag status"
 				codeKind: "flag status"
 				codeOrigin: "ACAS DDICT"

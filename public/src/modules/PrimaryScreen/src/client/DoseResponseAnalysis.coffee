@@ -130,7 +130,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			inactiveThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_inactiveThreshold'))
 			theoreticalMax: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_theoreticalMax'))
 			,
-			silent: true
+				silent: true
 
 
 		@setInverseAgonistModeEnabledState()
@@ -193,12 +193,45 @@ class window.ModelFitTypeController extends Backbone.View
 
 	events:
 		"change .bv_modelFitType": "handleModelFitTypeChanged"
+		"change .bv_fitTransformation": "handleFitTransformationChanged"
+		"change .bv_transformationUnits": "handleTransformationUnitsChanged"
 
-	render: =>
+	initialize: =>
 		$(@el).empty()
 		$(@el).html @template()
+		#get tranformation fit options
+		$.ajax
+			type: 'GET'
+			url: '/api/codetables/analysis parameter/transformation'
+			dataType: 'json'
+			error: (err) ->
+				alert 'Could not get list of transformation options'
+			success: (json) =>
+				if json.length == 0
+					alert 'Returned empty list of transformation options'
+				else
+					@transformationFitOptions = new PickListList json
+
+					transformationRuleList = @model.getAnalysisParameters().get('transformationRuleList')
+					fitTransformationList = new PickListList()
+					transformationRuleList.each (rule) =>
+						unless rule.get('transformationRule') is "unassigned"
+							rule = @transformationFitOptions.where(code: rule.get('transformationRule'))[0]
+							fitTransformationList.add new PickList
+								code: rule.get('name')
+								name: rule.get('name')
+
+					@setupFitTransformationSelect(fitTransformationList)
+
+
+	render: =>
 		@setupModelFitTypeSelect()
+		@setupTransformationUnitsSelect()
 		modelFitType = @model.getModelFitType().get('codeValue')
+		if modelFitType is "unassigned"
+			@$('.bv_modelFitTransformationWrapper').hide()
+		else
+			@$('.bv_modelFitTransformationWrapper').show()
 		@setupParameterController(modelFitType)
 
 	setupModelFitTypeSelect: =>
@@ -212,6 +245,30 @@ class window.ModelFitTypeController extends Backbone.View
 				code: "unassigned"
 				name: "Select Model Fit Type"
 			selectedCode: modelFitType
+
+	setupFitTransformationSelect: (fitTransformationList) =>
+		if @fitTransformationListController?
+			@fitTransformationListController.undelegateEvents()
+		@fitTransformationListController = new PickListSelectController
+			el: @$('.bv_fitTransformation')
+			collection: fitTransformationList
+			autoFetch: false
+			insertFirstOption: new PickList
+				code: "Select Fit Transformation"
+				name: "Select Fit Transformation"
+			selectedCode: @model.getModelFitTransformation().get('stringValue')
+
+	setupTransformationUnitsSelect: =>
+		transformationUnits = @model.getModelFitTransformationUnits().get('codeValue')
+		@transformationUnitsList = new PickListList()
+		@transformationUnitsList.url = "/api/codetables/model fit/transformation units"
+		@transformationUnitsListController = new PickListSelectController
+			el: @$('.bv_transformationUnits')
+			collection: @transformationUnitsList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Transformation Unit"
+			selectedCode: transformationUnits
 
 	setupParameterController: (modelFitType) =>
 		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
@@ -253,16 +310,83 @@ class window.ModelFitTypeController extends Backbone.View
 
 	handleModelFitTypeChanged: =>
 		modelFitType = @$('.bv_modelFitType').val()
+		if modelFitType is "unassigned"
+			@$('.bv_modelFitTransformationWrapper').hide()
+			@fitTransformationListController.setSelectedCode "Select Fit Transformation"
+			@transformationUnitsListController.setSelectedCode "unassigned"
+			@updateModel()
+		else
+			@$('.bv_modelFitTransformationWrapper').show()
 		@setupParameterController(modelFitType)
 		@updateModel()
 		@modelFitTypeListController.trigger 'change'
+
+	handleFitTransformationChanged: =>
+		@updateModel()
+		@trigger 'change'
+
+	handleTransformationUnitsChanged: =>
+		@updateModel()
+		@trigger 'change'
+
+	handleTransformationRuleChanged: (transformationRuleList) =>
+		fitTransformationList = new PickListList()
+		transformationRuleList.each (rule) =>
+			unless rule.get('transformationRule') is "unassigned"
+				rule = @transformationFitOptions.where(code: rule.get('transformationRule'))[0]
+				fitTransformationList.add new PickList
+					code: rule.get('name')
+					name: rule.get('name')
+		@model.getModelFitTransformation().set 'stringValue', 'Select Fit Transformation'
+		@setupFitTransformationSelect(fitTransformationList)
 
 	updateModel: =>
 		@model.getModelFitType().set
 			codeValue: @modelFitTypeListController.getSelectedCode()
 			recordedBy: window.AppLaunchParams.loginUser.username
 			recordedDate: new Date().getTime()
+		@model.getModelFitTransformation().set
+			stringValue: @fitTransformationListController.getSelectedModel().get('name')
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+		@model.getModelFitTransformationUnits().set
+			codeValue: @transformationUnitsListController.getSelectedCode()
+			recordedBy: window.AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
 		@model.trigger 'change'
+
+	isValid: ->
+		validCheck = true
+		errors = []
+		errors.push @parameterController.model.validationError...
+		errors.push @model.validateModelFitParams()...
+		if errors.length > 0
+			validCheck = false
+		@validationError errors
+
+		validCheck
+
+	validationError: (errors) =>
+		@clearValidationErrorStyles()
+		_.each errors, (err) =>
+			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
+				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
+				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
+				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
+				#				@$('.bv_group_'+err.attribute).tooltip();
+				@$("[data-toggle=tooltip]").tooltip();
+				@$("body").tooltip selector: '.bv_group_'+err.attribute
+				@$('.bv_group_'+err.attribute).addClass 'input_error error'
+				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
+
+	clearValidationErrorStyles: =>
+		errorElms = @$('.input_error')
+		_.each errorElms, (ee) =>
+			$(ee).removeAttr('data-toggle')
+			$(ee).removeAttr('data-placement')
+			$(ee).removeAttr('title')
+			$(ee).removeAttr('data-original-title')
+			$(ee).removeClass 'input_error error'
 
 class window.DoseResponseAnalysisController extends Backbone.View
 	template: _.template($("#DoseResponseAnalysisView").html())
@@ -343,9 +467,11 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@modelFitTypeController = new ModelFitTypeController
 			model: @model
 			el: @$('.bv_analysisParameterForm')
+		@modelFitTypeController.on 'change', => @validateModelFitTab()
 		@modelFitTypeController.render()
 		@parameterController = @modelFitTypeController.parameterController
 		@modelFitTypeController.modelFitTypeListController.on 'change', => @handleModelFitTypeChanged()
+		@parameterController.model.on 'change', => @validateModelFitTab()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
 			@$('.bv_fitModelButton').hide()
@@ -356,23 +482,31 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		modelFitType = @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 		if modelFitType is "unassigned"
 			@$('.bv_fitModelButton').hide()
+			@$('.bv_modelFitTransformationWrapper').hide()
 			if @modelFitTypeController.parameterController?
 				@modelFitTypeController.parameterController.undelegateEvents()
 		else
 			@$('.bv_fitModelButton').show()
+			@$('.bv_modelFitTransformationWrapper').show()
 			if @modelFitTypeController.parameterController?
-				@modelFitTypeController.parameterController.on 'valid', @paramsValid
-				@modelFitTypeController.parameterController.on 'invalid', @paramsInvalid
-				if @modelFitTypeController.parameterController.isValid() is true
-					@paramsValid()
-				else
-					@paramsInvalid()
+				@modelFitTypeController.parameterController.on 'valid', @validateModelFitTab
+				@modelFitTypeController.parameterController.on 'invalid', @validateModelFitTab
+				@validateModelFitTab()
+
+	validateModelFitTab: =>
+		if @modelFitTypeController.isValid() and @modelFitTypeController.parameterController.isValid()
+			@paramsValid()
+		else
+			@paramsInvalid()
 
 	paramsValid: =>
 		@$('.bv_fitModelButton').removeAttr('disabled')
 
 	paramsInvalid: =>
 		@$('.bv_fitModelButton').attr('disabled','disabled')
+
+	handleTransformationRuleChanged: (transformationRuleList) ->
+		@modelFitTypeController.handleTransformationRuleChanged transformationRuleList
 
 	launchFit: =>
 		if @analyzedPreviously
@@ -390,6 +524,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			experimentCode: @model.get('codeName')
 			modelFitType: @modelFitTypeController.modelFitTypeListController.getSelectedCode()
 			testMode: false
+			modelFitTransformation: JSON.stringify @model.getModelFitTransformation()
+			modelFitTransformationUnits: JSON.stringify @model.getModelFitTransformationUnits()
 
 		$.ajax
 			type: 'POST'

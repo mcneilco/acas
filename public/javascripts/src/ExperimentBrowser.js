@@ -500,9 +500,71 @@
         return this.$('.bv_editExperiment').hide();
       } else {
         this.formatOpenInQueryToolButton();
-        this.$('.bv_editExperiment').show();
-        return this.$('.bv_deleteExperiment').show();
+        if (this.canEdit()) {
+          this.$('.bv_editExperiment').show();
+        } else {
+          this.$('.bv_editExperiment').hide();
+        }
+        if (this.canDelete()) {
+          return this.$('.bv_deleteExperiment').show();
+        } else {
+          return this.$('.bv_deleteExperiment').hide();
+        }
       }
+    };
+
+    ExperimentBrowserController.prototype.canEdit = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (this.experimentController.model.getScientist().get('codeValue') === "unassigned") {
+        return true;
+      } else {
+        if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
+          rolesToTest = [];
+          ref1 = window.conf.entity.editingRoles.split(",");
+          for (i = 0, len = ref1.length; i < len; i++) {
+            role = ref1[i];
+            if (role === 'entityScientist') {
+              if (window.AppLaunchParams.loginUserName === this.experimentController.model.getScientist().get('codeValue')) {
+                return true;
+              }
+            } else {
+              rolesToTest.push($.trim(role));
+            }
+          }
+          if (rolesToTest.length === 0) {
+            return false;
+          }
+          if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    };
+
+    ExperimentBrowserController.prototype.canDelete = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.deletingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.deletingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.experimentController.model.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else {
+            rolesToTest.push($.trim(role));
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
     };
 
     ExperimentBrowserController.prototype.handleDeleteExperimentClicked = function() {

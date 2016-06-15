@@ -302,12 +302,76 @@
       if (protocol.getStatus().get('codeValue') === "deleted") {
         this.$('.bv_deleteProtocol').hide();
         this.$('.bv_editProtocol').hide();
-        return this.$('.bv_duplicateProtocol').hide();
+        this.$('.bv_duplicateProtocol').hide();
+        return this.$('.bv_createExperiment').show();
       } else {
-        this.$('.bv_editProtocol').show();
         this.$('.bv_duplicateProtocol').show();
-        return this.$('.bv_deleteProtocol').show();
+        this.$('.bv_createExperiment').show();
+        if (this.canEdit()) {
+          this.$('.bv_editProtocol').show();
+        } else {
+          this.$('.bv_editProtocol').hide();
+        }
+        if (this.canDelete()) {
+          return this.$('.bv_deleteProtocol').show();
+        } else {
+          return this.$('.bv_deleteProtocol').hide();
+        }
       }
+    };
+
+    ProtocolBrowserController.prototype.canEdit = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (this.protocolController.model.getScientist().get('codeValue') === "unassigned") {
+        return true;
+      } else {
+        if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
+          rolesToTest = [];
+          ref1 = window.conf.entity.editingRoles.split(",");
+          for (i = 0, len = ref1.length; i < len; i++) {
+            role = ref1[i];
+            if (role === 'entityScientist') {
+              if (window.AppLaunchParams.loginUserName === this.protocolController.model.getScientist().get('codeValue')) {
+                return true;
+              }
+            } else {
+              rolesToTest.push($.trim(role));
+            }
+          }
+          if (rolesToTest.length === 0) {
+            return false;
+          }
+          if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+            return false;
+          }
+        }
+        return true;
+      }
+    };
+
+    ProtocolBrowserController.prototype.canDelete = function() {
+      var i, len, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.deletingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.deletingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.protocolController.model.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else {
+            rolesToTest.push($.trim(role));
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
     };
 
     ProtocolBrowserController.prototype.handleDeleteProtocolClicked = function() {
