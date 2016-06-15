@@ -2047,6 +2047,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     # exampleClient is set at the head of runMain function
     if (checkPlateContentInFiles(fullPathToParse)) {
       resultTable <- getCompoundAssignmentsFromFiles(fullPathToParse, instrumentData, parameters)
+      # Validate batch codes because they came from files
+      resultTable[, batchCode:=validateBatchCodes(batchCode)]
     } else if (as.logical(racas::applicationSettings$server.service.internalPlateRegistration)) {
       resultTable <- getCompoundAssignmentsInternal(fullPathToParse, instrumentData,
                                                     testMode, parameters)
