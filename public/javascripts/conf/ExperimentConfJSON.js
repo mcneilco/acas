@@ -438,34 +438,6 @@
           name: "None",
           ignored: false
         }, {
-          codeType: "analysis parameter",
-          codeKind: "transformation",
-          codeOrigin: "ACAS DDICT",
-          code: "noAgonist",
-          name: "Without Agonist",
-          ignored: false
-        }, {
-          codeType: "analysis parameter",
-          codeKind: "transformation",
-          codeOrigin: "ACAS DDICT",
-          code: "enhancement",
-          name: "Enhancement: value - (noAgonist + NC)",
-          ignored: false
-        }, {
-          codeType: "analysis parameter",
-          codeKind: "transformation",
-          codeOrigin: "ACAS DDICT",
-          code: "enhancementRatio",
-          name: "Enhancement Ratio: value / (noAgonist + NC)",
-          ignored: false
-        }, {
-          codeType: "analysis parameter",
-          codeKind: "transformation",
-          codeOrigin: "ACAS DDICT",
-          code: "enhancementGraph",
-          name: "Enhancement Graph",
-          ignored: false
-        }, {
           codeType: "experiment metadata",
           codeKind: "file type",
           codeOrigin: "ACAS DDICT",
