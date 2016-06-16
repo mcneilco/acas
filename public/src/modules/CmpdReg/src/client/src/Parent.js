@@ -166,6 +166,7 @@ $(function() {
 			}
 
             this.$('.stereoComment').val(this.model.get('stereoComment'));
+            this.$('.comment').val(this.model.get('comment'));
             //this.$('.commonName').val(this.model.get('commonName'));
             this.$('.molWeight').val(this.model.get('molWeight'));
             this.$('.molFormula').val(this.model.get('molFormula'));
@@ -230,6 +231,7 @@ $(function() {
 
             this.model.set({
                 stereoComment: this.$('.stereoComment').val(),
+                comment: this.$('.comment').val(),
                 stereoCategory: this.stereoCategoryCodeController.getSelectedModel(),
                 //commonName: this.$('.commonName').val(),
 				parentAliases: this.aliasController.collection.toJSON()
