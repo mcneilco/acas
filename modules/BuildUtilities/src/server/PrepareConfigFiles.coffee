@@ -1,4 +1,3 @@
-csUtilities = require "../ServerAPI/CustomerSpecificServerFunctions.js"
 properties = require "properties"
 _ = require "underscore"
 underscoreDeepExtend = require "underscore-deep-extend"
@@ -8,14 +7,14 @@ flat = require 'flat'
 glob = require 'glob'
 shell = require 'shelljs'
 path = require 'path'
+acasHome =  path.resolve "#{__dirname}/../../.."
+csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 os = require 'os'
 propertiesParser = require "properties-parser"
-ACAS_HOME="../../.."
-configDir = "#{ACAS_HOME}/conf/"
+configDir = "#{acasHome}/conf/"
 global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
 
 sysEnv = process.env
-
 
 mkdirSync = (path) ->
 	try
@@ -30,8 +29,8 @@ writeJSONFormat = (conf) ->
 	fs.writeFileSync "#{configDir}/compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"
 
 writeClientJSONFormat = (conf) ->
-	mkdirSync "#{ACAS_HOME}/public/conf"
-	fs.writeFileSync "#{ACAS_HOME}/public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
+	mkdirSync "#{acasHome}/public/conf"
+	fs.writeFileSync "#{acasHome}/public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
 
 writePropertiesFormat = (conf) ->
 	fs = require('fs')
@@ -47,7 +46,7 @@ writePropertiesFormat = (conf) ->
 
 
 getRFilesWithRoute = ->
-	rFiles = glob.sync("#{ACAS_HOME}/src/r/**/*.R")
+	rFiles = glob.sync("#{acasHome}/src/r/**/*.R")
 	routes = []
 	for rFile in rFiles
 		rFilePath = path.resolve(rFile)
@@ -168,7 +167,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('RewriteEngine On')
 	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.client.host}:#{config.client.port}/$1 [L,R,NE]")
-	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
+	confs.push('REvalOnStartup \'Sys.setenv(acasHome = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	return confs.join('\n')
 
 getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
@@ -214,7 +213,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs.join('\n')
 
 writeApacheConfFile = (config)->
-	acasHome = path.resolve(__dirname,ACAS_HOME)
+	acasHome = path.resolve(__dirname,acasHome)
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
 		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome)
@@ -223,8 +222,8 @@ writeApacheConfFile = (config)->
 	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
-	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "#{acasHome}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "#{acasHome}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
 
 csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
@@ -277,7 +276,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 				else
 					conf.server.enableSpecRunner = true
 				if !conf.server?.file?.server?.path?
-					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve ACAS_HOME+"/"+conf.server.datafiles.relative_path}"
+					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
 				conf.server.run = user: do =>
 					if !conf.server.run?
 						console.log "server.run.user is not set"
@@ -302,3 +301,4 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 			writeApacheConfFile conf
 
 	getProperties(configDir)
+
