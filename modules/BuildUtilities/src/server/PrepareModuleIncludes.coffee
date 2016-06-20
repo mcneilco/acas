@@ -2,7 +2,7 @@ fs = require 'fs'
 glob = require 'glob'
 _ = require 'underscore'
 
-ACAS_HOME="#{__dirname}/../../.."
+ACAS_HOME="../../.."
 workingDir=process.argv[2]
 if typeof workingDir != "undefined"
 	process.chdir ".."
