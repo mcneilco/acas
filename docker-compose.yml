@@ -19,16 +19,7 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
-     - ./public/compiled:/home/runner/build/public/compiled
-     - ./moduledyn/PlateRegistration:/home/runner/acas/moduledyn/PlateRegistration
-     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
-     - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
-     - ./modules/Login:/home/runner/acas/modules/Login
-     - ./public/lib/handsontable/dist/:/home/runner/acas/public/lib/handsontable/dist/
-     - ./public/lib/dataTables/js/:/home/runner/acas/public/lib/dataTables/js/
-     - ./public/lib/jquery-ui-1.10.2.custom/js/:/home/runner/acas/public/lib/jquery-ui-1.10.2.custom/js/
-     - ./views/:/home/runner/acas/views/
-     - ./Gruntfile.coffee:/home/runner/build/Gruntfile.coffee
+     - ./:/home/runner/acas
      #handsontable.full.js
 
     env_file:
@@ -67,7 +58,7 @@ services:
   tomcat:
     image: mcneilco/tomcat-maven
     restart: always
-    depends_on: 
+    depends_on:
      - db
     ports:
      - "8080:8080"
