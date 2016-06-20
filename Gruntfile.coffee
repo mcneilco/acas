@@ -419,6 +419,8 @@ module.exports = (grunt) ->
 					src: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
 					dest: '<%= build %>/public/javascripts/src/ExcelApp/ExcelApp.js'
 		watch:
+			options:
+				interval: 500
 			module_client_coffee:
 				files: ["<%= acas_base %>", "<%= acas_custom %>"].map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
