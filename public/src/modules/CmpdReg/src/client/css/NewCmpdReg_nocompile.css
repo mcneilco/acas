@@ -167,7 +167,7 @@ div {
 }
 /****** FLOATING PANELS ******/
 /****** div#upload-app LOCATED IN MULTIPICKER CSS ******/
-.MetaLotView .floatingPanel {
+.MetaLotView .floatingPanel, .SearchResultsView .floatingPanel {
     position: absolute;
     left: 20px;
     bottom: 140px;
@@ -1125,6 +1125,34 @@ div.MetaLotViewButtons.buttons {
 .searchResultHeader {
     margin-top: 20px;
 }
+
+.bv_downloadSearchResultsSdf {
+    position: absolute !important;
+    left: 200px !important;
+    top: 50px !important;
+    bottom: auto !important;
+    width: 40em;
+    padding: 5px !important;
+    border: 12px solid #D5D8DD !important;
+    background-color: #EEE !important;
+    cursor: hand !important;
+    z-index: 100 !important;
+}
+
+.bv_closeExportSDF {
+    float:right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    margin-right: 20px;
+    margin-left: 300px;
+    border: none;
+}
+
+.closeExportSDF {
+    background: no-repeat url('../images/close.png');
+}
+
 
 /****** SEARCH FORM VIEW ******/
 .SearchFormView .StructureMain {

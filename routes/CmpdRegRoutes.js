@@ -36,7 +36,8 @@
     app.post('/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert);
     app.post('/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService);
     app.post('/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService);
-    return app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    return app.post('/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults);
   };
 
   exports.cmpdRegIndex = function(req, res) {
@@ -659,6 +660,59 @@
         }
       };
     })(this));
+  };
+
+  exports.exportSearchResults = function(req, resp) {
+    var cmpdRegCall, config, exportedSearchResults, request, serverUtilityFunctions, uploadsPath;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults';
+    uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
+    exportedSearchResults = uploadsPath + "exportedSearchResults/";
+    return serverUtilityFunctions.ensureExists(exportedSearchResults, 0x1e4, function(err) {
+      var currentDate, dataToPost, date, fileName, monthNum;
+      if (err != null) {
+        console.log("Can't find or create exportedSearchResults folder: " + exportedSearchResults);
+        resp.statusCode = 500;
+        return resp.end("Error trying to export search results to sdf: Can't find or create exportedSearchResults folder " + exportedSearchResults);
+      } else {
+        date = new Date();
+        monthNum = date.getMonth() + 1;
+        currentDate = date.getFullYear() + '_' + ("0" + monthNum).slice(-2) + '_' + ("0" + date.getDate()).slice(-2);
+        fileName = currentDate + "_" + date.getTime() + "_searchResults.sdf";
+        dataToPost = {
+          filePath: exportedSearchResults + fileName,
+          searchFormResultsDTO: req.body
+        };
+        return request({
+          method: 'POST',
+          url: cmpdRegCall,
+          body: dataToPost,
+          json: true,
+          timeout: 6000000
+        }, (function(_this) {
+          return function(error, response, json) {
+            var absFilePath, downloadFilePath, relFilePath;
+            if (error) {
+              resp.setHeader('Content-Type', 'plain/text');
+              absFilePath = json.reportFilePath;
+              relFilePath = absFilePath.split(config.all.server.datafiles.relative_path + "/")[1];
+              downloadFilePath = config.all.client.datafiles.downloadurl.prefix + relFilePath;
+              json.reportFilePath = downloadFilePath;
+              return resp.json(json);
+            } else {
+              console.log('got ajax error trying to export search results to sdf');
+              console.log(error);
+              console.log(json);
+              console.log(response);
+              resp.statusCode = 500;
+              return resp.end("Error trying to export search results to sdf: " + error);
+            }
+          };
+        })(this));
+      }
+    });
   };
 
 }).call(this);

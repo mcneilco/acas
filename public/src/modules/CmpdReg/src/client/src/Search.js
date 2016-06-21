@@ -93,7 +93,8 @@ $(function () {
                 }
                 this.searchResultsController = new SearchResultsController({
                     el: $(".SearchResultsView"),
-                    collection: new Backbone.Collection(this.searchResults)
+                    collection: new Backbone.Collection(this.searchResults),
+                    searchResults: ajaxReturn
                 });
 
                 this.searchResultsController.render();
