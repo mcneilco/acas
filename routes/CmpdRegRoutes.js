@@ -694,7 +694,7 @@
         }, (function(_this) {
           return function(error, response, json) {
             var absFilePath, downloadFilePath, relFilePath;
-            if (error) {
+            if (!error) {
               resp.setHeader('Content-Type', 'plain/text');
               absFilePath = json.reportFilePath;
               relFilePath = absFilePath.split(config.all.server.datafiles.relative_path + "/")[1];

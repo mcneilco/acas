@@ -540,7 +540,7 @@ exports.exportSearchResults = (req, resp) ->
 				json: true
 				timeout: 6000000
 			, (error, response, json) =>
-				if error
+				if !error
 					resp.setHeader('Content-Type', 'plain/text')
 					absFilePath = json.reportFilePath
 					relFilePath = absFilePath.split(config.all.server.datafiles.relative_path+"/")[1]
