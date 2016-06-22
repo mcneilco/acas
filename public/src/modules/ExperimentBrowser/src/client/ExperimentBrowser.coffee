@@ -239,6 +239,9 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			completionDate: date
 		$(@el).html(@template(toDisplay))
 
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			project = @model.getProjectCode().get('codeValue')
+			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
 class window.ExperimentSummaryTableController extends Backbone.View
@@ -250,6 +253,8 @@ class window.ExperimentSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_protocolNameHeader').after '<th style="width: 175px;">Project</th>'
 		if @collection.models.length is 0
 			$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
 			# display message indicating no results were found
