@@ -468,6 +468,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -525,6 +526,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -555,6 +557,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -585,6 +588,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -616,6 +620,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -647,6 +652,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(json);
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'plain/text');
           return resp.end(json);
         } else {

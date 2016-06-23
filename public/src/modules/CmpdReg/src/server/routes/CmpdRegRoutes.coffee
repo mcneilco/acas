@@ -360,6 +360,7 @@ exports.regSearch = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -404,6 +405,7 @@ exports.metaLots = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -427,6 +429,7 @@ exports.saveSalts = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -450,6 +453,7 @@ exports.saveIsotopes = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -475,6 +479,7 @@ exports.molConvert = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -499,6 +504,7 @@ exports.genericStructureService = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.end json
 		else
