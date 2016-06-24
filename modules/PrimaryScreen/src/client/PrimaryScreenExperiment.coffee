@@ -1751,6 +1751,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_dilutionFactor').attr 'disabled', 'disabled'
 		else
 			@$('.bv_transferVolume').attr 'disabled', 'disabled'
+		if @model.get('thresholdType') is "efficacy"
+			@$('.bv_hitSDThreshold').attr 'disabled', 'disabled'
+		else
+			@$('.bv_hitEfficacyThreshold').attr 'disabled', 'disabled'
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	#	See UploadAndRunPrimaryAnalsysisController for example required initialization function

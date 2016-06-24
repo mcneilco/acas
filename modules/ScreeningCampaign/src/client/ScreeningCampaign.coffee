@@ -14,57 +14,16 @@ class window.ScreeningExperiment extends PrimaryScreenExperiment #TODO: make Par
 
 class window.ScreeningExperimentParameters extends Backbone.Model
 	defaults: ->
-		signalDirectionRule: "unassigned"
-		aggregateBy: "unassigned"
-		aggregationMethod: "unassigned"
-		normalization: new Normalization()
-		transformationRuleList: new TransformationRuleList()
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		thresholdType: null
-		useOriginalHits: false
+		thresholdType: "efficacy"
 		autoHitSelection: false
 
 	initialize: ->
 		@.set @parse(@.attributes)
 
-	parse: (resp) =>
-		if resp.transformationRuleList?
-			if resp.transformationRuleList not instanceof TransformationRuleList
-				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
-			resp.transformationRuleList.on 'change', =>
-				@trigger 'change'
-			resp.transformationRuleList.on 'amDirty', =>
-				@trigger 'amDirty'
-		if resp.normalization?
-			if resp.normalization not instanceof Normalization
-				resp.normalization = new Normalization(resp.normalization)
-			resp.normalization.on 'change', =>
-				@trigger 'change'
-			resp.normalization.on 'amDirty', =>
-				@trigger 'amDirty'
-		resp
-
 	validate: (attrs) =>
 		errors = []
-		transformationErrors = @get('transformationRuleList').validateCollection()
-		errors.push transformationErrors...
-		if attrs.signalDirectionRule is "unassigned" or attrs.signalDirectionRule is null
-			errors.push
-				attribute: 'signalDirectionRule'
-				message: "Signal Direction Rule must be assigned"
-		if attrs.aggregateBy is "unassigned" or attrs.aggregateBy is null
-			errors.push
-				attribute: 'aggregateBy'
-				message: "Aggregate By must be assigned"
-		if attrs.aggregationMethod is "unassigned" or attrs.aggregationMethod is null
-			errors.push
-				attribute: 'aggregationMethod'
-				message: "Aggregation method must be assigned"
-		if not attrs.normalization? or attrs.normalization.get('normalizationRule') is "unassigned"
-			errors.push
-				attribute: 'normalizationRule'
-				message: "Normalization rule must be assigned"
 		if attrs.autoHitSelection
 			if attrs.thresholdType == "sd" && _.isNaN(attrs.hitSDThreshold)
 				errors.push
@@ -493,14 +452,10 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 	template: _.template($("#ScreeningCampaignDataAnalysisView").html())
 
 	events: ->
-		"change .bv_signalDirectionRule": "attributeChanged"
-		"change .bv_aggregateBy": "attributeChanged"
-		"change .bv_aggregationMethod": "attributeChanged"
 		"keyup .bv_hitEfficacyThreshold": "attributeChanged"
 		"keyup .bv_hitSDThreshold": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
-		"change .bv_useOriginalHits": "handleUseOriginalHitsChanged"
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
 
 		"click .bv_analyze": "handleAnalyzeClicked"
@@ -550,12 +505,7 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 		@$("[data-toggle=popover]").popover();
 		@$("body").tooltip selector: '.bv_popover'
 
-		@setupSignalDirectionSelect()
-		@setupAggregateBySelect()
-		@setupAggregationMethodSelect()
 		@handleAutoHitSelectionChanged(true)
-		@setupNormalizationController()
-		@setupTransformationRuleListController()
 
 		@
 
@@ -566,57 +516,8 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 		@$('.bv_cancel').removeAttr 'disabled'
 		@$('.bv_cancelComplete').hide()
 
-
-	setupSignalDirectionSelect: ->
-		@signalDirectionList = new PickListList()
-		@signalDirectionList.url = "/api/codetables/analysis parameter/signal direction"
-		@signalDirectionListController = new PickListSelectController
-			el: @$('.bv_signalDirectionRule')
-			collection: @signalDirectionList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Signal Direction"
-			selectedCode: @model.get('signalDirectionRule')
-
-	setupAggregateBySelect: ->
-		@aggregateByList = new PickListList()
-		@aggregateByList.url = "/api/codetables/analysis parameter/aggregate by"
-		@aggregateByListController = new PickListSelectController
-			el: @$('.bv_aggregateBy')
-			collection: @aggregateByList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Aggregate By"
-			selectedCode: @model.get('aggregateBy')
-
-	setupAggregationMethodSelect: ->
-		@aggregationMethodList = new PickListList()
-		@aggregationMethodList.url = "/api/codetables/analysis parameter/aggregation method"
-		@aggregationMethodListController = new PickListSelectController
-			el: @$('.bv_aggregationMethod')
-			collection: @aggregationMethodList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Aggregation Method"
-			selectedCode: @model.get('aggregationMethod')
-
-	setupNormalizationController: ->
-		@normalizationController = new NormalizationController
-			el: @$('.bv_normalization')
-			model: @model.get('normalization')
-		@normalizationController.render()
-
-	setupTransformationRuleListController: ->
-		@transformationRuleListController= new TransformationRuleListController
-			el: @$('.bv_transformationList')
-			collection: @model.get('transformationRuleList')
-		@transformationRuleListController.render()
-
 	updateModel: =>
 		@model.set
-			signalDirectionRule: @signalDirectionListController.getSelectedCode()
-			aggregateBy: @aggregateByListController.getSelectedCode()
-			aggregationMethod: @aggregationMethodListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
 		@$('.bv_cancel').removeAttr 'disabled'
@@ -631,11 +532,6 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 		else
 			@$('.bv_hitEfficacyThreshold').attr('disabled','disabled')
 			@$('.bv_hitSDThreshold').removeAttr('disabled')
-		@attributeChanged()
-
-	handleUseOriginalHitsChanged: =>
-		useOriginalHits = @$('.bv_useOriginalHits').is(":checked")
-		@model.set useOriginalHits: useOriginalHits
 		@attributeChanged()
 
 	handleAutoHitSelectionChanged: (skipUpdate) =>
@@ -689,6 +585,14 @@ class window.ScreeningCampaignDataAnalysisController extends AbstractFormControl
 				@$('.bv_analyzing').hide()
 				@$('.bv_analysisResults').hide()
 				@$('.bv_analyzingData').modal 'hide'
+
+	enableAllInputs: ->
+		super()
+		if @model.get('thresholdType') is "efficacy"
+			@$('.bv_hitSDThreshold').attr 'disabled', 'disabled'
+		else
+			@$('.bv_hitEfficacyThreshold').attr 'disabled', 'disabled'
+
 
 class window.ScreeningCampaignModuleController extends AbstractFormController
 	template: _.template($("#ScreeningCampaignModuleView").html())
@@ -978,6 +882,11 @@ class window.ScreeningCampaignAnalysisController extends PrimaryScreenAnalysisCo
 	checkForSourceFile: ->
 		#don't load source file as a data file (file to parse)
 
+	showUploadWrapper: ->
+		@$('.bv_resultStatus').html("")
+		@$('.bv_htmlSummary').html("")
+
+
 class window.UploadAndRunScreeningCampaignAnalsysisController extends AbstractUploadAndRunPrimaryAnalsysisController
 
 	initialize: ->
@@ -1001,7 +910,54 @@ class window.UploadAndRunScreeningCampaignAnalsysisController extends AbstractUp
 		@maxFileSize = 200000000
 		@loadReportFile = false
 		@parseFileUploaded = true #not really uploaded but don't want to require data file upload
-		super()
+
+		$(@el).html @template()
+		@notificationController = new LSNotificationController
+			el: @$('.bv_notifications')
+			showPreview: false
+
+		@parseFileController = new LSFileInputController
+			el: @$('.bv_parseFile')
+			inputTitle: ''
+			url: UtilityFunctions::getFileServiceURL()
+			fieldIsRequired: false
+			allowedFileTypes: @allowedFileTypes
+			maxFileSize: @maxFileSize
+
+		@parseFileController.on('fileInput:uploadComplete', @handleParseFileUploaded)
+		@parseFileController.on('fileInput:removedFile', @handleParseFileRemoved)
+		@parseFileController.render()
+
+		if @loadReportFile
+			@reportFileController = new LSFileInputController
+				el: @$('.bv_reportFile')
+				inputTitle: ''
+				url: UtilityFunctions::getFileServiceURL()
+				fieldIsRequired: false
+				allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf']
+			@reportFileController.on('fileInput:uploadComplete', @handleReportFileUploaded)
+			@reportFileController.on('fileInput:removedFile', @handleReportFileRemoved)
+			@reportFileController.render()
+			@handleAttachReportFileChanged()
+		else
+			@$('.bv_reportFileFeature').hide()
+
+
+		if @loadImagesFile
+			@imagesFileController = new LSFileInputController
+				el: @$('.bv_imagesFile')
+				inputTitle: ''
+				url: UtilityFunctions::getFileServiceURL()
+				fieldIsRequired: false
+				allowedFileTypes: ['zip']
+			@imagesFileController.on('fileInput:uploadComplete', @handleImagesFileUploaded)
+			@imagesFileController.on('fileInput:removedFile', @handleImagesFileRemoved)
+			@imagesFileController.render()
+			@handleAttachImagesFileChanged()
+		else
+			@$('.bv_imagesFileFeature').hide()
+
+		@showFileSelectPhase()
 		@$('.bv_moduleTitle').hide()
 		@analysisParameterController = new ScreeningCampaignDataAnalysisController
 			model: @options.paramsFromExperiment
@@ -1039,3 +995,11 @@ class window.UploadAndRunScreeningCampaignAnalsysisController extends AbstractUp
 						@$('.bv_validateStatusDropDown').modal("hide")
 					dataType: 'json'
 
+	backToUpload: =>
+		super()
+		@$('.bv_resultStatus').html ""
+		@analysisParameterController.model.trigger 'change'
+
+	loadAnother: =>
+		super()
+		@$('.bv_resultStatus').html ""

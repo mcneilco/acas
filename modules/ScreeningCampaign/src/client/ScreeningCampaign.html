@@ -228,49 +228,7 @@
     <div class="bv_saveChangesBeforeAnalysis span10 hide">To analyze data, save or cancel the changes made in the General and/or Linked Experiments tabs.</div>
 
     <div class="bv_dataAnalysisParametersWrapper">
-        <h5>Analysis Parameters</h5>
-        <div class="form-horizontal">
-            <div class="control-group bv_group_signalDirectionRule" style="margin-bottom: 10px;">
-                <label class="control-label">*Positive Control Signal Direction</label>
-                <div class="controls">
-                    <select class="bv_signalDirectionRule" style="width:349px;margin-top:10px;"></select>
-                </div>
-            </div>
-            <div class="control-group bv_group_aggregateBy">
-                <label class="control-label">*Aggregate By</label>
-                <div class="controls">
-                    <select class="bv_aggregateBy" style="width:349px;margin-right:5px;"></select>
-                    <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregate By" data-content="Text to explain different options for aggregate by."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
-                </div>
-            </div>
-
-            <div class="control-group bv_group_aggregationMethod">
-                <label class="control-label">*Aggregation Method</label>
-                <div class="controls">
-                    <select class="bv_aggregationMethod" style="width:349px;margin-right:5px;"> </select>
-                    <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregation Method" data-content="Text to explain different options for aggregation method."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
-                </div>
-            </div>
-        </div>
-        <div class="bv_normalization"></div>
-        <div class="form-horizontal" style="width:670px;">
-            <div class="control-group">
-                <label class="control-label" style="width:100px;margin-left:40px;">*Transformation</label>
-                <div class="controls">
-                    <span class="bv_transformationList"></span>
-                </div>
-            </div>
-        </div>
-
-        <hr class="span12" style="margin-left:0px;margin-right:70px;margin-bottom:0px;margin-top:25px;" />
-
-
         <h5>Hit Selection Parameters</h5>
-        <div class="control-group bv_group_useOriginalHits" style="margin-left:20px;margin-bottom:20px;">
-            <label class="control-label checkbox" style="width:200px;padding-left:0;">
-                <input type="checkbox" name="bv_useOriginalHits" class="bv_useOriginalHits" <% if (useOriginalHits) { %> checked="checked"<% }%> />Use Original Hits
-            </label>
-        </div>
         <div class="control-group bv_group_autoHitSelection" style="margin-left:20px;margin-bottom:20px;">
             <label class="control-label checkbox" style="width:200px;padding-left:0;">
                 <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
@@ -296,22 +254,6 @@
                 </div>
             </div>
         </div>
-
-        <hr class="span12" style="margin-left:0px;margin-right:70px;margin-bottom:0px;margin-top:10px;" />
-
-        <!--<div class="well bv_analysisResults"></div>-->
-
-        <!-- Save-->
-        <!--<div class="span12" style="margin-top:20px; margin-left:0px;">-->
-            <!--<button type="button" class="btn bv_analyze pull-right" disabled="disabled">Analyze</button>-->
-            <!--<button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>-->
-            <!--<div class="bv_analysisFailed pull-right hide" style="padding-top:5px;color:red;">Analysis Failed</div>-->
-            <!--<div class="bv_analysisComplete pull-right hide" style="padding-top:5px;color:#62c462;">Analysis Complete</div>-->
-            <!--<div class="bv_analyzing pull-right hide" style="padding-top:5px;color:red;">Analzying...</div>-->
-            <!--<div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>-->
-            <!--<div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>-->
-        <!--</div>-->
-
     </div>
 
     <div class='modal bv_analyzingData hide'>
