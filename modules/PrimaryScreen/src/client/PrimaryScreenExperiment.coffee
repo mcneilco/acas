@@ -1022,7 +1022,7 @@ class window.TransformationRuleWithParametersController extends TransformationRu
 
 	setUpNegativeControlSettingController: =>
 		@negativeControlController = new ControlSettingController
-			className: 'bv_transformationPositiveControl'
+			className: 'bv_transformationNegativeControl'
 			model: @model.get('transformationParameters').get('negativeControl')
 			standardsList: @standardsList
 			controlLabel: '*Negative Control'
