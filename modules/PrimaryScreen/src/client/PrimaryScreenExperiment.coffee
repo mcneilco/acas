@@ -272,10 +272,9 @@ class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
 			indivModelErrors = model.validate(model.attributes)
 			if indivModelErrors?
 				for error in indivModelErrors
-					unless (matchReadName and error.attribute == 'readPosition')
-						modelErrors.push
-							attribute: error.attribute+':eq('+index+')'
-							message: error.message
+					modelErrors.push
+						attribute: error.attribute+':eq('+index+')'
+						message: error.message
 		return modelErrors
 
 class window.StandardCompoundList extends Backbone.Collection
@@ -1182,7 +1181,7 @@ class window.PrimaryAnalysisTimeWindowListController extends AbstractFormControl
 		@nextPositionNumber = 1
 
 	handleModelRemoved: =>
-		@renumberTimeWindows
+		@renumberTimeWindows()
 		@collection.trigger 'change'
 
 	render: =>
@@ -1229,7 +1228,7 @@ class window.StandardCompoundListController extends AbstractFormController
 		@nextPositionNumber = 1
 
 	handleModelRemoved: =>
-		@renumberStandards
+		@renumberStandards()
 		@collection.trigger 'change'
 
 	render: =>
@@ -1263,7 +1262,7 @@ class window.StandardCompoundListController extends AbstractFormController
 		@collection.each (standard, index) =>
 			standardNumber = 'S' + @nextPositionNumber.toString()
 			standard.set standardNumber: @nextPositionNumber
-			@$('.bv_timePosition:eq('+index+')').html(standardNumber)
+			@$('.bv_standardNumber:eq('+index+')').html(standardNumber)
 			@nextPositionNumber++
 
 
