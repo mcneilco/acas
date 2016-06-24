@@ -376,13 +376,14 @@ class window.CurveEditorController extends Backbone.View
 			if curveFitClasses?
 				controllerClass =  curveFitClasses.get 'parametersController'
 				drapcType = window[controllerClass]
+			if @drapc?
+				@drapc.undelegateEvents()
 			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
 			@drapc.setFormTitle "Fit Criteria"
 
 			@drapc.render()
-
 			@stopListening @drapc.model, 'change'
 			@listenTo @drapc.model, 'change', @handleParametersChanged
 
@@ -428,7 +429,6 @@ class window.CurveEditorController extends Backbone.View
 			@deleteRsession()
 		@model = model
 
-		@render()
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.on 'sync', @handleModelSync
 
@@ -845,9 +845,12 @@ class window.CurveCuratorController extends Backbone.View
 				selectedCurve: @initiallySelectedCurveID
 				locked: @locked
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
+			if @curveEditorController?
+				@curveEditorController.undelegateEvents()
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 				locked: @locked
+
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError

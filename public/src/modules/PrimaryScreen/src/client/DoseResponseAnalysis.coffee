@@ -38,14 +38,22 @@ class window.DoseResponseAnalysisParameters extends Backbone.Model
 	handleInactiveThresholdChanged: =>
 		if _.isNaN(@get('inactiveThreshold')) or @get('inactiveThreshold') == null
 			@set 'inactiveThresholdMode': false
+				,
+					silent: true
 		else
 			@set 'inactiveThresholdMode': true
+				,
+					silent: true
 
 	handleTheoreticalMaxChanged: =>
 		if _.isNaN(@get('theoreticalMax')) or @get('theoreticalMax') == null
 			@set 'theoreticalMaxMode': false
+			,
+				silent: true
 		else
 			@set 'theoreticalMaxMode': true
+			,
+				silent: true
 
 	validate: (attrs) ->
 		errors = []
@@ -131,7 +139,8 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 			theoreticalMax: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_theoreticalMax'))
 			,
 				silent: true
-
+		@model.handleInactiveThresholdChanged()
+		@model.handleTheoreticalMaxChanged()
 
 		@setInverseAgonistModeEnabledState()
 		@model.trigger 'change'
@@ -154,7 +163,7 @@ class window.DoseResponseAnalysisParametersController extends AbstractFormContro
 
 	handleMaxLimitTypeChanged: =>
 		radioValue = @$("input[name='bv_max_limitType']:checked").val()
-		@model.get('max').set limitType: radioValue, silent: true
+		@model.get('max').set limitType: radioValue
 		if radioValue == 'none'
 			@$('.bv_max_value').attr('disabled','disabled')
 		else
