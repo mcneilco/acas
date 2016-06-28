@@ -2036,7 +2036,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                        use.names=FALSE)
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
@@ -2491,7 +2491,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
