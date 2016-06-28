@@ -39,7 +39,7 @@ exports.getAuthorByUsernameInternal = (username, callback) ->
 		resp.json authorServiceTestJSON.getAuthorByUsernameInternalResponse
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"authors?username="+username
+		baseurl = config.all.client.service.persistence.fullpath+"authors?find=ByUserName&userName="+username
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -67,7 +67,8 @@ exports.getAuthorModulePreferencesInternal = (userName, moduleName, callback) ->
 		resp.json authorServiceTestJSON.getAuthorByUsernameInternalResponse
 	else
 		exports.getAuthorByUsernameInternal userName, (json, statusCode) ->
-			author = new Author json[0]
+
+			author = new Author json
 			settings = author.get('lsStates').getStateValueByTypeAndKind('metadata', 'module preferences', 'clobValue', moduleName)?.get("clobValue")
 			if settings?
 				console.debug 'here are settings', settings
@@ -86,7 +87,7 @@ exports.updateAuthorModulePreferencesInternal = (userName, moduleName, settings,
 		resp.json authorServiceTestJSON.updateAuthorApplicationSettingsResponse
 	else
 		exports.getAuthorByUsernameInternal userName, (json, statusCode) ->
-			author = new Author json[0]
+			author = new Author json
 			newValue = JSON.stringify(settings)
 			value = author.get('lsStates').getOrCreateValueByTypeAndKind('metadata', 'module preferences', 'clobValue', moduleName)
 			if value.isNew()
