@@ -140,13 +140,15 @@ exports.registerCmpds = (req, resp) ->
 		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
 		zipFilePath = movedUploadsPath+zipFileName
 
-		buffer = zip.generate({type:"nodebuffer"})
 		zipFilePath = config.all.server.service.persistence.filePath+"/cmpdreg_bulkload/"+zipFileName
-		fs.writeFile zipFilePath, buffer, (err) ->
-			if err
-				resp.end "Summary ZIP file could not be created"
-			else
-				resp.json [json, zipFileName]
+		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
+		fstream.on 'finish', ->
+			console.log "finished create write stream"
+			resp.json [json, zipFileName]
+		fstream.on 'error', (err) ->
+			console.log "error writing stream for zip"
+			console.log err
+			resp.end "Summary ZIP file could not be created"
 
 	registerCmpds = (req, resp) ->
 		if req == "error"

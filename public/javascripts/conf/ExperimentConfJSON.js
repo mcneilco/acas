@@ -531,7 +531,7 @@
           labelSeparator: "-",
           labelTypeAndKind: "id_codeName",
           thingTypeAndKind: "document_experiment",
-          latestNumber: 1
+          latestNumber: 0
         }
       ]
     };

@@ -239,6 +239,9 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			completionDate: date
 		$(@el).html(@template(toDisplay))
 
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			project = @model.getProjectCode().get('codeValue')
+			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
 class window.ExperimentSummaryTableController extends Backbone.View
@@ -250,6 +253,8 @@ class window.ExperimentSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_protocolNameHeader').after '<th style="width: 175px;">Project</th>'
 		if @collection.models.length is 0
 			$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
 			# display message indicating no results were found
@@ -335,15 +340,63 @@ class window.ExperimentBrowserController extends Backbone.View
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
 			@formatOpenInQueryToolButton()
-			@$('.bv_editExperiment').show()
-			@$('.bv_deleteExperiment').show()
-			#TODO: make deleting experiment privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteExperiment').hide()
+			if @canEdit()
+				@$('.bv_editExperiment').show()
+			else
+				@$('.bv_editExperiment').hide()
+			if @canDelete()
+				@$('.bv_deleteExperiment').show()
+			else
+				@$('.bv_deleteExperiment').hide()
+
+	canEdit: ->
+		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @experimentController.model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
+					else
+						rolesToTest.push role
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @experimentController.model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")

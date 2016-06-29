@@ -119,6 +119,12 @@
         }, {
           typeName: "codeValue",
           kindName: "model fit type"
+        }, {
+          typeName: "stringValue",
+          kindName: "model fit transformation"
+        }, {
+          typeName: "codeValue",
+          kindName: "model fit transformation units"
         }
       ],
       labeltypes: [
@@ -206,6 +212,9 @@
         }, {
           typeName: "model fit",
           kindName: "type"
+        }, {
+          typeName: "model fit",
+          kindName: "transformation units"
         }
       ],
       codetables: [
@@ -384,6 +393,20 @@
           code: "4 parameter D-R",
           name: "EC50",
           ignored: false
+        }, {
+          codeType: "model fit",
+          codeKind: "transformation units",
+          codeOrigin: "ACAS DDICT",
+          code: "none",
+          name: "None",
+          ignored: false
+        }, {
+          codeType: "model fit",
+          codeKind: "transformation units",
+          codeOrigin: "ACAS DDICT",
+          code: "%",
+          name: "%",
+          ignored: false
         }
       ],
       labelsequences: [
@@ -394,7 +417,7 @@
           labelSeparator: "-",
           labelTypeAndKind: "id_codeName",
           thingTypeAndKind: "document_protocol",
-          latestNumber: 1
+          latestNumber: 0
         }
       ]
     };

@@ -23,6 +23,7 @@ import ldclient
 from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
 from ldclient.models import ViewSelection
+from ldclient.models import Project
 
 def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId, ldClientVersion):
 
@@ -47,10 +48,15 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId,
         assay_column_ids = []
         for assay_to_add in assays_to_add:
             assay_tree=api.get_folder_tree_data(projectId, assay_to_add['protocolName'])
+            if type(assay_tree) is list:
+                assay_tree=assay_tree[0]
             while assay_tree['name'] != assay_to_add['protocolName']:
     	        assay_tree=assay_tree['children'][0]
             for assay in assay_tree['children']:
                 assay_column_ids.extend(assay['addable_column_ids'])
+                if len(assay['children'])>0:
+                    for sub_assay in assay['children']:
+                        assay_column_ids.extend(sub_assay['addable_column_ids'])
     else:
         assays = api.assays()
         assay_hash = {}
@@ -132,7 +138,10 @@ def main():
         ld_client_version=float(7.3)
     print "LDClient version is:"+str(ld_client_version)
     try:
-    	projectId = api.get_project_id_by_name(project)
+#    	projectId = api.get_project_id_by_name(project)
+        matching_projects = filter(lambda p: p.alternate_id == project, api.projects())
+        projectId = int(matching_projects[0].id.encode('ascii'))
+        print "Project " + project + " found with id: " + str(projectId)
     except:
     	projectId = 0
     if type(projectId) is not int:
