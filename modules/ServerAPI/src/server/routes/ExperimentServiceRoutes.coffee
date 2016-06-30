@@ -243,7 +243,7 @@ exports.genericExperimentSearch = (req, res) ->
 			res.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/search?q="+req.params.searchTerm+"&userName="+req.user.username
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'

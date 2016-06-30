@@ -85,7 +85,8 @@
           var projectEntry;
           projectEntry = {
             id: project.id,
-            name: project.code,
+            name: project.name,
+            code: project.code,
             active: project.active != null ? ['N', 'Y'][+project.active] : 'Y',
             is_restricted: project.isRestricted != null ? +project.isRestricted : 0,
             project_desc: project.name

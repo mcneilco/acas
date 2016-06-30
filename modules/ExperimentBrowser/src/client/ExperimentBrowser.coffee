@@ -243,6 +243,9 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			completionDate: date
 		$(@el).html(@template(toDisplay))
 
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			project = @model.getProjectCode().get('codeValue')
+			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
 class window.ExperimentSummaryTableController extends Backbone.View
@@ -258,6 +261,8 @@ class window.ExperimentSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_protocolNameHeader').after '<th style="width: 175px;">Project</th>'
 		if @collection.models.length is 0
 			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).removeClass "hide"
 			# display message indicating no results were found
@@ -370,11 +375,19 @@ class window.ExperimentBrowserController extends Backbone.View
 			if window.conf.entity?.editingRoles?
 				rolesToTest = []
 				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
 					if role is 'entityScientist'
 						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
 							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @experimentController.model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
 					else
-						rolesToTest.push $.trim(role)
+						rolesToTest.push role
 				if rolesToTest.length is 0
 					return false
 				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
@@ -385,11 +398,19 @@ class window.ExperimentBrowserController extends Backbone.View
 		if window.conf.entity?.deletingRoles?
 			rolesToTest = []
 			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
 				if role is 'entityScientist'
 					if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
 						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @experimentController.model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
 				else
-					rolesToTest.push $.trim(role)
+					rolesToTest.push role
 			if rolesToTest.length is 0
 				return false
 			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
