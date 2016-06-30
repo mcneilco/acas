@@ -21,7 +21,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/purityMeasuredBys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/structureimage/:type/[\\S]*', loginRoutes.ensureAuthenticated, exports.getStructureImage
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMetaLot
-	app.get '/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
+	app.get '/cmpdReg/MultipleFilePicker/[\\S]*', loginRoutes.ensureAuthenticated, exports.getMultipleFilePicker
 	app.post '/cmpdReg/search/cmpds', loginRoutes.ensureAuthenticated, exports.searchCmpds
 	app.post '/cmpdReg/regsearches/parent', loginRoutes.ensureAuthenticated, exports.regSearch
 	app.post '/cmpdReg/filesave', loginRoutes.ensureAuthenticated, exports.fileSave
@@ -382,7 +382,8 @@ exports.getMarvinJSLicense = (req, resp) ->
 exports.getMultipleFilePicker = (req, resp) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + req.originalUrl
+	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 

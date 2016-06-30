@@ -36,8 +36,6 @@
         ref = user.roles;
         for (j = 0, len1 = ref.length; j < len1; j++) {
           userRole = ref[j];
-          console.log("role");
-          console.log(role);
           if (userRole.roleEntry.lsType === role.lsType && userRole.roleEntry.lsKind === role.lsKind && userRole.roleEntry.roleName === role.roleName) {
             match = true;
           }
