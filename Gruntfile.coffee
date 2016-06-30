@@ -47,7 +47,7 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly') && fs.existsSync("#{acas_base}/moduledyn/PlateRegistration")
+		if !grunt.option('customonly')
 			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
@@ -326,7 +326,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/moduledyn/**/src/client/*.css"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(sourcePath+"/modulesdyn/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/moduledyn/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						module = replaced.split("/")[0]
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/client",module)}"
 					dest: "#{grunt.config.get('build')}/public/stylesheetsdyn"
@@ -458,10 +458,10 @@ module.exports = (grunt) ->
 				entry: (
 					entries = []
 					grunt.config.get('sourceDirectories').map (i,index) ->
-						entry = "#{i}/moduledyn/PlateRegistration/src/client/index.coffee"
-						if fs.existsSync(entry)
+						entry = {index: "#{i}/moduledyn/PlateRegistration/src/client/index.coffee"}
+						if fs.existsSync(entry.index)
 							entries.push entry
-					entries
+					entries[0]
 				)
 
 				output:
