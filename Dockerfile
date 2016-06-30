@@ -57,4 +57,7 @@ ENV     PREPARE_MODULE_CONF_JSON=true
 ENV     PREPARE_CONFIG_FILES=true
 ENV     ACAS_HOME=$BUILD_PATH
 
+EXPOSE 3000
+EXPOSE 3001
+
 CMD     ["/bin/sh","bin/acas.sh", "run"]

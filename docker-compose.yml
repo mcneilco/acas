@@ -20,7 +20,6 @@ services:
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
      - ./:/home/runner/acas
-     - ./Gruntfile.coffee:/home/runner/build/Gruntfile.coffee
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
@@ -57,7 +56,7 @@ services:
   tomcat:
     image: mcneilco/tomcat-maven
     restart: always
-    depends_on: 
+    depends_on:
      - db
     ports:
      - "8080:8080"

@@ -57,6 +57,9 @@
 			,
 				typeName: "metadata"
 				kindName: "screening inventory"
+			,
+				typeName: "metadata"
+				kindName: "log"
 			]
 
 		valuetypes:

@@ -481,6 +481,8 @@ module.exports = (grunt) ->
 					src: "#{grunt.config.get("build")}/public/javascripts/src/ExcelApp/ExcelApp.js"
 					dest: "#{grunt.config.get("build")}/public/javascripts/src/ExcelApp/ExcelApp.js"
 		watch:
+			options:
+				interval: 500
 			module_client_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
