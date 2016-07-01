@@ -170,6 +170,7 @@ $(function() {
             //this.$('.commonName').val(this.model.get('commonName'));
             this.$('.molWeight').val(this.model.get('molWeight'));
             this.$('.molFormula').val(this.model.get('molFormula'));
+            this.$('.exactMass').val(this.model.get('exactMass'));
 
 			this.aliasController = new AliasesController({collection: this.model.get('parentAliases'), readMode: this.readMode, step: this.step})
 			this.$('.bv_aliasesContainer').html(this.aliasController.render().el );
