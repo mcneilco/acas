@@ -18,7 +18,7 @@ $(function() {
                             this.set({parent: new Parent({json: lotjs.lot.saltForm.parent})});
                         } else {
 	                        this.set({parent: new Parent({
-	                        		molStructure: this.get('parentStructure'),
+	                        	molStructure: this.get('parentStructure'),
 				                    molWeight: this.get('molWeight'),
 				                    molFormula: this.get('molFormula')
 	                        	})});
@@ -36,7 +36,7 @@ $(function() {
                         this.set({parent: new Parent({json: lotjs.lot.parent})});
                     } else {
                         this.set({parent: new Parent({
-                        		molStructure: this.get('parentStructure'),
+                        	molStructure: this.get('parentStructure'),
 			                    molWeight: this.get('molWeight'),
 			                    molFormula: this.get('molFormula')
                         	})});
@@ -133,7 +133,8 @@ $(function() {
                 salts: this.salts,
                 isotopes: this.isotopes,
                 el: this.$('.LotForm_SaltFormView'),
-                errorNotifList: eNoti
+                errorNotifList: eNoti,
+								isEditable: this.allowedToUpdate()
             });
             this.lotController = new LotController({
                 model: this.model.get('lot'),
