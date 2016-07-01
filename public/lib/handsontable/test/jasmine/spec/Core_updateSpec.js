@@ -239,4 +239,78 @@ describe('Core_updateSettings', function () {
     expect(getCellValidator(0, 0)).toBeUndefined();
   });
 
+  it("should allow updating the table height", function () {
+    var hot = handsontable({
+      startRows: 22,
+      startCols: 5
+    });
+
+    var initialHeight = parseInt(this.$container[0].style.height, 10);
+
+    updateSettings({
+      height: 300
+    });
+
+    expect(parseInt(this.$container[0].style.height, 10)).toEqual(300);
+    expect(parseInt(this.$container[0].style.height, 10)).toNotEqual(initialHeight);
+  });
+
+  it("should not reset the table height, when the updateSettings config object doesn't have any height specified", function () {
+    var hot = handsontable({
+      startRows: 22,
+      startCols: 5,
+      height: 300
+    });
+
+    var initialHeight = this.$container[0].style.height;
+
+    updateSettings({
+      rowHeaders: true
+    });
+
+    expect(parseInt(this.$container[0].style.height, 10)).toEqual(parseInt(initialHeight, 10));
+  });
+
+  it("should allow resetting the table height", function () {
+    var hot = handsontable({
+      startRows: 22,
+      startCols: 5,
+      height: 300
+    });
+
+    var initialHeight = this.$container[0].style.height;
+
+    updateSettings({
+      height: null
+    });
+
+    expect(parseInt(this.$container[0].style.height, 10)).toNotEqual(parseInt(initialHeight, 10));
+  });
+
+  it("should allow updating the stretching type", function() {
+    var hot = handsontable({
+      stretchH: 'last'
+    });
+
+    expect(hot.view.wt.getSetting('stretchH')).toEqual('last');
+
+    updateSettings({
+      stretchH: 'all'
+    });
+
+    expect(hot.view.wt.getSetting('stretchH')).toEqual('all');
+
+    updateSettings({
+      stretchH: 'none'
+    });
+
+    expect(hot.view.wt.getSetting('stretchH')).toEqual('none');
+
+    updateSettings({
+      stretchH: 'last'
+    });
+
+    expect(hot.view.wt.getSetting('stretchH')).toEqual('last');
+  });
+
 });

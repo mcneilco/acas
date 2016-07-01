@@ -14,7 +14,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated ,exports.searchForEntitiesRoute
 	app.post '/api/entitymeta/projectCodes/:csv?', loginRoutes.ensureAuthenticated, exports.projectCodesRoute
 
-configuredEntityTypes = require '../src/javascripts/ServerAPI/ConfiguredEntityTypes.js'
+configuredEntityTypes = require '../conf/ConfiguredEntityTypes.js'
 _ = require 'underscore'
 
 
@@ -53,6 +53,12 @@ exports.getSpecificEntityType = (displayName, callback) ->
 	else
 		callback {}
 
+exports.getSpecificEntityTypeByTypeKindAndCodeOrigin = (type, kind, codeOrigin) ->
+	entityType = _.findWhere configuredEntityTypes.entityTypes, {type: type, kind: kind, codeOrigin: codeOrigin}
+	if entityType?
+		return entityType
+	else
+		return {}
 
 ####################################################################
 #   REFERENCE CODES
@@ -121,6 +127,22 @@ exports.referenceCodes = (requestData, csv, callback) ->
 					callback
 						displayName: requestData.displayName
 						results: formatJSONReferenceCode(codeResponse.results, "referenceName")
+		else if entityType.codeOrigin is "ACAS LSContainer"
+			console.log "entityType.codeOrigin is ACAS LSContainer"
+			console.log reqList
+			console.log reqList
+#			reqList = [reqList[0].requestName]
+			preferredContainerService = require "./InventoryServiceRoutes.js"
+			reqHashes =
+				containerType: entityType.type
+				containerKind: entityType.kind
+				requests: reqList
+			preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+				console.log "codeResponse"
+				console.log codeResponse
+				callback
+					displayName: requestData.displayName
+					results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
 		callback.statusCode = 500
@@ -189,6 +211,20 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 					callback
 						displayName: requestData.displayName
 						results: formatJSONBestLabel(codeResponse.results, "preferredName")
+		else if entityType.codeOrigin is "ACAS LSContainer"
+			console.log "entityType.codeOrigin is ACAS LSContainer"
+			console.log reqList
+			preferredContainerService = require "./ContainerServiceRoutes.js"
+			reqHashes =
+				containerType: entityType.type
+				containerKind: entityType.kind
+				requests: reqList
+			preferredContainerService.getContainerCodesFromNamesOrCodes reqHashes, (codeResponse) ->
+				console.log "codeResponse"
+				console.log codeResponse
+				callback
+					displayName: requestData.displayName
+					results: formatJSONBestLabel(codeResponse.results, "preferredName")
 			return
 		callback.statusCode = 500
 		callback.end "problem with internal best label request: code type and kind are unknown to system"

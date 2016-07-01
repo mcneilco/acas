@@ -2,32 +2,39 @@
 	exports.typeKindList =
 		containertypes:
 			[
-				typeName: "virtual"
+				typeName: "definition container"
 			,
-				typeName: "physical"
+				typeName: "location"
+			,
+				typeName: "container"
+			,
+				typeName: "well"
 			]
 
 		container:
 			[
-				typeName: "virtual"
-				kindName: "plate"
-      ,
-				typeName: "physical"
+				typeName: "definition container"
 				kindName: "plate"
 			,
-				typeName: "physical"
-				kindName: "well"
+				typeName: "location"
+				kindName: "default"
 			,
-				typeName: "physical"
-				kindName: "system"
+				typeName: "container"
+				kindName: "plate"
+			,
+				typeName: "well"
+				kindName: "default"
+			,
+				typeName: "container"
+				kindName: "tube"
 			]
 
 		statetypes:
 			[
-				typeName: "metadata"
-      ,
 				typeName: "constants"
-      ,
+			,
+				typeName: "metadata"
+			,
 				typeName: "status"
 			]
 
@@ -36,105 +43,95 @@
 				typeName: "constants"
 				kindName: "format"
 			,
-				typeName: "metadata"
-				kindName: "container"
+				typeName: "constants"
+				kindName: "information"
 			,
-				typeName: "status"
-				kindName: "location"
+				typeName: "metadata"
+				kindName: "information"
 			,
 				typeName: "status"
 				kindName: "content"
 			,
-				typeName: "constants"
-				kindName: "container"
+				typeName: "status"
+				kindName: "content"
+			,
+				typeName: "metadata"
+				kindName: "screening inventory"
+			,
+				typeName: "metadata"
+				kindName: "log"
 			]
 
 		valuetypes:
 			[
-				typeName: "dateValue"
+				typeName: "numericValue"
 			,
 				typeName: "codeValue"
 			,
 				typeName: "stringValue"
 			,
-				typeName: "numericValue"
+				typeName: "dateValue"
 			]
 
 		valuekinds:
 			[
-        typeName: "numericValue"
-        kindName: "wells"
-      ,
-        typeName: "numericValue"
-        kindName: "rows"
-      ,
-        typeName: "numericValue"
-        kindName: "columns"
-      ,
-        typeName: "codeValue"
-        kindName: "subcontainer naming convention"
-      ,
-        typeName: "numericValue"
-        kindName: "max well volume"
-      ,
-        typeName: "dateValue"
-        kindName: "registration date"
-      ,
-        typeName: "codeValue"
-        kindName: "supplier code"
-      ,
-        typeName: "codeValue"
-        kindName: "status code"
-      ,
-        typeName: "codeValue"
-        kindName: "availability"
-      ,
-        typeName: "numericValue"
-        kindName: "gross mass"
-      ,
-        typeName: "numericValue"
-        kindName: "tare weight"
-      ,
-        typeName: "stringValue"
-        kindName: "created user"
-      ,
-        typeName: "dateValue"
-        kindName: "created date"
-      ,
-        typeName: "codeValue"
-        kindName: "CUSTOM_LOCATION"
-      ,
-        typeName: "codeValue"
-        kindName: "batch code"
-      ,
-        typeName: "stringValue"
-        kindName: "description"
-      ,
-        typeName: "codeValue"
-        kindName: "plate template"
-      ,
-        typeName: "codeValue"
-        kindName: "k plate id"
-      ,
-        typeName: "numericValue"
-        kindName: "current mass"
-      ,
-        typeName: "numericValue"
-        kindName: "net mass"
-      ,
-        typeName: "numericValue"
-        kindName: "initial mass"
-      ,
-        typeName: "codeValue"
-        kindName: "solvent code"
-      ,
-        typeName: "codeValue"
-        kindName: "plate type"
-       ]
+				typeName: "numericValue"
+				kindName: "wells"
+			,
+				typeName: "numericValue"
+				kindName: "rows"
+			,
+				typeName: "numericValue"
+				kindName: "columns"
+			,
+				typeName: "codeValue"
+				kindName: "subcontainer naming convention"
+			,
+				typeName: "numericValue"
+				kindName: "max well volume"
+			,
+				typeName: "stringValue"
+				kindName: "description"
+			,
+				typeName: "codeValue"
+				kindName: "created user"
+			,
+				typeName: "dateValue"
+				kindName: "created date"
+			,
+				typeName: "codeValue"
+				kindName: "status"
+			,
+				typeName: "codeValue"
+				kindName: "supplier"
+			,
+				typeName: "codeValue"
+				kindName: "type"
+			,
+				typeName: "dateValue"
+				kindName: "registered date"
+			,
+				typeName: "numericValue"
+				kindName: "tare weight"
+			,
+				typeName: "codeValue"
+				kindName: "batch code"
+			,
+				typeName: "codeValue"
+				kindName: "solvent code"
+			,
+				typeName: "codeValue"
+				kindName: "physical state"
+			,
+				typeName: "numericValue"
+				kindName: "amount"
+			]
 
 		labeltypes:
 			[
 				typeName: "name"
+			,
+				typeName: "barcode"
 			]
 
 		labelkinds:
@@ -144,32 +141,229 @@
 			,
 				typeName: "name"
 				kindName: "common"
+			,
+				typeName: "barcode"
+				kindName: "barcode"
+			,
+				typeName: "name"
+				kindName: "well name"
 			]
 
 		ddicttypes:
 			[
+				typeName: "status"
 			]
 
 		ddictkinds:
 			[
-
+				typeName: "status"
+				kindName: "container"
 			]
 
 		codetables:
 			[
-
+#				codeType: "type"
+#				codeKind: "container tube"
+#				codeOrigin: "ACAS DDICT"
+#				code: "1.4 ml matrix mini-tube"
+#				name: "1.4 mL Matrix Mini-Tube"
+#				ignored: false
+#			,
+				codeType: "type"
+				codeKind: "container tube"
+				codeOrigin: "ACAS DDICT"
+				code: "empty vial"
+				name: "Empty Vial"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container tube"
+				codeOrigin: "ACAS DDICT"
+				code: "master vial"
+				name: "Master Vial"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container tube"
+				codeOrigin: "ACAS DDICT"
+				code: "solution vial"
+				name: "Solution Vial"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container tube"
+				codeOrigin: "ACAS DDICT"
+				code: "powder vial"
+				name: "Powder Vial"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "hitpick master plate"
+				name: "Hitpick Master Plate"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "screen system plate"
+				name: "Screen System Plate"
+				ignored: false
+			,
+#				codeType: "type"
+#				codeKind: "container plate"
+#				codeOrigin: "ACAS DDICT"
+#				code: "combinational plate"
+#				name: "Combinational Plate"
+#				ignored: false
+#			,
+#				codeType: "type"
+#				codeKind: "container plate"
+#				codeOrigin: "ACAS DDICT"
+#				code: "solubility calibration"
+#				name: "Solubility Calibration"
+#				ignored: false
+#			,
+				codeType: "type"
+				codeKind: "container tube"
+				codeOrigin: "ACAS DDICT"
+				code: "solubility sample"
+				name: "Solubility Sample"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "library"
+				name: "Library"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "sidecar"
+				name: "Sidecar"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "library master"
+				name: "Library Master"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "standards"
+				name: "Standards"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "hitpick"
+				name: "Hitpick"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "mixed"
+				name: "Mixed"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "reagent"
+				name: "Reagent"
+				ignored: false
+			,
+				codeType: "type"
+				codeKind: "container plate"
+				codeOrigin: "ACAS DDICT"
+				code: "lead profiling"
+				name: "Lead Profiling"
+				ignored: false
+			,
+#				codeType: "status"
+#				codeKind: "container plate"
+#				codeOrigin: "ACAS DDICT"
+#				code: "hitpick plate"
+#				name: "Hitpick plate"
+#				ignored: false
+#			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "in progress"
+				name: "In Progress"
+				ignored: false
+			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "active"
+				name: "Active"
+				ignored: false
+			,
+#				codeType: "status"
+#				codeKind: "container"
+#				codeOrigin: "ACAS DDICT"
+#				code: "flagged"
+#				name: "Flagged"
+#				ignored: false
+#			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "expired"
+				name: "Expired"
+				ignored: false
+			,
+#				codeType: "status"
+#				codeKind: "container"
+#				codeOrigin: "ACAS DDICT"
+#				code: "rejected"
+#				name: "Rejected"
+#				ignored: false
+#			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "created"
+				name: "Created"
+				ignored: false
+			,
+#				codeType: "status"
+#				codeKind: "container"
+#				codeOrigin: "ACAS DDICT"
+#				code: "special set"
+#				name: "Special Set"
+#				ignored: false
+#			,
+#				codeType: "status"
+#				codeKind: "container"
+#				codeOrigin: "ACAS DDICT"
+#				code: "inactive"
+#				name: "Inactive"
+#				ignored: false
+#			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "checked-out"
+				name: "Checked-out"
+				ignored: false
+			,
+				codeType: "status"
+				codeKind: "container"
+				codeOrigin: "ACAS DDICT"
+				code: "checked-in"
+				name: "Checked-in"
+				ignored: false
 			]
 
-		labelsequences:
-			[
-				digits: 8
-				groupDigits: false
-				labelPrefix: "PLATE"
-				labelSeparator: "-"
-				labelTypeAndKind: "id_codeName"
-				thingTypeAndKind: "document_plate"
-				latestNumber:0
-			]
-
-
-) (if (typeof process is "undefined" or not process.versions) then window.protocolConfJSON = window.protocolConfJSON or {} else exports)
+) (if (typeof process is "undefined" or not process.versions) then window.inventoryConfJSON = window.inventoryConfJSON or {} else exports)

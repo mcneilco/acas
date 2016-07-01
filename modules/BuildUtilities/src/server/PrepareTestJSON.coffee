@@ -2,7 +2,7 @@ fs = require 'fs'
 glob = require 'glob'
 path = require 'path'
 _ = require "underscore"
-ACAS_HOME="../../.."
+ACAS_HOME="#{__dirname}/../../.."
 
 mkdirSync = (path) ->
 	try

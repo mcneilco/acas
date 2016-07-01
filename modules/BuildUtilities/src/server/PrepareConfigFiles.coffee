@@ -1,4 +1,3 @@
-csUtilities = require "../ServerAPI/CustomerSpecificServerFunctions.js"
 properties = require "properties"
 _ = require "underscore"
 underscoreDeepExtend = require "underscore-deep-extend"
@@ -8,14 +7,14 @@ flat = require 'flat'
 glob = require 'glob'
 shell = require 'shelljs'
 path = require 'path'
+acasHome =  path.resolve "#{__dirname}/../../.."
+csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 os = require 'os'
 propertiesParser = require "properties-parser"
-ACAS_HOME="../../.."
-configDir = "#{ACAS_HOME}/conf/"
+configDir = "#{acasHome}/conf/"
 global.deployMode= "Dev" # This may be overridden in getConfServiceVars()
 
 sysEnv = process.env
-
 
 mkdirSync = (path) ->
 	try
@@ -30,8 +29,8 @@ writeJSONFormat = (conf) ->
 	fs.writeFileSync "#{configDir}/compiled/conf.js", "exports.all="+JSON.stringify(conf)+";"
 
 writeClientJSONFormat = (conf) ->
-	mkdirSync "#{ACAS_HOME}/public/conf"
-	fs.writeFileSync "#{ACAS_HOME}/public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
+	mkdirSync "#{acasHome}/public/conf"
+	fs.writeFileSync "#{acasHome}/public/conf/conf.js", "window.conf="+JSON.stringify(conf.client)+";"
 
 writePropertiesFormat = (conf) ->
 	fs = require('fs')
@@ -47,7 +46,7 @@ writePropertiesFormat = (conf) ->
 
 
 getRFilesWithRoute = ->
-	rFiles = glob.sync("#{ACAS_HOME}/src/r/**/*.R")
+	rFiles = glob.sync("#{acasHome}/src/r/**/*.R")
 	routes = []
 	for rFile in rFiles
 		rFilePath = path.resolve(rFile)
@@ -135,19 +134,24 @@ getApacheCompileOptions = ->
 		compileOptions.push(option: 'ApacheVersion', value: apacheVersion)
 		compileOptions
 
-getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs = []
 	runUser = config.server.run.user
 	confs.push('User ' + runUser)
 	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
 	confs.push('Listen ' + config.server.rapache.listen + ':' + config.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
-	confs.push('StartServers ' + _.findWhere(apacheHardCodedConfigs, {directive: 'StartServers'}).value)
-	confs.push('ServerSignature ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerSignature'}).value)
+	confs.push('StartServers ' + config.server.rapache.conf.startservers)
+	confs.push('MinSpareServers ' + config.server.rapache.conf.minspareservers)
+	confs.push('MaxSpareServers ' + config.server.rapache.conf.maxspareservers)
+	confs.push('ServerLimit ' + config.server.rapache.conf.serverlimit)
+	confs.push('MaxClients ' + config.server.rapache.conf.maxclients)
+	confs.push('MaxRequestsPerChild ' + config.server.rapache.conf.maxrequestsperchild)
+	confs.push('ServerSignature ' + config.server.rapache.conf.serversignature)
 	confs.push('ServerName ' + config.client.host)
-	confs.push('HostnameLookups ' + _.findWhere(apacheHardCodedConfigs, {directive: 'HostnameLookups'}).value)
-	confs.push('ServerAdmin ' + _.findWhere(apacheHardCodedConfigs, {directive: 'ServerAdmin'}).value)
-	confs.push('LogFormat ' + _.findWhere(apacheHardCodedConfigs, {directive: 'LogFormat'}).value)
+	confs.push('HostnameLookups ' + config.server.rapache.conf.hostnamelookups)
+	confs.push('ServerAdmin ' + config.server.rapache.conf.serveradmin)
+	confs.push('LogFormat ' + config.server.rapache.conf.logformat)
 	confs.push('ErrorLog ' + config.server.log.path + '/racas.log')
 	confs.push('LogLevel ' + config.server.log.level.toLowerCase())
 	if Boolean(config.client.use.ssl)
@@ -163,10 +167,10 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedCon
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('RewriteEngine On')
 	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.client.host}:#{config.client.port}/$1 [L,R,NE]")
-	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
+	confs.push('REvalOnStartup \'Sys.setenv(acasHome = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	return confs.join('\n')
 
-getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConfigs, acasHome) ->
+getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs = []
 	apacheVersion = _.findWhere(apacheCompileOptions, {option: 'ApacheVersion'}).value
 	switch apacheVersion
@@ -208,26 +212,18 @@ getApacheSpecificConfString = (config, apacheCompileOptions, apacheHardCodedConf
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
 	apacheSpecificConfs.join('\n')
 
-apacheHardCodedConfigs= [{directive: 'StartServers', value: '5'},
-	{directive: 'ServerSignature', value: 'On'},
-	{directive: 'HostnameLookups', value: 'On'},
-	{directive: 'ServerAdmin', value: 'root@localhost'},
-	{directive: 'ServerSignature', value: 'On'},
-	{directive: 'LogFormat', value: '"%h %l %u %t \\"%r\\" %>s %b \\"%{Referer}i\\" \\"%{User-Agent}i\\"" combined'},
-	{directive: 'RewriteEngine', value: 'On'}]
-
 writeApacheConfFile = (config)->
-	acasHome = path.resolve(__dirname,ACAS_HOME)
+	acasHome = path.resolve(__dirname,acasHome)
 	apacheCompileOptions = getApacheCompileOptions()
 	if apacheCompileOptions != 'skip'
-		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+		apacheSpecificConfString = getApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	else
 		apacheSpecificConfString = ''
-	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, apacheHardCodedConfigs, acasHome)
+	rapacheConfString = getRApacheSpecificConfString(config, apacheCompileOptions, acasHome)
 	rFilesWithRoute = getRFilesWithRoute()
 	rFileHandlerString = getRFileHandlerString(rFilesWithRoute, config, acasHome)
-	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
-	fs.writeFileSync "#{ACAS_HOME}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "#{acasHome}/conf/compiled/apache.conf", [apacheSpecificConfString,rapacheConfString,rFileHandlerString].join('\n')
+	fs.writeFileSync "#{acasHome}/conf/compiled/rapache.conf", [rapacheConfString,rFileHandlerString].join('\n')
 
 csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
@@ -280,7 +276,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 				else
 					conf.server.enableSpecRunner = true
 				if !conf.server?.file?.server?.path?
-					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve ACAS_HOME+"/"+conf.server.datafiles.relative_path}"
+					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
 				conf.server.run = user: do =>
 					if !conf.server.run?
 						console.log "server.run.user is not set"
@@ -305,3 +301,4 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 			writeApacheConfFile conf
 
 	getProperties(configDir)
+

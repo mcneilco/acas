@@ -113,7 +113,37 @@ describe('manualColumnMove', function () {
     expect(this.$container.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('1');
   });
 
-  it("should reset column order", function () {
+  it("should reset column order with updateSettings when undefined is passed", function () {
+    handsontable({
+      data: [
+        {id: 1, name: "Ted", lastName: "Right"},
+        {id: 2, name: "Frank", lastName: "Honest"},
+        {id: 3, name: "Joan", lastName: "Well"},
+        {id: 4, name: "Sid", lastName: "Strong"},
+        {id: 5, name: "Jane", lastName: "Neat"},
+        {id: 6, name: "Chuck", lastName: "Jackson"},
+        {id: 7, name: "Meg", lastName: "Jansen"},
+        {id: 8, name: "Rob", lastName: "Norris"},
+        {id: 9, name: "Sean", lastName: "O'Hara"},
+        {id: 10, name: "Eve", lastName: "Branson"}
+      ],
+      manualColumnMove: [1, 2, 0]
+    });
+
+    expect(this.$container.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Ted');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Right');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('1');
+
+    updateSettings({
+      manualColumnMove: void 0
+    });
+
+    expect(this.$container.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('1');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
+  });
+
+  it("should not change column order with updateSettings when `true` is passed", function () {
     handsontable({
       data: [
         {id: 1, name: "Ted", lastName: "Right"},
@@ -138,9 +168,9 @@ describe('manualColumnMove', function () {
       manualColumnMove: true
     });
 
-    expect(this.$container.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('1');
-    expect(this.$container.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
-    expect(this.$container.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Ted');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Right');
+    expect(this.$container.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('1');
   });
 
   it("should move columns when viewport has been scrolled", function () {
@@ -176,7 +206,7 @@ describe('manualColumnMove', function () {
     waits(100);
 
     runs(function () {
-      moveSecondDisplayedColumnBeforeFirstColumn(htCore, lastVisibleColumnIndex);
+      swapDisplayedColumns(htCore, lastVisibleColumnIndex - 1, lastVisibleColumnIndex);
 
       expect(htCore.find('tbody tr:eq(0) td:eq(' + (lastVisibleColumnIndex - 1) +')').text()).toEqual('Right');
       expect(htCore.find('tbody tr:eq(0) td:eq(' + lastVisibleColumnIndex +')').text()).toEqual('Ted');
@@ -240,7 +270,7 @@ describe('manualColumnMove', function () {
     expect(htCore2.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
     expect(htCore2.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
 
-    moveSecondDisplayedColumnBeforeFirstColumn(htCore2, 1);
+    swapDisplayedColumns(htCore2, 1, 0);
 
     expect(htCore1.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('1');
     expect(htCore1.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
@@ -549,7 +579,7 @@ describe('manualColumnMove', function () {
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
 
-    moveFirstDisplayedColumnAfterSecondColumn(htCore, 0);
+    swapDisplayedColumns(htCore, 0, 1);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Ted');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('1');
@@ -575,7 +605,7 @@ describe('manualColumnMove', function () {
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
 
-    moveFirstDisplayedColumnAfterSecondColumn(htCore, 1);
+    swapDisplayedColumns(htCore, 1, 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('1');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Right');
@@ -603,7 +633,7 @@ describe('manualColumnMove', function () {
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Right');
     expect(htCore.find('tbody tr:eq(0) td:eq(3)').text()).toEqual('Blue');
 
-    moveSecondDisplayedColumnBeforeFirstColumn(htCore, 1);
+    swapDisplayedColumns(htCore, 1, 0);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('1');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Ted');
@@ -678,7 +708,7 @@ describe('manualColumnMove', function () {
 
     expect(htCore.find('tbody tr:eq(0) td:eq(1)')[0].className.indexOf("htDimmed")).toBeGreaterThan(-1);
 
-    moveFirstDisplayedColumnAfterSecondColumn(htCore, 1);
+    swapDisplayedColumns(htCore, 1, 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(2)')[0].className.indexOf("htDimmed")).toBeGreaterThan(-1);
   });
@@ -703,7 +733,7 @@ describe('manualColumnMove', function () {
 
     expect(htCore.find('tbody tr:eq(0) td:eq(1)')[0].className.indexOf("htDimmed")).toBeGreaterThan(-1);
 
-    moveFirstDisplayedColumnAfterSecondColumn(htCore, 1);
+    swapDisplayedColumns(htCore, 1, 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(2)')[0].className.indexOf("htDimmed")).toBeGreaterThan(-1);
 
@@ -724,6 +754,7 @@ describe('manualColumnMove', function () {
     });
 
     var htCore = getHtCore();
+    var plugin = hot.getPlugin('manualColumnMove');
 
     selectCell(0, 2);
 
@@ -731,19 +762,18 @@ describe('manualColumnMove', function () {
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Kia');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Nissan');
 
-    moveSecondDisplayedColumnBeforeFirstColumn(htCore, 3);
+    swapDisplayedColumns(htCore, 3, 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Nissan');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Kia');
-    expect(hot.manualColumnPositions).toEqual([0, 2, 1, 3, 4]);
+    expect(plugin.columnPositions).toEqual([0, 2, 1, 3, 4]);
 
     alter('insert_col', 2);
-
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Nissan');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('');
-    expect(hot.manualColumnPositions).toEqual([0, 3, 2, 1, 4, 5]);
+    expect(plugin.columnPositions).toEqual([0, 3, 2, 1, 4, 5]);
   });
 
   it("should reconstruct manualcolpositions after removing columns", function () {
@@ -761,6 +791,7 @@ describe('manualColumnMove', function () {
     });
 
     var htCore = getHtCore();
+    var plugin = hot.getPlugin('manualColumnMove');
 
     selectCell(0, 2);
 
@@ -768,18 +799,128 @@ describe('manualColumnMove', function () {
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Kia');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Nissan');
 
-    moveSecondDisplayedColumnBeforeFirstColumn(htCore, 3);
+    swapDisplayedColumns(htCore, 3, 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('');
     expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Nissan');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Kia');
-    expect(hot.manualColumnPositions).toEqual([0, 2, 1, 3, 4]);
+    expect(plugin.columnPositions).toEqual([0, 2, 1, 3, 4]);
 
     alter('remove_col', 2);
 
     expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('');
-    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Kia');
+    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Nissan');
     expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Toyota');
-    expect(hot.manualColumnPositions).toEqual([0, 1, 2, 3]);
+    expect(plugin.columnPositions).toEqual([0, 1, 2, 3]);
   });
+
+  it("should remove a proper column, after the column positions were changed", function () {
+    var hot = handsontable({
+      data: [
+        ["", "Kia", "Nissan", "Toyota", "Honda"],
+        ["2008", 10, 11, 12, 13],
+        ["2009", 20, 11, 14, 13],
+        ["2010", 30, 15, 12, 13]
+      ],
+      colHeaders: true,
+      rowHeaders: true,
+      manualColumnMove: true,
+      contextMenu: true
+    });
+
+    var htCore = getHtCore();
+
+    swapDisplayedColumns(htCore, 1, 2);
+
+    expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Kia');
+    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('');
+    expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Nissan');
+
+    alter('remove_col', 1);
+
+    expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Kia');
+    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Nissan');
+    expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Toyota');
+
+    swapDisplayedColumns(htCore, 2, 3);
+
+    alter('remove_col', 2);
+
+    expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Kia');
+    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Toyota');
+    expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Honda');
+
+  });
+
+  it("should remove multiple column properly, after the column positions were changed", function () {
+    var hot = handsontable({
+      data: [
+        ["", "Kia", "Nissan", "Toyota", "Honda"],
+        ["2008", 10, 11, 12, 13],
+        ["2009", 20, 11, 14, 13],
+        ["2010", 30, 15, 12, 13]
+      ],
+      colHeaders: true,
+      rowHeaders: true,
+      manualColumnMove: [3, 2, 0, 1, 4],
+    });
+
+    var htCore = getHtCore();
+
+    alter('remove_col', 1, 2);
+
+    expect(htCore.find('tbody tr:eq(0) td:eq(0)').text()).toEqual('Toyota');
+    expect(htCore.find('tbody tr:eq(0) td:eq(1)').text()).toEqual('Kia');
+    expect(htCore.find('tbody tr:eq(0) td:eq(2)').text()).toEqual('Honda');
+  });
+
+  it('should reconstruct manualcolpositions after paste data', function () {
+    var hot = handsontable({
+      data: [
+        ["1", "2"],
+        ["3", "4"]
+      ],
+      colHeaders: true,
+      rowHeaders: true,
+      manualColumnMove: true
+    });
+
+    var htCore = getHtCore();
+    var plugin = hot.getPlugin('manualColumnMove');
+
+    selectCell(1, 0, 1, 0);
+    triggerPaste('1\t2\t3\t4\t5\t6\t7\t8\t9\t');
+
+    waits(500);
+
+    runs( function() {
+      swapDisplayedColumns(htCore, 8, 6);
+      expect(htCore.find('tbody tr:eq(1) td:eq(5)').text()).toEqual('8');
+    });
+  });
+
+  describe('handle and guide', function() {
+    it('should display the move handle in the proper position and with a proper size', function() {
+      var hot = handsontable({
+        data: [
+          {id: 1, name: "Ted", lastName: "Right"},
+          {id: 2, name: "Frank", lastName: "Honest"},
+          {id: 3, name: "Joan", lastName: "Well"},
+          {id: 4, name: "Sid", lastName: "Strong"},
+          {id: 5, name: "Jane", lastName: "Neat"}
+        ],
+        colHeaders: true,
+        manualColumnMove: true
+      });
+
+      var $headerTH = this.$container.find('thead tr:eq(0) th:eq(1)');
+      $headerTH.simulate('mouseover');
+
+      var $handle = $('.manualColumnMover');
+
+      expect($handle.offset().left).toEqual($headerTH.offset().left);
+      expect($handle.height()).toEqual($headerTH.outerHeight());
+    });
+  });
+
 });

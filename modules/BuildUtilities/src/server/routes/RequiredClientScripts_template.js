@@ -38,6 +38,8 @@ exports.applicationScripts = [
 	'/javascripts/src/Components/PickList.js',
 	'/javascripts/src/ServerAPI/Label.js',
 	'/javascripts/src/ServerAPI/Thing.js',
+	'/javascripts/src/ServerAPI/Container.js',
+	'/javascripts/src/ServerAPI/Subject.js',
 	'/javascripts/src/ServerAPI/BaseEntity.js',
 	'/javascripts/src/ServerAPI/AnalysisGroup.js',
 	'/javascripts/src/ServerAPI/Experiment.js',
