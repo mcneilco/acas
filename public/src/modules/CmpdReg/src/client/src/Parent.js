@@ -57,7 +57,7 @@ $(function() {
 			}
 			if (attr.stereoCategory != null && attr.stereoComment !=null) {
                 if (attr.stereoCategory.get('code')=='see_comments' && attr.stereoComment=='') {
-                    errors.push({attribute: 'stereoComment', message: "Is stereo category is see comments, a comment must be supplied"});
+                    errors.push({attribute: 'stereoComment', message: "If stereo category is see comments, a comment must be supplied"});
                 }
             }
 			if (attr.stereoCategory != null) {

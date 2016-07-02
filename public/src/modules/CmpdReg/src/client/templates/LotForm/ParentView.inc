@@ -17,7 +17,7 @@
 	  </div>
 
 	 	<div class="row4">
-			<label class="FormLabel2">Stereo Category:</label>
+			<label class="FormLabel2">*Stereo Category:</label>
 			<select class="FormInput stereoCategoryCode"></select>
 		</div>
 
@@ -27,7 +27,7 @@
 		</div>
 
 	 	<div class="row5 bv_compoundTypeContainer">
-			<label class="FormLabel2">Compound Type:</label>
+			<label class="FormLabel2">*Compound Type:</label>
 			<select class="FormInput compoundTypeCode"></select>
 		</div>
 
