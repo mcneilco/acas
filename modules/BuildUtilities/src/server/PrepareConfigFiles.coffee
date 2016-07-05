@@ -107,7 +107,7 @@ getApacheCompileOptions = ->
 					console.log 'no defaults for ubuntu apache, run without APACHE environment variable if Apache is installed'
 		else
 			compileString = shell.exec(apacheCommand + ' -V', {silent:true})
-			compileOptionStrings =  compileString.output.split("\n");
+			compileOptionStrings =  compileString.stdout.split("\n");
 			compileOptions = []
 			apacheVersion = ''
 			for option in compileOptionStrings
@@ -138,7 +138,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs = []
 	runUser = config.server.run.user
 	confs.push('User ' + runUser)
-	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).output.replace('\n','')  )
+	confs.push('Group ' + shell.exec('id -g -n ' + runUser, {silent:true}).stdout.replace('\n','')  )
 	confs.push('Listen ' + config.server.rapache.listen + ':' + config.client.service.rapache.port)
 	confs.push('PidFile ' + acasHome + '/bin/apache.pid')
 	confs.push('StartServers ' + config.server.rapache.conf.startservers)
@@ -286,7 +286,7 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 						else
 							console.log "process.env.USER is not set"
 							if process.getuid()
-								user = shell.exec('whoami',{silent:true}).output.replace('\n','')
+								user = shell.exec('whoami',{silent:true}).stdout.replace('\n','')
 								console.log "using whoami result #{user}"
 								return user
 							else
