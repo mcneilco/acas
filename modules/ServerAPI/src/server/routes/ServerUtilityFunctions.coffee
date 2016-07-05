@@ -90,9 +90,9 @@ exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preV
 						catch error
 							console.log error
 
-exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction, serviceRapacheFullPath) ->
 	testMode = req.query.testMode
-	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode
+	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath
 
 exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
 	request = require 'request'
