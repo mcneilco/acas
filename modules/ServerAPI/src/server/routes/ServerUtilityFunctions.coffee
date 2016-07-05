@@ -1,6 +1,7 @@
 _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
+path = require 'path'
 
 basicRScriptPreValidation = (payload) ->
 	result =
@@ -245,18 +246,7 @@ exports.ensureExists = (path, mask, cb) ->
 	return
 
 exports.makeAbsolutePath = (relativePath) ->
-	acasPath = process.env.PWD
-	dotMatches = relativePath.match(/\.\.\//g)
-	if dotMatches?
-		numDotDots = relativePath.match(/\.\.\//g).length
-		relativePath = relativePath.replace /\.\.\//g, ''
-		for d in [1..numDotDots]
-			acasPath = acasPath.replace /[^\/]+\/?$/, ''
-	else
-		acasPath+= '/'
-
-	console.log acasPath+relativePath+'/'
-	acasPath+relativePath+'/'
+	path.resolve(__dirname, "..",relativePath)
 
 exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
