@@ -7,11 +7,12 @@ services:
     ports:
      - "3000:3000"
      - "3001:3001"
+     - "5858:5858"
     environment:
      - APP_NAME=compound-inventory
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
-     - DOCKER_HOST_IP=${DOCKER_HOST_IP}
+     - DOCKER_HOST_IP=localhost
     volumes:
      - filestore:/home/runner/build/privateUploads
      - logs:/home/runner/logs

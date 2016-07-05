@@ -66,6 +66,8 @@ module.exports = (grunt) ->
 			build: ["#{grunt.config.get('build')}/*", "!#{grunt.config.get('build')}/r_libs", "!#{grunt.config.get('build')}/node_modules", "!#{grunt.config.get('build')}/privateUploads","!#{grunt.config.get('build')}/privateTempFiles"]
 		coffee:
 			module_client:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -79,6 +81,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_server:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -93,6 +97,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_spec:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -106,6 +112,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_testFixtures:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -119,6 +127,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_serviceTests:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -132,6 +142,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			app:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -140,6 +152,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			conf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -148,6 +162,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_conf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -161,6 +177,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			routes:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -169,6 +187,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_routes:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -178,6 +198,8 @@ module.exports = (grunt) ->
 				]
 		#these compilers are for the custom coffee scripts before they get copied
 			custom_compilePublicConf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -186,6 +208,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 		copy:
+			options:
+				sourceMap: true
 			bin:
 				files: [
 					expand: true
