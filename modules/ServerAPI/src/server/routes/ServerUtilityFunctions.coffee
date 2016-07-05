@@ -130,6 +130,8 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 			@serverError = error
 			@responseJSON = body
 			if @serverError? or response?.statusCode != 200 or (@responseJSON? and @responseJSON["RExecutionError"]?)
+				console.log @responseJSON
+				console.log error
 				if response?.statusCode != 200
 					messageText = "Internal error please contact administrator"
 				else if (@responseJSON? && @responseJSON["RExecutionError"]?)
