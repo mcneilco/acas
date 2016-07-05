@@ -1,10 +1,206 @@
 ((exports) ->
+	exports.getContainersInLocationResponse = [
+		containerBarcode: "C1099920"
+		containerCodeName: "CONT-6069440"
+		locationCodeName: "CONT-6069436"
+	,
+		containerBarcode: "C1100304"
+		containerCodeName: "CONT-6069443"
+		locationCodeName: "CONT-6069436"
+	,
+		containerBarcode: "C1100488"
+		containerCodeName: "CONT-6069444"
+		locationCodeName: "CONT-6069436"
+	]
 
 	exports.getContainerCodesByLabelsResponseResponse = [
-			codeName: "CONT-3076"
-			label: "hitpicker"
-		]
+		codeName: "CONT-3076"
+		label: "hitpicker"
+	]
 
+	exports.getContainersByLabelsResponse = [
+		label: "C1100032"
+		codeName: "CONT-6069441"
+		container:
+			codeName: "CONT-6069441"
+			deleted: false
+			id: 12122886
+			ignored: false
+			lsKind: "plate"
+			lsLabels: [
+				deleted: false
+				id: 6060230
+				ignored: false
+				labelText: "C1100032"
+				lsKind: "barcode"
+				lsTransaction: 50
+				lsType: "barcode"
+				lsTypeAndKind: "barcode_barcode"
+				physicallyLabled: true
+				preferred: true
+				recordedBy: "acas"
+				recordedDate: 1456838346180
+				version: 0
+			]
+			lsStates: [
+				deleted: false
+				id: 3509824
+				ignored: false
+				lsKind: "information"
+				lsTransaction: 50
+				lsType: "metadata"
+				lsTypeAndKind: "metadata_information"
+				lsValues: [
+					codeTypeAndKind: "null_null"
+					dateValue: 1279291311000
+					deleted: false
+					id: 14011985
+					ignored: false
+					lsKind: "registration date"
+					lsTransaction: 50
+					lsType: "dateValue"
+					lsTypeAndKind: "dateValue_registration date"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "plate type"
+					codeOrigin: "ACAS DDICT"
+					codeType: "plate type"
+					codeTypeAndKind: "plate type_plate type"
+					codeValue: "screen system plate"
+					deleted: false
+					id: 14012385
+					ignored: false
+					lsKind: "plate type"
+					lsTransaction: 50
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_plate type"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					dateValue: 1279291311000
+					deleted: false
+					id: 14011984
+					ignored: false
+					lsKind: "created date"
+					lsTransaction: 50
+					lsType: "dateValue"
+					lsTypeAndKind: "dateValue_created date"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "availability"
+					codeType: "availability"
+					codeTypeAndKind: "availability_availability"
+					codeValue: "0"
+					deleted: false
+					id: 14012169
+					ignored: false
+					lsKind: "availability"
+					lsTransaction: 50
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_availability"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 14011797
+					ignored: false
+					lsKind: "created user"
+					lsTransaction: 50
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_created user"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					stringValue: "rmaldonado"
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "supplier code"
+					codeOrigin: "KPLATE"
+					codeType: "supplier code"
+					codeTypeAndKind: "supplier code_supplier code"
+					codeValue: "ACD001"
+					deleted: false
+					id: 14012451
+					ignored: false
+					lsKind: "supplier code"
+					lsTransaction: 50
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_supplier code"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeTypeAndKind: "null_null"
+					deleted: false
+					id: 14011796
+					ignored: false
+					lsKind: "description"
+					lsTransaction: 50
+					lsType: "stringValue"
+					lsTypeAndKind: "stringValue_description"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					stringValue: "ACD001:AV 5UL"
+					unitTypeAndKind: "null_null"
+					version: 0
+				,
+					codeKind: "kplate id"
+					codeOrigin: "KPLATE"
+					codeType: "kplate id"
+					codeTypeAndKind: "kplate id_kplate id"
+					codeValue: "17405"
+					deleted: false
+					id: 14012271
+					ignored: false
+					lsKind: "k plate id"
+					lsTransaction: 50
+					lsType: "codeValue"
+					lsTypeAndKind: "codeValue_k plate id"
+					operatorTypeAndKind: "null_null"
+					publicData: true
+					recordedBy: "acas"
+					recordedDate: 1456838346180
+					unitTypeAndKind: "null_null"
+					version: 0
+				]
+				recordedBy: "acas"
+				recordedDate: 1456838346180
+				version: 0
+			]
+			lsTransaction: 50
+			lsType: "container"
+			lsTypeAndKind: "container_plate"
+			recordedBy: "acas"
+			recordedDate: 1456838346180
+			version: 0
+	]
 	exports.getWellCodesByPlateBarcodesResponse = [
 			plateBarcode: "C1138822"
 			plateCodeName: "CONT-2"
@@ -7688,33 +7884,40 @@
 	]
 
 	exports.getWellContentResponse = [
-		batchCode: null
-		batchConcUnits: null
-		batchConcentration: null
-		grossMass: null
-		grossMassUnits: "NA"
-		netMass: null
-		netMassUnits: "NA"
-		physicalState: null
-		solventCode: null
-		volume: null
-		volumeUnits: null
-		wellCodeName: "CONT-3073"
+		amount: 5
+		amountUnits: "uL"
+		batchCode: "CMPD000023564::3"
+		batchConcUnits: "mM"
+		batchConcentration: 1
+		columnIndex: 29
+		containerCodeName: "CONT-6069690"
+		level: null
+		message: null
+		physicalState: "liquid"
+		recordedBy: "acas"
+		recordedDate: 1456838364133
+		rowIndex: 29
+		solventCode: "DMSO"
+		wellName: "AC029"
 	,
-		batchCode: null
-		batchConcUnits: null
-		batchConcentration: null
-		grossMass: null
-		grossMassUnits: "NA"
-		netMass: null
-		netMassUnits: "NA"
-		physicalState: null
-		solventCode: null
-		volume: null
-		volumeUnits: null
-		wellCodeName: "CONT-3074"
+		amount: 5
+		amountUnits: "uL"
+		batchCode: "CMPD000684210::1"
+		batchConcUnits: "mM"
+		batchConcentration: 1
+		columnIndex: 30
+		containerCodeName: "CONT-6069691"
+		level: null
+		message: null
+		physicalState: "liquid"
+		recordedBy: "acas"
+		recordedDate: 1456838364133
+		rowIndex: 29
+		solventCode: "DMSO"
+		wellName: "AC030"
 	]
-	exports.getPlateMetadataAndDefinitionMetadataByPlateBarcodeResponse = [
+
+	exports.getContainerAndDefinitionContainerByContainerByLabelResponse = [
 		barcode: "12"
 		codeName: "CONT-00000002"
 		description: null
@@ -7726,6 +7929,660 @@
 		createdDate: null
 		supplier: null
 	]
+
+	exports.getBreadCrumbByContainerCodeResponse = [
+		containerID: 12122883
+		containerCode: "CONT-6069438"
+		currentLocationID: 12122880
+		currentLocationCode: "CONT-6069435"
+		currentLocationLabel: "screening system"
+		labelBreadCrumb: "screening system"
+	,
+		containerID: 12122884
+		containerCode: "CONT-6069439"
+		currentLocationID: 12122880
+		currentLocationCode: "CONT-6069435"
+		currentLocationLabel: "screening system"
+		labelBreadCrumb: "screening system"
+	,
+		containerID: 12122885
+		containerCode: "CONT-6069440"
+		currentLocationID: 12122881
+		currentLocationCode: "CONT-6069436"
+		currentLocationLabel: "hitpicker"
+		labelBreadCrumb: "hitpicker"
+	,
+		containerID: 12122886
+		containerCode: "CONT-6069441"
+		currentLocationID: 12122880
+		currentLocationCode: "CONT-6069435"
+		currentLocationLabel: "screening system"
+		labelBreadCrumb: "screening system"
+	]
+
+	exports.getWellCodesByContainerCodesResponse = [
+		requestCodeName: "CONT-6069438"
+		wellCodeNames: [ "CONT-6069594", "CONT-6069595", "CONT-6069596", "CONT-6069597"]
+	,
+		requestCodeName: "CONT-6069439"
+		wellCodeNames: [ "CONT-6071068", "CONT-6071069", "CONT-6071070", "CONT-6071071"]
+	,
+		requestCodeName: "CONT-6069440"
+		wellCodeNames: [ "CONT-6072718", "CONT-6072719", "CONT-6072720", "CONT-6072721"]
+	,
+		requestCodeName: "CONT-6069441"
+		wellCodeNames: [ "CONT-6074144", "CONT-6074145", "CONT-6074146", "CONT-6074147"]
+	]
+
+	exports.updatePlateMetadataAndDefinitionMetadataByPlateBarcodeResponse = [
+		barcode: "C1138792999999999"
+		codeName: "CONT-17307711"
+		description: "test"
+		plateSize: 1536
+		numberOfRows: 32
+		numberOfColumns: 48
+		type: "test2"
+		status: "at step"
+		createdDate: 1457975001000
+		supplier: "brianss"
+		recordedBy: "bbolts"
+	]
+
+	exports.searchContainersInternalResponse = [
+		"description": "test description",
+		"plateSize": 1536,
+		"numberOfRows": 32,
+		"numberOfColumns": 48,
+		"barcode": "TESTBARCODE-123",
+		"codeName": "CONT-00000001",
+		"definitionCodeName": "CONT-00000002",
+		"recordedBy": "acas"
+		,
+		"description": "test description 2",
+		"status": "active",
+		"type": "screening plate",
+		"plateSize": 1536,
+		"numberOfRows": 32,
+		"numberOfColumns": 48,
+		"barcode": "TESTBARCODE-124",
+		"codeName": "CONT-00003075",
+		"definitionCodeName": "CONT-00000002",
+		"recordedBy": "acas"
+	]
+
+	exports.definitionContainers = [
+		plate = [
+			{
+				deleted: false,
+				ignored: false,
+				lsKind: "plate",
+				lsLabels: [
+					{
+						deleted: false,
+						ignored: false,
+						labelText: "96",
+						lsKind: "common",
+						lsType: "name",
+						lsTypeAndKind: "name_common",
+						physicallyLabled: true,
+						preferred: true,
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsStates: [
+					{
+						deleted: false,
+						ignored: false,
+						lsKind: "format",
+						lsType: "constants",
+						lsTypeAndKind: "constants_format",
+						lsValues: [
+							{
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "columns",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_columns",
+								numericValue: 12,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "wells",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_wells",
+								numericValue: 96,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "rows",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_rows",
+								numericValue: 8,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								codeValue: "A001",
+								deleted: false,
+								ignored: false,
+								lsKind: "subcontainer naming convention",
+								lsType: "codeValue",
+								lsTypeAndKind: "codeValue_subcontainer naming convention",
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}
+						],
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsType: "definition container",
+				lsTypeAndKind: "definition container_plate",
+				recordedBy: "acas",
+				recordedDate: 1456179684968
+			}, {
+				deleted: false,
+				ignored: false,
+				lsKind: "plate",
+				lsLabels: [
+					{
+						deleted: false,
+						ignored: false,
+						labelText: "384",
+						lsKind: "common",
+						lsType: "name",
+						lsTypeAndKind: "name_common",
+						physicallyLabled: true,
+						preferred: true,
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsStates: [
+					{
+						deleted: false,
+						ignored: false,
+						lsKind: "format",
+						lsType: "constants",
+						lsTypeAndKind: "constants_format",
+						lsValues: [
+							{
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "columns",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_columns",
+								numericValue: 24,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "wells",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_wells",
+								numericValue: 384,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "rows",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_rows",
+								numericValue: 16,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								codeValue: "A001",
+								deleted: false,
+								ignored: false,
+								lsKind: "subcontainer naming convention",
+								lsType: "codeValue",
+								lsTypeAndKind: "codeValue_subcontainer naming convention",
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}
+						],
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsType: "definition container",
+				lsTypeAndKind: "definition container_plate",
+				recordedBy: "acas",
+				recordedDate: 1456179684968
+			}, {
+				deleted: false,
+				ignored: false,
+				lsKind: "plate",
+				lsLabels: [
+					{
+						deleted: false,
+						ignored: false,
+						labelText: "1536",
+						lsKind: "common",
+						lsType: "name",
+						lsTypeAndKind: "name_common",
+						physicallyLabled: true,
+						preferred: true,
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsStates: [
+					{
+						deleted: false,
+						ignored: false,
+						lsKind: "format",
+						lsType: "constants",
+						lsTypeAndKind: "constants_format",
+						lsValues: [
+							{
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "columns",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_columns",
+								numericValue: 48,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "wells",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_wells",
+								numericValue: 1536,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "rows",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_rows",
+								numericValue: 32,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								codeValue: "A001",
+								deleted: false,
+								ignored: false,
+								lsKind: "subcontainer naming convention",
+								lsType: "codeValue",
+								lsTypeAndKind: "codeValue_subcontainer naming convention",
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}
+						],
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsType: "definition container",
+				lsTypeAndKind: "definition container_plate",
+				recordedBy: "acas",
+				recordedDate: 1456179684968
+			}
+		],tube = [
+			{
+				deleted: false,
+				ignored: false,
+				lsKind: "tube",
+				lsLabels: [
+					{
+						deleted: false,
+						ignored: false,
+						labelText: "Vial",
+						lsKind: "common",
+						lsType: "name",
+						lsTypeAndKind: "name_common",
+						physicallyLabled: true,
+						preferred: true,
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsStates: [
+					{
+						deleted: false,
+						ignored: false,
+						lsKind: "format",
+						lsType: "constants",
+						lsTypeAndKind: "constants_format",
+						lsValues: [
+							{
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "columns",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_columns",
+								numericValue: 1,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "wells",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_wells",
+								numericValue: 1,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								deleted: false,
+								ignored: false,
+								lsKind: "rows",
+								lsType: "numericValue",
+								lsTypeAndKind: "numericValue_rows",
+								numericValue: 1,
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}, {
+								codeTypeAndKind: "null_null",
+								codeValue: "A001",
+								deleted: false,
+								ignored: false,
+								lsKind: "subcontainer naming convention",
+								lsType: "codeValue",
+								lsTypeAndKind: "codeValue_subcontainer naming convention",
+								operatorTypeAndKind: "null_null",
+								publicData: true,
+								recordedBy: "acas",
+								recordedDate: 1456179684968,
+								unitTypeAndKind: "null_null"
+							}
+						],
+						recordedBy: "acas",
+						recordedDate: 1456179684968
+					}
+				],
+				lsType: "definition container",
+				lsTypeAndKind: "definition container_tube",
+				recordedBy: "acas",
+				recordedDate: 1456179684968
+			}
+		]
+	]
+
+	exports.containerLog = [
+		codeName : "CONT-0001"
+		entryType : "vial expired"
+		entry : "DV to MINI Process"
+		recordedBy : "acas"
+		recordedDate : 1456179684968 #optional
+		lsTransaction : 1234 #optional
+		additionalValues : [ #optional
+			lsType : "numericValue"
+			lsKind : "amount"
+			numericValue : 1302.7
+			unitKind : "uL"
+		]
+	,
+		codeName : "CONT-0002"
+		entryType : "vial solvated"
+		entry : ""
+		recordedBy : "acas"
+		recordedDate : 1456179684968
+		additionalValues : [
+			lsType : "numericValue"
+			lsKind : "amount"
+			numericValue : 1302.7
+			unitKind : "uL"
+		]
+	,
+		codeName : "CONT-0001"
+		entryType : "solid transfer destination"
+		entry : ""
+		recordedBy : "acas"
+		recordedDate : 1456179684968
+		additionalValues : [
+			lsType : "numericValue"
+			lsKind : "amount"
+			numericValue : 6.6
+			unitKind : "mg"
+		,
+			lsType : "codeValue"
+			lsKind : "parent"
+			codeValue : "DV750150"
+		]
+	]
+
+	exports.vial =
+		deleted: false
+		ignored: false
+		lsKind: "tube"
+		lsLabels: [
+			deleted: false
+			ignored: false
+			labelText: "VIAL-00001"
+			lsKind: "barcode"
+			lsType: "barcode"
+			lsTypeAndKind: "barcode_barcode"
+			physicallyLabled: true
+			preferred: true
+			recordedBy: "acas"
+			recordedDate: 1462585654689
+			version: 0
+		]
+		lsStates: [
+			deleted: false
+			ignored: false
+			lsKind: "information"
+			lsType: "constants"
+			lsTypeAndKind: "constants_information"
+			lsValues: [
+				codeTypeAndKind: "null_null"
+				deleted: false
+				ignored: false
+				lsKind: "tare weight"
+				lsType: "numericValue"
+				lsTypeAndKind: "numericValue_tare weight"
+				numericValue: 5668.27
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitKind: "mg"
+				unitTypeAndKind: "null_mg"
+				version: 0
+			]
+			recordedBy: "acas"
+			recordedDate: 1462585654689
+			version: 0
+		,
+			deleted: false
+			ignored: false
+			lsKind: "information"
+			lsType: "metadata"
+			lsTypeAndKind: "metadata_information"
+			lsValues: [
+				codeTypeAndKind: "null_null"
+				dateValue: 1380930856000
+				deleted: false
+				ignored: false
+				lsKind: "created date"
+				lsType: "dateValue"
+				lsTypeAndKind: "dateValue_created date"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeKind: "status"
+				codeOrigin: "ACAS DDICT"
+				codeType: "status"
+				codeTypeAndKind: "status_status"
+				codeValue: "created"
+				deleted: false
+				ignored: false
+				lsKind: "status"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_status"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeKind: "type"
+				codeOrigin: "ACAS DDICT"
+				codeType: "type"
+				codeTypeAndKind: "type_type"
+				codeValue: "powder vial"
+				deleted: false
+				ignored: false
+				lsKind: "type"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_type"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeTypeAndKind: "null_null"
+				dateValue: 1383289200000
+				deleted: false
+				ignored: false
+				lsKind: "registration date"
+				lsType: "dateValue"
+				lsTypeAndKind: "dateValue_registration date"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeKind: "availability"
+				codeType: "availability"
+				codeTypeAndKind: "availability_availability"
+				codeValue: "0"
+				deleted: false
+				ignored: false
+				lsKind: "availability"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_availability"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeKind: "created user"
+				codeOrigin: "ACAS DDICT"
+				codeType: "created user"
+				codeTypeAndKind: "created user_created user"
+				codeValue: "jzer"
+				deleted: false
+				ignored: false
+				lsKind: "created user"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_created user"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			,
+				codeKind: "supplier"
+				codeOrigin: "KPLATE"
+				codeType: "supplier"
+				codeTypeAndKind: "supplier_supplier"
+				codeValue: "CMG"
+				deleted: false
+				ignored: false
+				lsKind: "supplier"
+				lsType: "codeValue"
+				lsTypeAndKind: "codeValue_supplier"
+				operatorTypeAndKind: "null_null"
+				publicData: true
+				recordedBy: "acas"
+				recordedDate: 1462585654689
+				unitTypeAndKind: "null_null"
+				version: 0
+			]
+			recordedBy: "acas"
+			recordedDate: 1462585654689
+			version: 0
+		]
+		lsType: "container"
+		lsTypeAndKind: "container_tube"
+		recordedBy: "acas"
+		recordedDate: 1462585654689
+		version: 0
 
 
 ) (if (typeof process is "undefined" or not process.versions) then window.inventoryServiceTestJSON = window.inventoryServiceTestJSON or {} else exports)

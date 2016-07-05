@@ -1,19 +1,25 @@
 
-window.Handsontable = function Handsontable(rootElement, userSettings) {
+function Handsontable(rootElement, userSettings) {
   let instance = new Handsontable.Core(rootElement, userSettings || {});
 
   instance.init();
 
   return instance;
-};
+}
 
-import './shims/classes';
+module.exports = Handsontable;
+
+// Only for tests! (temporary solution)
+Handsontable.utils = {};
+
+import './shims/runtime';
 import 'es6collections';
 import {Hooks} from './pluginHooks';
 
 if (!Handsontable.hooks) {
   Handsontable.hooks = new Hooks();
 }
+Handsontable.utils.Hooks = Hooks;
 
 import './core';
 import './renderers/_cellDecorator';
@@ -22,6 +28,8 @@ import './../plugins/jqueryHandsontable';
 import * as arrayHelpers from './helpers/array';
 import * as browserHelpers from './helpers/browser';
 import * as dataHelpers from './helpers/data';
+import * as dateHelpers from './helpers/date';
+import * as featureHelpers from './helpers/feature';
 import * as functionHelpers from './helpers/function';
 import * as mixedHelpers from './helpers/mixed';
 import * as numberHelpers from './helpers/number';
@@ -36,6 +44,8 @@ const HELPERS = [
   arrayHelpers,
   browserHelpers,
   dataHelpers,
+  dateHelpers,
+  featureHelpers,
   functionHelpers,
   mixedHelpers,
   numberHelpers,
@@ -59,7 +69,13 @@ if (!/^@@/.test(baseVersion)) {
   Handsontable.baseVersion = baseVersion;
 }
 
+// namespace for plugins
 Handsontable.plugins = {};
+
+import {registerPlugin} from './plugins';
+
+Handsontable.plugins.registerPlugin = registerPlugin;
+
 Handsontable.helper = {};
 Handsontable.dom = {};
 // legacy support

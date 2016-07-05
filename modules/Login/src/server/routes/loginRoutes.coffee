@@ -1,6 +1,7 @@
 
 exports.setupAPIRoutes = (app) ->
 	app.get '/api/users/:username', exports.getUsers
+	app.get '/api/authors', exports.getAuthors
 
 exports.setupRoutes = (app, passport) ->
 	app.get '/login', exports.loginPage
@@ -19,6 +20,7 @@ exports.setupRoutes = (app, passport) ->
 		exports.changeAuthenticationService,
 		exports.changePost
 	app.post '/api/userChangeAuthentication', exports.changeAuthenticationService
+	app.get '/api/authors', exports.ensureAuthenticated, exports.getAuthors
 
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 config = require '../conf/compiled/conf.js'
@@ -43,6 +45,7 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 		resetPasswordOption: resetPasswordOption
+		headerName: config.all.client.moduleMenus.headerName
 
 exports.resetPost = (req, res) ->
 	console.log req.session
@@ -51,10 +54,14 @@ exports.resetPost = (req, res) ->
 	
 exports.loginPost = (req, res) ->
 	console.log "got to login post"
-	if req.session.returnTo?
+	if req.session.returnTo? && req.session.returnTo != "/"
 		res.redirect req.session.returnTo
 	else
-		res.redirect '/'
+		if config.all.client.basePath?
+			res.redirect config.all.client.basePath
+		else
+			res.redirect '/'
+
 
 exports.changePost = (req, res) ->
 	console.log req.session
@@ -78,6 +85,13 @@ exports.ensureAuthenticated = (req, res, next) ->
 		req.session.returnTo = req.url
 	res.redirect '/login'
 
+exports.ensureAuthenticatedAPI = (req, res, next) ->
+	console.log "checking for login for path: "+req.url
+	if req.isAuthenticated()
+		return next()
+	if req.session?
+		req.session.returnTo = req.url
+	res.redirect 401, '/login'
 
 exports.getUsers = (req, resp) ->
 	console.log "get users in route file"
@@ -181,3 +195,11 @@ exports.changePage = (req, res) ->
 			scripts: []
 			user: user
 			message: "need login or admin"
+
+exports.getAuthors = (req, resp) ->
+	console.log "getting authors"
+	if (req.query.testMode is true) or (global.specRunnerTestmode is true)
+		baseEntityServiceTestJSON = require '../src/javascripts/spec/testFixtures/BaseEntityServiceTestJSON.js'
+		resp.end JSON.stringify baseEntityServiceTestJSON.authorsList
+	else
+		csUtilities.getAuthors req, resp

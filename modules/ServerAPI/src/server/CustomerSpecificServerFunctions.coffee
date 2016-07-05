@@ -542,3 +542,14 @@ exports.getBatchProjects = (requests, callback) ->
 				console.log response
 				console.log json
 				callback null
+
+exports.createPlate = (request, callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function createPlate"
+
+exports.updateWellContent = (request) ->
+	console.debug "inside base customer specific server function updateWellContent"
+
+exports.updateContainersByContainerCodes = (request) ->
+	console.debug "inside base customer specific server function updateContainersByContainerCodes"

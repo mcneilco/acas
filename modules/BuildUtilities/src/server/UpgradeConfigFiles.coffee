@@ -30,4 +30,4 @@ if require.main == module
 	if ! examplePropertiesPath? | ! customPropertiesPath? | ! outPath?
 		printUsageAndExit()
 
-	exports.upgradeConfigFiles exampleConfig, userConfig
+	exports.upgradeConfigFiles examplePropertiesPath, customPropertiesPath, outPath

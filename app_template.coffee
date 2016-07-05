@@ -17,6 +17,7 @@ startApp = ->
 	LocalStrategy = require('passport-local').Strategy
 	global.deployMode = config.all.client.deployMode
 
+	console.log "log level set to '#{console.level}'"
 	global.stubsMode = false
 	testModeOverRide = process.argv[2]
 	unless typeof testModeOverRide == "undefined"
@@ -27,6 +28,7 @@ startApp = ->
 	# login setup
 	passport.serializeUser (user, done) ->
 		#make sure to save only required attributes and not the password
+		if user.codeName? then uCodeName=user.codeName else uCodeName=null
 		userToSerialize =
 			id: user.id
 			username: user.username
@@ -34,6 +36,7 @@ startApp = ->
 			firstName: user.firstName
 			lastName: user.lastName
 			roles: user.roles
+			codeName: uCodeName
 		done null, userToSerialize
 
 	passport.deserializeUser (user, done) ->
@@ -104,12 +107,13 @@ startApp = ->
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
 	options = if stubsMode then ["stubsMode"] else []
+	options.push ['--color']
 	forever = require("forever-monitor")
 	child = new (forever.Monitor)("app_api.js",
 		max: 3
 		silent: false
 		options: options
-		args: ['--color']
+		args: options
 	)
 
 	child.on "exit", ->

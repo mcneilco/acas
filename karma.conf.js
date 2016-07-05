@@ -17,7 +17,7 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'public/compiled/spec.bundle.js'
+      'build/public/compiled/spec.bundle.js'
     ],
 
     plugins: [ 'karma-chrome-launcher', 'karma-firefox-launcher', 'karma-jasmine-jquery', 'karma-jasmine', 'karma-sourcemap-loader', 'karma-webpack', 'karma-coverage'],
@@ -35,7 +35,7 @@ module.exports = function(config) {
     //  'public/compiled/spec.bundle.js': ['coverage']
     //},
     preprocessors: {
-      'public/compiled/spec.bundle.js': ['webpack', 'coverage']
+      'build/public/compiled/spec.bundle.js': ['webpack', 'coverage']
     },
 
     // test results reporter to use
@@ -72,7 +72,8 @@ module.exports = function(config) {
 
     // start these browsers
     // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers: ['Firefox', 'Chrome', 'Safari'],
+    //browsers: ['Firefox', 'Chrome', 'Safari'],
+    browsers: ['Firefox'],
 
 
     // Continuous Integration mode
@@ -82,6 +83,9 @@ module.exports = function(config) {
     // Concurrency level
     // how many browser should be started simultaneous
     concurrency: Infinity,
-    coverageReporter: { type : 'html', dir : 'coverage1/' }
+    //coverageReporter: { type : 'html', dir : 'coverage1/' },
+    //client: {
+    //  args: ['--grep', 'PlateTypeCollection']
+    //}
   })
 }

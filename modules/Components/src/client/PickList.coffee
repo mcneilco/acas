@@ -98,6 +98,10 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@insertFirstOption = null
 
+		if @options.insertSelectedCode?
+			@insertSelectedCode = @options.insertSelectedCode
+		else
+			@insertSelectedCode = false
 
 		if @options.autoFetch?
 			@autoFetch = @options.autoFetch
@@ -110,14 +114,13 @@ class window.PickListSelectController extends Backbone.View
 		else
 			@handleListReset()
 
-
 	handleListReset: =>
 		if @insertFirstOption
 			@collection.add @insertFirstOption,
 				at: 0
 				silent: true
 			unless (@selectedCode is @insertFirstOption.get('code'))
-				if (@collection.where({code: @selectedCode})).length is 0
+				if @insertSelectedCode && (@collection.where({code: @selectedCode})).length is 0
 					newOption = new PickList
 						code: @selectedCode
 						name: @selectedCode
