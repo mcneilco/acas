@@ -48,7 +48,7 @@ class window.AssignedPropertiesList extends Backbone.Collection
 			for index in [0..@.length-1]
 				model = @.at(index)
 				currentDbProp = model.get('dbProperty')
-				unless currentDbProp is "none"
+				unless currentDbProp is "none" or currentDbProp is "Parent Common Name" or currentDbProp is "Parent LiveDesign Corp Name" or currentDbProp is "Parent Alias" or currentDbProp is "Lot Alias"
 					if currentDbProp of assignedDbProps
 						duplicates.push
 							attribute: 'dbProperty:eq('+index+')'

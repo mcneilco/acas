@@ -106,7 +106,7 @@
         for (index = i = 0, ref = this.length - 1; 0 <= ref ? i <= ref : i >= ref; index = 0 <= ref ? ++i : --i) {
           model = this.at(index);
           currentDbProp = model.get('dbProperty');
-          if (currentDbProp !== "none") {
+          if (!(currentDbProp === "none" || currentDbProp === "Parent Common Name" || currentDbProp === "Parent LiveDesign Corp Name" || currentDbProp === "Parent Alias" || currentDbProp === "Lot Alias")) {
             if (currentDbProp in assignedDbProps) {
               duplicates.push({
                 attribute: 'dbProperty:eq(' + index + ')',
