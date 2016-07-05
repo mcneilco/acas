@@ -94,9 +94,11 @@ exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFu
 	testMode = req.query.testMode
 	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode
 
-exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode) ->
+exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
+	if !serviceRapacheFullPath?
+		serviceRapacheFullPath = config.all.client.service.rapache.fullpath
 
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(argumentsJSON), username
@@ -124,7 +126,7 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 	else
 		request.post
 			timeout: 6000000
-			url: config.all.client.service.rapache.fullpath + "runfunction"
+			url: serviceRapacheFullPath + "runfunction"
 			json: true
 			body: JSON.stringify(requestBody)
 		, (error, response, body) =>
