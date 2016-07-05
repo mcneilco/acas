@@ -2332,13 +2332,11 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     }
     
     # Save plate order and compound plate order
-    plateOrderDT <- unique(resultTable[, list(cmpdBarcode, assayBarcode, plateOrder)])
+    plateOrderDT <- unique(resultTable[, list(assayBarcode, plateOrder)])
     setkey(plateOrderDT, plateOrder)
     # Save to experiment for screening campaigns
     updateValueByTypeAndKind(paste(plateOrderDT$assayBarcode, collapse = ","), "experiment", experiment$id, 
                              "metadata", "experiment metadata", "stringValue", "plate order")
-    updateValueByTypeAndKind(paste(plateOrderDT$cmpdBarcode, collapse = ","), "experiment", experiment$id, 
-                             "metadata", "experiment metadata", "stringValue", "compound barcodes")
     
     # TODO: move to correct location
     # Removes rows that have no compound data

@@ -19,13 +19,18 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   library(data.table)
 
   wideDataPrimary <- getExperimentData(primaryExperimentCodes)
-  wideDataConf <- getExperimentData(confirmationExperimentCodes)
   # ACASDEV-759: get plate order
   primaryPlateOrderFrame <- ldply(primaryExperimentCodes, getPlateOrderForExperiment)
   wideDataPrimary <- merge(wideDataPrimary, as.data.table(primaryPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
-  confPlateOrderFrame <- ldply(confirmationExperimentCodes, getPlateOrderForExperiment)
-  wideDataConf <- merge(wideDataConf, as.data.table(confPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
-  wideDataAll <- rbind(wideDataPrimary, wideDataConf)
+  if (length(confirmationExperimentCodes) > 0) {
+    wideDataConf <- getExperimentData(confirmationExperimentCodes)
+    confPlateOrderFrame <- ldply(confirmationExperimentCodes, getPlateOrderForExperiment)
+    wideDataConf <- merge(wideDataConf, as.data.table(confPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
+    wideDataAll <- rbind(wideDataPrimary, wideDataConf)
+  } else {
+    wideDataAll <- copy(wideDataPrimary)  # Need to copy as wideDataAll column names are changed for spotfire file
+  }
+  
   
   # ACASDEV-763: make spotfire file, see saveReports.R for inspiration
   dir.create(getUploadedFilePath(file.path("experiments", experiment$codeName)), showWarnings = FALSE)
@@ -63,6 +68,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
       ifelse(singleReport$download, 'download', ''), '>', singleReport$title, '</a>')
   }
   
+  totalTested <- length(unique(wideDataPrimary$compoundName))
   # ACASDEV-765: find list of confirmed compounds, looking at existing code for screening campaigns
   if (length(confirmationExperimentCodes) > 0) {
     wideDataConf <- as.data.table(wideDataConf)
@@ -86,7 +92,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     maxPrimaryThreshDT <- primaryThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = compoundName]
     
     combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="compoundName")
-    if (is.null(inputParameters$thresholdType)) {
+    if (!inputParameters$autoHitSelection || is.null(inputParameters$thresholdType)) {
       maxConfThreshDT[, hit := FALSE]
       xLabel <- "Efficacy Primary"
       yLabel <- "Efficacy Confirmation"
@@ -114,7 +120,6 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     
     # ACASDEV-766: calculate confirmation rate out of set tested
     # Get number of compounds confirmed
-    totalTested <- length(unique(wideDataPrimary$compoundName))
     totalConfirmed <- length(unique(maxConfThreshDT[hit == TRUE, compoundName]))
     totalRetested <- length(intersect(wideDataPrimary$compoundName, confThreshDT$compoundName))
     confirmationRate <- totalConfirmed / totalRetested * 100  # convert to percent
@@ -134,10 +139,12 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     dev.off()
     if (dryRun) {
       confImageFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
-                                                "dryrun confirmation graph", user, lsTransaction)
+                                                "dryrun confirmation graph", user, lsTransaction, 
+                                                deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
     } else {
       confImageFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
-                                                "confirmation graph", user, lsTransaction)
+                                                "confirmation graph", user, lsTransaction,
+                                                deleteOldFile = TRUE, customSourceFileMove = customSourceFileMove)
     }
   }
   
@@ -146,10 +153,12 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   writeLines(primaryHitList, getUploadedFilePath(tempFile))
   if (dryRun) {
     primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
-                                               "dryrun primary hit list", user, lsTransaction)
+                                               "dryrun primary hit list", user, lsTransaction, 
+                                               deleteOldFile = FALSE, customSourceFileMove = customSourceFileMove)
   } else {
     primaryHitFile <- saveAcasFileToExperiment(tempFile, experiment, "metadata", "experiment metadata", 
-                                               "primary hit list", user, lsTransaction)
+                                               "primary hit list", user, lsTransaction, 
+                                               deleteOldFile = TRUE, customSourceFileMove = customSourceFileMove)
   }
   
   summaryInfo$experiment <- experiment
@@ -227,9 +236,7 @@ getPlateOrderForExperiment <- function(experimentCode) {
   # checking lists cached in database
   plateOrderValues <- getValuesByTypeAndKind(experimentState, "stringValue_plate order")
   plateOrderValue <- Find(function(x) {x$ignored == FALSE}, plateOrderValues)
-  compoundBarcodeValues <- getValuesByTypeAndKind(experimentState, "stringValue_compound barcodes")
-  compoundBarcodeValue <- Find(function(x) {x$ignored == FALSE}, compoundBarcodeValues)
-  if (is.null(plateOrderValue) || is.null(compoundBarcodeValue)) {
+  if (is.null(plateOrderValue)) {
     sourceFileValues <- getValuesByTypeAndKind(experimentState, "fileValue_source file")
     sourceFileValue <- Find(function(x) {x$ignored == FALSE}, sourceFileValues)
     sourceFilePath <- downloadAcasFile(sourceFileValue)
@@ -242,32 +249,20 @@ getPlateOrderForExperiment <- function(experimentCode) {
       plateAssoc <- read.csv(plateAssociationFile, header = FALSE)
       plateOrder <- data.frame(experimentCode = experimentCode, 
                                assayBarcode = plateAssoc[[1]], 
-                               plateOrder = 1:nrow(plateAssoc), 
-                               cmpdBarcode = NA_character_)
-      if (len(plateAssoc) > 1) {
-        plateOrder$cmpdBarcode <- plateAssoc[[2]]
-      }
+                               plateOrder = 1:nrow(plateAssoc))
       # Save to experiment for next time
       updateValueByTypeAndKind(paste(plateOrder$assayBarcode, collapse = ","), "experiment", experiment$id, 
                                "metadata", "experiment metadata", "stringValue", "plate order")
-      updateValueByTypeAndKind(paste(plateOrder$cmpdBarcode, collapse = ","), "experiment", experiment$id, 
-                               "metadata", "experiment metadata", "stringValue", "compound barcodes")
     } else {
       plateOrder <- data.frame(experimentCode = character(), 
                                assayBarcode = character(), 
-                               plateOrder = numeric(), 
-                               cmpdBarcode = character())
+                               plateOrder = numeric())
     }
   } else {
     plateOrderList <- strsplit(plateOrderValue$stringValue, ",")[[1]]
-    compoundBarcodeList <- strsplit(compoundBarcodeValue$stringValue, ",")[[1]]
-    if (length(plateOrderList) != length(compoundBarcodeList)) {
-      stop("saved 'stringValue_plate order' and 'stringValue_compound barcodes' do not have same length")
-    }
     plateOrder <- data.frame(experimentCode = experimentCode, 
                              assayBarcode = plateOrderList, 
-                             plateOrder = 1:length(plateOrderList), 
-                             cmpdBarcode = compoundBarcodeList)
+                             plateOrder = 1:length(plateOrderList))
   }
   return(plateOrder)
 }
