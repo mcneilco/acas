@@ -395,8 +395,10 @@ client.entity.hideStatuses=["deleted"]
 # client.entity.editingRoles/deletingRoles determine which users can edit/delete protocols/expts. Leave config empty if all users can edit/delete
 # use 'entityScientist' if want to restrict privileges to user saved in the scientist value
 # Example for restricting editing privs to user in entity's scientist value and users with admin role: client.entity.editingRoles=entityScientist,admin
-client.entity.editingRoles=entityScientist,projectAdmin,admin
-client.entity.deletingRoles=entityScientist,projectAdmin,admin
+# client.entity.editingRoles=entityScientist,projectAdmin,admin
+# client.entity.deletingRoles=entityScientist,projectAdmin,admin
+client.entity.editingRoles=
+client.entity.deletingRoles=
 
 client.protocol.showAssayTreeRule=false
 
