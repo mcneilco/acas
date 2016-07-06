@@ -22,10 +22,12 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   # ACASDEV-759: get plate order
   primaryPlateOrderFrame <- ldply(primaryExperimentCodes, getPlateOrderForExperiment)
   wideDataPrimary <- merge(wideDataPrimary, as.data.table(primaryPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
+  wideDataPrimary[, compoundName := getCompoundName(batchCode)]
   if (length(confirmationExperimentCodes) > 0) {
     wideDataConf <- getExperimentData(confirmationExperimentCodes)
     confPlateOrderFrame <- ldply(confirmationExperimentCodes, getPlateOrderForExperiment)
     wideDataConf <- merge(wideDataConf, as.data.table(confPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
+    wideDataConf[, compoundName := getCompoundName(batchCode)]
     wideDataAll <- rbind(wideDataPrimary, wideDataConf)
   } else {
     wideDataAll <- copy(wideDataPrimary)  # Need to copy as wideDataAll column names are changed for spotfire file
@@ -72,15 +74,13 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   # ACASDEV-765: find list of confirmed compounds, looking at existing code for screening campaigns
   if (length(confirmationExperimentCodes) > 0) {
     wideDataConf <- as.data.table(wideDataConf)
-    wideDataConf[, compoundName := getCompoundName(batchCode)]
+    
     # Remove flagged points and get mean per compound and concentration
     confThreshDT <- wideDataConf[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
                                  list(SD = mean(transformed_sd, na.rm = TRUE), 
                                       efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
                                  by=list(compoundName, concentration)]
     
-    wideDataPrimary <- as.data.table(wideDataPrimary)
-    wideDataPrimary[, compoundName := getCompoundName(batchCode)]
     # Remove flagged points and get mean per compound and concentration
     primaryThreshDT <- wideDataPrimary[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
                                        list(SD = mean(transformed_sd, na.rm = TRUE), 
