@@ -40,6 +40,7 @@ ENV     APP_NAME ACAS
 ENV     BUILD_PATH /home/runner/build
 ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
+ENV     ACAS_SHARED /home/runner/acas_shared
 ENV     APACHE Redhat
 RUN     npm install -g grunt forever nodemon mocha coffee-script
 COPY    package.json $ACAS_BASE/package.json

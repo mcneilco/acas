@@ -33,6 +33,10 @@ module.exports = (grunt) ->
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
 #	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
@@ -635,6 +639,11 @@ module.exports = (grunt) ->
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
+
 	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
