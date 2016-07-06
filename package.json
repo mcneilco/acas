@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node app.js",
     "startstubs": "node app.js stubsMode",
+    "debug": "node --debug=5858 --nolazy app.js",
     "dev": "grunt build && (grunt &) && nodemon --debug=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
     "devstubs": "grunt build && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts",
     "postinstall": "grunt build",
