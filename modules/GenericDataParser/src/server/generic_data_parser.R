@@ -1074,7 +1074,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
   linkColumns <- getLinkColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
   
-  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
+  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255, na.rm = TRUE), c(TRUE))
   
   if (precise) {
     labelRow <- as.character(unlist(calculatedResults[4, ]))
