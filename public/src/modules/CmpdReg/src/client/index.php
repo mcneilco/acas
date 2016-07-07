@@ -63,6 +63,7 @@
     <script type="text/javascript" src="src/SearchResults.js"></script>
     <script type="text/javascript" src="src/NewLotSuccess.js"></script>
     <script type="text/javascript" src="src/AddAlias.js"></script>
+    <script type="text/javascript" src="src/EditParent.js"></script>
 
     <script type="text/javascript" src="spec/testData/TestJSON.js"></script>
 
@@ -120,7 +121,9 @@
         include 'templates/LotForm/NewLotSuccessView.inc';
         include 'templates/ErrorNotificationView.inc';
         include 'templates/AddAliasView.inc';
-        
+        include 'templates/EditParentView.inc';
+        include 'templates/EditParentSearchView.inc';
+        include 'templates/EditParentSearchResultsView.inc';
 		$lvTemplate = file_get_contents('custom/LotView_Custom.inc');
 		echo str_replace('<\%','<%', $lvTemplate);
 

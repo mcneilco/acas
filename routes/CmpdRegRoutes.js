@@ -37,7 +37,9 @@
     app.post('/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService);
     app.post('/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService);
     app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
-    return app.post('/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults);
+    app.post('/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults);
+    app.post('/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent);
+    return app.post('/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent);
   };
 
   exports.cmpdRegIndex = function(req, res) {
@@ -719,6 +721,64 @@
         })(this));
       }
     });
+  };
+
+  exports.validateParent = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log("exports.validateParent");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/validateParent';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: req.body,
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          resp.setHeader('Content-Type', 'plain/text');
+          return resp.json(json);
+        } else {
+          console.log('got ajax error trying to validate parent');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          resp.statusCode = 500;
+          return resp.end("Error trying to validate parent: " + error);
+        }
+      };
+    })(this));
+  };
+
+  exports.updateParent = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log("exports.updateParent");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: req.body,
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          resp.setHeader('Content-Type', 'plain/text');
+          return resp.json(json);
+        } else {
+          console.log('got ajax error trying to update parent');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          resp.statusCode = 500;
+          return resp.end("Error trying to update parent: " + error);
+        }
+      };
+    })(this));
   };
 
 }).call(this);

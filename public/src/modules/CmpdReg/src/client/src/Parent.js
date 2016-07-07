@@ -26,8 +26,6 @@ $(function() {
                     stereoCategory: new PickList(js.stereoCategory),
                     stereoComment: js.stereoComment,
                     //commonName: js.commonName,
-                    compoundType: new PickList(js.compoundType),
-                    parentAnnotation: new PickList(js.parentAnnotation),
                     molWeight: js.molWeight,
 					exactMass: js.exactMass,
                     molFormula: js.molFormula,
@@ -35,7 +33,19 @@ $(function() {
                     chemist: new PickList(js.chemist),
 					parentAliases: new AliasCollection(js.parentAliases)
 				}, {silent: true});
-			}
+
+				if (window.configuration.metaLot.showSelectCompoundTypeList) {
+					this.set({
+						compoundType: new PickList(js.compoundType)
+					}, {silent: true});
+				};
+
+				if (window.configuration.metaLot.showSelectParentAnnotationList) {
+					this.set({
+						parentAnnotation: new PickList(js.parentAnnotation)
+					}, {silent: true});
+				}
+			};
 		},
 
 		validate: function(attr) {
@@ -90,6 +100,13 @@ $(function() {
 		template: _.template($('#LotForm_ParentView_template').html()),
 
 		events: {
+			'click .editParentButton': 'editParent',
+			'click .cancelUpdateParentButtonOn': 'cancel',
+			'click .backUpdateParentButtonOn': 'back',
+			'click .saveUpdateParentButtonOn': 'validateParent',
+			'click .confirmUpdateParent': 'updateParentConfirmed',
+			'click .cancelUpdateParent': 'cancelUpdateParent',
+			'click .closeParentUpdatedPanel': 'showUpdatedMetalot'
 		},
 
 		initialize: function() {
@@ -181,8 +198,12 @@ $(function() {
                 this.$('.parentAnnotationCode').attr('disabled', true);
                 this.$('.comment').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
+				this.$('.editParentButtonWrapper').show();
 
             }
+			else {
+				this.$('.editParentButtonWrapper').hide();
+			}
 			if (this.readMode) {
 				this.setAliasToReadOnly();
 			} else {
@@ -244,6 +265,23 @@ $(function() {
 				this.model.set({parentAnnotation: this.parentAnnotationCodeController.getSelectedModel()})
 			};
 		},
+		editParent: function() {
+			var self = this;
+			self.trigger('editParentRequest', self.model);
+		},
+
+		cancel: function() {
+			window.location.reload();
+		},
+
+		back: function() {
+			this.trigger('updateParentBack');
+			this.hide()
+		},
+
+		hide: function() {
+			$(this.el).hide();
+		},
 
 		isValid: function() {
 			return this.valid;
@@ -286,6 +324,81 @@ $(function() {
 			    model: structImage
 		    });
 		    this.structImage.render();
+		},
+
+		validateParent: function(){
+			this.$('.bv_saveUpdateParentButton').removeClass('saveUpdateParentButtonOn');
+			this.$('.bv_saveUpdateParentButton').addClass('saveUpdateParentButtonOff');
+			this.$('.bv_cancelUpdateParentButton').removeClass('cancelUpdateParentButtonOn');
+			this.$('.bv_cancelUpdateParentButton').addClass('cancelUpdateParentButtonOff');
+			this.$('.bv_backUpdateParentButton').removeClass('backUpdateParentButtonOn');
+			this.$('.bv_backUpdateParentButton').addClass('backUpdateParentButtonOff');
+			this.updateModel();
+			$.ajax({
+				type: "POST",
+				url: window.configuration.serverConnection.baseServerURL+"validateParent",
+				data: JSON.stringify(this.model),
+				dataType: "json",
+				contentType: 'application/json',
+				success: (function(_this)
+				{
+					return function(ajaxReturn){
+						return _this.validateParentReturn(ajaxReturn);
+					};
+				})(this)
+			});
+		},
+
+		validateParentReturn: function(ajaxReturn){
+			this.$('.ConfirmEditParentPanel').show();
+			this.$('.ConfirmEditParentPanel').html($('#ConfirmEditParentPanel_template').html());
+			var lotsAffectedMsg = "";
+			_.each(ajaxReturn, function(lot){
+				if (lotsAffectedMsg === ""){
+					lotsAffectedMsg = "The following lots will be affected: "+lot.name;
+				}
+				else{
+					lotsAffectedMsg += ", "+lot.name;
+				}
+			});
+			lotsAffectedMsg += ".";
+			this.$('.lotsAffected').html(lotsAffectedMsg);
+		},
+
+		updateParentConfirmed: function(){
+			$.ajax({
+				type: "POST",
+				url: window.configuration.serverConnection.baseServerURL+"updateParent",
+				data: JSON.stringify(this.model),
+				dataType: "json",
+				contentType: 'application/json',
+				success: (function(_this)
+				{
+					return function(ajaxReturn){
+						return _this.updateParentReturn(ajaxReturn);
+					};
+				})(this)
+			});
+		},
+
+		updateParentReturn: function(ajaxReturn){
+			this.$('.ConfirmEditParentPanel').hide();
+			this.trigger('parentUpdated', ajaxReturn);
+		},
+
+		cancelUpdateParent: function(){
+			this.$('.ConfirmEditParentPanel').hide();
+			this.$('.bv_saveUpdateParentButton').addClass('saveUpdateParentButtonOn');
+			this.$('.bv_saveUpdateParentButton').removeClass('saveUpdateParentButtonOff');
+			this.$('.bv_cancelUpdateParentButton').addClass('cancelUpdateParentButtonOn');
+			this.$('.bv_cancelUpdateParentButton').removeClass('cancelUpdateParentButtonOff');
+			this.$('.bv_backUpdateParentButton').addClass('backUpdateParentButtonOn');
+			this.$('.bv_backUpdateParentButton').removeClass('backUpdateParentButtonOff');
+		},
+
+		showUpdatedMetalot: function(){
+			this.$('.ParentUpdatedPanel').hide();
+			window.location.reload();
 		}
 	});
 

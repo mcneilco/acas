@@ -385,6 +385,39 @@ div {
     width: 100%;
 }
 
+.confirmUpdateParentMessage, .updatedLotsMessage {
+    margin-left:11px;
+    font-weight:normal;
+}
+
+.confirmUpdateParent {
+    background: no-repeat url('../images/update.png');
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    margin-right:0px;
+    margin-top:0px;
+}
+
+.cancelUpdateParent {
+    background: no-repeat url('../images/cancel.png');
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    margin-right:0px;
+    margin-left:320px;
+}
+
+.closeParentUpdatedPanel {
+    background: no-repeat url('../images/okay.png');
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    margin-right:0px;
+    margin-top:0px;
+}
 
 /****** ERROR NOTIFICATION ******/
 
@@ -504,26 +537,26 @@ div {
     margin-left: 150px;
 }
 
-.RegistrationSearchView {
+.RegistrationSearchView, .RegistrationSearchView {
     width: 700px;
     margin-left: 150px;
 }
-.RegistrationSearchView input.corpName {
+.RegistrationSearchView input.corpName{
     width: 150px;
     border-color: #d2d2d2;
     border-style: solid;
     border-width: 1px;
 }
-.RegistrationSearchView label {
+.RegistrationSearchView label, .RegistrationSearchView label {
     font-weight: bold;
 }
-.RegistrationSearchView .corpNameInput {
+.RegistrationSearchView .corpNameInput{
     position: absolute;
     left: 20px;
     top: 560px;
     margin-left: 140px;
 }
-.RegistrationSearchView a.nextButton {
+.RegistrationSearchView a.nextButton, .EditParentSearchView a.nextButton {
     background: no-repeat url('../images/next_step.png');
     height: 27px;
     width: 90px;
@@ -531,7 +564,7 @@ div {
     left: 760px;
     top: 560px;
 }
-.RegistrationSearchView a.cancelButton {
+.RegistrationSearchView a.cancelButton, .EditParentSearchView a.cancelEditButton {
     background: no-repeat url('../images/cancel.png');
     height: 27px;
     width: 90px;
@@ -540,17 +573,17 @@ div {
     top: 560px;
 }
 /****** REGISTRATION STEP 2 ******/
-.RegSearchResultsView .radioWrapper label {
+.RegSearchResultsView .radioWrapper label, .EditParentSearchResultsView .radioWrapper label {
     font-weight: bold;
 }
-.RegSearchResultsView .ReqStruc .row2 .FormLabel {
+.RegSearchResultsView .ReqStruc .row2 .FormLabel, .EditParentSearchResultsView .ReqStruc .row2 .FormLabel {
     font-weight: bold;
 }
 .RegSearchResultsView {
     width: 670px;
     margin-left: 150px;
 }
-.RegSearchResultsView .asDrawnStructure {
+.RegSearchResultsView .asDrawnStructure, .EditParentSearchResultsView .asDrawnStructure {
     /*width: 600px; original width set by John*/
     width: 620px;
     height: 315px;
@@ -558,55 +591,55 @@ div {
     margin-left: 0px;
 }
 
-.RegSearchResultsView .asDrawnStructure .copyButtonWrapper {
+.RegSearchResultsView .asDrawnStructure .copyButtonWrapper, .EditParentSearchResultsView .asDrawnStructure .copyButtonWrapper {
     margin-bottom: 10px;
 }
 
-.RegSearchResultsView .asDrawnStructure .molCopyTextArea {
+.RegSearchResultsView .asDrawnStructure .molCopyTextArea, .EditParentSearchResultsView .asDrawnStructure .molCopyTextArea {
     width: 605px;
     height: 260px;
 }
 
-.RegSearchResultsView .asDrawnStructure .copyPanelCloseButton {
+.RegSearchResultsView .asDrawnStructure .copyPanelCloseButton, .EditParentSearchResultsView .asDrawnStructure .copyPanelCloseButton {
     margin-right: 14px;
 }
 
-.RegSearchResultsView .ReqStruc {
+.RegSearchResultsView .ReqStruc, .EditParentSearchResultsView .ReqStruc {
     margin-left: 10px;
     width: 688px;
     height: 388px;
     /*padding-bottom: 28px;*/
 }
-.RegSearchResultsView .FormLabel {
+.RegSearchResultsView .FormLabel, .EditParentSearchResultsView .FormLabel {
     width: 10em; /*spacing between labels and input fields*/
     text-align: left;
 }
-.RegSearchResultsView .radioWrapper {
+.RegSearchResultsView .radioWrapper, .EditParentSearchResultsView .radioWrapper {
     display: block;
     width: 300px;
 }
 
-.RegSearchResultsView .row1 {
+.RegSearchResultsView .row1, .EditParentSearchResultsView .row1 {
     text-align: left;
     float: left;
     width: 65px;
     margin-top: 8px;
 }
-.RegSearchResultsView .row2 {
+.RegSearchResultsView .row2, .EditParentSearchResultsView .row2 {
     text-align: left;
     float: left;
     width: 190px;
     margin-top: 7px;
 }
-.RegSearchResultsView .row3 {
+.RegSearchResultsView .row3, .EditParentSearchResultsView .row3 {
     text-align: left;
     float: left;
     width: 161px;
 }
-.RegSearchResultsView .row3 .asDrawnMolWeight {
+.RegSearchResultsView .row3 .asDrawnMolWeight, .EditParentSearchResultsView .row3 .asDrawnMolWeight {
     width: 100px;
 }
-.RegSearchResultsView .row3-1 {
+.RegSearchResultsView .row3-1, .EditParentSearchResultsView .row3-1 {
     text-align: left;
     float: left;
     width: 190px;
@@ -625,7 +658,7 @@ div {
     width: 96px;
 }
 
-.RegSearchResultsView input.asDrawnMolWeight, .asDrawnMolFormula {
+.RegSearchResultsView input.asDrawnMolWeight, .asDrawnMolFormula, .EditParentSearchResultsView input.asDrawnMolWeight, .asDrawnMolFormula {
     width: 96px;
     border-color: #d2d2d2;
     border-style: solid;
@@ -638,14 +671,14 @@ div {
                                            width: 86px;
                                        }
 
-.RegSearchResultsView .saltFormCorpNames {
+.RegSearchResultsView .saltFormCorpNames, .EditParentSearchResultsView .saltFormCorpNames {
     margin-top: 0px;
     margin-right: 0px;
     margin-bottom: 0px;
     margin-left: 5px;
 }
 
-.RegSearchResults_ParentListView {
+.RegSearchResults_ParentListView, .RegSearchResults_ParentListView {
     position: relative;
     width: 670px;
     /*    overflow: auto;*/
@@ -655,22 +688,22 @@ div {
     height: 435px;
 }
 
-.RegSearchResultsView .parentImageWrapper {
+.RegSearchResultsView .parentImageWrapper, .EditParentSearchResultsView .parentImageWrapper {
     width: 620px;
     height: 315px;
     border: 2px solid #D5D8DD
 }
 
-.RegSearchResultsView .parentImageWrapper .copyButtonWrapper {
+.RegSearchResultsView .parentImageWrapper .copyButtonWrapper, .EditParentSearchResultsView .parentImageWrapper .copyButtonWrapper {
     margin-bottom: 10px;
 }
 
-.RegSearchResultsView .parentImageWrapper .molCopyTextArea {
+.RegSearchResultsView .parentImageWrapper .molCopyTextArea, .EditParentSearchResultsView .parentImageWrapper .molCopyTextArea {
     width: 605px;
     height: 260px;
 }
 
-.RegSearchResultsView .parentImageWrapper .copyPanelCloseButton {
+.RegSearchResultsView .parentImageWrapper .copyPanelCloseButton, .EditParentSearchResultsView .parentImageWrapper .copyPanelCloseButton {
     margin-right: 14px;
 }
 
@@ -681,7 +714,7 @@ div {
 }
 
 
-.RegSearchResultsView a.nextButton, .cancelButton {
+.RegSearchResultsView a.nextButton, .cancelButton, .EditParentSearchResultsView a.nextButton, .cancelEditButton {
     background: no-repeat url('../images/next_step.png');
     float: right;
     height: 27px;
@@ -689,14 +722,14 @@ div {
     padding: 10px 5px 0px 5px;
 }
 
-.RegSearchResultsView a.nextButton {
+.RegSearchResultsView a.nextButton, .EditParentSearchResultsView a.nextButton {
     margin-right: 190px;
 }
 
-.RegSearchResultsView a.cancelButton {
+.RegSearchResultsView a.cancelButton, .EditParentSearchResultsView a.cancelEditButton {
     background: no-repeat url('../images/cancel.png');
 }
-.RegSearchResultsView a.backButton {
+.RegSearchResultsView a.backButton, .EditParentSearchResultsView a.backToSearchButton {
     background: no-repeat url('../images/back.png');
 }
 .ParentView .br {
@@ -978,7 +1011,7 @@ div.MetaLotViewButtons.buttons {
     margin-top: 20px;
     width: 636px;
 }
-.MetaLotViewButtons a.cancelButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton {
+.MetaLotViewButtons a.cancelButton, a.saveButton, a.backButton, a.newLotButton, a.detailsButton, a.editAnalyticalFiles, a.editLotButton, a.closeButton, a.backToSearchButton {
     float: right;
     height: 27px;
     width: 90px;
@@ -1307,3 +1340,37 @@ div.MetaLotViewButtons.buttons {
     display: none;
 }
 
+.editParentButtonWrapper a.editParentButton {
+    background: no-repeat url('../images/edit_parent.png');
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+}
+
+.EditParentViewButtons .bv_saveUpdateParentButton, .bv_cancelUpdateParentButton, .bv_backUpdateParentButton {
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+}
+.EditParentViewButtons a.saveUpdateParentButtonOn {
+    background: no-repeat url('../images/save.png');
+    margin-right: 170px;
+}
+.EditParentViewButtons a.saveUpdateParentButtonOff {
+    background: no-repeat url('../images/save_off.png');
+    margin-right: 170px;
+}
+.EditParentViewButtons a.cancelUpdateParentButtonOn {
+    background: no-repeat url('../images/cancel.png');
+}
+.EditParentViewButtons a.cancelUpdateParentButtonOff {
+    background: no-repeat url('../images/cancel_off.png');
+}
+.EditParentViewButtons a.backUpdateParentButtonOn {
+    background: no-repeat url('../images/back.png');
+}
+.EditParentViewButtons a.backUpdateParentButtonOff {
+    background: no-repeat url('../images/back_off.png');
+}

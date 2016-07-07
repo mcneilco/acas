@@ -106,7 +106,7 @@ $(function() {
 		initialize: function() {
 			//TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
 			$(this.el).html(this.template());
-			_.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated');
+			_.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest');
 
             var eNoti = this.options.errorNotifList;
 
@@ -124,6 +124,7 @@ $(function() {
                 errorNotifList: eNoti,
                 readMode: false
             });
+            this.parentController.bind('editParentRequest', this.editParentRequest);
             this.salts = new Salts()
             this.salts.fetch();
             this.isotopes = new Isotopes();
@@ -275,6 +276,17 @@ $(function() {
 	                }
 	            });
 	        });
+        },
+
+        editParentRequest: function(parent) {
+            $(this.el).empty();
+            this.editParentController = new EditParentController({
+                el: $(this.el),
+                corpName: this.model.get('corpName'),
+                errorNotifList: new ErrorNotificationList(),
+                user: this.user,
+                parentModel: parent
+            });
         },
 
         newLotSaved: function(message) {
