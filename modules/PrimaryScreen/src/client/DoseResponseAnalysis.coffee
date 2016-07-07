@@ -425,7 +425,7 @@ class window.DoseResponseAnalysisController extends Backbone.View
 			@$('.bv_resultsContainer').hide()
 
 	testReadyForFit: =>
-		if @model.getAnalysisStatus().get('codeValue') == "not started"
+		if @model.getAnalysisStatus().get('codeValue') != "complete"
 			@setNotReadyForFit()
 		else
 			@setReadyForFit()
@@ -471,7 +471,8 @@ class window.DoseResponseAnalysisController extends Backbone.View
 		@modelFitTypeController.render()
 		@parameterController = @modelFitTypeController.parameterController
 		@modelFitTypeController.modelFitTypeListController.on 'change', => @handleModelFitTypeChanged()
-		@parameterController.model.on 'change', => @validateModelFitTab()
+		if @parameterController?
+			@parameterController.model.on 'change', => @validateModelFitTab()
 		modelFitType = @model.getModelFitType().get('codeValue')
 		if modelFitType is "unassigned"
 			@$('.bv_fitModelButton').hide()
