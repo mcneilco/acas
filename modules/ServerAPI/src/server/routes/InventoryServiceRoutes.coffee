@@ -402,17 +402,17 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
-				callback containers, 400
+				callback "error when requesting code names", 400
 			if statusCode == 500
-				console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
-				callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed", 500
+				console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
+				callback "updateContainerMetadataByContainerCodeInternal failed", 500
 				return
 			else
 				barcodes = _.pluck updateInformation, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
-						console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
+						console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
@@ -499,7 +499,6 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			console.debug "response statusCode: #{response.statusCode}"
 			if !error && json[0] != "<"
 				callback json, response.statusCode
 			else
