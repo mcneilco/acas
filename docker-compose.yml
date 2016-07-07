@@ -61,8 +61,10 @@ services:
      - db
     ports:
      - "8080:8080"
+     - "8000:8000"
     environment:
      - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+     - JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000
     volumes_from:
      - roo
      - acas
