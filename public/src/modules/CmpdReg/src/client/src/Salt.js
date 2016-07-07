@@ -166,7 +166,6 @@ $(function() {
 						sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
 					}
 				}
-				// self.hide();
 				self.marvinLoaded = true;
 			},function (error) {
 				alert("Cannot retrieve newSaltMarvinSketch sketcher instance from iframe:"+error);

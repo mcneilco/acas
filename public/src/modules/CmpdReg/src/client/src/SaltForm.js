@@ -229,7 +229,6 @@ $(function() {
 		},
 
 	hide: function() {
-	  console.log("some peckerwood called hide");
 	  $(this.el).hide();
 	},
 
