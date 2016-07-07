@@ -269,7 +269,7 @@ getExperimentData <- function (experimentCodes) {
   # Accepts a list of experiment codes, returns a data.table
   library(data.table)
   
-  getDataString <- "select e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
+  getDataString <- "select /*+ FIRST_ROWS(10) */ e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
     ss.ls_type_and_kind as SUB_STATE_TYPE_AND_KIND, sv.id as SUB_VALUE_ID, sv.ls_kind as VALUE_KIND, sv.ls_type as VALUE_TYPE, 
     sv.code_value, sv.numeric_value, sv.string_value, 
     sv.unit_kind, sv.concentration, sv.conc_unit
