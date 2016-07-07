@@ -483,6 +483,7 @@ module.exports = (grunt) ->
 				sourceDirectories: ["{<%= sourceDirectories %>}"]
 			build:
 #				entry: {index: "<%= acas_base %>"+"/moduledyn/PlateRegistration/src/client/index.coffee"}
+				devtool: "sourcemap"
 				entry: (
 					entries = []
 					grunt.config.get('sourceDirectories').map (i,index) ->
