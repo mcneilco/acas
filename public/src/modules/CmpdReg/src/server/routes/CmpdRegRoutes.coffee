@@ -33,6 +33,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
+	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
+	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -563,3 +565,53 @@ exports.exportSearchResults = (req, resp) ->
 					resp.end "Error trying to export search results to sdf: " + error;
 
 			)
+
+exports.validateParent = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log "exports.validateParent"
+
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/validateParent'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to validate parent'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to validate parent: " + error;
+	)
+
+exports.updateParent = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log "exports.updateParent"
+
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update parent'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update parent: " + error;
+	)
