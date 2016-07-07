@@ -35,7 +35,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   
   
   # ACASDEV-763: make spotfire file, see saveReports.R for inspiration
-  dir.create(getUploadedFilePath(file.path("experiments", experiment$codeName)), showWarnings = FALSE)
+  dir.create(getUploadedFilePath(file.path("experiments", experiment$codeName)), showWarnings = FALSE, recursive = TRUE)
   if (dryRun) {
     reportLocation <- file.path("experiments", experiment$codeName, "dryrun")
   } else {
