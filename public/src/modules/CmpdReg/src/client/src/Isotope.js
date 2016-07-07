@@ -9,14 +9,14 @@ $(function() {
 //				this.localStorage = new Store('IsotopeItems');
 //			}
 		},
-	
+
 		url: function() {
 			if(window.configuration.serverConnection.connectToServer) {
 				return window.configuration.serverConnection.baseServerURL+'isotopes';
 			} else {
 				return 'spec/testData/Isotope.php';
 			}
-		}, 
+		},
 
 		defaults: {
 			name: '',
@@ -26,7 +26,7 @@ $(function() {
 		validate: function(attr) {
 			var errors = new Array();
 			if (attr.massChange!=null) {
-				if(isNaN(attr.massChange)) { 
+				if(isNaN(attr.massChange)) {
 					errors.push({'attribute': 'massChange', 'message':  "Isotope Mass Change must be a Number"});
 				}
 			}
@@ -51,11 +51,11 @@ $(function() {
 			}
 			if (errors.length > 0) {return errors;}
 		}
-		
+
 	});
 
 	window.Isotopes = Backbone.Collection.extend({
-	
+
 		model: Isotope,
 		initialize: function() {
 //			if(window.configuration.serverConnection.connectToServer) {
@@ -65,7 +65,7 @@ $(function() {
 //				this.localStorage = new Store('Isotopes');
 //			}
 		},
-			
+
 		url: function() {
 			if(window.configuration.serverConnection.connectToServer) {
 				return window.configuration.serverConnection.baseServerURL+'isotopes';
@@ -74,16 +74,16 @@ $(function() {
 			}
 		}
 	});
-	
-	
-	
+
+
+
 	window.IsotopeOptionController = Backbone.View.extend({
 		tagName: "option",
-		
+
 		initialize: function(){
 		  _.bindAll(this, 'render');
 		},
-		
+
 		render: function(){
 			if(window.configuration.metaLot.includeAbbrevInIsoSaltOption) {
 				$(this.el).attr('value', this.model.cid).html(this.model.get('abbrev')+': '+this.model.get('name'));
@@ -105,7 +105,7 @@ $(function() {
 				};
 			}
 		},
-		
+
 		render: function() {
 			$(this.el).empty();
 			if(window.configuration.metaLot.isotopeListNoneOption) {
@@ -114,11 +114,14 @@ $(function() {
 				$(this.el).append(this.make('option', {value: ''}, 'none'));
 			}
 			var self = this;
+			var existingCid = "";
 			this.collection.each(function(isotope){
 				$(self.el).append(new SaltOptionController({model: isotope}).render().el);
+				if (self.options.existingAbbrev==isotope.get('abbrev')) { existingCid = isotope.cid; }
 			});
+			if (existingCid != "") { $(self.el).val(existingCid); }
 		},
-		
+
 		addOne: function(isotope){
 			this.render();
 			//$(this.el).append(new IsotopeOptionController({model: isotope}).render().el);
@@ -127,12 +130,12 @@ $(function() {
 		selectedCid: function(){
 			return $(this.el).val();
 		}
-		
-	});	
-	
+
+	});
+
 	window.NewIsotopeController = Backbone.View.extend({
 		template: _.template($('#NewIsotopeView_template').html()),
-		
+
 		events: {
 			'click .saveNewIsotopeButton': 'save',
 			'click .cancelNewIsotopeButton': 'cancel'
@@ -143,13 +146,13 @@ $(function() {
 			//TODO the template load should probably in render()
             $(this.el).html(this.template());
 			this.hide();
-            
+
 		},
 
 		render: function () {
 			return this;
 		},
-		
+
 		show: function() {
             $(this.el).show();
 //            if(!window.testMode) {
@@ -160,7 +163,7 @@ $(function() {
 //                });
 //            }
 		},
-		
+
 		hide: function() {
 			$(this.el).hide();
 			$(this.el).dialog('close');
@@ -170,10 +173,10 @@ $(function() {
 			this.clearValidationErrorStyles();
 			this.hide();
 		},
-		
+
 		save: function() {
             this.trigger('clearErrors', "NewIsotopeController");
-			
+
             var isotope = new Isotope();
             isotope.bind('error',  this.validationError);
             var isotopeSetSucceeded = isotope.set({
@@ -206,10 +209,10 @@ $(function() {
                         self.delegateEvents(); // start listening to events
                     }
                 });
-			}           
+			}
 
 		},
-		
+
 		validationError: function(model, errors) {
 			this.clearValidationErrorStyles();
 			var self = this;
@@ -217,12 +220,12 @@ $(function() {
 				self.$('.isotope_'+err.attribute).addClass('input_error');
 				self.trigger('notifyError', {owner: 'NewIsotopeController', errorLevel: 'error', message: err.message});
 			});
-		}, 
-		
+		},
+
 		clearValidationErrorStyles: function() {
 			var errorElms = this.$('.input_error');
 			this.trigger('clearErrors', 'NewIsotopeController');
-			
+
 			_.each(errorElms, function(ee) {
 				$(ee).removeClass('input_error');
 			});

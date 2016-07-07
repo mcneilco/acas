@@ -229,7 +229,7 @@ div {
 .NewLotSuccessView .labelCorpName label{
     font-weight: bold;
 }
-.NewIsotopeView a.cancelNewIsotopeButton, .saveNewIsotopeButton {
+.saveNewIsotopeButton {
     background: no-repeat url('../images/save.png');
     float:right;
     height: 27px;
@@ -239,7 +239,7 @@ div {
     margin-top: 15px;
     border: none;
 }
-.NewIsotopeView a.saveNewIsotopeButton, .cancelNewIsotopeButton {
+.cancelNewIsotopeButton {
     background: no-repeat url('../images/cancel.png');
     float:right;
     height: 27px;
@@ -249,16 +249,16 @@ div {
     margin-top: 15px;
     border: none;
 }
-.NewSaltView .cancelNewSaltButton, .saveNewSaltButton {
-    background: no-repeat url('../images/cancel.png');
+.saveNewSaltButton {
+    background: no-repeat url('../images/save.png');
     float:right;
     height: 27px;
     width: 90px;
     padding: 10px 5px 0px 5px;
     border: none;
 }
-.NewSaltView .saveNewSaltButton, .cancelNewSaltButton {
-    background: no-repeat url('../images/save.png');
+.cancelNewSaltButton {
+    background: no-repeat url('../images/cancel.png');
     float:right;
     height: 27px;
     width: 90px;

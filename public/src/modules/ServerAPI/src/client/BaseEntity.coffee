@@ -307,11 +307,19 @@ class window.BaseEntityController extends AbstractFormController
 			if window.conf.entity?.editingRoles?
 				rolesToTest = []
 				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
 					if role is 'entityScientist'
 						if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
 							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
 					else
-						rolesToTest.push $.trim(role)
+						rolesToTest.push role
 				if rolesToTest.length is 0
 					return false
 				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
@@ -322,11 +330,19 @@ class window.BaseEntityController extends AbstractFormController
 		if window.conf.entity?.deletingRoles?
 			rolesToTest = []
 			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
 				if role is 'entityScientist'
 					if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
 						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
 				else
-					rolesToTest.push $.trim(role)
+					rolesToTest.push role
 			if rolesToTest.length is 0
 				return false
 			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest

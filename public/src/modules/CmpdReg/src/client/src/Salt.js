@@ -1,20 +1,20 @@
 $(function() {
 
 	window.Salt = Backbone.Model.extend({
-	
+
 		initialize: function() {
 
 		},
-        
+
         url: function() {
 			if(window.configuration.serverConnection.connectToServer) {
 				return window.configuration.serverConnection.baseServerURL+'salts';
 			} else {
 				return 'spec/testData/Salt.php';
 			}
-		}, 
+		},
 
-		
+
 		defaults: {
 			name: '',
 			abbrev: '',
@@ -48,13 +48,13 @@ $(function() {
 			}
 			if (errors.length > 0) {return errors;}
 		}
-		
+
 	});
 
 	window.Salts = Backbone.Collection.extend({
 
 		model: Salt,
-		
+
 		initialize: function() {
 
 		},
@@ -64,20 +64,20 @@ $(function() {
 			} else {
 				return 'spec/testData/Salt.php';
 			}
-		} 
+		}
 
-			
+
 	});
-	
+
 	//TODO refactor this and IsotopeOptionController to be the same
-	
+
 	window.SaltOptionController = Backbone.View.extend({
 		tagName: "option",
-		
+
 		initialize: function(){
 		  _.bindAll(this, 'render');
 		},
-		
+
 		render: function(){
 			if(window.configuration.metaLot.includeAbbrevInIsoSaltOption) {
 				$(this.el).attr('value', this.model.cid).html(this.model.get('abbrev')+': '+this.model.get('name'));
@@ -91,7 +91,7 @@ $(function() {
 
 	//TODO refactor this and IsotopeSelectController to be the same
 	window.SaltSelectController = Backbone.View.extend({
-		initialize: function(){	
+		initialize: function(){
 			_.bindAll(this, 'addOne', 'render');
 			this.collection.bind('add', this.addOne);
 			this.collection.bind('reset', this.render);
@@ -101,43 +101,45 @@ $(function() {
 				};
 			}
 		},
-		
+
 		render: function() {
 			$(this.el).empty();
 			if(window.configuration.metaLot.sortSaltsByAbbrev) {
 				$(this.el).append(this.make('option', {value: ''}, window.configuration.metaLot.saltListNoneOption));
 			} else {
-				$(this.el).append(this.make('option', {value: ''}, 'none'));				
+				$(this.el).append(this.make('option', {value: ''}, 'none'));
 			}
 			var self = this;
-			
+			var existingCid = "";
 			this.collection.each(function(salt){
 				$(self.el).append(new SaltOptionController({ model: salt }).render().el);
+				if (self.options.existingAbbrev==salt.get('abbrev')) { existingCid = salt.cid; }
 			});
+			if (existingCid != "") { $(self.el).val(existingCid); }
 		},
-		
+
 		addOne: function(salt){
 			this.render();
 			//$(this.el).append(new SaltOptionController({ model: salt }).render().el);
 		},
-		
+
 		selectedCid: function(){
 			return $(this.el).val();
 		}
 
 
-	});	
-	
+	});
+
 	window.NewSaltController = Backbone.View.extend({
 		template: _.template($('#NewSaltView_template').html()),
-		
+
 		events: {
 			'click .saveNewSaltButton': 'saveSalt',
 			'click .cancelNewSaltButton': 'cancel'
 		},
-		
+
 		initialize: function(){
-			_.bindAll(this, 'validationError', 'saveSalt');
+			_.bindAll(this, 'validationError', 'saveSalt', 'render');
 			$(this.el).html(this.template());
 
 			this.marvinLoaded = false;
@@ -152,7 +154,7 @@ $(function() {
 						sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
 					}
 				}
-				self.hide();
+				// self.hide();
 				self.marvinLoaded = true;
 			},function (error) {
 				alert("Cannot retrieve newSaltMarvinSketch sketcher instance from iframe:"+error);
@@ -164,22 +166,22 @@ $(function() {
 
 		show: function() {
 			this.marvinSketcherInstance.clear();
-            $(this.el).show();
+      $(this.el).show();
 		},
-		
+
 		hide: function() {
 			$(this.el).hide();
 			$(this.el).dialog('close');
 		},
-		
+
 		cancel: function() {
 			this.clearValidationErrorStyles();
 			this.hide();
 		},
-		
+
 		saveSalt: function() {
             this.trigger('clearErrors', "NewSaltController");
-			
+
             var salt = new Salt();
 			salt.bind('error',  this.validationError);
 			var mol = null;
@@ -232,7 +234,7 @@ $(function() {
 			}
 
 		},
-		
+
 		validationError: function(model, errors) {
 			this.clearValidationErrorStyles();
 			var self = this;
@@ -240,12 +242,12 @@ $(function() {
 				self.$('.salt_'+err.attribute).addClass('input_error');
 				self.trigger('notifyError', {owner: 'NewSaltController', errorLevel: 'error', message: err.message});
 			});
-		}, 
-		
+		},
+
 		clearValidationErrorStyles: function() {
 			var errorElms = this.$('.input_error');
 			this.trigger('clearErrors', 'NewSaltController');
-			
+
 			_.each(errorElms, function(ee) {
 				$(ee).removeClass('input_error');
 			});

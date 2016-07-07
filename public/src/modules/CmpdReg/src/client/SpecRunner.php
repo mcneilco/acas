@@ -6,11 +6,11 @@
 
   <link rel="shortcut icon" type="image/png" href="lib/jasmine-1.1.0/jasmine_favicon.png">
 
-  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.1.0/jasmine.css">
+  <link rel="stylesheet" type="text/css" href="lib/jasmine-1.1.0/jasmine_nocompile.css">
 <!--  <link rel="stylesheet" type="text/css" href="css/NewCmpdReg.css">-->
   <script type="text/javascript" src="lib/jasmine-1.1.0/jasmine.js"></script>
   <script type="text/javascript" src="lib/jasmine-1.1.0/jasmine-html.js"></script>
-  
+
   <script type="text/javascript" src="lib/json2.js"></script>
   <script type="text/javascript" src="lib/jquery-1.7.2.min.js"></script>
   <script type="text/javascript" src="lib/jquery.form.js"></script>
@@ -28,10 +28,10 @@
   <script type="text/javascript" src="lib/backbone.amplify.js"></script>
 <!--  <script LANGUAGE="JavaScript1.1" SRC="marvin/marvin.js"></script> -->
 <!-- for marvin js -->
- 	<link type="text/css" rel="stylesheet" href="marvinjs/js/lib/rainbow/github.css" />
- 	<script src="marvinjs/js/lib/rainbow/rainbow-custom.min.js"></script>
- 	<script src="marvinjs/gui/lib/promise-1.0.0.min.js"></script>
- 	<script src="marvinjs/js/marvinjslauncher.js"></script>
+ 	<link type="text/css" rel="stylesheet" href="../marvinjs/js/lib/rainbow/github.css" />
+ 	<script src="../marvinjs/js/lib/rainbow/rainbow-custom.min.js"></script>
+ 	<script src="../marvinjs/gui/lib/promise-1.0.0.min.js"></script>
+ 	<script src="../marvinjs/js/marvinjslauncher.js"></script>
 
   <!-- include source files here... -->
   <script type="text/javascript" src="src/AppController.js"></script>
@@ -56,7 +56,7 @@
   <script type="text/javascript" src="src/SearchResults.js"></script>
   <script type="text/javascript" src="src/NewLotSuccess.js"></script>
   <script type="text/javascript" src="src/AddAlias.js"></script>
-  
+
   <script type="text/javascript" src="custom/Lot_Custom.js"></script>
 
 
@@ -81,23 +81,23 @@
   <script type="text/javascript" src="spec/SearchResultsSpec.js"></script>
   <script type="text/javascript" src="spec/NewLotSuccessSpec.js"></script>
   <script type="text/javascript" src="spec/AddAliasSpec.js"></script>
-  
+
   <script type="text/javascript" src="custom/LotSpec_Custom.js"></script>
 
 
   <script type="text/javascript">
     $(function() {
-    
+
      // constants for the application
-     
+
       window.configuration = <?php include 'custom/configurationSpec.json' ?> ;
-     
+
      //constants for testing
 
       window.testMode = true;
       window.appController = null;
       window.configuration.serverConnection.connectToServer = false; // need to override true in the configuration file
-	  
+
       var jasmineEnv = jasmine.getEnv();
       jasmineEnv.updateInterval = 1000;
 
@@ -141,7 +141,7 @@
 	<?php include 'templates/AppControllerView.inc'; ?>
 
 	<!-- Templates -->
-	
+
     <?php
     	include 'templates/StructureImageView.inc';
     	include 'templates/LotForm/NewIsotopeView.inc';
@@ -163,7 +163,7 @@
         include 'templates/LotForm/NewLotSuccessView.inc';
         include 'templates/ErrorNotificationView.inc';
         include 'templates/AddAliasView.inc';
-        
+
 		$lvTemplate = file_get_contents('custom/LotView_Custom.inc');
 		echo str_replace('<\%','<%', $lvTemplate);
 
@@ -172,7 +172,7 @@
     		Isotope 1:<select id="LotForm_SaltFormIsotopeSelect-1View"><option value=''>none</option></select>
     		Isotope 2:<select id="LotForm_SaltFormIsotopeSelect-2View"><option value=''>none</option></select>
     		<div id="NewIsotopeView"></div>
- 
+
 <!-- Salt test elements -->
     		Salt 1:<select id="LotForm_SaltFormSaltSelect-1View"><option value=''>none</option></select>
     		Salt 2:<select id="LotForm_SaltFormSaltSelect-2View"><option value=''>none</option></select>
@@ -187,8 +187,8 @@
 
 <!-- LotForm_SaltFormView tests -->
 		<div id="LotForm_SaltFormView"></div>
-		
-		
+
+
 <!-- LotForm tests -->
 		<div id="LotForm_LotView"</div>
 <!-- PickList tests -->
@@ -219,9 +219,9 @@
         <div class="SearchResultsView"></div>
 
 <!-- NewLotSuccessController tests -->
-       
+
         <div class="NewLotSuccessView"></div>
-        
+
     </div>
 </body>
 </html>
