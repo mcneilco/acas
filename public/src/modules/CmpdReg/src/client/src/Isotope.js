@@ -95,6 +95,10 @@ $(function() {
 	});
 
 	window.IsotopeSelectController = Backbone.View.extend({
+		events: {
+			'change': 'handleSelectChanged'
+		},
+
 		initialize: function(){
 			_.bindAll(this, 'addOne','render');
 			this.collection.bind('add', this.addOne);
@@ -104,6 +108,7 @@ $(function() {
 					return iso.get('abbrev');
 				};
 			}
+			this.existingCid = "";
 		},
 
 		render: function() {
@@ -114,12 +119,15 @@ $(function() {
 				$(this.el).append(this.make('option', {value: ''}, 'none'));
 			}
 			var self = this;
-			var existingCid = "";
-			this.collection.each(function(isotope){
+			this.collection.each(function (isotope) {
 				$(self.el).append(new SaltOptionController({model: isotope}).render().el);
-				if (self.options.existingAbbrev==isotope.get('abbrev')) { existingCid = isotope.cid; }
+				if (self.existingCid=="") {
+					if (self.options.existingAbbrev == isotope.get('abbrev')) {
+						self.existingCid = isotope.cid;
+					}
+				}
 			});
-			if (existingCid != "") { $(self.el).val(existingCid); }
+			if (self.existingCid != "") { $(self.el).val(self.existingCid); }
 		},
 
 		addOne: function(isotope){
@@ -129,8 +137,11 @@ $(function() {
 
 		selectedCid: function(){
 			return $(this.el).val();
-		}
+		},
 
+		handleSelectChanged: function (){
+			this.existingCid = this.selectedCid();
+		}
 	});
 
 	window.NewIsotopeController = Backbone.View.extend({

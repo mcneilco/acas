@@ -93,7 +93,7 @@ $(function() {
 			$(this.el).html(this.template());
 			if(this.isEditable) {
 				var existingAbbrev = "";
-				if (!this.model.isNew()) { existingAbbrev = this.model.get('isosalt').get('abbrev'); }
+				if (this.model.get('isosalt')) { existingAbbrev = this.model.get('isosalt').get('abbrev'); }
 				if(this.model.get('type')=='salt') {
 					this.isosaltSelectController = new SaltSelectController({
 						el: this.$('.isosalts'),

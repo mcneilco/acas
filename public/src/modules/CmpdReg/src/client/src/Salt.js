@@ -91,8 +91,12 @@ $(function() {
 
 	//TODO refactor this and IsotopeSelectController to be the same
 	window.SaltSelectController = Backbone.View.extend({
+		events: {
+			'change': 'handleSelectChanged'
+		},
+
 		initialize: function(){
-			_.bindAll(this, 'addOne', 'render');
+			_.bindAll(this, 'addOne', 'render', 'handleSelectChanged');
 			this.collection.bind('add', this.addOne);
 			this.collection.bind('reset', this.render);
 			if (window.configuration.metaLot.sortSaltsByAbbrev) {
@@ -100,6 +104,7 @@ $(function() {
 					return salt.get('abbrev');
 				};
 			}
+			this.existingCid = "";
 		},
 
 		render: function() {
@@ -110,12 +115,15 @@ $(function() {
 				$(this.el).append(this.make('option', {value: ''}, 'none'));
 			}
 			var self = this;
-			var existingCid = "";
 			this.collection.each(function(salt){
 				$(self.el).append(new SaltOptionController({ model: salt }).render().el);
-				if (self.options.existingAbbrev==salt.get('abbrev')) { existingCid = salt.cid; }
+				if (self.existingCid=="") {
+					if (self.options.existingAbbrev == salt.get('abbrev')) {
+						self.existingCid = salt.cid;
+					}
+				}
 			});
-			if (existingCid != "") { $(self.el).val(existingCid); }
+			if (self.existingCid != "") { $(self.el).val(self.existingCid); }
 		},
 
 		addOne: function(salt){
@@ -125,6 +133,10 @@ $(function() {
 
 		selectedCid: function(){
 			return $(this.el).val();
+		},
+
+		handleSelectChanged: function (){
+			this.existingCid = this.selectedCid();
 		}
 
 
