@@ -1,4 +1,4 @@
-saveReports <- function(resultTable, spotfireResultTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove) {
+saveReports <- function(resultTable, spotfireResultTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove, skipFileText=FALSE) {
   # Runs all of the reports needed for a successfully dry run
   #output: a list of links to files
   library(gdata)
@@ -8,17 +8,17 @@ saveReports <- function(resultTable, spotfireResultTable, saveLocation, experime
   spotfireHost <- racas::applicationSettings$client.service.spotfire.host
   if (is.null(spotfireHost) || gdata::trim(spotfireHost) == "") {
     reportList$txtFile <- saveCsvReport(inputTable=spotfireResultTable, saveLocation, 
-                                        experiment, parameters, recordedBy)
+                                        experiment, parameters, recordedBy, skipFileText=skipFileText)
   } else {
     reportList$spotfireFile <- saveSpotfireFile(
       inputTable=spotfireResultTable, saveLocation, experiment, parameters, 
-      recordedBy, customSourceFileMove=customSourceFileMove)
+      recordedBy, customSourceFileMove=customSourceFileMove, skipFileText=skipFileText)
   }
   
   return(reportList)
 }
 
-saveCsvReport <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
+saveCsvReport <- function(inputTable, saveLocation, experiment, parameters, recordedBy, skipFileText=FALSE) {
   # Saves tab-delimited report, responds with a list of list(title="All Data", link=userLink, fileLink=fileLink, fileText=fileText, download = TRUE)
   
   # Change well type names
@@ -44,7 +44,11 @@ saveCsvReport <- function(inputTable, saveLocation, experiment, parameters, reco
   
   initialFileLocation <- tempfile("allData", fileext = ".csv")
   write.table(inputTable, file=initialFileLocation, quote=TRUE, na="", row.names=FALSE, sep=",")
-  fileText <- readChar(initialFileLocation, nchar=file.info(initialFileLocation)$size)
+  if (!skipFileText) {
+    fileText <- readChar(initialFileLocation, nchar=file.info(initialFileLocation)$size)
+  } else {
+    fileText <- NULL
+  }
   finalLocation <- file.path(saveLocation, "allData.csv")
   finalLocation <- moveFileToFileServer(initialFileLocation, experiment = experiment, recordedBy = recordedBy, 
                                         targetPath = finalLocation)

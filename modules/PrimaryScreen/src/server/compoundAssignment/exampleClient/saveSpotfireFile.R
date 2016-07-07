@@ -1,4 +1,4 @@
-saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove) {
+saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove, skipFileText=FALSE) {
   # Saves spotfire file with correct column names
 
   # Change well type names
@@ -42,7 +42,11 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   fileLocation <- getUploadedFilePath(file.path(saveLocation,"spotfire-DRAFT.txt"))
   write.table(inputTable, file=fileLocation, quote=FALSE, na="", row.names=FALSE, sep="\t")
   
-  fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
+  if (!skipFileText) {
+    fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
+  } else {
+    fileText <- NULL
+  }
   
   # targetPath is only for testing
   finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
