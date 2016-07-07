@@ -146,7 +146,7 @@ $(function() {
 		},
 
 		render: function () {
-			self = this;
+			var self = this;
 			MarvinJSUtil.getEditor("#newSaltMarvinSketch").then(function (sketcherInstance) {
 				self.marvinSketcherInstance = sketcherInstance;
 				if (typeof window.marvinStructureTemplates !== 'undefined') {
