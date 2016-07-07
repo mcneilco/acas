@@ -34,7 +34,7 @@
 				typeName: "fileValue"
 			,
 				kindName: "plate order"
-				typeName: "stringValue"
+				typeName: "clobValue"
 			,
 				kindName: "compound barcodes"
 				typeName: "stringValue"

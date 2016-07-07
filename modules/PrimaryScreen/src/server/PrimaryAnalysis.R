@@ -2336,7 +2336,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     setkey(plateOrderDT, plateOrder)
     # Save to experiment for screening campaigns
     updateValueByTypeAndKind(paste(plateOrderDT$assayBarcode, collapse = ","), "experiment", experiment$id, 
-                             "metadata", "experiment metadata", "stringValue", "plate order")
+                             "metadata", "experiment metadata", "clobValue", "plate order")
     
     # TODO: move to correct location
     # Removes rows that have no compound data
