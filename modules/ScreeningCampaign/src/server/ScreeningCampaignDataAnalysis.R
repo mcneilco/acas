@@ -28,7 +28,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     confPlateOrderFrame <- ldply(confirmationExperimentCodes, getPlateOrderForExperiment)
     wideDataConf <- merge(wideDataConf, as.data.table(confPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
     wideDataConf[, compoundName := getCompoundName(batchCode)]
-    wideDataAll <- rbind(wideDataPrimary, wideDataConf)
+    wideDataAll <- rbind(wideDataPrimary, wideDataConf, fill = TRUE)
   } else {
     wideDataAll <- copy(wideDataPrimary)  # Need to copy as wideDataAll column names are changed for spotfire file
   }
@@ -62,8 +62,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   }
   wideDataAll[, zPrimeByPlate := computeZPrimeByPlate2(.SD), by=assayBarcode]
   summaryInfo$reports <- saveReports(NULL, wideDataAll, saveLocation=reportLocation, experiment, inputParameters, user, 
-                                           customSourceFileMove=customSourceFileMove)
-  summaryInfo$reports[[1]]$fileText <- NULL  # clear up memory
+                                           customSourceFileMove=customSourceFileMove, skipFileText=TRUE)
   for (singleReport in summaryInfo$reports) {
     summaryInfo$info[[singleReport$title]] <- paste0(
       '<a href="', singleReport$link, '" target="_blank" ',
@@ -234,7 +233,7 @@ getPlateOrderForExperiment <- function(experimentCode) {
   experimentState <- Find(function(x) {x$ignored == FALSE}, experimentStates)
   
   # checking lists cached in database
-  plateOrderValues <- getValuesByTypeAndKind(experimentState, "stringValue_plate order")
+  plateOrderValues <- getValuesByTypeAndKind(experimentState, "clobValue_plate order")
   plateOrderValue <- Find(function(x) {x$ignored == FALSE}, plateOrderValues)
   if (is.null(plateOrderValue)) {
     sourceFileValues <- getValuesByTypeAndKind(experimentState, "fileValue_source file")
@@ -252,14 +251,14 @@ getPlateOrderForExperiment <- function(experimentCode) {
                                plateOrder = 1:nrow(plateAssoc))
       # Save to experiment for next time
       updateValueByTypeAndKind(paste(plateOrder$assayBarcode, collapse = ","), "experiment", experiment$id, 
-                               "metadata", "experiment metadata", "stringValue", "plate order")
+                               "metadata", "experiment metadata", "clobValue", "plate order")
     } else {
       plateOrder <- data.frame(experimentCode = character(), 
                                assayBarcode = character(), 
                                plateOrder = numeric())
     }
   } else {
-    plateOrderList <- strsplit(plateOrderValue$stringValue, ",")[[1]]
+    plateOrderList <- strsplit(plateOrderValue$clobValue, ",")[[1]]
     plateOrder <- data.frame(experimentCode = experimentCode, 
                              assayBarcode = plateOrderList, 
                              plateOrder = 1:length(plateOrderList))
@@ -270,7 +269,7 @@ getExperimentData <- function (experimentCodes) {
   # Accepts a list of experiment codes, returns a data.table
   library(data.table)
   
-  getDataString <- "select e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
+  getDataString <- "select /*+ FIRST_ROWS(10) */ e.code_name as EXPT_CODE, eag.ANALYSIS_GROUP_ID, atg.treatment_group_id, s.id as SUBJECT_ID, 
     ss.ls_type_and_kind as SUB_STATE_TYPE_AND_KIND, sv.id as SUB_VALUE_ID, sv.ls_kind as VALUE_KIND, sv.ls_type as VALUE_TYPE, 
     sv.code_value, sv.numeric_value, sv.string_value, 
     sv.unit_kind, sv.concentration, sv.conc_unit
