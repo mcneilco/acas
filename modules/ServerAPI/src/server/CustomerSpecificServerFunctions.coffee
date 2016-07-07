@@ -445,3 +445,6 @@ exports.updateWellContent = (request) ->
 
 exports.updateContainersByContainerCodes = (request) ->
 	console.debug "inside base customer specific server function updateContainersByContainerCodes"
+
+exports.addContainerLogs = (request) ->
+	console.debug "inside base customer specific server function addContainerLogs"

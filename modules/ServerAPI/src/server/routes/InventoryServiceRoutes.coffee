@@ -1520,20 +1520,21 @@ exports.searchContainersInternal = (input, callback) ->
 		)
 
 exports.containerLogs = (req, resp) ->
-	exports.containerLogsInternal req.body, (json, statusCode) ->
+	exports.containerLogsInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.containerLogsInternal = (inputs, callback) ->
+exports.containerLogsInternal = (inputs, callCustom, callback) ->
 	validateContainerLogsInput inputs, (inputs, error) ->
 		if error == true
 			statusCode = 400
 			callback inputs, statusCode
 		else
-			exports.addContainerLogs inputs, (json, statusCode) ->
+			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
-exports.addContainerLogs = (inputs, callback) ->
+exports.addContainerLogs = (inputs, callCustom, callback) ->
+	callCustom  = callCustom != "0"
 	codeNames = _.uniq(_.pluck(inputs, "codeName"))
 	exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
 		containerModels = getContainerModels(containers)
@@ -1546,6 +1547,13 @@ exports.addContainerLogs = (inputs, callback) ->
 			containersToSave.push containerModel
 		containers = JSON.stringify(containersToSave)
 		exports.updateContainersInternal containers, (json, statusCode) ->
+			if callCustom
+				if csUtilities.addContainerLogs?
+					console.log "running customer specific server function addContainerLogs"
+					csUtilities.addContainerLogs inputs, (response) ->
+						console.log response
+				else
+					console.warn "could not find customer specific server function addContainerLogs so not running it"
 			callback json, statusCode
 
 getContainerModels = (containers) ->
