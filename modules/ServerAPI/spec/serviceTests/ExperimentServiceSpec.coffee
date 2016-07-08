@@ -1,9 +1,11 @@
 assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
-experimentServiceTestJSON = require '../testFixtures/ExperimentServiceTestJSON.js'
+acasHome = '../../../..'
+inventoryServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ExperimentServiceTestJSON.js"
+
 fs = require 'fs'
-config = require '../../../../conf/compiled/conf.js'
+config = require "#{acasHome}/conf/compiled/conf.js"
 
 
 parseResponse = (jsonStr) ->

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
+    "test": "mocha  --reporter spec --bail --check-leaks src/spec/ServerAPI/serviceTests/InventoryServiceSpec.js",
     "start": "node app.js",
     "startstubs": "node app.js stubsMode",
     "debug": "node --debug=5858 --nolazy app.js",

@@ -252,7 +252,7 @@ exports.ensureExists = (path, mask, cb) ->
 	return
 
 exports.makeAbsolutePath = (relativePath) ->
-	path.resolve(__dirname, "..",relativePath)
+	path.resolve(__dirname, "..",relativePath)+"/"
 
 exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []

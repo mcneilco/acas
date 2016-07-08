@@ -2,9 +2,9 @@ assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
 fs = require 'fs'
-config = require '../../../../conf/compiled/conf.js'
-csUtilities = require './CustomerSpecificServerFunctions.js'
-
+acasHome = '../../../..'
+config = require "#{acasHome}/conf/compiled/conf.js"
+csUtilities = require "#{acasHome}/src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
 
 parseResponse = (jsonStr) ->
 	try
@@ -16,6 +16,68 @@ parseResponse = (jsonStr) ->
 
 describe "Base ACAS Customer Specific Function Tests", ->
 	describe "User information testing", ->
+		if process.env.NODE_ENV == "integration"
+			describe "User creation", ->
+				before (done) ->
+					@.timeout(20000)
+					options =
+						method: 'POST'
+						url: "#{config.all.client.service.persistence.fullpath}/authors"
+						headers:
+							'content-type': 'application/json'
+						body:
+							firstName: 'Bob'
+							lastName: 'Roberts'
+							userName: 'bob'
+							emailAddress: 'bob@mcneilco.com'
+							version: 0
+							enabled: true
+							locked: false
+							password: '5en6G6MezRroT3XKqkdPOmY/BfQ='
+							recordedBy: 'bob'
+							recordedDate: 1457542406000
+							lsType: 'default'
+							lsKind: 'default'
+						json: true
+					request options, (error, response, body) =>
+						@response = response
+						@body = body
+						if error
+							throw new Error(error)
+						done()
+				it "should return a status code of 201", ->
+					expectedReponse = 201
+					if @body?
+						expectedReponse = 500
+						assert.equal(@body.indexOf("Constraint") > -1, true, "Received an error when trying to register user, not because of a constraint violcation though")
+					assert.equal(@response?,true, "Did not register user properly. Got no response from tomcat")
+					assert.equal(@response.statusCode, expectedReponse, "status code "+@response.statusCode+" returned instead")
+			describe "Author role creation", ->
+				before (done) ->
+					@.timeout(20000)
+					options =
+						method: 'POST'
+						url: "http://#{config.all.client.service.persistence.host}:#{config.all.client.service.persistence.port}/acas/authorroles"
+						headers:
+							accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+							'content-type': 'application/x-www-form-urlencoded'
+						form:
+							userEntry: '5'
+							roleEntry: '1'
+					request options, (error, response, body) =>
+						@response = response
+						@body = body
+						if error
+							throw new Error(error)
+						done()
+				it "should return a status code of 302", ->
+					expectedReponse = 302
+					if @body?
+						expectedReponse = 500
+						assert.equal(@body.indexOf("Constraint") > -1, true, "Received an error when trying to add ls roles")
+					assert.equal(@response?,true, "Did not register user properly. Got no response from tomcat")
+					assert.equal(@response.statusCode, expectedReponse, "status code "+@response.statusCode+" returned instead")
+
 		describe "Get user", ->
 			before (done) ->
 				@.timeout(20000)
@@ -27,10 +89,10 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				assert.equal @user.email, "bob@mcneilco.com"
 			it "should return an array of roles", ->
 				assert.equal @user.roles.length > 0, true
-			it "should user bob shoud have role admin", ->
+			it "should user bob shoud have role ROLE_ACAS-USERS", ->
 				roleFound = false
 				_.each @user.roles, (role) ->
-					if role.roleEntry.roleName == "admin" then roleFound = true
+					if role.roleEntry.roleName == "ROLE_ACAS-USERS" then roleFound = true
 				assert.equal roleFound, true
 
 	describe "entity file handling", ->
@@ -229,7 +291,6 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				@.timeout(20000)
 				csUtilities.getPreferredBatchIds requestData.requests, (response) =>
 					@response = response
-					console.log response
 					done()
 			it "should return 3 results", ->
 				assert.equal @response.length, 3
@@ -272,7 +333,6 @@ describe "Base ACAS Customer Specific Function Tests", ->
 				#global.specRunnerTestmode = true
 				csUtilities.getPreferredParentIds requestData.requests, (response) =>
 					@response = response
-					console.log response
 					done()
 			it "should return 3 results", ->
 				assert.equal @response.length, 3

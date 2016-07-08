@@ -436,6 +436,20 @@ module.exports = (grunt) ->
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/server/r",module)}"
 					dest: "#{grunt.config.get('build')}/src/r"
 				]
+			serviceTests_r:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.R"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						module = replaced.split("/")[0]
+						console.log "#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/spec",module)}"
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/spec",module)}"
+					dest: "#{grunt.config.get('build')}/src/r/spec"
+				]
 			module_routes_js:
 				files: [
 					expand: true
@@ -533,6 +547,9 @@ module.exports = (grunt) ->
 			module_serviceTests_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee", "#{i}/public/conf/serviceTests/*.coffee"]
 				tasks: "newer:coffee:module_serviceTests"
+			serviceTests_r:
+				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.R"]
+				tasks: "newer:copy:serviceTests_r"
 			app_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/*.coffee"]
 				tasks: "newer:coffee:app"

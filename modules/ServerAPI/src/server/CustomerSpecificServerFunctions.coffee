@@ -95,7 +95,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	)
 exports.getUser = (username, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
+	if config.all.server.roologin.getUserLink? and !global.specRunnerTestmode
 		request = require 'request'
 		request(
 			headers:
@@ -231,7 +231,6 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
-
 	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
 	if relEntitiesFolder==null
 		callback false

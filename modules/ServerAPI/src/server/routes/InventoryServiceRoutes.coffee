@@ -1533,6 +1533,33 @@ exports.containerLogsInternal = (inputs, callCustom, callback) ->
 			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
+exports.getOrCreateContainer = (container, callback) ->
+	label = container.lsLabels[0].labelText
+	request = require 'request'
+	request.post
+		url: "http://localhost:"+config.all.server.nodeapi.port+"/api/getContainersByLabels?containerType=#{container.lsType}&containerKind=#{container.lsKind}"
+		json: true
+		body: [label]
+	, (error, response, body) =>
+		if !body[0].codeName?
+			request.post
+				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/containers"
+				json: true
+				body: container
+			, (error, response, body) =>
+				callback body
+		else
+			callback body[0].container
+
+exports.getOrCreateContainers = (containers, callback) ->
+	responseArray = []
+	containers.forEach (container) =>
+		exports.getOrCreateContainer container, (response) =>
+			responseArray.push response
+			if responseArray.length == containers.length
+				callback responseArray
+
+
 exports.addContainerLogs = (inputs, callCustom, callback) ->
 	callCustom  = callCustom != "0"
 	codeNames = _.uniq(_.pluck(inputs, "codeName"))
