@@ -40,6 +40,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/searchContainers', exports.searchContainers
 	app.post '/api/containerLogs', exports.containerLogs
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -78,6 +79,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
 	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -1622,3 +1624,39 @@ validateContainerLogInput = (input, callback) ->
 	output = input
 	output.errors = errors
 	callback output, error
+
+exports.getContainerCodeNamesByContainerValue = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getContainerCodeNamesByContainerValueInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		request = require 'request'
+		console.debug 'calling service', baseurl
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify requestObject
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				console.debug 'returned success from service', baseurl
+				callback json
+			else
+				console.error 'got ajax error trying to get getContainerCodeNamesByContainerValue'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify "getContainerCodeNamesByContainerValue failed"
+		)
