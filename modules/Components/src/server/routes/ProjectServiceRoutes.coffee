@@ -19,7 +19,7 @@ exports.getProjects = (req, resp) ->
 		csUtilities.getProjects req, resp
 
 exports.getProjectStubs = (req, resp) ->
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	if !req.user?
 		req.user = {}
 		req.user.username = req.params.username
