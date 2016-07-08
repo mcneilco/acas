@@ -2,7 +2,7 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas:ACASDEV-591-multiple-controls
+    image: mcneilco/acas:1.9.0-release
     restart: always
     ports:
      - "3000:3000"
@@ -28,7 +28,7 @@ services:
 # Start command
 #    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:ACASDEV-591-multiple-controls
+    image: mcneilco/racas:1.9.0-release
     restart: always
     ports:
      - "1080:1080"
@@ -71,7 +71,7 @@ services:
       - ./conf/docker/roo/environment/roo.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:cmpd-inventory-feature
+    image: mcneilco/acas-roo-server:1.9.0-release
     volumes:
      - /usr/local/tomcat/webapps/acas
     command: /bin/true
