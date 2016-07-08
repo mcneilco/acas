@@ -51,8 +51,8 @@
 # logging.logtoconsole=true
 # server.security.authstrategy=database
 # client.service.control.tolerance.percentage=0.01
-# New optional configuration additions
-# client.moduleMenus.headerName=ACAS
+# New optional configuration additions, formerly called client.moduleMenus.headerName
+# client.moduleMenus.logoText=ACAS
 # client.moduleMenus.homePageMessage=Welcome to ACAS
 # client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2015
 # server.service.persistence.filePath=${ACAS_HOME}/${server.datafiles.relative_path}
@@ -155,18 +155,29 @@ client.service.rapache.host=rservices
 client.service.rapache.path=r-services-api
 client.service.rapache.fullpath=http://${client.service.rapache.host}:${client.service.rapache.port}/${client.service.rapache.path}/
 
-################################
-# SAR
-################################
+
+###########################################################################
+#  ACAS SAR Values
+###########################################################################
+
+# Properties requiring aggregation on geometric mean
 server.sar.geomMean=[Ki,Kd,pH]
+
+# Title of leftmost column when no search string is entered
+# e.g. for Chanda should be "Gene ID"
 server.sar.defaultTitle ="Tested Entity Information"
+
 #options are bestLabel and ReferenceCode
 server.sar.csvLabel = bestLabel
-#options are ignoreOperators or includeOperators
+
+# options are ignoreOperators or includeOperators
 client.sar.sorting = includeOperators
-client.cmpdreg.host=host4.labsynch.com
-client.service.external.structure.url=http://${client.cmpdreg.host}:8080/cmpdreg/structureimage/lot/
-client.service.external.lotDetails.url=http://${client.cmpdreg.host}:8080/cmpdreg/#lot/
+
+# url to fetch structure images from
+client.service.external.structure.url=http://${client.host}:8080/cmpdreg/structureimage/lot/
+
+# url to lot details
+client.service.external.lotDetails.url=http://${client.host}:8080/cmpdreg/#lot/
 
 ################################
 # Uncategorized
@@ -227,17 +238,24 @@ server.log.level=DEBUG
 
 server.log.path=/home/runner/logs
 
+#config for whether project is required
 client.include.project=FALSE
+# config for whether project attribute is saved as part of an experiment
+client.save.project=FALSE
 client.path=
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
-client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.configuredViewers=DataViewer,LiveDesign
 client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.liveDesign.baseUrl=
 client.service.result.viewer.liveDesign.username=
 client.service.result.viewer.liveDesign.password=
-client.service.result.viewer.liveDesign.database=
+client.service.result.viewer.liveDesign.database.name=
+client.service.result.viewer.liveDesign.database.username=
+client.service.result.viewer.liveDesign.database.password=
+client.service.result.viewer.liveDesign.database.hostname=
+client.service.result.viewer.liveDesign.database.port=
 client.service.result.viewer.simpleSAR.baseUrl=
 client.service.result.viewer.seurat.protocolPrefix=http://${client.service.persistence.host}:9080/seurat/runseurat?cmd=newjob&AssayName=
 client.service.result.viewer.seurat.experimentPrefix=&AssayProtocol=
@@ -273,9 +291,10 @@ client.require.login=true
 server.service.external.file.type=blueimp
 server.service.external.file.service.url=
 
-# options for preferred batchid type are: SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString
+# options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://${client.cmpdreg.host}:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.separator=-
 server.service.external.project.url=
 server.service.external.report.registration.url=
 server.service.external.user.authentication.url=
@@ -283,8 +302,8 @@ server.service.external.user.information.url=
 server.service.external.logging.url=
 
 # Required if using Spotfire
-client.service.spotfire.host=dsantsptdxp
-client.service.spotfire.path=/Lead Discovery/HTSWells
+client.service.spotfire.host=
+client.service.spotfire.path=
 
 # Used by custom code for accessing inventory
 server.service.external.inventory.database.host=
@@ -300,19 +319,30 @@ server.security.authstrategy=database
 
 ## ACAS Home Page Options
 # If module is customized and the ACAS header name needs to be replaced, you can set the following options
-client.moduleMenus.headerName=ACAS
+client.moduleMenus.logoText=ACAS
 client.moduleMenus.homePageMessage=Welcome to ACAS
 client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2015
 # If summary statistics is an included feature, set the following to true
 client.moduleMenus.summaryStats=false
-client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://${client.cmpdreg.host}:8080/cmpdreg"},\
-                                     {"displayName": "Seurat", "href": "http://localhost:9080/seurat"}, \
-                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://${client.cmpdreg.host}:3000/CmpdRegBulkLoader"}, \
-                                     {"displayName": "Data Viewer", "href": "http://localhost:3000/dataViewer"}]
+# For navigation to external ACAS modules from ACAS homepage
+client.moduleMenus.modules.external=[{"displayName": "DataViewer", "href": "/DataViewer"},\
+                                     {"displayName": "Compound Registration", "href": "/CmpdReg"},\
+                                     {"displayName": "Compound Registration Bulk Loader", "href":"/CmpdRegBulkLoader"}]
+
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
 client.roles.htsAdmin=admin
+# client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
+# client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
+# client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
+# client.roles.acas.userRole=ROLE_ACAS-USERS
+# client.roles.acas.adminRole=ROLE_ACAS-ADMINS
+client.roles.loginRole=
+client.roles.cmpdreg.chemistRole=
+client.roles.cmpdreg.adminRole=
+client.roles.acas.userRole=
+client.roles.acas.adminRole=
 client.browser.enableSearchAll=true
 client.containerInventory.search.maxResult=1000
 
@@ -320,6 +350,7 @@ client.containerInventory.search.maxResult=1000
 client.service.cmpdReg.persistence.host=${client.cmpdreg.host}
 client.service.cmpdReg.persistence.path=cmpdreg/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
+client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/cmpdreg
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
@@ -330,12 +361,13 @@ client.cmpdReg.showFileDate=true
 
 # Migration notes
 # ACAS 1.5 -> 1.6
+#
 # Module Menu configuration
 #
 # Navigation to external ACAS modules from ACAS homepage
-# Example: client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://demo.labsynch.com:8081/cmpdreg"},\
-                                     {"displayName": "Seurat", "href": "http://demo.labsynch.com:9080/seurat"}, \
-                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://demo.labsynch.com:3000/CmpdRegBulkLoader"}]
+# Example: client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "href": "http://localhost:8081/cmpdreg"},\
+                                     {"displayName": "Seurat", "href": "http://localhost:9080/seurat"}, \
+                                     {"displayName": "Compound Registration Bulk Loader", "href": "http://localhost:3000/CmpdRegBulkLoader"}]
 #
 # Curve fit model configuration
 #
@@ -344,7 +376,10 @@ client.cmpdReg.showFileDate=true
 #                                                     {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"public/src/modules/CurveAnalysis/src/server/ki.R"}]
 #
 client.curvefit.modelfitparameter.classes=[{"code":"4 parameter D-R", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4", "RSource":"src/r/CurveAnalysis/ll4.R"}, \
-                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R"}]
+                                            {"code":"Ki Fit", "parametersController":"DoseResponseKiAnalysisParametersController", "parametersClass": "DoseResponseKiAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKi", "RSource":"src/r/CurveAnalysis/ki.R"}, \
+                                            {"code":"4 parameter D-R IC50", "parametersController":"DoseResponseAnalysisParametersController", "parametersClass": "DoseResponseIC50AnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveLL4IC50", "RSource":"src/r/CurveAnalysis/ll4IC50.R"},\
+                                            {"code":"Michaelis-Menten", "parametersController":"DoseResponseKmAnalysisParametersController", "parametersClass": "DoseResponseKmAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveKm", "RSource":"src/r/CurveAnalysis/mm2.R"},\
+                                            {"code":"Substrate Inhibition", "parametersController":"DoseResponseSubstrateInhibitionAnalysisParametersController", "parametersClass": "DoseResponseSubstrateInhibitionAnalysisParameters", "plotCurveClass": "DoseResponsePlotCurveSubstrateInhibition", "RSource":"src/r/CurveAnalysis/substrateInhibition.R"}]
 
 # Lock when approved filter
 #
@@ -357,11 +392,38 @@ client.experiment.lockwhenapproved.filter=[{"lsType": "Bio Activity"}]
 # Protocols and experiments which should be hidden (to non-admin users) in the protocol/expt browser when the status is in the config below
 client.entity.hideStatuses=["deleted"]
 
+# client.entity.editingRoles/deletingRoles determine which users can edit/delete protocols/expts. Leave config empty if all users can edit/delete
+# use 'entityScientist' if want to restrict privileges to user saved in the scientist value
+# Example for restricting editing privs to user in entity's scientist value and users with admin role: client.entity.editingRoles=entityScientist,admin
+# client.entity.editingRoles=entityScientist,projectAdmin,admin
+# client.entity.deletingRoles=entityScientist,projectAdmin,admin
+client.entity.editingRoles=
+client.entity.deletingRoles=
+
 client.protocol.showAssayTreeRule=false
+
+## Cmpd Reg Bulk Loader Options
+client.service.cmpdReg.persistence.host=${client.service.persistence.host}
+client.service.cmpdReg.persistence.path=cmpdreg/api/v1
+client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
+
+# If project select is shown separately in the Configuration part of the GUI
+client.cmpdReg.showProjectSelect=true
+
+# Default status for experiments loaded thorugh experiment loader
+server.sel.experimentStatus=approved
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
 
+# Mark whether using internal plate registration for plate analysis
+server.service.internalPlateRegistration=false
+
+#TODO: remove later, support both
+server.service.genericSpecificPreProcessor=false
+
+# User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
+client.entity.approvalRole=
 
 client.service.preferred.batchid.path=/api/preferredBatchId
 client.service.project.path=/api/projects
@@ -407,9 +469,20 @@ server.support.smtp.port=25
 server.support.smtp.username=support@mcneilco.com
 server.support.smtp.password=null
 server.support.smtp.auth=false
+server.support.smtp.tls=false
+server.support.smtp.ssl=false
+
 
 client.roles.containerInventory.admin=${server.support.smtp.username}
 client.compoundInventory.enforceUppercaseBarcodes=true
 client.containerIventory.maxBarcodeLength=40
 
 client.basePath=/
+
+server.curveCurator.onRejectMakeReportedValuesNonPublic=false
+server.curveRender.drawPointsForRejectedCurve=true
+
+flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
+flyway.schema=acas
+flyway.database.username=${server.database.username}
+flyway.database.password=${server.database.password}

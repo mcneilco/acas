@@ -16,7 +16,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 
 exports.getAllCodeTableValues = (req, resp) ->
 	if global.specRunnerTestmode
-		codeTableServiceTestJSON = require '../public/javascripts/spec/testFixtures/codeTableServiceTestJSON.js'
+		codeTableServiceTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTableServiceTestJSON.js'
 		resp.end JSON.stringify codeTableServiceTestJSON['codes']
 	else
 		config = require '../conf/compiled/conf.js'
@@ -38,7 +38,7 @@ exports.getAllCodeTableValues = (req, resp) ->
 
 exports.getCodeTableValues = (req, resp) ->
 	if global.specRunnerTestmode
-		fullCodeTableJSON = require '../public/javascripts/spec/testFixtures/CodeTableJSON.js'
+		fullCodeTableJSON = require '../public/javascripts/spec/CodeTableJSON.js'
 		correctCodeTable = _.findWhere(fullCodeTableJSON.codes, {type:req.params.type, kind:req.params.kind})
 		resp.end JSON.stringify correctCodeTable['codes']
 	else
@@ -62,7 +62,7 @@ exports.getCodeTableValues = (req, resp) ->
 
 exports.postCodeTable = (req, resp) ->
 	if global.specRunnerTestmode
-		codeTablePostTestJSON = require '../public/javascripts/spec/testFixtures/codeTablePostTestJSON.js'
+		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePostTestJSON.js'
 		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		console.log "attempting to post new code table value"
@@ -88,7 +88,7 @@ exports.postCodeTable = (req, resp) ->
 exports.putCodeTable = (req, resp) ->
 	#console.log JSON.stringify req.body
 	if global.specRunnerTestmode
-		codeTablePostTestJSON = require '../public/javascripts/spec/testFixtures/codeTablePutTestJSON.js'
+		codeTablePostTestJSON = require '../public/javascripts/spec/Components/testFixtures/codeTablePutTestJSON.js'
 		resp.end JSON.stringify codeTablePostTestJSON.codeEntry
 	else
 		config = require '../conf/compiled/conf.js'

@@ -39,9 +39,12 @@
 # Stopped for transport
 
 runMain <- function(fileName,dryRun=TRUE,recordedBy) {
-  library('rcdk')
+  library('racas')
+  
   library('plyr')
   library('iterators')
+
+  library('rcdk')
   
   fileName <- getUploadedFilePath(fileName)
   
@@ -50,7 +53,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   # fileName <- "public/src/modules/BulkLoadContainersFromSDF/spec/specFiles/redactedCustomer_Mock data_Confirmation_Update.sdf"
   
   if (!grepl("\\.sdf$|\\.csv$",fileName)) {
-    stop("The input file must have extension .sdf or .csv")
+    stopUser("The input file must have extension .sdf or .csv")
   }
   
   tryCatch({
@@ -61,7 +64,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       moleculeList <- read.csv(fileName, blank.lines.skip=TRUE)
     }
   }, error = function(e) {
-    stop(paste("Error in loading the file:",e))
+    stopUser(paste("Error in loading the file:",e))
   })
   
   if (grepl("\\.sdf$",fileName)) {
@@ -80,7 +83,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
   differences <- setdiff(requiredProperties,availableProperties)
   
   if(length(differences)>0) {
-    stop(paste("Your file is missing:",paste(differences, sep = ", ")))
+    stopUser(paste("Your file is missing:",paste(differences, sep = ", ")))
   }
   
   # TODO: if the compound already exists, give a warning before loading
@@ -121,7 +124,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
       if(testMode) {
         propertyTable <- propertyTable[!is.na(propertyTable$batchName), ]
       } else {
-        stop(paste0("Could not find compounds: ", paste(missingCompounds, collapse = ', '), ". Make sure that all compounds have already been loaded into Seurat and you are not using a new lot."))
+        stopUser(paste0("Could not find compounds: ", paste(missingCompounds, collapse = ', '), ". Make sure that all compounds have already been loaded into Seurat and you are not using a new lot."))
       }
     }
     
@@ -129,7 +132,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     propertyTable$ALIQUOT_VOLUME <- as.numeric(propertyTable$ALIQUOT_VOLUME)
     
     if (any(is.na(c(propertyTable$ALIQUOT_CONC, propertyTable$ALIQUOT_VOLUME)))) {
-      stop("Some of the concentrations or volumes are not numbers")
+      stopUser("Some of the concentrations or volumes are not numbers")
     }
     
     # Convert 'mM' to 'uM'
@@ -137,7 +140,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     propertyTable$ALIQUOT_CONC_UNIT[propertyTable$ALIQUOT_CONC_UNIT == "mM"] <- "uM"
     
     if (any(propertyTable$ALIQUOT_CONC_UNIT != "uM")) {
-    	stop("All concentration units must be uM or mM")
+    	stopUser("All concentration units must be uM or mM")
     }
     
     # Save plate
@@ -147,7 +150,7 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     newFileName <- paste0("uploadedPlates/", basename(fileName))
     
     if(!file.exists(fileName)) {
-      stop(paste("Missing file", fileName))
+      stopUser(paste("Missing file", fileName))
     }
     file.rename(fileName, paste0(racas::getUploadedFilePath(newFileName)))
     
@@ -162,8 +165,11 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     
     savedPlates <- saveContainers(plateList)
     
-    plateIds <- data.frame(barcode=barcodes, plateId=sapply(savedPlates,getElement, "id"))
-    
+    idCodeNameFrame <- ldply(savedPlates, function(x) {
+      return(data.frame(id = x$id, codeName = x$codeName, stringsAsFactors = FALSE))
+    })
+    idCodeNameFrame <- idCodeNameFrame[match(vapply(plateCodeNameList, getElement, "", name="autoLabel"), idCodeNameFrame$codeName), ]
+    plateIds <- data.frame(barcode=barcodes, plateId=idCodeNameFrame$id)
     propertyTable$plateId <- plateIds$plateId[match(propertyTable$ALIQUOT_PLATE_BARCODE,plateIds$barcode)]
     
     # Save wells
@@ -180,8 +186,11 @@ runMain <- function(fileName,dryRun=TRUE,recordedBy) {
     names(wellList) <- NULL
     
     savedWells <- saveContainers(wellList)
-    
-    propertyTable$wellId <- sapply(savedWells, getElement, "id")
+    idCodeNameFrame <- ldply(savedWells, function(x) {
+      return(data.frame(wellId = x$id, codeName = x$codeName, stringsAsFactors = FALSE))
+    })
+    idCodeNameFrame <- idCodeNameFrame[match(propertyTable$wellCodeName, idCodeNameFrame$codeName), ]
+    propertyTable$wellId <- idCodeNameFrame$wellId
     
     # Save interactions
     propertyTable$interactionCodeName <- unlist(getAutoLabels(thingTypeAndKind="interaction_containerContainer",
@@ -334,8 +343,10 @@ createPlateWellInteraction <- function(wellId, plateId, interactionCodeName, lsT
 }
 
 bulkLoadContainersFromSDF <- function(request) {
-  library('racas')
   options(stringsAsFactors = FALSE)
+  library('racas')
+  globalMessenger <- messenger()$reset()
+  globalMessenger$devMode <- FALSE
   
   # Collect the information from the request
   request <- as.list(request)
@@ -347,42 +358,29 @@ bulkLoadContainersFromSDF <- function(request) {
   dryRun <- interpretJSONBoolean(dryRun)
   
   # Run the main function with error handling
-  loadResult <- tryCatch.W.E(runMain(fileName,dryRun,recordedBy))
+  loadResult <- tryCatchLog(runMain(fileName,dryRun,recordedBy))
   
-  # If the output has class simpleError, save it as an error
-  errorList <- list()
-  if(class(loadResult$value)[1]=="simpleError") {
-    errorList <- list(loadResult$value$message)
-    loadResult$errorList <- errorList
-    loadResult$value <- NULL
-  }
+  allTextErrors <- getErrorText(loadResult$errorList)
+  warningList <- getWarningText(loadResult$warningList)
   
-  # Save warning messages (but not the function call, as it is only useful while programming)
-  loadResult$warningList <- lapply(loadResult$warningList, getElement, "message")
-  if (length(loadResult$warningList)>0) {
-    loadResult$warningList <- strsplit(unlist(loadResult$warningList),"\n")
-  }
-    
   # Organize the error outputs
-  loadResult$errorList <- errorList
-  hasError <- length(errorList) > 0
-  hasWarning <- length(loadResult$warningList) > 0
-  
-  htmlSummary <- createHtmlSummary(hasError,errorList,hasWarning,loadResult$warningList,summaryInfo=loadResult$value,dryRun)
+  hasError <- length(allTextErrors) > 0
+  hasWarning <- length(warningList) > 0
   
   errorMessages <- list()
   
   # This is code that could put the error and warning messages into a format that is displayed at the bottom of the screen
-  for (singleError in errorList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="error", message=singleError)))
-  }
+  errorMessages <- c(errorMessages, lapply(allTextErrors, function(x) {list(errorLevel="error", message=x)}))
+  errorMessages <- c(errorMessages, lapply(warningList, function(x) {list(errorLevel="warning", message=x)}))
+  #   errorMessages <- c(errorMessages, list(list(errorLevel="info", message=countInfo)))
   
-  for (singleWarning in loadResult$warningList) {
-    errorMessages <- c(errorMessages, list(list(errorLevel="warning", message=singleWarning)))
-  }
+  # Create the HTML to display
+  htmlSummary <- createHtmlSummary(hasError, allTextErrors, hasWarning, warningList, 
+                                   summaryInfo=loadResult$value, dryRun)
+  
   
   response <- list(
-    commit= !hasError,
+    commit= (!dryRun && !hasError),
     transactionId= loadResult$value$lsTransactionId,
     results= list(
       id= loadResult$value$lsTransactionId,
@@ -396,6 +394,6 @@ bulkLoadContainersFromSDF <- function(request) {
     errorMessages= errorMessages
   )
   
-  return( response) 
+  return(response) 
 }
 

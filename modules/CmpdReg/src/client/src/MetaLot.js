@@ -1,0 +1,360 @@
+$(function() {
+
+	window.MetaLot = Backbone.Model.extend({
+
+		initialize: function() {
+			if (this.has('json') ) {
+				var lotjs = this.get('json');
+
+
+                // Depending on mode,
+                // json comes in with lot->saltForm->parent hierarchy,
+                // or lot->saltForm lot->parent
+                // but MetaLot is programmed flat to be compatible with other models
+                // Flatten here
+                if (window.configuration.metaLot.saltBeforeLot) {
+                    if (lotjs.lot.saltForm){
+                        if (lotjs.lot.saltForm.parent){
+                            this.set({parent: new Parent({json: lotjs.lot.saltForm.parent})});
+                        } else {
+	                        this.set({parent: new Parent({
+	                        		molStructure: this.get('parentStructure'),
+				                    molWeight: this.get('molWeight'),
+				                    molFormula: this.get('molFormula')
+	                        	})});
+                        }
+                        lotjs.lot.saltForm.isosalts = lotjs.isosalts;
+                        this.set({saltForm: new SaltForm({json: lotjs.lot.saltForm})});
+                    } else {
+                        this.set({saltForm: new SaltForm()});
+                    }
+                } else {
+                    if (lotjs.lot.parent){
+                        if (lotjs.lot.saltForm) {
+                            lotjs.lot.parent.parentAliases = lotjs.lot.saltForm.parent.parentAliases;
+                        }
+                        this.set({parent: new Parent({json: lotjs.lot.parent})});
+                    } else {
+                        this.set({parent: new Parent({
+                        		molStructure: this.get('parentStructure'),
+			                    molWeight: this.get('molWeight'),
+			                    molFormula: this.get('molFormula')
+                        	})});
+                    }
+                    if (lotjs.lot.saltForm){
+                        lotjs.lot.saltForm.isosalts = lotjs.isosalts;
+                        this.set({saltForm: new SaltForm({json: lotjs.lot.saltForm})});
+                    } else {
+                        this.set({saltForm: new SaltForm()});
+                    }
+                }
+
+                lotjs.lot.fileList = lotjs.fileList;
+                this.set({lot: new Lot({json: lotjs.lot})});
+			} else if ( this.has('parentStructure') ) {
+				this.set({
+                    saltForm: new SaltForm(),
+                    parent: new Parent({
+                    	molStructure: this.get('parentStructure'),
+                    	molImage: this.get('parentImage'),
+	                    molWeight: this.get('molWeight'),
+	                    molFormula: this.get('molFormula')
+                    }),
+                    lot: new Lot({isVirtual: this.get('isVirtual')})
+                });
+			}
+		},
+
+		getModelForSave: function() {
+            var sf = this.get('saltForm').getModelForSave()
+
+            if (window.configuration.metaLot.saltBeforeLot) {
+                sf.set({
+                    parent: this.get('parent').getModelForSave()
+                });
+            }
+
+            var lot = this.get('lot').getModelForSave();
+            lot.set({saltForm: sf});
+
+            if (!window.configuration.metaLot.saltBeforeLot) {
+                lot.set({parent: this.get('parent').getModelForSave()});
+            }
+            var mts = new Backbone.Model({
+                lot: lot,
+                fileList: new Backbone.Collection(lot.get('fileList')),
+                isosalts: sf.get('isosalts')
+            });
+            mts.get('lot').unset('fileList');
+            mts.get('lot').get('saltForm').unset('isosalts');
+            return mts;
+		}
+
+	});
+
+
+    window.MetaLotController = Backbone.View.extend({
+		template: _.template($('#MetaLotView_template').html()),
+
+		events: {
+            'click .saveButton': 'save',
+            'click .backButton': 'back',
+            'click .cancelButton': 'close',
+            'click .newLotButton': 'newLot'
+		},
+
+		initialize: function() {
+			//TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
+			$(this.el).html(this.template());
+			_.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated');
+
+            var eNoti = this.options.errorNotifList;
+
+            if(this.options.user) {
+                this.user = this.options.user;
+                if(this.model.get('lot').isNew()) {
+                    this.model.get('lot').set({chemist: this.user});
+                }
+            } else {
+                this.user = null;
+            }
+            this.parentController = new ParentController({
+                model: this.model.get('parent'),
+                el: this.$('.LotForm_ParentView'),
+                errorNotifList: eNoti,
+                readMode: false
+            });
+            this.salts = new Salts()
+            this.salts.fetch();
+            this.isotopes = new Isotopes();
+            this.isotopes.fetch();
+            this.saltFormController = new SaltFormController({
+                model: this.model.get('saltForm'),
+                salts: this.salts,
+                isotopes: this.isotopes,
+                el: this.$('.LotForm_SaltFormView'),
+                errorNotifList: eNoti
+            });
+            this.lotController = new LotController({
+                model: this.model.get('lot'),
+                el: this.$('.LotForm_LotView'),
+                errorNotifList: eNoti
+            });
+
+            if (eNoti!=null) {
+                this.bind('notifyError', eNoti.add);
+                this.bind('clearErrors', eNoti.removeMessagesForOwner);
+            }
+		},
+
+		render: function() {
+            this.setupButtonsAndTitles();
+
+            this.parentController.render();
+            this.saltFormController.render();
+            if(this.model.get('lot').get('isVirtual')) {
+                this.saltFormController.hide();
+            }
+            this.lotController.render();
+            if(!this.allowedToUpdate()) {
+                this.lotController.disableAll();
+                this.parentController.setAliasToReadOnly();
+            } else {
+                this.parentController.setAliasToEdit();
+            }
+
+            this.$('.NewLotSuccessView').hide();
+            if (appController) {
+                appController.setDocumentTitle(this.model.get('lot').get('corpName'));
+            }
+
+			return this;
+		},
+
+        setupButtonsAndTitles: function() {
+            var lisb = window.configuration.metaLot.lotCalledBatch;
+            if (this.model.get('lot').isNew()){
+                this.$('.newLotButton').hide();
+                this.$('.saveButton').addClass('saveImage');
+                this.$('.saveButton').removeClass('updateImage');
+                this.$('.cancelButton').addClass('cancelImage');
+                this.$('.cancelButton').removeClass('closeImage');
+                if (!this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()){
+                    this.$('.formTitle').html('New '+(lisb?'batch':'lot')+' of '+this.model.get('saltForm').get('corpName'));
+                }
+                if (this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()){
+                    if (window.configuration.metaLot.saltBeforeLot) {
+                        this.$('.formTitle').html('New Salt of '+this.model.get('parent').get('corpName'));
+                    } else {
+                        this.$('.formTitle').html('New '+(lisb?'Batch':'Lot')+' of '+this.model.get('parent').get('corpName'));
+                    }
+                }
+                if (this.model.get('parent').isNew()){
+                    this.$('.formTitle').html('New compound and '+(lisb?'batch':'lot'));
+                }
+                if (this.model.get('lot').get('isVirtual')){
+                    this.$('.formTitle').html('New virtual '+(lisb?'batch':'lot'));
+                }
+
+            } else {
+                this.$('.saveButton').removeClass('saveImage');
+                this.$('.saveButton').addClass('updateImage');
+                this.$('.cancelButton').removeClass('cancelImage');
+                this.$('.cancelButton').addClass('closeImage');
+                this.$('.backButton').hide();
+                if(this.allowedToUpdate()) {
+                    this.$('.formTitle').html('Edit '+(lisb?'Batch':'Lot')+' '+this.model.get('lot').get('corpName'));
+                } else {
+                    this.$('.formTitle').html((lisb?'Batch':'Lot')+' Details for '+this.model.get('lot').get('corpName'));
+                }
+                this.$('.newLotButton').show();
+                if (this.model.get('lot').get('isVirtual')){
+                    this.$('.newLotButton').hide();
+                    this.$('.saveButton').hide();
+                }
+                if(!this.allowedToUpdate()) {
+                     this.$('.saveButton').hide();
+                }
+
+           }
+
+        },
+
+        save: function() {
+            this.trigger('clearErrors', "MetaLotController");
+            this.updateModel();
+	        mlself = this;
+            window.fooMODEL = this.model;
+	        this.saltFormController.updateModel(function(){
+		        if (mlself.saltFormController.model.isNew()) {
+			        mlself.saltFormController.model.set({
+				        'chemist': mlself.lotController.model.get('chemist')
+			        });
+		        }
+
+		        if (!mlself.isValid()) {
+			        return;
+	            }
+
+	            var mts = mlself.model.getModelForSave();
+
+	            if (mlself.model.get('lot').isNew()) {
+	                var successFunct = mlself.newLotSaved;
+	            } else {
+	                var successFunct = mlself.lotUpdated;
+	            }
+
+				if(window.configuration.serverConnection.connectToServer) {
+	                var url = window.configuration.serverConnection.baseServerURL+"metalots";
+	            } else {
+	                var url = "spec/testData/Lot.php";
+	            }
+
+	            var lisb = window.configuration.metaLot.lotCalledBatch;
+		        mlself.trigger('notifyError', {
+	                owner: 'MetaLotController',
+	                errorLevel: 'warning',
+	                message: 'Saving '+(lisb?'batch':'lot')+'...'
+	            });
+		        mlself.delegateEvents({}); // stop listening to buttons
+
+		        $.ajax({
+	                type: "POST",
+	                url: url,
+	                data: JSON.stringify(mts),
+	                dataType: "json",
+	                contentType: 'application/json',
+	                success: successFunct,
+	                error: function(error) {
+		                mlself.trigger('clearErrors', "MetaLotController");
+	                    var resp = $.parseJSON(error.responseText);
+	                    _.each(resp, function(err) {
+		                    mlself.trigger('notifyError', {owner: "MetaLotController", errorLevel: err.level, message: err.message});
+	                    });
+		                mlself.delegateEvents(); // start listening to events
+	                }
+	            });
+	        });
+        },
+
+        newLotSaved: function(message) {
+            this.trigger('clearErrors', "MetaLotController");
+            var newLotSuccessController = new NewLotSuccessController({
+                el: this.$('.NewLotSuccessView'),
+                corpName: message.lot.corpName,
+                buid: message.lot.buid
+            });
+            newLotSuccessController.render();
+
+        },
+
+        lotUpdated: function(response) {
+            this.trigger('clearErrors', "MetaLotController");
+            // the form gets re-rendered, so we don't need to turn event listening back on
+            // here since it will result in multiple listeners firing for the same event
+            // - ms, 10/23/15
+            //this.delegateEvents(); // start listening to events
+            this.trigger('lotSaved', response);// RestratioController listens but does nothing at the moment
+            this.trigger('notifyError', {owner: "MetaLotController", errorLevel: "info", message: "Lot save succesful"});
+            // use the router / appController to re-render the form with the updated data
+            appController.updateLot(response);
+        },
+
+        back: function() {
+            this.trigger('lotBack');
+            this.hide();
+        },
+
+		updateModel: function() {
+            this.lotController.updateModel();
+            if (this.lotController.model.isNew() && this.user!=null) {
+                this.lotController.model.set({
+                    'registeredBy': this.user
+                });
+            }
+            this.parentController.updateModel();
+            if (this.parentController.model.isNew()) {
+                this.parentController.model.set({
+                    'chemist': this.lotController.model.get('chemist')
+                });
+            }
+        },
+
+        isValid: function() {
+            return (this.lotController.isValid() &&
+                   this.saltFormController.isValid() &&
+                   this.parentController.isValid());
+        },
+        show: function() {
+            $(this.el).show();
+		},
+
+		hide: function() {
+            $(this.el).hide();
+		},
+
+        close: function() {
+            this.hide();
+            appController.reset();
+        },
+
+        newLot: function() {
+            window.open("#register/"+this.lotController.model.get('corpName'));
+
+        },
+
+        allowedToUpdate: function() {
+            var chemist = this.model.get('lot').get('chemist');
+
+            if( this.user==null || chemist==null || this.model.get('lot').isNew()) return true; // test mode or new
+
+            if(this.user.get('isAdmin') || this.user.get('code')==chemist.get('code')) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+	});
+
+});

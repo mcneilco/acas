@@ -1,0 +1,55 @@
+<script type="text/template" id="ParentProtocolView" xmlns="http://www.w3.org/1999/html">
+    <h4 class="title">Parent Protocol</h4>
+    <div class="form-horizontal">
+        <div class="row-fluid">
+            <div class="span7">
+                    <div class="control-group bv_group_protocolName">
+                        <label class="control-label">*Protocol Name</label>
+                        <div class="controls">
+                            <input class="bv_protocolName" style="width:336px;" type="text" placeholder="">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">Code</label>
+                        <div class="controls">
+                            <span class="uneditable-input bv_protocolCode" style="width:336px;">autofill when saved</span>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label">*Child Protocol</label>
+                        <div class="controls">
+                            <span class="bv_childProtocolList"></span>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- SAVE AND CANCEL -->
+            <div class="span7 bv_saveAndCancelButtons" style="margin-left:10px;">
+                <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;margin-top:0px;">Save</button>
+                <!--<button type="button" class="btn bv_newEntity pull-right" style="margin-right:5px;">Clear Form</button>-->
+                <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-top:0px;margin-right:5px;margin-left:5px;">Cancel</button>
+                <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;"></div>
+                <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;">Saving...</div>
+                <div class="bv_saveFailed pull-right hide" style="padding-top:5px;color:red;">Save Failed</div>
+                <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+                <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
+                <div class="bv_cancelFail pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Failed</div>
+            </div>
+         </div>
+    </div>
+</script>
+
+
+<script type="text/template" id="ChildProtocolItemView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_childProtocolWrapper" style="margin-bottom: 10px;">
+        <span class="control-group bv_group_childProtocol">
+            <select class="bv_childProtocol" style="width:350px;"></select>
+            <button class="close bv_deleteChildProtocol" style="">&times;</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="ChildProtocolItemListView" xmlns="http://www.w3.org/1999/html">
+    <span class="bv_childProtocolInfo"></span>
+    <button class="btn bv_addChildProtocolButton pull-right">Add Protocol</button>
+</script>

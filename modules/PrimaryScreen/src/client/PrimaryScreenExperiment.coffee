@@ -8,7 +8,9 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 
 	validate: (attrs) =>
 		errors = []
-		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
+		# Possible issue: this lets letters following the numbers pass, like "12341a"
+		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
+		if (not readPositionIsNumeric or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -21,8 +23,141 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 		else
 			return null
 
-class window.TransformationRule extends Backbone.Model
+class window.PrimaryAnalysisTimeWindow extends Backbone.Model
 	defaults:
+		position: 1
+		statistic: "max"
+		windowStart: ""
+		windowEnd: ""
+		unit: "s"
+
+	validate: (attrs) =>
+		errors = []
+		ws = attrs.windowStart
+		if _.isNaN(ws) or ws is "" or ws is null or ws is undefined or isNaN(ws)
+			errors.push
+				attribute: 'timeWindowStart'
+				message: "Window Start must be a number"
+		we = attrs.windowEnd
+		if _.isNaN(we) or we is "" or we is null or we is undefined or isNaN(we)
+			errors.push
+				attribute: 'timeWindowEnd'
+				message: "Window End must be a number"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.StandardCompound extends Backbone.Model
+	defaults:
+		standardNumber: 1
+		batchCode: ""
+		concentration: ""
+		concentrationUnits: "uM"
+		standardType: "unassigned"
+
+	validate: (attrs) =>
+		errors = []
+		batchCode = attrs.batchCode
+		if batchCode is "" or batchCode is undefined or batchCode is "invalid" or batchCode is null
+			errors.push
+				attribute: 'batchCode'
+				message: "A registered batch number must be provided."
+		# concentration is allowed to be "" for vehicle controls
+		conc = attrs.concentration
+		if _.isNaN(conc) or conc is null or conc is undefined or isNaN(conc)
+			errors.push
+				attribute: 'concentration'
+				message: "Concentration must be a number"
+		st = attrs.standardType
+		if st is "" or st is null or st is undefined or st is "unassigned"
+			errors.push
+				attribute: 'standardType'
+				message: "Standard Type must be selected"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.Additive extends Backbone.Model
+	defaults:
+		additiveNumber: 1
+		batchCode: ""
+		concentration: ""
+		concentrationUnits: "uM"
+		additiveType: ""
+	validate: (attrs) =>
+		errors = []
+		# Add later: batch code validation? or not?
+		addType = attrs.additiveType
+		if addType is "" or addType is null or addType is undefined
+			errors.push
+				attribute: 'additiveType'
+				message: "Additive Type must be selected"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+
+class window.ControlSetting extends Backbone.Model
+	defaults:
+		standardNumber: "1"
+		defaultValue: ""
+
+	validate: (attrs) =>
+		errors = []
+		if attrs.standardNumber is "unassigned" or attrs.standardNumber is null
+			errors.push
+				attribute: 'standardNumber'
+				message: "Standard must be assigned"
+		if _.isNaN(attrs.defaultValue)
+			errors.push
+				attribute: 'defaultValue'
+				message: 'Default value must be a number'
+		if attrs.defaultValue is "" and attrs.standardNumber is 'input value'
+			errors.push
+				attribute: 'defaultValue'
+				message: 'Default value must be defined'
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.TransformationParameters extends Backbone.Model
+	initialize: (attributes, options) ->
+		if options?.rule?
+			@.set @parse(attributes, options.rule)
+		else
+			@.set @parse(attributes)
+
+	parse: (resp, rule) ->
+		if rule?
+			if rule is 'percent efficacy'
+				if resp.positiveControl?
+					if resp.positiveControl not instanceof ControlSetting
+						resp.positiveControl = new ControlSetting(resp.positiveControl)
+				else
+					resp.positiveControl = new ControlSetting
+				resp.positiveControl.on 'change', =>
+					@trigger 'change'
+				resp.positiveControl.on 'amDirty', =>
+					@trigger 'amDirty'
+			if rule is 'sd' or rule is 'percent efficacy'
+				if resp.negativeControl?
+					if resp.negativeControl not instanceof ControlSetting
+						resp.negativeControl = new ControlSetting(resp.negativeControl)
+				else
+					resp.negativeControl = new ControlSetting
+				resp.negativeControl.on 'change', =>
+					@trigger 'change'
+				resp.negativeControl.on 'amDirty', =>
+					@trigger 'amDirty'
+			# If needed, add a place to call custom parse rules here
+		resp
+
+class window.TransformationRule extends Backbone.Model
+	defaults: ->
 		transformationRule: "unassigned"
 
 	validate: (attrs) =>
@@ -37,6 +172,66 @@ class window.TransformationRule extends Backbone.Model
 		else
 			return null
 
+class window.TransformationRuleWithParameters extends TransformationRule
+	defaults: ->
+		_(super()).extend(
+			transformationParameters: new TransformationParameters
+		)
+
+	initialize: ->
+		@.set @parse(@.attributes)
+
+	parse: (resp) =>
+		if resp.transformationParameters?
+			if resp.transformationParameters not instanceof TransformationParameters
+				resp.transformationParameters = new TransformationParameters(resp.transformationParameters, {rule: @transformationRule})
+			resp.transformationParameters.on 'change', =>
+				@trigger 'change'
+			resp.transformationParameters.on 'amDirty', =>
+				@trigger 'amDirty'
+		resp
+
+class window.Normalization extends Backbone.Model
+	defaults: ->
+		normalizationRule: "unassigned"
+
+	validate: (attrs) =>
+		errors = []
+		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
+			errors.push
+				attribute: 'normalizationRule'
+				message: "Normalization Rule must be assigned"
+		if errors.length > 0
+			return errors
+		else
+			return null
+
+class window.NormalizationWithControls extends Normalization
+	defaults: ->
+		_(super()).extend(
+			positiveControl: new ControlSetting()
+			negativeControl: new ControlSetting()
+		)
+
+	initialize: ->
+		@.set @parse(@.attributes)
+
+	parse: (resp) =>
+		if resp.positiveControl?
+			if resp.positiveControl not instanceof ControlSetting
+				resp.positiveControl = new ControlSetting(resp.positiveControl)
+			resp.positiveControl.on 'change', =>
+				@trigger 'change'
+			resp.positiveControl.on 'amDirty', =>
+				@trigger 'amDirty'
+		if resp.negativeControl?
+			if resp.negativeControl not instanceof ControlSetting
+				resp.negativeControl = new ControlSetting(resp.negativeControl)
+			resp.negativeControl.on 'change', =>
+				@trigger 'change'
+			resp.negativeControl.on 'amDirty', =>
+				@trigger 'amDirty'
+		resp
 
 class window.PrimaryAnalysisReadList extends Backbone.Collection
 	model: PrimaryAnalysisRead
@@ -66,6 +261,53 @@ class window.PrimaryAnalysisReadList extends Backbone.Collection
 					usedReadNames[currentReadName] = index
 		return modelErrors
 
+class window.PrimaryAnalysisTimeWindowList extends Backbone.Collection
+	model: PrimaryAnalysisTimeWindow
+
+	validateCollection: =>
+		modelErrors = []
+		@each (model, index) ->
+			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
+			# which adds the class "error" to the invalid attributes
+			indivModelErrors = model.validate(model.attributes)
+			if indivModelErrors?
+				for error in indivModelErrors
+					modelErrors.push
+						attribute: error.attribute+':eq('+index+')'
+						message: error.message
+		return modelErrors
+
+class window.StandardCompoundList extends Backbone.Collection
+	model: StandardCompound
+
+	validateCollection: =>
+		modelErrors = []
+		@each (model, index) =>
+			# note: can't call model.isValid() because if invalid, the function will trigger validationError,
+			# which adds the class "error" to the invalid attributes
+			indivModelErrors = model.validate(model.attributes)
+			if indivModelErrors?
+				for error in indivModelErrors
+					modelErrors.push
+						attribute: error.attribute+':eq('+index+')'
+						message: error.message
+		return modelErrors
+
+class window.AdditiveList extends Backbone.Collection
+	model: Additive
+
+	validateCollection: =>
+		modelErrors = []
+		@each (model, index) =>
+# note: can't call model.isValid() because if invalid, the function will trigger validationError,
+# which adds the class "error" to the invalid attributes
+			indivModelErrors = model.validate(model.attributes)
+			if indivModelErrors?
+				for error in indivModelErrors
+					modelErrors.push
+						attribute: error.attribute+':eq('+index+')'
+						message: error.message
+		return modelErrors
 
 class window.TransformationRuleList extends Backbone.Collection
 	model: TransformationRule
@@ -95,6 +337,9 @@ class window.TransformationRuleList extends Backbone.Collection
 					usedRules[currentRule] = index
 		modelErrors
 
+class window.TransformationRuleWithParametersList extends TransformationRuleList
+	model: TransformationRuleWithParameters
+
 
 class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 	defaults: ->
@@ -102,49 +347,34 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 		signalDirectionRule: "unassigned"
 		aggregateBy: "unassigned"
 		aggregationMethod: "unassigned"
-		normalizationRule: "unassigned"
+		normalization: new NormalizationWithControls()
 		assayVolume: null
 		transferVolume: null
 		dilutionFactor: null
 		hitEfficacyThreshold: null
 		hitSDThreshold: null
-		positiveControl: new Backbone.Model()
-		negativeControl: new Backbone.Model()
-		vehicleControl: new Backbone.Model()
-		agonistControl: new Backbone.Model()
 		thresholdType: null
 		volumeType: "dilution"
 		htsFormat: true
 		autoHitSelection: false
 		matchReadName: false
+		fluorescentStart: null
+		fluorescentEnd: null
+		fluorescentStep: null
+		latePeakTime: null
 		primaryAnalysisReadList: new PrimaryAnalysisReadList()
-		transformationRuleList: new TransformationRuleList()
+		transformationRuleList: new TransformationRuleWithParametersList()
+		primaryAnalysisTimeWindowList: new PrimaryAnalysisTimeWindowList()
+		standardCompoundList: new StandardCompoundList()
+		hasAdditives: false
+		hasTimeWindows: false
+		additiveList: new AdditiveList()
 
 
 	initialize: ->
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
-		if resp.positiveControl?
-			if resp.positiveControl not instanceof Backbone.Model
-				resp.positiveControl = new Backbone.Model(resp.positiveControl)
-			resp.positiveControl.on 'change', =>
-				@trigger 'change'
-		if resp.negativeControl?
-			if resp.negativeControl not instanceof Backbone.Model
-				resp.negativeControl = new Backbone.Model(resp.negativeControl)
-			resp.negativeControl.on 'change', =>
-				@trigger 'change'
-		if resp.vehicleControl?
-			if resp.vehicleControl not instanceof Backbone.Model
-				resp.vehicleControl = new Backbone.Model(resp.vehicleControl)
-			resp.vehicleControl.on 'change', =>
-				@trigger 'change'
-		if resp.agonistControl?
-			if resp.agonistControl not instanceof Backbone.Model
-				resp.agonistControl = new Backbone.Model(resp.agonistControl)
-			resp.agonistControl.on 'change', =>
-				@trigger 'change'
 		if resp.primaryAnalysisReadList?
 			if resp.primaryAnalysisReadList not instanceof PrimaryAnalysisReadList
 				resp.primaryAnalysisReadList = new PrimaryAnalysisReadList(resp.primaryAnalysisReadList)
@@ -152,61 +382,57 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 				@trigger 'change'
 			resp.primaryAnalysisReadList.on 'amDirty', =>
 				@trigger 'amDirty'
+		if resp.primaryAnalysisTimeWindowList?
+			if resp.primaryAnalysisTimeWindowList not instanceof PrimaryAnalysisTimeWindowList
+				resp.primaryAnalysisTimeWindowList = new PrimaryAnalysisTimeWindowList(resp.primaryAnalysisTimeWindowList)
+			resp.primaryAnalysisTimeWindowList.on 'change', =>
+				@trigger 'change'
+			resp.primaryAnalysisTimeWindowList.on 'amDirty', =>
+				@trigger 'amDirty'
 		if resp.transformationRuleList?
-			if resp.transformationRuleList not instanceof TransformationRuleList
-				resp.transformationRuleList = new TransformationRuleList(resp.transformationRuleList)
+			if resp.transformationRuleList not instanceof TransformationRuleWithParametersList
+				resp.transformationRuleList = new TransformationRuleWithParametersList(resp.transformationRuleList)
 			resp.transformationRuleList.on 'change', =>
 				@trigger 'change'
+				@trigger 'transformationRuleChanged'
 			resp.transformationRuleList.on 'amDirty', =>
 				@trigger 'amDirty'
+		if resp.standardCompoundList?
+			if resp.standardCompoundList not instanceof StandardCompoundList
+				resp.standardCompoundList = new StandardCompoundList(resp.standardCompoundList)
+			resp.standardCompoundList.on 'change', =>
+				@trigger 'change'
+			resp.standardCompoundList.on 'amDirty', =>
+				@trigger 'amDirty'
+		if resp.additiveList?
+			if resp.additiveList not instanceof AdditiveList
+				resp.additiveList = new AdditiveList(resp.additiveList)
+			resp.additiveList.on 'change', =>
+				@trigger 'change'
+			resp.additiveList.on 'amDirty', =>
+				@trigger 'amDirty'
+		if resp.normalization?
+			if resp.normalization not instanceof NormalizationWithControls
+				resp.normalization = new NormalizationWithControls(resp.normalization)
+			resp.normalization.on 'change', =>
+				@trigger 'change'
+			resp.normalization.on 'amDirty', =>
+				@trigger 'amDirty'
 		resp
-
 
 	validate: (attrs) =>
 		errors = []
 		readErrors = @get('primaryAnalysisReadList').validateCollection(attrs.matchReadName)
 		errors.push readErrors...
+		timeWindowErrors = @get('primaryAnalysisTimeWindowList').validateCollection()
+		errors.push timeWindowErrors...
 		transformationErrors = @get('transformationRuleList').validateCollection()
 		errors.push transformationErrors...
-		positiveControl = @get('positiveControl').get('batchCode')
-		if positiveControl is "" or positiveControl is undefined or positiveControl is "invalid" or positiveControl is null
-			errors.push
-				attribute: 'positiveControlBatch'
-				message: "A registered batch number must be provided."
-		positiveControlConc = @get('positiveControl').get('concentration')
-		if _.isNaN(positiveControlConc) or positiveControlConc is undefined or positiveControlConc is null or positiveControlConc is ""
-			errors.push
-				attribute: 'positiveControlConc'
-				message: "Positive control conc must be set"
-
-		negativeControl = @get('negativeControl').get('batchCode')
-		if negativeControl is "" or negativeControl is undefined or negativeControl is "invalid" or negativeControl is null
-			errors.push
-				attribute: 'negativeControlBatch'
-				message: "A registered batch number must be provided."
-		negativeControlConc = @get('negativeControl').get('concentration')
-		if _.isNaN(negativeControlConc) or negativeControlConc is undefined or negativeControlConc is null or negativeControlConc is ""
-			errors.push
-				attribute: 'negativeControlConc'
-				message: "Negative control conc must be set"
-
-		agonistControl = @get('agonistControl').get('batchCode')
-		agonistControlConc = @get('agonistControl').get('concentration')
-		if (agonistControl !="" and agonistControl != undefined and agonistControl != null) or (agonistControlConc != "" and agonistControlConc != undefined and agonistControlConc != null) # at least one of the agonist control fields is filled
-			if agonistControl is "" or agonistControl is undefined or agonistControl is null or agonistControl is "invalid"
-				errors.push
-					attribute: 'agonistControlBatch'
-					message: "A registered batch number must be provided."
-			if _.isNaN(agonistControlConc) || agonistControlConc is undefined || agonistControlConc is "" || agonistControlConc is null
-				errors.push
-					attribute: 'agonistControlConc'
-					message: "Agonist control conc must be set"
-		vehicleControl = @get('vehicleControl').get('batchCode')
-		if vehicleControl is "invalid"
-			errors.push
-				attribute: 'vehicleControlBatch'
-				message: "A registered batch number must be provided."
-
+		standardCompoundErrors = @get('standardCompoundList').validateCollection()
+		errors.push standardCompoundErrors...
+		if attrs.hasAdditives
+			additiveErrors = @get('additiveList').validateCollection()
+			errors.push additiveErrors...
 		if attrs.instrumentReader is "unassigned" or attrs.instrumentReader is null
 			errors.push
 				attribute: 'instrumentReader'
@@ -223,7 +449,7 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'aggregationMethod'
 				message: "Aggregation method must be assigned"
-		if attrs.normalizationRule is "unassigned" or attrs.normalizationRule is null
+		if not attrs.normalization? or attrs.normalization.get('normalizationRule') is "unassigned"
 			errors.push
 				attribute: 'normalizationRule'
 				message: "Normalization rule must be assigned"
@@ -252,6 +478,22 @@ class window.PrimaryScreenAnalysisParameters extends Backbone.Model
 			errors.push
 				attribute: 'transferVolume'
 				message: "Transfer volume must be a number"
+		if _.isNaN(attrs.fluorescentStart)
+			errors.push
+				attribute: 'fluorescentStart'
+				message: "Fluorescent Start must be a number"
+		if _.isNaN(attrs.fluorescentEnd)
+			errors.push
+				attribute: 'fluorescentEnd'
+				message: "Fluorescent End must be a number"
+		if _.isNaN(attrs.fluorescentStep)
+			errors.push
+				attribute: 'fluorescentStep'
+				message: "Fluorescent Step must be a number"
+		if _.isNaN(attrs.latePeakTime)
+			errors.push
+				attribute: 'latePeakTime'
+				message: "Late Peak Time must be a number"
 		if errors.length > 0
 			return errors
 		else
@@ -283,6 +525,24 @@ class window.PrimaryScreenExperiment extends Experiment
 		super()
 		@.set lsType: "Biology"
 		@.set lsKind: "Bio Activity"
+
+	validateModelFitParams: =>
+		errors = []
+		fitTrans = @getModelFitTransformation().get('stringValue')
+		if fitTrans is "Select Fit Transformation" or fitTrans is undefined or fitTrans is null
+			errors.push
+				attribute: 'fitTransformation'
+				message: "Fit transformation must be set"
+		transUnits = @getModelFitTransformationUnits().get('codeValue')
+		if transUnits is "unassigned" or transUnits is undefined or transUnits is null
+			errors.push
+				attribute: 'transformationUnits'
+				message: "Transformation units must be set"
+
+		if errors.length > 0
+			return errors
+		else
+			return null
 
 	getDryRunStatus: ->
 		status = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "dry run status"
@@ -333,10 +593,259 @@ class window.PrimaryScreenExperiment extends Experiment
 
 		type
 
-#	copyProtocolAttributes: (protocol) =>
+	getModelFitTransformation: ->
+		trans = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit transformation"
+		if !trans.has('stringValue')
+			trans.set stringValue: "Select Fit Transformation"
+
+		trans
+
+	getModelFitTransformationUnits: ->
+		tu = @get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit transformation units"
+		if !tu.has('codeValue')
+			tu.set codeValue: "%"
+			tu.set codeType: "model fit"
+			tu.set codeKind: "transformation units"
+			tu.set codeOrigin: "ACAS DDICT"
+
+		tu
+
+	copyProtocolAttributes: (protocol) =>
 #		modelFitStatus = @getModelFitStatus().get('codeValue')
 #		super(protocol)
 #		@getModelFitStatus().set codeValue: modelFitStatus
+#only need to copy protocol's experiment metadata attributes
+		pstates = protocol.get('lsStates')
+		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
+		if pExptMeta.length > 0
+			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
+			if eExptMeta.length > 0
+				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
+				if dapVal.length > 0
+#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					if dapVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove dapVal[0]
+					else
+						dapVal[0].set ignored: true
+			else
+				eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
+			dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters").attributes)
+			dap.unset 'id'
+			dap.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add dap
+
+			mfpVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "model fit parameters"
+			if mfpVal.length > 0
+				if mfpVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mfpVal[0]
+				else
+					mfpVal[0].set ignored: true
+			mfp = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "model fit parameters").attributes)
+			mfp.unset 'id'
+			mfp.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mfp
+
+			mftVal = eExptMeta[0].getValuesByTypeAndKind "codeValue", "model fit type"
+			if mftVal.length > 0
+				if mftVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftVal[0]
+				else
+					mftVal[0].set ignored: true
+			mft = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit type").attributes)
+			mft.unset 'id'
+			mft.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mft
+			@getDryRunStatus().set ignored: true
+			@getDryRunStatus().set codeValue: 'not started'
+			@getDryRunResultHTML().set ignored: true
+			@getDryRunResultHTML().set clobValue: ""
+
+		@set
+			lsKind: protocol.get('lsKind')
+			protocol: protocol
+		@trigger 'change'
+		@trigger "protocol_attributes_copied"
+		return
+
+
+class window.PrimaryScreenExperimentList extends Backbone.Collection
+	model: PrimaryScreenExperiment
+
+class window.PrimaryAnalysisTimeWindowController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"keyup .bv_timeWindowStart": "attributeChanged"
+		"keyup .bv_timeWindowEnd": "attributeChanged"
+		"change .bv_timeStatistic": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'PrimaryAnalysisTimeWindowController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@$('.bv_timePosition').html('T'+@model.get('position'))
+		@setUpStatisticSelect()
+		@
+
+	setUpStatisticSelect: ->
+		@timeStatisticList = new PickListList()
+		@timeStatisticList.url = "/api/codetables/analysis parameter/statistic"
+		@timeStatisticListController = new PickListSelectController
+			el: @$('.bv_timeStatistic')
+			collection: @timeStatisticList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Statistic"
+			selectedCode: @model.get('statistic')
+
+
+	updateModel: =>
+		@model.set
+			windowStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowStart'))
+			windowEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_timeWindowEnd'))
+			statistic: @timeStatisticListController.getSelectedCode()
+		@trigger 'updateState'
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
+
+class window.StandardCompoundController extends AbstractFormController
+	template: _.template($("#StandardCompoundView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"keyup .bv_batchCode": "handleBatchChanged"
+		"keyup .bv_concentration": "attributeChanged"
+		"change .bv_standardType": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'StandardCompoundController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+	render: =>
+		$(@el).empty()
+
+		$(@el).html @template(@model.attributes)
+		@$('.bv_standardNumber').html('S'+@model.get('standardNumber'))
+		@setUpStandardTypeSelect()
+		@
+
+	setUpStandardTypeSelect: ->
+		@standardTypeList = new PickListList()
+		@standardTypeList.url = "/api/codetables/analysis parameter/standard type"
+		@standardTypeListController = new PickListSelectController
+			el: @$('.bv_standardType')
+			collection: @standardTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Standard Type"
+			selectedCode: @model.get('standardType')
+
+
+	updateModel: =>
+		concentration = UtilityFunctions::getTrimmedInput @$('.bv_concentration')
+		if concentration isnt ""
+			concentration = parseFloat(concentration)
+		@model.set
+			concentration: concentration
+			standardType: @standardTypeListController.getSelectedCode()
+		@trigger 'updateState'
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
+
+	handleBatchChanged: ->
+		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_batchCode')
+		@getPreferredBatchId(batchCode)
+
+	getPreferredBatchId: (batchId) ->
+		if batchId == ""
+			@model.set batchCode: ""
+			@attributeChanged()
+			return
+		else
+			@requestData =
+				requests: [
+					{requestName: batchId}
+				]
+			$.ajax
+				type: 'POST'
+				url: "/api/preferredBatchId"
+				data: @requestData
+				success: (json) =>
+					@handlePreferredBatchIdReturn(json)
+				error: (err) =>
+					@serviceReturn = null
+				dataType: 'json'
+
+	handlePreferredBatchIdReturn: (json) =>
+		if json.results?.length > 0
+			results = (json.results)[0]
+			preferredName = results.preferredName
+			requestName = results.requestName
+			if preferredName == requestName
+				@model.set batchCode: preferredName
+			else if preferredName == ""
+				@model.set batchCode: "invalid"
+			else
+				@$('.bv_batchCode').val(preferredName)
+				@model.set batchCode: preferredName
+			@attributeChanged()
+
+class window.AdditiveController extends AbstractFormController
+	template: _.template($("#AdditiveView").html())
+	tagName: "div"
+	className: "form-inline"
+	events:
+		"keyup .bv_batchCode": "attributeChanged"
+		"keyup .bv_concentration": "attributeChanged"
+		"change .bv_additiveType": "attributeChanged"
+		"click .bv_delete": "clear"
+
+	initialize: ->
+		@errorOwnerName = 'AdditiveController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@$('.bv_additiveNumber').html('A'+@model.get('additiveNumber'))
+		@setUpAdditiveTypeSelect()
+		@
+
+	setUpAdditiveTypeSelect: ->
+		@additiveTypeList = new PickListList()
+		@additiveTypeList.url = "/api/codetables/analysis parameter/additive type"
+		@additiveTypeListController = new PickListSelectController
+			el: @$('.bv_additiveType')
+			collection: @additiveTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Additive Type"
+			selectedCode: @model.get('additiveType')
+
+
+	updateModel: =>
+		@model.set
+			batchCode: UtilityFunctions::getTrimmedInput @$('.bv_batchCode')
+			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_concentration'))
+			additiveType: @additiveTypeListController.getSelectedCode()
+		@trigger 'updateState'
+
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
 
 class window.PrimaryAnalysisReadController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadView").html())
@@ -394,7 +903,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	updateModel: =>
 		@model.set
-			readPosition: parseInt(UtilityFunctions::getTrimmedInput @$('.bv_readPosition'))
+			readPosition: UtilityFunctions::getTrimmedInput @$('.bv_readPosition')
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
@@ -411,19 +920,20 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 		@attributeChanged()
 		@trigger 'updateAllActivities'
 
-
+	clear: =>
+		@model.destroy()
+		@attributeChanged()
 
 class window.TransformationRuleController extends AbstractFormController
 	template: _.template($("#TransformationRuleView").html())
 	events:
-		"change .bv_transformationRule": "attributeChanged"
+		"change .bv_transformationRule": "ruleChanged"
 		"click .bv_deleteRule": "clear"
 
 	initialize: ->
 		@errorOwnerName = 'TransformationRuleController'
 		@setBindings()
 		@model.on "destroy", @remove, @
-
 
 	render: =>
 		$(@el).empty()
@@ -432,10 +942,13 @@ class window.TransformationRuleController extends AbstractFormController
 
 		@
 
+	ruleChanged: =>
+		@updateModel()
+		@render
+
 	updateModel: =>
 		@model.set transformationRule: @transformationListController.getSelectedCode()
 		@trigger 'updateState'
-
 
 	setUpTransformationRuleSelect: ->
 		@transformationList = new PickListList()
@@ -453,6 +966,352 @@ class window.TransformationRuleController extends AbstractFormController
 		@model.destroy()
 		@attributeChanged()
 
+class window.TransformationRuleWithParametersController extends TransformationRuleController
+	controlsTemplate: _.template($("#TransformationRuleWithParametersView").html())
+
+	initialize: (options) ->
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "TransformationRuleWithParametersController missing standardsList in options"
+		@errorOwnerName = 'TransformationRuleWithParametersController'
+		@setBindings()
+		@model.on "destroy", @remove, @
+
+
+	render: =>
+		super()
+		@$('.bv_transformationControls').html @controlsTemplate(@model.attributes)
+		@setUpControls()
+
+		@
+
+	updateModel: =>
+		@model.set transformationRule: @transformationListController.getSelectedCode()
+		@setUpControls()
+		@trigger 'updateState'
+
+	setUpControls: =>
+		rule = @model.get('transformationRule')
+		if @model.get('transformationParameters') instanceof Backbone.Model
+			newAttr = @model.get('transformationParameters').attributes
+		else
+			newAttr = @model.get('transformationParameters')
+		@transformationParameters = new TransformationParameters newAttr, {rule: rule}
+		@transformationParameters.on 'change', =>
+			@model.trigger 'change'
+		@$('.bv_transformationParameters').empty()
+		if rule is 'percent efficacy'
+			@setUpPositiveControlSettingController()
+		if rule is 'sd' or rule is 'percent efficacy'
+			@setUpNegativeControlSettingController()
+
+	setUpPositiveControlSettingController: =>
+		if @positiveControlController?
+			@positiveControlController.undelegateEvents()
+		@positiveControlController = new ControlSettingController
+			className: 'bv_transformationPositiveControl'
+			model: @model.get('transformationParameters').get('positiveControl')
+			standardsList: @standardsList
+			controlLabel: '*Positive Control'
+		@positiveControlController.render()
+		@$('.bv_transformationParameters').append @positiveControlController.el
+		@positiveControlController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setUpNegativeControlSettingController: =>
+		@negativeControlController = new ControlSettingController
+			className: 'bv_transformationNegativeControl'
+			model: @model.get('transformationParameters').get('negativeControl')
+			standardsList: @standardsList
+			controlLabel: '*Negative Control'
+		@negativeControlController.render()
+		@$('.bv_transformationParameters').append @negativeControlController.el
+		@negativeControlController.on 'updateState', =>
+			@trigger 'updateState'
+
+class window.ControlSettingController extends AbstractFormController
+	# Must be initialized with the option standardsList
+	template: _.template($("#ControlSettingView").html())
+	events:
+		"change .bv_standardNumber": "attributeChanged"
+		"keyup .bv_defaultValue": "attributeChanged"
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setupStandardsListSelect(@standardsList)
+		@$('.control-label').html @controlLabel
+		selectedStandard = @standardsListSelectController.getSelectedCode()
+		@showInputValue(selectedStandard)
+		@
+
+	initialize: (options) ->
+		@errorOwnerName = 'ControlSettingController'
+		@setBindings()
+		@standardNumberList = null # is a PickListList
+		if not options.standardsList?
+			throw "ControlSettingController missing standardsList in options"
+		@standardsList = options.standardsList
+		if not options.controlLabel?
+			throw "ControlSettingController missing controlLabel in options"
+		@controlLabel = options.controlLabel
+		@standardsList.on 'change reset add remove', =>
+			@setupStandardsListSelect @standardsList
+
+	updateModel: =>
+		defaultValue = UtilityFunctions::getTrimmedInput @$('.bv_defaultValue')
+		if defaultValue isnt ""
+			defaultValue = parseFloat(defaultValue)
+		selectedStandard = @standardsListSelectController.getSelectedCode()
+		@model.set
+			defaultValue: defaultValue
+			standardNumber: selectedStandard
+		@showInputValue(selectedStandard)
+		@trigger 'updateState'
+		@trigger 'change'
+
+	showInputValue: (selectedStandard) =>
+		if selectedStandard is 'input value'
+			@$('.bv_defaultValue').removeClass('hide')
+		else
+			@$('.bv_defaultValue').addClass('hide')
+
+	setupStandardsListSelect: (standardsList) =>
+		standardsSelectArray = standardsList.map (model) =>
+			code: model.get('standardNumber').toString()
+			name: "S#{model.get('standardNumber')} #{model.get('batchCode')} @ #{model.get('concentration')} uM"
+		standardsSelectArray.push
+			code: "input value"
+			name: "Input Value"
+		if @standardNumberList?
+			@standardNumberList.reset standardsSelectArray
+		else
+			@standardNumberList = new PickListList standardsSelectArray
+		if @standardsListSelectController?
+			@standardsListSelectController.setSelectedCode @model.get('standardNumber')
+		else
+			@standardsListSelectController = new PickListSelectController
+				el: @$('.bv_standardNumber')
+				collection: @standardNumberList
+				insertFirstOption: new PickList
+					code: "unassigned"
+					name: "Select Standard"
+				selectedCode: @model.get('standardNumber')
+				autoFetch: false
+
+class window.NormalizationController extends AbstractFormController
+	template: _.template($("#NormalizationView").html())
+
+	events:
+		"change .bv_normalizationRule": "attributeChanged"
+
+	initialize: (options) ->
+		@errorOwnerName = 'NormalizationController'
+		@setBindings()
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template(@model.attributes)
+		@setupNormalizationSelect()
+		@
+
+	updateModel: =>
+		@model.set normalizationRule: @normalizationListController.getSelectedCode()
+		@trigger 'updateState'
+
+	setupNormalizationSelect: ->
+		@normalizationList = new PickListList()
+		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
+		@normalizationListController = new PickListSelectController
+			el: @$('.bv_normalizationRule')
+			collection: @normalizationList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Normalization Rule"
+			selectedCode: @model.get('normalizationRule')
+
+class window.NormalizationWithControlsController extends NormalizationController
+	# Must be initialized with the option standardsList
+	controlsTemplate: _.template($("#NormalizationWithControlsView").html())
+
+	initialize: (options) ->
+		@errorOwnerName = 'NormalizationWithControlsController'
+		@setBindings()
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "NormalizationWithControlsController missing standardsList in options"
+
+	render: =>
+		super()
+		@$('.bv_normalizationControls').html @controlsTemplate(@model.attributes)
+		@setupPositiveControlSettingController()
+		@setupNegativeControlSettingController()
+		@
+
+	setupPositiveControlSettingController: ->
+		@positiveControlController = new ControlSettingController
+			el: @$('.bv_normalizationPositiveControl')
+			model: @model.get('positiveControl')
+			standardsList: @standardsList
+			controlLabel: '*Positive Control'
+		@positiveControlController.render()
+		@positiveControlController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupNegativeControlSettingController: ->
+		@negativeControlController = new ControlSettingController
+			el: @$('.bv_normalizationNegativeControl')
+			model: @model.get('negativeControl')
+			standardsList:	@standardsList
+			controlLabel: '*Negative Control'
+		@negativeControlController.render()
+		@negativeControlController.on 'updateState', =>
+			@trigger 'updateState'
+
+
+class window.PrimaryAnalysisTimeWindowListController extends AbstractFormController
+	template: _.template($("#PrimaryAnalysisTimeWindowListView").html())
+	events:
+		"click .bv_addTimeWindowButton": "addNewWindow"
+
+	initialize: =>
+		@collection.on 'remove', @handleModelRemoved
+		@nextPositionNumber = 1
+
+	handleModelRemoved: =>
+		@renumberTimeWindows()
+		@collection.trigger 'change'
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (timeWindow) =>
+			@addOneWindow(timeWindow)
+		@
+
+	addNewWindow: (skipAmDirtyTrigger) =>
+		newModel = new PrimaryAnalysisTimeWindow()
+		@collection.add newModel
+		@addOneWindow(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneWindow: (timeWindow) ->
+		timeWindow.set position: @nextPositionNumber
+		@nextPositionNumber++
+		parc = new PrimaryAnalysisTimeWindowController
+			model: timeWindow
+		@$('.bv_timeWindowInfo').append parc.render().el
+		parc.on 'updateState', =>
+			@trigger 'updateState'
+		parc.on 'updateAllActivities', @updateAllActivities
+
+	renumberTimeWindows: =>
+		@nextPositionNumber = 1
+		index = 0
+		while index < @collection.length
+			windowNumber = 'T' + @nextPositionNumber.toString()
+			@collection.at(index).set position: @nextPositionNumber
+			@$('.bv_timePosition:eq('+index+')').html(windowNumber)
+			index++
+			@nextPositionNumber++
+
+class window.StandardCompoundListController extends AbstractFormController
+	template: _.template($("#StandardCompoundListView").html())
+	events:
+		"click .bv_addStandardCompoundButton": "addNewStandard"
+
+	initialize: =>
+		@collection.on 'remove', @handleModelRemoved
+		@nextPositionNumber = 1
+
+	handleModelRemoved: =>
+		@renumberStandards()
+		@collection.trigger 'change'
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (standard) =>
+			@addOneStandard(standard)
+		if @collection.length == 0
+			@addNewStandard(true)
+		@
+
+	addNewStandard: (skipAmDirtyTrigger) =>
+		newModel = new StandardCompound
+		@collection.add newModel
+		@addOneStandard(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneStandard: (standard) ->
+		standard.set standardNumber: @nextPositionNumber
+		@nextPositionNumber++
+		scc = new StandardCompoundController
+			model: standard
+		@$('.bv_standardCompoundInfo').append scc.render().el
+		scc.on 'updateState', =>
+			@trigger 'updateState'
+		scc.on 'updateAllActivities', @updateAllActivities
+
+	renumberStandards: =>
+		@nextPositionNumber = 1
+		@collection.each (standard, index) =>
+			standardNumber = 'S' + @nextPositionNumber.toString()
+			standard.set standardNumber: @nextPositionNumber
+			@$('.bv_standardNumber:eq('+index+')').html(standardNumber)
+			@nextPositionNumber++
+
+
+
+class window.AdditiveListController extends AbstractFormController
+	template: _.template($("#AdditiveListView").html())
+	events:
+		"click .bv_addAdditiveButton": "addNewAdditive"
+
+	initialize: =>
+		@collection.on 'remove', @handleModelRemoved
+		@nextPositionNumber = 1
+
+	handleModelRemoved: =>
+		@renumberAdditives
+		@collection.trigger 'change'
+
+	render: =>
+		$(@el).empty()
+		$(@el).html @template()
+		@collection.each (additive) =>
+			@addOneAdditive(additive)
+		if @collection.length == 0
+			@addNewAdditive(true)
+		@
+
+	addNewAdditive: (skipAmDirtyTrigger) =>
+		newModel = new Additive
+		@collection.add newModel
+		@addOneAdditive(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneAdditive: (additive) ->
+		additive.set additiveNumber: @nextPositionNumber
+		@nextPositionNumber++
+		scc = new AdditiveController
+			model: additive
+		@$('.bv_additiveInfo').append scc.render().el
+		scc.on 'updateState', =>
+			@trigger 'updateState'
+
+	renumberAdditives: =>
+		@nextPositionNumber = 1
+		@collection.each (additive, index) =>
+			additiveNumber = 'A' + @nextPositionNumber.toString()
+			additive.set additiveNumber: @nextPositionNumber
+			@$('.bv_additiveNumber:eq('+index+')').html(additiveNumber)
+			@nextPositionNumber++
 
 class window.PrimaryAnalysisReadListController extends AbstractFormController
 	template: _.template($("#PrimaryAnalysisReadListView").html())
@@ -541,11 +1400,10 @@ class window.TransformationRuleListController extends AbstractFormController
 	events:
 		"click .bv_addTransformationButton": "addNewRule"
 
-	initialize: =>
+	initialize: (options) =>
 		@collection.on 'remove', @checkNumberOfRules
 		@collection.on 'remove', => @collection.trigger 'amDirty'
 		@collection.on 'remove', => @collection.trigger 'change'
-
 
 	render: =>
 		$(@el).empty()
@@ -563,7 +1421,6 @@ class window.TransformationRuleListController extends AbstractFormController
 		unless skipAmDirtyTrigger is true
 			newModel.trigger 'amDirty'
 
-
 	addOneRule: (rule) ->
 		trc = new TransformationRuleController
 			model: rule
@@ -571,10 +1428,33 @@ class window.TransformationRuleListController extends AbstractFormController
 		trc.on 'updateState', =>
 			@trigger 'updateState'
 
-
 	checkNumberOfRules: => #ensures that there is always one rule
 		if @collection.length == 0
 			@addNewRule()
+
+class window.TransformationRuleWithParametersListController extends TransformationRuleListController
+
+	initialize: (options) =>
+		if options.standardsList?
+			@standardsList = options.standardsList
+		else
+			throw "TransformationRuleWithParametersListController missing standardsList in options"
+		super()
+
+	addNewRule: (skipAmDirtyTrigger)=>
+		newModel = new TransformationRuleWithParameters()
+		@collection.add newModel
+		@addOneRule(newModel)
+		unless skipAmDirtyTrigger is true
+			newModel.trigger 'amDirty'
+
+	addOneRule: (rule) ->
+		trc = new TransformationRuleWithParametersController
+			model: rule
+			standardsList: @standardsList
+		@$('.bv_transformationInfo').append trc.render().el
+		trc.on 'updateState', =>
+			@trigger 'updateState'
 
 class window.PrimaryScreenAnalysisParametersController extends AbstractParserFormController
 	template: _.template($("#PrimaryScreenAnalysisParametersView").html())
@@ -586,26 +1466,24 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		"change .bv_signalDirectionRule": "attributeChanged"
 		"change .bv_aggregateBy": "attributeChanged"
 		"change .bv_aggregationMethod": "attributeChanged"
-		"change .bv_normalizationRule": "attributeChanged"
 		"keyup .bv_assayVolume": "handleAssayVolumeChanged"
 		"keyup .bv_dilutionFactor": "handleDilutionFactorChanged"
 		"keyup .bv_transferVolume": "handleTransferVolumeChanged"
 		"keyup .bv_hitEfficacyThreshold": "attributeChanged"
 		"keyup .bv_hitSDThreshold": "attributeChanged"
-		"keyup .bv_positiveControlBatch": "handlePositiveControlBatchChanged"
-		"keyup .bv_positiveControlConc": "attributeChanged"
-		"keyup .bv_negativeControlBatch": "handleNegativeControlBatchChanged"
-		"keyup .bv_negativeControlConc": "attributeChanged"
-		"keyup .bv_vehicleControlBatch": "handleVehicleControlBatchChanged"
-		"keyup .bv_agonistControlBatch": "handleAgonistControlBatchChanged"
-		"keyup .bv_agonistControlConc": "attributeChanged"
 		"change .bv_thresholdTypeEfficacy": "handleThresholdTypeChanged"
 		"change .bv_thresholdTypeSD": "handleThresholdTypeChanged"
 		"change .bv_volumeTypeTransfer": "handleVolumeTypeChanged"
 		"change .bv_volumeTypeDilution": "handleVolumeTypeChanged"
 		"change .bv_autoHitSelection": "handleAutoHitSelectionChanged"
+		"change .bv_hasAdditives": "handleHasAdditivesChanged"
+		"change .bv_hasTimeWindows": "handleHasTimeWindowsChanged"
 		"change .bv_htsFormat": "attributeChanged"
 		"click .bv_matchReadName": "handleMatchReadNameChanged"
+		"keyup .bv_fluorescentStart": "attributeChanged"
+		"keyup .bv_fluorescentEnd": "attributeChanged"
+		"keyup .bv_fluorescentStep": "attributeChanged"
+		"keyup .bv_latePeakTime": "attributeChanged"
 
 
 
@@ -618,7 +1496,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
-		@setupNormalizationSelect()
 
 
 
@@ -633,10 +1510,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@setupSignalDirectionSelect()
 		@setupAggregateBySelect()
 		@setupAggregationMethodSelect()
-		@setupNormalizationSelect()
 		@handleAutoHitSelectionChanged(true)
+		@handleHasAdditivesChanged(true)
+		@handleHasTimeWindowsChanged(true)
 		@setupReadListController()
-		@setupTransformationRuleListController()
+		@setupTimeWindowListController()
+		@setupStandardCompoundListController()
+		@setupAdditiveListController()
+		@setupNormalizationWithControlsController()
+		@setupTransformationRuleWithParametersListController()
 		@handleMatchReadNameChanged(true)
 
 		@
@@ -686,17 +1568,6 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 				name: "Select Aggregation Method"
 			selectedCode: @model.get('aggregationMethod')
 
-	setupNormalizationSelect: ->
-		@normalizationList = new PickListList()
-		@normalizationList.url = "/api/codetables/analysis parameter/normalization method"
-		@normalizationListController = new PickListSelectController
-			el: @$('.bv_normalizationRule')
-			collection: @normalizationList
-			insertFirstOption: new PickList
-				code: "unassigned"
-				name: "Select Normalization Rule"
-			selectedCode: @model.get('normalizationRule')
-
 	setupReadListController: ->
 		@readListController= new PrimaryAnalysisReadListController
 			el: @$('.bv_readList')
@@ -705,10 +1576,44 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		@readListController.on 'updateState', =>
 			@trigger 'updateState'
 
-	setupTransformationRuleListController: ->
-		@transformationRuleListController= new TransformationRuleListController
+	setupTimeWindowListController: ->
+		@timeWindowListController= new PrimaryAnalysisTimeWindowListController
+			el: @$('.bv_timeWindowList')
+			collection: @model.get('primaryAnalysisTimeWindowList')
+		@timeWindowListController.render()
+		@timeWindowListController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupStandardCompoundListController: ->
+		@standardCompoundListController= new StandardCompoundListController
+			el: @$('.bv_standardCompoundList')
+			collection: @model.get('standardCompoundList')
+		@standardCompoundListController.render()
+		@standardCompoundListController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupAdditiveListController: ->
+		@additiveListController= new AdditiveListController
+			el: @$('.bv_additiveList')
+			collection: @model.get('additiveList')
+		@additiveListController.render()
+		@additiveListController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupNormalizationWithControlsController: ->
+		@normalizationController = new NormalizationWithControlsController
+			el: @$('.bv_normalization')
+			model: @model.get('normalization')
+			standardsList: @model.get('standardCompoundList')
+		@normalizationController.render()
+		@normalizationController.on 'updateState', =>
+			@trigger 'updateState'
+
+	setupTransformationRuleWithParametersListController: ->
+		@transformationRuleListController= new TransformationRuleWithParametersListController
 			el: @$('.bv_transformationList')
 			collection: @model.get('transformationRuleList')
+			standardsList: @model.get('standardCompoundList')
 		@transformationRuleListController.render()
 		@transformationRuleListController.on 'updateState', =>
 			@trigger 'updateState'
@@ -722,12 +1627,15 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			signalDirectionRule: @signalDirectionListController.getSelectedCode()
 			aggregateBy: @aggregateByListController.getSelectedCode()
 			aggregationMethod: @aggregationMethodListController.getSelectedCode()
-			normalizationRule: @normalizationListController.getSelectedCode()
 			hitEfficacyThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitEfficacyThreshold'))
 			hitSDThreshold: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_hitSDThreshold'))
 			assayVolume: UtilityFunctions::getTrimmedInput @$('.bv_assayVolume')
 			transferVolume: UtilityFunctions::getTrimmedInput @$('.bv_transferVolume')
 			dilutionFactor: UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor')
+			fluorescentStart: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart')
+			fluorescentEnd: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd')
+			fluorescentStep: UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep')
+			latePeakTime: UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime')
 			htsFormat: htsFormat
 		if @model.get('assayVolume') != ""
 			@model.set assayVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_assayVolume'))
@@ -735,68 +1643,17 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@model.set transferVolume: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_transferVolume'))
 		if @model.get('dilutionFactor') != ""
 			@model.set dilutionFactor: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_dilutionFactor'))
-		@model.get('positiveControl').set
-			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_positiveControlConc'))
-		@model.get('negativeControl').set
-			concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_negativeControlConc'))
-		@model.get('vehicleControl').set
-			concentration: null
-		@model.get('agonistControl').set
-			concentration: UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc')
-		if @model.get('agonistControl').get('concentration') != ""
-			@model.get('agonistControl').set
-				concentration: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_agonistControlConc'))
+		if @model.get('fluorescentStart') != ""
+			@model.set fluorescentStart: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStart'))
+		if @model.get('fluorescentEnd') != ""
+			@model.set fluorescentEnd: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentEnd'))
+		if @model.get('fluorescentStep') != ""
+			@model.set fluorescentStep: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_fluorescentStep'))
+		if @model.get('latePeakTime') != ""
+			@model.set latePeakTime: parseFloat(UtilityFunctions::getTrimmedInput @$('.bv_latePeakTime'))
 		@trigger 'updateState'
 
-	handlePositiveControlBatchChanged: ->
-		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_positiveControlBatch')
-		@getPreferredBatchId(batchCode, 'positiveControl')
 
-	handleNegativeControlBatchChanged: ->
-		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_negativeControlBatch')
-		@getPreferredBatchId(batchCode, 'negativeControl')
-
-	handleAgonistControlBatchChanged: ->
-		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_agonistControlBatch')
-		@getPreferredBatchId(batchCode, 'agonistControl')
-
-	handleVehicleControlBatchChanged: ->
-		batchCode = UtilityFunctions::getTrimmedInput @$('.bv_vehicleControlBatch')
-		@getPreferredBatchId(batchCode, 'vehicleControl')
-
-	getPreferredBatchId: (batchId, control) ->
-		if batchId == ""
-			@model.get(control).set batchCode: ""
-			@attributeChanged()
-			return
-		else
-			@requestData =
-				requests: [
-					{requestName: batchId}
-				]
-			$.ajax
-				type: 'POST'
-				url: "/api/preferredBatchId"
-				data: @requestData
-				success: (json) =>
-					@handlePreferredBatchIdReturn(json, control)
-				error: (err) =>
-					@serviceReturn = null
-				dataType: 'json'
-
-	handlePreferredBatchIdReturn: (json, control) =>
-		if json.results?
-			results = (json.results)[0]
-			preferredName = results.preferredName
-			requestName = results.requestName
-			if preferredName == requestName
-				@model.get(control).set batchCode: preferredName
-			else if preferredName == ""
-				@model.get(control).set batchCode: "invalid"
-			else
-				@$('.bv_'+control+'Batch').val(preferredName)
-				@model.get(control).set batchCode: preferredName
-			@attributeChanged()
 
 	handleAssayVolumeChanged: =>
 		@attributeChanged()
@@ -843,6 +1700,26 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 		unless skipUpdate is true
 			@attributeChanged()
 
+	handleHasAdditivesChanged: (skipUpdate) =>
+		hasAdditives = @$('.bv_hasAdditives').is(":checked")
+		@model.set hasAdditives: hasAdditives
+		if hasAdditives
+			@$('.additives').show()
+		else
+			@$('.additives').hide()
+		unless skipUpdate is true
+			@attributeChanged()
+
+	handleHasTimeWindowsChanged: (skipUpdate) =>
+		hasTimeWindows = @$('.bv_hasTimeWindows').is(":checked")
+		@model.set hasTimeWindows: hasTimeWindows
+		if hasTimeWindows
+			@$('.timeSettings').show()
+		else
+			@$('.timeSettings').hide()
+		unless skipUpdate is true
+			@attributeChanged()
+
 	handleVolumeTypeChanged: (skipUpdate) =>
 		volumeType = @$("input[name='bv_volumeType']:checked").val()
 		@model.set volumeType: volumeType
@@ -873,6 +1750,10 @@ class window.PrimaryScreenAnalysisParametersController extends AbstractParserFor
 			@$('.bv_dilutionFactor').attr 'disabled', 'disabled'
 		else
 			@$('.bv_transferVolume').attr 'disabled', 'disabled'
+		if @model.get('thresholdType') is "efficacy"
+			@$('.bv_hitSDThreshold').attr 'disabled', 'disabled'
+		else
+			@$('.bv_hitEfficacyThreshold').attr 'disabled', 'disabled'
 
 class window.AbstractUploadAndRunPrimaryAnalsysisController extends BasicFileValidateAndSaveController
 	#	See UploadAndRunPrimaryAnalsysisController for example required initialization function
@@ -1008,6 +1889,8 @@ class window.UploadAndRunPrimaryAnalsysisController extends AbstractUploadAndRun
 		@analysisParameterController = new PrimaryScreenAnalysisParametersController
 			model: @options.paramsFromExperiment
 			el: @$('.bv_additionalValuesForm')
+		@analysisParameterController.model.on "transformationRuleChanged", =>
+			@trigger 'transformationRuleChanged', @analysisParameterController.model.get('transformationRuleList')
 		@completeInitialization()
 
 class window.PrimaryScreenAnalysisController extends Backbone.View
@@ -1025,7 +1908,7 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		else
 			@setExperimentSaved()
 			@setupDataAnalysisController(@options.uploadAndRunControllerName)
-
+			@checkForSourceFile()
 
 	render: =>
 		@showExistingResults()
@@ -1212,11 +2095,26 @@ class window.PrimaryScreenAnalysisController extends Backbone.View
 		@dataAnalysisController.setUser(window.AppLaunchParams.loginUserName)
 		@dataAnalysisController.setExperimentId(@model.id)
 		@dataAnalysisController.on 'analysis-completed', @handleAnalysisComplete
+		@dataAnalysisController.on 'transformationRuleChanged', (transformationRuleList) =>
+			@trigger 'transformationRuleChanged', transformationRuleList
 		@dataAnalysisController.on 'amDirty', =>
 			@trigger 'amDirty'
 		@dataAnalysisController.on 'amClean', =>
 			@trigger 'amClean'
 #		@showExistingResults()
+
+	checkForSourceFile: ->
+		sourceFile = @model.getSourceFile()
+		if sourceFile? and @dataAnalysisController.parseFileNameOnServer is ""
+			sourceFileValue = sourceFile.get('fileValue')
+			displayName = sourceFile.get('comments')
+			@dataAnalysisController.$('.bv_fileChooserContainer:eq(0)').html '<div style="margin-top:5px;"><a style="margin-left:20px;" href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+displayName+'</a><button type="button" class="btn btn-danger bv_deleteSavedSourceFile pull-right" style="margin-bottom:20px;margin-right:20px;">Delete</button></div>'
+			@dataAnalysisController.handleParseFileUploaded(sourceFile.get('fileValue'))
+			@dataAnalysisController.$('.bv_deleteSavedSourceFile').on 'click', =>
+				@dataAnalysisController.parseFileController.render()
+				@dataAnalysisController.handleParseFileRemoved()
+#			@dataAnalysisController.$('.bv_fileChooserContainer').html '<div style="margin-top:5px;"><a href="'+window.conf.datafiles.downloadurl.prefix+sourceFileValue+'">'+@model.get('structural file').get('comments')+'</a></div>'
+#			@dataAnalysisController.parseFileController.lsFileChooser.fileUploadComplete(null,result:[name:sourceFile.get('fileValue')])
 
 
 # This wraps all the tabs
@@ -1296,6 +2194,12 @@ class window.AbstractPrimaryScreenExperimentController extends Backbone.View
 		@setupModelFitController(@modelFitControllerName)
 		@analysisController.on 'analysis-completed', =>
 			@fetchModel()
+		@analysisController.on 'transformationRuleChanged', (transformationRuleList) =>
+			@modelFitController.handleTransformationRuleChanged(transformationRuleList)
+		@$('.bv_primaryScreenDataAnalysisTab').on 'shown', (e) =>
+			if @model.getAnalysisStatus().get('codeValue') is "not started"
+				@analysisController.checkForSourceFile()
+
 		@model.on "protocol_attributes_copied", @handleProtocolAttributesCopied
 		@model.on 'statusChanged', @handleStatusChanged
 		@experimentBaseController.render()

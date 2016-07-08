@@ -5,7 +5,7 @@
 
 <script type="text/template" id="DoseResponseAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
 
-	<div class="span5" style="margin-left:0;">
+	<div class="span5" style="margin:0;">
     <div class="well well-small" style="margin-left:10px;margin-bottom:10px;width:350px;height:230px;background-color:#ffffff;">
         <div class="form form-inline" style="margin-bottom:5px;">
             <strong class="bv_formTitle" style="font-size:18px;">Global Fit Criteria</strong>
@@ -83,8 +83,8 @@
 </script>
 
 <script type="text/template" id="DoseResponseAnalysisView" xmlns="http://www.w3.org/1999/html">
-    <div class="bv_group_modelFitStatus span8" style="margin-left:0px;">
-        <div class="span9" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong>
+    <div class="bv_group_modelFitStatus span9" style="margin-left:0px;">
+        <div class="" style="margin-left:0;margin-top:5px;"><strong>Fit Status:</strong>
             <span class="bv_modelFitStatus" style="font-weight: bold;"> Curves not fit</span>
         </div>
         <div class="bv_fitOptionWrapper">
@@ -93,7 +93,7 @@
             <!--</span>-->
             <div class="bv_analysisParameterForm"></div>
         </div>
-        <button class="btn btn-default offset6 bv_fitModelButton hide" type="button">Fit Data</button>
+        <button class="btn btn-default offset9 bv_fitModelButton hide" style="margin-top:10px;" type="button">Fit Data</button>
     </div>
     <div class="bv_analyzeExperimentToFit span10">To fit data, save and analyze the experiment.</div>
 
@@ -124,9 +124,24 @@
         <span class="control-group bv_group_modelFitType">
             <label class="control-label">Model Fit Type</label>
             <div class="controls">
-                <select class="span6 bv_modelFitType" style="margin-right:10px;width:170px;"></select>
+                <select class="span6 bv_modelFitType" style="margin-right:10px;width:349px;"></select>
             </div>
         </span>
     </div>
-    <div class=" bv_analysisParameterForm"></div>
+    <hr/>
+    <div class="form-horizontal bv_modelFitTransformationWrapper" style="margin-bottom:20px;">
+        <span class="control-group bv_group_fitTransformation">
+            <label class="control-label">Fit Transformation</label>
+            <div class="controls">
+                <select class="span6 bv_fitTransformation" style="margin-right:10px;width:349px;margin-bottom:20px;"></select>
+            </div>
+        </span>
+        <span class="control-group bv_group_transformationUnits">
+            <label class="control-label">Transformation Unit</label>
+            <div class="controls">
+                <select class="span6 bv_transformationUnits" style="margin-right:10px;width:349px;margin-bottom:20px;"></select>
+            </div>
+        </span>
+    </div>
+    <div class=" bv_analysisParameterForm" style="margin-left:140px;"></div>
 </script>

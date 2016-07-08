@@ -40,7 +40,7 @@ getCompoundPlateData <- function(barcodes, testMode=FALSE, tempFilePath) {
                           "left outer join kalypsysadmin.datadictionary dd_plateType on dd_plateType.datadictid = kp.type_ld ",
                           "where kp.barcode in ('", paste(barcodes, collapse = "','"), "') ",
                           "order by kp.barcode, kpw.wellref ")
-                          
+    source("src/r/PrimaryScreen/instrumentSpecific/specificDataPreProcessorFiles/queryDB.R", local = TRUE)
     return(sqlQuery(queryString = queryString, 
                     host = racas::applicationSettings$server.service.external.inventory.database.host,
                     port = racas::applicationSettings$server.service.external.inventory.database.port,

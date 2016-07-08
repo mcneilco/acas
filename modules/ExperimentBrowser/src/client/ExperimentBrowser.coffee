@@ -139,6 +139,10 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 			@searchUrl = @genericSearchUrl
 		else
 			@searchUrl = @codeNameSearchUrl
+		if @options.domSuffix? #suffix added to end of dom elements that are searched for globally in handleDoSearchClicked
+			@domSuffix = @options.domSuffix
+		else
+			@domSuffix = ""
 
 
 	events:
@@ -161,14 +165,14 @@ class window.ExperimentSimpleSearchController extends AbstractFormController
 			@$(".bv_doSearch").attr("disabled", true)
 
 	handleDoSearchClicked: =>
-		$(".bv_experimentTableController").addClass "hide"
-		$(".bv_errorOccurredPerformingSearch").addClass "hide"
+		$(".bv_experimentTableController"+@domSuffix).addClass "hide"
+		$(".bv_errorOccurredPerformingSearch"+@domSuffix).addClass "hide"
 		experimentSearchTerm = $.trim(@$(".bv_experimentSearchTerm").val())
-		$(".bv_exptSearchTerm").val ""
+		$(".bv_exptSearchTerm"+@domSuffix).val ""
 		if experimentSearchTerm isnt ""
-			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
-			$(".bv_experimentBrowserSearchInstructions").addClass "hide"
-			$(".bv_searchExperimentsStatusIndicator").removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
+			$(".bv_experimentBrowserSearchInstructions"+@domSuffix).addClass "hide"
+			$(".bv_searchExperimentsStatusIndicator"+@domSuffix).removeClass "hide"
 			if !window.conf.browser.enableSearchAll and experimentSearchTerm is "*"
 				$(".bv_moreSpecificExperimentSearchNeeded").removeClass "hide"
 			else
@@ -239,10 +243,17 @@ class window.ExperimentRowSummaryController extends Backbone.View
 			completionDate: date
 		$(@el).html(@template(toDisplay))
 
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			project = @model.getProjectCode().get('codeValue')
+			@$('.bv_protocolName').after "<td class='bv_project'>"+project+"</td>"
 		@
 
 class window.ExperimentSummaryTableController extends Backbone.View
 	initialize: ->
+		if @options.domSuffix?
+			@domSuffix = @options.domSuffix
+		else
+			@domSuffix = ""
 
 	selectedRowChanged: (row) =>
 		@trigger "selectedRowUpdated", row
@@ -250,11 +261,13 @@ class window.ExperimentSummaryTableController extends Backbone.View
 	render: =>
 		@template = _.template($('#ExperimentSummaryTableView').html())
 		$(@el).html @template
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_protocolNameHeader').after '<th style="width: 175px;">Project</th>'
 		if @collection.models.length is 0
-			$(".bv_noMatchingExperimentsFoundMessage").removeClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).removeClass "hide"
 			# display message indicating no results were found
 		else
-			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
+			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
 			@collection.each (exp) =>
 				hideStatusesList = null
 				if window.conf.entity?.hideStatuses?
@@ -281,7 +294,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		"click .bv_duplicateExperiment": "handleDuplicateExperimentClicked"
 		"click .bv_confirmDeleteExperimentButton": "handleConfirmDeleteExperimentClicked"
 		"click .bv_cancelDelete": "handleCancelDeleteClicked"
-		"click .bv_openInQueryTool": "handleOpenInQueryToolClicked"
+		"click .bv_openInQueryToolButton": "handleOpenInQueryToolClicked"
 
 	initialize: ->
 		template = _.template( $("#ExperimentBrowserView").html(),  {includeDuplicateAndEdit: @includeDuplicateAndEdit} );
@@ -294,7 +307,7 @@ class window.ExperimentBrowserController extends Backbone.View
 		@searchController.render()
 		@searchController.on "searchReturned", @setupExperimentSummaryTable
 		#@searchController.on "resetSearch", @destroyExperimentSummaryTable
-		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
+#		@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 
 	setupExperimentSummaryTable: (experiments) =>
 		@destroyExperimentSummaryTable()
@@ -317,7 +330,15 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		if experiment.get('lsKind') is "Bio Activity"
+		if experiment.get('lsKind') is "Parent Bio Activity"
+			@experimentController = new ParentExperimentMetadataController
+				model: new ParentExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController = new ExperimentBaseController
+				model: new ScreeningExperiment experiment.attributes
+				readOnly: true
+		else if experiment.get('lsKind') is "Bio Activity"
 			@experimentController = new ExperimentBaseController
 				protocolKindFilter: "?protocolKind=Bio Activity"
 				model: new PrimaryScreenExperiment experiment.attributes
@@ -328,21 +349,73 @@ class window.ExperimentBrowserController extends Backbone.View
 				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
+		if experiment.get('lsKind') is "Bio Activity Screen"
+			@experimentController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
+			@experimentController.$('.bv_group_protocolCode').hide()
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		if experiment.getStatus().get('codeValue') is "deleted"
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
-			@$('.bv_editExperiment').show()
-			@$('.bv_deleteExperiment').show()
-			#TODO: make deleting experiment privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteExperiment').show() #TODO for future releases, add in showing duplicateExperiment
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteExperiment').hide()
+			@formatOpenInQueryToolButton()
+			if @canEdit()
+				@$('.bv_editExperiment').show()
+			else
+				@$('.bv_editExperiment').hide()
+			if @canDelete()
+				@$('.bv_deleteExperiment').show()
+			else
+				@$('.bv_deleteExperiment').hide()
+
+	canEdit: ->
+		if @experimentController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @experimentController.model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
+					else
+						rolesToTest.push role
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @experimentController.model.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @experimentController.model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteExperimentClicked: =>
 		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")
@@ -391,7 +464,28 @@ class window.ExperimentBrowserController extends Backbone.View
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
 	handleOpenInQueryToolClicked: =>
-		window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
+			window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+
+	formatOpenInQueryToolButton: =>
+		@$('.bv_viewerOptions').empty()
+		configuredViewers = window.conf.service.result.viewer.configuredViewers
+		if configuredViewers?
+			configuredViewers = configuredViewers.split(",")
+		if configuredViewers? and configuredViewers.length>1
+			for viewer in configuredViewers
+				viewerName = $.trim viewer
+				href = "'/openExptInQueryTool?tool=#{viewerName}&experiment=#{@experimentController.model.get("codeName")}','_blank'"
+				if @experimentController.model.getStatus().get('codeValue') != "approved" and viewerName is "LiveDesign"
+					@$('.bv_viewerOptions').append '<li class="disabled"><a href='+href+' target="_blank">'+viewerName+'</a></li>'
+				else
+					@$('.bv_viewerOptions').append '<li><a href='+href+' target="_blank">'+viewerName+'</a></li>'
+		else
+			@$('.bv_openInQueryToolButton').removeAttr 'data-toggle', 'dropdown'
+			@$('.bv_openInQueryToolButton').removeClass 'dropdown-toggle'
+			@$('.bv_openInQueryToolButton .caret').hide()
+			@$('.bv_openInQueryToolButton').html("Open In " + window.conf.service.result.viewer.displayName)
+			@$('.bv_openInQueryTool').removeClass "btn-group"
 
 	destroyExperimentSummaryTable: =>
 		if @experimentSummaryTable?

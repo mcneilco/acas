@@ -58,10 +58,10 @@
 		interactionkinds:
 			[
 				kindName: "test subject"
-				typeName: "first refers to second"
+				typeName: "refers to"
 			,
 				kindName: "plate well"
-				typeName: "first has second as a member"
+				typeName: "has member"
 			]
 
 		containertypes:
@@ -224,6 +224,9 @@
 				typeName: "stringValue"
 			,
 				kindName: "curve id"
+				typeName: "stringValue"
+			,
+				kindName: "curve name"
 				typeName: "stringValue"
 			,
 				kindName: "Dose"

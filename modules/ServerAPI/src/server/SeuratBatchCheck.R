@@ -15,8 +15,8 @@ seuratBatchCodeCheck <- function(input) {
   getGoodBatchCodes <- function(batchCodeVector) {
     if (length(batchCodeVector) <= 1000) {
       goodBatchCodes <- query(paste0(
-        "select c.corporate_id || '-' || l.lot_id from syn_compound c
-  join syn_compound_lot l on c.compound_id=l.compound_id
+        "select c.corporate_id || '-' || l.lot_id from seurat.syn_compound c
+  join seurat.syn_compound_lot l on c.compound_id=l.compound_id
   where c.corporate_id || '-' || l.lot_id in (", sqliz(batchCodeVector),")"))
       if (length(goodBatchCodes) > 0) {
         goodBatchCodes <- as.character(goodBatchCodes[[1]])

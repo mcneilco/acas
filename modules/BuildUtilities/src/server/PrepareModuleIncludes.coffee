@@ -10,6 +10,8 @@ if typeof workingDir != "undefined"
 
 prepIncludes = ->
 	styleFiles = glob.sync "#{ACAS_HOME}/public/stylesheets/*/*.css"
+	styleFiles = _.filter styleFiles, (fileName)->
+		!(/_nocompile.css$/.test(fileName))
 	templateFiles = glob.sync "#{ACAS_HOME}/public/html/**/*.html"
 
 	includeLines = ""

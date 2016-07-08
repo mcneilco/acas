@@ -281,7 +281,7 @@ class window.BaseEntityController extends AbstractFormController
 		@updateEditable()
 		@$('.bv_save').attr('disabled', 'disabled')
 		@$('.bv_cancel').attr('disabled','disabled')
-		if @readOnly is true
+		if @readOnly is true or !@canEdit()
 			@displayInReadOnlyMode()
 
 		@
@@ -300,6 +300,55 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_cancel').removeAttr('disabled')
 		@$('.bv_cancelComplete').hide()
 
+	canEdit: ->
+		if @model.isNew() or @model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
+							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
+					else
+						rolesToTest.push role
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @model.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
+
 	setupStatusSelect: ->
 		statusState = @model.getStatus()
 		@statusList = new PickListList()
@@ -308,6 +357,15 @@ class window.BaseEntityController extends AbstractFormController
 			el: @$('.bv_status')
 			collection: @statusList
 			selectedCode: statusState.get 'codeValue'
+		@listenTo @statusList, 'sync', @editStatusOptions
+
+	editStatusOptions: =>
+		if window.conf.entity?.approvalRole?
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, window.conf.entity.approvalRole
+				@$(".bv_status option[value='approved']").attr 'disabled', 'disabled'
+				@$(".bv_status option[value='rejected']").attr 'disabled', 'disabled'
+		if !@canDelete()
+			@$(".bv_status option[value='deleted']").attr 'disabled', 'disabled'
 
 	setupScientistSelect: ->
 		@scientistList = new PickListList()
@@ -517,10 +575,13 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_save').removeAttr('disabled')
 
 	checkDisplayMode: =>
-		if @readOnly is true
+		status = @model.getStatus().get('codeValue')
+		if @readOnly is true or !@canEdit()
 			@displayInReadOnlyMode()
-		else if @model.getStatus().get('codeValue') is "deleted"
+		else if status is "deleted" or status is "approved" or status is "rejected"
 			@disableAllInputs()
+			unless @model.getStatus().get('codeValue') is "deleted"
+				@$('.bv_status').removeAttr 'disabled'
 			@$('.bv_newEntity').removeAttr('disabled')
 			@$('.bv_newEntity').removeAttr('disabled')
 

@@ -50,13 +50,16 @@ class window.Experiment extends BaseEntity
 		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
 		if pExptMeta.length > 0
 			eExptMeta = @.get('lsStates').getStatesByTypeAndKind "metadata", "experiment metadata"
-			dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
-			if dapVal.length > 0
-				#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
-				if dapVal[0].isNew()
-					eExptMeta[0].get('lsValues').remove dapVal[0]
-				else
-					dapVal[0].set ignored: true
+			if eExptMeta.length > 0
+				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
+				if dapVal.length > 0
+					#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+					if dapVal[0].isNew()
+						eExptMeta[0].get('lsValues').remove dapVal[0]
+					else
+						dapVal[0].set ignored: true
+			else
+				eExptMeta = [@.get('lsStates').getOrCreateStateByTypeAndKind("metadata", "experiment metadata")]
 			dap = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "clobValue", "data analysis parameters").attributes)
 			dap.unset 'id'
 			dap.unset 'lsTransaction'
@@ -83,10 +86,34 @@ class window.Experiment extends BaseEntity
 			mft.unset 'id'
 			mft.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mft
-			@getDryRunStatus().set ignored: true
-			@getDryRunStatus().set codeValue: 'not started'
-			@getDryRunResultHTML().set ignored: true
-			@getDryRunResultHTML().set clobValue: ""
+
+			mftransVal = eExptMeta[0].getValuesByTypeAndKind "stringValue", "model fit transformation"
+			if mftransVal.length > 0
+				if mftransVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftransVal[0]
+				else
+					mftransVal[0].set ignored: true
+			mftrans = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "stringValue", "model fit transformation").attributes)
+			mftrans.unset 'id'
+			mftrans.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mftrans
+
+			mftuVal = eExptMeta[0].getValuesByTypeAndKind "codeValue", "model fit transformation units"
+			if mftuVal.length > 0
+				if mftuVal[0].isNew()
+					eExptMeta[0].get('lsValues').remove mftuVal[0]
+				else
+					mftuVal[0].set ignored: true
+			mftu = new Value(_.clone(pstates.getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "codeValue", "model fit transformation units").attributes)
+			mftu.unset 'id'
+			mftu.unset 'lsTransaction'
+			eExptMeta[0].get('lsValues').add mftu
+
+# 		commented because experiment base does not have these values
+#			@getDryRunStatus().set ignored: true
+#			@getDryRunStatus().set codeValue: 'not started'
+#			@getDryRunResultHTML().set ignored: true
+#			@getDryRunResultHTML().set clobValue: ""
 
 		@set
 			lsKind: protocol.get('lsKind')
@@ -131,22 +158,23 @@ class window.Experiment extends BaseEntity
 				attribute: 'protocolCode'
 				message: "Protocol must be set"
 		if attrs.subclass?
-			reqProject = window.conf.include.project
-			unless reqProject?
-				reqProject = "true"
-			reqProject = reqProject.toLowerCase()
-			unless reqProject is "false"
-				projectCode = @getProjectCode().get('codeValue')
-				if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
-					errors.push
-						attribute: 'projectCode'
-						message: "Project must be set"
+			unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+				reqProject = window.conf.include.project
+				unless reqProject?
+					reqProject = "true"
+				reqProject = reqProject.toLowerCase()
+				unless reqProject is "false"
+					projectCode = @getProjectCode().get('codeValue')
+					if projectCode is "" or projectCode is "unassigned" or projectCode is undefined
+						errors.push
+							attribute: 'projectCode'
+							message: "Project must be set"
 			cDate = @getCompletionDate().get('dateValue')
 			if cDate is undefined or cDate is "" or cDate is null then cDate = "fred"
 			if isNaN(cDate)
 				errors.push
 					attribute: 'completionDate'
-					meetsage: "Assay completion date must be set"
+					message: "Assay completion date must be set"
 
 		if errors.length > 0
 			return errors
@@ -177,6 +205,46 @@ class window.Experiment extends BaseEntity
 
 	getCompletionDate: ->
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
+
+	getAttachedFiles: (fileTypes) =>
+		#get list of possible kinds of analytical files
+		attachFileList = new ExperimentAttachFileList()
+		for type in fileTypes
+			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
+			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
+			if analyticalFileValues.length > 0 and type.code != "unassigned"
+				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+				#add new afm to attach file list
+				for file in analyticalFileValues
+					if file.get('ignored') is false
+						afm = new AttachFile
+							fileType: type.code
+							fileValue: file.get('fileValue')
+							id: file.get('id')
+							comments: file.get('comments')
+						attachFileList.add afm
+
+			# get files not saved in metadata_experiment metadata state
+			if (type.code is "source file") or type.code is "annotation file"
+				if type.code is "source file"
+					file = @getSourceFile()
+				else
+					file = @getSELReportFile()
+				if file?
+					displayName = file.get('comments')
+					fileModel = new AttachFile
+						fileType: type.code
+						fileValue: file.get('fileValue')
+						id: file.get('id')
+						comments: displayName
+					attachFileList.add fileModel
+		attachFileList
+
+	getSourceFile: ->
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "experiment metadata", "fileValue", "source file"
+
+	getSELReportFile: -> #for getting report files uploaded through SEL
+		@get('lsStates').getStateValueByTypeAndKind "metadata", "report locations", "fileValue", "annotation file"
 
 	duplicateEntity: =>
 		copiedEntity = super()
@@ -220,13 +288,19 @@ class window.Experiment extends BaseEntity
 		,
 			type: 'stringValue'
 			kind: 'hts format'
+		,
+			type: 'stringValue'
+			kind: 'model fit transformation'
+		,
+			type: 'codeValue'
+			kind: 'model fit transformation units'
 		]
 		unless @isNew()
 			expState = @get('lsStates').getStatesByTypeAndKind("metadata", "experiment metadata")[0]
 			for val in valuesToDelete
 				value = expState.getValuesByTypeAndKind(val.type, val.kind)[0]
 				if value?
-					if ((val.kind is "data analysis parameters" or val.kind is "model fit parameters" or val.kind is "model fit type" or val.kind is "dry run status" or val.kind  is "dry run html") and value.isNew())
+					if ((val.kind is "data analysis parameters" or val.kind is "model fit parameters" or val.kind is "model fit type" or val.kind is "dry run status" or val.kind  is "dry run html" or val.kind is "source file") and value.isNew())
 					else
 						expState.get('lsValues').remove value
 		super()
@@ -275,8 +349,6 @@ class window.ExperimentBaseController extends BaseEntityController
 								if json.length == 0
 									alert 'Could not get experiment for code in this URL, creating new one'
 								else
-									#TODO Once server is upgraded to not wrap in an array, use the commented out line. It is consistent with specs and tests
-	#								expt = new Experiment json
 									lsKind = json.lsKind #doesn't work for specRunner mode. In stubs mode, doesn't return array but for non-stubsMode,this works for now - see todo above
 									if lsKind is "default"
 										expt = new Experiment json
@@ -324,7 +396,10 @@ class window.ExperimentBaseController extends BaseEntityController
 		@setupScientistSelect()
 		@setupTagList()
 		@setupProtocolSelect(@options.protocolFilter, @options.protocolKindFilter)
-		@setupProjectSelect()
+		if window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_group_projectCode').hide()
+		else
+			@setupProjectSelect()
 		@setupAttachFileListController()
 		@setupCustomExperimentMetadataController()
 		@render()
@@ -337,7 +412,8 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model = new Experiment()
 		if @model.get('protocol') != null
 			@$('.bv_protocolCode').val(@model.get('protocol').get('codeName'))
-		@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
+		unless window.conf.save?.project? and window.conf.save.project.toLowerCase() is "false"
+			@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@setUseProtocolParametersDisabledState()
 		@$('.bv_completionDate').datepicker();
 		@$('.bv_completionDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
@@ -359,14 +435,36 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
 		@render()
-		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
+		if @$('.bv_saveFailed').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
+		else if @$('.bv_cancelComplete').is(":visible")
+			@trigger 'amClean'
 		else
 			@$('.bv_updateComplete').show()
 			@trigger 'amClean'
 			@model.trigger 'saveSuccess'
 		@setupAttachFileListController()
+
+	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
+		if @attachFileListController?
+			@attachFileListController.undelegateEvents()
+		@attachFileListController= new ExperimentAttachFileListController
+			autoAddAttachFileModel: false
+			el: @$('.bv_attachFileList')
+			collection: attachFileList
+			firstOptionName: "Select Method"
+			allowedFileTypes: ['xls', 'rtf', 'pdf', 'txt', 'csv', 'sdf', 'xlsx', 'doc', 'docx', 'png', 'gif', 'jpg', 'ppt', 'pptx', 'pzf', 'zip']
+			fileTypeList: fileTypeList
+			required: false
+		@attachFileListController.on 'amClean', =>
+			@trigger 'amClean'
+		@attachFileListController.on 'renderComplete', =>
+			@checkDisplayMode()
+		@attachFileListController.render()
+		@attachFileListController.on 'amDirty', =>
+			@trigger 'amDirty' #need to put this after the first time @attachFileListController is rendered or else the module will always start off dirty
+			@model.trigger 'change'
 
 	setupExptNameChkbx: ->
 		code = @model.get('codeName')
@@ -415,14 +513,6 @@ class window.ExperimentBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
-
-	setupStatusSelect: ->
-		@statusList = new PickListList()
-		@statusList.url = "/api/codetables/experiment/status"
-		@statusListController = new PickListSelectController
-			el: @$('.bv_status')
-			collection: @statusList
-			selectedCode: @model.getStatus().get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""

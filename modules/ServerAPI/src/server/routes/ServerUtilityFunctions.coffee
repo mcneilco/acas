@@ -132,8 +132,10 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 		, (error, response, body) =>
 			@serverError = error
 			@responseJSON = body
-			if response.statusCode != 200 or (@responseJSON? && @responseJSON["RExecutionError"]?) or @serverError?
-				if response.statusCode !=200
+			if @serverError? or response?.statusCode != 200 or (@responseJSON? and @responseJSON["RExecutionError"]?)
+				console.log @responseJSON
+				console.log error
+				if response?.statusCode != 200
 					messageText = "Internal error please contact administrator"
 				else if (@responseJSON? && @responseJSON["RExecutionError"]?)
 					messageText = @responseJSON["RExecutionError"]
@@ -225,6 +227,8 @@ exports.getFromACASServer = (baseurl, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
+				resp.statusCode = 500
+				resp.end "Could not get from ACAS Server"
 				console.log 'got ajax error'
 				console.log error
 				console.log json

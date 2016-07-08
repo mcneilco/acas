@@ -1,0 +1,133 @@
+//extends layout
+//!!! 5
+html#CmpdRegView
+	head
+		title= title
+		link(rel="stylesheet", href="/src/modules/CmpdReg/src/client/css/NewCmpdReg_nocompile.css")
+		link(rel="stylesheet", href="/src/modules/CmpdReg/src/client/lib/JQuery_theme_redmond/jquery-ui-1.8.20.custom_nocompile.css")
+		link(rel="stylesheet", href="/src/modules/CmpdReg/src/client/MultipleFilePicker/css/style_nocompile.css")
+		link(rel="stylesheet", href="/src/modules/CmpdReg/src/client/custom/customStyles_nocompile.css")
+		//link(rel="stylesheet", href="/stylesheets/CmpdReg/github.css")
+
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/jquery-1.7.2.min.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/json2.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/jquery.form.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/jquery-ui-1.8.20.custom.min.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/underscore-1.1.6.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/backbone.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/amplify.store.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/lib/backbone.amplify.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/marvinjs/js/lib/rainbow/rainbow-custom.min.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/marvinjs/gui/lib/promise-1.0.0.min.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/marvinjs/js/marvinjslauncher.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/custom/marvinStructureTemplate.js")
+
+		//script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/jquery-1.6.2.js")
+		//script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/backbone-localstorage.js")
+		//script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/jasmine.js")
+		//script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/jasmine-html.js")
+
+		//script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/qunit.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/AppController.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Isotope.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Salt.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/ErrorNotification.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/IsoSaltEquiv.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/SaltForm.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Lot.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/PickList.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/StructureImage.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/MultipleFilePicker/javascript/src/file.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/MultipleFilePicker/javascript/src/file_renderer.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Parent.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/MetaLot.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/RegistrationSearch.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/SaltFormList.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/ParentList.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/RegSearchResults.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Registration.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/SearchForm.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/Search.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/SearchResults.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/NewLotSuccess.js")
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/src/AddAlias.js")
+
+		script(type='text/javascript', src="/src/modules/CmpdReg/src/client/custom/Lot_Custom.js")
+
+
+
+		include ../public/src/modules/CmpdReg/src/client/templates/StructureImageView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/NewIsotopeView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/ErrorNotificationView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/NewSaltView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/SaltFormView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/SaltForm_IsoSaltEquivView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/ParentView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/MetaLotView.inc
+		include ../public/src/modules/CmpdReg/src/client/MultipleFilePicker/templates/jspVersion/file_template_jsp.inc
+		include ../public/src/modules/CmpdReg/src/client/MultipleFilePicker/templates/jspVersion/file_template_desc_jsp.inc
+		include ../public/src/modules/CmpdReg/src/client/MultipleFilePicker/templates/jspVersion/file_template_renderer_jsp.inc
+		include ../public/src/modules/CmpdReg/src/client/MultipleFilePicker/templates/DropView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/RegistrationSearchView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/RegSearchResults/RegSearchResultsView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/RegistrationView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/Search/SearchFormView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/Search/SearchView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/Search/SearchResultsView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/Search/SearchResultView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/AppControllerView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/LotForm/NewLotSuccessView.inc
+		include ../public/src/modules/CmpdReg/src/client/templates/jspVersion/AddAliasView_jsp.inc
+		include ../public/src/modules/CmpdReg/src/client/custom/LotView_Custom.inc
+
+		//end inserted by PrepareModuleIncludes
+		//-each script in scripts
+		//	script(type='text/javascript', src= script)
+body
+
+	script
+		window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
+		$(function() {
+			var currentWindowOnload = window.onload;
+			window.onload = function() {
+				if (currentWindowOnload) {
+					currentWindowOnload()
+				}
+				window.servicesHostPrefix = "";
+				window.configuration = window.AppLaunchParams.cmpdRegConfig
+				window.appController = new AppController({
+					el: $('#AppControllerView'),
+					//user: window.AppLaunchParams.loginUser
+					user: new Backbone.Model(window.AppLaunchParams.cmpdRegUser)
+					});
+			};
+		});
+
+	div#AppControllerView
+
+
+	//script
+	//	$(function () {
+	//		//window.configuration = Configuration.getConfigJson()
+	//		window.testMode = false;
+	//		//window.configuration.serverConnection.connectToServer = true; // need to override true in the configuration file
+	//		var currentWindowOnload = window.onload;
+	//
+	//		window.onload = function() {
+	//		if (currentWindowOnload)
+	//			currentWindowOnload()
+	//
+	//		window.appController = new AppController({
+	//			el: '#AppControllerView',
+	//			user: new Backbone.Model(SecurityUtil.getLoginUser().toJson())
+	//		});
+	//	};
+	//
+	//	});
+//div #AppControllerView

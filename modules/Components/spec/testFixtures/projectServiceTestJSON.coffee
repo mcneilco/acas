@@ -20,6 +20,21 @@
 		name: "proj3ct four"
 		ignored: true
 	]
+	exports.projectStubs = [
+		active: true,
+		alias: "Banana",
+		code: "BANANA",
+		id: 2,
+		isRestricted: true,
+		name: "Banana"
+	,
+		active: true,
+		alias: "APPLE",
+		code: "APPLE",
+		id: 1,
+		isRestricted: true,
+		name: "APPLE"
+	]
 ) (if (typeof process is "undefined" or not process.versions) then window.projectServiceTestJSON = window.projectServiceTestJSON or {} else exports)
 
 

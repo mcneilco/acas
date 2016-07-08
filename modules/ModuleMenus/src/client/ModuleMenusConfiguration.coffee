@@ -7,15 +7,18 @@ window.ModuleMenusConfiguration =
 		menuName: "Experiment Loader"
 		mainControllerClassName: "GenericDataParserController"
 		autoLaunchName:"generic_data_parser"
+		# requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
 		menuName: "Dose Response"
 		mainControllerClassName: "DoseResponseFitWorkflowController"
+		# requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
 		menuName: "Plate Analysis Protocol Editor"
 		mainControllerClassName: "PrimaryScreenProtocolModuleController"
 		autoLaunchName:"primary_screen_protocol"
+		# requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
 		menuName: "Plate Analysis Experiment Editor"
@@ -31,6 +34,11 @@ window.ModuleMenusConfiguration =
 		menuName: "Experiment Editor"
 		mainControllerClassName: "ExperimentBaseController"
 		autoLaunchName:"experiment_base"
+	,
+		isHeader: false
+		menuName: "Project Editor"
+		mainControllerClassName: "ProjectController"
+		autoLaunchName:"project"
 	,
 		isHeader: false
 		menuName: "Data Viewer"
@@ -61,6 +69,9 @@ window.ModuleMenusConfiguration =
 		isHeader: false, menuName: "Experiment Browser"
 		mainControllerClassName: "ExperimentBrowserController"
 	,
+		isHeader: false, menuName: "Project Browser"
+		mainControllerClassName: "ProjectBrowserController"
+	,
 		isHeader: true
 		menuName: "Admin"
 	,
@@ -68,7 +79,26 @@ window.ModuleMenusConfiguration =
 		menuName: "Admin Panel"
 		mainControllerClassName: "AdminPanelController"
 		autoLaunchName: "admin_panel"
+		requireUserRoles: []
 	,
 		isHeader: false, menuName: "Logging"
 		mainControllerClassName: "LoggingController"
+		requireUserRoles: []
+	,
+		isHeader: true
+		menuName: "Across Experiments"
+	,
+		isHeader: false
+		menuName: "Parent Protocol"
+		mainControllerClassName: "ParentProtocolController"
+		autoLaunchName: "parent_protocol"
+	,
+		isHeader: false
+		menuName: "Parent Experiment"
+		mainControllerClassName: "ParentExperimentModuleController"
+		autoLaunchName: "parent_experiment"
+	,
+		isHeader: false, menuName: "Screening Campaign"
+		mainControllerClassName: "ScreeningCampaignModuleController"
+		autoLaunchName:"screening_campaign"
 	]
