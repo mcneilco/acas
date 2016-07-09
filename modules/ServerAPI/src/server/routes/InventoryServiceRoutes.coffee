@@ -41,6 +41,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/containerLogs', exports.containerLogs
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', exports.createTube
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -80,6 +81,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -1660,3 +1662,52 @@ exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback
 				console.error response
 				callback JSON.stringify "getContainerCodeNamesByContainerValue failed"
 		)
+
+exports.createTube = (req, resp) ->
+	exports.createTubeInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.createTubeInternal = (input, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createTube"
+	if input.createdDate?
+		if typeof(input.createdDate) != "number"
+			console.warn "#{input.createdDate} is typeof #{typeof(input.createdDate)}, created date should be a number"
+			input.createdDate = parseInt input.createdDate
+			if isNaN(input.createdDate)
+				msg = "received #{input.createdDate} when attempting to coerce created date"
+				console.error msg
+				callback msg, 400
+	console.log "baseurl"
+	console.log baseurl
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		input.barcode = input.barcode.toUpperCase()
+		console.warn input.barcode
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify input
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error  && response.statusCode == 200
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.createTube?
+				console.log "running customer specific server function createTube"
+				csUtilities.createTube input, (customerResponse, statusCode) ->
+					json = _.extend json, customerResponse
+					callback json, statusCode
+			else
+				console.warn "could not find customer specific server function createTube so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tube'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)
