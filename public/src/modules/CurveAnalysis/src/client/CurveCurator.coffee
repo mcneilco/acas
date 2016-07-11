@@ -101,16 +101,15 @@ class window.DoseResponsePlotController extends AbstractFormController
 				},
 			)
 
-			promptForKnockout = (selectedPoints) =>
-				running = @running
-				if !@running?
+			promptForKnockout = (selectedPoints, force) =>
+				if force || !@running?
 					@running = true
 					@showDoseResponseKnockoutPanel selectedPoints
 				else
 					return
 
-			includePoints = (selectedPoints) =>
-				if !@runnning?
+			includePoints = (selectedPoints, force) =>
+				if force || !@running?
 					@running = true
 					selectedPoints.forEach (selectedPoint) =>
 						@points[selectedPoint.idx].algorithmFlagStatus = ""
@@ -269,7 +268,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				dx
 				dy
 			], brd)
-		createSelection = (e) ->
+		createSelection = (e) =>
+			if !@running?
+				@running = true
 			if !brd.elementsByName.selection?
 				coords = getMouseCoords(e)
 				a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
@@ -300,9 +301,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 						if selected?
 							if selected.length > 0
 								if knockoutMode
-									promptForKnockout(selected)
+									promptForKnockout(selected, true)
 								else
-									includePoints(selected)
+									includePoints(selected, true)
 
 				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
