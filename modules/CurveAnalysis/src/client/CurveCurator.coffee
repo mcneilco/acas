@@ -102,27 +102,36 @@ class window.DoseResponsePlotController extends AbstractFormController
 			)
 
 			promptForKnockout = (selectedPoints) =>
-				@showDoseResponseKnockoutPanel selectedPoints
+				running = @running
+				if !@running?
+					@running = true
+					@showDoseResponseKnockoutPanel selectedPoints
+				else
+					return
 
 			includePoints = (selectedPoints) =>
-				selectedPoints.forEach (selectedPoint) =>
-					@points[selectedPoint.idx].algorithmFlagStatus = ""
-					@points[selectedPoint.idx].algorithmFlagObservation = ""
-					@points[selectedPoint.idx].algorithmFlagCause = ""
-					@points[selectedPoint.idx].algorithmFlagComment = ""
-					@points[selectedPoint.idx].preprocessFlagStatus = ""
-					@points[selectedPoint.idx].preprocessFlagObservation = ""
-					@points[selectedPoint.idx].preprocessFlagCause = ""
-					@points[selectedPoint.idx].preprocessFlagComment = ""
-					@points[selectedPoint.idx].userFlagStatus = ""
-					@points[selectedPoint.idx].userFlagObservation = ""
-					@points[selectedPoint.idx].userFlagCause = ""
-					@points[selectedPoint.idx].userFlagComment = ""
+				if !@runnning?
+					@running = true
+					selectedPoints.forEach (selectedPoint) =>
+						@points[selectedPoint.idx].algorithmFlagStatus = ""
+						@points[selectedPoint.idx].algorithmFlagObservation = ""
+						@points[selectedPoint.idx].algorithmFlagCause = ""
+						@points[selectedPoint.idx].algorithmFlagComment = ""
+						@points[selectedPoint.idx].preprocessFlagStatus = ""
+						@points[selectedPoint.idx].preprocessFlagObservation = ""
+						@points[selectedPoint.idx].preprocessFlagCause = ""
+						@points[selectedPoint.idx].preprocessFlagComment = ""
+						@points[selectedPoint.idx].userFlagStatus = ""
+						@points[selectedPoint.idx].userFlagObservation = ""
+						@points[selectedPoint.idx].userFlagCause = ""
+						@points[selectedPoint.idx].userFlagComment = ""
 
-					selectedPoint.drawAsIncluded()
-				@model.set points: @points
-				@model.trigger 'change'
-				return
+						selectedPoint.drawAsIncluded()
+					@model.set points: @points
+					@model.trigger 'change'
+					return
+				else
+					return
 
 			ii = 0
 			while ii < points.length
