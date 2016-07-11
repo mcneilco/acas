@@ -268,6 +268,7 @@ div {
 }
 
 .bv_aliasesContainer {
+    margin-bottom: 11px;
     margin-left: 0;
 }
 
@@ -373,7 +374,7 @@ div {
 }
 
 .bv_editAliases {
-    margin-top: 15px;
+    /*margin-top: 15px;*/
     cursor: pointer;
 }
 
@@ -481,6 +482,13 @@ div {
     padding: 13px 5px 10px 45px;
     z-index: -100;
 }
+
+.EditParentSearchResultsWarning {
+  margin-bottom: 15px;
+  margin-left: 10px;
+  width: 634px;
+}
+
 /****** GLOBAL HEADER ******/
 
 #AppControllerView {
@@ -591,6 +599,15 @@ div {
     margin-left: 0px;
 }
 
+.ParentView .parentImageWrapper {
+    width: 620px;
+    height: 315px;
+    border: 2px solid #D5D8DD;
+    margin-left: 0px;
+}
+
+/*parentImageWrapper */
+
 .RegSearchResultsView .asDrawnStructure .copyButtonWrapper, .EditParentSearchResultsView .asDrawnStructure .copyButtonWrapper {
     margin-bottom: 10px;
 }
@@ -610,7 +627,7 @@ div {
     height: 388px;
     /*padding-bottom: 28px;*/
 }
-.RegSearchResultsView .FormLabel, .EditParentSearchResultsView .FormLabel {
+.RegSearchResultsView .FormLabel {
     width: 10em; /*spacing between labels and input fields*/
     text-align: left;
 }
@@ -631,7 +648,7 @@ div {
     width: 190px;
     margin-top: 7px;
 }
-.RegSearchResultsView .row3, .EditParentSearchResultsView .row3 {
+.RegSearchResultsView .row3 {
     text-align: left;
     float: left;
     width: 161px;
@@ -639,11 +656,29 @@ div {
 .RegSearchResultsView .row3 .asDrawnMolWeight, .EditParentSearchResultsView .row3 .asDrawnMolWeight {
     width: 100px;
 }
-.RegSearchResultsView .row3-1, .EditParentSearchResultsView .row3-1 {
+.RegSearchResultsView .row3-1 {
     text-align: left;
     float: left;
     width: 190px;
 }
+
+ .EditParentSearchResultsView .row3 {
+   text-align: left;
+   float: left;
+   width: 190px;
+ }
+
+.EditParentSearchResultsView .row3-1 {
+  text-align: left;
+  float: left;
+  width: 190px;
+}
+
+.EditParentSearchResultsView .FormLabel {
+  width: 80px !important;
+  margin-top: 0 !important;
+}
+
 .row4 {
     text-align: left;
     float: left;
@@ -965,33 +1000,47 @@ input.casNumber {
 .MetaLotView .LotForm_LotViewChem {
     float:left;
 }
-select.FormInput.chemist, .physicalStateCode {
+select.FormInput.chemist, .FormInput.physicalStateCode {
     width: 160px;
 }
-input.FormInput.supplier, .supplierID, .percentEE, .lotNumber {
-    width: 155px;
+input.FormInput.supplier, .FormInput.supplierID, .FormInput.percentEE, .FormInput.lotNumber {
+    width: 160px;
 }
 .MetaLotView .notForVirtual3 {
     clear:both;
     padding:5px;
 }
+.formInput.comments, .formInput.notebookPage, .formInput.lotMolWeight, .formInput.meltingPoint {
+  width: 160px;
+}
+
+
 /*** SYNTH DATE COLUMN ***/
 
 .MetaLotView .LotForm_LotViewSynth {
     margin-top: 13px;
 }
 input.FormInput .hasDatepicker, .color {
-    width: 155px;
-}
-input.FormInput.amount, .retain, .purity, .solutionAmount {
-    width: 104px;
-}
-select.FormInput.purityMeasuredByCode, .vendorCode {
     width: 160px;
 }
-select.FormInput.amountUnitsCode, .retainUnitsCode, .purityOperatorCode, .solutionAmountUnitsCode {
+input.FormInput.amount, .FormInput.retain, .FormInput.purity, .FormInput.solutionAmount {
+    width: 108px;
+}
+select.FormInput.purityMeasuredByCode, .FormInput.vendorCode {
+    width: 160px;
+}
+select.FormInput.amountUnitsCode, .FormInput.retainUnitsCode, .FormInput.purityOperatorCode, .FormInput.solutionAmountUnitsCode {
     width: 48px;
 }
+
+.formInput.synthesisDate, .formInput.supplierLot {
+  width: 160px;
+}
+
+.formInput.boilingPoint {
+  width: 160px !important;
+}
+
 /*** ANALYTICAL FILES ***/
 div.analyticalFiles {
     margin-left: 12px;
@@ -1345,7 +1394,9 @@ div.MetaLotViewButtons.buttons {
     float: right;
     height: 27px;
     width: 90px;
-    padding: 10px 5px 0px 5px;
+    padding: 0px 0px 0px 0px;
+    margin: 5px 60px 0 0;
+
 }
 
 .EditParentViewButtons .bv_saveUpdateParentButton, .bv_cancelUpdateParentButton, .bv_backUpdateParentButton {
@@ -1373,4 +1424,16 @@ div.MetaLotViewButtons.buttons {
 }
 .EditParentViewButtons a.backUpdateParentButtonOff {
     background: no-repeat url('../images/back_off.png');
+}
+
+.ConfirmEditParentPanel .floatingPanel {
+  left: 260px;
+}
+
+.ParentUpdatedPanel .floatingPanel {
+  left: 260px;
+}
+
+.EditParentStepThreeTitle {
+  margin-left: 15px;
 }

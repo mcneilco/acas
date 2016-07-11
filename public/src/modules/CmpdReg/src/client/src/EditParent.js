@@ -54,7 +54,7 @@ $(function () {
             });
 
             return this;
-            
+
         },
 
         show: function() {
@@ -189,6 +189,9 @@ $(function () {
             this.parentListCont.render()
             if(this.json.length==0) {
                 this.$('.EditParentSearchResults_ParentListView').hide();
+            }
+            if(this.json.parents.length==0) {
+                this.$('.EditParentSearchResultsWarning').hide()
             }
             if (window.configuration.regSearchResults) {
                 if (window.configuration.regSearchResults.hideVirtualOption) {
@@ -375,6 +378,7 @@ $(function () {
             this.parentController.bind('updateParentBack', this.updateParentBack);
             this.parentController.bind('parentUpdated', this.parentUpdated);
             this.parentController.render();
+            this.$('.ParentView').prepend("<h1 class='formTitle EditParentStepThreeTitle'>Edit Parent Step Three: Update Parent Attributes</h1>");//fiona
             this.$('.EditParentViewButtons').show();
             this.$('.editParentButtonWrapper').hide();
             this.$('.stereoCategoryCode').removeAttr('disabled');
@@ -384,7 +388,7 @@ $(function () {
             this.$('.parentAnnotationCode').removeAttr('disabled');
             this.$('.comment').removeAttr('disabled');
         },
-        
+
         parentUpdated: function(ajaxReturn){
             this.$('.ParentUpdatedPanel').show();
             this.$('.ParentUpdatedPanel').html($('#ParentUpdatedPanel_template').html());
