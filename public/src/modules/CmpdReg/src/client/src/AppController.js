@@ -168,6 +168,7 @@ $(function () {
         updateLot: function(updatedLot) {
             this.metaLot = new MetaLot({json: updatedLot});
             this.setupMetaLotController();
+            this.router.navigate("#lot/"+this.metaLot.get('lot').get('corpName'), {trigger: false, replace: true});
         },
 
         setupMetaLotController: function() {
