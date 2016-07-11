@@ -15,7 +15,6 @@ $(function() {
 
 		render: function() {
 			$(this.el).html(this.template());
-			console.log(this.model.attributes);
 			if (this.model.has('molImage') ) {
 				this.$('.structImage').attr('src',"data:image/png;base64,"+this.model.get('molImage'));
 			} else {

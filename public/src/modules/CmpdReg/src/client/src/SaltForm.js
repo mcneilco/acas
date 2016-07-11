@@ -3,8 +3,8 @@ $(function() {
 	window.SaltForm = Backbone.Model.extend({
 		defaults: {
 			corpName: '',
-            isosalts: null,
-            chemist: null,
+			isosalts: null,
+			chemist: null,
 			casNumber: ''
 		},
 
@@ -39,8 +39,8 @@ $(function() {
 
 			} else if( this.isNew() ) {
 				this.set({
-            isosalts: new IsoSaltEquivList()
-        });
+			isosalts: new IsoSaltEquivList()
+		});
 			}
 		},
 
@@ -57,7 +57,7 @@ $(function() {
 		getModelForSave: function() {
 			var mts = new Backbone.Model(this.attributes);
 			mts.set({isosalts: this.get('isosalts').getSetIsosalts()});
-            mts.unset('json');
+			mts.unset('json');
 			return mts;
 		}
 
@@ -69,41 +69,41 @@ $(function() {
 		events: {
 			'click .addSaltButton': 'showAddSaltPanel',
 			'click .addIsotopeButton': 'showAddIsotopePanel',
-      'click .showSaltFormMarvin': 'toggleStructureView',
+	  'click .showSaltFormMarvin': 'toggleStructureView',
 			'click .copyButton': 'copyMol',
 			'click .copyPanelCloseButton': 'hideCopyMolPanel'
 		},
 
 		initialize: function() {
-      //TODO the template load should probably in render()
-      $(this.el).html(this.template());
-      this.$('.radioWrapper').hide();
+	  //TODO the template load should probably in render()
+	  $(this.el).html(this.template());
+	  this.$('.radioWrapper').hide();
 
-			_.bindAll(this, 'showAddSaltPanel', 'validationError', 'updateModel', 'toggleStructureView');
+			_.bindAll(this, 'showAddSaltPanel', 'validationError', 'updateModel', 'toggleStructureView', 'render');
 			this.model.bind('error',  this.validationError);
 			this.valid = true;
-      this.isEditable = this.options.isEditable;
+	  this.isEditable = this.options.isEditable;
 
 			this.marvinLoaded = false; // load on demand, not default, to make testing more reliable and fast
 
 			if ( this.isEditable ) {
 				var isList = this.model.get('isosalts');
-        var saltCount = 0;
-        var isotopeCount = 0;
+		var saltCount = 0;
+		var isotopeCount = 0;
 
-        for (var i=0 ; i<isList.length; i++) {
-          if (isList.at(i).get('type') == "salt") {
-            saltCount++;
-          } else {
-            isotopeCount++;
-          }
-        }
-        for (var i=saltCount ; i<3 ; i++) {
-				      isList.add(new IsoSaltEquiv({type: 'salt'}));
-        }
-        for (var i=isotopeCount ; i<2 ; i++) {
-				      isList.add(new IsoSaltEquiv({type: 'isotope'}));
-        }
+		for (var i=0 ; i<isList.length; i++) {
+		  if (isList.at(i).get('type') == "salt") {
+			saltCount++;
+		  } else {
+			isotopeCount++;
+		  }
+		}
+		for (var i=saltCount ; i<3 ; i++) {
+					  isList.add(new IsoSaltEquiv({type: 'salt'}));
+		}
+		for (var i=isotopeCount ; i<2 ; i++) {
+					  isList.add(new IsoSaltEquiv({type: 'isotope'}));
+		}
 
 				this.newSaltController = new NewSaltController({el: this.$('.newSaltView'), collection: this.options.salts});
 				this.newIsotopeController = new NewIsotopeController({el: this.$('.newIsotopeView'), collection: this.options.isotopes});
@@ -138,7 +138,7 @@ $(function() {
 				salts: this.options.salts,
 				isotopes: this.options.isotopes,
 				errorNotifList: eNoti,
-        isEditable: this.isEditable
+		isEditable: this.isEditable
 			});
 
 		},
@@ -166,7 +166,7 @@ $(function() {
 						alert("Molecule export failed from search sketcher:"+error);
 					});
 				} else {
-          this.model.set({molStructure: mol});
+		  this.model.set({molStructure: mol});
 					callback();
 				}
 			} else {
@@ -210,28 +210,27 @@ $(function() {
 				this.$('.addIsosaltButtons').removeClass('hidden');
 				this.$('.addIsosaltButtons').addClass('shown');
 			} else {
-        this.$('.casNumber').attr('disabled', true);
-        if (this.model.get('casNumber')==null || this.model.get('casNumber')=='' ) {
-          this.$('.casNumberDiv').hide();
-        }
+				this.$('.casNumber').attr('disabled', true);
+				if (this.model.get('casNumber')==null || this.model.get('casNumber')=='' ) {
+				  this.$('.casNumberDiv').hide();
+				}
 				this.$('.addIsosaltButtons').removeClass('shown');
 				this.$('.addIsosaltButtons').addClass('hidden');
-        this.$('.showSaltFormMarvinControl').hide();
+				this.$('.showSaltFormMarvinControl').hide();
 			}
-      this.$('.casNumber').val(this.model.get('casNumber'));
-      if( this.model.get('molStructure')==null || this.model.get('molStructure')=='') {
-        this.hideStructureView();
-      } else {
-        this.showStructureView();
-      }
+			this.$('.casNumber').val(this.model.get('casNumber'));
+			if( this.model.get('molStructure')==null || this.model.get('molStructure')=='') {
+				this.hideStructureView();
+			} else {
+				this.showStructureView();
+			}
 
 			return this;
 		},
 
-    hide: function() {
-      console.log("some peckerwood called hide");
-      $(this.el).hide();
-    },
+	hide: function() {
+	  $(this.el).hide();
+	},
 
 		showAddSaltPanel: function() {
 			this.newSaltController.show();
@@ -240,73 +239,73 @@ $(function() {
 		showAddIsotopePanel: function() {
 			this.newIsotopeController.show();
 		},
-    setupForRegSelect: function() {
-        this.$('.regPick').val(this.model.get('corpName'));
-        this.$('.corpName').html(this.model.get('corpName'));
-        this.$('.structureWrapper').hide();
-        this.$('.radioWrapper').show();
-    },
+	setupForRegSelect: function() {
+		this.$('.regPick').val(this.model.get('corpName'));
+		this.$('.corpName').html(this.model.get('corpName'));
+		this.$('.structureWrapper').hide();
+		this.$('.radioWrapper').show();
+	},
 
-    toggleStructureView: function() {
-        if (this.$('.showSaltFormMarvin').attr('checked')=='checked') {
-            this.showStructureView();
-        } else {
-            this.hideStructureView();
-        }
-    },
+	toggleStructureView: function() {
+		if (this.$('.showSaltFormMarvin').attr('checked')=='checked') {
+			this.showStructureView();
+		} else {
+			this.hideStructureView();
+		}
+	},
 
-    hideStructureView: function() {
-        $('.structureWrapper').animate({opacity: 0}, 100, function () {
-            $(this).slideUp(100);
-        });
-        this.structureHidden = true;
-    },
+	hideStructureView: function() {
+		$('.structureWrapper').animate({opacity: 0}, 100, function () {
+			$(this).slideUp(100);
+		});
+		this.structureHidden = true;
+	},
 
-    showStructureView: function() {
-      this.$('.structureWrapper').show();
-      this.structureHidden = false;
-      this.$('.showSaltFormMarvin').attr('checked','checked');
-      if( this.isEditable) {
-        self = this;
-        self.$('.saltFormImage').hide();
-        MarvinJSUtil.getEditor("#saltFormMarvinSketch").then(function (sketcherInstance) {
-	        self.marvinSketcherInstance = sketcherInstance;
-	        if (typeof window.marvinStructureTemplates !== 'undefined') {
-		        for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
-			        sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
-		        }
-	        }
-          if (!self.marvinLoaded) {
-            if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
-              sketcherInstance.importStructure("mol", self.model.get('molStructure')).catch(function(error) {
-          			alert(error);
-              });
-            }
-          }
-          self.marvinLoaded = true;
-	        $('.structureWrapper').animate({opacity: 100}, 100, function () {
-		        $(this).slideDown(100);
-	        });
-        },function (error) {
-	        alert("Cannot retrieve saltFormMarvinSketch sketcher instance from iframe:"+error);
-        });
+	showStructureView: function() {
+	  this.$('.structureWrapper').show();
+	  this.structureHidden = false;
+	  this.$('.showSaltFormMarvin').attr('checked','checked');
+	  if( this.isEditable) {
+		var self = this;
+		self.$('.saltFormImage').hide();
+		MarvinJSUtil.getEditor("#saltFormMarvinSketch").then(function (sketcherInstance) {
+			self.marvinSketcherInstance = sketcherInstance;
+			if (typeof window.marvinStructureTemplates !== 'undefined') {
+				for (i=0 ; i<window.marvinStructureTemplates.length; i++ ) {
+					sketcherInstance.addTemplate(window.marvinStructureTemplates[i]);
+				}
+			}
+		  if (!self.marvinLoaded) {
+			if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
+			  sketcherInstance.importStructure("mol", self.model.get('molStructure')).catch(function(error) {
+					alert(error);
+			  });
+			}
+		  }
+		  self.marvinLoaded = true;
+			$('.structureWrapper').animate({opacity: 100}, 100, function () {
+				$(this).slideDown(100);
+			});
+		},function (error) {
+			alert("Cannot retrieve saltFormMarvinSketch sketcher instance from iframe:"+error);
+		});
 
-      } else {
-        self.$('#saltFormMarvinSketch').hide();
-        this.structImage = new StructureImageController({
-	        el: this.$('.saltFormImage'),
-	        model: new Backbone.Model({
-		        corpName: this.model.get('corpName'),
-		        corpNameType: "SaltForm",
-		        molStructure: this.model.get('molStructure')
-	        })
-        });
-        this.structImage.render();
-        $('.structureWrapper').animate({opacity: 100}, 100, function () {
-	        $(this).slideDown(100);
-        });
-      }
-    },
+	  } else {
+		self.$('#saltFormMarvinSketch').hide();
+		this.structImage = new StructureImageController({
+			el: this.$('.saltFormImage'),
+			model: new Backbone.Model({
+				corpName: this.model.get('corpName'),
+				corpNameType: "SaltForm",
+				molStructure: this.model.get('molStructure')
+			})
+		});
+		this.structImage.render();
+		$('.structureWrapper').animate({opacity: 100}, 100, function () {
+			$(this).slideDown(100);
+		});
+	  }
+	},
 
 		copyMol: function() {
 			this.$('.copyTextPanel').show();
