@@ -6,7 +6,7 @@ class window.ModuleMenusController extends Backbone.View
 		if window.conf.leaveACASMessage == "WARNING: There are unsaved changes."
 			return window.conf.leaveACASMessage
 		else
-			return null
+			return
 
 	initialize: ->
 
@@ -42,8 +42,8 @@ class window.ModuleMenusController extends Backbone.View
 		else
 			@$('.bv_homePageWrapper').show()
 
-		if window.conf.moduleMenus.headerName?
-			@$('.bv_headerName').html(window.conf.moduleMenus.headerName)
+		if window.conf.moduleMenus.logoText?
+			@$('.bv_headerName').html(window.conf.moduleMenus.logoText)
 		if window.conf.moduleMenus.homePageMessage?
 			@$('.bv_homePageMessage').html(window.conf.moduleMenus.homePageMessage)
 		if window.conf.moduleMenus.copyrightMessage?

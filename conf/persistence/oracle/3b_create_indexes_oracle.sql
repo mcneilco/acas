@@ -218,3 +218,5 @@ add constraint
    CL_TK_FK FOREIGN KEY (LS_TYPE_AND_KIND)
 references
    LABEL_KIND (LS_TYPE_AND_KIND);
+   
+create index idx_trtgrpvl_public_data on treatment_group_value(public_data);

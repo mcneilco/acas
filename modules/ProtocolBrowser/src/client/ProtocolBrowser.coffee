@@ -119,11 +119,10 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				hideStatusesList
 				if window.conf.entity?.hideStatuses?
 					hideStatusesList = window.conf.entity.hideStatuses
 				#non-admin users can't see protocols with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]) or prot.get('codeName') is "PROT-Screen"
 					prsc = new ProtocolRowSummaryController
 						model: prot
 					prsc.on "gotClick", @selectedRowChanged
@@ -176,15 +175,22 @@ class window.ProtocolBrowserController extends Backbone.View
 
 	selectedProtocolUpdated: (protocol) =>
 		@trigger "selectedProtocolUpdated"
-		if protocol.get('lsKind') is "Bio Activity"
+		if protocol.get('lsKind') is "Parent Bio Activity"
+			#get parent protocol to return childProtocols as well
+			@getParentProtocol(protocol.get('codeName'))
+		else if protocol.get('lsKind') is "Bio Activity"
 			@protocolController = new PrimaryScreenProtocolController
 				model: new PrimaryScreenProtocol protocol.attributes
 				readOnly: true
+			@showMasterView()
 		else
 			@protocolController = new ProtocolBaseController
 				model: protocol
 				readOnly: true
+			@showMasterView()
 
+	showMasterView: =>
+		protocol = @protocolController.model
 		$('.bv_protocolBaseController').html @protocolController.render().el
 		$(".bv_protocolBaseController").removeClass("hide")
 		$(".bv_protocolBaseControllerContainer").removeClass("hide")
@@ -192,18 +198,83 @@ class window.ProtocolBrowserController extends Backbone.View
 			@$('.bv_deleteProtocol').hide()
 			@$('.bv_editProtocol').hide()
 			@$('.bv_duplicateProtocol').hide()
+			@$('.bv_createExperiment').show()
 		else
-			@$('.bv_editProtocol').show()
 			@$('.bv_duplicateProtocol').show()
-			@$('.bv_deleteProtocol').show()
-	#TODO: make deleting protocol privilege a config
-#			if UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]
-#				@$('.bv_deleteProtocol').show()
-#	#			if window.AppLaunchParams.loginUser.username is @protocolController.model.get("recordedBy")
-#	#				console.log "user is protocol creator"
-#			else
-#				@$('.bv_deleteProtocol').hide()
+			@$('.bv_createExperiment').show()
+			if @canEdit()
+				@$('.bv_editProtocol').show()
+			else
+				@$('.bv_editProtocol').hide()
+			if @canDelete()
+				@$('.bv_deleteProtocol').show()
+			else
+				@$('.bv_deleteProtocol').hide()
 
+	getParentProtocol: (codeName) =>
+		$.ajax
+			type: 'GET'
+			url: "/api/protocols/parentProtocol/codename/"+codeName
+			dataType: 'json'
+			error: (err) ->
+				alert 'Error - Could not get parent protocol ' + codeName
+			success: (json) =>
+				if json.length == 0
+					alert 'Could not get parent protocol ' + codeName
+				else
+					@protocolController = new ParentProtocolController
+						model: new ParentProtocol json
+						readOnly: true
+					@showMasterView()
+
+	canEdit: ->
+		if @protocolController.model.getScientist().get('codeValue') is "unassigned"
+			return true
+		else
+			if window.conf.entity?.editingRoles?
+				rolesToTest = []
+				for role in window.conf.entity.editingRoles.split(",")
+					role = $.trim(role)
+					if role is 'entityScientist'
+						if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
+							return true
+					else if role is 'projectAdmin'
+						projectAdminRole =
+							lsType: "Project"
+							lsKind: @protocolController.model.getProjectCode().get('codeValue')
+							roleName: "Administrator"
+						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+							return true
+					else
+						rolesToTest.push role
+				if rolesToTest.length is 0
+					return false
+				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+					return false
+			return true
+
+	canDelete: ->
+		if window.conf.entity?.deletingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.deletingRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @protocolController.model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	handleDeleteProtocolClicked: =>
 		@$(".bv_protocolCodeName").html @protocolController.model.get("codeName")
@@ -248,6 +319,8 @@ class window.ProtocolBrowserController extends Backbone.View
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+		else if protocolKind is "Parent Bio Activity"
+			window.open("/entity/copy/parent_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
 
@@ -255,6 +328,8 @@ class window.ProtocolBrowserController extends Backbone.View
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+		if protocolKind is "Parent Bio Activity"
+			window.open("/parent_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 		else
 			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 

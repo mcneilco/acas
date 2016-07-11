@@ -2,16 +2,18 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas:compound-inventory
+    image: mcneilco/acas:cmg-lims
     restart: always
     ports:
      - "3000:3000"
      - "3001:3001"
+     - "5858:5858"
     environment:
-     - APP_NAME=compound-inventory
+     - APP_NAME=cmg-lims
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
-     - DOCKER_HOST_IP=${DOCKER_HOST_IP}
+     - DOCKER_HOST_IP=localhost
+     - NODE_ENV=integration
     volumes:
      - filestore:/home/runner/build/privateUploads
      - logs:/home/runner/logs
@@ -19,18 +21,7 @@ services:
      - /home/runner/build/src/r
      - /home/runner/build/conf/compiled
      # Please add any dev volumes below this line
-     - ./public/compiled:/home/runner/build/public/compiled
-     - ./moduledyn/PlateRegistration:/home/runner/acas/moduledyn/PlateRegistration
-     - ./modules/ServerAPI:/home/runner/acas/modules/ServerAPI
-     - ./public/lib/font-awesome:/home/runner/build/public/lib/font-awesome
-     - ./modules/Login:/home/runner/acas/modules/Login
-     - ./public/lib/handsontable/dist/:/home/runner/acas/public/lib/handsontable/dist/
-     - ./public/lib/dataTables/js/:/home/runner/acas/public/lib/dataTables/js/
-     - ./public/lib/jquery-ui-1.10.2.custom/js/:/home/runner/acas/public/lib/jquery-ui-1.10.2.custom/js/
-     - ./views/:/home/runner/acas/views/
-     - ./Gruntfile.coffee:/home/runner/build/Gruntfile.coffee
-     #handsontable.full.js
-
+     - ./:/home/runner/acas
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
@@ -67,12 +58,14 @@ services:
   tomcat:
     image: mcneilco/tomcat-maven
     restart: always
-    depends_on: 
+    depends_on:
      - db
     ports:
      - "8080:8080"
+     - "8000:8000"
     environment:
      - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+     - JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000
     volumes_from:
      - roo
      - acas

@@ -1,6 +1,7 @@
 _ = require 'underscore'
 Backbone = require 'backbone'
 $ = require 'jquery'
+path = require 'path'
 
 basicRScriptPreValidation = (payload) ->
 	result =
@@ -89,13 +90,15 @@ exports.runRFunction_HIDDEN = (request, rScript, rFunction, returnFunction, preV
 						catch error
 							console.log error
 
-exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction) ->
+exports.runRFunction = (req, rScript, rFunction, returnFunction, preValidationFunction, serviceRapacheFullPath) ->
 	testMode = req.query.testMode
-	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode
+	exports.runRFunctionOutsideRequest req.body.user, req.body, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath
 
-exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode) ->
+exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunction, returnFunction, preValidationFunction, testMode, serviceRapacheFullPath) ->
 	request = require 'request'
 	config = require '../conf/compiled/conf.js'
+	if !serviceRapacheFullPath?
+		serviceRapacheFullPath = config.all.client.service.rapache.fullpath
 
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	csUtilities.logUsage "About to call RApache function: "+rFunction, JSON.stringify(argumentsJSON), username
@@ -123,14 +126,16 @@ exports.runRFunctionOutsideRequest = (username, argumentsJSON, rScript, rFunctio
 	else
 		request.post
 			timeout: 6000000
-			url: config.all.client.service.rapache.fullpath + "runfunction"
+			url: serviceRapacheFullPath + "runfunction"
 			json: true
 			body: JSON.stringify(requestBody)
 		, (error, response, body) =>
 			@serverError = error
 			@responseJSON = body
-			if response.statusCode != 200 or (@responseJSON? && @responseJSON["RExecutionError"]?) or @serverError?
-				if response.statusCode !=200
+			if @serverError? or response?.statusCode != 200 or (@responseJSON? and @responseJSON["RExecutionError"]?)
+				console.log @responseJSON
+				console.log error
+				if response?.statusCode != 200
 					messageText = "Internal error please contact administrator"
 				else if (@responseJSON? && @responseJSON["RExecutionError"]?)
 					messageText = @responseJSON["RExecutionError"]
@@ -222,6 +227,8 @@ exports.getFromACASServer = (baseurl, resp) ->
 			if !error && response.statusCode == 200
 				resp.end JSON.stringify json
 			else
+				resp.statusCode = 500
+				resp.end "Could not get from ACAS Server"
 				console.log 'got ajax error'
 				console.log error
 				console.log json
@@ -245,18 +252,7 @@ exports.ensureExists = (path, mask, cb) ->
 	return
 
 exports.makeAbsolutePath = (relativePath) ->
-	acasPath = process.env.PWD
-	dotMatches = relativePath.match(/\.\.\//g)
-	if dotMatches?
-		numDotDots = relativePath.match(/\.\.\//g).length
-		relativePath = relativePath.replace /\.\.\//g, ''
-		for d in [1..numDotDots]
-			acasPath = acasPath.replace /[^\/]+\/?$/, ''
-	else
-		acasPath+= '/'
-
-	console.log acasPath+relativePath+'/'
-	acasPath+relativePath+'/'
+	path.resolve(__dirname, "..",relativePath)+"/"
 
 exports.getFileValuesFromEntity = (thing, ignoreSaved) ->
 	fvs = []
@@ -1272,8 +1268,51 @@ class Container extends Backbone.Model
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
 
-##END COPY PASTE
+	addNewLogStates: (inputs) ->
+		for input in inputs
+			valueList = new ValueList
+			valueList.add new Value
+				lsType: "codeValue"
+				lsKind: "entry type"
+				codeValue: input.entryType
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			valueList.add new Value
+				lsType: "clobValue"
+				lsKind: "entry"
+				clobValue: input.entry
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			if input.additionalValues?
+				for additionalValue in input.additionalValues
+					valueList.add	new Value
+						lsType : additionalValue.lsType
+						lsKind : additionalValue.lsKind
+						numericValue: additionalValue.numericValue
+						stringValue: additionalValue.stringValue
+						stringValue: additionalValue.stringValue
+						codeValue: additionalValue.codeValue
+						dateValue: additionalValue.dateValue
+						clobValue: additionalValue.clobValue
+						fileValue: additionalValue.fileValue
+						unitKind: additionalValue.unitKind
+						codeType: additionalValue.codeType
+						codeKind: additionalValue.codeKind
+						codeOrigin: additionalValue.codeOrigin
+						recordedDate: input.recordedDate
+						recordedBy: input.recordedBy
+						lsTransaction: input.lsTransaction
+			@get('lsStates').add new State
+				lsType: "metadata"
+				lsKind: "log"
+				lsValues: valueList
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
 
+		@
 
 class ContainerPlate extends Container
 	urlRoot: "/api/containers"

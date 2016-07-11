@@ -106,7 +106,7 @@ getFormatSettings <- function() {
       "Ki Fit" = list(
         doseResponseKinds = list(
           "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Ki",
-          "curve id", "fitSummaryClob", "Ligand Conc", "Kd", "Fitted Ki",
+          "curve id", "curve name", "fitSummaryClob", "Ligand Conc", "Kd", "Fitted Ki",
           "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
           "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
         )

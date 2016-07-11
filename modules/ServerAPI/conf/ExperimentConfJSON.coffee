@@ -37,6 +37,9 @@
 			,
 				typeName: "metadata"
 				kindName: "custom experiment metadata gui"
+			,
+				typeName: "metadata"
+				kindName: "data column order"
 			]
 
 		valuetypes:
@@ -96,6 +99,9 @@
 				typeName: "fileValue"
 				kindName: "reference file"
 			,
+				typeName: "fileValue"
+				kindName: "source file"
+			,
 				typeName: "clobValue"
 				kindName: "data analysis parameters"
 			,
@@ -112,7 +118,7 @@
 				kindName: "image file"
 			,
 				typeName: "fileValue"
-				kindName: "report file"
+				kindName: "annotation file"
 			,
 				typeName: "codeValue"
 				kindName: "model fit type"
@@ -134,6 +140,9 @@
 			,
 				typeName: "stringValue"
 				kindName: "hide column"	
+			,
+				typeName: "codeValue"
+				kindName: "agonist batch code"
 			]
 
 		labeltypes:
@@ -195,6 +204,9 @@
 				kindName: "signal direction"
 			,
 				typeName: "analysis parameter"
+				kindName: "standard type"
+			,
+				typeName: "analysis parameter"
 				kindName: "aggregate by"
 			,
 				typeName: "analysis parameter"
@@ -205,6 +217,9 @@
 			,
 				typeName: "analysis parameter"
 				kindName: "transformation"
+			,
+				typeName: "analysis parameter"
+				kindName: "statistic"
 			,
 				typeName: "experiment metadata"
 				kindName: "file type"
@@ -355,6 +370,27 @@
 				name: "Luminescence"
 				ignored: false
 			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "maximum"
+				name: "Maximum"
+				ignored: false
+			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "minimum"
+				name: "Minimum"
+				ignored: false
+			,
+				codeType: "reader data"
+				codeKind: "read name"
+				codeOrigin: "ACAS DDICT"
+				code: "Calc: (R2-R1)/R1"
+				name: "Calc: (R2-R1)/R1"
+				ignored: false
+			,
 				codeType: "analysis parameter"
 				codeKind: "signal direction"
 				codeOrigin: "ACAS DDICT"
@@ -367,6 +403,27 @@
 				codeOrigin: "ACAS DDICT"
 				code: "assay plate"
 				name: "Assay Plate"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "PC"
+				name: "Positive Control"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "NC"
+				name: "Negative Control"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "standard type"
+				codeOrigin: "ACAS DDICT"
+				code: "VC"
+				name: "Vehicle Control"
 				ignored: false
 			,
 				codeType: "analysis parameter"
@@ -397,6 +454,13 @@
 				name: "% efficacy"
 				ignored: false
 			,
+				codeType: "analysis parameter"
+				codeKind: "transformation"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "None"
+				ignored: false
+			,
 				codeType: "experiment metadata"
 				codeKind: "file type"
 				codeOrigin: "ACAS DDICT"
@@ -404,11 +468,53 @@
 				name: "Reference File"
 				ignored: false
 			,
+				codeType: "experiment metadata"
+				codeKind: "file type"
+				codeOrigin: "ACAS DDICT"
+				code: "source file"
+				name: "Source File"
+				ignored: false
+			,
+				codeType: "experiment metadata"
+				codeKind: "file type"
+				codeOrigin: "ACAS DDICT"
+				code: "annotation file"
+				name: "Report File"
+				ignored: false
+			,
 				codeType: "model fit"
 				codeKind: "type"
 				codeOrigin: "ACAS DDICT"
 				code: "4 parameter D-R"
 				name: "EC50"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "max"
+				name: "Max"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "min"
+				name: "Min"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "mean"
+				name: "Mean"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "statistic"
+				codeOrigin: "ACAS DDICT"
+				code: "median"
+				name: "Median"
 				ignored: false
 			]
 
@@ -420,7 +526,7 @@
 				labelSeparator: "-"
 				labelTypeAndKind: "id_codeName"
 				thingTypeAndKind: "document_experiment"
-				latestNumber:1
+				latestNumber:0
 			]
 
 ) (if (typeof process is "undefined" or not process.versions) then window.experimentConfJSON = window.experimentConfJSON or {} else exports)

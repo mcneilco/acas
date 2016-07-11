@@ -52,12 +52,13 @@ source("src/r/ServerAPI/genericDataParserConfiguration.R")
 
 #####
 # Define Functions
-validateMetaData <- function(metaData, configList, formatSettings = list(), errorEnv = NULL, testMode = FALSE) {
+validateMetaData <- function(metaData, configList, username, formatSettings = list(), errorEnv = NULL, testMode = FALSE) {
   # Valides the meta data section
   #
   # Args:
   #   metaData: 			A "data.frame" of two columns containing the Meta data for the experiment
   #	  configList:     Also known as racas::applicationSettings
+  #   username:       A string containing a username, carried by 'recordedBy' one function level higher  
   #   formatSettings: A nested list containing types of experiments and extra information about
   #                   them (particularly relevant here is the "extraHeaders" column)
   # Returns:
@@ -176,7 +177,7 @@ validateMetaData <- function(metaData, configList, formatSettings = list(), erro
   }
   
   if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, errorEnv) 
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, errorEnv) 
   }
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
@@ -441,7 +442,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -452,6 +453,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   #   replaceFakeCorpBatchId:   A string that is not a corp batch id, will be ignored by the batch check, and will be replaced by a column of the same name
   #   mainCode:                 A string, normally the corporate batch ID
   #   inputFormat:              The format of the input file
+  #   projectCode:              Project code entered
   #
   # Returns:
   #   a "data.frame" of the validated calculated results
@@ -548,8 +550,61 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   
   validateValueKinds(neededValueKinds, neededValueKindTypes, dryRun)
   
+  
+  ### ================== Check batch projects ========================================================
+  if (!is.null(projectCode)) {
+    # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
+    projectList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+    currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
+    projectDF <- do.call(rbind, lapply(projectList, as.data.frame)) 
+    if (length(currentProjList) > 0) {
+      currentProj <- currentProjList[[1]]
+      if (currentProj$isRestricted) {
+        # columns of batchProjects must include "Project.Code" and "Requested.Name", both strings
+        batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
+        batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
+        # Compounds in a restricted project may not be entered into another project
+        rCompounds <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode, "Requested.Name"]
+        if (length(rCompounds) > 0) {
+          addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"), 
+                          "' are in a restricted project that does not match the one entered for this experiment."))
+        }
+      }
+    }
+  }
+
+  
   # Return the validated results
   return(calculatedResults)
+}
+getProjectForBatch <- function (entityIds, displayName) {
+  # Gets a data.frame from roo with columns "Project.Code" and "Requested.Name",
+  # where the Requested.Name matches the entityIds.
+  # displayName must be "Corporate Batch ID" for now, others may be supported later.
+  batchProjectService <- paste0(racas::applicationSettings$server.nodeapi.path, 
+                                "/api/entitymeta/projectCodes/csv")
+  
+  if (length(entityIds) > 500) {
+    return(rbind(getProjectForBatch(entityIds[1:500], displayName),
+                 getProjectForBatch(entityIds[501:length(entityIds)], displayName)))
+  } else {
+    requestIds <- list()
+    
+    requestIds$displayName <- displayName
+    requestIds$entityIdStringLines <- paste(entityIds, collapse = "\n")
+    
+    # Get the preferred ids from the server
+    response <- list(error=FALSE)
+    response <- postURLcheckStatus(batchProjectService, toJSON(requestIds), requireJSON = TRUE)
+    tryCatch({
+      response <- fromJSON(response)
+    }, error = function(e) {
+      stopUser(paste0("The loader was unable to parse the response it got from the batch project ID service: ", response))
+    })
+    
+    # Return the useful part
+    return(read.csv(text=response$resultCSV, stringsAsFactors=FALSE))
+  }
 }
 getHiddenColumns <- function(classRow, errorEnv) {
   # Get information about which columns to hide (publicData = FALSE)
@@ -909,7 +964,7 @@ extractValueKinds <- function(valueKindsVector, ignoreHeaders = NULL, uncertaint
                                 "Units" = fillerArray, "Conc" = fillerArray, 
                                 "concUnits" = fillerArray, "reshapeText" = fillerArray)
   returnDataFrame$DataColumn <- dataColumns
-  returnDataFrame$valueKind <- trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",dataColumns))))
+  returnDataFrame$valueKind <- getResultKindWithoutExtras(dataColumns)
   returnDataFrame$Units <-  getUnitFromParentheses(dataColumns)
   concAndUnits <- gsub("^([^\\[]+)(\\[(.+)\\])?(.*)", "\\3", dataColumns) 
   concUnitList <- getNumberAndUnit(concAndUnits)
@@ -1019,7 +1074,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
   hiddenColumns <- getHiddenColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
   linkColumns <- getLinkColumns(as.character(unlist(calculatedResults[1,])), errorEnv)
   
-  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255), c(TRUE))
+  clobColumns <- vapply(calculatedResults, function(x) any(nchar(as.character(x)) > 255, na.rm = TRUE), c(TRUE))
   
   if (precise) {
     labelRow <- as.character(unlist(calculatedResults[4, ]))
@@ -1098,7 +1153,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
       # default list
       doseResponseKinds <- list(
         "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-        "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+        "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
         "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
         "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
       )
@@ -1118,7 +1173,7 @@ organizeCalculatedResults <- function(calculatedResults, inputFormat, formatPara
     # This list is a copy of the Dose Response kinds, because both use the same fitter. Update later.
     timeResultKinds <- list(
       "Fitted Min", "SST", "Rendering Hint", "rSquared", "SSE", "Fitted Slope", 
-      "Fitted EC50", "Slope", "curve id", "fitSummaryClob", "EC50", 
+      "Fitted EC50", "Slope", "curve id", "curve name", "fitSummaryClob", "EC50", 
       "parameterStdErrorsClob", "fitSettings", "flag", "Min", "Fitted Max", 
       "curveErrorsClob", "category", "Max", "reportedValuesClob", "IC50"
     )
@@ -1573,7 +1628,7 @@ getExperimentByNameCheck <- function(experimentName, protocol, configList, dupli
       stopUser("There was an error checking if the experiment is in the correct protocol. Please contact your system administrator.")
     })
     # Finish if the previous experiment was part of a deleted protocol, we can just delete and reload
-    if (experimentList[[1]]$protocol$deleted) {
+    if (experimentList[[1]]$protocol$ignored) {
       return(experimentList[[1]])
     }
     protocolOfExperiment <- getProtocolById(experimentList[[1]]$protocol$id)
@@ -1638,7 +1693,7 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   protocol <- saveProtocol(protocol)
 }
-createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList, replacedExperimentCodes, additionalStates = NULL) {
+createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGenericDataFormatExcelFile, recordedBy, configList, replacedExperimentCodes, additionalStates = NULL, modelFitTransformation = NULL) {
   # creates an experiment using the metaData
   # 
   # Args:
@@ -1650,6 +1705,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   #   configList:             Also known as racas::applicationSettings
   #   replacedExperimentCodes: Used to create a state noting what the experiment code used to be
   #   additionalStates:       Used to add additional states like custom experiment meta data
+  #   modelFitTransformation: String of y column for Dose Response, may be NULL
   #
   # Returns:
   #  A list that is an experiment
@@ -1687,11 +1743,15 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
     codeType = "assay",
     codeKind = "scientist",
     lsTransaction= lsTransaction)
+  experimentStatus <- applicationSettings$server.sel.experimentStatus
+  if (is.null(experimentStatus) || experimentStatus == "") {
+    experimentStatus <- "approved"
+  }
   experimentValues[[length(experimentValues)+1]] <- createStateValue(
     recordedBy = recordedBy,
     lsType = "codeValue",
     lsKind = "experiment status",
-    codeValue = "approved",
+    codeValue = experimentStatus,
     codeType = "experiment",
     codeKind = "status",
     codeOrigin = "ACAS DDICT",
@@ -1722,6 +1782,13 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
                                                                          codeValue = experimentCode,
                                                                          lsTransaction= lsTransaction)
     }
+  }
+  if(!is.null(modelFitTransformation)) {
+    experimentValues[[length(experimentValues)+1]] <- createStateValue(recordedBy = recordedBy,lsType = "stringValue",
+                                                                       lsKind = "model fit transformation",
+                                                                       stringValue = modelFitTransformation,
+                                                                       lsTransaction= lsTransaction)
+    modelFitTransformation
   }
   # Create an experiment state for metadata
   experimentStates[[length(experimentStates)+1]] <- createExperimentState(experimentValues=experimentValues,
@@ -1771,19 +1838,20 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- getExperimentById(experiment$id)
   return(experiment)
 }
-validateProject <- function(projectName, configList, errorEnv) {
-  # checks with Roo services to ensure that a project is available and correct
+validateProject <- function(projectName, configList, username, errorEnv) {
+  # checks with Roo services to ensure that a project is available and correct. Converts names to codes.
   # 
   # Args:
-  #   projectName:         A string naming the project
+  #   projectName:         A string naming the project, either the name or the code
   #   configList:          Also known as racas::applicationSettings
+  #   username:            A string containing a username, carried by 'recordedBy' two function levels higher  
   #
   # Returns:
-  #  The projectName if validation was successful, or the empty string if it was not
+  #  The project code if validation was successful, or the empty string if it was not
   require('RCurl')
   require('rjson')
   tryCatch({
-  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.project.path))
+  projectList <- getURL(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.project.path, "/", username))
   }, error = function(e) {
     stopUser("The project service did not respond correctly, contact your system administrator")
   })
@@ -1793,15 +1861,26 @@ validateProject <- function(projectName, configList, errorEnv) {
     addError(paste("There was an error in validating your project:", projectList), errorEnv = errorEnv)
     return("")
   })
-  projectNames <- sapply(projectList, function(x) x$code)
-  #projectNames <- sapply(projectList, function(x) x$name)
-  if(length(projectNames) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
-  if (projectName %in% projectNames) {
+  projectCodes <- vapply(projectList, getElement, character(1), 'code')
+  if(length(projectCodes) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
+  projectNames <- list()
+  # Get a vector of project names if available
+  if (!is.null(projectList[[1]]$name)) {
+    projectNames <- vapply(projectList, getElement, character(1), 'name')
+  }
+  if (projectName %in% projectCodes) {
     return(projectName)
+  } else if (length(projectNames) > 0 && projectName %in% projectNames) {
+    return(projectCodes[projectName == projectNames][1])
   } else {
     configText <- toJSON(configList)
+    if (length(projectNames) > 0) {
+      projectAvailableList <- paste(projectNames, collapse = "', '")
+    } else {
+      projectAvailableList <- paste(projectCodes, collapse = "', '")
+    }
     addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
-                                      paste(projectNames, collapse = "', '"), "'."), errorEnv=errorEnv)
+                    projectAvailableList, "'."))
     return("")
   }
 }
@@ -1957,7 +2036,7 @@ uploadRawDataOnly <- function(metaData, lsTransaction, subjectData, experiment, 
                                        use.names=FALSE)
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
@@ -2412,7 +2491,7 @@ uploadData <- function(metaData,lsTransaction,analysisGroupData,treatmentGroupDa
   
   
   serverFileLocation <- saveAcasFileToExperiment(
-    fileStartLocation, experiment, "metadata", "raw results locations", "source file", 
+    fileStartLocation, experiment, "metadata", "experiment metadata", "source file", 
     recordedBy, lsTransaction)
   if(!is.null(reportFilePath) && reportFilePath != "") {
     batchNameList <- unique(analysisGroupData[analysisGroupData$valueKind == "batch code", "codeValue"])
@@ -2495,7 +2574,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   customFormatSettings <- getFormatSettings()$rawOnly
   
-  validatedMetaDataList <- validateMetaData(metaData, configList, customFormatSettings, errorEnv)
+  validatedMetaDataList <- validateMetaData(metaData, configList, recordedBy, customFormatSettings, errorEnv)
   validatedMetaData <- validatedMetaDataList$validatedMetaData
   duplicateExperimentNamesAllowed <- validatedMetaDataList$duplicateExperimentNamesAllowed
   useExisting <- validatedMetaDataList$useExisting
@@ -2537,13 +2616,15 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
-    calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode, 
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat)
+    calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat, 
+    projectCode = validatedMetaData$Project)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)
   subjectData <- subjectAndTreatmentData$subjectData
   treatmentGroupData <- subjectAndTreatmentData$treatmentGroupData
+  modelFitTransformation <- subjectAndTreatmentData$modelFitTransformation
   validateSubjectData(subjectData, dryRun)
   
   # If there are errors, do not allow an upload
@@ -2604,7 +2685,8 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   
   if (!dryRun && errorFree && !useExistingExperiment) {
     experiment <- createNewExperiment(metaData = validatedMetaData, protocol, lsTransaction, fullPathToFile, 
-                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates)
+                                      recordedBy, configList, deletedExperimentCodes, validatedCustomMetaDataStates,
+                                      modelFitTransformation)
     
     # If an error occurs, this allows the experiment to still be accessed
     assign(x="experiment", value=experiment, envir=parent.frame())
@@ -2660,6 +2742,9 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     summaryInfo$info$"In Life Notebook" <- as.character(validatedMetaData$"In Life Notebook")
   }
   summaryInfo$info$"Assay Date" = validatedMetaData$"Assay Date"
+  if(!is.null(validatedMetaData$Project)) {
+    summaryInfo$info$"Project" <- as.character(validatedMetaData$Project)
+  }
   if(!is.null(customExperimentMetaDataValues)) {
     summaryInfo$info <- c(summaryInfo$info,customExperimentMetaDataValues)
   }
@@ -3147,11 +3232,10 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
     groupByColumns <- c(subjectData[2, 2], 'link')
     groupByColumnsNoUnit <- trim(gsub("\\(\\w*\\)", "", groupByColumns))
     
-    keepColumn <- "Response"
-    excludedRowKinds <- "flag"
-    
     link <- calculatedResults[calculatedResults$valueKind == "curve id", c("rowID", "stringValue", "originalMainID")]
     if (!is.null(subjectData)) {
+      
+      excludedRowKinds <- "flag"
       
       if (!all(unlist(subjectData[1, 1:4]) == c("temp id", "x", "y", "flag"))) {
         stopUser("The first row in Raw Results must be 'temp id', 'x', 'y', 'flag'")
@@ -3159,6 +3243,8 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       if (subjectData[2, 1] != "curve id") {
         stopUser("The second row in Raw Results must start with curve id")
       }
+      
+      yColumn <- getResultKindWithoutExtras(subjectData[2, 3]) # usually "Response"
       
       subjectData[1, 1:4] <- c("Datatype", "Number", "Number", "Text")
       
@@ -3179,14 +3265,14 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       
       
       stateAssignments <- data.frame(
-        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        valueKind = c("Dose", yColumn, "flag", "flag status", "flag cause", "flag observation"), 
         stateType = c("data", "data", "data", "data", "data", "data"), 
         stateKind = c("results", "results", "preprocess flag", "preprocess flag", "preprocess flag", "preprocess flag"),
         stringsAsFactors = FALSE
       )
       
       codeAssignments <- data.frame(
-        valueKind = c("Dose", "Response", "flag", "flag status", "flag cause", "flag observation"), 
+        valueKind = c("Dose", yColumn, "flag", "flag status", "flag cause", "flag observation"), 
         codeType = c(NA, NA, NA, rep("preprocess well flags", 3)), 
         codeKind = c(NA, NA, NA, "flag status", "flag cause", "flag observation"),
         codeOrigin = c(NA, NA, NA, rep("ACAS DDICT", 3)),
@@ -3196,7 +3282,7 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       # list(subjectData, treatmentGroupData)
       intermedList <- organizeSubjectData(
         subjectData, groupByColumns, excludedRowKinds, inputFormat, mainCode=NULL,
-        link, precise, stateAssignments, keepColumn, errorEnv=errorEnv, 
+        link, precise, stateAssignments, yColumn, errorEnv=errorEnv, 
         formatParameters = formatParameters, concColumn = subjectData[2,2],# 2,2 is usually Dose (uM)
         codeAssignments = codeAssignments)
       
@@ -3206,6 +3292,11 @@ getSubjectAndTreatmentData <- function (precise, genericDataFileDataFrame, calcu
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Dose"] <- "concentration"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "Response"] <- "efficacy"
       intermedList$treatmentGroupData$valueKind[intermedList$treatmentGroupData$valueKind == "flag"] <- "comment"
+      if (yColumn == "Response") {
+        intermedList$modelFitTransformation <- "efficacy"
+      } else {
+        intermedList$modelFitTransformation <- yColumn
+      }
     }
   }
   return(intermedList)
@@ -3221,6 +3312,10 @@ validateSubjectData <- function(subjectData, dryRun) {
 getUnitFromParentheses <- function(columnHeaders) {
   # gets text that is between two parentheses
   gsub(".*\\((.*)\\).*||(.*)", "\\1", columnHeaders)
+}
+getResultKindWithoutExtras <- function(columnHeaders) {
+  # gets result kind without sections in parentheses, brackets, and square brackets
+  trim(gsub("\\[[^)]*\\]","",gsub("(.*)\\((.*)\\)(.*)", "\\1\\3",gsub("\\{[^}]*\\}","",columnHeaders))))
 }
 external.parseGenericData <- function(request) {
   # Not in use yet, see ?messenger for future standard

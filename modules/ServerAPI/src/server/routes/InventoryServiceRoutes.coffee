@@ -38,6 +38,10 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/mergeContainers', exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
+	app.post '/api/containerLogs', exports.containerLogs
+	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', exports.createTube
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -74,8 +78,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
+	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
+	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 
 exports.getContainersInLocation = (req, resp) ->
+	req.setTimeout 86400000
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getContainersInLocationResponse
@@ -88,6 +97,7 @@ exports.getContainersInLocation = (req, resp) ->
 			url: baseurl
 			body: req.body
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.json json
@@ -100,6 +110,7 @@ exports.getContainersInLocation = (req, resp) ->
   		)
 
 exports.getContainersByLabels = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainersByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -146,6 +157,7 @@ exports.getContainersByLabelsInternal = (containerLabels, containerType, contain
 						callback response, statusCode
 
 exports.getContainerCodesByLabels = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainerCodesByLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -175,6 +187,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 			url: baseurl
 			body: JSON.stringify containerCodesJSON
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && json[0] != "<"
@@ -188,6 +201,7 @@ exports.getContainerCodesByLabelsInternal = (containerCodesJSON, containerType, 
 		)
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getWellCodesByPlateBarcodesInternal req.body, (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
@@ -195,6 +209,7 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 			resp.json json
 
 exports.getWellCodesByPlateBarcodes = (req, resp) ->
+	req.setTimeout 86400000
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellCodesByPlateBarcodesResponse
@@ -207,6 +222,7 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
 			url: baseurl
 			body: req.body
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				resp.json json
@@ -219,6 +235,7 @@ exports.getWellCodesByPlateBarcodes = (req, resp) ->
   		)
 
 exports.getWellContent = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getWellContentInternal req.body, (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
@@ -239,6 +256,7 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
 			url: baseurl
 			body: JSON.stringify wellCodeNames
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
@@ -253,6 +271,7 @@ exports.getWellContentInternal = (wellCodeNames, callback) ->
   		)
 
 exports.getContainerAndDefinitionContainerByContainerLabel = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainerAndDefinitionContainerByContainerLabelInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
@@ -279,6 +298,7 @@ exports.getContainerAndDefinitionContainerByContainerLabelInternal = (labels, co
 						callback json, statusCode
 
 exports.getContainerAndDefinitionContainerByContainerCodeNames = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -361,11 +381,13 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 						callback outArray, 200
 
 exports.updateContainerByContainerCode = (req, resp) ->
+	req.setTimeout 86400000
 	exports.updateContainersByContainerCodesInternal [req.body], req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
 
 exports.updateContainersByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
 	exports.updateContainersByContainerCodesInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -384,17 +406,17 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
-				callback containers, 400
+				callback "error when requesting code names", 400
 			if statusCode == 500
-				console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
-				callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed", 500
+				console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
+				callback "updateContainerMetadataByContainerCodeInternal failed", 500
 				return
 			else
 				barcodes = _.pluck updateInformation, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
-						console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
+						console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
@@ -458,6 +480,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
 #
 exports.getContainersByCodeNames = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getContainersByCodeNamesInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -477,9 +500,9 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			url: baseurl
 			body: codeNamesJSON
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			console.debug "response statusCode: #{response.statusCode}"
 			if !error && json[0] != "<"
 				callback json, response.statusCode
 			else
@@ -491,6 +514,7 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 		)
 
 exports.getDefinitionContainersByContainerCodeNames = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getDefinitionContainersByContainerCodeNamesInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -508,6 +532,7 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 			url: baseurl
 			body: codeNamesJSON
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error
@@ -521,6 +546,7 @@ exports.getDefinitionContainersByContainerCodeNamesInternal = (codeNamesJSON, ca
 		)
 
 exports.getBreadCrumbByContainerCode = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getBreadCrumbByContainerCodeInternal req.body, req.query.delimeter, (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
@@ -542,6 +568,7 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 			url: baseurl
 			body: codeNamesJSON
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
@@ -555,6 +582,7 @@ exports.getBreadCrumbByContainerCodeInternal = (codeNamesJSON, delimeter, callba
 		)
 
 exports.getWellCodesByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getWellCodesByContainerCodesInternal req.body, (json) ->
 		if json.indexOf('failed') > -1
 			resp.statusCode = 500
@@ -576,6 +604,7 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 			url: baseurl
 			body: codeNamesJSON
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
@@ -589,13 +618,22 @@ exports.getWellCodesByContainerCodesInternal = (codeNamesJSON, callback) ->
 				callback JSON.stringify "getWellCodesByContainerCodes failed"
 		)
 
+exports.getWellContentByContainerCodes = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getWellContentByContainerCodesInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
 exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) ->
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.getWellContentByContainerCodesResponse
 	else
 		console.debug 'requesting well codes from container codes'
-		exports.getWellCodesByContainerCodesInternal containerCodeNames, (wellCodesResponse) ->
+		uniqueCodeNames = _.uniq containerCodeNames
+		exports.getWellCodesByContainerCodesInternal uniqueCodeNames, (wellCodesResponse) ->
 			wellCodes = _.map wellCodesResponse, (wellCode) ->
 				_.map wellCode.wellCodeNames, (codeName) ->
 					{containerCode: wellCode.requestCodeName, wellCode: codeName}
@@ -613,6 +651,7 @@ exports.getWellContentByContainerCodesInternal = (containerCodeNames, callback) 
 				callback response
 
 exports.updateContainers = (req, resp) ->
+	req.setTimeout 86400000
 	exports.updateContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -631,6 +670,7 @@ exports.updateContainersInternal = (containers, callback) ->
 			url: baseurl
 			body: containers
 			json: true
+			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
 			if !error && response.statusCode == 200 && json[0] != "<"
@@ -645,6 +685,7 @@ exports.updateContainersInternal = (containers, callback) ->
 		)
 
 exports.getAllContainers = (req, resp) ->
+	req.setTimeout 86400000
 	if req.query.testMode or global.specRunnerTestmode
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json containerTestJSON.container
@@ -656,6 +697,7 @@ exports.getAllContainers = (req, resp) ->
 
 
 exports.containersByTypeKind = (req, resp) ->
+	req.setTimeout 86400000
 	exports.containersByTypeKindInternal req.params.lsType, req.params.lsKind, req.query.format, req.query.stub, req.query.testMode, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -677,6 +719,7 @@ exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, 
 			method: 'GET'
 			url: baseurl
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
 				callback json, 200
@@ -689,6 +732,7 @@ exports.containersByTypeKindInternal = (lsType, lsKind, format, stub, testMode, 
 		)
 
 exports.containerByCodeName = (req, resp) ->
+	req.setTimeout 86400000
 	if req.query.testMode or global.specRunnerTestmode
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json containerTestJSON.container
@@ -712,6 +756,7 @@ updateContainer = (container, testMode, callback) ->
 				url: baseurl
 				body: container
 				json: true
+				timeout: 86400000
 			, (error, response, json) =>
 				if !error && response.statusCode == 200
 					callback json
@@ -723,6 +768,7 @@ updateContainer = (container, testMode, callback) ->
 
 
 postContainer = (req, resp) ->
+	req.setTimeout 86400000
 	console.debug "post container"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	containerToSave = req.body
@@ -765,6 +811,7 @@ postContainer = (req, resp) ->
 				url: baseurl
 				body: containerToSave
 				json: true
+				timeout: 86400000
 			, (error, response, json) =>
 				if !error && response.statusCode == 201
 					checkFilesAndUpdate json
@@ -776,9 +823,11 @@ postContainer = (req, resp) ->
 			)
 
 exports.postContainer = (req, resp) ->
+	req.setTimeout 86400000
 	postContainer req, resp
 
 exports.putContainer = (req, resp) ->
+	req.setTimeout 86400000
 #	if req.query.testMode or global.specRunnerTestmode
 #		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 #		containerToSave = JSON.parse(JSON.stringify(containerTestJSON.container))
@@ -818,6 +867,7 @@ exports.validateContainerNameInternal = (container, callback) ->
 			url: baseurl
 			body: container
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			if !error && response.statusCode == 202
 				resp.json true
@@ -832,6 +882,8 @@ exports.validateContainerNameInternal = (container, callback) ->
 		)
 
 exports.validateContainerName = (req, resp) ->
+	req.setTimeout 86400000
+
 	if req.query.testMode or global.specRunnerTestmode
 		containerTestJSON = require '../public/javascripts/spec/testFixtures/ContainerServiceTestJSON.js'
 		resp.json true
@@ -851,6 +903,7 @@ exports.validateContainerName = (req, resp) ->
 			url: baseurl
 			body: req.body.container
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			console.debug "response"
 			console.debug json
@@ -907,6 +960,7 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 			url: url
 			body: postBody
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			console.debug response.statusCode
 			console.debug json
@@ -923,6 +977,7 @@ exports.getContainerCodesFromNamesOrCodes = (codeRequest, callback) ->
 		)
 
 getContainerCodesFromLabels = (req, callback) ->
+	req.setTimeout 86400000
 	if global.specRunnerTestmode
 		response =
 			codeName: 'CONT-0000001'
@@ -942,6 +997,7 @@ getContainerCodesFromLabels = (req, callback) ->
 			url: url
 			body: postBody
 			json: true
+			timeout: 86400000
 		, (error, response, json) =>
 			console.debug response.statusCode
 			console.debug json
@@ -955,11 +1011,13 @@ getContainerCodesFromLabels = (req, callback) ->
 		)
 
 exports.getContainerCodesFromLabels = (req, resp) ->
+	req.setTimeout 86400000
 	getContainerCodesFromLabels req, (json) ->
 		resp.json json
 
 
 exports.getContainerFromLabel = (req, resp) -> #only for sending in 1 label and expecting to get 1 container back
+	req.setTimeout 86400000
 	getContainerCodesFromLabels req, (json) ->
 		if json[0]?.codeName? #assumes that labels are unique
 			req.params.code = json[0].codeName
@@ -1020,6 +1078,7 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 		)
 
 exports.moveToLocation = (req, resp) ->
+	req.setTimeout 86400000
 	exports.moveToLocationInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1054,6 +1113,7 @@ exports.moveToLocationInternal = (input, callback) ->
 		)
 
 exports.getWellContentByContainerLabel = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getWellContentByContainerLabelsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json[0]
@@ -1064,6 +1124,7 @@ exports.getWellContentByContainerLabelsObject = (req, resp) ->
 		resp.json json
 
 exports.getWellContentByContainerLabels = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getWellContentByContainerLabelsInternal req.body, req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1089,6 +1150,7 @@ exports.getWellContentByContainerLabelsInternal = (containerLabels, containerTyp
 					callback wellContent, 200
 
 exports.cloneContainer = (req, resp) ->
+	req.setTimeout 86400000
 	exports.cloneContainersInternal [req.body], (json, statusCode) ->
 		resp.statusCode = statusCode
 		if resp.statusCode == 200
@@ -1097,6 +1159,7 @@ exports.cloneContainer = (req, resp) ->
 			resp.json json
 
 exports.cloneContainers = (req, resp) ->
+	req.setTimeout 86400000
 	exports.cloneContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1143,6 +1206,7 @@ exports.cloneContainersInternal = (input, callback) ->
 									callback outputArray, 200
 
 exports.splitContainer = (req, resp) ->
+	req.setTimeout 86400000
 	exports.splitContainerInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1269,6 +1333,7 @@ exports.splitContainerInternal = (input, callback) ->
 									outputArray.push newContainer
 
 exports.mergeContainers = (req, resp) ->
+	req.setTimeout 86400000
 	exports.mergeContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1379,6 +1444,7 @@ exports.mergeContainersInternal = (input, callback) ->
 								callback "error creating plate", 500
 
 exports.getDefinitionContainerByNumberOfWells = (req, resp) ->
+	req.setTimeout 86400000
 	exports.getDefinitionContainerByNumberOfWellsInternal req.params.lsType, req.params.lsKind, req.params.numberOfWells, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1415,6 +1481,7 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 
 
 exports.searchContainers = (req, resp) ->
+	req.setTimeout 86400000
 	exports.searchContainersInternal req.body, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
@@ -1433,6 +1500,7 @@ exports.searchContainersInternal = (input, callback) ->
 			url: baseurl
 			body: input
 			json: true
+			timeout: 86400000
 			headers:
 				'content-type': 'application/json'
 				'accept': 'application/json'
@@ -1455,3 +1523,191 @@ exports.searchContainersInternal = (input, callback) ->
 				callback JSON.stringify("searchContainers failed"), 500
 		)
 
+exports.containerLogs = (req, resp) ->
+	exports.containerLogsInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.containerLogsInternal = (inputs, callCustom, callback) ->
+	validateContainerLogsInput inputs, (inputs, error) ->
+		if error == true
+			statusCode = 400
+			callback inputs, statusCode
+		else
+			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
+				callback json, statusCode
+
+exports.getOrCreateContainer = (container, callback) ->
+	label = container.lsLabels[0].labelText
+	request = require 'request'
+	request.post
+		url: "http://localhost:"+config.all.server.nodeapi.port+"/api/getContainersByLabels?containerType=#{container.lsType}&containerKind=#{container.lsKind}"
+		json: true
+		body: [label]
+	, (error, response, body) =>
+		if !body[0].codeName?
+			request.post
+				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/containers"
+				json: true
+				body: container
+			, (error, response, body) =>
+				callback body
+		else
+			callback body[0].container
+
+exports.getOrCreateContainers = (containers, callback) ->
+	responseArray = []
+	containers.forEach (container) =>
+		exports.getOrCreateContainer container, (response) =>
+			responseArray.push response
+			if responseArray.length == containers.length
+				callback responseArray
+
+
+exports.addContainerLogs = (inputs, callCustom, callback) ->
+	callCustom  = callCustom != "0"
+	codeNames = _.uniq(_.pluck(inputs, "codeName"))
+	exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+		containerModels = getContainerModels(containers)
+		containersToSave = []
+		for containerModel in containerModels
+			modelInputLogs = _.filter(inputs, (input) -> input.codeName == containerModel.get("codeName"));
+			containerModel.addNewLogStates(modelInputLogs)
+			containerModel.prepareToSave "acas"
+			containerModel.reformatBeforeSaving()
+			containersToSave.push containerModel
+		containers = JSON.stringify(containersToSave)
+		exports.updateContainersInternal containers, (json, statusCode) ->
+			if callCustom
+				if csUtilities.addContainerLogs?
+					console.log "running customer specific server function addContainerLogs"
+					csUtilities.addContainerLogs inputs, (response) ->
+						console.log response
+				else
+					console.warn "could not find customer specific server function addContainerLogs so not running it"
+			callback json, statusCode
+
+getContainerModels = (containers) ->
+	outputs = []
+	for container in containers
+		preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.container.lsType, container.container.lsKind, "ACAS Container"
+		if _.isEmpty preferredEntity
+			message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
+			console.error message
+			console.debug "here are the configured entity types"
+			preferredEntityCodeService.getConfiguredEntityTypes false, (types)->
+				console.debug types
+			callback message, 400
+			return
+		outputs.push new preferredEntity.model(container.container)
+	return outputs
+
+validateContainerLogsInput = (inputs, callback) ->
+	@err = false
+	output = _.map inputs, (input) =>
+		validateContainerLogInput input, (output, error) =>
+			@err = @err || error
+			output
+	callback output, @err
+
+validateContainerLogInput = (input, callback) ->
+	errors = []
+	if !input.codeName?
+		errors.push "must have codeName"
+	if !input.entryType?
+		errors.push "must have entryType"
+	if input.entryType? && input.entryType == ""
+		errors.push "entryType cannot be \"\""
+	if !input.recordedBy?
+		errors.push "must have recordedBy"
+	if !input.recordedDate?
+		input.recordedDate = new Date().getTime()
+	error = errors.length > 0
+	output = input
+	output.errors = errors
+	callback output, error
+
+exports.getContainerCodeNamesByContainerValue = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getContainerCodeNamesByContainerValueInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		request = require 'request'
+		console.debug 'calling service', baseurl
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify requestObject
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				console.debug 'returned success from service', baseurl
+				callback json
+			else
+				console.error 'got ajax error trying to get getContainerCodeNamesByContainerValue'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify "getContainerCodeNamesByContainerValue failed"
+		)
+
+exports.createTube = (req, resp) ->
+	exports.createTubeInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.createTubeInternal = (input, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createTube"
+	if input.createdDate?
+		if typeof(input.createdDate) != "number"
+			console.warn "#{input.createdDate} is typeof #{typeof(input.createdDate)}, created date should be a number"
+			input.createdDate = parseInt input.createdDate
+			if isNaN(input.createdDate)
+				msg = "received #{input.createdDate} when attempting to coerce created date"
+				console.error msg
+				callback msg, 400
+	console.log "baseurl"
+	console.log baseurl
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		input.barcode = input.barcode.toUpperCase()
+		console.warn input.barcode
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify input
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error  && response.statusCode == 200
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.createTube?
+				console.log "running customer specific server function createTube"
+				csUtilities.createTube input, (customerResponse, statusCode) ->
+					json = _.extend json, customerResponse
+					callback json, statusCode
+			else
+				console.warn "could not find customer specific server function createTube so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tube'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)

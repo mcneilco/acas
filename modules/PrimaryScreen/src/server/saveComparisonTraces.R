@@ -20,15 +20,15 @@ library(racas)
 
 # saveComparisonTraces
 # Input: resultTable, a data.table with the following columns:
-#             - barcode
+#             - assayBarcode
 #             - Maximum
 #             - Minimum
-#             - timePoints: one record per trial, containing a string
+#             - T_timePoints: one record per trial, containing a string
 #                           of tab-delimited data
-#             - sequences: same as timePoints
-#             - batchName
+#             - T_sequence: same as timePoints
+#             - batchCode
 #             - wellType
-#        filePath, where the plots should be saved (will be created if necessary)
+#        filePath, where the plots should be saved (will be created if necessary, will have getUploadedFilePath run)
 #        debugMode, if true, plots are printed to the screen instead of saved
 # Output: Writes graphs to a user-specified file path, or prints
 #         them to the screen in debugging mode. Creates the desired
@@ -36,39 +36,42 @@ library(racas)
 #         and batch name.
 #         Modifies the table by adding a column of file names
 saveComparisonTraces <- function(resultTable, filePath, debugMode = FALSE) {
+  save(resultTable, filePath, file="public/comparisonTest.Rda")
+  resultTable <- copy(resultTable)
   keyResultTable(resultTable)
   filePath <- trimTrailingBackslash(filePath)
   
-  # Make a clean table of just 'test' and 'no agonist'
-  cleanedTable <- resultTable[wellType == 'test' | wellType == 'no agonist']
+  # Make a clean table of just 'test' compounds
+  cleanedTable <- resultTable[wellType == 'test']
   
   # Determine the point on the x-axis to which we normalize the data
-  normalizingIndex <- normalizingIndex(cleanedTable$sequence)
+  normalizingIndex <- normalizingIndex(cleanedTable$T_sequence)
   
   # Get the (normalized) mean of the negative controls
   ncTable <- resultTable[wellType == 'NC']
-  ncMeans <- ncTable[, meanNC(sequence, normalizingIndex), by = "barcode,batchName"]
+  ncMeans <- ncTable[, meanNC(T_sequence, normalizingIndex), by = "assayBarcode,batchCode"]
   
-  batchFactor <- factor(unique(resultTable$batchName))
-  barcodeFactor <- factor(unique(resultTable$barcode))
-  
-  cleanedTable[, plotMany(timePoints, sequence, Minimum, Maximum, 
-                          wellType, batchFactor, batchName, barcode, ncMeans,
+  batchFactor <- factor(unique(resultTable$batchCode))
+  barcodeFactor <- factor(unique(resultTable$assayBarcode))
+  names(barcodeFactor) <- barcodeFactor
+  minName <- grep("\\{minimum\\}", names(cleanedTable), value = TRUE)
+  maxName <- grep("\\{maximum\\}", names(cleanedTable), value = TRUE)
+  cleanedTable[, Minimum := get(minName)]
+  cleanedTable[, Maximum := get(maxName)]
+  cleanedTable[, plotMany(T_timePoints, T_sequence, Minimum, Maximum, 
+                          wellType, agonistConc, batchFactor, batchCode, assayBarcode, ncMeans,
                           filePath, debugMode, normalizingIndex, barcodeFactor), 
-               by = "batchName,barcode"]
+               by = "batchCode,assayBarcode"]
   
-  # Generate the vector of file names and add it to the table
-  tableWithFiles <- fileNames(resultTable, filePath)
-  
-  return(tableWithFiles)
+  return(NULL)
 }
 
 
 # keyResultTable
 # Input: resultTable, from the instrument
-# Output: Keys the table based on the batchName and barcode
+# Output: Keys the table based on the batchCode and barcode
 keyResultTable <- function(resultTable) {
-  setkey(resultTable, batchName, barcode)
+  setkey(resultTable, batchCode, assayBarcode)
 }
 
 
@@ -119,8 +122,8 @@ normalizingIndex <- function(sequence) {
 #         the maximum fluorescense from a test or "no agonist" trial. The
 #         return value is unimportant as long as it's not NULL (the data.table
 #         method that calls this function can't deal with type NULL)
-plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType, 
-                     batchFactor, batchName, code, ncMeans, filePath, 
+plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType, agonistConc, 
+                     batchFactor, batchCode, code, ncMeans, filePath, 
                      debugMode, normalizingIndex, barcodeFactor) {
   splitx <- strsplit(timePoints, "\t", fixed = TRUE)
   splity <- strsplit(sequence, "\t", fixed = TRUE)
@@ -132,24 +135,24 @@ plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType,
     if (!file.exists(fullPath)) {
       dir.create(fullPath, recursive = TRUE)
     }
-    png(file.path(fullPath, paste(barcodeFactor[code], "_", batchName, ".png", sep = "")))
+    png(file.path(fullPath, paste(barcodeFactor[code], "_", batchCode, ".png", sep = "")))
   }
   
   sampleRange <- max(Maximum) - min(Minimum)
   
   plot(c(0, maxTime), 
-       c(-15, max(sampleRange, max(ncMeans$V1))),
+       c(-15, max(sampleRange, max(unlist(ncMeans$V1)))),
        type = 'n', 
        xlab = "Time (sec)",
        ylab = "Activity (rfu)")
-  title(main = paste(barcodeFactor[code], ": ", batchName, sep = ""))
+  title(main = paste(barcodeFactor[code], ": ", batchCode, sep = ""))
   
-  mapply(plotOne, splitx, splity, wellType, normalizingIndex)
+  mapply(plotOne, splitx, splity, wellType, agonistConc, normalizingIndex)
 
   # Only plot the negative controls with the barcode you want
-  setkey(ncMeans, barcode, batchName)
-  filteredNC <- ncMeans[barcode==barcodeFactor[code]]
-  filteredNC[, plotOne(splitx[1], V1, "NC", weight = 2.5), by = "barcode,batchName"]
+  setkey(ncMeans, assayBarcode, batchCode)
+  filteredNC <- ncMeans[assayBarcode==barcodeFactor[code]]
+  filteredNC[, plotOne(splitx[1], V1, "NC", 0, normalizingIndex, weight = 2.5), by = "assayBarcode,batchCode"]
   
   if (!debugMode) {
     dev.off()
@@ -165,7 +168,7 @@ plotMany <- function(timePoints, sequence, Minimum, Maximum, wellType,
 #        splity, a list of the fluorescence values as strings
 #        wellType, a string indicating which type of well is to be plotted
 #        weight, the weight of the line
-plotOne <- function(splitx, splity, wellType, normalizingIndex, weight = 1) {
+plotOne <- function(splitx, splity, wellType, agonistConc, normalizingIndex, weight = 1) {
   xData <- as.numeric(unlist(splitx))
   yData <- as.numeric(unlist(splity))
   
@@ -177,7 +180,7 @@ plotOne <- function(splitx, splity, wellType, normalizingIndex, weight = 1) {
   }
   
   # Add lines to a pre-existing plot
-  lines(xData, yData, type = 'l', col = getColor(wellType), lwd = weight)
+  lines(xData, yData, type = 'l', col = getColor(wellType, agonistConc), lwd = weight)
 }
 
 # meanNC
@@ -196,23 +199,7 @@ meanNC <- function(sequence, normalizingIndex) {
   # Normalize to the predetermined index
   yNormalized <- averagedY - averagedY[normalizingIndex]
 
-  return(yNormalized)
-}
-
-
-# fileNames
-# Creates a vector whose nth entry is the filename to
-# which the resultTable's nth row of data was plotted.
-# Any rows with wellType other than 'no agonist' or
-# 'test' are given an entry of NA
-fileNames <- function(resultTable, filePath) {
-  # Generate a file path if the wellType is test or no agonist,
-  # otherwise leave the file path as NA
-  fileTable <- transform(resultTable, comparisonTraceFile = 
-                           ifelse((wellType == 'no agonist' | wellType == 'test'),
-                                  file.path(filePath, paste(barcode, "_", batchName, ".png", sep = "")),
-                                  NA_character_))
-  return(fileTable)
+  return(list(list(yNormalized)))
 }
 
 
@@ -224,12 +211,12 @@ fileNames <- function(resultTable, filePath) {
 #               not be plotting.
 #              "black" and an error message if the well type is
 #               unrecognized
-getColor <- function(wellType) {
+getColor <- function(wellType, agonistConc) {
   if (wellType == "NC") {
     return("darkgreen")
-  } else if (wellType == "no agonist") {
+  } else if (agonistConc == 0) {
     return("blue")
-  } else if (wellType == "test") {
+  } else {
     return("red")
   }
 }

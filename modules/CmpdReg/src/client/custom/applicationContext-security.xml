@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.1.xsd
+        http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+	<!-- HTTP security configurations -->
+	<http auto-config="true" use-expressions="true">
+		<form-login login-processing-url="/resources/j_spring_security_check"
+			login-page="/login" authentication-failure-url="/login?login_error=t" />
+		<logout logout-url="/resources/j_spring_security_logout" />
+		<!-- Configure these elements to secure URIs in your application -->
+		    <intercept-url pattern="/api/**" access="permitAll" />
+            <intercept-url pattern="/login**" access="permitAll" />
+            <intercept-url pattern="/index**" access="permitAll" />
+            <intercept-url pattern="/resources/**" access="permitAll" />
+            <intercept-url pattern="/marvinjs/**" access="permitAll" />
+            <intercept-url pattern="/client/**" access="permitAll" />
+            <intercept-url pattern="/applicationsettings**" access="permitAll" />
+            <intercept-url pattern="/metalots/corpName/**" access="permitAll" />
+            <intercept-url pattern="/#lot/**" access="permitAll" />
+ 	    	<intercept-url pattern="/structureimage/**" access="permitAll" />
+            <intercept-url pattern="/newCmpdReg**" access="isAuthenticated()" />
+            <intercept-url pattern="/**" access="isAuthenticated()" />
+	</http>
+
+	<beans:bean id="postSuccessAuthHandler"
+		class="com.labsynch.cmpdreg.utils.PostSuccessfulAuthenticationHandler">
+		<beans:property name="defaultTargetUrl" value="/"></beans:property>
+	</beans:bean>
+
+
+
+	<ldap-server id="ldapServer" url="ldaps://ddag-ldap.onschrodinger.com:636"
+		manager-dn="cn=admin,dc=livedesign" manager-password="viler3.pandit" />
+
+	<authentication-manager alias="authenticationManager">
+		<ldap-authentication-provider server-ref="ldapServer"
+			user-dn-pattern="" 
+			user-search-filter="uid={0}"
+			group-search-filter="cn=acas-users"
+			user-search-base="ou=users,dc=livedesign"
+			group-search-base="ou=groups,ou=mcneilco,dc=livedesign"
+			group-role-attribute="cn" role-prefix="ROLE_" />
+	</authentication-manager>
+	<!-- Security event logging -->
+	<beans:bean id="loggerListener"
+		class="org.springframework.security.authentication.event.LoggerListener" />
+
+
+
+
+	<!-- Configure Authentication mechanism -->
+<!-- 	<authentication-manager alias="authenticationManager">
+		<authentication-provider>
+			<password-encoder hash="sha-256" />
+			<user-service>
+				<user name="bbiologist" password="3df3679765d4ae0b831653ea350180cdc3260d982d2b03ac0db0d4fd3e02aebe" authorities="ROLE_BIOLOGIST" />
+				<user name="cchemist" password="4489e884210f4378830932f90473b66f1afa979de3301d43ee3c361b6bd36400" authorities="ROLE_CHEMIST" />
+				<user name="admin"
+					password="8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"
+					authorities="ROLE_ADMIN" />
+				<user name="user"
+					password="04f8996da763b7a969b1028ee3007569eaf3a635486ddab211d512c85b9df8fb"
+					authorities="ROLE_USER" />
+			</user-service>
+		</authentication-provider>
+	</authentication-manager> -->
+
+	
+</beans:beans>

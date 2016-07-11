@@ -2,9 +2,11 @@ assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
 fs = require 'fs'
-config = require '../../../../conf/compiled/conf.js'
-servUtilities = require '../../../../routes/ServerUtilityFunctions.js'
-thingServiceTestJSON = require '../../../../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+acasHome = '../../../..'
+config = require "#{acasHome}/conf/compiled/conf.js"
+thingServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ThingServiceTestJSON.js"
+servUtilities = require "#{acasHome}/routes/ServerUtilityFunctions.js"
+
 
 parseResponse = (jsonStr) ->
 	try
@@ -55,7 +57,8 @@ describe "Server Utiilty Function Tests", ->
 			assert.equal isNaN(parseInt(@newTransaction.id)), false
 
 	describe "add transaction to ls entity", ->
-		protocolServiceTestJSON = require '../testFixtures/ProtocolServiceTestJSON.js'
+		protocolServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ProtocolServiceTestJSON.js"
+
 		before (done) ->
 			trans =
 				comments: 'test transaction'

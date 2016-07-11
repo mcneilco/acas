@@ -50,6 +50,11 @@ class window.Thing extends Backbone.Model
 						resp.secondLsThings = new SecondLsThingItxList(resp.secondLsThings)
 					resp.secondLsThings.on 'change', =>
 						@trigger 'change'
+				if resp.lsTags?
+					if resp.lsTags not instanceof TagList
+						resp.lsTags = new TagList(resp.lsTags)
+					resp.lsTags.on 'change', =>
+						@trigger 'change'
 				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
@@ -133,7 +138,7 @@ class window.Thing extends Backbone.Model
 				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
 
-	getAnalyticalFiles: (fileTypes) =>
+	getAnalyticalFiles: (fileTypes) => #TODO: rename from analytical files to attachFiles or something more generic
 		#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
 		for type in fileTypes

@@ -128,6 +128,8 @@ THEN
 		)
 WHEN agv.ls_type = 'dateValue'
 	THEN to_char(agv.date_value, 'yyyy-mm-dd')
+WHEN agv.ls_type = 'codeValue'
+	THEN agv.code_value
 WHEN agv.ls_type = 'clobValue' 
 	THEN DBMS_LOB.substr(agv.clob_value, 3000)
 	ELSE COALESCE(agv.string_value,agv.comments)

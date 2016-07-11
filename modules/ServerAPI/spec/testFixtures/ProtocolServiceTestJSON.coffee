@@ -1326,6 +1326,36 @@
 		recordedBy: "smeyer"
 		recordedDate: 1372303173000
 		version: 0
+	,
+		id: 74
+		ignored: false
+		imageFile: null
+		labelText: "Bio Activity Experiment"
+		lsKind: "protocol name"
+		lsTransaction: 79
+		lsType: "name"
+		lsTypeAndKind: "name_protocol name"
+		modifiedDate: null
+		physicallyLabled: false
+		preferred: true
+		protocol:
+			codeName: "PROT-00000111"
+			id: 2592
+			ignored: false
+			lsKind: "Bio Activity"
+			lsTransaction: 79
+			lsType: "Parent"
+			lsTypeAndKind: "Parent_Bio Activity"
+			modifiedBy: null
+			modifiedDate: null
+			recordedBy: "smeyer"
+			recordedDate: 1372303173000
+			shortDescription: "protocol created by hand"
+			version: 1
+
+		recordedBy: "smeyer"
+		recordedDate: 1372303173000
+		version: 0
 	]
 
 	exports.protocolKinds = [

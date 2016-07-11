@@ -18,7 +18,7 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	serviceType = config.all.client.service.external.preferred.batchid.type
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
-	possibleServiceTypes = ['NewLineSepBulkPost','SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString']
+	possibleServiceTypes = ['NewLineSepBulkPost','SeuratCmpdReg','GeneCodeCheckByR','AcasCmpdReg','LabSynchCmpdReg','SingleBatchNameQueryString', 'AllPass']
 
 	if serviceType not in possibleServiceTypes
 		errorMessage = "client.service.external.preferred.batchid.type '#{serviceType}' is not in possible service types #{possibleServiceTypes}"
@@ -31,14 +31,27 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 				error: false
 				errorMessages: []
 				results: preferredResp
+	else if serviceType == "AllPass" && !global.specRunnerTestmode
+		results = ({requestName: req.requestName, preferredName: req.requestName} for req in requests)
+		callback JSON.stringify
+			error: false
+			errorMessages: []
+			results: results
 	else if serviceType == "SeuratCmpdReg" && !global.specRunnerTestmode
-		req.body.user = "" # to bypass validation function
-		serverUtilityFunctions.runRFunction(
+		req =
+			testMode: false
+			requests: requests
+			user: ""
+		serverUtilityFunctions.runRFunctionOutsideRequest(
+			"",
 			req,
 			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
-		(rReturn) ->
-			callback rReturn
+			(rReturn) ->
+				callback rReturn
+			,
+			null,
+			false
 		)
 	else if serviceType == "AcasCmpdReg" && !global.specRunnerTestmode
 		req.body.user = "" # to bypass validation function

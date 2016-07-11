@@ -1,14 +1,15 @@
-saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy) {
+saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, recordedBy, customSourceFileMove, skipFileText=FALSE) {
   # Saves spotfire file with correct column names
-  
+
   # Change well type names
   translationList <- list(
     test = "Compound Discrete (Tested Lot)", 
+    VC = "Vehicle Control",
     PC = "Positive Control",
     NC = "Negative Control",
     BLANK = "Blank")
-  inputTable[, wellType := unlist(translationList[wellType])]
-
+  inputTable[wellType %in% names(translationList), wellType := unlist(translationList[wellType])]
+ 
   inputTable <- changeColNameReadability(inputTable, readabilityChange="computerToHuman", parameters)
 
   newColNames <- colnames(inputTable)
@@ -38,17 +39,21 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
   
   setcolorder(inputTable, requiredColumns)
   
-  fileLocation <- file.path(saveLocation,"spotfire-DRAFT.txt")
+  fileLocation <- getUploadedFilePath(file.path(saveLocation,"spotfire-DRAFT.txt"))
   write.table(inputTable, file=fileLocation, quote=FALSE, na="", row.names=FALSE, sep="\t")
   
-  fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
+  if (!skipFileText) {
+    fileText <- readChar(fileLocation, nchar=file.info(fileLocation)$size)
+  } else {
+    fileText <- NULL
+  }
   
   # targetPath is only for testing
   finalLocation <- moveFileToFileServer(fileLocation, experiment = experiment, recordedBy = recordedBy, 
-                                        targetPath = "testSpotfire.txt")
+                                        targetPath = "testSpotfire.txt", customSourceFileMove=customSourceFileMove)
   
   if (racas::applicationSettings$server.service.external.file.type == "custom") {
-    # example: tibcospotfire:server:http\://dsantsptdxp/:analysis:/Tien/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
+    # example: tibcospotfire:server:http\://severName/:analysis:/user/HTSWells:configurationBlock:HTSExperimentCode=\'EXPT-0002\';HTSDataURL=\'http\://imapp01-d\:8080/exampleClient/files/v1/Files/FILE1419587.txt\
     spotfirePrefix <- paste0("tibcospotfire:server:http\\://", 
                              racas::applicationSettings$client.service.spotfire.host,
                              "/:analysis:",
@@ -65,5 +70,5 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
                        racas::applicationSettings$client.port, '/dataFiles/', finalLocation)
     fileLink <- paste0(racas::applicationSettings$server.nodeapi.path, '/dataFiles/', finalLocation)
   }
-  return(list(title="Spotfire", link=userLink, fileLink=fileLink, fileText=fileText))
+  return(list(title="Spotfire", link=userLink, fileLink=fileLink, fileText=fileText, download = FALSE))
 }

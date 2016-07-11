@@ -2,7 +2,7 @@ fs = require 'fs'
 glob = require 'glob'
 _ = require "underscore"
 path = require "path"
-ACAS_HOME="../../.."
+ACAS_HOME=path.resolve "#{__dirname}/../../.."
 
 mkdirSync = (path) ->
 	try
@@ -50,6 +50,9 @@ typeKinds = [
 	"unitkinds"
 	"valuetypes"
 	"valuekinds"
+	"roletypes"
+	"rolekinds"
+	"lsroles"
 ]
 
 #name/pattern of confJSON file(s) to compile and store in CompiledModuleConfJSONs.json and to save the contents into the database

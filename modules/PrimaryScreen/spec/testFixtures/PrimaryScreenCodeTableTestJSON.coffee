@@ -45,7 +45,7 @@
 			kind: "transformation"
 			codes:
 				[
-					code: "% efficacy"
+					code: "percent efficacy"
 					name: "% Efficacy"
 					ignored: false
 				,
@@ -110,6 +110,49 @@
 				,
 					code: "Ki Fit"
 					name: "KI"
+					ignored: false
+				]
+		,
+			type: "analysis parameter"
+			kind: "statistic"
+			codes:
+					[
+						code: "max"
+						name: "Maximum"
+						ignored: false
+					,
+						code: "min"
+						name: "Minimum"
+						ignored: false
+					]
+		,
+			type: "analysis parameter"
+			kind: "standard type"
+			codes:
+				[
+					code: "PC"
+					name: "Positive Control"
+					ignored: false
+				,
+					code: "NC"
+					name: "Negative Control"
+					ignored: false
+				,
+					code: "VC"
+					name: "Vehicle Control"
+					ignored: false
+				]
+		,
+			type: "analysis parameter"
+			kind: "additive type"
+			codes:
+				[
+					code: "agonist"
+					name: "Agonist"
+					ignored: false
+				,
+					code: "antagonist"
+					name: "Antagonist"
 					ignored: false
 				]
 		]

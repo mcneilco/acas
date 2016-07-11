@@ -67,16 +67,19 @@ class window.Protocol extends BaseEntity
 				errors.push
 					attribute: 'creationDate'
 					message: "Date must be set"
-		assayTreeRule = @getAssayTreeRule().get('stringValue')
-		unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
-			if assayTreeRule.charAt([0]) != "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule must start with '/'"
-			else if assayTreeRule.charAt([assayTreeRule.length-1]) is "/"
-				errors.push
-					attribute: 'assayTreeRule'
-					message: "Assay tree rule should not end with '/'"
+		#don't call @getAssayTreeRule because will create value if it doesn't exist
+		assayTreeRule = @get('lsStates').getStateValueByTypeAndKind "metadata", "protocol metadata", "stringValue", "assay tree rule"
+		if assayTreeRule?
+			assayTreeRule = assayTreeRule.get('stringValue')
+			unless assayTreeRule is "" or assayTreeRule is undefined or assayTreeRule is null
+				if assayTreeRule.charAt([0]) != "/"
+					errors.push
+						attribute: 'assayTreeRule'
+						message: "Assay tree rule must start with '/'"
+				else if assayTreeRule.charAt([assayTreeRule.length-1]) is "/"
+					errors.push
+						attribute: 'assayTreeRule'
+						message: "Assay tree rule should not end with '/'"
 
 		if errors.length > 0
 			return errors

@@ -1,11 +1,13 @@
 assert = require 'assert'
 request = require 'request'
 _ = require 'underscore'
-experimentServiceTestJSON = require '../testFixtures/ExperimentServiceTestJSON.js'
-runRFunctionServiceTestJSON = require '../testFixtures/RunRFunctionServiceTestJSON.js'
+acasHome = '../../../..'
+experimentServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/ExperimentServiceTestJSON.js"
+runRFunctionServiceTestJSON = require "#{acasHome}/public/javascripts/spec/ServerAPI/testFixtures/RunRFunctionServiceTestJSON.js"
+
 fs = require 'fs'
 exec = require('child_process').exec
-config = require '../../../../conf/compiled/conf.js'
+config = require "#{acasHome}/conf/compiled/conf.js"
 
 parseResponse = (jsonStr) ->
   try
@@ -188,86 +190,86 @@ describe "C. Writing a file to", ->
           assert(@files.indexOf("test.txt")== -1, "test file was not deleted from the uploads directory. Check that
                                                     server.datafiles.relative_path points to a directory that can be written to.")
 
-
+#TEST Removed because we don't run Rscript anymore
 #################################
 # D. Communication with rScript #
 #################################
 
-describe "D. Access to Rscript", ->
-  before (done) ->
-    exec config.all.server.rscript + " -e 'help()'", (error, stdout, stderr) =>
-      @error1 = error
-      done()
-  it "should not throw an error", ->
-    assert.equal(@error1, null, "Check that Rscript is installed and that config.all.server.rscript is set properly")
-
-  describe "and then to racas hello(),", ->
-    rCommand =  'tryCatch({
-                library(racas);
-                hello()
-                },error = function(ex) {cat(paste("R Execution Error:",ex));})'
-    before (done) ->
-      #this takes a long time even when working, adjust timeout to 10 seconds
-      @timeout 10000
-      exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error,stdout,stderr) =>
-        @stdout = stdout
-        @stderr = stderr
-        done()
-    it.skip "should not throw an error or warning", ->
-      assert.equal(@stderr, null, "racas gives the following error or warning: "+@stderr)
-    it "should return 'Hello from racas'", ->
-      assert.equal(@stdout, 'Hello from racas', "Rscript is unable to properly access racas.")
-      #todo add description of what could be broken here
-
-  describe "and then to the database", ->
-    describe "through tomcat using getAllValueKinds()", ->
-      rCommand =  'tryCatch({
-                  library(racas);
-                  getAllValueKinds()
-                  },error = function(ex) {cat(paste("R Execution Error:",ex));})'
-      before (done) ->
-        #this takes a long time even when working, adjust timeout to 10 seconds
-        @timeout 10000
-        exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
-          @stderr = stderr
-          @stdout = stdout
-          done()
-      it.skip "should not throw an error or warning", ->
-        assert.equal(@stderr, null, "racas gives the following error or warning: \n"+@stderr)
-      it "should return a list", ->
-        #split the output into an array using the newline as the delimiter, only return the first split.
-        split = @stdout.split "\n", 1
-        assert.equal(split[0], "[[1]]", "check that racas can access the database through tomcat.")
-
-    describe "directly using getDatabaseConnection()", ->
-      rCommand =  'tryCatch({
-                  library(racas);
-                  conn <- getDatabaseConnection();
-                  dbDisconnect(conn)
-                  },error = function(ex) {cat(paste("R Execution Error:",ex));})'
-      before (done) ->
-        #this takes a long time even when working, adjust timeout to 10 seconds
-        @timeout 10000
-        exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
-          @stderr = stderr
-          @stdout = stdout
-          done()
-      it.skip "should not throw an error or warning", ->
-        assert.equal(@stderr, null, "Error connecting to the database through racas. Check relevant environment variables. \n" +@stderr)
-      it.skip "should return a status of ???", ->
-        #todo figure out what this is supposed to return when postgreSQL is installed.
-        assert(false,@stdout)
-
+#describe "D. Access to Rscript", ->
+#  before (done) ->
+#    exec "Rscript" + " -e 'help()'", (error, stdout, stderr) =>
+#      @error1 = error
+#      done()
+#  it "should not throw an error", ->
+#    assert.equal(@error1, null, "Check that Rscript is installed and that Rscript is set properly")
+#
+#  describe "and then to racas hello(),", ->
+#    rCommand =  'tryCatch({
+#                library(racas);
+#                hello()
+#                },error = function(ex) {cat(paste("R Execution Error:",ex));})'
+#    before (done) ->
+#      #this takes a long time even when working, adjust timeout to 10 seconds
+#      @timeout 10000
+#      exec Rscript + " -e" + " '" + rCommand + "'", (error,stdout,stderr) =>
+#        @stdout = stdout
+#        @stderr = stderr
+#        done()
+#    it.skip "should not throw an error or warning", ->
+#      assert.equal(@stderr, null, "racas gives the following error or warning: "+@stderr)
+#    it "should return 'Hello from racas'", ->
+#      assert.equal(@stdout, 'Hello from racas', "Rscript is unable to properly access racas.")
+#      #todo add description of what could be broken here
+#
+#  describe "and then to the database", ->
+#    describe "through tomcat using getAllValueKinds()", ->
+#      rCommand =  'tryCatch({
+#                  library(racas);
+#                  getAllValueKinds()
+#                  },error = function(ex) {cat(paste("R Execution Error:",ex));})'
+#      before (done) ->
+#        #this takes a long time even when working, adjust timeout to 10 seconds
+#        @timeout 10000
+#        exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
+#          @stderr = stderr
+#          @stdout = stdout
+#          done()
+#      it.skip "should not throw an error or warning", ->
+#        assert.equal(@stderr, null, "racas gives the following error or warning: \n"+@stderr)
+#      it "should return a list", ->
+#        #split the output into an array using the newline as the delimiter, only return the first split.
+#        split = @stdout.split "\n", 1
+#        assert.equal(split[0], "[[1]]", "check that racas can access the database through tomcat.")
+#
+#    describe "directly using getDatabaseConnection()", ->
+#      rCommand =  'tryCatch({
+#                  library(racas);
+#                  conn <- getDatabaseConnection();
+#                  dbDisconnect(conn)
+#                  },error = function(ex) {cat(paste("R Execution Error:",ex));})'
+#      before (done) ->
+#        #this takes a long time even when working, adjust timeout to 10 seconds
+#        @timeout 10000
+#        exec config.all.server.rscript + " -e" + " '" + rCommand + "'", (error, stdout, stderr) =>
+#          @stderr = stderr
+#          @stdout = stdout
+#          done()
+#      it.skip "should not throw an error or warning", ->
+#        assert.equal(@stderr, null, "Error connecting to the database through racas. Check relevant environment variables. \n" +@stderr)
+#      it.skip "should return a status of ???", ->
+#        #todo figure out what this is supposed to return when postgreSQL is installed.
+#        assert(false,@stdout)
+#
 
 
 #################################
 # E. Communication with rApache #
 #################################
 
-describe "E. Access to rApache", ->
+describe "D. Access to rApache", ->
   @timeout 10000
   before (done) ->
-    request config.all.client.service.rapache.fullpath + "RApacheInfo", (error, response, body) =>
+    request config.all.client.service.rapache.fullpath + "hello", (error, response, body) =>
       @responseJSON = body
       @response = response
       done()
@@ -299,7 +301,7 @@ describe "E. Access to rApache", ->
         @responseJSON = body
         done()
     it "should return the response", ->
-      assert @responseJSON.result == 'Success', "communication error when running rApache runfunction route, returned "+@responseJSON+" instead."
+      assert @responseJSON.result == 'Success', "communication error when running rApache runfunction route, returned "+JSON.stringify(@responseJSON)+" instead."
 
   describe "and then to the database", ->
     describe "through tomcat", ->

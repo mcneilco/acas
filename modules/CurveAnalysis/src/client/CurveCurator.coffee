@@ -87,10 +87,14 @@ class window.DoseResponsePlotController extends AbstractFormController
 	initJSXGraph: (points, curve, plotWindow, divID, plotCurveClass) =>
 		@points = points
 		log10 = @log10
+		logDose = true
+		if curve.type in ["Michaelis-Menten", "Substrate Inhibition"]
+			logDose = false
+
 		if typeof (brd) is "undefined"
 			brd = JXG.JSXGraph.initBoard(divID,
 				boundingbox: plotWindow
-				axis: false #we do this later (log axis causes)
+				axis: !logDose #we do this later (log axis causes)
 				showCopyright: false
 				zoom : {
 					wheel: false
@@ -122,7 +126,7 @@ class window.DoseResponsePlotController extends AbstractFormController
 
 			ii = 0
 			while ii < points.length
-				x = log10 points[ii].dose
+				x = if logDose then log10(points[ii].dose) else points[ii].dose
 				y = points[ii].response
 				userFlagStatus = points[ii].userFlagStatus
 				preprocessFlagStatus = points[ii].preprocessFlagStatus
@@ -213,31 +217,32 @@ class window.DoseResponsePlotController extends AbstractFormController
 					return
 				ii++
 
-			x = brd.create("line", [
-				[0,0]
-				[1,0]
-			],
-				strokeColor: "#888888"
-			)
-			y = brd.create("axis", [
-				[plotWindow[0], 0]
-				[plotWindow[0], 1]
-			])
-			x.isDraggable = false
+			if logDose
+				x = brd.create("line", [
+					[0,0]
+					[1,0]
+				],
+					strokeColor: "#888888"
+				)
+				y = brd.create("axis", [
+					[plotWindow[0], 0]
+					[plotWindow[0], 1]
+				])
+				x.isDraggable = false
 
-			# create the tick markers for the axis
-			t = brd.create("ticks", [x,1],
-				# yes, show the labels
-				drawLabels: true
-			# yes, show the tick marker at zero (or, in this case: 1)
-				drawZero: true
-				generateLabelValue: (tick) ->
-					# get the first defining point of the axis
-					p1 = @line.point1
-					# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
-					#Xaxis in log scale
-					Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
-			)
+				# create the tick markers for the axis
+				t = brd.create("ticks", [x,1],
+					# yes, show the labels
+					drawLabels: true
+				# yes, show the tick marker at zero (or, in this case: 1)
+					drawZero: true
+					generateLabelValue: (tick) ->
+						# get the first defining point of the axis
+						p1 = @line.point1
+						# this works for the x-axis, for the y-axis you'll have to use usrCoords[2] (usrCoords[0] is the z-coordinate).
+						#Xaxis in log scale
+						Math.pow 10, tick.usrCoords[1] - p1.coords.usrCoords[1]
+				)
 
 		else
 			brd.removeObject window.curve  unless typeof (window.curve) is "undefined"
@@ -895,13 +900,16 @@ class window.CurveCuratorController extends Backbone.View
 			success: =>
 				@trigger 'getCurvesSuccessful'
 				@render()
-			error: =>
-				@$('.bv_badExperimentCode').modal
-					backdrop: "static"
-				@$('.bv_badExperimentCode').modal "show"
+			error: (model, response, options) =>
+				@showBadExperimentModal(response.responseText)
 
-	showBadExperimentModal: ->
+	showBadExperimentModal: (text)->
 		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
+		console.log text
+		console.log $('.bv_badExperimentCode .modal-body')
+		console.log $('.bv_badExperimentCode').find('.modal-body').html()
+		if text?
+			@$('.bv_badExperimentCode').find('.modal-body').html(text+'<div><br></div>')
 		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')
 
 	handleWarnUserLockedExperiment: (exptCode, curveID)->
