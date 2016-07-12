@@ -1306,6 +1306,10 @@ div.MetaLotViewButtons.buttons {
 .SearchFormView select.FormInput.chemist {
     width: 223px;
 }
+.SearchFormView input.FormInput.maxResults {
+    width: 221px;
+    margin-left:4px;
+}
 .SearchFormView .percentSimilarity {
     width: 30px;
     border-color: #d2d2d2;
@@ -1318,7 +1322,7 @@ div.MetaLotViewButtons.buttons {
     width: 90px;
     padding: 10px 5px 0px 5px;
     position: absolute;
-    bottom: -75px;
+    bottom: -100px;
     left: 680px;
 }
 .SearchFormView a.cancelButton {
@@ -1327,7 +1331,7 @@ div.MetaLotViewButtons.buttons {
     width: 90px;
     padding: 10px 5px 0px 5px;
     position: absolute;
-    bottom: -75px;
+    bottom: -100px;
     left: 585px;
 }
 

@@ -36,6 +36,10 @@
 				<option value="anybody">anybody</option>
 			</select>
 		</div>
+		<div>
+			<label class="FormLabel maxResultsLabel">Max. No. of Search Results</label>
+			<input type="text" class="FormInput maxResults"/>
+		</div>
 	</div>
 	
 	<div class="StructureMainOpt">
