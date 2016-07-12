@@ -101,28 +101,36 @@ class window.DoseResponsePlotController extends AbstractFormController
 				},
 			)
 
-			promptForKnockout = (selectedPoints) =>
-				@showDoseResponseKnockoutPanel selectedPoints
+			promptForKnockout = (selectedPoints, force) =>
+				if force || !@running?
+					@running = true
+					@showDoseResponseKnockoutPanel selectedPoints
+				else
+					return
 
-			includePoints = (selectedPoints) =>
-				selectedPoints.forEach (selectedPoint) =>
-					@points[selectedPoint.idx].algorithmFlagStatus = ""
-					@points[selectedPoint.idx].algorithmFlagObservation = ""
-					@points[selectedPoint.idx].algorithmFlagCause = ""
-					@points[selectedPoint.idx].algorithmFlagComment = ""
-					@points[selectedPoint.idx].preprocessFlagStatus = ""
-					@points[selectedPoint.idx].preprocessFlagObservation = ""
-					@points[selectedPoint.idx].preprocessFlagCause = ""
-					@points[selectedPoint.idx].preprocessFlagComment = ""
-					@points[selectedPoint.idx].userFlagStatus = ""
-					@points[selectedPoint.idx].userFlagObservation = ""
-					@points[selectedPoint.idx].userFlagCause = ""
-					@points[selectedPoint.idx].userFlagComment = ""
+			includePoints = (selectedPoints, force) =>
+				if force || !@running?
+					@running = true
+					selectedPoints.forEach (selectedPoint) =>
+						@points[selectedPoint.idx].algorithmFlagStatus = ""
+						@points[selectedPoint.idx].algorithmFlagObservation = ""
+						@points[selectedPoint.idx].algorithmFlagCause = ""
+						@points[selectedPoint.idx].algorithmFlagComment = ""
+						@points[selectedPoint.idx].preprocessFlagStatus = ""
+						@points[selectedPoint.idx].preprocessFlagObservation = ""
+						@points[selectedPoint.idx].preprocessFlagCause = ""
+						@points[selectedPoint.idx].preprocessFlagComment = ""
+						@points[selectedPoint.idx].userFlagStatus = ""
+						@points[selectedPoint.idx].userFlagObservation = ""
+						@points[selectedPoint.idx].userFlagCause = ""
+						@points[selectedPoint.idx].userFlagComment = ""
 
-					selectedPoint.drawAsIncluded()
-				@model.set points: @points
-				@model.trigger 'change'
-				return
+						selectedPoint.drawAsIncluded()
+					@model.set points: @points
+					@model.trigger 'change'
+					return
+				else
+					return
 
 			ii = 0
 			while ii < points.length
@@ -260,7 +268,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				dx
 				dy
 			], brd)
-		createSelection = (e) ->
+		createSelection = (e) =>
+			if !@running?
+				@running = true
 			if !brd.elementsByName.selection?
 				coords = getMouseCoords(e)
 				a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
@@ -291,9 +301,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 						if selected?
 							if selected.length > 0
 								if knockoutMode
-									promptForKnockout(selected)
+									promptForKnockout(selected, true)
 								else
-									includePoints(selected)
+									includePoints(selected, true)
 
 				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
