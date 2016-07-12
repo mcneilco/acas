@@ -238,6 +238,59 @@ exports.protocolCodeList = (req, resp) ->
 				console.log response
 		)
 
+exports.getProtocolList = (protocolName, protocolKind, callback) ->
+	if protocolName isnt ""
+		shouldFilterByName = true
+		filterString = protocolName.toUpperCase()
+	else if protocolKind isnt ""
+		shouldFilterByKind = true
+		#filterString = req.query.protocolKind.toUpperCase()
+		filterString = protocolKind
+	else
+		shouldFilterByName = false
+		shouldFilterByKind = false
+
+	translateToCodes = (labels) ->
+		protCodes = []
+		for label in labels
+			if shouldFilterByName
+				match = label.labelText.toUpperCase().indexOf(filterString) > -1
+			else if shouldFilterByKind
+				if label.protocol.lsKind == "default" or label.protocol.lsKind == "Bio Activity"
+					match = label.protocol.lsKind.indexOf(filterString) > -1
+				else
+					match = label.protocol.lsKind.toUpperCase().indexOf(filterString) > -1
+			else
+				match = true
+			if !label.ignored and !label.protocol.ignored and label.lsType=="name" and match
+				protCodes.push
+					code: label.protocol.codeName
+					name: label.labelText
+					ignored: label.ignored
+		protCodes
+
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"protocols/codetable"
+
+	if shouldFilterByName
+		baseurl += "/?protocolName="+filterString
+	else if shouldFilterByKind
+		baseurl += "?lskind="+filterString
+
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json
+		else
+			console.log 'got ajax error trying to get protocol labels'
+			console.log error
+			console.log json
+			console.log response
+	)
 
 exports.protocolKindCodeList = (req, resp) ->
 	translateToCodes = (kinds) ->

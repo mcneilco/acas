@@ -1314,6 +1314,380 @@ class Container extends Backbone.Model
 
 		@
 
+
+class Experiment extends Backbone.Model
+	lsProperties: {}
+
+	defaults: () =>
+		@set lsType: "Experiment"
+		@set lsKind: "Experiment"
+		@set corpName: ""
+		@set recordedBy: AppLaunchParams.loginUser.username
+		@set recordedDate: new Date().getTime()
+		@set shortDescription: " "
+		@set lsLabels: new LabelList()
+		@set lsStates: new StateList()
+#		@set firstLsThings: new FirstLsThingItxList()
+#		@set secondLsThings: new SecondLsThingItxList()
+
+	initialize: ->
+		@.set @parse(@.attributes)
+
+	parse: (resp) =>
+		if resp?
+			if resp == "not unique experiment name" or resp == '"not unique experiment name"'
+				@createDefaultLabels()
+				@createDefaultStates()
+				return
+			else
+				if resp.lsLabels?
+					if resp.lsLabels not instanceof LabelList
+						resp.lsLabels = new LabelList(resp.lsLabels)
+					resp.lsLabels.on 'change', =>
+						@trigger 'change'
+
+				if resp.lsStates?
+					if resp.lsStates not instanceof StateList
+						resp.lsStates = new StateList(resp.lsStates)
+					resp.lsStates.on 'change', =>
+						@trigger 'change'
+				@.set resp
+				@createDefaultLabels()
+				@createDefaultStates()
+#				@createDefaultFirstLsThingItx()
+#				@createDefaultSecondLsThingItx()
+		else
+			@createDefaultLabels()
+			@createDefaultStates()
+		#			@createDefaultFirstLsThingItx()
+		#			@createDefaultSecondLsThingItx()
+		resp
+
+	createDefaultLabels: =>
+# loop over defaultLabels
+# getorCreateLabel
+# add key as attribute of model
+		if @lsProperties.defaultLabels?
+			for dLabel in @lsProperties.defaultLabels
+				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@set dLabel.key, newLabel
+				#			if newLabel.get('preferred') is undefined
+				newLabel.set preferred: dLabel.preferred
+
+
+	createDefaultStates: =>
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+#Adding the new state and value to @
+				console.log "creating default state"
+				console.log dValue
+				newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
+				@listenTo newValue, 'createNewValue', @createNewValue
+				#setting unitType and unitKind in the state, if units are given
+				if dValue.unitKind? and newValue.get('unitKind') is undefined
+					newValue.set unitKind: dValue.unitKind
+				if dValue.unitType? and newValue.get('unitType') is undefined
+					newValue.set unitType: dValue.unitType
+				if dValue.codeKind? and newValue.get('codeKind') is undefined
+					newValue.set codeKind: dValue.codeKind
+				if dValue.codeType? and newValue.get('codeType') is undefined
+					newValue.set codeType: dValue.codeType
+				if dValue.codeOrigin? and newValue.get('codeOrigin') is undefined
+					newValue.set codeOrigin: dValue.codeOrigin
+
+				#Setting dValue.key attribute in @ to point to the newValue
+				@set dValue.key, newValue
+
+				if dValue.value? and (newValue.get(dValue.type) is undefined)
+					newValue.set dValue.type, dValue.value
+				#setting top level model attribute's value to equal valueType's value
+				# (ie set "value" to equal value in "stringValue")
+				@get(dValue.key).set("value", newValue.get(dValue.type))
+				newValue.set("key", dValue.key)
+
+	updateValuesByKeyValue: (keyValues) =>
+		if @lsProperties.defaultValues?
+			defaultKeys =  _.pluck(@lsProperties.defaultValues, "key")
+			matchedKeyValues = _.pick keyValues, defaultKeys
+			for key of matchedKeyValues
+				type = @.get(key).get("lsType")
+				value = matchedKeyValues[key]
+				unit = keyValues["#{key}Unit"]
+				if type == "dateValue"
+					value = parseInt value
+				else if type == "numericValue"
+					value = Number value
+				@.get(key).set "value", value
+				if unit?
+					@.get(key).set "unitKind", String(unit)
+
+	getValues: =>
+		response = {}
+		if @lsProperties.defaultValues?
+			defaultKeys = _.pluck(@lsProperties.defaultValues, "key")
+			for key in defaultKeys
+				response[key] = @.get(key).get("value")
+				if @.get(key).get("unitKind")?
+					response["#{key}Unit"] = @.get(key).get("unitKind")
+		response
+
+	getValuesByKey: (keys) =>
+		if @lsProperties.defaultValues?
+			defaultKeys =  _.pluck(@lsProperties.defaultValues, "key")
+			matchedKeyValues = _.intersection(keys, defaultKeys)
+			outObject = {}
+			for key in matchedKeyValues
+				outObject[key] = @.get(key).get("value")
+			outObject
+
+	createNewValue: (key, newVal) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: key})[0]
+		@unset(key)
+		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+		newValue.set valInfo['type'], newVal
+		newValue.set
+			unitKind: valInfo['unitKind']
+			unitType: valInfo['unitType']
+			codeKind: valInfo['codeKind']
+			codeType: valInfo['codeType']
+			codeOrigin: valInfo['codeOrigin']
+			value: newVal
+		@set key, newValue
+
+	createDefaultFirstLsThingItx: =>
+# loop over defaultFirstLsThingItx
+# add key as attribute of model
+		if @lsProperties.defaultFirstLsThingItx?
+			for itx in @lsProperties.defaultFirstLsThingItx
+				thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
+				unless thingItx?
+					thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
+				@set itx.key, thingItx
+
+	createDefaultSecondLsThingItx: =>
+# loop over defaultSecondLsThingItx
+# add key as attribute of model
+		if @lsProperties.defaultSecondLsThingItx?
+			for itx in @lsProperties.defaultSecondLsThingItx
+				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
+				@set itx.key, thingItx
+
+	reformatBeforeSaving: =>
+		if @lsProperties.defaultLabels?
+			for dLabel in @lsProperties.defaultLabels
+				@unset(dLabel.key)
+
+		#		if @lsProperties.defaultFirstLsThingItx?
+		#			for itx in @lsProperties.defaultFirstLsThingItx
+		#				@unset(itx.key)
+		#
+		#		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
+		#			@get('firstLsThings').reformatBeforeSaving()
+		#
+		#		if @lsProperties.defaultSecondLsThingItx?
+		#			for itx in @lsProperties.defaultSecondLsThingItx
+		#				@unset(itx.key)
+		#
+		#		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
+		#			@get('secondLsThings').reformatBeforeSaving()
+
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+				if @get(dValue.key)?
+					if @get(dValue.key).get('value') is undefined
+						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+						lsStates[0].get('lsValues').remove value
+					@unset(dValue.key)
+
+		if @attributes.attributes?
+			delete @attributes.attributes
+		if @attributes.collection?
+			delete @attributes.collection
+		for i of @attributes
+			if _.isFunction(@attributes[i])
+				delete @attributes[i]
+			else if !isNaN(i)
+				delete @attributes[i]
+
+#	deleteInteractions : =>
+#		delete @attributes.firstLsThings
+#		delete @attributes.secondLsThings
+
+	duplicate: =>
+		copiedObject = @.clone()
+		copiedObject.unset 'codeName'
+		labels = copiedObject.get('lsLabels')
+		labels.each (label) =>
+			@resetClonedAttrs label
+		states = copiedObject.get('lsStates')
+		@resetStatesAndVals states
+		copiedObject.set
+			version: 0
+		@resetClonedAttrs(copiedObject)
+		copiedObject.get('notebook').set value: ""
+		copiedObject.get('scientist').set value: "unassigned"
+		copiedObject.get('completion date').set value: null
+
+		#		delete copiedContainer.attributes.firstLsThings
+
+		#		secondItxs = copiedThing.get('secondLsThings')
+		#		secondItxs.each (itx) =>
+		#			@resetClonedAttrs(itx)
+		#			itxStates = itx.get('lsStates')
+		#			@resetStatesAndVals itxStates
+		copiedObject
+
+	resetStatesAndVals: (states) =>
+		states.each (st) =>
+			@resetClonedAttrs(st)
+			values = st.get('lsValues')
+			if values?
+				ignoredVals = values.filter (val) ->
+					val.get('ignored')
+				for val in ignoredVals
+					igVal = st.getValueById(val.get('id'))[0]
+					values.remove igVal
+				values.each (sv) =>
+					@resetClonedAttrs(sv)
+
+	resetClonedAttrs: (clone) =>
+		clone.unset 'id'
+		clone.unset 'lsTransaction'
+		clone.unset 'modifiedDate'
+		clone.set
+			recordedBy: AppLaunchParams.loginUser.username
+			recordedDate: new Date().getTime()
+			version: 0
+
+	getStateValueHistory: (vKind) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
+		@get('lsStates').getStateValueHistory valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
+
+	prepareToSave: (recordedBy)->
+		if !recordedBy?
+			recordedBy = @get('recordedBy')
+		rBy = recordedBy
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@get('lsLabels').each (lab) ->
+			unless lab.get('recordedBy') != ""
+				lab.set recordedBy: rBy
+			unless lab.get('recordedDate') != null
+				lab.set recordedDate: rDate
+		@get('lsStates').each (state) ->
+			unless state.get('recordedBy') != ""
+				state.set recordedBy: rBy
+			unless state.get('recordedDate') != null
+				state.set recordedDate: rDate
+			state.get('lsValues').each (val) ->
+				unless val.get('recordedBy') != ""
+					val.set recordedBy: rBy
+				unless val.get('recordedDate') != null
+					val.set recordedDate: rDate
+
+	addNewLogStates: (inputs) ->
+		for input in inputs
+			valueList = new ValueList
+			valueList.add new Value
+				lsType: "codeValue"
+				lsKind: "entry type"
+				codeValue: input.entryType
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			valueList.add new Value
+				lsType: "clobValue"
+				lsKind: "entry"
+				clobValue: input.entry
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			if input.additionalValues?
+				for additionalValue in input.additionalValues
+					valueList.add	new Value
+						lsType : additionalValue.lsType
+						lsKind : additionalValue.lsKind
+						numericValue: additionalValue.numericValue
+						stringValue: additionalValue.stringValue
+						stringValue: additionalValue.stringValue
+						codeValue: additionalValue.codeValue
+						dateValue: additionalValue.dateValue
+						clobValue: additionalValue.clobValue
+						fileValue: additionalValue.fileValue
+						unitKind: additionalValue.unitKind
+						codeType: additionalValue.codeType
+						codeKind: additionalValue.codeKind
+						codeOrigin: additionalValue.codeOrigin
+						recordedDate: input.recordedDate
+						recordedBy: input.recordedBy
+						lsTransaction: input.lsTransaction
+			@get('lsStates').add new State
+				lsType: "metadata"
+				lsKind: "log"
+				lsValues: valueList
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+
+		@
+
+	serializeToSave: =>
+		lsLabels = []
+		_.each(@get("lsLabels").models, (l) =>
+			label = {
+				ignored: l.get("ignored")
+				imageFile: l.get("imageFile")
+				labelText: l.get("labelText")
+				lsKind: l.get("lsKind")
+				lsType: l.get("lsType")
+				physicallyLabled: l.get("physicallyLabled")
+				preferred: l.get("preferred")
+				recordedBy: @get("recordedBy")
+				recordedDate: l.get("recordedDate")
+
+			}
+			lsLabels.push label
+		)
+
+		lsStates = []
+		_.each(@get("lsStates").models, (s) =>
+			lsValues = []
+			_.each(s.get('lsValues').models, (lsValue) =>
+				lsValue.set("recordedBy", @get("recordedBy"))
+				lsValue.set("lsTypeAndKind", lsValue.get("lsType") + "_" + lsValue.get("lsKind"))
+				lsValues.push lsValue.toJSON()
+			)
+			lsState = {
+				deleted: s.get("deleted")
+				ignored: s.get("ignored")
+				lsKind: s.get("lsKind")
+				lsType: s.get("lsType")
+				lsTypeAndKind: s.get("lsType") + "_" + s.get("lsKind")
+				lsValues: lsValues
+				recordedBy: @get("recordedBy")
+				recordedDate: s.get("recordedDate")
+			}
+			lsStates.push lsState
+		)
+
+		dto = {
+			analysisGroups: []
+			lsKind: @get("lsKind")
+			lsLabels: lsLabels
+			lsStates: lsStates
+			lsType: @get("lsType")
+			recordedBy: @get("recordedBy")
+			recordedDate: @get("recordedDate")
+			shortDescription: @get("shortDescription")
+			lsTags: []
+			protocol: @get('protocol')
+			lsTypeAndKind: @get("lsType") + "_" + @get("lsKind")
+		}
+
+		dto
+
+
 class ContainerPlate extends Container
 	urlRoot: "/api/containers"
 
@@ -1505,6 +1879,23 @@ class AnalysisGroupList extends Backbone.Collection
 	model: AnalysisGroup
 
 
+class Vial extends Container
+	initialize: ->
+		@.set
+			lsType: "container"
+			lsKind: "tube"
+		super()
+
+	lsProperties:
+		defaultLabels: [
+			key: 'barcode'
+			type: 'barcode'
+			kind: 'barcode'
+			preferred: true
+		]
+	defaultValues: [
+	]
+
 exports.Label = Label
 exports.LabelList = LabelList
 exports.Value = Value
@@ -1521,6 +1912,8 @@ exports.LsThingItxList = LsThingItxList
 exports.FirstLsThingItxList = FirstLsThingItxList
 exports.SecondLsThingItxList = SecondLsThingItxList
 exports.Container = Container
+exports.Vial = Vial
+exports.Experiment = Experiment
 exports.DefinitionContainerPlate = DefinitionContainerPlate
 exports.DefinitionContainerTube = DefinitionContainerTube
 exports.ContainerPlate = ContainerPlate
