@@ -281,7 +281,7 @@ $(function() {
 
         editParentRequest: function(parent) {
             $(this.el).empty();
-            this.editParentController = new EditParentController({
+            this.editParentWorkflowController = new EditParentWorkflowController({
                 el: $(this.el),
                 corpName: this.model.get('corpName'),
                 errorNotifList: new ErrorNotificationList(),

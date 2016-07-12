@@ -241,6 +241,7 @@ $(function () {
                 molStructure: this.json.asDrawnStructure,
                 molWeight: this.json.asDrawnMolWeight,
                 molFormula: this.json.asDrawnMolFormula,
+                molImage: this.json.asDrawnImage
             });
             this.trigger('editParentSearchResultsNext', selection);
             this.hide();
@@ -260,7 +261,35 @@ $(function () {
         }
     });
 
-    window.EditParentController = Backbone.View.extend({
+    window.EditParentController = ParentController.extend({
+
+        render: function(){
+            EditParentController.__super__.render.call(this);
+            this.$('.EditParentViewButtons').show();
+            this.$('.editParentButtonWrapper').hide();
+            this.$('.stereoCategoryCode').removeAttr('disabled');
+            this.$('.stereoComment').removeAttr('disabled');
+            this.$('.compoundTypeCode').removeAttr('disabled');
+            this.$('.parentAnnotationCode').removeAttr('disabled');
+            this.$('.parentAnnotationCode').removeAttr('disabled');
+            this.$('.comment').removeAttr('disabled');
+            return this;
+        },
+
+        renderStruct: function(){
+            var structImage = new Backbone.Model({
+                molImage: this.model.get('molImage'),
+                molStructure: this.model.get('molStructure')
+            });
+            this.structImage = new StructureImageController({
+                el: this.$('.parentImageWrapper'),
+                model: structImage
+            });
+            this.structImage.render();
+        }
+    });
+
+    window.EditParentWorkflowController = Backbone.View.extend({
         template: _.template($('#EditParentView_template').html()),
 
         initialize: function(){
@@ -303,7 +332,7 @@ $(function () {
         },
 
         editParentSearchNext: function(searchEntries) {
-            this.trigger('clearErrors', "EditParentController");
+            this.trigger('clearErrors', "EditParentWorkflowController");
             this.searchEntries = searchEntries;
             if(window.configuration.serverConnection.connectToServer) {
                 var url = window.configuration.serverConnection.baseServerURL+"regsearches/parent";
@@ -312,7 +341,7 @@ $(function () {
                 //TODO: add test route
             }
             this.trigger('notifyError', {
-                owner: 'EditParentController',
+                owner: 'EditParentWorkflowController',
                 errorLevel: 'warning',
                 message: 'Searching...'
             });
@@ -329,11 +358,11 @@ $(function () {
         },
 
         editParentSearchReturn: function(ajaxReturn) {
-            this.trigger('clearErrors', "EditParentController");
+            this.trigger('clearErrors', "EditParentWorkflowController");
             this.delegateEvents(); // start listening to events
             this.editParentSearchResults = ajaxReturn;
             if (this.editParentSearchResults.parents.length==0 && this.searchEntries.get('molStructure')==null){
-                this.trigger('notifyError', {owner: "EditParentController", errorLevel: 'warning', message: "No parents match your search criteria, and no structure provided"});
+                this.trigger('notifyError', {owner: "EditParentWorkflowController", errorLevel: 'warning', message: "No parents match your search criteria, and no structure provided"});
                 this.searchController.show();
             } else {
                 //filter out the current parent
@@ -368,7 +397,7 @@ $(function () {
             if( this.parentController !=null ) {
                 this.deleteParentController();
             }
-            this.parentController = new ParentController({
+            this.parentController = new EditParentController({
                 model: this.parentModel,
                 el: this.$('.ParentView'),
                 errorNotifList:new ErrorNotificationList(),
@@ -379,14 +408,6 @@ $(function () {
             this.parentController.bind('parentUpdated', this.parentUpdated);
             this.parentController.render();
             this.$('.ParentView').prepend("<h1 class='formTitle EditParentStepThreeTitle'>Edit Parent Step Three: Update Parent Attributes</h1>");//fiona
-            this.$('.EditParentViewButtons').show();
-            this.$('.editParentButtonWrapper').hide();
-            this.$('.stereoCategoryCode').removeAttr('disabled');
-            this.$('.stereoComment').removeAttr('disabled');
-            this.$('.compoundTypeCode').removeAttr('disabled');
-            this.$('.parentAnnotationCode').removeAttr('disabled');
-            this.$('.parentAnnotationCode').removeAttr('disabled');
-            this.$('.comment').removeAttr('disabled');
         },
 
         parentUpdated: function(ajaxReturn){
