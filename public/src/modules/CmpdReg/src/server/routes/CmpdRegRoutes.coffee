@@ -386,6 +386,7 @@ exports.getMultipleFilePicker = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
+	cmpdRegCall = cmpdRegCall.replace /\\/g, "%5C"
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 

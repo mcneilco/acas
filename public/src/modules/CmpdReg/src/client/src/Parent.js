@@ -45,6 +45,13 @@ $(function() {
 						parentAnnotation: new PickList(js.parentAnnotation)
 					}, {silent: true});
 				}
+
+				if (!this.isNew()){
+					this.set({
+						cdId: js.cdId,
+						parentNumber: js.parentNumber
+					},{silent: true});
+				};
 			};
 		},
 
