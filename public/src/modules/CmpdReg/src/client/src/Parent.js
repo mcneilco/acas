@@ -25,13 +25,16 @@ $(function() {
                     molStructure: js.molStructure,
                     stereoCategory: new PickList(js.stereoCategory),
                     stereoComment: js.stereoComment,
-                    //commonName: js.commonName,
+                    commonName: js.commonName,
                     molWeight: js.molWeight,
 					exactMass: js.exactMass,
                     molFormula: js.molFormula,
 					comment: js.comment,
                     chemist: new PickList(js.chemist),
-					parentAliases: new AliasCollection(js.parentAliases)
+					parentAliases: new AliasCollection(js.parentAliases),
+					registrationDate: js.registrationDate,
+					cdId: js.cdId,
+					parentNumber: js.parentNumber
 				}, {silent: true});
 
 				if (window.configuration.metaLot.showSelectCompoundTypeList) {
@@ -46,12 +49,6 @@ $(function() {
 					}, {silent: true});
 				}
 
-				if (!this.isNew()){
-					this.set({
-						cdId: js.cdId,
-						parentNumber: js.parentNumber
-					},{silent: true});
-				};
 			};
 		},
 
