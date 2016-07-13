@@ -182,6 +182,7 @@ class window.ParentProtocolController extends BaseEntityController
 
 	handleSaveModule: =>
 		@$('.bv_saving').show()
+		@model.prepareToSave()
 		@model.save null,
 			success: (model, response, options) =>
 				@$('.bv_updateComplete').show()
