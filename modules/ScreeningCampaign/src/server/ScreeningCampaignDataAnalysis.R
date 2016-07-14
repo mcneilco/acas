@@ -4,6 +4,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   summaryInfo <- list()
   lsTransaction <- createLsTransaction()$id
   experiment <- getExperimentByCodeName(experimentCode)
+  setExperimentStatus(status = "running", experiment, dryRun=dryRun)
   saveInputParameters(inputParameters, experiment, lsTransaction, user)
   
   primaryExperimentCodes <- fromJSON(primaryExperimentCodes)
@@ -22,12 +23,14 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
   # ACASDEV-759: get plate order
   primaryPlateOrderFrame <- ldply(primaryExperimentCodes, getPlateOrderForExperiment)
   wideDataPrimary <- merge(wideDataPrimary, as.data.table(primaryPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
-  wideDataPrimary[, compoundName := getCompoundName(batchCode)]
+  wideDataPrimary[, batchName := getCompoundName(batchCode)]
+  wideDataPrimary[, batch_number := getBatchNumber(batchCode)]
   if (length(confirmationExperimentCodes) > 0) {
     wideDataConf <- getExperimentData(confirmationExperimentCodes)
     confPlateOrderFrame <- ldply(confirmationExperimentCodes, getPlateOrderForExperiment)
     wideDataConf <- merge(wideDataConf, as.data.table(confPlateOrderFrame), all.x = TRUE, by = c("experimentCode", "assayBarcode"))
-    wideDataConf[, compoundName := getCompoundName(batchCode)]
+    wideDataConf[, batchName := getCompoundName(batchCode)]
+    wideDataConf[, batch_number := getBatchNumber(batchCode)]
     wideDataAll <- rbind(wideDataPrimary, wideDataConf, fill = TRUE)
   } else {
     wideDataAll <- copy(wideDataPrimary)  # Need to copy as wideDataAll column names are changed for spotfire file
@@ -69,7 +72,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
       ifelse(singleReport$download, 'download', ''), '>', singleReport$title, '</a>')
   }
   
-  totalTested <- length(unique(wideDataPrimary$compoundName))
+  totalTested <- length(unique(wideDataPrimary$batchName))
   # ACASDEV-765: find list of confirmed compounds, looking at existing code for screening campaigns
   if (length(confirmationExperimentCodes) > 0) {
     wideDataConf <- as.data.table(wideDataConf)
@@ -78,19 +81,19 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     confThreshDT <- wideDataConf[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
                                  list(SD = mean(transformed_sd, na.rm = TRUE), 
                                       efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
-                                 by=list(compoundName, concentration)]
+                                 by=list(batchName, cmpdConc)]
     
     # Remove flagged points and get mean per compound and concentration
     primaryThreshDT <- wideDataPrimary[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
                                        list(SD = mean(transformed_sd, na.rm = TRUE), 
                                             efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
-                                       by=list(compoundName, concentration)]
+                                       by=list(batchName, cmpdConc)]
     
     # Get max for each compound (could be at any concentration)
-    maxConfThreshDT <- confThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = compoundName]
-    maxPrimaryThreshDT <- primaryThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = compoundName]
+    maxConfThreshDT <- confThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = batchName]
+    maxPrimaryThreshDT <- primaryThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = batchName]
     
-    combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="compoundName")
+    combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="batchName")
     if (!inputParameters$autoHitSelection || is.null(inputParameters$thresholdType)) {
       maxConfThreshDT[, hit := FALSE]
       xLabel <- "Efficacy Primary"
@@ -119,8 +122,8 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     
     # ACASDEV-766: calculate confirmation rate out of set tested
     # Get number of compounds confirmed
-    totalConfirmed <- length(unique(maxConfThreshDT[hit == TRUE, compoundName]))
-    totalRetested <- length(intersect(wideDataPrimary$compoundName, confThreshDT$compoundName))
+    totalConfirmed <- length(unique(maxConfThreshDT[hit == TRUE, batchName]))
+    totalRetested <- length(intersect(wideDataPrimary$batchName, confThreshDT$batchName))
     confirmationRate <- totalConfirmed / totalRetested * 100  # convert to percent
     
     # ACASDEV-767: draw confirmation graph
@@ -205,7 +208,7 @@ makeWideData <- function(exptDT) {
              "CODE_VALUE.metadata_plate information_barcode", 
              "CONCENTRATION", "CONC_UNIT", "CODE_VALUE.data_results_batch code"), 
            c("experimentCode", "normalizedActivity", 
-             "well", "wellType", "assayBarcode", "concentration", "concUnit", "batchCode"))
+             "well", "wellType", "assayBarcode", "cmpdConc", "concUnit", "batchCode"))
   optionalNames <- data.frame(
     old=c("STRING_VALUE.data_user flag_comment", "CODE_VALUE.data_auto flag_flag status", 
           "CODE_VALUE.data_auto flag_flag observation", "CODE_VALUE.data_auto flag_flag cause", 
