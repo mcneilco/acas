@@ -50,13 +50,16 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId,
             assay_tree=api.get_folder_tree_data(projectId, assay_to_add['protocolName'])
             if type(assay_tree) is list:
                 assay_tree=assay_tree[0]
-            while assay_tree['name'] != assay_to_add['protocolName']:
+            while assay_tree['name'] != assay_to_add['protocolName'] and len(assay_tree['children']) > 0:
     	        assay_tree=assay_tree['children'][0]
-            for assay in assay_tree['children']:
-                assay_column_ids.extend(assay['addable_column_ids'])
-                if len(assay['children'])>0:
-                    for sub_assay in assay['children']:
-                        assay_column_ids.extend(sub_assay['addable_column_ids'])
+            if len(assay_tree['children']) == 0:
+                assay_column_ids.extend(assay_tree['addable_column_ids'])
+            else:
+                for assay in assay_tree['children']:
+                    assay_column_ids.extend(assay['addable_column_ids'])
+                    if len(assay['children'])>0:
+                        for sub_assay in assay['children']:
+                            assay_column_ids.extend(sub_assay['addable_column_ids'])
     else:
         assays = api.assays()
         assay_hash = {}
