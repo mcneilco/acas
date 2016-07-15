@@ -1,0 +1,23 @@
+{
+    serverConnection: {
+        connectToServer: false,
+        baseServerURL: null,
+        logoutURL: "http://localhost:8080/cmpdreg/resources/j_spring_security_logout"
+    },
+    clientUILabels: {
+        corpNameLabel: "CMPD Number",
+        applicationNameForTitleBar: "LabSynch Compound Registration"
+    },
+    marvin: {
+        marvinImplicitH: "off"
+    },
+    testVars: {
+        validNotebookPage: 'ALS-LB-0001-001'
+    },
+    metaLot: {
+        saltBeforeLot: false,
+        lotCalledBatch: true
+    }
+
+    
+}

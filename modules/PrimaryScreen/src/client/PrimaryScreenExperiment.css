@@ -1,0 +1,18 @@
+.bv_transformationControls .bv_standardNumberLabel {
+  margin-left: 55px !important;
+}
+
+.bv_transformationControls .bv_standardNumber {
+  margin-left: 24px;
+}
+
+.bv_normalizationControls .bv_normalizationPositiveControl .bv_standardNumberLabel {
+  width: 124px !important;
+  margin-left: 86px !important;
+}
+
+.bv_transformationControls .bv_defaultValue {
+  float: right;
+  margin-top: -30px;
+  margin-right: 179px;
+}

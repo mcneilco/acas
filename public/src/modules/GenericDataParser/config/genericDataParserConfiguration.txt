@@ -1,4 +1,0 @@
-
-#This is a configuration file for SeuratAddOns/public/src/modules/GenericDataParser/src/server/generic_data_parser.R
-settings =
-	allowProtocolCreationWithFormats: Context Fear rCFC,Generic,Dose Response

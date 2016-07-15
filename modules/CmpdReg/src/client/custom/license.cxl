@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--PLEASE DO NOT MODIFY THIS FILE AND BE AWARE THAT THE FILE CONTAINS CONFIDENTIAL INFORMATION.-->
+<ChemAxon>
+<License>
+<Field Name="Software" Value="Marvin Applets"/>
+<Field Name="License Term" Value="Evaluation"/>
+<Field Name="Licensee" Value="McNeil and Company"/>
+<Field Name="Number of Users" Value="1"/>
+<Field Name="Expiration Date" Value="2014-07-22"/>
+<Field Name="Support Expiration Date" Value="2014-07-22"/>
+<Field Name="Comment" Value="Seurat for Schrodinger"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFCg8dmOOGlm7IV1IdQQLzMKHlqlQAhRx98BMNIj1Y7QDjzuacM4NtJcjig=="/>
+</License>
+<License>
+<Field Name="Software" Value="Marvin Beans"/>
+<Field Name="License Term" Value="Evaluation"/>
+<Field Name="Licensee" Value="McNeil and Company"/>
+<Field Name="Number of Users" Value="1"/>
+<Field Name="Expiration Date" Value="2014-07-22"/>
+<Field Name="Support Expiration Date" Value="2014-07-22"/>
+<Field Name="Comment" Value="Seurat for Schrodinger"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFEnbW54nv95+nv5knxYQmaltDVwWAhQP3dHXDlNyftZjzJNfYq6aFpBF3g=="/>
+</License>
+<License>
+<Field Name="Software" Value="JChem Base"/>
+<Field Name="License Term" Value="Evaluation"/>
+<Field Name="Licensee" Value="McNeil and Company"/>
+<Field Name="Number of Users" Value="1"/>
+<Field Name="Expiration Date" Value="2014-07-22"/>
+<Field Name="Support Expiration Date" Value="2014-07-22"/>
+<Field Name="Comment" Value="Seurat for Schrodinger"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Restriction Name="Search/Min" Value="Unlimited"/>
+<Signature Value="MCwCFAxWLMJoIrPtitUohyqYuZVecTNDAhQM5onwLsYy2ra2WDoSBEwlBFONvw=="/>
+</License>
+<License>
+<Field Name="Software" Value="JKlustor"/>
+<Field Name="License Term" Value="Evaluation"/>
+<Field Name="Licensee" Value="McNeil and Company"/>
+<Field Name="Number of Users" Value="1"/>
+<Field Name="Expiration Date" Value="2014-07-22"/>
+<Field Name="Support Expiration Date" Value="2014-07-22"/>
+<Field Name="Comment" Value="Seurat for Schrodinger"/>
+<Restriction Name="B/S/P/E" Value="Standard"/>
+<Restriction Name="Server Use" Value="Allowed"/>
+<Signature Value="MCwCFEuNGwxhQ8HMyXLM72m1heGObDE/AhRDlNRnrZfszx65m1uakMiVx6OG3A=="/>
+</License>
+</ChemAxon>

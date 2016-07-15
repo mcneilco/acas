@@ -1,0 +1,20 @@
+extends layout
+block content
+    div#appContainer
+
+
+    script
+        window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
+        $(function() {
+            var currentWindowOnload = window.onload;
+            window.onload = function() {
+                if (currentWindowOnload) {
+                    currentWindowOnload();
+                }
+                window.serviceHostPrefix = "";
+                window.appController = new CmpdRegBulkLoaderAppController({
+                                el: $('#appContainer')
+                            });
+                window.appController.render();
+            };
+        });

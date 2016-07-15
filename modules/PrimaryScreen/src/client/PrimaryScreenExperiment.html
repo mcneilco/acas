@@ -1,0 +1,432 @@
+<script type="text/template" id="PrimaryScreenExperimentView" xmlns="http://www.w3.org/1999/html">
+    <div class="container">
+        <div class="tabbable span8">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#tab1" data-toggle="tab">General Information</a></li>
+                <li><a class="bv_primaryScreenDataAnalysisTab" href="#tab3" data-toggle="tab">Data Analysis</a></li>
+                <li><a href="#tab5" data-toggle="tab">Model Fit</a></li>
+            </ul>
+
+            <div class="tab-content span12">
+
+                <!-- GENERAL INFORMATION TAB -->
+                <div class="tab-pane active bv_experimentBase" id="tab1"></div>
+
+                <!-- DATA ANALYSIS TAB -->
+                <div class="tab-pane bv_primaryScreenDataAnalysis" id="tab3" style="overflow:hidden;"></div>
+
+
+                <!-- CURVE FIT ANALYSIS TAB -->
+                <div class="tab-pane bv_doseResponseAnalysis" id="tab5"></div>
+
+            </div>
+        </div>
+    </div>
+
+
+</script>
+
+<!--TODOX: bv_moduleTitle needs to be smaller; padding below module loader needs to be reduced. -->
+
+
+<script type="text/template" id="PrimaryScreenAnalysisParametersView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_autofillSection"></div>
+</script>
+
+<script type="text/template" id="PrimaryScreenAnalysisParametersAutofillView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="control-group bv_group_htsFormat" style="margin-left:35px;margin-bottom:20px;">
+        <label class="control-label checkbox" style="width:200px;padding-left:0;">
+            <input type="checkbox" name="bv_htsFormat" class="bv_htsFormat" <% if (htsFormat) { %> checked="checked"<% }%> />Save data in HTS format
+        </label>
+    </div>
+
+    <div class="span12">
+        <h5>Standards</h5>
+        <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
+        <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
+        <span style="margin-left:62px;margin-bottom:5px;">Standard Type</span>
+        <div class="bv_standardCompoundList"></div>
+
+    </div>
+
+    <div class="span12">
+        <div class="control-group bv_group_hasAdditives" style="margin-left:20px;margin-bottom:20px;">
+            <label class="control-label checkbox" style="width:200px;padding-left:0;">
+                <input type="checkbox" name="bv_hasAdditives" class="bv_hasAdditives" <% if (hasAdditives) { %> checked="checked"<% }%> /><h5>Additives</h5>
+            </label>
+        </div>
+        <div class="additives">
+            <span style="margin-left:65px;margin-bottom:5px;">Batch Name</span>
+            <span style="margin-left:115px;margin-bottom:5px;">Conc</span>
+            <span style="margin-left:62px;margin-bottom:5px;">Additive Type</span>
+            <div class="bv_additiveList"></div>
+        </div>
+    </div>
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-top:12px;margin-bottom:0px;" />
+
+
+    <h5>Assay Parameters</h5>
+
+
+    <div class="form-horizontal">
+        <div class="control-group bv_group_dilutionFactor">
+            <label class="control-label radio" style="width:100px;padding-left:39px;">
+                <input type="radio" name="bv_volumeType" value="dilution" class="bv_volumeTypeDilution" <% if (volumeType=="dilution") { %> checked="checked"<% }%> />Dilution Factor
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="bv_dilutionFactor" style="width:335px;" value="<%=dilutionFactor%>" type="text" <% if (volumeType!="dilution") { %> disabled="disabled"<% }%> />
+            </div>
+        </div>
+        <div class="control-group bv_group_transferVolume">
+            <label class="control-label radio" style="width:110px;padding-left:30px;">
+                <input type="radio" name="bv_volumeType" value="transfer" class="bv_volumeTypeTransfer" <% if (volumeType=="transfer") { %> checked="checked"<% }%> />Compound Transfer Volume
+            </label>
+            <div class="controls" style="padding-left:0;">
+                <input class="bv_transferVolume" style="width:335px;" value="<%=transferVolume%>" type="text" <% if (volumeType!="transfer") { %> disabled="disabled"<% }%>>
+                <span style="margin-left:5px;">nl</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-horizontal">
+        <div class="control-group bv_group_assayVolume">
+            <label class="control-label">Assay Volume</label>
+            <div class="controls">
+                <input class="bv_assayVolume" value="<%=assayVolume%>" type="text" style="width:335px;"> </input>
+                <span style="margin-left:5px;">nl</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-horizontal">
+        <div class="control-group bv_group_instrumentReader" style="margin-bottom:25px;">
+            <label class="control-label">*Instrument Reader</label>
+            <div class="controls">
+                <select class="bv_instrumentReader" style="width:349px;">
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="control-group bv_group_hasTimeWindows" style="margin-left:20px;margin-bottom:20px;">
+        <label class="control-label checkbox" style="width:200px;padding-left:0;">
+            <input type="checkbox" name="bv_hasTimeWindows" class="bv_hasTimeWindows" <% if (hasTimeWindows) { %> checked="checked"<% }%> /><h5>Time Windows</h5>
+        </label>
+    </div>
+    <div class="timeSettings">
+        <div class="form-horizontal">
+            <div class="control-group bv_group_fluorescentStart">
+                <label class="control-label">Fluorescent Start</label>
+                <div class="controls">
+                    <input class="bv_fluorescentStart" value="<%=fluorescentStart%>" type="text" style="width:335px;"> </input>
+                    <span style="margin-left:5px;">sec</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_fluorescentEnd">
+                <label class="control-label">Fluorescent End</label>
+                <div class="controls">
+                    <input class="bv_fluorescentEnd" value="<%=fluorescentEnd%>" type="text" style="width:335px;"> </input>
+                    <span style="margin-left:5px;">sec</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_fluorescentStep">
+                <label class="control-label">Fluorescent Step Size</label>
+                <div class="controls">
+                    <input class="bv_fluorescentStep" value="<%=fluorescentStep%>" type="text" style="width:335px;"> </input>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-horizontal">
+            <div class="control-group bv_group_latePeakTime">
+                <label class="control-label">Late Peak Time</label>
+                <div class="controls">
+                    <input class="bv_latePeakTime" value="<%=latePeakTime%>" type="text" style="width:335px;"> </input>
+                    <span style="margin-left:5px;">sec</span>
+                </div>
+            </div>
+        </div>
+
+        <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
+
+        <span style="margin-left:0px;margin-bottom:5px;">Position</span>
+        <span style="margin-left:7px;margin-bottom:5px;">Statistic</span>
+        <span style="margin-left:80px;margin-bottom:5px;">Window Start</span>
+        <span style="margin-left:50px;margin-bottom:5px;">Window End</span>
+        <span style="margin-left:90px;margin-bottom:5px;">Unit</span>
+        <div class="bv_timeWindowList"></div>
+    </div>
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
+    <h5>Assay Reads</h5>
+
+    <span style="margin-left:0px;margin-bottom:5px;">Read Number</span>
+    <span style="margin-left:7px;margin-bottom:5px;">Read Position</span>
+    <span style="margin-left:90px;margin-bottom:5px;">Read Name</span>
+    <span class="bv_group_matchReadName">
+            <span class="checkbox pull-right" style="width:160px;padding-left:100;margin-right:52px;">
+                <input type="checkbox" name="bv_matchReadName" class="bv_matchReadName" style="margin-right:10px;" <% if (matchReadName) { %> checked="checked"<% }%> />Match Read Name
+            </span>
+    </span>
+    <div class="bv_readList"></div>
+
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:50px;margin-bottom:0px;margin-top:25px;" />
+
+    <h5>Analysis Parameters</h5>
+    <div class="form-horizontal">
+        <div class="control-group bv_group_signalDirectionRule" style="margin-bottom: 10px;">
+            <label class="control-label">*Positive Control Signal Direction</label>
+            <div class="controls">
+                <select class="bv_signalDirectionRule" style="width:349px;margin-top:10px;"></select>
+            </div>
+        </div>
+        <div class="control-group bv_group_aggregateBy">
+            <label class="control-label">*Aggregate By</label>
+            <div class="controls">
+                <select class="bv_aggregateBy" style="width:349px;margin-right:5px;"></select>
+                <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregate By" data-content="Text to explain different options for aggregate by."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
+            </div>
+        </div>
+
+        <div class="control-group bv_group_aggregationMethod">
+            <label class="control-label">*Aggregation Method</label>
+            <div class="controls">
+                <select class="bv_aggregationMethod" style="width:349px;margin-right:5px;"> </select>
+                <a tabindex="0" class="bv_popover" style="padding:0px;" type="button" data-toggle="popover" data-trigger="focus" title="Aggregation Method" data-content="Text to explain different options for aggregation method."><i class="icon-question-sign"style="margin-top:2px;"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="bv_normalization"></div>
+    <div class="form-horizontal">
+        <div class="control-group">
+            <label class="control-label" style="width:100px;margin-left:40px;">*Transformation</label>
+            <div class="controls">
+                <span class="bv_transformationList"></span>
+            </div>
+        </div>
+    </div>
+
+    <hr class="span12" style="margin-left:0px;width:593px;margin-right:70px;margin-bottom:0px;margin-top:25px;" />
+
+
+    <h5>Hit Selection Parameters</h5>
+    <div class="control-group bv_group_autoHitSelection" style="margin-left:20px;margin-bottom:20px;">
+        <label class="control-label checkbox" style="width:200px;padding-left:0;">
+            <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
+        </label>
+    </div>
+    <div class="form-horizontal">
+        <div class="bv_thresholdControls">
+            <div class="control-group bv_group_hitEfficacyThreshold">
+                <label class="control-label radio" style="width:145px;padding-left:30px;">
+                    <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
+                </label>
+                <div class="controls" style="padding-left:35px;">
+                    <input class="bv_hitEfficacyThreshold" style="width:335px;" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
+                </div>
+            </div>
+            <div class="control-group bv_group_hitSDThreshold">
+                <label class="control-label radio" style="width:115px;padding-left:59px;">
+                    <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
+                </label>
+                <div class="controls" style="padding-left:35px;">
+                    <input class="bv_hitSDThreshold" style="width:335px;" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
+                </div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+
+<script type="text/template" id="PrimaryScreenAnalysisView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_fileUploadWrapper"></div>
+
+    <div class="bv_saveExperimentToAnalyze span10">To analyze data, save the experiment.</div>
+
+    <div class='modal bv_invalidAnalysisStates hide'>
+        <div class="modal-header">
+            <h4>An error has occurred.</h4>
+        </div>
+        <div class="modal-body">
+            <div style="text-align: center;">Please print this message and contact an administrator.</div>
+            <div class="bv_dryRunStatus" style="text-align:left;margin-top:10px;"></div>
+            <div class="bv_dryRunResult" style="text-align:left;"></div>
+            <div style="margin-bottom:10px;height:3px;background-color:#eeeeee;"></div>
+            <div class="bv_analysisStatus" style="text-align:left;"></div>
+            <div class="bv_analysisResult" style="text-align:left;"></div>
+        </div>
+    </div>
+
+
+</script>
+
+<script type="text/template" id="PrimaryAnalysisReadView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+
+        <span class="control-group bv_group_readNumber">
+            <span class="bv_readNumber" style="margin-right: 15px;margin-left: 40px;width: 34px;"></span>
+        <span class="control-group bv_group_readPosition">
+            <input class="span1 bv_readPosition" style="margin-right: 22px; margin-left: 35px; width: 50px;" value="<%=readPosition%>" type="text">
+            <span class="bv_readPositionHolder hide" style="margin-right: 0px; margin-left: 111px;"></span>
+        </span>
+        <span class="control-group bv_group_readName">
+            <select class="span6 bv_readName" style="margin-right:15px;width:277px;"></select>
+        </span>
+        <span class="bv_group_activity">
+            <label class="control-label radio" style="width:80px;padding-left:0;">
+                <input type="radio" name="bv_activity" class="bv_activity" style="margin-right:10px;margin-top:2px;" <% if (activity) { %> checked="checked"<% }%> />Activity
+            </label>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+        </span>
+    </div>
+</script>
+
+<script type="text/template" id="PrimaryAnalysisTimeWindowView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_timePosition">
+            <span class="bv_timePosition" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_timeStatistic">
+            <select class="span6 bv_timeStatistic" style="margin-right:15px;width:100px;"></select>
+        </span>
+        <span class="control-group bv_group_timeWindowStart">
+            <input class="span1 bv_timeWindowStart" style="margin-right: 22px; margin-left: 35px; width: 70px;" value="<%=windowStart%>" type="text">
+        </span>
+        <span class="control-group bv_group_timeWindowEnd">
+            <input class="span1 bv_timeWindowEnd" style="margin-right: 50px; margin-left: 35px; width: 70px;" value="<%=windowEnd%>" type="text">
+        </span>
+        <span class="control-group bv_group_timeUnit">
+            <select class="span6 bv_timeUnit" style="margin-right:15px;width:70px;">
+                <option value="s">Sec</option>
+            </select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="StandardCompoundView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_standardNumber">
+            <span class="bv_standardNumber" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_batchCode">
+            <input class="span6 bv_batchCode" style="margin-right:15px;width:180px;" value="<%=batchCode%>" type="text">
+        </span>
+        <span class="control-group bv_group_concentration">
+            <input class="span6 bv_concentration" style="width:60px;" value="<%=concentration%>" type="text">
+        </span>
+        &micro;M
+        <span class="control-group bv_group_standardType">
+            <select class="span6 bv_standardType" style="margin-left:10px;width:200px;"></select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="AdditiveView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="form-inline" style="margin-bottom:5px;margin-top:5px;width:580px;">
+        <span class="control-group bv_group_additiveNumber">
+            <span class="bv_additiveNumber" style="margin-right: 22px;margin-left: 20px;width: 34px;"></span>
+        </span>
+        <span class="control-group bv_group_batchCode">
+            <input class="span6 bv_batchCode" style="margin-right:15px;width:180px;" value="<%=batchCode%>" type="text">
+        </span>
+        <span class="control-group bv_group_concentration">
+            <input class="span6 bv_concentration" style="width:60px;" value="<%=concentration%>" type="text">
+        </span>
+        &micro;M
+        <span class="control-group bv_group_additiveType">
+            <select class="span6 bv_additiveType" style="margin-left:10px;width:200px;"></select>
+        </span>
+        <button class="close bv_delete" style="margin-top:1px;">&times;</button>
+    </div>
+</script>
+
+<script type="text/template" id="PrimaryAnalysisReadListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_readInfo"></div>
+    <button class="btn bv_addReadButton" style="margin-left:465px;">Add Read</button>
+</script>
+
+<script type="text/template" id="PrimaryAnalysisTimeWindowListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_timeWindowInfo"></div>
+    <button class="btn bv_addTimeWindowButton" style="margin-left:465px;">Add Window</button>
+</script>
+
+<script type="text/template" id="StandardCompoundListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_standardCompoundInfo"></div>
+    <button class="btn bv_addStandardCompoundButton" style="margin-left:465px;">Add Standard</button>
+</script>
+
+<script type="text/template" id="AdditiveListView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_additiveInfo"></div>
+    <button class="btn bv_addAdditiveButton" style="margin-left:465px;">Add Additive</button>
+</script>
+
+<script type="text/template" id="TransformationRuleView" xmlns="http://www.w3.org/1999/html">
+    <div class="span5" style="width:510px;">
+        <span class="control-group bv_group_transformationRule">
+            <select class="bv_transformationRule" style="margin-right:5px;margin-bottom:20px;width:349px;display: inline-block;"></select>
+            <button class="close bv_deleteRule" style="margin-right:140px;margin-top:3px;">&times;</button>
+        </span>
+    </div>
+    <div class="bv_transformationControls"></div>
+</script>
+
+<script type="text/template" id="TransformationRuleWithParametersView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_transformationParameters" style="margin-left: -155px;"></div>
+</script>
+
+<script type="text/template" id="ControlSettingView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-inline" style="margin-bottom:20px">
+        <label class="control-label bv_standardNumberLabel" style="width:130px;margin-left:80px;">*Control</label>
+        <span class="control-group bv_group_standardNumber" style="width:250px">
+            <select class="bv_standardNumber"></select>
+        </span>
+        <span class="control-group bv_group_defaultValue">
+            <input class="bv_defaultValue hide" value="<%=defaultValue%>" type="text" style="width:40px">
+        </span>
+    </div>
+
+</script>
+
+<script type="text/template" id="NormalizationView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-horizontal">
+        <div class="control-group bv_group_normalizationRule">
+            <label class="control-label" style="width:100px;margin-left:40px;">*Normalization</label>
+            <div class="controls">
+                <select class="bv_normalizationRule" style="width:349px;">
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="bv_normalizationControls"></div>
+</script>
+
+<script type="text/template" id="NormalizationWithControlsView" xmlns="http://www.w3.org/1999/html">
+    <div class="form-inline">
+        <div class="bv_normalizationPositiveControl"></div>
+        <div class="bv_normalizationNegativeControl"></div>
+    </div>
+</script>
+
+
+<script type="text/template" id="TransformationRuleListView" xmlns="http://www.w3.org/1999/html">
+    <span class="bv_transformationInfo pull-right"></span>
+    <button class="btn bv_addTransformationButton" style="margin-left: 228px;">Add Transformation</button>
+</script>

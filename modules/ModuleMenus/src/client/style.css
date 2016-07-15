@@ -1,0 +1,46 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+.sidebar-nav {
+    padding: 9px 0;
+}
+
+.mainModuleWell {
+
+    background-color:white;
+}
+
+.dataTableRow {
+	cursor: pointer;
+}
+
+.rowSelected {
+	background-color: green;
+}
+
+.bv_modLaunchMenuWrapper .active {
+    font-weight: bold;
+}
+
+/*.bv_GenericDataParserController {
+
+    background-color: yellow;
+}
+
+.bv_GenericDataParserController template-upload {
+
+   background-color: purple;
+}
+
+.bv_DocForBatchesController {
+    background-color: blue;
+}
+
+.bv_BulkLoadContainersFromSDFController {
+    background-color: red;
+}
+
+.bv_BulkLoadSampleTransfersController {
+    background-color: green;
+}*/

@@ -1,0 +1,274 @@
+<script type="text/template" id="ScreeningCampaignModuleView" xmlns="http://www.w3.org/1999/html">
+    <div class="container">
+        <div class="tabbable span9">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#screeningCampaignGeneralInfo" data-toggle="tab">General</a></li>
+                <li><a href="#screeningCampaignLinkedExperiments" data-toggle="tab">Linked Experiments</a></li>
+                <li><a class="bv_screeningCampaignDataAnalysisTab" href="#screeningCampaignDataAnalysis" data-toggle="tab">Data Analysis</a></li>
+            </ul>
+
+            <div class="tab-content span12">
+
+                <div class="tab-pane active bv_screeningCampaignGeneralInfo" id="screeningCampaignGeneralInfo"></div>
+
+                <div class="tab-pane bv_screeningCampaignLinkedExperiments" id="screeningCampaignLinkedExperiments" style="overflow:hidden; width:800px;"></div>
+
+                <div class="tab-pane bv_screeningCampaignDataAnalysis" id="screeningCampaignDataAnalysis" style="overflow:hidden;"></div>
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="LinkedExperimentsView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_saveChangesBeforeLink span10 hide">To link experiments, save or cancel the changes made in the General and/or Data Analysis tabs.</div>
+    <div class="bv_linkedExperimentsWrapper">
+        <h5>Associate Primary Experiments</h5>
+
+        <div style="margin-left:20px;">
+            <div class="bv_primaryExperimentSearchController" style="padding-bottom: 0px;"></div>
+
+            <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+                <div class="bv_searchExperimentsStatusIndicatorPrimaryExpt" style="height: 280px;">
+                    <table width="100%">
+                        <thead>
+                        <tr><td style="display: none;">placeholder</td></tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                                <h5 class="bv_noMatchingExperimentsFoundMessagePrimaryExpt hide">No Matching Experiments Found</h5>
+                                <h5 class="bv_moreSpecificExperimentSearchNeededPrimaryExpt hide">A more specific search term is required.</h5>
+                                <h5 class="bv_errorOccurredPerformingSearchPrimaryExpt hide">An error occurred while searching for the experiment.</h5>
+
+                                <div class="bv_experimentBrowserSearchInstructionsPrimaryExpt">
+                                    <i class="icon-search bv_doSearchIcon"></i>
+                                    Experiment Browser
+                                </div>
+                                <div class="hide bv_searchingExperimentsMessagePrimaryExpt" style="margin: auto;">
+                                    <h5>Searching for Experiments containing text "<i class="bv_exptSearchTermPrimaryExpt"></i>"</h5>
+                                    <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                        <div class="bar" style="width: 100%; margin: auto;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bv_experimentTableControllerPrimaryExpt hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+            </div>
+
+            <div style="font-weight:bold;padding:10px; margin-top:20px; border-left: 1px solid #dddddd; border-right: 1px solid #dddddd; border-top: 1px solid #dddddd;">Linked Primary Experiments</div>
+            <div class="bv_noLinkedPrimaryExpt hide" style="padding:10px;text-align: center; border-right: 1px solid #dddddd; border-left: 1px solid #dddddd;">No Linked Primary Experiments</div>
+            <div class="bv_addedPrimaryExperimentsTableController" style="margin:0px; padding:10px; overflow: auto; overflow: auto; border-left: 1px solid #dddddd; border-right: 1px solid #dddddd; border-bottom: 1px solid #dddddd;"></div>
+
+        </div>
+
+
+        <hr style="margin-top:30px;"/>
+    <!--Follow up experiments -->
+        <h5>Associate Follow Up Experiments</h5>
+
+        <div style="margin-left:20px;">
+            <div class="bv_followUpExperimentSearchController" style="padding-bottom: 0px;"></div>
+
+            <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+                <div class="bv_searchExperimentsStatusIndicatorFollowUpExpt" style="height: 280px;">
+                    <table width="100%">
+                        <thead>
+                        <tr><td style="display: none;">placeholder</td></tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                                <h5 class="bv_noMatchingExperimentsFoundMessageFollowUpExpt hide">No Matching Experiments Found</h5>
+                                <h5 class="bv_moreSpecificExperimentSearchNeededFollowUpExpt hide">A more specific search term is required.</h5>
+                                <h5 class="bv_errorOccurredPerformingSearchFollowUpExpt hide">An error occurred while searching for the experiment.</h5>
+
+                                <div class="bv_experimentBrowserSearchInstructionsFollowUpExpt">
+                                    <i class="icon-search bv_doSearchIcon"></i>
+                                    Experiment Browser
+                                </div>
+                                <div class="hide bv_searchingExperimentsMessageFollowUpExpt" style="margin: auto;">
+                                    <h5>Searching for Experiments containing text "<i class="bv_exptSearchTermFollowUpExpt"></i>"</h5>
+                                    <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                        <div class="bar" style="width: 100%; margin: auto;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bv_experimentTableControllerFollowUpExpt hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+            </div>
+
+            <div style="font-weight:bold;padding:10px; margin-top:20px; border-left: 1px solid #dddddd; border-right: 1px solid #dddddd; border-top: 1px solid #dddddd;">Linked Follow Up Experiments</div>
+            <div class="bv_noLinkedFollowUpExpt hide" style="padding:10px;text-align: center; border-right: 1px solid #dddddd; border-left: 1px solid #dddddd;">No Linked Follow Up Experiments</div>
+            <div class="bv_addedFollowUpExperimentsTableController" style="margin:0px; padding:10px; overflow: auto; overflow: auto; border-left: 1px solid #dddddd; border-right: 1px solid #dddddd; border-bottom: 1px solid #dddddd;"></div>
+
+        </div>
+
+    <!-- Save-->
+        <div class="span12" style="margin-top:20px; margin-left:0px;">
+            <button type="button" class="btn btn-success bv_save pull-right" disabled="disabled">Update</button>
+            <button type="button" class="btn btn-danger bv_cancel pull-right" style="margin-right:5px;margin-left:5px;"disabled="disabled">Cancel</button>
+            <div class="bv_updateComplete pull-right hide" style="padding-top:5px;color:#62c462;">Update Complete</div>
+            <div class="bv_updateFailed pull-right hide" style="padding-top:5px;color:red;">Save Failed</div>
+            <div class="bv_saving pull-right hide" style="padding-top:5px;color:red;">Saving...</div>
+            <div class="bv_canceling pull-right hide" style="padding-top:5px;color:red;margin-right:5px;">Canceling...</div>
+            <div class="bv_cancelComplete pull-right hide" style="padding-top:5px;color:#62c462;margin-right:5px;">Cancel Complete</div>
+        </div>
+    </div>
+
+    <div class="modal fade bv_experimentAlreadyLinked" tabindex="-1" role="dialog" aria-labelledby="" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close bv_closeExptAlreadyLinkedModal" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only"></span></button>
+                    <h4 class="modal-title" style="color:red;">Experiment Already Linked</h4>
+                </div>
+                <div class="modal-body" style="padding-left:0px;">
+                    <label class="bv_experimentAlreadyLinkedMessage" style="margin-left:30px;"></label>
+                    <!--<label style="margin-left:30px;margin-top:20px;">To view the experiment(s) with the same name, click-->
+                    <!--<a class="bv_exptLink" href="http://localhost:3000">here</a> </label>-->
+                    <!--<span>The experiment could not be saved because the entered experiment name is already used by another experiment. Please enter in a new experiment name.</span>-->
+                </div>
+                <!--<div class="modal-footer">-->
+                <!--<button type="button" class="btn bv_ok" disabled="disabled">Add</button>-->
+                <!--</div>-->
+            </div>
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="SearchedExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class>
+        <button class="btn bv_addExperiment">Add</button>
+    </td>
+    <td class='bv_experimentCode'>
+        <a class='bv_experimentCodeLink' target="_blank"><%=experimentCode%></a>
+    </td>
+    <td class='bv_experimentName'><%=experimentName%></td>
+    <td class='bv_protocolCode'><%=protocolCode%></td>
+    <td class='bv_protocolName'><%=protocolName%></td>
+    <td class='bv_scientist'><%=scientist%></td>
+    <td class='bv_completionDate'><%=moment(completionDate).format("YYYY-MM-DD")%></td>
+    <td class='bv_status'><%=status%></td>
+    <td class='bv_analysisStatus'><%=analysisStatus%></td>
+</script>
+
+<script type="text/template" id="SearchedExperimentSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; width: 100%; ">
+        <thead style="">
+        <tr>
+            <th style="width: 125px;">Add</th>
+            <th style="width: 125px;">Code</th>
+            <th style="width: 200px;">Name</th>
+            <th style="width: 125px;">Protocol Code</th>
+            <th style="width: 175px;">Protocol Name</th>
+            <th style="width: 80px;">Scientist</th>
+            <th style="width: 80px;">Date</th>
+            <th >Status</th>
+            <th >Analysis Status</th>
+        </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+</script>
+
+<script type="text/template" id="AddedExperimentRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_experimentCode'>
+        <a class='bv_experimentCodeLink' target="_blank"><%=experimentCode%></a>
+    </td>
+    <td class='bv_experimentName'><%=experimentName%></td>
+    <td class='bv_protocolCode'><%=protocolCode%></td>
+    <td class='bv_protocolName'><%=protocolName%></td>
+    <td class='bv_scientist'><%=scientist%></td>
+    <td class='bv_completionDate'><%=moment(completionDate).format("YYYY-MM-DD")%></td>
+    <td class='bv_status'><%=status%></td>
+    <td class='bv_analysisStatus'><%=analysisStatus%></td>
+    <td class>
+        <button class="btn bv_removeExpt">Remove</button>
+    </td>
+</script>
+
+<script type="text/template" id="AddedExperimentSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; width: 100%; ">
+        <thead style="">
+        <tr>
+            <th style="width: 100px;">Code</th>
+            <th style="width: 150px;">Name</th>
+            <th style="width: 125px;">Protocol Code</th>
+            <th style="width: 175px;">Protocol Name</th>
+            <th style="width: 80px;">Scientist</th>
+            <th style="width: 80px;">Date</th>
+            <th >Status</th>
+            <th >Analysis Status</th>
+            <th style="width:125px;">Remove</th>
+        </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+</script>
+
+<script type="text/template" id="ScreeningCampaignDataAnalysisView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_saveChangesBeforeAnalysis span10 hide">To analyze data, save or cancel the changes made in the General and/or Linked Experiments tabs.</div>
+
+    <div class="bv_dataAnalysisParametersWrapper">
+        <h5>Hit Selection Parameters</h5>
+        <div class="control-group bv_group_autoHitSelection" style="margin-left:20px;margin-bottom:20px;">
+            <label class="control-label checkbox" style="width:200px;padding-left:0;">
+                <input type="checkbox" name="bv_autoHitSelection" class="bv_autoHitSelection" <% if (autoHitSelection) { %> checked="checked"<% }%> />Automatic Hit Selection
+            </label>
+        </div>
+        <div class="form-horizontal">
+            <div class="bv_thresholdControls">
+                <div class="control-group bv_group_hitEfficacyThreshold">
+                    <label class="control-label radio" style="width:145px;padding-left:30px;">
+                        <input type="radio" name="bv_thresholdType" value="efficacy" class="bv_thresholdTypeEfficacy" <% if (thresholdType=="efficacy") { %>checked="checked"<% }%> />*Hit Efficacy Threshold
+                    </label>
+                    <div class="controls" style="padding-left:35px;">
+                        <input class="bv_hitEfficacyThreshold" style="width:335px;" value="<%=hitEfficacyThreshold%>" type="text" <% if (thresholdType!="efficacy") { %> disabled="disabled"<% } %>>
+                    </div>
+                </div>
+                <div class="control-group bv_group_hitSDThreshold">
+                    <label class="control-label radio" style="width:115px;padding-left:59px;">
+                        <input type="radio" name="bv_thresholdType" value="sd" class="bv_thresholdTypeSD" <% if (thresholdType=="sd") { %> checked="checked"<% }%> />*Hit SD Threshold
+                    </label>
+                    <div class="controls" style="padding-left:35px;">
+                        <input class="bv_hitSDThreshold" style="width:335px;" value="<%=hitSDThreshold%>" type="text" <% if (thresholdType!="sd") { %> disabled="disabled"<% }%> />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class='modal bv_analyzingData hide'>
+        <div class="modal-header">
+            <h3>Analyzing Data</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</script>
