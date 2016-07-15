@@ -140,7 +140,7 @@ exports.registerCmpds = (req, resp) ->
 		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
 		zipFilePath = movedUploadsPath+zipFileName
 
-		zipFilePath = config.all.server.service.persistence.filePath+"/cmpdreg_bulkload/"+zipFileName
+		zipFilePath = config.all.server.service.persistence.filePath+path.sep+"cmpdreg_bulkload"+path.sep+zipFileName
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
 			console.log "finished create write stream"
@@ -185,8 +185,8 @@ exports.registerCmpds = (req, resp) ->
 		fs = require 'fs'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		oldPath = uploadsPath + fileName
-		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/"
-		while fs.existsSync(bulkLoadFolder + '/' + fileName)
+		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload" + path.sep
+		while fs.existsSync(bulkLoadFolder + path.sep + fileName)
 			fileName = fileName.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, (s, index, ext) ->
 				' (' + ((parseInt(index, 10) or 0) + 1) + ')' + (ext or '')
 			)
