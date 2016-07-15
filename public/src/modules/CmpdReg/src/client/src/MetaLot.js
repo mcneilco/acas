@@ -48,8 +48,12 @@ $(function() {
                         this.set({saltForm: new SaltForm()});
                     }
                 }
+				if (lotjs.fileList == undefined) {
+					lotjs.lot.fileList = [];
+				} else {
+					lotjs.lot.fileList = lotjs.fileList;
+				}
 
-                lotjs.lot.fileList = lotjs.fileList;
                 this.set({lot: new Lot({json: lotjs.lot})});
 			} else if ( this.has('parentStructure') ) {
 				this.set({
@@ -147,6 +151,8 @@ $(function() {
                 this.bind('notifyError', eNoti.add);
                 this.bind('clearErrors', eNoti.removeMessagesForOwner);
             }
+
+			this.saveInProgress = false;
 		},
 
 		render: function() {
@@ -223,10 +229,11 @@ $(function() {
         },
 
         save: function() {
+	        if (this.saveInProgress) {return;}
+	        this.saveInProgress = true;
             this.trigger('clearErrors', "MetaLotController");
             this.updateModel();
 	        mlself = this;
-            window.fooMODEL = this.model;
 	        this.saltFormController.updateModel(function(){
 		        if (mlself.saltFormController.model.isNew()) {
 			        mlself.saltFormController.model.set({
@@ -235,6 +242,7 @@ $(function() {
 		        }
 
 		        if (!mlself.isValid()) {
+			        mlself.saveInProgress = false;
 			        return;
 	            }
 
@@ -294,23 +302,23 @@ $(function() {
             this.trigger('clearErrors', "MetaLotController");
             var newLotSuccessController = new NewLotSuccessController({
                 el: this.$('.NewLotSuccessView'),
-                corpName: message.lot.corpName,
-                buid: message.lot.buid
+                corpName: message.metalot.lot.corpName,
+                buid: message.metalot.lot.buid
             });
             newLotSuccessController.render();
-
+	        this.saveInProgress = false;
         },
 
         lotUpdated: function(response) {
             this.trigger('clearErrors', "MetaLotController");
-            // the form gets re-rendered, so we don't need to turn event listening back on
-            // here since it will result in multiple listeners firing for the same event
-            // - ms, 10/23/15
-            //this.delegateEvents(); // start listening to events
-            this.trigger('lotSaved', response);// RestratioController listens but does nothing at the moment
+            this.trigger('lotSaved', response.metalot);// RestratioController listens but does nothing at the moment
+	        _.each(response.errors, function(err) {
+		        mlself.trigger('notifyError', {owner: "MetaLotController", errorLevel: err.level, message: err.message});
+	        });
             this.trigger('notifyError', {owner: "MetaLotController", errorLevel: "info", message: "Lot save succesful"});
             // use the router / appController to re-render the form with the updated data
-            appController.updateLot(response);
+            appController.updateLot(response.metalot);
+	        this.saveInProgress = false;
         },
 
         back: function() {
