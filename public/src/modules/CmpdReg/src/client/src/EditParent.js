@@ -127,7 +127,7 @@ $(function () {
         template: _.template($('#EditParentSearchResultsView_template').html()),
 
         events: {
-            /* 			'click .nextButton': 'next', */
+            'click .nextButton': 'next',
             'click .cancelEditButton': 'cancel',
             'click .isVirtual': 'toggleParentsVisible',
             'click .backToSearchButton': 'back'
@@ -145,22 +145,6 @@ $(function () {
                 $(this.el).html(this.template());
             }
 
-            // Hack to try to solve problem with multiple reg in IE
-            if (window.configuration.marvin.delayShowStep2Next) {
-                var wt = window.configuration.marvin.delayShowStep2Next;
-                delete this.events['click .nextButton'];
-                this.delegateEvents();
-                this.$('.nextButton').fadeTo(10, .25);
-                var self = this;
-                setTimeout(function(){
-                    self.$('.nextButton').fadeTo(400, 1.0);
-                    self.events['click .nextButton'] = 'next';
-                    self.delegateEvents();
-                },wt);
-            } else {
-                this.events['click .nextButton'] = 'next';
-                this.delegateEvents();
-            }
 
 
             this.json = this.options.json;
