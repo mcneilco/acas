@@ -407,7 +407,7 @@ div {
     width: 90px;
     padding: 10px 5px 0px 5px;
     margin-right:0px;
-    margin-left:320px;
+    margin-left:190px;
 }
 
 .closeParentUpdatedPanel {
@@ -1320,7 +1320,7 @@ div.MetaLotViewButtons.buttons {
     background: no-repeat url('../images/search.png');
     height: 27px;
     width: 90px;
-    padding: 10px 5px 0px 5px;
+    padding: 10px 5px 10px 5px;
     position: absolute;
     bottom: -100px;
     left: 680px;
@@ -1329,7 +1329,7 @@ div.MetaLotViewButtons.buttons {
     background: no-repeat url('../images/cancel.png');
     height: 27px;
     width: 90px;
-    padding: 10px 5px 0px 5px;
+    padding: 10px 5px 10px 5px;
     position: absolute;
     bottom: -100px;
     left: 585px;
@@ -1432,10 +1432,20 @@ div.MetaLotViewButtons.buttons {
 
 .ConfirmEditParentPanel .floatingPanel {
   left: 260px;
+  width: 386px;
 }
 
 .ParentUpdatedPanel .floatingPanel {
   left: 260px;
+  max-width: 420px;
+}
+
+.confirmUpdateParentMessage {
+  max-width: 400px;
+}
+
+.ParentUpdatedPanel .updatedLotsMessage {
+  max-width: 365px;
 }
 
 .EditParentStepThreeTitle {
