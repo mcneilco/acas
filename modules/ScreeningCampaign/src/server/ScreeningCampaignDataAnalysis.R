@@ -83,10 +83,10 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
                                       efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
                                  by=list(batchName, cmpdConc)]
     
-    # Remove flagged points and get mean per compound and concentration
+    # Remove flagged points and get max per compound and concentration
     primaryThreshDT <- wideDataPrimary[wellType=="test" & (is.na(flagType) | (flagType != "knocked out")), 
-                                       list(SD = mean(transformed_sd, na.rm = TRUE), 
-                                            efficacy = mean(get("transformed_percent efficacy"), na.rm = TRUE)), 
+                                       list(SD = max(transformed_sd, na.rm = TRUE), 
+                                            efficacy = max(get("transformed_percent efficacy"), na.rm = TRUE)), 
                                        by=list(batchName, cmpdConc)]
     
     # Get max for each compound (could be at any concentration)
@@ -96,22 +96,22 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="batchName")
     if (!inputParameters$autoHitSelection || is.null(inputParameters$thresholdType)) {
       maxConfThreshDT[, hit := FALSE]
-      xLabel <- "Efficacy Primary"
-      yLabel <- "Efficacy Confirmation"
+      xLabel <- "Max Efficacy (Primary Screen)"
+      yLabel <- "Max Averaged Efficacy (Confirmation Screen)"
       xValues <- combinedDT$efficacy.x
       yValues <- combinedDT$efficacy.y
       threshold <- NA
     } else if (inputParameters$thresholdType == "sd") {
       maxConfThreshDT[, hit := SD > inputParameters$hitSDThreshold]
-      xLabel <- "SD Primary"
-      yLabel <- "SD Confirmation"
+      xLabel <- "Max SD (Primary Screen)"
+      yLabel <- "Max Averaged SD (Confirmation Screen)"
       xValues <- combinedDT$SD.x
       yValues <- combinedDT$SD.y
       threshold <- inputParameters$hitSDThreshold
     } else if (inputParameters$thresholdType == "efficacy") {
       maxConfThreshDT[, hit := efficacy > inputParameters$hitEfficacyThreshold]
-      xLabel <- "Efficacy Primary"
-      yLabel <- "Efficacy Confirmation"
+      xLabel <- "Max Efficacy (Primary Screen)"
+      yLabel <- "Max Averaged Efficacy (Confirmation Screen)"
       xValues <- combinedDT$efficacy.x
       yValues <- combinedDT$efficacy.y
       threshold <- inputParameters$hitEfficacyThreshold
