@@ -402,13 +402,14 @@
   };
 
   exports.getMetaLot = function(req, resp) {
-    var _, cmpdRegCall, config, endOfUrl, request;
+    var _, cmpdRegCall, cmpdRegConfig, config, endOfUrl, request;
     request = require('request');
     _ = require('underscore');
     config = require('../conf/compiled/conf.js');
     endOfUrl = req.originalUrl.replace(/\/cmpdreg\/metalots/, "");
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl;
     console.log(cmpdRegCall);
+    cmpdRegConfig = require('../public/src/modules/CmpdReg/src/client/custom/configuration.json');
     return request({
       method: 'GET',
       url: cmpdRegCall,
@@ -423,25 +424,32 @@
         if (!error) {
           if ((json != null ? (ref = json.lot) != null ? (ref1 = ref.project) != null ? ref1.code : void 0 : void 0 : void 0) != null) {
             projectCode = json.lot.project.code;
-            return exports.getACASProjects(req, function(statusCode, acasProjectsForUsers) {
-              if (statusCode !== 200) {
-                resp.statusCode = statusCode;
-                resp.end(JSON.stringify(acasProjectsForUsers));
-              }
-              if (_.where(acasProjectsForUsers, {
-                code: projectCode
-              }).length > 0) {
-                return resp.json(json);
-              } else {
-                console.log("user does not have permissions to the lot's project");
-                resp.statusCode = 500;
-                return resp.end(JSON.stringify("Lot does not exist"));
-              }
-            });
+            if (cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails) {
+              return exports.getACASProjects(req, function(statusCode, acasProjectsForUsers) {
+                if (statusCode !== 200) {
+                  resp.statusCode = statusCode;
+                  resp.end(JSON.stringify(acasProjectsForUsers));
+                }
+                if (_.where(acasProjectsForUsers, {
+                  code: projectCode
+                }).length > 0) {
+                  return resp.json(json);
+                } else {
+                  console.log("user does not have permissions to the lot's project");
+                  resp.statusCode = 500;
+                  return resp.end(JSON.stringify("Lot does not exist"));
+                }
+              });
+            } else {
+              return resp.json(json);
+            }
           } else {
-            console.log("could not find lot");
-            resp.statusCode = 500;
-            return resp.end(JSON.stringify("Could not find lot"));
+            if (cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails) {
+              resp.statusCode = 500;
+              return resp.end(JSON.stringify("Could not find lot"));
+            } else {
+              return resp.json(json);
+            }
           }
         } else {
           console.log('got ajax error trying to get CmpdReg MetaLot');
@@ -502,6 +510,7 @@
     config = require('../conf/compiled/conf.js');
     endOfUrl = req.originalUrl.replace(/\/cmpdreg\//, "");
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" + endOfUrl;
+    cmpdRegCall = cmpdRegCall.replace(/\\/g, "%5C");
     console.log(cmpdRegCall);
     return req.pipe(request(cmpdRegCall)).pipe(resp);
   };

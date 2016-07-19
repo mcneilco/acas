@@ -313,6 +313,7 @@ exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
+	cmpdRegConfig = require '../public/src/modules/CmpdReg/src/client/custom/configuration.json'
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -326,20 +327,26 @@ exports.getMetaLot = (req, resp) ->
 		if !error
 			if json?.lot?.project?.code?
 				projectCode = json.lot.project.code
-				exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
-					if statusCode != 200
-						resp.statusCode = statusCode
-						resp.end JSON.stringify acasProjectsForUsers
-					if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
-						resp.json json
-					else
-						console.log "user does not have permissions to the lot's project"
-						resp.statusCode = 500
-						resp.end JSON.stringify "Lot does not exist"
-			else
-				console.log "could not find lot"
-				resp.statusCode = 500
-				resp.end JSON.stringify "Could not find lot"
+				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+					exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
+						if statusCode != 200
+							resp.statusCode = statusCode
+							resp.end JSON.stringify acasProjectsForUsers
+						if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
+							resp.json json
+						else
+							console.log "user does not have permissions to the lot's project"
+							resp.statusCode = 500
+							resp.end JSON.stringify "Lot does not exist"
+				else
+					resp.json json
+			else #no project attr in lot
+				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+					resp.statusCode = 500
+					resp.end JSON.stringify "Could not find lot"
+				else
+					resp.json json
+
 		else
 			console.log 'got ajax error trying to get CmpdReg MetaLot'
 			console.log error

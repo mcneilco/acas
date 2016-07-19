@@ -34,6 +34,7 @@
         "showSelectParentAnnotationList": false,
 	    "fileSaveDirNamedForBatchName": true,
 	    "useExactMass": true,
+		"useProjectRolesToRestrictLotDetails": false,
 	"disableAliasEdit": true
     },
     "serverSettings": {
