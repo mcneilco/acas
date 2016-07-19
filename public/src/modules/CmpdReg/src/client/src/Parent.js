@@ -203,7 +203,11 @@ $(function() {
                 this.$('.parentAnnotationCode').attr('disabled', true);
                 this.$('.comment').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
-				this.$('.editParentButtonWrapper').show();
+				var user = window.AppLaunchParams.cmpdRegUser;
+				if(user.code == this.model.get('chemist').get('code') || user.isAdmin)
+					this.$('.editParentButtonWrapper').show();
+				else
+					this.$('.editParentButtonWrapper').hide();
 
             }
 			else {
