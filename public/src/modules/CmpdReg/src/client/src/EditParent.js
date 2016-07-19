@@ -257,6 +257,7 @@ $(function () {
             this.$('.parentAnnotationCode').removeAttr('disabled');
             this.$('.parentAnnotationCode').removeAttr('disabled');
             this.$('.comment').removeAttr('disabled');
+            this.$('.isMixture').removeAttr('disabled');
             return this;
         },
 

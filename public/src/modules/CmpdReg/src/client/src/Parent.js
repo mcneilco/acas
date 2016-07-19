@@ -10,7 +10,8 @@ $(function() {
             molStructure: '',
             comment: '',
             corpName: '',
-            chemist: null
+            chemist: null,
+			isMixture: false
 		},
 
 		initialize: function() {
@@ -34,7 +35,9 @@ $(function() {
 					parentAliases: new AliasCollection(js.parentAliases),
 					registrationDate: js.registrationDate,
 					cdId: js.cdId,
-					parentNumber: js.parentNumber
+					parentNumber: js.parentNumber,
+					isMixture: js.isMixture
+
 				}, {silent: true});
 
 				if (window.configuration.metaLot.showSelectCompoundTypeList) {
@@ -192,7 +195,12 @@ $(function() {
             this.$('.molWeight').val(this.model.get('molWeight'));
             this.$('.molFormula').val(this.model.get('molFormula'));
             this.$('.exactMass').val(this.model.get('exactMass'));
-
+			if(this.model.get('isMixture') == true) {
+				this.$('.isMixture').attr('checked', true);
+			}
+			else {
+				this.$('.isMixture').removeAttr('checked');
+			}
 			this.aliasController = new AliasesController({collection: this.model.get('parentAliases'), readMode: this.readMode, step: this.step})
 			this.$('.bv_aliasesContainer').html(this.aliasController.render().el );
 			if (!this.model.isNew()) {
@@ -202,6 +210,7 @@ $(function() {
                 this.$('.parentAnnotationCode').attr('disabled', true);
                 this.$('.parentAnnotationCode').attr('disabled', true);
                 this.$('.comment').attr('disabled', true);
+				this.$('.isMixture').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
 				var user = window.AppLaunchParams.cmpdRegUser;
 				if(user.code == this.model.get('chemist').get('code') || user.isAdmin)
@@ -264,8 +273,9 @@ $(function() {
                 comment: this.$('.comment').val(),
                 stereoCategory: this.stereoCategoryCodeController.getSelectedModel(),
                 //commonName: this.$('.commonName').val(),
-				parentAliases: this.aliasController.collection.toJSON()
-            });
+				parentAliases: this.aliasController.collection.toJSON(),
+				isMixture: this.$('.isMixture').attr('checked') == 'checked'
+		});
 
 			if(this.compoundTypeCodeController != null){
 				this.model.set({compoundType: this.compoundTypeCodeController.getSelectedModel()})

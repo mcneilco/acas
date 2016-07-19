@@ -23,6 +23,10 @@
 	  <div class="bv_aliasesContainer">
 
 	  </div>
+        <div>
+            <input type="checkbox" class="isMixture"/>
+            Is Mixture
+        </div>
 
 	 	<div class="row4">
 			<label class="FormLabel2">*Stereo Category:</label>
