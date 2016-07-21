@@ -140,10 +140,7 @@ exports.registerCmpds = (req, resp) ->
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload"+path.sep
-		zipFilePath = movedUploadsPath+zipFileName
-
-		zipFilePath = config.all.server.service.persistence.filePath+path.sep+"cmpdreg_bulkload"+path.sep+zipFileName
-		zipFilePath = zipFilePath.replace /\\/g, "%5C"
+		zipFilePath = origUploadsPath + path.sep + "cmpdreg_bulkload" + path.sep + zipFileName
 		console.log zipFilePath
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
