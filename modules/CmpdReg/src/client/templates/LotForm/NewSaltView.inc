@@ -2,7 +2,7 @@
 	<h2 class="form_title">Register New Salt:</h2>
 	<hr>
 		<div class="marvinWrapper">
-			<iframe src="/src/modules/CmpdReg/src/marvinjs/editorws.html" id="newSaltMarvinSketch" class="sketcher-frame"></iframe>
+			<iframe src="/CmpdReg/marvinjs/editorws.html" id="newSaltMarvinSketch" class="sketcher-frame"></iframe>
 		</div>
 		<div class="corpNameInput">
 		<label class="FormLabel">Salt Name </label>

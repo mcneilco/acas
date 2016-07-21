@@ -5,7 +5,7 @@
             <img class="structImage"/>
         </div>
         <div class="copyButtonWrapper">
-            <img class="copyButton" src="/src/modules/CmpdReg/src/client/images/glyphicon-copy.png"/>
+            <img class="copyButton" src="/CmpdReg/client/images/glyphicon-copy.png"/>
         </div>
     </div>
     <div class="copyTextPanel" style="display:none">

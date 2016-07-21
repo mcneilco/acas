@@ -45,7 +45,7 @@
     <label class="FormLabel2">Aliases:</label>
     <span class="bv_aliasReadViewContainer"></span>
     <span class="bv_editAliases ">
-        <img src="/src/modules/CmpdReg/src/client/images/edit.png" class="editAliasesButton"/>
+        <img src="/CmpdReg/client/images/edit.png" class="editAliasesButton"/>
     </span>
     <div class="bv_addAliasContainer"></div>
 

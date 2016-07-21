@@ -8,7 +8,7 @@
         Isotope/salt Structure:
     </h2></div>
 	<div class="structureWrapper">
-		<iframe src="/src/modules/CmpdReg/src/marvinjs/editorws.html" id="saltFormMarvinSketch" class="sketcher-frame"></iframe>
+		<iframe src="/CmpdReg/marvinjs/editorws.html" id="saltFormMarvinSketch" class="sketcher-frame"></iframe>
 		<div class="saltFormImage"></div>
 	</div>
 	<div class="radioWrapper">

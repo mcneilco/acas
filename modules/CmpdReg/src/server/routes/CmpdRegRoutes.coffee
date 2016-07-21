@@ -34,7 +34,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
 	config = require '../conf/compiled/conf.js'
-	cmpdRegConfig = require '../public/src/modules/CmpdReg/src/client/custom/configuration.json'
+	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	_ = require 'underscore'
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
@@ -132,7 +132,7 @@ exports.getAuthorizedCmpdRegProjectsInternal = (req, callback) ->
 
 
 exports.getACASProjects = (req, callback) ->
-	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	if !req.user?
 		req.user = {}
 		req.user.username = req.params.username

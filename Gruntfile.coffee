@@ -416,6 +416,18 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/server/routes/*.js"]
 					dest: "#{grunt.config.get('build')}/routes"
 				]
+			cmpdreg_module:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/CmpdReg/src/client/**","#{i}/modules/CmpdReg/src/marvinjs/**", "!#{i}/modules/CmpdReg/src/server"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/CmpdReg/src/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						"#{dest}/#{replaced}"
+					dest: "#{grunt.config.get('build')}/public/CmpdReg"
+				]
 		execute:
 			prepare_module_includes:
 				options:
@@ -559,6 +571,9 @@ module.exports = (grunt) ->
 			copy_custom_public_conf:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/public/conf/*.R"]
 				tasks: "newer:copy:public_conf_r"
+			copy_cmpdreg_module:
+				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/CmpdReg/src/client/**","#{i}/modules/CmpdReg/src/marvinjs/**", "!#{i}/modules/CmpdReg/src/server"]
+				tasks: "newer:copy:cmpdreg_module"
 			prepare_module_includes:
 				files:[
 					"#{grunt.config.get("build")}/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"
