@@ -482,6 +482,9 @@ client.basePath=/
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
 server.curveRender.drawPointsForRejectedCurve=true
 
+# Restrict experiment search by project
+server.service.projects.restrictExperiments=false
+
 flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
