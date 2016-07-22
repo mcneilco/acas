@@ -213,16 +213,13 @@ $(function() {
                 this.$('.comment').attr('disabled', true);
 				this.$('.isMixture').attr('disabled', true);
                 //this.$('.commonName').attr('disabled', true);
-				var user = window.AppLaunchParams.cmpdRegUser;
-				if(user.code == this.model.get('chemist').get('code') || user.isAdmin)
-					this.$('.editParentButtonWrapper').show();
-				else
-					this.$('.editParentButtonWrapper').hide();
-
             }
-			else {
+			if ( this.options.isEditable ) {
+				this.$('.editParentButtonWrapper').show();
+			} else {
 				this.$('.editParentButtonWrapper').hide();
 			}
+
 			if (this.readMode) {
 				this.setAliasToReadOnly();
 			} else {
