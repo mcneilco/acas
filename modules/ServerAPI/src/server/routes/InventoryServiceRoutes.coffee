@@ -39,6 +39,7 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
 	app.post '/api/containerLogs', exports.containerLogs
+	app.get '/api/containerLogs/:label', exports.getContainerLogs
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', exports.createTube
@@ -78,7 +79,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
-	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
+	app.post '/api/containerLogs', loginRoutes.ensureAuthenticated, exports.containerLogs
+	app.get '/api/containerLogs/:label', loginRoutes.ensureAuthenticated, exports.getContainerLogs
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
@@ -1536,6 +1538,31 @@ exports.containerLogsInternal = (inputs, callCustom, callback) ->
 		else
 			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
+
+exports.getContainerLogs = (req, resp) ->
+	exports.getContainerLogsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLogsInternal = (labels, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{JSON.stringify(labels)}'"
+		exports.getContainersByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (getContainersByLabelsResponse, statusCode) =>
+			response = []
+			for getContainer in getContainersByLabelsResponse
+				responseObject = 
+					label: getContainer.label
+					codeName: getContainer.codeName
+					logs: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.logs = container[0].getLogs()
+				response.push responseObject
+			callback response, 200
+
 
 exports.getOrCreateContainer = (container, callback) ->
 	label = container.lsLabels[0].labelText
