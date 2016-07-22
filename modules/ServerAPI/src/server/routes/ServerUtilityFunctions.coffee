@@ -1268,6 +1268,24 @@ class Container extends Backbone.Model
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
 
+	getLogs: ->
+		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'log'
+		console.log lsStates
+		response = []
+		if lsStates?
+			lsStates.forEach (lsState) =>
+				additionalValues = lsState.get('lsValues').filter (value) ->
+					(!value.get('ignored')) and !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='entry type')) and !((value.get('lsType')=='clobValue') and (value.get('lsKind')=='entry'))
+				responseObject = 
+					codeName: @get('codeName')
+					recordedBy: lsState.get('recordedBy')
+					recordedDate: lsState.get('recordedDate')
+					entryType: lsState.getValuesByTypeAndKind('codeValue', 'entry type')[0].get('codeValue')
+					entry: lsState.getValuesByTypeAndKind('clobValue', 'entry')[0]?.get('clobValue')
+					additionalValues: additionalValues
+				response.push responseObject
+		return response
+
 	addNewLogStates: (inputs) ->
 		for input in inputs
 			valueList = new ValueList
