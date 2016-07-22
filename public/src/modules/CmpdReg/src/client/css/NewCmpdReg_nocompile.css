@@ -386,9 +386,25 @@ div {
     width: 100%;
 }
 
-.confirmUpdateParentMessage, .updatedLotsMessage {
+.confirmUpdateParentMessage, .updatedLotsMessage, .validateParentErrorsMsg {
     margin-left:11px;
     font-weight:normal;
+}
+
+.parentErrors{
+    margin-left:40px;
+    font-weight:normal;
+    font-size: 1.17em;
+}
+
+.closeValidateParentErrors {
+    background: no-repeat url('../images/okay.png');
+    float: right;
+    height: 27px;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    margin-right:0px;
+    margin-top:15px;
 }
 
 .confirmUpdateParent {
@@ -410,7 +426,7 @@ div {
     margin-left:190px;
 }
 
-.closeParentUpdatedPanel {
+.closeParentUpdatedPanel{
     background: no-repeat url('../images/okay.png');
     float: right;
     height: 27px;
@@ -1428,6 +1444,11 @@ div.MetaLotViewButtons.buttons {
 }
 .EditParentViewButtons a.backUpdateParentButtonOff {
     background: no-repeat url('../images/back_off.png');
+}
+
+.ValidateParentErrorsPanel .floatingPanel {
+  left: 115px;
+  width: 660px;
 }
 
 .ConfirmEditParentPanel .floatingPanel {

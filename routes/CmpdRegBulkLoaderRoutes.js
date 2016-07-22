@@ -1,4 +1,8 @@
 (function() {
+  var path;
+
+  path = require('path');
+
   exports.setupAPIRoutes = function(app) {
     return app.post('/api/cmpdRegBulkLoader', exports.postAssignedProperties);
   };
@@ -162,14 +166,16 @@
         rFile = ref[i];
         serverUtilityFunctions = require('./ServerUtilityFunctions.js');
         config = require('../conf/compiled/conf.js');
-        splitNames = rFile.split("/cmpdreg_bulkload/");
+        splitNames = rFile.split(path.sep + "cmpdreg_bulkload" + path.sep);
         rFileName = splitNames[1];
         zip.file(rFileName, fs.readFileSync(rFile));
       }
       origUploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
-      movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/";
+      movedUploadsPath = origUploadsPath + "cmpdreg_bulkload" + path.sep;
       zipFilePath = movedUploadsPath + zipFileName;
-      zipFilePath = config.all.server.service.persistence.filePath + "/cmpdreg_bulkload/" + zipFileName;
+      zipFilePath = config.all.server.service.persistence.filePath + path.sep + "cmpdreg_bulkload" + path.sep + zipFileName;
+      zipFilePath = zipFilePath.replace(/\\/g, "%5C");
+      console.log(zipFilePath);
       fstream = zip.generateNodeStream({
         type: "nodebuffer",
         streamFiles: true
@@ -226,8 +232,8 @@
       fs = require('fs');
       uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
       oldPath = uploadsPath + fileName;
-      bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/";
-      while (fs.existsSync(bulkLoadFolder + '/' + fileName)) {
+      bulkLoadFolder = uploadsPath + "cmpdreg_bulkload" + path.sep;
+      while (fs.existsSync(bulkLoadFolder + path.sep + fileName)) {
         fileName = fileName.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, function(s, index, ext) {
           return ' (' + ((parseInt(index, 10) || 0) + 1) + ')' + (ext || '');
         });

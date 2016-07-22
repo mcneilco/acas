@@ -77,9 +77,20 @@
 		<a class="button bv_backUpdateParentButton backUpdateParentButtonOn" href="#" onclick="this.blur(); return false;"></a>
 	</div>
 
+	<div class="ValidateParentErrorsPanel hide"></div>
 	<div class="ConfirmEditParentPanel hide"></div>
 	<div class="ParentUpdatedPanel hide"></div>
 
+</script>
+
+<script type="text/template" id="ValidateParentErrorsPanel_template">
+    <div class="floatingPanel ">
+        <h2 class="form_title">Invalid Parent Compound</h2>
+        <hr />
+        <h3 class="validateParentErrorsMsg">The parent is invalid due to the following reasons. Please fix the errors before attempting to update the parent again.</h3>
+        <div class="parentErrors"></div>
+        <div class="closeValidateParentErrors"></div>
+    </div>
 </script>
 
 <script type="text/template" id="ConfirmEditParentPanel_template">

@@ -111,6 +111,7 @@ $(function() {
 			'click .cancelUpdateParentButtonOn': 'cancel',
 			'click .backUpdateParentButtonOn': 'back',
 			'click .saveUpdateParentButtonOn': 'validateParent',
+			'click .closeValidateParentErrors': 'cancelUpdateParent',
 			'click .confirmUpdateParent': 'updateParentConfirmed',
 			'click .cancelUpdateParent': 'cancelUpdateParent',
 			'click .closeParentUpdatedPanel': 'showUpdatedMetalot'
@@ -364,26 +365,67 @@ $(function() {
 					return function(ajaxReturn){
 						return _this.validateParentReturn(ajaxReturn);
 					};
+				})(this),
+				error: (function(_this)
+				{
+					return function(error){
+						return _this.handleValidateParentError(error);
+					};
 				})(this)
 			});
 		},
 
 		validateParentReturn: function(ajaxReturn){
-			this.$('.ConfirmEditParentPanel').show();
-			this.$('.ConfirmEditParentPanel').html($('#ConfirmEditParentPanel_template').html());
-			var lotsAffectedMsg = "";
-			_.each(ajaxReturn, function(lot){
-				if (lotsAffectedMsg === ""){
-					lotsAffectedMsg = "The following lots will be affected: "+lot.name;
-				}
-				else{
-					lotsAffectedMsg += ", "+lot.name;
-				}
-			});
-			lotsAffectedMsg += ".";
-			this.$('.lotsAffected').html(lotsAffectedMsg);
+			if (ajaxReturn.dupeParents != null) {
+				this.$('.ValidateParentErrorsPanel').show();
+				this.$('.ValidateParentErrorsPanel').html($('#ValidateParentErrorsPanel_template').html());
+				var dupeParentsMsg = "";
+				_.each(ajaxReturn.dupeParents, function(parent){
+					var stereoComment;
+					if (parent.stereoComment != null && parent.stereoComment != "") {
+						stereoComment = parent.stereoComment;
+					}
+					else {
+						stereoComment = "None";
+					};
+					dupeParentsMsg += "<li>Duplicate parent found. Compound Name: "+parent.corpName + ". Stereo Category: " + parent.stereoCategory.name + ". Stereo Comment: " + stereoComment + ".";
+				});
+				this.$('.parentErrors').html(dupeParentsMsg);
+			}
+			else if (ajaxReturn.errors != null) {
+				this.$('.ValidateParentErrorsPanel').show();
+				this.$('.ValidateParentErrorsPanel').html($('#ValidateParentErrorsPanel_template').html());
+				var errorsMsg = "";
+				_.each(ajaxReturn.errors, function(err){
+					errorsMsg += "<li>"+err.message+"</li>";
+				});
+				this.$('.parentErrors').html(errorsMsg);
+				
+			}
+			else {
+				this.$('.ConfirmEditParentPanel').show();
+				this.$('.ConfirmEditParentPanel').html($('#ConfirmEditParentPanel_template').html());
+				var lotsAffectedMsg = "";
+				_.each(ajaxReturn, function(lot){
+					if (lotsAffectedMsg === ""){
+						lotsAffectedMsg = "The following lots will be affected: "+lot.name;
+					}
+					else{
+						lotsAffectedMsg += ", "+lot.name;
+					}
+				});
+				lotsAffectedMsg += ".";
+				this.$('.lotsAffected').html(lotsAffectedMsg);
+
+			}
 		},
 
+		handleValidateParentError: function (error) {
+			this.$('.ValidateParentErrorsPanel').show();
+			this.$('.ValidateParentErrorsPanel').html($('#ValidateParentErrorsPanel_template').html());
+			this.$('.validateParentErrorsMsg').html("There was an error validating the parent. Please try again or contact an administrator.");
+		},
+		
 		updateParentConfirmed: function(){
 			$.ajax({
 				type: "POST",
@@ -406,6 +448,7 @@ $(function() {
 		},
 
 		cancelUpdateParent: function(){
+			this.$('.ValidateParentErrorsPanel').hide();
 			this.$('.ConfirmEditParentPanel').hide();
 			this.$('.bv_saveUpdateParentButton').addClass('saveUpdateParentButtonOn');
 			this.$('.bv_saveUpdateParentButton').removeClass('saveUpdateParentButtonOff');
