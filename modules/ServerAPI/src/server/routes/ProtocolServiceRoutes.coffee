@@ -24,6 +24,24 @@ exports.setupRoutes = (app, loginRoutes) ->
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
+exports.protocolByCodenameInternal = (codeName, callback) ->
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+	baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/" + codeName
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback json, response.statusCode
+		else
+			console.log "got error retrieving protocol by code name"
+			console.log error
+			callback null, response.statusCode
+
+	)
+
 exports.protocolByCodename = (req, resp) ->
 
 	if global.specRunnerTestmode

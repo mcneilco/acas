@@ -1893,8 +1893,121 @@ class Vial extends Container
 			kind: 'barcode'
 			preferred: true
 		]
-	defaultValues: [
-	]
+		defaultValues: [
+			key: 'description'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'stringValue'
+			kind: 'description'
+		,
+			key: 'status'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'status'
+		,
+			key: 'created user'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'created user'
+		,
+			key: 'created date'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'dateValue'
+			kind: 'created date'
+		,
+			key: 'supplier'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'supplier'
+		,
+			key: 'type'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'type'
+		,
+			key: 'kplate id'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'kplate id'
+		,
+			key: 'instrument'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'instrument'
+		,
+			key: 'experiment'
+			stateType: 'metadata'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'experiment'
+		,
+			key: 'tare weight'
+			stateType: 'constants'
+			stateKind: 'information'
+			type: 'numericValue'
+			kind: 'tare weight'
+		,
+			key: 'golden'
+			stateType: 'constants'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'golden'
+		,
+			key: 'instrument'
+			stateType: 'constants'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'instrument'
+		,
+			key: 'experiment'
+			stateType: 'constants'
+			stateKind: 'information'
+			type: 'codeValue'
+			kind: 'experiment'
+		,
+			key: 'initial weight'
+			stateType: 'status'
+			stateKind: 'content'
+			type: 'numericValue'
+			kind: 'initial weight'
+		,
+			key: 'current weight'
+			stateType: 'status'
+			stateKind: 'content'
+			type: 'numericValue'
+			kind: 'current weight'
+		,
+			key: 'amount received'
+			stateType: 'status'
+			stateKind: 'content'
+			type: 'numericValue'
+			kind: 'amount received'
+		,
+			key: 'entry type'
+			stateType: 'metadata'
+			stateKind: 'log'
+			type: 'codeValue'
+			kind: 'entry type'
+		,
+			key: 'entry'
+			stateType: 'metadata'
+			stateKind: 'log'
+			type: 'clobValue'
+			kind: 'entry'
+		,
+			key: 'amount'
+			stateType: 'metadata'
+			stateKind: 'log'
+			type: 'numericValue'
+			kind: 'amount'
+		]
 
 exports.Label = Label
 exports.LabelList = LabelList
