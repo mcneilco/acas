@@ -143,7 +143,8 @@ $(function () {
                 {},
                 function(ajaxReturn) {
                     self.metaLot = new MetaLot({json: ajaxReturn});
-                    self.setupMetaLotController();                    
+                    self.setupMetaLotController();
+                    self.$('.GetCmpdError').hide();
                 }
             )
             .error(function(error) {
@@ -159,7 +160,8 @@ $(function () {
                     });
                 }
                 else {
-                    self.$('.GetCmpdError').show()
+                    self.$('.MetaLotView').hide();
+                    self.$('.GetCmpdError').show();
                 }
             });
             this.hideControls();

@@ -288,6 +288,8 @@ $(function() {
         },
 
         editParentRequest: function(parent) {
+            this.trigger('clearErrors', "MetaLotController");
+            this.trigger('clearErrors', "LotController");
             $(this.el).empty();
             this.editParentWorkflowController = new EditParentWorkflowController({
                 el: $(this.el),
