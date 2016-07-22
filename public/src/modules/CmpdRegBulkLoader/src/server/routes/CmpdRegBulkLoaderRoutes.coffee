@@ -137,13 +137,10 @@ exports.registerCmpds = (req, resp) ->
 			config = require '../conf/compiled/conf.js'
 			splitNames = rFile.split (path.sep+"cmpdreg_bulkload"+path.sep)
 			rFileName = splitNames[1]
+			rFileName = rFileName.replace(path.sep, '');
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload"+path.sep
-		zipFilePath = movedUploadsPath+zipFileName
-
-		zipFilePath = config.all.server.service.persistence.filePath+path.sep+"cmpdreg_bulkload"+path.sep+zipFileName
-		zipFilePath = zipFilePath.replace /\\/g, "%5C"
+		zipFilePath = origUploadsPath + "cmpdreg_bulkload" + path.sep + zipFileName
 		console.log zipFilePath
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
