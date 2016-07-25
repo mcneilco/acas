@@ -84,6 +84,11 @@ $(function() {
             if (!window.configuration.metaLot.saltBeforeLot) {
                 lot.set({parent: this.get('parent').getModelForSave()});
             }
+            sf.get('isosalts').each(function(isosalt){
+            	if (isosalt.get('type') == 'salt') isosalt.set({salt:isosalt.get('isosalt')})
+            	else if (isosalt.get('type') == 'isotope') isosalt.set({isotope:isosalt.get('isosalt')})
+            	isosalt.unset('isosalt');
+            })
             var mts = new Backbone.Model({
                 lot: lot,
                 fileList: new Backbone.Collection(lot.get('fileList')),
