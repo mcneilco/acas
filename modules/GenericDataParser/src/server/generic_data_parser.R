@@ -1512,7 +1512,7 @@ addImageFiles <- function(imagesFile, calculatedResults, experiment, dryRun, rec
                                 file.path(imageLocation, calculatedResults$inlineFileValue))
       fileValuesToAdd <- fileValueVector[!is.na(fileValueVector)]
       if (!dryRun) {
-        fileValuesToAdd <- vapply(fileValuesToAdd, moveFileToFileServer, c(""), experiment=experiment, recordedBy=recordedBy)
+        fileValuesToAdd <- vapply(fileValuesToAdd, moveFileToFileServer, c(""), experiment=experiment, recordedBy=recordedBy, customSourceFileMove=customSourceFileMove)
       }
       calculatedResults$fileValue[!is.na(fileValueVector)] <- fileValuesToAdd
     } else {
