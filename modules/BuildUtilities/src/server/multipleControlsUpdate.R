@@ -1,3 +1,5 @@
+# This file exists for migrating clob values from 1.8 to 1.9
+
 library(racas)
 library(plyr)
 
@@ -16,13 +18,12 @@ updateClobValue <- function(clobValue) {
            concentrationUnits=parameters$negativeControl$concentrationUnits,
            standardType="NC"))
     if (!is.null(parameters$vehicleControl$batchCode)) {
-      parameters$standardCompoundList <- append(
-        parameters$standardCompoundList,
-        list(standardNumber=3, 
-             batchCode=parameters$vehicleControl$batchCode, 
-             concentration=parameters$vehicleControl$concentration,
-             concentrationUnits=parameters$vehicleControl$concentrationUnits,
-             standardType="VC"))
+      parameters$standardCompoundList[[length(parameters$standardCompoundList) + 1]] <- list(
+        standardNumber=3, 
+        batchCode=parameters$vehicleControl$batchCode, 
+        concentration=parameters$vehicleControl$concentration,
+        concentrationUnits=parameters$vehicleControl$concentrationUnits,
+        standardType="VC")
     }
     parameters$positiveControl <- NULL
     parameters$negativeControl <- NULL
