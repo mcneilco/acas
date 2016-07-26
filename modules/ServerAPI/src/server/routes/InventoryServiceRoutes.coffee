@@ -1081,11 +1081,12 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000
-	exports.moveToLocationInternal req.body, (json, statusCode) ->
+	exports.moveToLocationInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.moveToLocationInternal = (input, callback) ->
+exports.moveToLocationInternal = (input, callCustom, callback) ->
+	callCustom  = callCustom != "0"
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.moveToLocationResponse
@@ -1105,7 +1106,14 @@ exports.moveToLocationInternal = (input, callback) ->
 		, (error, response, json) =>
 			console.debug "response statusCode: #{response.statusCode}"
 			if !error
-				callback json, response.statusCode
+				if callCustom && csUtilities.moveToLocation?
+					console.log "running customer specific server function moveToLocation"
+					csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+						json = _.extend json, customerResponse
+						callback json, statusCode
+				else
+					console.warn "could not find customer specific server function moveToLocation so not running it"
+					callback json, response.statusCode
 			else
 				console.error 'got ajax error trying to get moveToLocation'
 				console.error error
