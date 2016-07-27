@@ -14,13 +14,21 @@ createDensityPlot <- function(values, wellTypes, threshold, margins = c(5,4,4,8)
   # Set parameters to format the graph correctly
   par(mar=margins)
   
+  wrapDensityWithZero <- function(den) {
+    # Adds an extra point at zero at both ends of the density plot to clean plot
+    x <- den$x
+    xDiff <- x[2] - x[1]
+    list(x = c(x[1] - xDiff, x, tail(x, 1) + xDiff),
+         y = c(0, den$y, 0))
+  }
+  
   # Create density data to graph
-  NCdensity <- density(values[wellTypes == "NC"])
-  PCdensity <- density(values[wellTypes == "PC"])
+  NCdensity <- wrapDensityWithZero(density(values[wellTypes == "NC"]))
+  PCdensity <- wrapDensityWithZero(density(values[wellTypes == "PC"]))
   if(sum(wellTypes == "test") < 2) {
     stopUser("No test compounds found in the plates. Have all plates been loaded?")
   }
-  testDensity <- density(values[wellTypes == "test"])
+  testDensity <- wrapDensityWithZero(density(values[wellTypes == "test"]))
   yHeight <- max(NCdensity$y, PCdensity$y, testDensity$y)
   
   plot(NCdensity, 
