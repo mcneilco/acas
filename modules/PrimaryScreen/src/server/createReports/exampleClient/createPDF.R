@@ -162,8 +162,23 @@ createPDF <- function(resultTable, assayData, parameters, summaryInfo, threshold
 }
 calculateNewWellType <- function(batchCode, cmpdConc, posStandard, negStandard) {
   # calculates new well types for a set of batchCodes and cmpdConcentrations
-  wellType <- ifelse(batchCode==posStandard$batchCode & cmpdConc==posStandard$concentration, "PC", "test")
-  wellType[batchCode==negStandard$batchCode & cmpdConc==negStandard$concentration] <- "NC"
+  toleranceRange <- racas::applicationSettings$client.service.control.tolerance.percentage
+  # Positive control
+  targetConc <- posStandard$concentration
+  if (!is.na(targetConc)) {
+    concFilter <- abs(cmpdConc-targetConc) <= (targetConc * toleranceRange)/100
+    wellType <- ifelse(batchCode==posStandard$batchCode & concFilter, "PC", "test")
+  } else {
+    wellType <- ifelse(batchCode==posStandard$batchCode, "PC", "test")
+  }
+  # Negative control
+  targetConc <- negStandard$concentration
+  if (!is.na(targetConc)) {
+    concFilter <- abs(cmpdConc-targetConc) <= (targetConc * toleranceRange)/100
+    wellType[batchCode==negStandard$batchCode & concFilter] <- "NC"
+  } else {
+    wellType[batchCode==negStandard$batchCode] <- "NC"
+  }
   return(wellType)
 }
 getNewControlPlot <- function(controlPair, standardList, batchCodes, concentrations, flags, normalizedActivities, plateOrder, activityName) {
