@@ -43,6 +43,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', exports.createTube
+	app.post '/api/createTubes', exports.createTubes
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -84,6 +85,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
+	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -1725,6 +1727,66 @@ exports.createTubeInternal = (input, callCustom, callback) ->
 			if callCustom && csUtilities.createTube?
 				console.log "running customer specific server function createTube"
 				csUtilities.createTube input, (customerResponse, statusCode) ->
+					json = _.extend json, customerResponse
+					callback json, statusCode
+			else
+				console.warn "could not find customer specific server function createTube so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tube'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)
+
+exports.createTubes = (req, resp) ->
+	exports.createTubesInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.createTubesInternal = (tubes, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createTubes"
+	_.each(tubes, (tube) ->
+		if tube.createdDate?
+			if typeof(tube.createdDate) != "number"
+				console.warn "#{tube.createdDate} is typeof #{typeof(tube.createdDate)}, created date should be a number"
+				tube.createdDate = parseInt tube.createdDate
+				if isNaN(tube.createdDate)
+					msg = "received #{tube.createdDate} when attempting to coerce created date"
+					console.error msg
+					callback msg, 400
+	)
+
+	console.log "baseurl"
+	console.log baseurl
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		_.each(tubes, (tube) ->
+			tube.barcode = tube.barcode.toUpperCase()
+			console.warn tube.barcode
+		)
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify tubes
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		console.log "error"
+		console.log error
+		console.log "response"
+		console.log response
+		console.log "json"
+		console.log json
+		if !error  && response.statusCode == 200
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.createTube?
+				console.log "running customer specific server function createTube"
+				csUtilities.createTube tubes, (customerResponse, statusCode) ->
 					json = _.extend json, customerResponse
 					callback json, statusCode
 			else

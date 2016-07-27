@@ -1,6 +1,11 @@
 class window.BasicFileValidateReviewAndSaveController extends BasicFileValidateAndSaveController
 	template: _.template($("#BasicFileValidateReviewAndSaveView").html())
 
+	events: ->
+		return _.extend({},BasicFileValidateAndSaveController.prototype.events,{
+			'click .bv_linkToDownloadAnnotatedFile' : 'handleClickLinkToDownloadAnnotatedFile'
+		});
+
 	initialize: ->
 		console.log "BasicFileValidateReviewAndSaveController"
 		super()
@@ -29,3 +34,8 @@ class window.BasicFileValidateReviewAndSaveController extends BasicFileValidateA
 	loadAnother: =>
 		@$(".bv_linkToDownloadInvalidsFile").addClass "hide"
 		super()
+
+	handleClickLinkToDownloadAnnotatedFile: =>
+		console.log "handleClickLinkToDownloadAnnotatedFile"
+		# go back to the first screen after downloading the annotated file
+		@loadAnother()
