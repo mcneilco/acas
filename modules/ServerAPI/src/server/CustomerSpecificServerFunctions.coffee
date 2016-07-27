@@ -560,3 +560,6 @@ exports.updateContainersByContainerCodes = (request) ->
 
 exports.addContainerLogs = (request) ->
 	console.debug "inside base customer specific server function addContainerLogs"
+
+exports.moveToLocation = (request) ->
+	console.debug "inside base customer specific server function moveToLocation"

@@ -501,7 +501,7 @@ module.exports = (grunt) ->
 				entry: (
 					entries = []
 					grunt.config.get('sourceDirectories').map (i,index) ->
-						entry = {index: "#{i}/moduledyn/PlateRegistration/src/client/index.coffee"}
+						entry = {index: path.resolve("#{i}/moduledyn/PlateRegistration/src/client/index.coffee")}
 						if fs.existsSync(entry.index)
 							entries.push entry
 					entries[0]
