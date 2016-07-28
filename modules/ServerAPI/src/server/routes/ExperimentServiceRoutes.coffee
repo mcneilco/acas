@@ -127,6 +127,8 @@ updateExpt = (expt, testMode, callback) ->
 		else
 			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
+			console.log "expt to update"
+			console.log JSON.stringify expt
 			request = require 'request'
 			request(
 				method: 'PUT'

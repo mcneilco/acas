@@ -157,6 +157,63 @@ postProtocol = (req, resp) ->
 						resp.end JSON.stringify "saveFailed"
 			)
 
+exports.createProtocolInternal = (protToSave, testMode, callback) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+	serverUtilityFunctions.createLSTransaction protToSave.recordedDate, "new protocol", (transaction) ->
+		protToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, protToSave
+		if testMode or global.specRunnerTestmode
+			unless protToSave.codeName?
+				protToSave.codeName = "PROT-00000001"
+
+		checkFilesAndUpdate = (prot) ->
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity prot, false
+			filesToSave = fileVals.length
+
+			completeProtUpdate = (protToUpdate)->
+				updateProt protToUpdate, testMode, (updatedProt) ->
+					resp.json updatedProt
+
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed"
+				if --filesToSave == 0 then completeProtUpdate(prot)
+
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode prot.codeName
+				for fv in fileVals
+					csUtilities.relocateEntityFile fv, prefix, prot.codeName, fileSaveCompleted
+			else
+				callback prot
+
+		if testMode or global.specRunnerTestmode
+			unless protToSave.id?
+				protToSave.id = 1
+			checkFilesAndUpdate protToSave
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"protocols"
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: protToSave
+				json: true
+			, (error, response, json) =>
+				if !error && response.statusCode == 201
+					checkFilesAndUpdate json
+				else
+					console.log 'got ajax error trying to save new protocol'
+					console.log error
+					#					console.log json
+					#					console.log response
+					console.log response.statusCode
+					console.log response
+					if response.body[0].message is "not unique protocol name"
+						callback response.body[0].message
+					else
+						callback "saveFailed"
+			)
 
 exports.postProtocol = (req, resp) ->
 	postProtocol req, resp
@@ -183,6 +240,29 @@ exports.putProtocol = (req, resp) ->
 				csUtilities.relocateEntityFile fv, prefix, req.body.codeName, fileSaveCompleted
 	else
 		completeProtUpdate()
+
+exports.getProtocolLabelsInternal = (callback) ->
+	if global.specRunnerTestmode
+		protocolServiceTestJSON = require '../public/javascripts/spec/testFixtures/ProtocolServiceTestJSON.js'
+		resp.end JSON.stringify protocolServiceTestJSON.lsLabels
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"protocollabels"
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log 'got ajax error trying to get protocol labels'
+				console.log error
+				console.log json
+				console.log response
+				callback 'got ajax error trying to get protocol labels'
+		)
 
 exports.lsLabels = (req, resp) ->
 	if global.specRunnerTestmode

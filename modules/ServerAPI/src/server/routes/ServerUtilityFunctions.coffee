@@ -1702,11 +1702,13 @@ class Experiment extends Backbone.Model
 			protocol: @get('protocol')
 			lsTypeAndKind: @get("lsType") + "_" + @get("lsKind")
 		}
+
 		if @get("id")?
-			dto.id = @get("id")
-		if @get("corpName") isnt ""
-			dto.codeName = @get("corpName")
+			dto = @get("id")
+		if @get("codeName") isnt ""
+			dto.codeName = @get("codeName")
 		dto
+
 
 
 class ContainerPlate extends Container
