@@ -1793,17 +1793,17 @@ exports.createTubesInternal = (tubes, callCustom, callback) ->
 # If call custom doesn't equal 0 then call custom
 			callCustom  = callCustom != "0"
 			if callCustom && csUtilities.createTube?
-				console.log "running customer specific server function createTube"
-				csUtilities.createTube tubes, (customerResponse, statusCode) ->
+				console.log "running customer specific server function createTubes"
+				csUtilities.createTubes tubes, (customerResponse, statusCode) ->
 					json = _.extend json, customerResponse
 					callback json, statusCode
 			else
-				console.warn "could not find customer specific server function createTube so not running it"
+				console.warn "could not find customer specific server function createTubes so not running it"
 				callback json, response.statusCode
 		else if response.statusCode == 400
 			callback response.body, response.statusCode
 		else
-			console.log 'got ajax error trying to create tube'
+			console.log 'got ajax error trying to create tubes'
 			console.log error
 			console.log response
 			callback response.body, 500

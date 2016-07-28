@@ -552,6 +552,11 @@ exports.createTube = (request, callback) ->
 	callback answer, 200
 	console.debug "inside base customer specific server function createTube"
 
+exports.createTubes = (request, callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function createTubes"
+
 exports.updateWellContent = (request) ->
 	console.debug "inside base customer specific server function updateWellContent"
 
