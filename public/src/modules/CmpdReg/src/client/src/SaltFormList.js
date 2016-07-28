@@ -22,11 +22,11 @@ $(function() {
 		
 		render: function() {
 			$(this.el).empty();
-			$(this.el).append(this.make('option', {value: -1}, 'New Salt'));
 			var self = this;
 			this.collection.each(function(sf){
 				$(self.el).append(new SaltFormOptionController({ model: sf }).render().el);
 			});
+			$(this.el).append(this.make('option', {value: -1}, 'New Salt'));
 		},
 
 		getSelectedSaltForm: function(){
