@@ -274,13 +274,8 @@ exports.postExperiment = (req, resp) ->
 		resp.json response
 
 exports.putExperimentInternal = (experiment, testMode, callback) ->
-	console.log "put experiment internal"
-	console.log "experiment"
-	console.dir experiment
 	exptToSave = experiment
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
-	console.log "fileVals"
-	console.log fileVals
 	filesToSave = fileVals.length
 
 	completeExptUpdate = ->
@@ -292,8 +287,7 @@ exports.putExperimentInternal = (experiment, testMode, callback) ->
 			resp.statusCode = 500
 			return resp.end "file move failed"
 		if --filesToSave == 0 then completeExptUpdate()
-	console.log "filesToSave"
-	console.log filesToSave
+
 	if filesToSave > 0
 		prefix = serverUtilityFunctions.getPrefixFromEntityCode exptToSave.codeName
 		for fv in fileVals
@@ -304,7 +298,6 @@ exports.putExperimentInternal = (experiment, testMode, callback) ->
 
 
 exports.putExperiment = (req, resp) ->
-	console.log "put experiment"
 	exptToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
 	filesToSave = fileVals.length

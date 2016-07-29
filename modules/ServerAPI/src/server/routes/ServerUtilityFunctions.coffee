@@ -1270,7 +1270,6 @@ class Container extends Backbone.Model
 
 	getLogs: ->
 		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'log'
-		console.log lsStates
 		response = []
 		if lsStates?
 			lsStates.forEach (lsState) =>
@@ -1397,8 +1396,6 @@ class Experiment extends Backbone.Model
 		if @lsProperties.defaultValues?
 			for dValue in @lsProperties.defaultValues
 #Adding the new state and value to @
-				console.log "creating default state"
-				console.log dValue
 				newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
 				@listenTo newValue, 'createNewValue', @createNewValue
 				#setting unitType and unitKind in the state, if units are given
@@ -1654,15 +1651,19 @@ class Experiment extends Backbone.Model
 		lsLabels = []
 		_.each(@get("lsLabels").models, (l) =>
 			label = {
+				deleted: l.get("deleted")
+				id: l.get("id")
 				ignored: l.get("ignored")
 				imageFile: l.get("imageFile")
 				labelText: l.get("labelText")
 				lsKind: l.get("lsKind")
 				lsType: l.get("lsType")
+				lsTypeAndKind: l.get("lsType") + "_" + l.get("lsKind")
 				physicallyLabled: l.get("physicallyLabled")
 				preferred: l.get("preferred")
 				recordedBy: @get("recordedBy")
 				recordedDate: l.get("recordedDate")
+				version: l.get("version")
 
 			}
 			lsLabels.push label
@@ -1704,7 +1705,7 @@ class Experiment extends Backbone.Model
 		}
 
 		if @get("id")?
-			dto = @get("id")
+			dto.id = @get("id")
 		if @get("codeName") isnt ""
 			dto.codeName = @get("codeName")
 		dto
