@@ -1795,7 +1795,7 @@ exports.createTubesInternal = (tubes, callCustom, callback) ->
 			if callCustom && csUtilities.createTube?
 				console.log "running customer specific server function createTubes"
 				csUtilities.createTubes tubes, (customerResponse, statusCode) ->
-					json = _.extend json, customerResponse
+#					json = _.extend json, customerResponse
 					callback json, statusCode
 			else
 				console.warn "could not find customer specific server function createTubes so not running it"
