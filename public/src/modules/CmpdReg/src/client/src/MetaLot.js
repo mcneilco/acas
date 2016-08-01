@@ -313,14 +313,28 @@ $(function() {
 	    },
 
 	    newLotSaved: function (message) {
-		    this.trigger('clearErrors', "MetaLotController");
-		    var newLotSuccessController = new NewLotSuccessController({
-			    el: this.$('.NewLotSuccessView'),
-			    corpName: message.metalot.lot.corpName,
-			    buid: message.metalot.lot.buid
-		    });
-		    newLotSuccessController.render();
-		    this.saveInProgress = false;
+			if(message.errors.length > 0){
+				var error = message.errors;
+				mlself.trigger('clearErrors', "MetaLotController");
+				_.each(error, function (err) {
+					mlself.trigger('notifyError', {
+						owner: "MetaLotController",
+						errorLevel: err.level,
+						message: err.message
+					});
+				});
+				mlself.delegateEvents(); // start listening to events
+			}
+			else {
+				this.trigger('clearErrors', "MetaLotController");
+				var newLotSuccessController = new NewLotSuccessController({
+					el: this.$('.NewLotSuccessView'),
+					corpName: message.metalot.lot.corpName,
+					buid: message.metalot.lot.buid
+				});
+				newLotSuccessController.render();
+				this.saveInProgress = false;
+			}
 	    },
 
 	    lotUpdated: function (response) {
