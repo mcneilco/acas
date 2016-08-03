@@ -1098,7 +1098,10 @@ class Container extends Backbone.Model
 				if type == "dateValue"
 					value = parseInt value
 				else if type == "numericValue"
-					value = Number value
+					if value?
+						value = Number value
+					else
+						value = null
 				@.get(key).set "value", value
 				if unit?
 					@.get(key).set "unitKind", String(unit)
@@ -1430,8 +1433,11 @@ class Experiment extends Backbone.Model
 				unit = keyValues["#{key}Unit"]
 				if type == "dateValue"
 					value = parseInt value
-				else if type == "numericValue"
-					value = Number value
+				else if type == "numericValues"
+					if value?
+						value = Number value
+					else
+						value = null
 				@.get(key).set "value", value
 				if unit?
 					@.get(key).set "unitKind", String(unit)

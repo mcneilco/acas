@@ -467,6 +467,13 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
 							return
 						else
+							if callCustom
+								if csUtilities.updateContainersByContainerCodes?
+									console.log "running customer specific server function updateContainersByContainerCodes"
+									csUtilities.updateContainersByContainerCodes updateInformation, (response) ->
+										console.log response
+								else
+									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
 							for updateInfo, index in updateInformation
 								preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin savedContainers[index].lsType, savedContainers[index].lsKind, "ACAS Container"
 								savedContainer = new preferredEntity.model(savedContainers[index])
@@ -475,14 +482,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 								for key of values
 									updateInformation[index][key] = values[key]
 							callback updateInformation, 200
-							if callCustom
-								if csUtilities.updateContainersByContainerCodes?
-									console.log "running customer specific server function updateContainersByContainerCodes"
-									csUtilities.updateContainersByContainerCodes updateInfo, (response) ->
-										console.log response
-								else
-									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
-#
+
 exports.getContainersByCodeNames = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getContainersByCodeNamesInternal req.body, (json, statusCode) ->
@@ -1795,7 +1795,7 @@ exports.createTubesInternal = (tubes, callCustom, callback) ->
 			if callCustom && csUtilities.createTube?
 				console.log "running customer specific server function createTubes"
 				csUtilities.createTubes tubes, (customerResponse, statusCode) ->
-					json = _.extend json, customerResponse
+#					json = _.extend json, customerResponse
 					callback json, statusCode
 			else
 				console.warn "could not find customer specific server function createTubes so not running it"
