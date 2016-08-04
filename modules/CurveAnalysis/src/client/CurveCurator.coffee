@@ -101,28 +101,36 @@ class window.DoseResponsePlotController extends AbstractFormController
 				},
 			)
 
-			promptForKnockout = (selectedPoints) =>
-				@showDoseResponseKnockoutPanel selectedPoints
+			promptForKnockout = (selectedPoints, force) =>
+				if force || !@running?
+					@running = true
+					@showDoseResponseKnockoutPanel selectedPoints
+				else
+					return
 
-			includePoints = (selectedPoints) =>
-				selectedPoints.forEach (selectedPoint) =>
-					@points[selectedPoint.idx].algorithmFlagStatus = ""
-					@points[selectedPoint.idx].algorithmFlagObservation = ""
-					@points[selectedPoint.idx].algorithmFlagCause = ""
-					@points[selectedPoint.idx].algorithmFlagComment = ""
-					@points[selectedPoint.idx].preprocessFlagStatus = ""
-					@points[selectedPoint.idx].preprocessFlagObservation = ""
-					@points[selectedPoint.idx].preprocessFlagCause = ""
-					@points[selectedPoint.idx].preprocessFlagComment = ""
-					@points[selectedPoint.idx].userFlagStatus = ""
-					@points[selectedPoint.idx].userFlagObservation = ""
-					@points[selectedPoint.idx].userFlagCause = ""
-					@points[selectedPoint.idx].userFlagComment = ""
+			includePoints = (selectedPoints, force) =>
+				if force || !@running?
+					@running = true
+					selectedPoints.forEach (selectedPoint) =>
+						@points[selectedPoint.idx].algorithmFlagStatus = ""
+						@points[selectedPoint.idx].algorithmFlagObservation = ""
+						@points[selectedPoint.idx].algorithmFlagCause = ""
+						@points[selectedPoint.idx].algorithmFlagComment = ""
+						@points[selectedPoint.idx].preprocessFlagStatus = ""
+						@points[selectedPoint.idx].preprocessFlagObservation = ""
+						@points[selectedPoint.idx].preprocessFlagCause = ""
+						@points[selectedPoint.idx].preprocessFlagComment = ""
+						@points[selectedPoint.idx].userFlagStatus = ""
+						@points[selectedPoint.idx].userFlagObservation = ""
+						@points[selectedPoint.idx].userFlagCause = ""
+						@points[selectedPoint.idx].userFlagComment = ""
 
-					selectedPoint.drawAsIncluded()
-				@model.set points: @points
-				@model.trigger 'change'
-				return
+						selectedPoint.drawAsIncluded()
+					@model.set points: @points
+					@model.trigger 'change'
+					return
+				else
+					return
 
 			ii = 0
 			while ii < points.length
@@ -260,7 +268,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 				dx
 				dy
 			], brd)
-		createSelection = (e) ->
+		createSelection = (e) =>
+			if !@running?
+				@running = true
 			if !brd.elementsByName.selection?
 				coords = getMouseCoords(e)
 				a = brd.create 'point', [coords.usrCoords[1],coords.usrCoords[2]], {name:'selectionA', withLabel:false, visible:false, fixed:false}
@@ -291,9 +301,9 @@ class window.DoseResponsePlotController extends AbstractFormController
 						if selected?
 							if selected.length > 0
 								if knockoutMode
-									promptForKnockout(selected)
+									promptForKnockout(selected, true)
 								else
-									includePoints(selected)
+									includePoints(selected, true)
 
 				brd.on 'up', brd.mouseUp, brd
 				brd.followSelection = (e) ->
@@ -344,8 +354,9 @@ class window.CurveDetail extends Backbone.Model
 		if curveFitClasses?
 			parametersClass =  curveFitClasses.get 'parametersClass'
 			drapType = window[parametersClass]
-		if resp.fitSettings not instanceof drapType
-			resp.fitSettings = new drapType(resp.fitSettings)
+		if drapType?
+			if resp.fitSettings not instanceof drapType
+				resp.fitSettings = new drapType(resp.fitSettings)
 		return resp
 
 class window.CurveEditorController extends Backbone.View
@@ -375,6 +386,8 @@ class window.CurveEditorController extends Backbone.View
 			if curveFitClasses?
 				controllerClass =  curveFitClasses.get 'parametersController'
 				drapcType = window[controllerClass]
+			if @drapc?
+				@drapc.undelegateEvents()
 			@drapc = new drapcType
 				model: @model.get('fitSettings')
 				el: @$('.bv_analysisParameterForm')
@@ -427,7 +440,6 @@ class window.CurveEditorController extends Backbone.View
 			@deleteRsession()
 		@model = model
 
-		@render()
 		UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 		@model.on 'sync', @handleModelSync
 
@@ -596,6 +608,15 @@ class window.CurveSummaryController extends Backbone.View
 		'click .bv_userNA': 'userNA'
 
 	initialize: ->
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('curveAttributes').renderingHint})
+		renderCurvePath =  curveFitClasses.get 'renderCurvePath'
+#		console.log renderCurvePath
+		if renderCurvePath?
+#			console.log renderCurvePath
+			@renderCurvePath = renderCurvePath
+		else
+			@renderCurvePath = 'dr'
 		@model.on 'change', @render
 		if @options.locked
 			@locked = @options.locked
@@ -608,7 +629,7 @@ class window.CurveSummaryController extends Backbone.View
 			curveUrl = "/src/spec/testFixtures/modules/CurveAnalysis/spec/testFixtures/testThumbs/"
 			curveUrl += @model.get('curveid')+".png"
 		else
-			curveUrl = "/api/curve/render/?legend=false&showGrid=false&height=120&width=250&curveIds="
+			curveUrl = "/api/curve/render/#{@renderCurvePath}/?legend=false&showGrid=true&height=120&width=250&curveIds="
 			curveUrl += @model.get('curveid') + "&showAxes=true&axes=y&labelAxes=false"
 		@$el.html @template
 			curveUrl: curveUrl
@@ -835,9 +856,12 @@ class window.CurveCuratorController extends Backbone.View
 				selectedCurve: @initiallySelectedCurveID
 				locked: @locked
 			@curveListController.on 'selectionUpdated', @curveSelectionUpdated
+			if @curveEditorController?
+				@curveEditorController.undelegateEvents()
 			@curveEditorController = new CurveEditorController
 				el: @$('.bv_curveEditor')
 				locked: @locked
+
 			@curveEditorController.on 'curveDetailSaved', @handleCurveDetailSaved
 			@curveEditorController.on 'curveDetailUpdated', @handleCurveDetailUpdated
 			@curveEditorController.on 'curveUpdateError', @handleCurveUpdateError
@@ -905,9 +929,6 @@ class window.CurveCuratorController extends Backbone.View
 
 	showBadExperimentModal: (text)->
 		UtilityFunctions::hideProgressModal $('.bv_loadCurvesModal')
-		console.log text
-		console.log $('.bv_badExperimentCode .modal-body')
-		console.log $('.bv_badExperimentCode').find('.modal-body').html()
 		if text?
 			@$('.bv_badExperimentCode').find('.modal-body').html(text+'<div><br></div>')
 		UtilityFunctions::showProgressModal $('.bv_badExperimentCode')

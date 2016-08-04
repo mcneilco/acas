@@ -174,7 +174,7 @@ server.sar.csvLabel = bestLabel
 client.sar.sorting = includeOperators
 
 # url to fetch structure images from
-client.service.external.structure.url=http://${client.host}:8080/cmpdreg/structureimage/lot/
+client.service.external.structure.url=http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/
 
 # url to lot details
 client.service.external.lotDetails.url=http://${client.host}:8080/cmpdreg/#lot/
@@ -401,6 +401,7 @@ client.entity.editingRoles=
 client.entity.deletingRoles=
 
 client.protocol.showAssayTreeRule=false
+client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=${client.service.persistence.host}
@@ -471,7 +472,6 @@ server.support.smtp.password=null
 server.support.smtp.auth=false
 server.support.smtp.tls=false
 server.support.smtp.ssl=false
-
 
 client.roles.containerInventory.admin=${server.support.smtp.username}
 client.compoundInventory.enforceUppercaseBarcodes=true
