@@ -1688,6 +1688,7 @@ class Experiment extends Backbone.Model
 				ignored: s.get("ignored")
 				lsKind: s.get("lsKind")
 				lsType: s.get("lsType")
+				id: s.get("id")
 				lsTypeAndKind: s.get("lsType") + "_" + s.get("lsKind")
 				lsValues: lsValues
 				recordedBy: @get("recordedBy")
