@@ -18,6 +18,11 @@
 				"Bio Activity":
 					deepLink: "primary_screen_experiment"
 				relatedFilesRelativePath: "experiments"
+			PROJ:
+				entityName: "things/project/project"
+				"project":
+					deepLink: "project"
+				relatedFilesRelativePath: "entities/projects"
 			PT:
 				entityName: "parent thing"
 				default:

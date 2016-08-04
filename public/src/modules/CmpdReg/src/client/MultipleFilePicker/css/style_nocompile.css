@@ -1,0 +1,154 @@
+#fixture {
+    position: absolute;
+    left: -10000px;
+    top: -10000px;
+}
+body {
+    font-family: Arial;
+}
+
+div#upload-app {
+    /* ORIGINAL WIDTH width: 510px;*/
+    width: 625px;
+
+    position: absolute;
+    bottom: 5px; important!
+left: 20px;
+
+}
+
+#upload-app {
+    background-color: #eeeeee;
+    border: 0.1em solid #d5d8dd;
+    border: 12px solid #D5D8DD;
+}
+div.drop-view {
+}
+span.drop-text {
+    color: rgb(200, 200, 200);
+    font-size: 1.7em;
+    display: inline-block;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    margin: 10px;
+}
+/*.file-view {
+    border-bottom: 1px solid #b8cfe5;
+    padding: 5px;
+    color: rgb(40, 40, 40);
+    overflow: auto;
+    clear: both;
+}*/
+.file-view span {
+    /*margin-right: 5px;*/
+}
+#drop-view {
+    /* ORIGINAL WIDTH width: 500px;*/
+    width: 615px;
+    height: 200px;
+    overflow: auto;
+}
+div.hover {
+    background: rgb(240, 240, 240);
+}
+.uploaded {
+    color: #2a4353;
+}
+.fileTable .description {
+    width: 90px;
+}
+.notuploaded {
+    color: #ffcccc;
+}
+.fileTable .uploaded {
+}
+input.delete {
+}
+span.name {
+
+}
+span.cancel {
+    margin-right: 17px;
+}
+select.ie-description {
+    /*margin-left: 43px;
+    margin-top: 8px;*/
+    /*float: right;
+    margin-right: 81px;*/
+    /*margin-left: 43px;*/
+    /*margin-left: 158px;*/
+    width: 90px;
+
+}
+.fileInputTable .fileInput {
+    width: 364px;
+}
+.fileInputTable .fileType {
+    width: 185px;
+}
+.fileInputTable .cancel {
+    /*    width: 110px;*/
+}
+.cancel {
+    font-size:13px;
+}
+#upload-app .file-upload {
+    /*width: 200px;*/
+}
+.cancel:hover {
+    cursor: pointer;
+    color: red;
+}
+#upload-app .btn {
+    margin: 10px 5px 10px 5px;
+    background-color: #2a4353;
+    float: right;
+    width: 90px;
+    padding: 10px 5px 0px 5px;
+    background-color: #2A4353;
+    margin-left: 10px;
+}
+input.cancelBtn.btn, input.reset.btn, input.upload.btn {
+    border-style: none;
+    cursor: hand;
+}
+#upload-app .btn.cancelBtn {
+    background: no-repeat url('../../images/cancel.png');
+    height: 27px;
+    width: 90px;
+}
+#upload-app .btn.reset {
+    background: no-repeat url('../../images/reset.png');
+    height: 27px;
+    width: 90px;
+}
+#upload-app .btn.upload {
+    background: no-repeat url('../../images/upload.png');
+    height: 27px;
+    width: 90px;
+}
+
+/*HEADER*/
+.header{
+    color: #2A4353;
+    font:1em Arial Narrow, Helvetica, sans-serif;
+    letter-spacing: -.3px;
+    text-transform:uppercase;
+    font-weight:bold;
+}
+.fileNameHead {
+    width: 280px;
+}
+.fileSizeHead {
+    width: 80px;
+}
+.descriptionHead {
+    width: 100px;
+}
+.statusHead {
+    width: 70px;
+}
+.removeHead {
+    width: 40px;
+}

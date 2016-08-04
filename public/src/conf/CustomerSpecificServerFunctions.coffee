@@ -3,12 +3,13 @@
 
   All functions are required with unchanged signatures
 ###
-serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+ACAS_HOME="../../.."
+serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 fs = require 'fs'
-
+_ = require 'underscore'
 
 exports.logUsage = (action, data, username) ->
-	# no ACAS logging service yet
+# no ACAS logging service yet
 	console.log "would have logged: "+action+" with data: "+data+" and user: "+username
 	# logger = require "../../../routes/Logger"
 	global.logger.writeToLog("info", "logUsage", action, data, username, null)
@@ -19,7 +20,8 @@ exports.getConfServiceVars = (sysEnv, callback) ->
 	callback(conf)
 
 exports.authCheck = (user, pass, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+#	retFun "Success"
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -34,7 +36,10 @@ exports.authCheck = (user, pass, retFun) ->
 		if !error && response.statusCode == 200
 			retFun JSON.stringify json
 		else if !error && response.statusCode == 302
-			retFun JSON.stringify response.headers.location
+			console.log 'Auth Successful - checking roles'
+			exports.checkRoles user , (checkRoleResponse) ->
+				retFun checkRoleResponse
+#			retFun JSON.stringify response.headers.location
 		else
 			console.log 'got connection error trying authenticate a user'
 			console.log error
@@ -44,7 +49,7 @@ exports.authCheck = (user, pass, retFun) ->
 	)
 
 exports.resetAuth = (email, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -66,7 +71,7 @@ exports.resetAuth = (email, retFun) ->
 	)
 
 exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	request = require 'request'
 	request(
 		headers:
@@ -90,8 +95,8 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 			retFun "connection_error "+error
 	)
 exports.getUser = (username, callback) ->
-	config = require '../../../conf/compiled/conf.js'
-	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	if config.all.client.require.login
 		request = require 'request'
 		request(
 			headers:
@@ -158,18 +163,49 @@ exports.loginStrategy = (username, password, done) ->
 				console.log "Exception trying to log:"+error
 			exports.getUser username,done
 
-exports.getProjects = (resp) ->
-	projects = 	exports.projects = [
-		code: "project1"
-		name: "Project 1"
-		ignored: false
-	,
-		code: "project2"
-		name: "Project 2"
-		ignored: false
-	]
+exports.getProjects = (req, resp) ->
+	exports.getProjectsInternal req, (statusCode, response) =>
+		resp.statusCode = statusCode
+		resp.json response
 
-	resp.end JSON.stringify projects
+exports.getProjectsInternal = (req, callback) ->
+	config = require '../../../conf/compiled/conf.js'
+	url = config.all.client.service.persistence.fullpath+"authorization/projects?find=ByUserName&userName="+req.user.username+"&format=codeTable"
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: url
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback response.statusCode, json
+		else
+			console.log 'got ajax error trying get acas project codes'
+			console.log error
+			console.log json
+			console.log response
+			callback response.statusCode, json
+	)
+
+exports.getProjectStubs = (req, resp) ->
+	exports.getProjectStubsInternal (statusCode, response) =>
+		resp.statusCode = statusCode
+		resp.json response
+
+exports.getProjectStubsInternal = (callback) ->
+	config = require '../../../conf/compiled/conf.js'
+	request = require 'request'
+	request.get
+		url: config.all.client.service.persistence.fullpath+"authorization/groupsAndProjects"
+		json: true
+	, (error, response, body) =>
+
+		serverError = error
+		acasGroupsAndProjects = body
+		#remove groups attribute
+		_.each acasGroupsAndProjects.projects, (project) ->
+			delete project.groups
+		callback response.statusCode, acasGroupsAndProjects.projects
 
 exports.makeServiceRequestHeaders = (user) ->
 	username = if user? then user.username else "testmode"
@@ -178,24 +214,22 @@ exports.makeServiceRequestHeaders = (user) ->
 		"From": username
 
 exports.getCustomerMolecularTargetCodes = (resp) ->
-	molecTargetTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	molecTargetTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.end JSON.stringify molecTargetTestJSON.customerMolecularTargetCodeTable
 
 exports.validateCloneAndGetTarget = (req, resp) ->
-	psProtocolServiceTestJSON = require '../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js'
+	psProtocolServiceTestJSON = require "#{ACAS_HOME}/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js"
 	resp.json psProtocolServiceTestJSON.successfulCloneValidation
 
-exports.getAuthors = (resp) ->
-	config = require '../../../conf/compiled/conf.js'
-	serverUtilityFunctions = require '../../../routes/ServerUtilityFunctions.js'
+exports.getAuthors = (req, resp) -> #req passed in as input to be able to filter users by roles
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	serverUtilityFunctions = require "#{ACAS_HOME}/routes/ServerUtilityFunctions.js"
 	baseurl = config.all.client.service.persistence.fullpath+"authors/codeTable"
+	#TODO: need to change if want to filter users by roles
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
-
-
-
 exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
 
@@ -206,7 +240,10 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 	relEntityFolder = relEntitiesFolder + entityCode + "/"
 	absEntitiesFolder = uploadsPath + relEntitiesFolder
 	absEntityFolder = uploadsPath + relEntityFolder
-	newPath = absEntityFolder + fileValue.fileValue
+	if fileValue.comments != undefined and fileValue.comments != null
+		newPath = absEntityFolder + fileValue.comments
+	else
+		newPath = absEntityFolder + fileValue.fileValue
 
 	entitiesFolder = uploadsPath + "entities/"
 	serverUtilityFunctions.ensureExists entitiesFolder, 0o0744, (err) ->
@@ -223,6 +260,17 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 						if err?
 							console.log "Can't find or create : " + absEntityFolder
 							callback false
+						else if fileValue.comments != undefined and fileValue.comments != null
+							console.log "fileValue has comments"
+							console.log oldPath
+							console.log newPath
+							stream = fs.createReadStream(oldPath).pipe fs.createWriteStream(newPath)
+							stream.on 'error', (err) ->
+								console.log "error copying file to new location"
+								callback false
+							stream.on 'close', ->
+								fileValue.fileValue = relEntityFolder + fileValue.comments
+								callback true
 						else
 							fs.rename oldPath, newPath, (err) ->
 								if err?
@@ -234,11 +282,11 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 									callback true
 
 exports.getDownloadUrl = (fileValue) ->
-	config = require '../../../conf/compiled/conf.js'
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	return config.all.client.datafiles.downloadurl.prefix+fileValue
 
 exports.getTestedEntityProperties = (propertyList, entityList, callback) ->
-	# This is a stub implementation that returns empty results
+# This is a stub implementation that returns empty results
 
 	if propertyList.indexOf('ERROR') > -1
 		callback null
@@ -306,9 +354,8 @@ exports.getPreferredBatchIds = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
-		console.log("search term: " +requests[0])
 		request
 			method: 'POST'
 			url: config.all.server.service.external.preferred.batchid.url
@@ -341,7 +388,7 @@ exports.getPreferredParentIds = (requests, callback) ->
 
 		callback response
 	else
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -374,7 +421,7 @@ exports.getBatchBestLabels = (requests, callback) ->
 
 		callback response
 	else #not spec mode
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -408,7 +455,7 @@ exports.getParentBestLabels = (requests, callback) ->
 
 		callback response
 	else
-		config = require '../../../conf/compiled/conf.js'
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 		request = require 'request'
 		request
 			method: 'POST'
@@ -434,3 +481,65 @@ checkBatch_TestMode = (requestName) ->
 		when  "alias" then respId = "norm_"+idComps[1]+"A"
 		else respId = requestName
 	return respId
+
+exports.checkRoles = (user, retFun) ->
+	exports.getUser user, (expectnull, author)->
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+		if author?.roles? and config.all.client.roles?.loginRole?
+			roles = _.map author.roles, (role) ->
+				role.roleEntry.roleName
+			loginRoles = config.all.client.roles.loginRole.split ","
+			console.log loginRoles
+			console.log _.intersection loginRoles, roles
+			if _.intersection(loginRoles, roles).length > 0
+				console.log 'Role check successful'
+				retFun 'success'
+			else
+				console.log 'Role check failed'
+				retFun 'login_error'
+		else if config.all.client.roles?.loginRole?
+			retFun 'login_error'
+		else
+			retFun 'success'
+
+exports.getExternalProjectCodes = (displayName, requests, callback) ->
+	if displayName == "Corporate Batch ID"
+		console.log "looking up compound batches"
+		exports.getBatchProjects requests, (response) ->
+			console.log "getExternalProjectCodes response"
+			console.log response
+			callback response
+	else
+		callback "failed: problem with external preferred Code request: code type and kind are unknown to system"
+
+exports.getBatchProjects = (requests, callback) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("999999999") > -1
+				res.projectCode = ""
+			else if req.requestName.indexOf("673874") > -1
+				res.projectCode = "DNS000001234::7"
+			else
+				res.projectCode = checkBatch_TestMode(req.requestName)
+			results.push res
+		response = results
+
+		callback response
+	else #not spec mode
+		config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+		request = require 'request'
+		request
+			method: 'POST'
+			url: config.all.client.service.cmpdReg.persistence.fullpath+"projects/getBatchProjects"
+			json: true
+			body: requests
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.log error
+				console.log response
+				console.log json
+				callback null

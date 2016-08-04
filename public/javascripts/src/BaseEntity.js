@@ -510,7 +510,7 @@
     };
 
     BaseEntityController.prototype.canEdit = function() {
-      var i, len, ref, ref1, role, rolesToTest;
+      var i, len, projectAdminRole, ref, ref1, role, rolesToTest;
       if (this.model.isNew() || this.model.getScientist().get('codeValue') === "unassigned") {
         return true;
       } else {
@@ -519,12 +519,22 @@
           ref1 = window.conf.entity.editingRoles.split(",");
           for (i = 0, len = ref1.length; i < len; i++) {
             role = ref1[i];
+            role = $.trim(role);
             if (role === 'entityScientist') {
               if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
                 return true;
               }
+            } else if (role === 'projectAdmin') {
+              projectAdminRole = {
+                lsType: "Project",
+                lsKind: this.model.getProjectCode().get('codeValue'),
+                roleName: "Administrator"
+              };
+              if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
+                return true;
+              }
             } else {
-              rolesToTest.push($.trim(role));
+              rolesToTest.push(role);
             }
           }
           if (rolesToTest.length === 0) {
@@ -539,18 +549,28 @@
     };
 
     BaseEntityController.prototype.canDelete = function() {
-      var i, len, ref, ref1, role, rolesToTest;
+      var i, len, projectAdminRole, ref, ref1, role, rolesToTest;
       if (((ref = window.conf.entity) != null ? ref.deletingRoles : void 0) != null) {
         rolesToTest = [];
         ref1 = window.conf.entity.deletingRoles.split(",");
         for (i = 0, len = ref1.length; i < len; i++) {
           role = ref1[i];
+          role = $.trim(role);
           if (role === 'entityScientist') {
             if (window.AppLaunchParams.loginUserName === this.model.getScientist().get('codeValue')) {
               return true;
             }
+          } else if (role === 'projectAdmin') {
+            projectAdminRole = {
+              lsType: "Project",
+              lsKind: this.model.getProjectCode().get('codeValue'),
+              roleName: "Administrator"
+            };
+            if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
+              return true;
+            }
           } else {
-            rolesToTest.push($.trim(role));
+            rolesToTest.push(role);
           }
         }
         if (rolesToTest.length === 0) {
@@ -577,6 +597,13 @@
     };
 
     BaseEntityController.prototype.editStatusOptions = function() {
+      var ref;
+      if (((ref = window.conf.entity) != null ? ref.approvalRole : void 0) != null) {
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, window.conf.entity.approvalRole)) {
+          this.$(".bv_status option[value='approved']").attr('disabled', 'disabled');
+          this.$(".bv_status option[value='rejected']").attr('disabled', 'disabled');
+        }
+      }
       if (!this.canDelete()) {
         return this.$(".bv_status option[value='deleted']").attr('disabled', 'disabled');
       }

@@ -17,6 +17,9 @@
   prepIncludes = function() {
     var i, includeLines, includeStr, j, len, len1, path, styleFiles, templateFiles;
     styleFiles = glob.sync('../public/src/modules/*/src/client/**/*.css');
+    styleFiles = _.filter(styleFiles, function(fileName) {
+      return !(/_nocompile.css$/.test(fileName));
+    });
     templateFiles = glob.sync('../public/src/modules/*/src/client/**/*.html');
     includeLines = "";
     for (i = 0, len = styleFiles.length; i < len; i++) {

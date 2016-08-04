@@ -6,11 +6,15 @@
  */
 
 (function() {
-  var checkBatch_TestMode, fs, serverUtilityFunctions;
+  var ACAS_HOME, _, checkBatch_TestMode, fs, serverUtilityFunctions;
 
-  serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+  ACAS_HOME = "../../..";
+
+  serverUtilityFunctions = require(ACAS_HOME + "/routes/ServerUtilityFunctions.js");
 
   fs = require('fs');
+
+  _ = require('underscore');
 
   exports.logUsage = function(action, data, username) {
     console.log("would have logged: " + action + " with data: " + data + " and user: " + username);
@@ -25,7 +29,7 @@
 
   exports.authCheck = function(user, pass, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -43,7 +47,10 @@
         if (!error && response.statusCode === 200) {
           return retFun(JSON.stringify(json));
         } else if (!error && response.statusCode === 302) {
-          return retFun(JSON.stringify(response.headers.location));
+          console.log('Auth Successful - checking roles');
+          return exports.checkRoles(user, function(checkRoleResponse) {
+            return retFun(checkRoleResponse);
+          });
         } else {
           console.log('got connection error trying authenticate a user');
           console.log(error);
@@ -57,7 +64,7 @@
 
   exports.resetAuth = function(email, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -86,7 +93,7 @@
 
   exports.changeAuth = function(user, passOld, passNew, passNewAgain, retFun) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     request = require('request');
     return request({
       headers: {
@@ -118,8 +125,8 @@
 
   exports.getUser = function(username, callback) {
     var config, request;
-    config = require('../../../conf/compiled/conf.js');
-    if (config.all.server.roologin.getUserLink && !global.specRunnerTestmode) {
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
+    if (config.all.client.require.login) {
       request = require('request');
       return request({
         headers: {
@@ -162,7 +169,7 @@
   };
 
   exports.isUserAdmin = function(user) {
-    var _, adminRoles, isAdmin;
+    var adminRoles, isAdmin;
     _ = require('underscore');
     adminRoles = _.filter(user.roles, function(role) {
       return role.roleEntry.roleName === 'admin';
@@ -209,20 +216,66 @@
     });
   };
 
-  exports.getProjects = function(resp) {
-    var projects;
-    projects = exports.projects = [
-      {
-        code: "project1",
-        name: "Project 1",
-        ignored: false
-      }, {
-        code: "project2",
-        name: "Project 2",
-        ignored: false
-      }
-    ];
-    return resp.end(JSON.stringify(projects));
+  exports.getProjects = function(req, resp) {
+    return exports.getProjectsInternal(req, (function(_this) {
+      return function(statusCode, response) {
+        resp.statusCode = statusCode;
+        return resp.json(response);
+      };
+    })(this));
+  };
+
+  exports.getProjectsInternal = function(req, callback) {
+    var config, request, url;
+    config = require('../../../conf/compiled/conf.js');
+    url = config.all.client.service.persistence.fullpath + "authorization/projects?find=ByUserName&userName=" + req.user.username + "&format=codeTable";
+    request = require('request');
+    return request({
+      method: 'GET',
+      url: url,
+      json: true
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error && response.statusCode === 200) {
+          return callback(response.statusCode, json);
+        } else {
+          console.log('got ajax error trying get acas project codes');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          return callback(response.statusCode, json);
+        }
+      };
+    })(this));
+  };
+
+  exports.getProjectStubs = function(req, resp) {
+    return exports.getProjectStubsInternal((function(_this) {
+      return function(statusCode, response) {
+        resp.statusCode = statusCode;
+        return resp.json(response);
+      };
+    })(this));
+  };
+
+  exports.getProjectStubsInternal = function(callback) {
+    var config, request;
+    config = require('../../../conf/compiled/conf.js');
+    request = require('request');
+    return request.get({
+      url: config.all.client.service.persistence.fullpath + "authorization/groupsAndProjects",
+      json: true
+    }, (function(_this) {
+      return function(error, response, body) {
+        var acasGroupsAndProjects, serverError;
+        serverError = error;
+        acasGroupsAndProjects = body;
+        _.each(acasGroupsAndProjects.projects, function(project) {
+          return delete project.groups;
+        });
+        return callback(response.statusCode, acasGroupsAndProjects.projects);
+      };
+    })(this));
   };
 
   exports.makeServiceRequestHeaders = function(user) {
@@ -235,27 +288,27 @@
 
   exports.getCustomerMolecularTargetCodes = function(resp) {
     var molecTargetTestJSON;
-    molecTargetTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    molecTargetTestJSON = require(ACAS_HOME + "/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js");
     return resp.end(JSON.stringify(molecTargetTestJSON.customerMolecularTargetCodeTable));
   };
 
   exports.validateCloneAndGetTarget = function(req, resp) {
     var psProtocolServiceTestJSON;
-    psProtocolServiceTestJSON = require('../../javascripts/spec/testFixtures/PrimaryScreenProtocolServiceTestJSON.js');
+    psProtocolServiceTestJSON = require(ACAS_HOME + "/public/javascripts/spec/PrimaryScreen/testFixtures/PrimaryScreenProtocolServiceTestJSON.js");
     return resp.json(psProtocolServiceTestJSON.successfulCloneValidation);
   };
 
-  exports.getAuthors = function(resp) {
+  exports.getAuthors = function(req, resp) {
     var baseurl, config;
-    config = require('../../../conf/compiled/conf.js');
-    serverUtilityFunctions = require('../../../routes/ServerUtilityFunctions.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
+    serverUtilityFunctions = require(ACAS_HOME + "/routes/ServerUtilityFunctions.js");
     baseurl = config.all.client.service.persistence.fullpath + "authors/codeTable";
     return serverUtilityFunctions.getFromACASServer(baseurl, resp);
   };
 
   exports.relocateEntityFile = function(fileValue, entityCodePrefix, entityCode, callback) {
     var absEntitiesFolder, absEntityFolder, config, entitiesFolder, newPath, oldPath, relEntitiesFolder, relEntityFolder, uploadsPath;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
     oldPath = uploadsPath + fileValue.fileValue;
     relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix);
@@ -266,7 +319,11 @@
     relEntityFolder = relEntitiesFolder + entityCode + "/";
     absEntitiesFolder = uploadsPath + relEntitiesFolder;
     absEntityFolder = uploadsPath + relEntityFolder;
-    newPath = absEntityFolder + fileValue.fileValue;
+    if (fileValue.comments !== void 0 && fileValue.comments !== null) {
+      newPath = absEntityFolder + fileValue.comments;
+    } else {
+      newPath = absEntityFolder + fileValue.fileValue;
+    }
     entitiesFolder = uploadsPath + "entities/";
     return serverUtilityFunctions.ensureExists(entitiesFolder, 0x1e4, function(err) {
       if (err != null) {
@@ -279,9 +336,23 @@
             return callback(false);
           } else {
             return serverUtilityFunctions.ensureExists(absEntityFolder, 0x1e4, function(err) {
+              var stream;
               if (err != null) {
                 console.log("Can't find or create : " + absEntityFolder);
                 return callback(false);
+              } else if (fileValue.comments !== void 0 && fileValue.comments !== null) {
+                console.log("fileValue has comments");
+                console.log(oldPath);
+                console.log(newPath);
+                stream = fs.createReadStream(oldPath).pipe(fs.createWriteStream(newPath));
+                stream.on('error', function(err) {
+                  console.log("error copying file to new location");
+                  return callback(false);
+                });
+                return stream.on('close', function() {
+                  fileValue.fileValue = relEntityFolder + fileValue.comments;
+                  return callback(true);
+                });
               } else {
                 return fs.rename(oldPath, newPath, function(err) {
                   if (err != null) {
@@ -303,7 +374,7 @@
 
   exports.getDownloadUrl = function(fileValue) {
     var config;
-    config = require('../../../conf/compiled/conf.js');
+    config = require(ACAS_HOME + "/conf/compiled/conf.js");
     return config.all.client.datafiles.downloadurl.prefix + fileValue;
   };
 
@@ -393,9 +464,8 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
-      console.log("search term: " + requests[0]);
       return request({
         method: 'POST',
         url: config.all.server.service.external.preferred.batchid.url,
@@ -439,7 +509,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -482,7 +552,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -527,7 +597,7 @@
       response = results;
       return callback(response);
     } else {
-      config = require('../../../conf/compiled/conf.js');
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
       request = require('request');
       return request({
         method: 'POST',
@@ -568,6 +638,88 @@
         respId = requestName;
     }
     return respId;
+  };
+
+  exports.checkRoles = function(user, retFun) {
+    return exports.getUser(user, function(expectnull, author) {
+      var config, loginRoles, ref, ref1, roles;
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
+      if (((author != null ? author.roles : void 0) != null) && (((ref = config.all.client.roles) != null ? ref.loginRole : void 0) != null)) {
+        roles = _.map(author.roles, function(role) {
+          return role.roleEntry.roleName;
+        });
+        loginRoles = config.all.client.roles.loginRole.split(",");
+        console.log(loginRoles);
+        console.log(_.intersection(loginRoles, roles));
+        if (_.intersection(loginRoles, roles).length > 0) {
+          console.log('Role check successful');
+          return retFun('success');
+        } else {
+          console.log('Role check failed');
+          return retFun('login_error');
+        }
+      } else if (((ref1 = config.all.client.roles) != null ? ref1.loginRole : void 0) != null) {
+        return retFun('login_error');
+      } else {
+        return retFun('success');
+      }
+    });
+  };
+
+  exports.getExternalProjectCodes = function(displayName, requests, callback) {
+    if (displayName === "Corporate Batch ID") {
+      console.log("looking up compound batches");
+      return exports.getBatchProjects(requests, function(response) {
+        console.log("getExternalProjectCodes response");
+        console.log(response);
+        return callback(response);
+      });
+    } else {
+      return callback("failed: problem with external preferred Code request: code type and kind are unknown to system");
+    }
+  };
+
+  exports.getBatchProjects = function(requests, callback) {
+    var config, k, len, req, request, res, response, results;
+    if (global.specRunnerTestmode) {
+      results = [];
+      for (k = 0, len = requests.length; k < len; k++) {
+        req = requests[k];
+        res = {
+          requestName: req.requestName
+        };
+        if (req.requestName.indexOf("999999999") > -1) {
+          res.projectCode = "";
+        } else if (req.requestName.indexOf("673874") > -1) {
+          res.projectCode = "DNS000001234::7";
+        } else {
+          res.projectCode = checkBatch_TestMode(req.requestName);
+        }
+        results.push(res);
+      }
+      response = results;
+      return callback(response);
+    } else {
+      config = require(ACAS_HOME + "/conf/compiled/conf.js");
+      request = require('request');
+      return request({
+        method: 'POST',
+        url: config.all.client.service.cmpdReg.persistence.fullpath + "projects/getBatchProjects",
+        json: true,
+        body: requests
+      }, (function(_this) {
+        return function(error, response, json) {
+          if (!error && response.statusCode === 200) {
+            return callback(json);
+          } else {
+            console.log(error);
+            console.log(response);
+            console.log(json);
+            return callback(null);
+          }
+        };
+      })(this));
+    }
   };
 
 }).call(this);

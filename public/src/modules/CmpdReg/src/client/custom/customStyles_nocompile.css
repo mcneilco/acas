@@ -1,0 +1,13 @@
+.MetaLotView .project {
+	width: 160px;
+}
+.MetaLotView .boilingPoint, .meltingPoint, .supplierLot, .buid {
+	width: 153px;
+}
+
+.MetaLotView .buid, .lotMolWeight, .synthesisDate, .notebookPage {
+	width: 155px;
+}
+
+
+

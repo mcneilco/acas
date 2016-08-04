@@ -1,5 +1,5 @@
 (function() {
-  var _, configuredEntityTypes, formatBestLabelsAsCSV, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONReferenceCode, formatReqArrayAsCSV, runSingleSearch,
+  var _, configuredEntityTypes, formatBestLabelsAsCSV, formatCSVRequestAsReqArray, formatJSONBestLabel, formatJSONProjectCode, formatJSONReferenceCode, formatProjectCodesArrayAsCSV, formatReqArrayAsCSV, runSingleSearch,
     hasProp = {}.hasOwnProperty;
 
   exports.setupAPIRoutes = function(app) {
@@ -7,7 +7,8 @@
     app.get('/api/entitymeta/configuredEntityTypes/displayName/:displayName', exports.getSpecificEntityTypeRoute);
     app.post('/api/entitymeta/referenceCodes/:csv?', exports.referenceCodesRoute);
     app.post('/api/entitymeta/pickBestLabels/:csv?', exports.pickBestLabelsRoute);
-    return app.post('/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute);
+    app.post('/api/entitymeta/searchForEntities', exports.searchForEntitiesRoute);
+    return app.post('/api/entitymeta/projectCodes/:csv?', exports.projectCodesRoute);
   };
 
   exports.setupRoutes = function(app, loginRoutes) {
@@ -15,7 +16,8 @@
     app.get('/api/entitymeta/ConfiguredEntityTypes/displayName/:displayName', loginRoutes.ensureAuthenticated, exports.getSpecificEntityTypeRoute);
     app.post('/api/entitymeta/referenceCodes/:csv?', loginRoutes.ensureAuthenticated, exports.referenceCodesRoute);
     app.post('/api/entitymeta/pickBestLabels/:csv?', loginRoutes.ensureAuthenticated, exports.pickBestLabelsRoute);
-    return app.post('/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated, exports.searchForEntitiesRoute);
+    app.post('/api/entitymeta/searchForEntities', loginRoutes.ensureAuthenticated, exports.searchForEntitiesRoute);
+    return app.post('/api/entitymeta/projectCodes/:csv?', loginRoutes.ensureAuthenticated, exports.projectCodesRoute);
   };
 
   configuredEntityTypes = require('../conf/ConfiguredEntityTypes.js');
@@ -380,6 +382,21 @@
     return outStr;
   };
 
+  formatProjectCodesArrayAsCSV = function(prefResp) {
+    var i, len, outStr, pref, preferreds;
+    preferreds = prefResp;
+    outStr = "Requested Name,Project Code\n";
+    if (prefResp != null) {
+      for (i = 0, len = preferreds.length; i < len; i++) {
+        pref = preferreds[i];
+        outStr += pref.requestName + ',' + pref.projectCode + '\n';
+      }
+    } else {
+      outStr += ',\n';
+    }
+    return outStr;
+  };
+
   formatJSONReferenceCode = function(prefResp, referenceCodeLocation) {
     var i, len, out, pref;
     out = [];
@@ -404,6 +421,116 @@
       });
     }
     return out;
+  };
+
+  formatJSONProjectCode = function(prefResp, projectCodeLocation) {
+    var i, len, out, pref;
+    out = [];
+    for (i = 0, len = prefResp.length; i < len; i++) {
+      pref = prefResp[i];
+      out.push({
+        requestName: pref.requestName,
+        projectCode: pref[projectCodeLocation]
+      });
+    }
+    return out;
+  };
+
+  exports.projectCodesRoute = function(req, resp) {
+    var csv, requestData;
+    requestData = {
+      displayName: req.body.displayName
+    };
+    if (req.params.csv === "csv") {
+      csv = true;
+      requestData.entityIdStringLines = req.body.entityIdStringLines;
+    } else {
+      csv = false;
+      requestData.requests = req.body.requests;
+    }
+    return exports.projectCodes(requestData, csv, function(json) {
+      if (typeof json === "string" && json.indexOf("failed") > -1) {
+        resp.statusCode = 500;
+        resp.json(json);
+      }
+      return resp.json(json);
+    });
+  };
+
+  exports.projectCodes = function(requestData, csv, callback) {
+    var csUtilities, entityType, preferredThingService, reqHashes, reqList;
+    console.log("stubs mode is: " + global.specRunnerTestmode);
+    console.log("csv is " + csv);
+    console.log("requestData.displayName is " + requestData.displayName);
+    exports.getSpecificEntityType(requestData.displayName, function(json) {
+      requestData.type = json.type;
+      requestData.kind = json.kind;
+      return requestData.sourceExternal = json.sourceExternal;
+    });
+    if (csv) {
+      reqList = formatCSVRequestAsReqArray(requestData.entityIdStringLines);
+    } else {
+      reqList = requestData.requests;
+    }
+    if (requestData.sourceExternal) {
+      console.log("looking up external entity");
+      csUtilities = require('../public/src/conf/CustomerSpecificServerFunctions.js');
+      csUtilities.getExternalProjectCodes(requestData.displayName, reqList, function(prefResp) {
+        if (typeof prefResp === "string" && prefResp.indexOf("failed") > -1) {
+          callback(prefResp);
+        }
+        if (csv) {
+          return callback({
+            displayName: requestData.displayName,
+            resultCSV: formatProjectCodesArrayAsCSV(prefResp)
+          });
+        } else {
+          return callback({
+            displayName: requestData.displayName,
+            results: formatJSONProjectCode(prefResp, "projectCode")
+          });
+        }
+      });
+    } else {
+      entityType = configuredEntityTypes.entityTypes[requestData.displayName];
+      console.log("entityType: " + entityType);
+      if (entityType.codeOrigin === "ACAS LsThing") {
+        preferredThingService = require("./ThingServiceRoutes.js");
+        reqHashes = {
+          thingType: entityType.type,
+          thingKind: entityType.kind,
+          requests: reqList
+        };
+        preferredThingService.getProjectCodesFromNamesOrCodes(reqHashes, function(codeResponse) {
+          var out, outStr, res;
+          if (csv) {
+            out = (function() {
+              var i, len, ref, results;
+              ref = codeResponse.results;
+              results = [];
+              for (i = 0, len = ref.length; i < len; i++) {
+                res = ref[i];
+                results.push(res.requestName + "," + res.projectCode);
+              }
+              return results;
+            })();
+            outStr = "Requested Name,Project Code\n" + out.join('\n');
+            return callback({
+              displayName: requestData.displayName,
+              resultCSV: outStr
+            });
+          } else {
+            return callback({
+              displayName: requestData.displayName,
+              results: formatJSONProjectCode(codeResponse.results, "projectCode")
+            });
+          }
+        });
+        return;
+      }
+      callback.statusCode = 500;
+      return callback("problem with internal preferred Code request: code type and kind are unknown to system");
+    }
   };
 
 }).call(this);

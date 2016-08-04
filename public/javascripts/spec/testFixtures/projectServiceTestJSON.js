@@ -1,6 +1,6 @@
 (function() {
   (function(exports) {
-    return exports.projects = [
+    exports.projects = [
       {
         code: "project1",
         name: "Project 1",
@@ -21,6 +21,23 @@
         code: "proj3ct4",
         name: "proj3ct four",
         ignored: true
+      }
+    ];
+    return exports.projectStubs = [
+      {
+        active: true,
+        alias: "Banana",
+        code: "BANANA",
+        id: 2,
+        isRestricted: true,
+        name: "Banana"
+      }, {
+        active: true,
+        alias: "APPLE",
+        code: "APPLE",
+        id: 1,
+        isRestricted: true,
+        name: "APPLE"
       }
     ];
   })((typeof process === "undefined" || !process.versions ? window.projectServiceTestJSON = window.projectServiceTestJSON || {} : exports));

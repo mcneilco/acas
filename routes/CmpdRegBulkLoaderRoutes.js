@@ -149,7 +149,7 @@
     var createSummaryZip, moveSdfFile, registerCmpds;
     req.connection.setTimeout(6000000);
     createSummaryZip = function(fileName, json) {
-      var JSZip, buffer, config, fs, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, splitNames, zip, zipFileName, zipFilePath;
+      var JSZip, config, fs, fstream, i, len, movedUploadsPath, origUploadsPath, rFile, rFileName, ref, serverUtilityFunctions, splitNames, zip, zipFileName, zipFilePath;
       console.log("fileName");
       console.log(fileName);
       fileName = fileName.substring(0, fileName.length - 4);
@@ -169,16 +169,19 @@
       origUploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
       movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/";
       zipFilePath = movedUploadsPath + zipFileName;
-      buffer = zip.generate({
-        type: "nodebuffer"
-      });
       zipFilePath = config.all.server.service.persistence.filePath + "/cmpdreg_bulkload/" + zipFileName;
-      return fs.writeFile(zipFilePath, buffer, function(err) {
-        if (err) {
-          return resp.end("Summary ZIP file could not be created");
-        } else {
-          return resp.json([json, zipFileName]);
-        }
+      fstream = zip.generateNodeStream({
+        type: "nodebuffer",
+        streamFiles: true
+      }).pipe(fs.createWriteStream(zipFilePath));
+      fstream.on('finish', function() {
+        console.log("finished create write stream");
+        return resp.json([json, zipFileName]);
+      });
+      return fstream.on('error', function(err) {
+        console.log("error writing stream for zip");
+        console.log(err);
+        return resp.end("Summary ZIP file could not be created");
       });
     };
     registerCmpds = function(req, resp) {

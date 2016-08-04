@@ -1,0 +1,174 @@
+This documents the client's expected server API
+Example of server responses
+
+--------------------------------------------------------------------------------
+Service: units
+Purpose: return list of unit options
+URL: serverBaseURL/units
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/units
+
+[{"code":"mg","id":1,"name":"mg","version":0},{"code":"g","id":2,"name":"g","version":0},{"code":"kg","id":3,"name":"kg","version":0},{"code":"mL","id":4,"name":"mL","version":0}]
+
+
+--------------------------------------------------------------------------------
+Service: operators
+Purpose: return list of operator options
+URL: serverBaseURL/operators
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/operators
+
+[{"code":"=","id":1,"name":"=","version":0},{"code":"<","id":2,"name":"<","version":0},{"code":">","id":3,"name":">","version":0}]
+
+--------------------------------------------------------------------------------
+Service: physicalStates
+Purpose: return list of physicalState options
+URL: serverBaseURL/physicalStates
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/physicalstates
+
+[{"code":"solid","id":1,"name":"solid","version":0},{"code":"liquid","id":2,"name":"liquid","version":0},{"code":"gel","id":3,"name":"gel","version":0}]
+
+--------------------------------------------------------------------------------
+Service: purityMeasuredBys
+Purpose: return list of purityMeasuredBy options
+URL: serverBaseURL/purityMeasuredBys
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/puritymeasuredbys
+
+[{"code":"HPLC","id":1,"name":"HPLC","version":0},{"code":"NMR","id":2,"name":"NMR","version":0},{"code":"GC","id":3,"name":"GC","version":0}]
+
+--------------------------------------------------------------------------------
+Service: stereoCategories
+Purpose: return list of stereoCategory options
+URL: serverBaseURL/stereoCategories
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/stereocategorys
+
+[{"code":"scalemic","id":1,"name":"Scalemic","version":0},{"code":"racemic","id":2,"name":"Racemic","version":0},{"code":"achiral","id":3,"name":"Achiral","version":0},{"code":"see_comments","id":4,"name":"See Comments","version":0}]
+
+--------------------------------------------------------------------------------
+Service: scientists
+Purpose: return list of scientist options
+URL: serverBaseURL/scientists
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/scientists
+
+[{"code":"aadmin","id":1,"ignore":null,"isAdmin":true,"isChemist":false,"name":"Adam Admin","version":0},{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},{"code":"bbiologist","id":3,"ignore":null,"isAdmin":false,"isChemist":false,"name":"Ben Biologist","version":0}]
+
+
+
+--------------------------------------------------------------------------------
+Service: salts
+Purpose: save and fetch salt objects
+URL: serverBaseURL/salts
+Example JSON response: testData/Salt.php
+GET:
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/salts
+
+[{"abbrev":"Na","formula":"Na","id":1,"ignore":null,"molStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","molWeight":22.98976928,"name":"Na","originalStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","saltCdId":21,"version":0}]
+
+POST: 
+
+curl -i -X POST -H Accept:application/json -H Content-Type:application/json -d '{"name":"Na","abbrev":"Na","molStructure":"\n  Marvin  10231115522D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n"}' http://localhost:8080/cmpdreg/salts
+
+
+
+--------------------------------------------------------------------------------
+Service: isotopes
+Purpose: save and fetch isotope objects
+URL: serverBaseURL/isotopes
+Example JSON response: testData/Isotopes.php
+GET:
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/isotopes
+
+[{"abbrev":"C14","id":1,"ignore":null,"massChange":2.0,"name":"C14","version":0},{"abbrev":"U235","id":2,"ignore":null,"massChange":-3.0,"name":"U235","version":0}]
+
+POST: 
+curl -i -X POST -H Accept:application/json -H Content-Type:application/json -d '{"name":"C14","abbrev":"C14","massChange":2}' http://localhost:8080/cmpdreg/isotopes
+
+--------------------------------------------------------------------------------
+Service: metalots
+Purpose: fetch metalot objects
+URL: serverBaseURL/lots
+
+GET:
+    Respond to get by batch corpName (serverBaseURL/metalots/SGD-9999-K-3).
+    Notes: Does not need to respond if no id provided (don't want to get all metalots)
+
+curl -v -H 'Accept: application/json' -X GET http://localhost:8080/cmpdreg/lots/SGD-0013-NA-01
+
+
+POST: 
+    Notes:
+            Notes: lot will always be new. saltForm and parent may or may not be new. If not new, do nothing to them
+            This example has smiles for parent's moeStructure, but it will be a mol
+    Validation:
+            If there are errors, like dup parent or saltForm, return error messages as in examples in Lot.php
+    Example JSON payload:
+        with numbers filled in and no as-drawn:
+[{"corpName":"SGD-0013-NA-01","fileList":null,"id":1,"amount":32.0, "supplier":"jimco","supplierID":"jimco id","synthesisDate":1317798000000,"version":0,
+"amountUnits":{"code":"mg","id":1,"name":"mg","version":0},"asDrawnStructure":"CCCCCC",
+"chemist":{"code":"aadmin","id":1,"ignore":null,"isAdmin":true,"isChemist":false,"name":"Adam Admin","version":0},
+"color":"blue","comments":"dfasd","ignore":false,"isVirtual":false,"lotAsDrawnCdId":0,"lotMolWeight":23423.2,"notebookPage":"1324-1234","percentEE":23.0,"physicalState":{"code":"solid","id":1,"name":"solid","version":0},
+"purity":923.0,"purityMeasuredBy":{"code":"NMR","id":2,"name":"NMR","version":0},"purityOperator":null,"retain":23.0,
+"retainUnits":{"code":"mg","id":1,"name":"mg","version":0},
+	"saltForm":{"casNumber":"new cas 012","chemist":
+	{"code":"aadmin","id":1,"ignore":null,"isAdmin":true,"isChemist":false,"name":"Adam Admin","version":0},
+	"corpName":"SGD-0001-Na","id":1,"ignore":false,"molStructure":"CCCC",
+	"saltFormCdId":0,"version":0,
+			"parent":{"chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},
+			"commonName":"common","corpName":"SGD-0001","id":1,"ignore":false,"molStructure":"CCC","parentCdId":0,
+			"stereoCategory":{"code":"achiral","id":3,"name":"Achiral","version":0},
+			"stereoComment":"ok comment","version":0}
+	}
+}]
+
+
+--------------------------------------------------------------------------------
+Service: search
+Purpose: search for salt forms
+URL: serverBaseURL/search
+Example JSON response: testData/Search.php  NB: this example has smiles for molStructures, but service should return mols
+GET:
+    Notes: Search based on and-ing fields filled in.
+            Returns salt forms of all matching lots, with array of lot nums and ids.
+            If molStructure provided, molStructure search on both saltForm and Parent, then union results
+            If saltForm has molStructure, return that, otherwise return parent's molStructure
+    Validation: Can return error if too many results returned (see example in Search.php). If no results found, just return empty [] as in example
+    Example query parameters:
+        Just alias set. Anybody chemist has id=0:
+searchParams:{"corpNameFrom":"","corpNameTo":"","aliasContSelect":"contains","alias":"alien","dateFrom":"","dateTo":"","searchType":"exact","percentSimilarity":null,"chemist":{"id":0,"code":"anyone","name":"anyone","isChemist":false,"isAdmin":false},"molStructure":""}
+        All filled in, with a chemist selected:
+searchParams:{"corpNameFrom":"sgd-1111","corpNameTo":"1234","aliasContSelect":"exact","alias":"fred","dateFrom":"10/02/2011","dateTo":"10/29/2011","searchType":"similarity","percentSimilarity":"90","chemist":{"id":3,"code":"bbiologist","name":"Ben Biologist","isChemist":false,"isAdmin":false},"molStructure":"\n  Marvin  10271121062D          \n\n  5  5  0  0  0  0            999 V2000\n   -4.9500   -2.6341    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6644   -2.2216    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6644   -1.3966    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2355   -1.3966    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2355   -2.2216    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  5  1  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  2  0  0  0  0\nM  END\n"}POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: regSearch
+Purpose: search in preparation for registration
+URL: serverBaseURL/regSearch
+Example JSON response: testData/RegSearch.php NB: this example has smiles for molStructures, but service should return mols
+GET:
+    Notes: Search on either corpName or Structure.
+            Structure search is exact match but allow stereo variants (ignore wedge and wiggles)
+            CorpName search should add SGD- prefix if not provided. Search parent, saltForm or lot based on format of string
+            If molStructure or parent corpName supplied returns all matching parents, and all salt forms of those parents
+            If a saltForm or lot corpName is supplied, return the single parent and saltForm that matches
+    Validation: Can return emtpy []
+    Example query parameters:
+        Structure provided: searchParams:{"molStructure":"\n  Marvin  10241118492D          \n\n  6  6  0  0  0  0            999 V2000\n   -2.3277   -1.7973    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0421   -2.2098    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0421   -3.0348    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3277   -3.4473    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6132   -3.0348    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6132   -2.2098    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  6  2  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  2  0  0  0  0\n  5  6  1  0  0  0  0\nM  END\n","corpName":""}
+        corpName provided: searchParams:{"molStructure":null,"corpName":"SGD-1234"}
+POST: NA
+PUT: NA
+
+
+--------------------------------------------------------------------------------
+Service: sdf
+Purpose: Return SDF given json array that includes a molStructure property with each member
+URL: /exportSDF?mols=
+Example 
+GET:
+    Notes: returns an SDF created from the mols in the query string JSON
+    Validation: each element of the JSON array will have a molStructure property. If it does not, show an error
+    Example query parameters: this example has smiles where it should have mols
+exportSDF?mols=[{%22corpName%22:%22SGD-1234-Na%22,%22stereoCategoryName%22:%22Racemic%22,%22stereoComment%22:%22%22,%22lotIDs%22:{%22SGD-1234-Na-1%22:1,%22SGD-1234-Na-2%22:2,%22SGD-1234-Na-3%22:3,%22SGD-1234-Na-5%22:5},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22SGD-1234-Cl%22,%22stereoCategoryName%22:%22Racemic%22,%22stereoComment%22:%22st%20comm%22,%22lotIDs%22:{%22SGD-1234-Cl-1%22:1,%22SGD-1234-Cl-2%22:2,%22SGD-1234-Cl-3%22:3},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22SGD-1234-C14%22,%22stereoCategoryName%22:%22Scalemic%22,%22stereoComment%22:%22%22,%22lotIDs%22:{%22SGD-1234-C14-1%22:1,%22SGD-1234-C14-2%22:2},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22SGD-2222-K%22,%22stereoCategoryName%22:%22See%20Comment%22,%22stereoComment%22:%22lots%20of%20centers%22,%22lotIDs%22:{%22SGD-2222-K-1%22:1},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22}]
+        
+POST: NA
+PUT: NA
+
+
+
