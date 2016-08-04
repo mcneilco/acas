@@ -531,7 +531,9 @@ class State extends Backbone.Model
 	initialize: ->
 		if @has('lsValues')
 			if @get('lsValues') not instanceof ValueList
-				@set lsValues: new ValueList(@get('lsValues'))
+				values = _.filter @get('lsValues'), (value) ->
+					!value.ignored && !value.deleted
+				@set lsValues: new ValueList(values)
 		@get('lsValues').on 'change', =>
 			@trigger 'change'
 
@@ -1026,13 +1028,17 @@ class Container extends Backbone.Model
 			else
 				if resp.lsLabels?
 					if resp.lsLabels not instanceof LabelList
-						resp.lsLabels = new LabelList(resp.lsLabels)
+						labels = _.filter resp.lsLabels, (label) ->
+							!label.ignored && !label.deleted
+						resp.lsLabels = new LabelList(labels)
 					resp.lsLabels.on 'change', =>
 						@trigger 'change'
 
 				if resp.lsStates?
 					if resp.lsStates not instanceof StateList
-						resp.lsStates = new StateList(resp.lsStates)
+						states = _.filter resp.lsStates, (state) ->
+							!state.ignored && !state.deleted
+						resp.lsStates = new StateList(states)
 					resp.lsStates.on 'change', =>
 						@trigger 'change'
 				@.set resp
@@ -1176,15 +1182,6 @@ class Container extends Backbone.Model
 		#		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
 		#			@get('secondLsThings').reformatBeforeSaving()
 
-		if @lsProperties.defaultValues?
-			for dValue in @lsProperties.defaultValues
-				if @get(dValue.key)?
-					if @get(dValue.key).get('value') is undefined
-						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-						lsStates[0].get('lsValues').remove value
-					@unset(dValue.key)
-
 		if @attributes.attributes?
 			delete @attributes.attributes
 		if @attributes.collection?
@@ -1255,21 +1252,39 @@ class Container extends Backbone.Model
 		rBy = recordedBy
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
+		@set lsLabels: new LabelList @get('lsLabels').filter (label) ->
+      #only keep labels where id is null/missing or the label is ignored
+			label.isNew() or label.get("ignored")==true
 		@get('lsLabels').each (lab) ->
 			unless lab.get('recordedBy') != ""
 				lab.set recordedBy: rBy
 			unless lab.get('recordedDate') != null
 				lab.set recordedDate: rDate
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+				if @get(dValue.key)?
+					if @get(dValue.key).get('value') is undefined
+						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+						lsStates[0].get('lsValues').remove value
+					@unset(dValue.key)
 		@get('lsStates').each (state) ->
 			unless state.get('recordedBy') != ""
 				state.set recordedBy: rBy
 			unless state.get('recordedDate') != null
 				state.set recordedDate: rDate
+			state.set 'lsValues': new ValueList state.get('lsValues').filter (val) ->
+				#remove where the value has an id and is not ignored
+				val.isNew() && !val.get("ignored")==true
 			state.get('lsValues').each (val) ->
 				unless val.get('recordedBy') != ""
 					val.set recordedBy: rBy
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
+		@set lsStates: new StateList @get('lsStates').filter (state) ->
+      #only keep states that have values or
+			#where id is null/missing or the state is ignored
+			state.get('lsValues').length > 0 or state.isNew() or state.get("ignored")==true
 
 	getLogs: ->
 		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'log'

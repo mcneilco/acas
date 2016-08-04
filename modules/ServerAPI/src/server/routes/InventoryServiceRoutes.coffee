@@ -458,6 +458,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							container.updateValuesByKeyValue updateInfo
 							container.prepareToSave updateInformation[0].recordedBy
 							container.reformatBeforeSaving()
+							#if container.isNew() or container.get('lsLabels').length > 0 or container.get('lsStates').length > 0
 							containerArray.push container.attributes
 						else
 							console.error "could not find container #{updateInfo.codeName}"
@@ -667,6 +668,7 @@ exports.updateContainersInternal = (containers, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
+		console.debug 'incoming updateContainersInternal request: ', containers
 		console.debug "base url: #{baseurl}"
 		request = require 'request'
 		request(
@@ -1612,6 +1614,7 @@ exports.addContainerLogs = (inputs, callCustom, callback) ->
 			containerModel.addNewLogStates(modelInputLogs)
 			containerModel.prepareToSave "acas"
 			containerModel.reformatBeforeSaving()
+			#if containerModel.isNew() or containerModel.get('lsLabels').length > 0 or containerModel.get('lsStates').length > 0
 			containersToSave.push containerModel
 		containers = JSON.stringify(containersToSave)
 		exports.updateContainersInternal containers, (json, statusCode) ->
