@@ -128,7 +128,7 @@ exports.updateProjectRoles = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		request = require 'request'
-		_ = require '../public/src/lib/underscore.js'
+		_ = require '../public/lib/underscore.js'
 
 		#delete author roles
 		console.log "req.body.authorRolesToDelete"
