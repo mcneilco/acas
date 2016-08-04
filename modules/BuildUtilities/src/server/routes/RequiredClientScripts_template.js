@@ -16,6 +16,7 @@ exports.requiredScripts = [
 	'/lib/bootstrap/bootstrap-tooltip.js',
 	'/lib/bootstrap-tagsinput/bootstrap-tagsinput.min.js',
 	'/lib/dataTables/js/jquery.dataTables.js',
+	'/lib/dataTables/js/lsThingSorting.js',
 	'/lib/bootstrap/bootstrap-datatable.js',
 	'/lib/bootstrap-combobox/js/bootstrap-combobox.js',
 	'/lib/jsxgraph/jsxgraphcore.js',
