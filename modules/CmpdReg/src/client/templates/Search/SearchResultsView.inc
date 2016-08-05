@@ -9,4 +9,13 @@
 
     </div>
 
+    <div class="floatingPanel bv_downloadSearchResultsSdf hide">
+       	<div class="bv_exportSearchResultsMessage"></div>
+       	<div class="bv_downloadSearchResultsMessage">Click
+        	<a class="bv_downloadSearchResultsLink">here</a>
+        	to download the file.
+		</div>
+		<div class="closeExportSDF bv_closeExportSDF"></div>
+    </div>
+
 </script>

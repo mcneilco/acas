@@ -112,13 +112,19 @@ $(function() {
         events: {
             'click .backButton': 'back',
             'click .closeButton': 'close',
-            'click .exportButton': 'exportSDF'
+            'click .exportButton': 'exportSDF',
+            'click .closeExportSDF': 'closeExportSDFPopUp'
 
         },
 
         initialize: function(){
             $(this.el).html(this.template());
             _.bindAll(this, 'render', 'close', 'back', 'openLot', 'newLot', 'exportSDF');
+            if (this.options.searchResults != null) {
+                this.searchResults = this.options.searchResults;
+            } else {
+                this.searchResults = {foundCompounds:[],lotsWithheld:false};
+            }
             this.searchResListController = new SearchResultListController({
                 el: this.$(".resultList"),
                 collection: this.collection
@@ -136,8 +142,6 @@ $(function() {
                     this.$('.newLotButton').hide();
                 }
             }
-            //TODO Redisplay this button once service supports the feature
-            this.$('.exportButton').hide();
 
             return this;
         },
@@ -171,9 +175,54 @@ $(function() {
         },
 
         exportSDF: function() {
-            window.open("exportSDF?mols="+JSON.stringify(this.collection));
+            $.ajax({
+                type: "POST",
+                url: "/cmpdReg/export/searchResults",
+                data: JSON.stringify(this.searchResults),
+                dataType: "json",
+                contentType: 'application/json',
+                success: (function(_this)
+                {
+                    return function(ajaxReturn){
+                        return _this.exportedResults(ajaxReturn);
+                    };
+                })(this),
+                //error: function(error) {
+                //    console.log("error");
+                //    console.log(error);
+                //}
 
+                error: (function(_this)
+                {
+                    return function(error){
+                        return _this.errorExportingResults(error);
+                    };
+                })(this)
+            });
+
+
+        },
+
+        exportedResults: function(ajaxReturn) {
+            console.log("exportedResults");
+            console.log(ajaxReturn);
+            this.$('.bv_downloadSearchResultsSdf').show();
+            this.$('.bv_exportSearchResultsMessage').html(ajaxReturn.summary);
+            this.$('.bv_downloadSearchResultsMessage').show();
+            this.$('.bv_downloadSearchResultsLink').attr("href",ajaxReturn.reportFilePath);
+        },
+
+        closeExportSDFPopUp: function() {
+            this.$('.bv_downloadSearchResultsSdf').hide();
+        },
+
+        errorExportingResults: function(error) {
+            console.log("error exporting results");
+            console.log(error);
+            this.$('.bv_downloadSearchResultsSdf').show();
+            this.$('.bv_exportSearchResultsMessage').html(error.responseText);
+            this.$('.bv_downloadSearchResultsMessage').hide();
         }
 
-    });
+        });
 });

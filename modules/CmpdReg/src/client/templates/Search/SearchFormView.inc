@@ -3,7 +3,7 @@
     <div class="StructureMain">
 		<h2><label class="QueryStructure">Query Structure:</label></h2>
 		<div class="marvinContainer">
-			<iframe src="/CmpdReg/marvinjs/editorws.html" id="searchMarvinSketch" class="sketcher-frame"></iframe>
+			<iframe src="/CmpdReg/marvinjs/editorws.html" id="searchMarvinSketch" class="sketcher-frame" data-toolbars="search"></iframe>
 		</div>
 	    <div class="registrationSearchMarvinSize"></div>
 	</div>
@@ -35,6 +35,10 @@
 			<select class="FormInput chemist" >
 				<option value="anybody">anybody</option>
 			</select>
+		</div>
+		<div>
+			<label class="FormLabel maxResultsLabel">Max. No. of Search Results</label>
+			<input type="text" class="FormInput maxResults"/>
 		</div>
 	</div>
 	

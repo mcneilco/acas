@@ -26,6 +26,9 @@
       } else {
         this.collection = new AliasCollection();
       }
+      if (!(this.collection instanceof Backbone.Collection)) {
+        this.collection = new AliasCollection(this.collection);
+      }
       this.readMode = false;
       if (this.options.readMode != null) {
         this.readMode = this.options.readMode;

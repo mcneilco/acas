@@ -16,6 +16,8 @@
     app.get('/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
+    app.get('/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
+    app.get('/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
     app.get('/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects);
     app.get('/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg);
@@ -34,7 +36,10 @@
     app.post('/cmpdReg/api/v1/structureServices/molconvert', loginRoutes.ensureAuthenticated, exports.molConvert);
     app.post('/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService);
     app.post('/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService);
-    return app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    app.post('/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService);
+    app.post('/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults);
+    app.post('/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent);
+    return app.post('/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent);
   };
 
   exports.cmpdRegIndex = function(req, res) {
@@ -397,13 +402,14 @@
   };
 
   exports.getMetaLot = function(req, resp) {
-    var _, cmpdRegCall, config, endOfUrl, request;
+    var _, cmpdRegCall, cmpdRegConfig, config, endOfUrl, request;
     request = require('request');
     _ = require('underscore');
     config = require('../conf/compiled/conf.js');
     endOfUrl = req.originalUrl.replace(/\/cmpdreg\/metalots/, "");
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl;
     console.log(cmpdRegCall);
+    cmpdRegConfig = require('../public/src/modules/CmpdReg/src/client/custom/configuration.json');
     return request({
       method: 'GET',
       url: cmpdRegCall,
@@ -418,25 +424,32 @@
         if (!error) {
           if ((json != null ? (ref = json.lot) != null ? (ref1 = ref.project) != null ? ref1.code : void 0 : void 0 : void 0) != null) {
             projectCode = json.lot.project.code;
-            return exports.getACASProjects(req, function(statusCode, acasProjectsForUsers) {
-              if (statusCode !== 200) {
-                resp.statusCode = statusCode;
-                resp.end(JSON.stringify(acasProjectsForUsers));
-              }
-              if (_.where(acasProjectsForUsers, {
-                code: projectCode
-              }).length > 0) {
-                return resp.json(json);
-              } else {
-                console.log("user does not have permissions to the lot's project");
-                resp.statusCode = 500;
-                return resp.end(JSON.stringify("Lot does not exist"));
-              }
-            });
+            if (cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails) {
+              return exports.getACASProjects(req, function(statusCode, acasProjectsForUsers) {
+                if (statusCode !== 200) {
+                  resp.statusCode = statusCode;
+                  resp.end(JSON.stringify(acasProjectsForUsers));
+                }
+                if (_.where(acasProjectsForUsers, {
+                  code: projectCode
+                }).length > 0) {
+                  return resp.json(json);
+                } else {
+                  console.log("user does not have permissions to the lot's project");
+                  resp.statusCode = 500;
+                  return resp.end(JSON.stringify("Lot does not exist"));
+                }
+              });
+            } else {
+              return resp.json(json);
+            }
           } else {
-            console.log("could not find lot");
-            resp.statusCode = 500;
-            return resp.end(JSON.stringify("Could not find lot"));
+            if (cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails) {
+              resp.statusCode = 500;
+              return resp.end(JSON.stringify("Could not find lot"));
+            } else {
+              return resp.json(json);
+            }
           }
         } else {
           console.log('got ajax error trying to get CmpdReg MetaLot');
@@ -465,6 +478,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -496,6 +510,7 @@
     config = require('../conf/compiled/conf.js');
     endOfUrl = req.originalUrl.replace(/\/cmpdreg\//, "");
     cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" + endOfUrl;
+    cmpdRegCall = cmpdRegCall.replace(/\\/g, "%5C");
     console.log(cmpdRegCall);
     return req.pipe(request(cmpdRegCall)).pipe(resp);
   };
@@ -523,6 +538,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -553,6 +569,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -583,6 +600,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -614,6 +632,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(JSON.stringify(json));
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'application/json');
           return resp.end(JSON.stringify(json));
         } else {
@@ -645,6 +664,7 @@
       return function(error, response, json) {
         if (!error) {
           console.log(json);
+          resp.statusCode = response.statusCode;
           resp.setHeader('Content-Type', 'plain/text');
           return resp.end(json);
         } else {
@@ -655,6 +675,117 @@
           return resp.end(JSON.stringify({
             error: "something went wrong :("
           }));
+        }
+      };
+    })(this));
+  };
+
+  exports.exportSearchResults = function(req, resp) {
+    var cmpdRegCall, config, exportedSearchResults, request, serverUtilityFunctions, uploadsPath;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    serverUtilityFunctions = require('./ServerUtilityFunctions.js');
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults';
+    uploadsPath = serverUtilityFunctions.makeAbsolutePath(config.all.server.datafiles.relative_path);
+    exportedSearchResults = uploadsPath + "exportedSearchResults/";
+    return serverUtilityFunctions.ensureExists(exportedSearchResults, 0x1e4, function(err) {
+      var currentDate, dataToPost, date, fileName, monthNum;
+      if (err != null) {
+        console.log("Can't find or create exportedSearchResults folder: " + exportedSearchResults);
+        resp.statusCode = 500;
+        return resp.end("Error trying to export search results to sdf: Can't find or create exportedSearchResults folder " + exportedSearchResults);
+      } else {
+        date = new Date();
+        monthNum = date.getMonth() + 1;
+        currentDate = date.getFullYear() + '_' + ("0" + monthNum).slice(-2) + '_' + ("0" + date.getDate()).slice(-2);
+        fileName = currentDate + "_" + date.getTime() + "_searchResults.sdf";
+        dataToPost = {
+          filePath: exportedSearchResults + fileName,
+          searchFormResultsDTO: req.body
+        };
+        return request({
+          method: 'POST',
+          url: cmpdRegCall,
+          body: dataToPost,
+          json: true,
+          timeout: 6000000
+        }, (function(_this) {
+          return function(error, response, json) {
+            var absFilePath, downloadFilePath, relFilePath;
+            if (!error) {
+              resp.setHeader('Content-Type', 'plain/text');
+              absFilePath = json.reportFilePath;
+              relFilePath = absFilePath.split(config.all.server.datafiles.relative_path + "/")[1];
+              downloadFilePath = config.all.client.datafiles.downloadurl.prefix + relFilePath;
+              json.reportFilePath = downloadFilePath;
+              return resp.json(json);
+            } else {
+              console.log('got ajax error trying to export search results to sdf');
+              console.log(error);
+              console.log(json);
+              console.log(response);
+              resp.statusCode = 500;
+              return resp.end("Error trying to export search results to sdf: " + error);
+            }
+          };
+        })(this));
+      }
+    });
+  };
+
+  exports.validateParent = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log("exports.validateParent");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/validateParent';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: req.body,
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          resp.setHeader('Content-Type', 'plain/text');
+          return resp.json(json);
+        } else {
+          console.log('got ajax error trying to validate parent');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          resp.statusCode = 500;
+          return resp.end("Error trying to validate parent: " + error);
+        }
+      };
+    })(this));
+  };
+
+  exports.updateParent = function(req, resp) {
+    var cmpdRegCall, config, request;
+    request = require('request');
+    config = require('../conf/compiled/conf.js');
+    console.log("exports.updateParent");
+    cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent';
+    return request({
+      method: 'POST',
+      url: cmpdRegCall,
+      body: req.body,
+      json: true,
+      timeout: 6000000
+    }, (function(_this) {
+      return function(error, response, json) {
+        if (!error) {
+          resp.setHeader('Content-Type', 'plain/text');
+          return resp.json(json);
+        } else {
+          console.log('got ajax error trying to update parent');
+          console.log(error);
+          console.log(json);
+          console.log(response);
+          resp.statusCode = 500;
+          return resp.end("Error trying to update parent: " + error);
         }
       };
     })(this));

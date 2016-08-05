@@ -24,6 +24,11 @@ $(function() {
 					errors.push({'attribute': 'percentSimilarity', 'message':  "% Similarity must be a number if provided"});
 				}
 			}
+			if (attributes.maxResults!=null) {
+				if(isNaN(attributes.maxResults) && attributes.maxResults!='') {
+					errors.push({'attribute': 'maxResults', 'message':  "Max. no. of search results must be a number if provided"});
+				}
+			}
 
             if (errors.length > 0) {return errors;}
         }
@@ -138,6 +143,9 @@ $(function() {
                     (jQuery.trim(this.$('.percentSimilarity').val())=='') ? null :
                     parseFloat(jQuery.trim(this.$('.percentSimilarity').val())),
                 chemist: this.chemistCodeController.getSelectedModel(),
+                maxResults:
+                    (jQuery.trim(this.$('.maxResults').val())=='') ? null :
+                    parseFloat(jQuery.trim(this.$('.maxResults').val())),
                 molStructure: molecule,
                 loggedInUser: window.appController.user.get("code")
             });

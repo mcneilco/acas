@@ -143,7 +143,8 @@ $(function () {
                 {},
                 function(ajaxReturn) {
                     self.metaLot = new MetaLot({json: ajaxReturn});
-                    self.setupMetaLotController();                    
+                    self.setupMetaLotController();
+                    self.$('.GetCmpdError').hide();
                 }
             )
             .error(function(error) {
@@ -159,7 +160,8 @@ $(function () {
                     });
                 }
                 else {
-                    self.$('.GetCmpdError').show()
+                    self.$('.MetaLotView').hide();
+                    self.$('.GetCmpdError').show();
                 }
             });
             this.hideControls();
@@ -168,6 +170,7 @@ $(function () {
         updateLot: function(updatedLot) {
             this.metaLot = new MetaLot({json: updatedLot});
             this.setupMetaLotController();
+            this.router.navigate("#lot/"+this.metaLot.get('lot').get('corpName'), {trigger: false, replace: true});
         },
 
         setupMetaLotController: function() {

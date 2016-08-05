@@ -18,7 +18,7 @@ $(function() {
                             this.set({parent: new Parent({json: lotjs.lot.saltForm.parent})});
                         } else {
 	                        this.set({parent: new Parent({
-	                        		molStructure: this.get('parentStructure'),
+	                        	molStructure: this.get('parentStructure'),
 				                    molWeight: this.get('molWeight'),
 				                    molFormula: this.get('molFormula')
 	                        	})});
@@ -36,7 +36,7 @@ $(function() {
                         this.set({parent: new Parent({json: lotjs.lot.parent})});
                     } else {
                         this.set({parent: new Parent({
-                        		molStructure: this.get('parentStructure'),
+                        	molStructure: this.get('parentStructure'),
 			                    molWeight: this.get('molWeight'),
 			                    molFormula: this.get('molFormula')
                         	})});
@@ -48,8 +48,12 @@ $(function() {
                         this.set({saltForm: new SaltForm()});
                     }
                 }
+				if (lotjs.fileList == undefined) {
+					lotjs.lot.fileList = [];
+				} else {
+					lotjs.lot.fileList = lotjs.fileList;
+				}
 
-                lotjs.lot.fileList = lotjs.fileList;
                 this.set({lot: new Lot({json: lotjs.lot})});
 			} else if ( this.has('parentStructure') ) {
 				this.set({
@@ -80,6 +84,11 @@ $(function() {
             if (!window.configuration.metaLot.saltBeforeLot) {
                 lot.set({parent: this.get('parent').getModelForSave()});
             }
+            sf.get('isosalts').each(function(isosalt){
+            	if (isosalt.get('type') == 'salt') isosalt.set({salt:isosalt.get('isosalt')})
+            	else if (isosalt.get('type') == 'isotope') isosalt.set({isotope:isosalt.get('isosalt')})
+            	isosalt.unset('isosalt');
+            })
             var mts = new Backbone.Model({
                 lot: lot,
                 fileList: new Backbone.Collection(lot.get('fileList')),
@@ -94,267 +103,334 @@ $(function() {
 
 
     window.MetaLotController = Backbone.View.extend({
-		template: _.template($('#MetaLotView_template').html()),
+	    template: _.template($('#MetaLotView_template').html()),
 
-		events: {
-            'click .saveButton': 'save',
-            'click .backButton': 'back',
-            'click .cancelButton': 'close',
-            'click .newLotButton': 'newLot'
-		},
+	    events: {
+		    'click .saveButton': 'save',
+		    'click .backButton': 'back',
+		    'click .cancelButton': 'close',
+		    'click .newLotButton': 'newLot'
+	    },
 
-		initialize: function() {
-			//TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
-			$(this.el).html(this.template());
-			_.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated');
+	    initialize: function () {
+		    //TODO the template load be in render(), but saltFormController won't work that way, unless I new it in the render'
+		    $(this.el).html(this.template());
+		    _.bindAll(this, 'save', 'back', 'newLot', 'newLotSaved', 'lotUpdated', 'editParentRequest');
 
-            var eNoti = this.options.errorNotifList;
+		    var eNoti = this.options.errorNotifList;
 
-            if(this.options.user) {
-                this.user = this.options.user;
-                if(this.model.get('lot').isNew()) {
-                    this.model.get('lot').set({chemist: this.user});
-                }
-            } else {
-                this.user = null;
-            }
-            this.parentController = new ParentController({
-                model: this.model.get('parent'),
-                el: this.$('.LotForm_ParentView'),
-                errorNotifList: eNoti,
-                readMode: false
-            });
-            this.salts = new Salts()
-            this.salts.fetch();
-            this.isotopes = new Isotopes();
-            this.isotopes.fetch();
-            this.saltFormController = new SaltFormController({
-                model: this.model.get('saltForm'),
-                salts: this.salts,
-                isotopes: this.isotopes,
-                el: this.$('.LotForm_SaltFormView'),
-                errorNotifList: eNoti
-            });
-            this.lotController = new LotController({
-                model: this.model.get('lot'),
-                el: this.$('.LotForm_LotView'),
-                errorNotifList: eNoti
-            });
+		    if (this.options.user) {
+			    this.user = this.options.user;
+			    if (this.model.get('lot').isNew()) {
+				    this.model.get('lot').set({chemist: this.user});
+			    }
+		    } else {
+			    this.user = null;
+		    }
+		    this.parentController = new ParentController({
+			    model: this.model.get('parent'),
+			    el: this.$('.LotForm_ParentView'),
+			    errorNotifList: eNoti,
+			    readMode: false,
+			    isEditable: this.parentAllowedToUpdate()
+		    });
+		    this.parentController.bind('editParentRequest', this.editParentRequest);
+		    this.salts = new Salts()
+		    this.salts.fetch();
+		    this.isotopes = new Isotopes();
+		    this.isotopes.fetch();
+		    this.saltFormController = new SaltFormController({
+			    model: this.model.get('saltForm'),
+			    salts: this.salts,
+			    isotopes: this.isotopes,
+			    el: this.$('.LotForm_SaltFormView'),
+			    errorNotifList: eNoti,
+			    isEditable: this.saltFormAllowedToUpdate()
+		    });
+		    this.lotController = new LotController({
+			    model: this.model.get('lot'),
+			    el: this.$('.LotForm_LotView'),
+			    errorNotifList: eNoti
+		    });
 
-            if (eNoti!=null) {
-                this.bind('notifyError', eNoti.add);
-                this.bind('clearErrors', eNoti.removeMessagesForOwner);
-            }
-		},
+		    if (eNoti != null) {
+			    this.bind('notifyError', eNoti.add);
+			    this.bind('clearErrors', eNoti.removeMessagesForOwner);
+		    }
 
-		render: function() {
-            this.setupButtonsAndTitles();
+		    this.saveInProgress = false;
+	    },
 
-            this.parentController.render();
-            this.saltFormController.render();
-            if(this.model.get('lot').get('isVirtual')) {
-                this.saltFormController.hide();
-            }
-            this.lotController.render();
-            if(!this.allowedToUpdate()) {
-                this.lotController.disableAll();
-                this.parentController.setAliasToReadOnly();
-            } else {
-                this.parentController.setAliasToEdit();
-            }
+	    render: function () {
+		    this.setupButtonsAndTitles();
 
-            this.$('.NewLotSuccessView').hide();
-            if (appController) {
-                appController.setDocumentTitle(this.model.get('lot').get('corpName'));
-            }
+		    this.parentController.render();
+		    this.saltFormController.render();
+		    if (this.model.get('lot').get('isVirtual')) {
+			    this.saltFormController.hide();
+		    }
+		    this.lotController.render();
+		    if (!this.allowedToUpdate()) {
+			    this.lotController.disableAll();
+			    this.parentController.setAliasToReadOnly();
+		    } else {
+			    this.parentController.setAliasToEdit();
+		    }
 
-			return this;
-		},
+		    this.$('.NewLotSuccessView').hide();
+		    if (appController) {
+			    appController.setDocumentTitle(this.model.get('lot').get('corpName'));
+		    }
 
-        setupButtonsAndTitles: function() {
-            var lisb = window.configuration.metaLot.lotCalledBatch;
-            if (this.model.get('lot').isNew()){
-                this.$('.newLotButton').hide();
-                this.$('.saveButton').addClass('saveImage');
-                this.$('.saveButton').removeClass('updateImage');
-                this.$('.cancelButton').addClass('cancelImage');
-                this.$('.cancelButton').removeClass('closeImage');
-                if (!this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()){
-                    this.$('.formTitle').html('New '+(lisb?'batch':'lot')+' of '+this.model.get('saltForm').get('corpName'));
-                }
-                if (this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()){
-                    if (window.configuration.metaLot.saltBeforeLot) {
-                        this.$('.formTitle').html('New Salt of '+this.model.get('parent').get('corpName'));
-                    } else {
-                        this.$('.formTitle').html('New '+(lisb?'Batch':'Lot')+' of '+this.model.get('parent').get('corpName'));
-                    }
-                }
-                if (this.model.get('parent').isNew()){
-                    this.$('.formTitle').html('New compound and '+(lisb?'batch':'lot'));
-                }
-                if (this.model.get('lot').get('isVirtual')){
-                    this.$('.formTitle').html('New virtual '+(lisb?'batch':'lot'));
-                }
+		    return this;
+	    },
 
-            } else {
-                this.$('.saveButton').removeClass('saveImage');
-                this.$('.saveButton').addClass('updateImage');
-                this.$('.cancelButton').removeClass('cancelImage');
-                this.$('.cancelButton').addClass('closeImage');
-                this.$('.backButton').hide();
-                if(this.allowedToUpdate()) {
-                    this.$('.formTitle').html('Edit '+(lisb?'Batch':'Lot')+' '+this.model.get('lot').get('corpName'));
-                } else {
-                    this.$('.formTitle').html((lisb?'Batch':'Lot')+' Details for '+this.model.get('lot').get('corpName'));
-                }
-                this.$('.newLotButton').show();
-                if (this.model.get('lot').get('isVirtual')){
-                    this.$('.newLotButton').hide();
-                    this.$('.saveButton').hide();
-                }
-                if(!this.allowedToUpdate()) {
-                     this.$('.saveButton').hide();
-                }
+	    setupButtonsAndTitles: function () {
+		    var lisb = window.configuration.metaLot.lotCalledBatch;
+		    if (this.model.get('lot').isNew()) {
+			    this.$('.newLotButton').hide();
+			    this.$('.saveButton').addClass('saveImage');
+			    this.$('.saveButton').removeClass('updateImage');
+			    this.$('.cancelButton').addClass('cancelImage');
+			    this.$('.cancelButton').removeClass('closeImage');
+			    if (!this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()) {
+				    this.$('.formTitle').html('New ' + (lisb ? 'batch' : 'lot') + ' of ' + this.model.get('saltForm').get('corpName'));
+			    }
+			    if (this.model.get('saltForm').isNew() && !this.model.get('parent').isNew()) {
+				    if (window.configuration.metaLot.saltBeforeLot) {
+					    this.$('.formTitle').html('New Salt of ' + this.model.get('parent').get('corpName'));
+				    } else {
+					    this.$('.formTitle').html('New ' + (lisb ? 'Batch' : 'Lot') + ' of ' + this.model.get('parent').get('corpName'));
+				    }
+			    }
+			    if (this.model.get('parent').isNew()) {
+				    this.$('.formTitle').html('New compound and ' + (lisb ? 'batch' : 'lot'));
+			    }
+			    if (this.model.get('lot').get('isVirtual')) {
+				    this.$('.formTitle').html('New virtual ' + (lisb ? 'batch' : 'lot'));
+			    }
 
-           }
+		    } else {
+			    this.$('.saveButton').removeClass('saveImage');
+			    this.$('.saveButton').addClass('updateImage');
+			    this.$('.cancelButton').removeClass('cancelImage');
+			    this.$('.cancelButton').addClass('closeImage');
+			    this.$('.backButton').hide();
+			    if (this.allowedToUpdate()) {
+				    this.$('.formTitle').html('Edit ' + (lisb ? 'Batch' : 'Lot') + ' ' + this.model.get('lot').get('corpName'));
+			    } else {
+				    this.$('.formTitle').html((lisb ? 'Batch' : 'Lot') + ' Details for ' + this.model.get('lot').get('corpName'));
+			    }
+			    this.$('.newLotButton').show();
+			    if (this.model.get('lot').get('isVirtual')) {
+				    this.$('.newLotButton').hide();
+				    this.$('.saveButton').hide();
+			    }
+			    if (!this.allowedToUpdate()) {
+				    this.$('.saveButton').hide();
+			    }
 
-        },
+		    }
 
-        save: function() {
-            this.trigger('clearErrors', "MetaLotController");
-            this.updateModel();
-	        mlself = this;
-            window.fooMODEL = this.model;
-	        this.saltFormController.updateModel(function(){
-		        if (mlself.saltFormController.model.isNew()) {
-			        mlself.saltFormController.model.set({
-				        'chemist': mlself.lotController.model.get('chemist')
-			        });
-		        }
+	    },
 
-		        if (!mlself.isValid()) {
-			        return;
-	            }
+	    save: function () {
+		    if (this.saveInProgress) {
+			    return;
+		    }
+		    this.saveInProgress = true;
+		    this.trigger('clearErrors', "MetaLotController");
+		    this.updateModel();
+		    mlself = this;
+		    this.saltFormController.updateModel(function () {
+			    if (mlself.saltFormController.model.isNew()) {
+				    mlself.saltFormController.model.set({
+					    'chemist': mlself.lotController.model.get('chemist')
+				    });
+			    }
 
-	            var mts = mlself.model.getModelForSave();
+			    if (!mlself.isValid()) {
+				    mlself.saveInProgress = false;
+				    return;
+			    }
 
-	            if (mlself.model.get('lot').isNew()) {
-	                var successFunct = mlself.newLotSaved;
-	            } else {
-	                var successFunct = mlself.lotUpdated;
-	            }
+			    var mts = mlself.model.getModelForSave();
 
-				if(window.configuration.serverConnection.connectToServer) {
-	                var url = window.configuration.serverConnection.baseServerURL+"metalots";
-	            } else {
-	                var url = "spec/testData/Lot.php";
-	            }
+			    if (mlself.model.get('lot').isNew()) {
+				    var successFunct = mlself.newLotSaved;
+			    } else {
+				    var successFunct = mlself.lotUpdated;
+			    }
 
-	            var lisb = window.configuration.metaLot.lotCalledBatch;
-		        mlself.trigger('notifyError', {
-	                owner: 'MetaLotController',
-	                errorLevel: 'warning',
-	                message: 'Saving '+(lisb?'batch':'lot')+'...'
-	            });
-		        mlself.delegateEvents({}); // stop listening to buttons
+			    if (window.configuration.serverConnection.connectToServer) {
+				    var url = window.configuration.serverConnection.baseServerURL + "metalots";
+			    } else {
+				    var url = "spec/testData/Lot.php";
+			    }
 
-		        $.ajax({
-	                type: "POST",
-	                url: url,
-	                data: JSON.stringify(mts),
-	                dataType: "json",
-	                contentType: 'application/json',
-	                success: successFunct,
-	                error: function(error) {
-		                mlself.trigger('clearErrors', "MetaLotController");
-	                    var resp = $.parseJSON(error.responseText);
-	                    _.each(resp, function(err) {
-		                    mlself.trigger('notifyError', {owner: "MetaLotController", errorLevel: err.level, message: err.message});
-	                    });
-		                mlself.delegateEvents(); // start listening to events
-	                }
-	            });
-	        });
-        },
+			    var lisb = window.configuration.metaLot.lotCalledBatch;
+			    mlself.trigger('notifyError', {
+				    owner: 'MetaLotController',
+				    errorLevel: 'warning',
+				    message: 'Saving ' + (lisb ? 'batch' : 'lot') + '...'
+			    });
+			    mlself.delegateEvents({}); // stop listening to buttons
 
-        newLotSaved: function(message) {
-            this.trigger('clearErrors', "MetaLotController");
-            var newLotSuccessController = new NewLotSuccessController({
-                el: this.$('.NewLotSuccessView'),
-                corpName: message.lot.corpName,
-                buid: message.lot.buid
-            });
-            newLotSuccessController.render();
+			    $.ajax({
+				    type: "POST",
+				    url: url,
+				    data: JSON.stringify(mts),
+				    dataType: "json",
+				    contentType: 'application/json',
+				    success: successFunct,
+				    error: function (error) {
+					    mlself.trigger('clearErrors', "MetaLotController");
+					    var resp = $.parseJSON(error.responseText);
+					    _.each(resp, function (err) {
+						    mlself.trigger('notifyError', {
+							    owner: "MetaLotController",
+							    errorLevel: err.level,
+							    message: err.message
+						    });
+					    });
+					    mlself.delegateEvents(); // start listening to events
+				    }
+			    });
+		    });
+	    },
 
-        },
+	    editParentRequest: function (parent) {
+		    this.trigger('clearErrors', "MetaLotController");
+		    this.trigger('clearErrors', "LotController");
+		    $(this.el).empty();
+		    this.editParentWorkflowController = new EditParentWorkflowController({
+			    el: $(this.el),
+			    corpName: this.model.get('corpName'),
+			    errorNotifList: new ErrorNotificationList(),
+			    user: this.user,
+			    parentModel: parent
+		    });
+	    },
 
-        lotUpdated: function(response) {
-            this.trigger('clearErrors', "MetaLotController");
-            // the form gets re-rendered, so we don't need to turn event listening back on
-            // here since it will result in multiple listeners firing for the same event
-            // - ms, 10/23/15
-            //this.delegateEvents(); // start listening to events
-            this.trigger('lotSaved', response);// RestratioController listens but does nothing at the moment
-            this.trigger('notifyError', {owner: "MetaLotController", errorLevel: "info", message: "Lot save succesful"});
-            // use the router / appController to re-render the form with the updated data
-            appController.updateLot(response);
-        },
+	    newLotSaved: function (message) {
+			if(message.errors.length > 0){
+				var error = message.errors;
+				mlself.trigger('clearErrors', "MetaLotController");
+				_.each(error, function (err) {
+					mlself.trigger('notifyError', {
+						owner: "MetaLotController",
+						errorLevel: err.level,
+						message: err.message
+					});
+				});
+				mlself.delegateEvents(); // start listening to events
+			}
+			else {
+				this.trigger('clearErrors', "MetaLotController");
+				var newLotSuccessController = new NewLotSuccessController({
+					el: this.$('.NewLotSuccessView'),
+					corpName: message.metalot.lot.corpName,
+					buid: message.metalot.lot.buid
+				});
+				newLotSuccessController.render();
+				this.saveInProgress = false;
+			}
+	    },
 
-        back: function() {
-            this.trigger('lotBack');
-            this.hide();
-        },
+	    lotUpdated: function (response) {
+		    this.trigger('clearErrors', "MetaLotController");
+		    this.trigger('lotSaved', response.metalot);// RestratioController listens but does nothing at the moment
+		    _.each(response.errors, function (err) {
+			    mlself.trigger('notifyError', {
+				    owner: "MetaLotController",
+				    errorLevel: err.level,
+				    message: err.message
+			    });
+		    });
+		    this.trigger('notifyError', {
+			    owner: "MetaLotController",
+			    errorLevel: "info",
+			    message: "Lot save succesful"
+		    });
+		    // use the router / appController to re-render the form with the updated data
+		    appController.updateLot(response.metalot);
+		    this.saveInProgress = false;
+	    },
 
-		updateModel: function() {
-            this.lotController.updateModel();
-            if (this.lotController.model.isNew() && this.user!=null) {
-                this.lotController.model.set({
-                    'registeredBy': this.user
-                });
-            }
-            this.parentController.updateModel();
-            if (this.parentController.model.isNew()) {
-                this.parentController.model.set({
-                    'chemist': this.lotController.model.get('chemist')
-                });
-            }
-        },
+	    back: function () {
+		    this.trigger('lotBack');
+		    this.hide();
+	    },
 
-        isValid: function() {
-            return (this.lotController.isValid() &&
-                   this.saltFormController.isValid() &&
-                   this.parentController.isValid());
-        },
-        show: function() {
-            $(this.el).show();
-		},
+	    updateModel: function () {
+		    this.lotController.updateModel();
+		    if (this.lotController.model.isNew() && this.user != null) {
+			    this.lotController.model.set({
+				    'registeredBy': this.user
+			    });
+		    }
+		    this.parentController.updateModel();
+		    if (this.parentController.model.isNew()) {
+			    this.parentController.model.set({
+				    'chemist': this.lotController.model.get('chemist')
+			    });
+		    }
+	    },
 
-		hide: function() {
-            $(this.el).hide();
-		},
+	    isValid: function () {
+		    return (this.lotController.isValid() &&
+		    this.saltFormController.isValid() &&
+		    this.parentController.isValid());
+	    },
+	    show: function () {
+		    $(this.el).show();
+	    },
 
-        close: function() {
-            this.hide();
-            appController.reset();
-        },
+	    hide: function () {
+		    $(this.el).hide();
+	    },
 
-        newLot: function() {
-            window.open("#register/"+this.lotController.model.get('corpName'));
+	    close: function () {
+		    this.hide();
+		    appController.reset();
+	    },
 
-        },
+	    newLot: function () {
+		    window.open("#register/" + this.lotController.model.get('corpName'));
 
-        allowedToUpdate: function() {
-            var chemist = this.model.get('lot').get('chemist');
+	    },
 
-            if( this.user==null || chemist==null || this.model.get('lot').isNew()) return true; // test mode or new
+	    allowedToUpdate: function () {
+		    var chemist = this.model.get('lot').get('chemist');
 
-            if(this.user.get('isAdmin') || this.user.get('code')==chemist.get('code')) {
-                return true;
-            } else {
-                return false;
-            }
-        }
+		    if (this.user == null || chemist == null || this.model.get('lot').isNew()) return true; // test mode or new
 
-	});
+		    if (this.user.get('isAdmin') || this.user.get('code') == chemist.get('code')) {
+			    return true;
+		    } else {
+			    return false;
+		    }
+	    },
 
+	    saltFormAllowedToUpdate: function () {
+		    if (!this.allowedToUpdate()) return false;
+
+		    if (window.configuration.metaLot.saltBeforeLot && this.model.get('lot').isNew()
+			    && !this.model.get('parent').isNew() && !this.model.get('saltForm').isNew()) {
+			    return false;
+		    } else {
+			    return true;
+		    }
+	    },
+
+	    parentAllowedToUpdate: function () {
+		    if (!this.allowedToUpdate()) return false;
+
+		    if (this.model.get('lot').isNew() ) {
+			    return false;
+		    } else {
+			    return true;
+		    }
+	    }
+    });
 });

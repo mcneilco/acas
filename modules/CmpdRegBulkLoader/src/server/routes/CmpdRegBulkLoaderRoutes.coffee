@@ -1,3 +1,5 @@
+path = require 'path'
+
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
 
@@ -133,14 +135,13 @@ exports.registerCmpds = (req, resp) ->
 		for rFile in json.reportFiles
 			serverUtilityFunctions = require './ServerUtilityFunctions.js'
 			config = require '../conf/compiled/conf.js'
-			splitNames = rFile.split ("/cmpdreg_bulkload/")
+			splitNames = rFile.split (path.sep+"cmpdreg_bulkload"+path.sep)
 			rFileName = splitNames[1]
+			rFileName = rFileName.replace(path.sep, '');
 			zip.file(rFileName, fs.readFileSync(rFile))
 		origUploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
-		movedUploadsPath = origUploadsPath + "cmpdreg_bulkload/"
-		zipFilePath = movedUploadsPath+zipFileName
-
-		zipFilePath = config.all.server.service.persistence.filePath+"/cmpdreg_bulkload/"+zipFileName
+		zipFilePath = origUploadsPath + "cmpdreg_bulkload" + path.sep + zipFileName
+		console.log zipFilePath
 		fstream = zip.generateNodeStream({type:"nodebuffer", streamFiles:true}).pipe(fs.createWriteStream(zipFilePath))
 		fstream.on 'finish', ->
 			console.log "finished create write stream"
@@ -185,8 +186,8 @@ exports.registerCmpds = (req, resp) ->
 		fs = require 'fs'
 		uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 		oldPath = uploadsPath + fileName
-		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload/"
-		while fs.existsSync(bulkLoadFolder + '/' + fileName)
+		bulkLoadFolder = uploadsPath + "cmpdreg_bulkload" + path.sep
+		while fs.existsSync(bulkLoadFolder + path.sep + fileName)
 			fileName = fileName.replace(/(?:(?: \(([\d]+)\))?(\.[^.]+))?$/, (s, index, ext) ->
 				' (' + ((parseInt(index, 10) or 0) + 1) + ')' + (ext or '')
 			)
