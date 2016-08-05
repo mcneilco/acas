@@ -416,6 +416,7 @@ server.sel.experimentStatus=approved
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true
+server.service.cron.enable=true
 
 # Mark whether using internal plate registration for plate analysis
 server.service.internalPlateRegistration=false
@@ -489,3 +490,4 @@ flyway.location=db/migration/postgres,com.labsynch.labseer.db.migration.postgres
 flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
+
