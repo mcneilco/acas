@@ -177,7 +177,7 @@ client.sar.sorting = includeOperators
 client.service.external.structure.url=http://host4.labsynch.com:8080/cmpdreg/structureimage/lot/
 
 # url to lot details
-client.service.external.lotDetails.url=http://${client.host}:8080/cmpdreg/#lot/
+client.service.external.lotDetails.url=/cmpdreg/#lot/
 
 ################################
 # Uncategorized
