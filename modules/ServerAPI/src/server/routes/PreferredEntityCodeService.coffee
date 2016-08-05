@@ -127,8 +127,8 @@ exports.referenceCodes = (requestData, csv, callback) ->
 					callback
 						displayName: requestData.displayName
 						results: formatJSONReferenceCode(codeResponse.results, "referenceName")
-		else if entityType.codeOrigin is "ACAS LSContainer"
-			console.log "entityType.codeOrigin is ACAS LSContainer"
+		else if entityType.codeOrigin is "ACAS LsContainer"
+			console.log "entityType.codeOrigin is ACAS LsContainer"
 			console.log reqList
 			console.log reqList
 #			reqList = [reqList[0].requestName]
@@ -145,8 +145,9 @@ exports.referenceCodes = (requestData, csv, callback) ->
 					results: formatJSONReferenceCode(codeResponse.results, "referenceName")
 			return
 		#this is the fall-through for internal. External fall-through is in csUtilities.getExternalReferenceCodes
-		callback.statusCode = 500
-		callback.end "problem with internal preferred Code request: code type and kind are unknown to system"
+			message = "problem with internal preferred Code request: code type and kind are unknown to system"
+			callback message
+			console.error message
 
 ####################################################################
 # BEST LABELS
@@ -226,8 +227,9 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 					displayName: requestData.displayName
 					results: formatJSONBestLabel(codeResponse.results, "preferredName")
 			return
-		callback.statusCode = 500
-		callback.end "problem with internal best label request: code type and kind are unknown to system"
+		message = "problem with internal best label request: code type and kind are unknown to system"
+		callback "problem with internal best label request: code type and kind are unknown to system"
+		console.error "problem with internal best label request: code type and kind are unknown to system"
 
 ####################################################################
 # ENTITY SEARCH

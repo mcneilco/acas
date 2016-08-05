@@ -319,8 +319,9 @@ exports.getExternalReferenceCodes = (displayName, requests, callback) ->
 		exports.getPreferredParentIds requests, (response) ->
 			callback response
 	else
-		callback.statusCode = 500
-		callback.end "problem with external preferred Code request: code type and kind are unknown to system"
+		message = "problem with external preferred Code request: code type and kind are unknown to system"
+		callback message
+		console.error message
 
 exports.getExternalBestLabel = (displayName, requests, callback) ->
 	if displayName == "Corporate Batch ID"
@@ -333,9 +334,9 @@ exports.getExternalBestLabel = (displayName, requests, callback) ->
 			console.log(JSON.stringify(response))
 			callback response
 	else
-		callback.statusCode = 500
-		callback.end "problem with external best label request: displayName is unknown to system"
-
+		message =  "problem with external best label request: displayName is unknown to system"
+		callback message
+		console.error message
 
 exports.getPreferredBatchIds = (requests, callback) ->
 	if global.specRunnerTestmode

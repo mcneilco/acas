@@ -42,7 +42,7 @@ exports.entityTypes =
   'Container Plate':
     type: 'container'
     kind: 'plate'
-    codeOrigin: 'ACAS Container'
+    codeOrigin: 'ACAS LsContainer'
     displayName: 'Plate'
     sourceExternal: false
     parent: false
@@ -51,7 +51,7 @@ exports.entityTypes =
   'Container Tube':
     type: 'container'
     kind: 'tube'
-    codeOrigin: 'ACAS Container'
+    codeOrigin: 'ACAS LsContainer'
     displayName: 'Tube'
     sourceExternal: false
     parent: false
@@ -60,7 +60,7 @@ exports.entityTypes =
   'Definition Container Plate':
     type: 'definition container'
     kind: 'plate'
-    codeOrigin: 'ACAS Container'
+    codeOrigin: 'ACAS LsContainer'
     displayName: 'Definition Plate'
     sourceExternal: false
     parent: false
@@ -69,7 +69,7 @@ exports.entityTypes =
   'Definition Container Tube':
     type: 'definition container'
     kind: 'tube'
-    codeOrigin: 'ACAS Container'
+    codeOrigin: 'ACAS LsContainer'
     displayName: 'Definition Tube'
     sourceExternal: false
     parent: false

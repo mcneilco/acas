@@ -168,7 +168,7 @@ server.sar.geomMean=[Ki,Kd,pH]
 server.sar.defaultTitle ="Tested Entity Information"
 
 #options are bestLabel and ReferenceCode
-server.sar.csvLabel = bestLabel
+server.sar.csvLabel=bestLabel
 
 # options are ignoreOperators or includeOperators
 client.sar.sorting = includeOperators
@@ -293,7 +293,7 @@ server.service.external.file.service.url=
 
 # options for preferred batchid type are: NewLineSepBulkPost, SeuratCmpdReg, GeneCodeCheckByR, AcasCmpdReg, LabSynchCmpdReg, SingleBatchNameQueryString, AllPass
 client.service.external.preferred.batchid.type=NewLineSepBulkPost
-server.service.external.preferred.batchid.url=http://tomcat:8080/cmpdreg/api/v1/getPreferredName
+server.service.external.preferred.batchid.url=http://host4.labsynch.com:8080/cmpdreg/api/v1/getPreferredName
 server.service.external.preferred.batchid.separator=-
 server.service.external.project.url=
 server.service.external.report.registration.url=
@@ -404,7 +404,7 @@ client.protocol.showAssayTreeRule=false
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
 ## Cmpd Reg Bulk Loader Options
-client.service.cmpdReg.persistence.host=${client.service.persistence.host}
+client.service.cmpdReg.persistence.host=host4.labsynch.com
 client.service.cmpdReg.persistence.path=cmpdreg/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
 
