@@ -65,6 +65,7 @@ getRFileHandlerString = (rFilesWithRoute, config, acasHome)->
 	routes = []
 	routes.push('<Location /'+config.client.service.rapache.path+'/hello>\n\tSetHandler r-handler\n\tREval "hello()"\n</Location>')
 	routes.push('<Location /'+config.client.service.rapache.path+'/RApacheInfo>\n\tSetHandler r-info\n</Location>')
+	routes.push('<Location /'+config.client.service.rapache.path+'/server-status>\n\tSetHandler server-status\n</Location>')
 	for rFile in rFilesWithRoute
 		route = rapacheHandlerText.replace('* ROUTE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *',rFile.route)
 		route = route.replace('* FILE_TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES *', rFile.filePath)
@@ -210,6 +211,8 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	else
 	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
+	apacheSpecificConfs.push('LoadModule status_module ' + modulesDir + "status_module.so")
+	apacheSpecificConfs.push('ExtendedStatus On')
 	apacheSpecificConfs.join('\n')
 
 writeApacheConfFile = (config)->
