@@ -42,6 +42,7 @@ module.exports = (grunt) ->
 		grunt.config.set('sourceDirectories', sourceDirectories)
 		grunt.config.set('build', build)
 		grunt.task.run 'copy'
+		grunt.task.run 'execute:npm_install'
 #		grunt.task.run 'upgrade_config_files'
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
