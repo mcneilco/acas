@@ -211,7 +211,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	else
 	apacheSpecificConfs.push('LoadModule rewrite_module ' + modulesDir + "mod_rewrite.so")
 	apacheSpecificConfs.push('LoadModule R_module ' + modulesDir + "mod_R.so")
-	apacheSpecificConfs.push('LoadModule status_module ' + modulesDir + "status_module.so")
+	apacheSpecificConfs.push('LoadModule status_module ' + modulesDir + "mod_status.so")
 	apacheSpecificConfs.push('ExtendedStatus On')
 	apacheSpecificConfs.join('\n')
 
