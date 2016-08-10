@@ -491,3 +491,4 @@ flyway.schema=acas
 flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
 
+server.acas.lic=/home/runner/build/conf/acas.lic
