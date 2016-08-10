@@ -209,7 +209,7 @@ module.exports = (grunt) ->
 				files: [
 					expand: true
 					cwd: "."
-					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/conf/*.properties", "#{i}/conf/*.properties.example", "#{i}/conf/*.R"]
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/conf/*"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
 						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
