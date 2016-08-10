@@ -414,6 +414,7 @@ client.cmpdReg.showProjectSelect=true
 # Default status for experiments loaded thorugh experiment loader
 server.sel.experimentStatus=approved
 server.sel.protocolStatus=created
+server.sel.assayStage=unassigned
 
 # Cron- change to "false" to not start cron jobs on startup
 server.service.cron.startOnRestart=true

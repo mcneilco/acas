@@ -1687,8 +1687,22 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
     lsType = "codeValue",
     lsKind = "protocol status",
     codeValue = protocolStatus,
-    codeType = "experiment",
+    codeType = "protocol",
     codeKind = "status",
+    codeOrigin = "ACAS DDICT",
+    lsTransaction= lsTransaction)
+
+  assayStage <- applicationSettings$server.sel.assayStage
+  if (is.null(assayStage) || assayStage == "") {
+    assayStage <- "unassigned"
+  }
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "assay stage",
+    codeValue = assayStage,
+    codeType = "assay",
+    codeKind = "stage",
     codeOrigin = "ACAS DDICT",
     lsTransaction= lsTransaction)
 
