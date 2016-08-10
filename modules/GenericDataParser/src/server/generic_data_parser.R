@@ -1675,8 +1675,37 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
   
   protocolStates <- list()
   
+  # Store the metaData in protocol values
+  protocolValues <- list()
+
+  protocolStatus <- applicationSettings$server.sel.protocolStatus
+  if (is.null(protocolStatus) || protocolStatus == "") {
+    protocolStatus <- "created"
+  }
+  protocolValues[[length(protocolValues)+1]] <- createStateValue(
+    recordedBy = recordedBy,
+    lsType = "codeValue",
+    lsKind = "protocol status",
+    codeValue = protocolStatus,
+    codeType = "experiment",
+    codeKind = "status",
+    codeOrigin = "ACAS DDICT",
+    lsTransaction= lsTransaction)
+
+  protocolStates[[length(protocolStates)+1]] <- createProtocolState(protocolValues=protocolValues,
+                                                                          lsTransaction = lsTransaction, 
+                                                                          recordedBy=recordedBy, 
+                                                                          lsType="metadata", 
+                                                                          lsKind="protocol metadata")
   # Add a label for the name
   protocolLabels <- list()
+  protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
+                                                                    recordedBy=recordedBy, 
+                                                                    lsType="name", 
+                                                                    lsKind="protocol name",
+                                                                    labelText=metaData$'Protocol Name'[1],
+                                                                    preferred=TRUE)
+  
   protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
                                                                     recordedBy=recordedBy, 
                                                                     lsType="name", 
