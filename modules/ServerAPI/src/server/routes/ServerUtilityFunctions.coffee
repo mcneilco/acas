@@ -1253,7 +1253,7 @@ class Container extends Backbone.Model
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
 		@set lsLabels: new LabelList @get('lsLabels').filter (label) ->
-      #only keep labels where id is null/missing or the label is ignored
+     #keep only label where it is new or the value is ignored
 			label.isNew() or label.get("ignored")==true
 		@get('lsLabels').each (lab) ->
 			unless lab.get('recordedBy') != ""
@@ -1274,8 +1274,8 @@ class Container extends Backbone.Model
 			unless state.get('recordedDate') != null
 				state.set recordedDate: rDate
 			state.set 'lsValues': new ValueList state.get('lsValues').filter (val) ->
-				#remove where the value has an id and is not ignored
-				val.isNew() && !val.get("ignored")==true
+				#keep only values where it is new or the value is ignored
+				val.isNew() or val.get("ignored")==true
 			state.get('lsValues').each (val) ->
 				unless val.get('recordedBy') != ""
 					val.set recordedBy: rBy
@@ -1283,7 +1283,7 @@ class Container extends Backbone.Model
 					val.set recordedDate: rDate
 		@set lsStates: new StateList @get('lsStates').filter (state) ->
       #only keep states that have values or
-			#where id is null/missing or the state is ignored
+			#where there are values to save or it is a new state or the state is ignored
 			state.get('lsValues').length > 0 or state.isNew() or state.get("ignored")==true
 
 	getLogs: ->
