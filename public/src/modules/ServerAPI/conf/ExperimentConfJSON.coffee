@@ -27,12 +27,6 @@
 				kindName: "experiment metadata"
 			,
 				typeName: "metadata"
-				kindName: "custom experiment metadata"
-			,
-				typeName: "metadata"
-				kindName: "custom experiment metadata gui"
-			,
-				typeName: "metadata"
 				kindName: "raw results locations"
 			,
 				typeName: "metadata"
