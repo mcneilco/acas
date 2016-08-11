@@ -279,7 +279,7 @@ exports.genericProtocolSearch = (req, res) ->
 			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&userName="+req.user.username
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
