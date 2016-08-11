@@ -29,7 +29,7 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 	else if tool is 'DataViewer'
 		url = '/dataViewer/filterByExpt/'+req.query.experiment
 		url = url.replace /(\r\n|\n|\r)/gm,""
-	  console.log "redirecting to #{url}"
+		console.log "redirecting to #{url}"
 		resp.redirect '/dataViewer/filterByExpt/'+req.query.experiment
 	else
 # Could later add customer specific call here
