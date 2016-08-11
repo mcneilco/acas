@@ -408,6 +408,19 @@ module.exports = (grunt) ->
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/server/r",module)}"
 					dest: "#{grunt.config.get('build')}/src/r"
 				]
+			module_python:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/server/python/**"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						module = replaced.split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/server/python",module)}"
+					dest: "#{grunt.config.get('build')}/src/python"
+				]
 			module_routes_js:
 				files: [
 					expand: true
