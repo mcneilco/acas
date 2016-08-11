@@ -48,6 +48,9 @@ renderCurve <- function(getParams) {
   }
 
   #Retrieve rendering hint parameters
+  if(is.na(coalesce(fitData[1]$renderingHint))) {
+    fitData[ , renderingHint := get_model_fit_classes()[1]$code]
+  }
   renderingOptions <- racas::get_rendering_hint_options(fitData[1]$renderingHint)
   logDose <- TRUE
   if(fitData[1]$renderingHint %in% c("Michaelis-Menten", "Substrate Inhibition")) logDose <- FALSE
