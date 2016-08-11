@@ -2761,7 +2761,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   }
   
   if(!dryRun) {
-    viewerLink <- getViewerLink(protocol, experiment, validatedMetaData$'Experiment Name') 
+    viewerLink <- racas::getViewerLink(protocol, experiment)
   }
   
   summaryInfo <- list(
@@ -2843,51 +2843,7 @@ getPreviousExperimentCodes <- function(experiment) {
   previousExperimentCodes <- lapply(previousCodeValues, getElement, "codeValue")
   return(previousExperimentCodes)
 }
-getViewerLink <- function(protocol, experiment, experimentName = NULL, protocolName = NULL) {
-  # Returns url link for viewer
 
-  if(is.null(experimentName)) {
-    experimentName <- getPreferredName(experiment)
-  }
-  
-  # Add name modifier to protocol name for viewer
-  protocolPostfixStates <- list()
-  if (is.list(protocol$lsStates)) {
-    protocolPostfixStates <- Filter(function(x) {x$lsTypeAndKind == "metadata_name modifier"}, 
-                                    protocol$lsStates)
-  }
-  
-  protocolPostfix <- ""
-  if (length(protocolPostfixStates) > 0) {
-    protocolPostfixState <- protocolPostfixStates[[1]]
-    protocolPostfixValues <- Filter(function(x) {x$lsTypeAndKind == "stringValue_postfix"},
-                                    protocolPostfixState$lsValues)
-    protocolPostfix <- protocolPostfixValues[[1]]$stringValue
-  }
-  
-  if (!is.null(racas::applicationSettings$client.service.result.viewer.protocolPrefix)) {
-    if (!(is.null(protocolName))) {
-      protocolName <- paste0(protocolName, protocolPostfix)
-    } else {
-      protocol <- getProtocolById(protocol$id)
-      
-      protocolName <- getPreferredName(protocol)
-      protocolName <- paste0(protocolName, protocolPostfix)
-    }
-    
-    if (is.list(experiment) && racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
-      experimentName <- paste0(experiment$codeName, "::", experimentName)
-    }
-    viewerLink <- paste0("/openExptInQueryTool?experiment=", URLencode(experiment$codeName, reserved=TRUE))
-#     viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
-#                          URLencode(protocolName, reserved=TRUE), 
-#                          racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-#                          URLencode(experimentName, reserved=TRUE))
-  } else {
-    viewerLink <- NULL
-  }
-  return(viewerLink)
-}
 translateClassToValueType <- function(x, reverse = F) {
   # translates Excel style Number formats to ACAS valueTypes (or reverse)
   valueTypeVector <- c("numericValue", "stringValue", "fileValue", "inlineFileValue", "urlValue", "dateValue", "clobValue", "blobValue", "codeValue")

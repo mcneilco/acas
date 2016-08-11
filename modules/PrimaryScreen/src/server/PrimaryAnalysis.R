@@ -2247,9 +2247,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     pdfLocation <- createPDF(resultTable, instrumentData$assayData, parameters, summaryInfo,
                                threshold = hitThreshold, experiment, dryRun, activityName) 
 
-    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":",
-                                         racas::applicationSettings$client.port,
-                                         '/dataFiles/experiments/', experiment$codeName, "/draft/",
+    summaryInfo$info$"Summary" <- paste0('<a href="/dataFiles/experiments/', experiment$codeName, "/draft/",
                                          experiment$codeName,'_SummaryDRAFT.pdf" target="_blank">Summary</a>')
 
     summaryInfo$dryRunReports <- saveReports(resultTable, spotfireResultTable, saveLocation=dryRunFileLocation, 
@@ -2284,9 +2282,7 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
     rm(instrumentData)
     gc()
 
-    summaryInfo$info$"Summary" <- paste0('<a href="http://', racas::applicationSettings$client.host, ":",
-                                         racas::applicationSettings$client.port,
-                                         '/dataFiles/experiments/', experiment$codeName, "/analysis/", 
+    summaryInfo$info$"Summary" <- paste0('<a href="/dataFiles/experiments/', experiment$codeName, "/analysis/", 
                                          experiment$codeName,'_Summary.pdf" target="_blank">Summary</a>')
     
     # Create the final Spotfire File
@@ -2576,15 +2572,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 			dbCommit(conn)
 		}
 
-    if (racas::applicationSettings$client.service.result.viewer.experimentNameColumn == "EXPERIMENT_NAME") {
-      experimentName <- paste0(experiment$codeName, "::", experiment$lsLabels[[1]]$labelText)
-    } else {
-      experimentName <- experiment$lsLabels[[1]]$labelText
-    }
-    viewerLink <- paste0(racas::applicationSettings$client.service.result.viewer.protocolPrefix, 
-                         URLencode(protocolName, reserved=TRUE), 
-                         racas::applicationSettings$client.service.result.viewer.experimentPrefix,
-                         URLencode(experimentName, reserved=TRUE))
+    viewerLink <- racas::getViewerLink(experiment = experiment)
+
     summaryInfo$viewerLink <- viewerLink
   }
   
