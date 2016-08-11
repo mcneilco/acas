@@ -399,7 +399,7 @@ exports.projectCodes = (requestData, csv, callback) ->
 
 	if requestData.sourceExternal
 		console.log("looking up external entity")
-		csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+		csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 		csUtilities.getExternalProjectCodes requestData.displayName, reqList, (prefResp) ->
 			if typeof prefResp is "string" and prefResp.indexOf("failed") > -1
 				callback prefResp
