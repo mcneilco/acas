@@ -66,7 +66,7 @@ saveSpotfireFile <- function(inputTable, saveLocation, experiment, parameters, r
     userLink <- paste0(spotfirePrefix, experimentParam, ";", fileParam, ";")
     fileLink <- paste0(racas::applicationSettings$server.service.external.file.service.url, finalLocation)
   } else {
-    userLink <- paste0('http://', racas::applicationSettings$client.host, ":", 
+    userLink <- paste0(racas::getSSLString(), racas::applicationSettings$client.host, ":",
                        racas::applicationSettings$client.port, '/dataFiles/', finalLocation)
     fileLink <- paste0(racas::applicationSettings$server.nodeapi.path, '/dataFiles/', finalLocation)
   }
