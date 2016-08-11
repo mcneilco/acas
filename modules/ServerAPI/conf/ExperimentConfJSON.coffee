@@ -365,6 +365,62 @@
 				name: "FLIPR"
 				ignored: false
 			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "acumen"
+				name: "Acumen"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "arrayscan"
+				name: "ArrayScan"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "biacore"
+				name: "Biacore"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "envision"
+				name: "EnVision"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "lumilux"
+				name: "LumiLux"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "microbeta"
+				name: "Microbeta"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "quantstudio"
+				name: "QuantStudio"
+				ignored: false
+			,
+				codeType: "equipment"
+				codeKind: "instrument reader"
+				codeOrigin: "ACAS DDICT"
+				code: "viewlux"
+				name: "ViewLux"
+				ignored: false
+			,
 				codeType: "reader data"
 				codeKind: "read name"
 				codeOrigin: "ACAS DDICT"
@@ -408,6 +464,41 @@
 				ignored: false
 			,
 				codeType: "analysis parameter"
+				codeKind: "aggregate by"
+				codeOrigin: "ACAS DDICT"
+				code: "cmpd batch conc"
+				name: "Compound Batch Concentration"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "aggregate by"
+				codeOrigin: "ACAS DDICT"
+				code: "entire assay"
+				name: "Across Entire Assay"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "aggregate by"
+				codeOrigin: "ACAS DDICT"
+				code: "cmpd plate"
+				name: "Compound Plate"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "aggregate by"
+				codeOrigin: "ACAS DDICT"
+				code: "assay plate"
+				name: "Assay Plate"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "aggregate by"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "No Aggregation"
+				ignored: false
+			,
+				codeType: "analysis parameter"
 				codeKind: "standard type"
 				codeOrigin: "ACAS DDICT"
 				code: "PC"
@@ -436,10 +527,45 @@
 				ignored: false
 			,
 				codeType: "analysis parameter"
+				codeKind: "aggregation method"
+				codeOrigin: "ACAS DDICT"
+				code: "median"
+				name: "Median"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "aggregation method"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "No Aggregation"
+				ignored: false
+			,
+				codeType: "analysis parameter"
 				codeKind: "normalization method"
 				codeOrigin: "ACAS DDICT"
 				code: "plate order only"
 				name: "Plate Order Only"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "normalization method"
+				codeOrigin: "ACAS DDICT"
+				code: "plate order & section by 8"
+				name: "Plate Order and Tip"
+				ignored: true
+			,
+				codeType: "analysis parameter"
+				codeKind: "normalization method"
+				codeOrigin: "ACAS DDICT"
+				code: "plate order and row"
+				name: "Plate Order and Row"
+				ignored: false
+			,
+				codeType: "analysis parameter"
+				codeKind: "normalization method"
+				codeOrigin: "ACAS DDICT"
+				code: "none"
+				name: "None"
 				ignored: false
 			,
 				codeType: "analysis parameter"
