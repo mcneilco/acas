@@ -5,7 +5,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 exports.redirectToQueryToolForExperiment = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 
-# params: {"tool": "Seurat", "experiment": "EXPT-00001", "protocol": "PROT-00001"}
+	# params: {"tool": "Seurat", "experiment": "EXPT-00001", "protocol": "PROT-00001"}
 	tool = req.query.tool
 
 	if not tool?
@@ -13,9 +13,11 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 		if not tool? #default may later change to Simple SAR
 			tool = 'DataViewer'
 	if tool is 'LiveDesign'
-		#resp.redirect '/api/redirectToNewLiveDesignLiveReportForExperiment/' + req.query.experiment
+#resp.redirect '/api/redirectToNewLiveDesignLiveReportForExperiment/' + req.query.experiment
 		getLdUrl = require './CreateLiveDesignLiveReportForACAS.js'
 		getLdUrl.getUrlForNewLiveDesignLiveReportForExperiment req.query.experiment, (url) ->
+			url = url.replace /(\r\n|\n|\r)/gm,""
+			console.log "redirecting to #{url}"
 			resp.redirect url
 	else if tool is 'Seurat'
 		expRoutes = require './ExperimentServiceRoutes.js'
@@ -25,7 +27,10 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 			else
 				resp.redirect res.resultViewerURL
 	else if tool is 'DataViewer'
+		url = '/dataViewer/filterByExpt/'+req.query.experiment
+		url = url.replace /(\r\n|\n|\r)/gm,""
+	  console.log "redirecting to #{url}"
 		resp.redirect '/dataViewer/filterByExpt/'+req.query.experiment
 	else
-    # Could later add customer specific call here
+# Could later add customer specific call here
 		resp.status(500).send('Invalid viewer tool')
