@@ -438,7 +438,7 @@ processData <- function(postData, exportCSV, onlyPublicData){
 	  httpheader=c('Content-Type'='application/json'),
 	  postfields=toJSON(searchParams))
 
-	myLogger$info(dataCsv)
+#	myLogger$info(dataCsv)
 
 	errorFlag <- tryCatch({
 	  dataDF <- read.csv(text = dataCsv, colClasses=c("character"))
@@ -453,7 +453,8 @@ processData <- function(postData, exportCSV, onlyPublicData){
 	} else {
 	        dataDT <- as.data.table(dataDF)
 	}
-
+ 
+   dataDT <- unique(dataDT)
 
 	### PROCESS DATA RETURNED FROM SERVER #####
 
@@ -542,7 +543,7 @@ processData <- function(postData, exportCSV, onlyPublicData){
 	        reportFileValues <- paste(unlist(unique(subset(dataDT,lsType=="fileValue" & lsKind =="report file" & experimentId == expt, lsKind))))
 	      }
 
-	saveSession('bforeModReportFile.rda')
+#	saveSession('bforeModReportFile.rda')
 	      outputDT <- modifyReportFileValues(outputDT, reportFileValues, exportCSV, aggregateData)
 
 
@@ -844,13 +845,13 @@ myLogger$info(postData)
 #postData <- '{"queryParams":{"batchCodes":"29 60","experimentCodeList":["EXPT-00017","tags_EXPT-00017","PROT-00014","_External data_Published Influenza Datasets"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
 #postData <- '{"queryParams":{"batchCodes":"","experimentCodeList":["EXPT-00000039"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
 #postData <- '{"queryParams":{"batchCodes":"","experimentCodeList":["EXPT-00000015"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
-#exportCSV <- TRUE
-#onlyPublicData <- "true"
+#postData <- '{"queryParams":{"batchCodes":"","experimentCodeList":["EXPT-00000052"],"searchFilters":{"booleanFilter":"and","advancedFilter":""}},"maxRowsToReturn":"10000","user":"goshiro"}'
+#exportCSV <- FALSE
+#configList$server.sar.csvLabel <- "bestLabel"
 
 ## temp work around
-configList$server.sar.csvLabel <- "bestLabel"
 configList$server.sar.exportOnlyPublicData <- "true"
-onlyPublicData <- "true"
+onlyPublicData <- configList$server.sar.exportOnlyPublicData
 
 
 processData(postData, exportCSV, onlyPublicData)
