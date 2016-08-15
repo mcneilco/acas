@@ -1,5 +1,6 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdReg', exports.postAssignedProperties
+	app.get '/cmpdReg/scientists', exports.getBasicCmpdReg
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
@@ -11,6 +12,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg/salts', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/isotopes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/stereoCategorys', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/compoundTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
+	app.get '/cmpdReg/parentAnnotations', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/fileTypes', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
 	app.get '/cmpdReg/projects', loginRoutes.ensureAuthenticated, exports.getAuthorizedCmpdRegProjects
 	app.get '/cmpdReg/vendors', loginRoutes.ensureAuthenticated, exports.getBasicCmpdReg
@@ -30,6 +33,9 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/cmpdReg/api/v1/structureServices/clean', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/hydrogenizer', loginRoutes.ensureAuthenticated, exports.genericStructureService
 	app.post '/cmpdReg/api/v1/structureServices/cipStereoInfo', loginRoutes.ensureAuthenticated, exports.genericStructureService
+	app.post '/cmpdReg/export/searchResults', loginRoutes.ensureAuthenticated, exports.exportSearchResults
+	app.post '/cmpdReg/validateParent', loginRoutes.ensureAuthenticated, exports.validateParent
+	app.post '/cmpdReg/updateParent', loginRoutes.ensureAuthenticated, exports.updateParent
 
 exports.cmpdRegIndex = (req, res) ->
 	scriptPaths = require './RequiredClientScripts.js'
@@ -357,6 +363,7 @@ exports.regSearch = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -380,6 +387,7 @@ exports.getMultipleFilePicker = (req, resp) ->
 	config = require '../conf/compiled/conf.js'
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\//, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + "/" +endOfUrl
+	cmpdRegCall = cmpdRegCall.replace /\\/g, "%5C"
 	console.log cmpdRegCall
 	req.pipe(request(cmpdRegCall)).pipe(resp)
 
@@ -402,6 +410,7 @@ exports.metaLots = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -425,6 +434,7 @@ exports.saveSalts = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -448,6 +458,7 @@ exports.saveIsotopes = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -473,6 +484,7 @@ exports.molConvert = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log JSON.stringify json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'application/json')
 			resp.end JSON.stringify json
 		else
@@ -497,6 +509,7 @@ exports.genericStructureService = (req, resp) ->
 	, (error, response, json) =>
 		if !error
 			console.log json
+			resp.statusCode = response.statusCode
 			resp.setHeader('Content-Type', 'plain/text')
 			resp.end json
 		else
@@ -507,3 +520,103 @@ exports.genericStructureService = (req, resp) ->
 			resp.end JSON.stringify {error: "something went wrong :("}
 	)
 
+exports.exportSearchResults = (req, resp) ->
+	path = require 'path'
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/export/searchResults'
+
+	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
+	exportedSearchResults = uploadsPath + "exportedSearchResults/"
+
+	serverUtilityFunctions.ensureExists exportedSearchResults, 0o0744, (err) ->
+		if err?
+			console.log "Can't find or create exportedSearchResults folder: " + exportedSearchResults
+			resp.statusCode = 500
+			resp.end "Error trying to export search results to sdf: Can't find or create exportedSearchResults folder " + exportedSearchResults
+		else
+			date = new Date();
+			monthNum = date.getMonth()+1;
+			currentDate = (date.getFullYear()+'_'+("0" + monthNum).slice(-2)+'_'+("0" + date.getDate()).slice(-2));
+			fileName = currentDate+"_"+date.getTime()+"_searchResults.sdf";
+			dataToPost = {
+				filePath: exportedSearchResults + fileName,
+				searchFormResultsDTO: req.body
+			}
+			request(
+				method: 'POST'
+				url: cmpdRegCall
+				body: dataToPost
+				json: true
+				timeout: 6000000
+			, (error, response, json) =>
+				if !error
+					resp.setHeader('Content-Type', 'plain/text')
+					absFilePath = json.reportFilePath
+					console.log absFilePath
+					relFilePath = absFilePath.split(config.all.server.datafiles.relative_path+path.sep)[1]
+					console.log relFilePath
+					downloadFilePath = config.all.client.datafiles.downloadurl.prefix + relFilePath
+					json.reportFilePath = downloadFilePath
+					resp.json json
+				else
+					console.log 'got ajax error trying to export search results to sdf'
+					console.log error
+					console.log json
+					console.log response
+					resp.statusCode = 500
+					resp.end "Error trying to export search results to sdf: " + error;
+
+			)
+
+exports.validateParent = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log "exports.validateParent"
+
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/validateParent'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to validate parent'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to validate parent: " + error;
+	)
+
+exports.updateParent = (req, resp) ->
+	request = require 'request'
+	config = require '../conf/compiled/conf.js'
+	console.log "exports.updateParent"
+
+	cmpdRegCall = config.all.client.service.cmpdReg.persistence.fullpath + '/parents/updateParent'
+	request(
+		method: 'POST'
+		url: cmpdRegCall
+		body: req.body
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error
+			resp.setHeader('Content-Type', 'plain/text')
+			resp.json json
+		else
+			console.log 'got ajax error trying to update parent'
+			console.log error
+			console.log json
+			console.log response
+			resp.statusCode = 500
+			resp.end "Error trying to update parent: " + error;
+	)

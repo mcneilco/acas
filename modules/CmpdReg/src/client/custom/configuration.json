@@ -59,6 +59,7 @@
     	"maxSearchResults": 5000,
     	"unitTestDB": true,
     	"initalDBLoad": true,
+    	"projectRestrictions": false,
     	"jchemVersion": "16.4.11.0"
     },
     "bulkLoadSettings": {
