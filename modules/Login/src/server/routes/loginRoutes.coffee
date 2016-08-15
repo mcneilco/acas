@@ -45,7 +45,7 @@ exports.loginPage = (req, res) ->
 		user: user
 		message: errorMsg
 		resetPasswordOption: resetPasswordOption
-		headerName: config.all.client.moduleMenus.headerName
+		headerName: config.all.client.moduleMenus.logoText
 
 exports.resetPost = (req, res) ->
 	console.log req.session
