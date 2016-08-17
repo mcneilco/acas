@@ -8,7 +8,7 @@ services:
      - "3000:3000"
      - "3001:3001"
     environment:
-     - APP_NAME=compound-inventory
+     - APP_NAME=1.9.0
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
      - DOCKER_HOST_IP=${DOCKER_HOST_IP}
