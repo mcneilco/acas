@@ -16,6 +16,7 @@ class window.Thing extends Backbone.Model
 		@set lsStates: new StateList()
 		@set firstLsThings: new FirstLsThingItxList()
 		@set secondLsThings: new SecondLsThingItxList()
+		@set lsTags: new TagList()
 
 	initialize: ->
 		@.set @parse(@.attributes)

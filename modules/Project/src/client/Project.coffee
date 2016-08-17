@@ -621,6 +621,10 @@ class window.ProjectController extends AbstractFormController
 		"keyup .bv_projectDetails": "attributeChanged"
 		"change .bv_restrictedData": "attributeChanged"
 		"click .bv_save": "handleSaveClicked"
+		"click .bv_newEntity": "handleNewEntityClicked"
+		"click .bv_cancel": "handleCancelClicked"
+		"click .bv_cancelClear": "handleCancelClearClicked"
+		"click .bv_confirmClear": "handleConfirmClearClicked"		
 
 	initialize: ->
 		if @model?
@@ -727,10 +731,13 @@ class window.ProjectController extends AbstractFormController
 		if @readOnly is true
 			@displayInReadOnlyMode()
 		@$('.bv_save').attr('disabled','disabled')
+		@$('.bv_cancel').attr('disabled','disabled')
 		if @model.isNew()
 			@$('.bv_save').html("Save")
+			@$('.bv_newEntity').hide()
 		else
 			@$('.bv_save').html("Update")
+			@$('.bv_newEntity').show()
 		@
 
 	handleSaveFailed: =>
@@ -761,6 +768,8 @@ class window.ProjectController extends AbstractFormController
 		@checkFormValid()
 		@$('.bv_saveComplete').hide()
 		@$('.bv_saveFailed').hide()
+		@$('.bv_cancel').removeAttr('disabled')
+		@$('.bv_cancelComplete').hide()
 
 	setupProjectStatusSelect: ->
 		@statusList = new PickListList()
@@ -779,6 +788,8 @@ class window.ProjectController extends AbstractFormController
 			el: @$('.bv_tags')
 			collection: lsTags
 		@tagListController.render()
+		console.log "setupTagList"
+		console.log @tagListController
 
 	setupAttachFileListController: =>
 		$.ajax
@@ -935,6 +946,7 @@ class window.ProjectController extends AbstractFormController
 				@$('.bv_manageUserPermissions').hide()
 		else
 			@disableAllInputs()
+			@$('.bv_newEntity').removeAttr('disabled')			
 			if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [@adminRole]) or UtilityFunctions::testUserHasRole(window.AppLaunchParams.loginUser, [window.conf.roles.acas.adminRole])
 				@$('.bv_manageUserPermissions').show()
 			else
@@ -973,6 +985,35 @@ class window.ProjectController extends AbstractFormController
 
 	handleStartDateIconClicked: =>
 		@$( ".bv_startDate" ).datepicker( "show" )
+
+	handleNewEntityClicked: =>
+		@$('.bv_confirmClearEntity').modal('show')
+		@$('.bv_confirmClear').removeAttr('disabled')
+		@$('.bv_cancelClear').removeAttr('disabled')
+		@$('.bv_closeModalButton').removeAttr('disabled')
+
+	handleCancelClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
+
+	handleConfirmClearClicked: =>
+		@$('.bv_confirmClearEntity').modal('hide')
+		@model = null
+		@completeInitialization()
+		@trigger 'amClean'
+
+	handleCancelClicked: =>
+		if @model.isNew()
+			@model = null
+			@completeInitialization()
+		else
+			@$('.bv_canceling').show()
+			@model.fetch
+				success: @handleCancelComplete
+		@trigger 'amClean'
+
+	handleCancelComplete: =>
+		@$('.bv_canceling').hide()
+		@$('.bv_cancelComplete').show()
 
 	updateModel: =>
 		@model.get("project name").set("labelText", UtilityFunctions::getTrimmedInput @$('.bv_projectName'))
@@ -1028,6 +1069,8 @@ class window.ProjectController extends AbstractFormController
 	saveProjectAndRoles: =>
 		@prepareToSaveAttachedFiles()
 		@prepareToSaveProjectLeaders()
+		console.log "saveProjectAndRoles - handle tags changed"
+		console.log @tagListController
 		@tagListController.handleTagsChanged()
 		@model.prepareToSave()
 		@model.reformatBeforeSaving()
@@ -1186,14 +1229,21 @@ class window.ProjectController extends AbstractFormController
 				@model.trigger 'saveFailed'
 
 	syncRoles: =>
+		@$('.bv_syncingRolesModal').modal
+			backdrop: 'static'
+		@$('.bv_syncingRolesModal').on 'hidden.bs.modal', =>
+			@$('.bv_syncProjectUsersError').modal 'show'
 		$.ajax
 			type: 'GET'
 			url: "/api/syncLiveDesignProjectsUsers"
 			error: (err) =>
+				console.log "should hide modal now"
+				@$('.bv_syncingRolesModal').modal 'hide'
 				@$('.bv_syncProjectUsersErrorMessage').html err.responseText
-				@$('.bv_syncProjectUsersError').modal 'show'
+#				@$('.bv_bv_syncingRolesModal').on 'hide.bs.modal
 				@model.trigger 'saveFailed'
 			success: (json) =>
+				@$('.bv_bv_syncingRolesModal').modal 'hide'
 				console.log 'successfully synced live design project users'
 
 	validationError: =>
@@ -1210,6 +1260,8 @@ class window.ProjectController extends AbstractFormController
 
 	displayInReadOnlyMode: =>
 		@$(".bv_save").hide()
+		@$(".bv_cancel").hide()
+		@$(".bv_newEntity").hide()		
 		@$('button').attr 'disabled', 'disabled'
 		@$(".bv_startDateIcon").addClass "uneditable-input"
 		@$(".bv_startDateIcon").on "click", ->
