@@ -47,8 +47,8 @@
 #########################################################################
 
 library(racas)
-source("src/r/ServerAPI/customFunctions.R")
-source("src/r/ServerAPI/genericDataParserConfiguration.R")
+source(file.path(applicationSettings$appHome,"src/r/ServerAPI/customFunctions.R"))
+source(file.path(applicationSettings$appHome,"src/r/ServerAPI/genericDataParserConfiguration.R"))
 
 #####
 # Define Functions
