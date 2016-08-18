@@ -175,12 +175,12 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
                      "'. Please remove these rows."))
     }
   }
-  
-  if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, errorEnv) 
-  }
+
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
+  }
+  if (!is.null(metaData$Project)) {
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData$'Protocol Name', errorEnv) 
   }
   
   if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
@@ -1838,7 +1838,7 @@ createNewExperiment <- function(metaData, protocol, lsTransaction, pathToGeneric
   experiment <- getExperimentById(experiment$id)
   return(experiment)
 }
-validateProject <- function(projectName, configList, username, errorEnv) {
+validateProject <- function(projectName, configList, username, protocolName = NULL, errorEnv) {
   # checks with Roo services to ensure that a project is available and correct. Converts names to codes.
   # 
   # Args:
@@ -1862,11 +1862,43 @@ validateProject <- function(projectName, configList, username, errorEnv) {
     return("")
   })
   projectCodes <- vapply(projectList, getElement, character(1), 'code')
-  if(length(projectCodes) == 0) {addError("No projects are available, contact your system administrator", errorEnv=errorEnv)}
+  if(length(projectCodes) == 0) {addError("No projects are available to you, contact your system administrator", errorEnv=errorEnv)}
   projectNames <- list()
   # Get a vector of project names if available
   if (!is.null(projectList[[1]]$name)) {
     projectNames <- vapply(projectList, getElement, character(1), 'name')
+  }
+  forceProtocolCreation <- grepl("CREATETHISPROTOCOL", protocolName)
+  if(forceProtocolCreation) {
+    protocolName <- trim(gsub("CREATETHISPROTOCOL", "", protocolName))
+  }
+  tryCatch({
+    protocolList <- getProtocolsByName(protocolName)
+  }, error = function(e) {
+    stopUser("There was an error in accessing the protocol. Please contact your system administrator.")
+  })
+  if (length(protocolList) !=0) {
+    protocol <- getProtocolById(protocolList[[1]]$id)
+    metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
+    if(length(metadataState) > 0) {
+      metadataState <- metadataState[[1]]
+      protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
+      if(!is.null(protocolProject)) {
+        protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
+        systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+        systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
+        projectIsRestricted <- systemProjectsDT[code == protocolProject]$isRestricted
+        projectCode <- systemProjectsDT[name == projectName]$code
+        if(projectIsRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
+          addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.")
+        }
+        userProjectDT <- rbindlist(projectList, fill = TRUE)
+        userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
+        if(!userHasAccess) {
+          addError("The protocol you entered is being used in a project that you do not have access to.")
+        }
+      }
+    }
   }
   if (projectName %in% projectCodes) {
     return(projectName)
@@ -1879,7 +1911,7 @@ validateProject <- function(projectName, configList, username, errorEnv) {
     } else {
       projectAvailableList <- paste(projectCodes, collapse = "', '")
     }
-    addError(paste0("The project you entered is not an available project. Please enter one of these projects: '",
+    addError(paste0("The project you entered is not an available project to you. Please enter one of these projects: '",
                     projectAvailableList, "'."))
     return("")
   }
