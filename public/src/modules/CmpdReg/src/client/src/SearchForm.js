@@ -41,6 +41,7 @@ $(function() {
 
 		events: {
 			'click .searchButton': 'search',
+			'keyup': 'keyupHandler',
             'click .searchType': 'updatePercentSimilarityDisabled',
 			'click .cancelButton': 'cancel'
 		},
@@ -210,7 +211,14 @@ $(function() {
                 selectedCode: tcode,
                 showIgnored: showIgnored
 			})
-        }
+        },
+
+	    keyupHandler: function(e) {
+		    console.log( "got keyup");
+		    if(e.which === 13) {// enter key
+			    this.search();
+		    }
+	    }
 
 
 	});
