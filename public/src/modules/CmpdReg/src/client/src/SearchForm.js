@@ -49,6 +49,12 @@ $(function() {
 			_.bindAll(this, 'search', 'cancel', 'validationError', 'updatePercentSimilarityDisabled','chemistsLoaded');
             this.valid = false;
 			this.marvinLoaded = false;
+			this.exportFormat = "mol";
+			if(window.configuration.marvin) {
+				if (window.configuration.marvin.exportFormat) {
+					this.exportFormat = window.configuration.marvin.exportFormat;
+				}
+			}
 
 		},
 
@@ -120,7 +126,7 @@ $(function() {
 
 		search: function() {
 			var self = this;
-			this.marvinSketcherInstance.exportStructure("mol").then(function(molecule) {
+			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
 					mol = '';
 				else

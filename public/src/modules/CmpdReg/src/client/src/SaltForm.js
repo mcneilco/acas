@@ -68,23 +68,28 @@ $(function() {
 
 		events: {
 			'click .addSaltButton': 'showAddSaltPanel',
-			'click .addIsotopeButton': 'showAddIsotopePanel',
-	  'click .showSaltFormMarvin': 'toggleStructureView',
+			'click .addIsotopeButton': 'showAddIsotopePanel', 
+			'click .showSaltFormMarvin': 'toggleStructureView',
 			'click .copyButton': 'copyMol',
 			'click .copyPanelCloseButton': 'hideCopyMolPanel'
 		},
 
 		initialize: function() {
-	  //TODO the template load should probably in render()
-	  $(this.el).html(this.template());
-	  this.$('.radioWrapper').hide();
+			$(this.el).html(this.template());
+			this.$('.radioWrapper').hide();
 
 			_.bindAll(this, 'showAddSaltPanel', 'validationError', 'updateModel', 'toggleStructureView', 'render');
 			this.model.bind('error',  this.validationError);
 			this.valid = true;
-	  this.isEditable = this.options.isEditable;
+			this.isEditable = this.options.isEditable;
 
 			this.marvinLoaded = false; // load on demand, not default, to make testing more reliable and fast
+			this.exportFormat = "mol";
+			if(window.configuration.marvin) {
+				if (window.configuration.marvin.exportFormat) {
+					this.exportFormat = window.configuration.marvin.exportFormat;
+				}
+			}
 
 			if ( this.isEditable ) {
 				var isList = this.model.get('isosalts');
@@ -155,7 +160,7 @@ $(function() {
 				var mol = '';
 				if(this.marvinLoaded && this.$('.structureWrapper').is(':visible')) {
 					self = this;
-					this.marvinSketcherInstance.exportStructure("mol").then(function(molecule) {
+					this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 						if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
 							mol = '';
 						else
@@ -277,7 +282,7 @@ $(function() {
 			}
 		  if (!self.marvinLoaded) {
 			if( self.model.get('molStructure')!=null && self.model.get('molStructure')!='') {
-			  sketcherInstance.importStructure("mol", self.model.get('molStructure')).catch(function(error) {
+			  sketcherInstance.importStructure(this.exportFormat, self.model.get('molStructure')).catch(function(error) {
 					alert(error);
 			  });
 			}

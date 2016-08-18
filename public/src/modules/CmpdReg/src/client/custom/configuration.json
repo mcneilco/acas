@@ -13,7 +13,8 @@
     "marvin": {
         "marvinImplicitH": "heteroterm",
         "sketchBondLength": 20,
-        "delayShowStep2Next": 750
+        "delayShowStep2Next": 750,
+		"exportFormat": "mol"
     },
 	"regSearchResults": {
 		"hideVirtualOption": false
