@@ -422,6 +422,11 @@
         console.log(response);
         console.log(json);
         if (!error) {
+          if (json.lot == null) {
+            resp.statusCode = 500;
+            resp.end(JSON.stringify("Could not find lot"));
+            return;
+          }
           if ((json != null ? (ref = json.lot) != null ? (ref1 = ref.project) != null ? ref1.code : void 0 : void 0 : void 0) != null) {
             projectCode = json.lot.project.code;
             if (cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails) {

@@ -325,6 +325,11 @@ exports.getMetaLot = (req, resp) ->
 		console.log json
 
 		if !error
+			if not json.lot?
+				resp.statusCode = 500
+				resp.end JSON.stringify "Could not find lot"
+				return			
+
 			if json?.lot?.project?.code?
 				projectCode = json.lot.project.code
 				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
