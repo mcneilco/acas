@@ -18,6 +18,9 @@
 	"regSearchResults": {
 		"hideVirtualOption": false
 	},
+	"searchForm": {
+		"defaultMaxResults": 100
+	},
     "metaLot": {
         "saltBeforeLot": false,
         "lotCalledBatch": false,
