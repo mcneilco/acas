@@ -3,10 +3,11 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/experimentName/:name', exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', exports.experimentById
+	app.get '/api/experiments', exports.experimentsAll
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
-	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
+#	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
@@ -24,6 +25,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/experimentName/:name', loginRoutes.ensureAuthenticated, exports.experimentByName
 	app.get '/api/experiments/protocolCodename/:code', loginRoutes.ensureAuthenticated, exports.experimentsByProtocolCodename
 	app.get '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.experimentById
+	app.get '/api/experiments', loginRoutes.ensureAuthenticated, exports.experimentsAll
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', loginRoutes.ensureAuthenticated, exports.experimentValueByStateTypeKindAndValueTypeKind
 	app.post '/api/experiments', loginRoutes.ensureAuthenticated, exports.postExperiment
 	app.put '/api/experiments/:id', loginRoutes.ensureAuthenticated, exports.putExperiment
@@ -115,6 +117,17 @@ exports.experimentById = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/"+req.params.id
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.experimentsAll = (req, resp) ->
+	console.log req.params.id
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments"
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
