@@ -179,8 +179,8 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
   }
-  if (!is.null(metaData$Project)) {
-    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData$'Protocol Name', errorEnv) 
+  if ((!is.null(configList$client.include.project) && configList$client.include.project) || ((!is.null(configList$client.save.project) && configList$client.save.project) && (!is.null(metaData$Project) && !is.na(metaData$Project) && metaData$Project != "NA"))) {
+    validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData$'Protocol Name', errorEnv)
   }
   
   if(!is.null(validatedMetaData$"Experiment Name") && grepl("CREATETHISEXPERIMENT$", validatedMetaData$"Experiment Name")) {
@@ -1862,10 +1862,10 @@ validateProject <- function(projectName, configList, username, protocolName = NU
     return("")
   })
   projectCodes <- vapply(projectList, getElement, character(1), 'code')
-  if(length(projectCodes) == 0) {addError("No projects are available to you, contact your system administrator", errorEnv=errorEnv)}
+  if(length(projectCodes) == 0) {stopUser("No projects are available to you, contact your system administrator to load data to this project")}
   projectNames <- list()
   # Get a vector of project names if available
-  if (!is.null(projectList[[1]]$name)) {
+  if (length(projectList) > 0 && !is.null(projectList[[1]]$name)) {
     projectNames <- vapply(projectList, getElement, character(1), 'name')
   }
   forceProtocolCreation <- grepl("CREATETHISPROTOCOL", protocolName)
@@ -1882,20 +1882,35 @@ validateProject <- function(projectName, configList, username, protocolName = NU
     metadataState <- getStatesByTypeAndKind(protocol, "metadata_protocol metadata")
     if(length(metadataState) > 0) {
       metadataState <- metadataState[[1]]
-      protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
+      #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
+      protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
       if(!is.null(protocolProject)) {
         protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
-        systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
-        systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
-        projectIsRestricted <- systemProjectsDT[code == protocolProject]$isRestricted
-        projectCode <- systemProjectsDT[name == projectName]$code
-        if(projectIsRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
-          addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.")
-        }
-        userProjectDT <- rbindlist(projectList, fill = TRUE)
-        userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
-        if(!userHasAccess) {
-          addError("The protocol you entered is being used in a project that you do not have access to.")
+        if(protocolProject != "unassigned") {
+          systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+          systemProjectsDT <- rbindlist(systemProjectsList, fill = TRUE)
+          protocolProjectMatches <- systemProjectsDT[code == protocolProject]
+          projectCode <- systemProjectsDT[name == projectName]$code
+          if(nrow(protocolProjectMatches) == 0) {
+            protocolProjectExists <- FALSE
+            addError("The project that this protocol belongs to is no longer available please contact your administrator or if you have the appropriate privileges re-assign the protocol to a new project", errorEnv = errorEnv)
+          } else {
+            protocolProjectExists <- TRUE
+          }
+          if(protocolProjectExists && protocolProjectMatches[1]$isRestricted && (length(projectCode) == 0 || protocolProject != projectCode)) {
+            addError("The protocol you entered belongs to a restricted project, therefore, the experiment project must match protocol's project.", errorEnv = errorEnv)
+          }
+          
+          rmNullObs <- function(x) {
+            is.NullOb <- function(x) is.null(x) | all(sapply(x, is.null))
+            x <- Filter(Negate(is.NullOb), x)
+            lapply(x, function(x) if (is.list(x)) rmNullObs(x) else x)
+          }
+          userProjectDT <- rbindlist(lapply(projectList, rmNullObs), fill = TRUE)
+          userHasAccess <- nrow(userProjectDT[code == protocolProject & ignored == FALSE]) > 0
+          if(!userHasAccess) {
+            addError("The protocol you entered is being used in a project that you do not have access to.", errorEnv = errorEnv)
+          }
         }
       }
     }
