@@ -56,6 +56,15 @@ class window.Protocol extends BaseEntity
 
 		assayPrinciple
 
+	getProjectCode: ->
+		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "project"
+		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
+			projectCodeValue.set codeValue: "unassigned"
+			projectCodeValue.set codeType: "project"
+			projectCodeValue.set codeKind: "biology"
+			projectCodeValue.set codeOrigin: "ACAS DDICT"
+
+		projectCodeValue
 
 	validate: (attrs) ->
 		errors = []
@@ -103,6 +112,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			"keyup .bv_protocolName": "handleNameChanged"
 			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
+			"change .bv_projectCode": "handleProjectCodeChanged"
 			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
@@ -175,6 +185,10 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@setupAttachFileListController()
+		if window.conf.protocol?.save?.project? and !window.conf.protocol.save.project
+			@$('.bv_group_projectCode').hide()
+		else
+			@setupProjectSelect()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -185,6 +199,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		unless @model?
 			@model = new Protocol()
 		@setUpAssayStageSelect()
+		unless window.conf.protocol?.save?.project? and !window.conf.protocol.save.project
+			@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@$('.bv_creationDate').datepicker();
 		@$('.bv_creationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCreationDate().get('dateValue')?
@@ -222,6 +238,17 @@ class window.ProtocolBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
+
+	setupProjectSelect: ->
+		@projectList = new PickListList()
+		@projectList.url = "/api/projects"
+		@projectListController = new PickListSelectController
+			el: @$('.bv_projectCode')
+			collection: @projectList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Project"
+			selectedCode: @model.getProjectCode().get('codeValue')
 
 	handleDeleteStatusChosen: =>
 		@$(".bv_deleteButtons").removeClass "hide"
@@ -267,13 +294,16 @@ class window.ProtocolBaseController extends BaseEntityController
 		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
 		@handleValueChanged "CreationDate", value
 
-
 	handleCreationDateIconClicked: =>
 		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
 		value = @assayStageListController.getSelectedCode()
 		@handleValueChanged "AssayStage", value
+
+	handleProjectCodeChanged: =>
+		value = @projectListController.getSelectedCode()
+		@handleValueChanged "ProjectCode", value
 
 	handleAssayPrincipleChanged: =>
 		value = UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')
