@@ -36,6 +36,7 @@ exports.applicationScripts = [
 	'/javascripts/src/Components/AbstractFormController.js',
 	'/javascripts/src/Components/AbstractParserFormController.js',
 	'/javascripts/src/Components/BasicFileValidateAndSave.js',
+	'/javascripts/src/Components/BasicFileValidateReviewAndSave.js',
 	'/javascripts/src/Components/PickList.js',
 	'/javascripts/src/ServerAPI/Label.js',
 	'/javascripts/src/ServerAPI/Thing.js',

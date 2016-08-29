@@ -56,7 +56,7 @@
 # client.moduleMenus.homePageMessage=Welcome to ACAS
 # client.moduleMenus.copyrightMessage=&copy; John McNeil & Company 2012-2016
 # server.service.persistence.filePath=${ACAS_HOME}/${server.datafiles.relative_path}
-# server.service.persistence.fileUrl=${server.nodeapi.path}/uploads
+# server.service.persistence.fileUrl=http://${server.nodeapi.path}/uploads
 # client.service.result.viewer.experimentName.invalidCharacters
 # New for some installs: client.service.result.viewer.experimentNameColumn=EXPERIMENT_NAME
 
@@ -125,7 +125,7 @@ server.datafiles.without.login=false
 
 # Required file path options
 # specify relative to ACAS_HOME without leading slash
-server.datafiles.relative_path=privateUploads
+server.datafiles.relative_path=privateUploads/
 server.tempfiles.relative_path=privateTempFiles
 
 # prefix for the client to prepend the fileValues to allow a user to download
@@ -134,7 +134,7 @@ client.datafiles.downloadurl.prefix=/dataFiles/
 # Is used to know location on server when sending from R to tomcat on separate server
 # Normally {$ACAS_HOME}/${server.datafiles.relative_path}
 server.service.persistence.filePath=/home/runner/build/privateUploads
-server.service.persistence.fileUrl=${client.host}:${server.nodeapi.port}/uploads
+server.service.persistence.fileUrl=http://${client.host}:${server.nodeapi.port}/uploads
 
 
 ###########################################################################

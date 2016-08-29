@@ -95,7 +95,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	)
 exports.getUser = (username, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	if config.all.server.roologin.getUserLink and !global.specRunnerTestmode
+	if config.all.server.roologin.getUserLink? and !global.specRunnerTestmode
 		request = require 'request'
 		request(
 			headers:
@@ -231,7 +231,6 @@ exports.relocateEntityFile = (fileValue, entityCodePrefix, entityCode, callback)
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
 	uploadsPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	oldPath = uploadsPath + fileValue.fileValue
-
 	relEntitiesFolder = serverUtilityFunctions.getRelativeFolderPathForPrefix(entityCodePrefix)
 	if relEntitiesFolder==null
 		callback false
@@ -549,8 +548,24 @@ exports.createPlate = (request, callback) ->
 	callback answer, 200
 	console.debug "inside base customer specific server function createPlate"
 
+exports.createTube = (request, callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function createTube"
+
+exports.createTubes = (request, callback) ->
+	answer = null
+	callback answer, 200
+	console.debug "inside base customer specific server function createTubes"
+
 exports.updateWellContent = (request) ->
 	console.debug "inside base customer specific server function updateWellContent"
 
 exports.updateContainersByContainerCodes = (request) ->
 	console.debug "inside base customer specific server function updateContainersByContainerCodes"
+
+exports.addContainerLogs = (request) ->
+	console.debug "inside base customer specific server function addContainerLogs"
+
+exports.moveToLocation = (request) ->
+	console.debug "inside base customer specific server function moveToLocation"

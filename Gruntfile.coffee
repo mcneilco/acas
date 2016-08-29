@@ -33,6 +33,10 @@ module.exports = (grunt) ->
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
 #	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
@@ -66,6 +70,8 @@ module.exports = (grunt) ->
 			build: ["#{grunt.config.get('build')}/*", "!#{grunt.config.get('build')}/r_libs", "!#{grunt.config.get('build')}/node_modules", "!#{grunt.config.get('build')}/privateUploads","!#{grunt.config.get('build')}/privateTempFiles"]
 		coffee:
 			module_client:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -79,6 +85,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_server:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -93,6 +101,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_spec:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -106,6 +116,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_testFixtures:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -119,6 +131,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_serviceTests:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -132,6 +146,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			app:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -140,6 +156,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			conf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -148,6 +166,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_conf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: false
@@ -161,6 +181,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			routes:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -169,6 +191,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 			module_routes:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -178,6 +202,8 @@ module.exports = (grunt) ->
 				]
 		#these compilers are for the custom coffee scripts before they get copied
 			custom_compilePublicConf:
+				options:
+					sourceMap: true
 				files: [
 					expand: true
 					flatten: true
@@ -186,6 +212,8 @@ module.exports = (grunt) ->
 					ext: '.js'
 				]
 		copy:
+			options:
+				sourceMap: true
 			bin:
 				files: [
 					expand: true
@@ -408,6 +436,20 @@ module.exports = (grunt) ->
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/server/r",module)}"
 					dest: "#{grunt.config.get('build')}/src/r"
 				]
+			serviceTests_r:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.R"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						module = replaced.split("/")[0]
+						console.log "#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/spec",module)}"
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/spec",module)}"
+					dest: "#{grunt.config.get('build')}/src/r/spec"
+				]
 			module_python:
 				files: [
 					expand: true
@@ -480,10 +522,11 @@ module.exports = (grunt) ->
 				sourceDirectories: ["{<%= sourceDirectories %>}"]
 			build:
 #				entry: {index: "<%= acas_base %>"+"/moduledyn/PlateRegistration/src/client/index.coffee"}
+				devtool: "sourcemap"
 				entry: (
 					entries = []
 					grunt.config.get('sourceDirectories').map (i,index) ->
-						entry = {index: "#{i}/moduledyn/PlateRegistration/src/client/index.coffee"}
+						entry = {index: path.resolve("#{i}/moduledyn/PlateRegistration/src/client/index.coffee")}
 						if fs.existsSync(entry.index)
 							entries.push entry
 					entries[0]
@@ -529,6 +572,9 @@ module.exports = (grunt) ->
 			module_serviceTests_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.coffee", "#{i}/public/conf/serviceTests/*.coffee"]
 				tasks: "newer:coffee:module_serviceTests"
+			serviceTests_r:
+				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/spec/serviceTests/*.R"]
+				tasks: "newer:copy:serviceTests_r"
 			app_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/*.coffee"]
 				tasks: "newer:coffee:app"
@@ -639,6 +685,11 @@ module.exports = (grunt) ->
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
+
 	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 

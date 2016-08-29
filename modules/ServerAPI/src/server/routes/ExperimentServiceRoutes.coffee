@@ -140,6 +140,8 @@ updateExpt = (expt, testMode, callback) ->
 		else
 			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
+			console.log "expt to update"
+			console.log JSON.stringify expt
 			request = require 'request'
 			request(
 				method: 'PUT'
@@ -210,10 +212,72 @@ postExperiment = (exptToSave, testMode, callback) ->
 					checkFilesAndUpdate json
 				else
 					console.log 'got ajax error trying to save experiment - not unique name'
+					console.log "response.body"
+					console.log response.body
 					if response.body[0].message is "not unique experiment name"
 						callback JSON.stringify "saveFailed: " + response.body[0].message
 					else
 						callback JSON.stringify "saveFailed"
+			)
+
+exports.saveNewExpriment = (exptToSave, testMode, callback) ->
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	#exptToSave = req.body
+	serverUtilityFunctions.createLSTransaction exptToSave.recordedDate, "new experiment", (transaction) ->
+		#console.log "exptToSave"
+		#console.log exptToSave
+		#console.log "transaction"
+		#console.log transaction
+		exptToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, exptToSave
+		if testMode or global.specRunnerTestmode
+			unless exptToSave.codeName?
+				exptToSave.codeName = "EXPT-00000001"
+			unless exptToSave.id?
+				exptToSave.id = 1
+
+		checkFilesAndUpdate = (expt) ->
+			fileVals = serverUtilityFunctions.getFileValuesFromEntity expt, false
+			filesToSave = fileVals.length
+
+			completeExptUpdate = (exptToUpdate)->
+				updateExpt exptToUpdate, testMode, (updatedExpt) ->
+					callback null, updatedExpt
+
+			fileSaveCompleted = (passed) ->
+				if !passed
+					callback "file move failed", null
+					#return resp.end "file move failed"
+				if --filesToSave == 0 then completeExptUpdate(expt)
+
+			if filesToSave > 0
+				prefix = serverUtilityFunctions.getPrefixFromEntityCode expt.codeName
+				for fv in fileVals
+					csUtilities.relocateEntityFile fv, prefix, expt.codeName, fileSaveCompleted
+			else
+				callback null, expt
+
+		if testMode or global.specRunnerTestmode
+			checkFilesAndUpdate exptToSave
+		else
+			config = require '../conf/compiled/conf.js'
+			baseurl = config.all.client.service.persistence.fullpath+"experiments"
+			request = require 'request'
+			request(
+				method: 'POST'
+				url: baseurl
+				body: exptToSave
+				json: true
+			, (error, response, json) =>
+				if !error && response.statusCode == 201
+					checkFilesAndUpdate json
+				else
+					console.log 'got ajax error trying to save experiment - not unique name'
+					console.log "response"
+					console.log response
+					if response.body[0].message is "not unique experiment name"
+						callback null, exptToSave # JSON.stringify response.body[0].message
+					else
+						callback "saveFailed", exptToSave #null
 			)
 
 exports.postExperiment = (req, resp) ->
@@ -222,8 +286,31 @@ exports.postExperiment = (req, resp) ->
 		console.log serverUtilityFunctions.getFileValuesFromEntity response, false
 		resp.json response
 
+exports.putExperimentInternal = (experiment, testMode, callback) ->
+	exptToSave = experiment
+	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
+	filesToSave = fileVals.length
+
+	completeExptUpdate = ->
+		updateExpt exptToSave, testMode, (updatedExpt) ->
+			callback updatedExpt
+
+	fileSaveCompleted = (passed) ->
+		if !passed
+			resp.statusCode = 500
+			return resp.end "file move failed"
+		if --filesToSave == 0 then completeExptUpdate()
+
+	if filesToSave > 0
+		prefix = serverUtilityFunctions.getPrefixFromEntityCode exptToSave.codeName
+		for fv in fileVals
+			if !fv.id?
+				csUtilities.relocateEntityFile fv, prefix, exptToSave.codeName, fileSaveCompleted
+	else
+		completeExptUpdate()
+
+
 exports.putExperiment = (req, resp) ->
-	console.log "put experiment"
 	exptToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
 	filesToSave = fileVals.length

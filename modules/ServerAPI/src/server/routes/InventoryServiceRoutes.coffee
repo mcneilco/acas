@@ -39,7 +39,11 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', exports.searchContainers
 	app.post '/api/containerLogs', exports.containerLogs
+	app.get '/api/containerLogs/:label', exports.getContainerLogs
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', exports.createTube
+	app.post '/api/createTubes', exports.createTubes
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -76,8 +80,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/mergeContainers', loginRoutes.ensureAuthenticated, exports.mergeContainers
 	app.get '/api/getDefinitionContainerByNumberOfWells/:lsType/:lsKind/:numberOfWells', loginRoutes.ensureAuthenticated, exports.getDefinitionContainerByNumberOfWells
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
-	app.post '/api/containerLogs', loginRoutes.ensureAuthenticate, exports.containerLogs
+	app.post '/api/containerLogs', loginRoutes.ensureAuthenticated, exports.containerLogs
+	app.get '/api/containerLogs/:label', loginRoutes.ensureAuthenticated, exports.getContainerLogs
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
+	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
+	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
+	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -402,17 +410,17 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 			console.debug "containers from service"
 			if statusCode == 400
 				console.error "got errors requesting code names: #{JSON.stringify containers}"
-				callback containers, 400
+				callback "error when requesting code names", 400
 			if statusCode == 500
-				console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
-				callback JSON.stringify "updateContainerMetadataByContainerCodeInternal failed", 500
+				console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containers}"
+				callback "updateContainerMetadataByContainerCodeInternal failed", 500
 				return
 			else
 				barcodes = _.pluck updateInformation, "barcode"
 				console.debug "calling getContainerCodesByLabelsInternal"
 				exports.getContainerCodesByLabelsInternal barcodes, null, null, "barcode", "barcode", (containerCodes, statusCode) =>
 					if statusCode == 500
-						console.errror "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
+						console.error "updateContainerMetadataByContainerCodeInternal failed: #{JSON.stringify containerCodes}"
 						callback "updateContainersByContainerCodesInternal failed", 500
 						return
 					console.debug "return from getContainerCodesByLabelsInternal with #{JSON.stringify(containerCodes)}"
@@ -450,6 +458,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							container.updateValuesByKeyValue updateInfo
 							container.prepareToSave updateInformation[0].recordedBy
 							container.reformatBeforeSaving()
+							#if container.isNew() or container.get('lsLabels').length > 0 or container.get('lsStates').length > 0
 							containerArray.push container.attributes
 						else
 							console.error "could not find container #{updateInfo.codeName}"
@@ -459,6 +468,13 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							callback JSON.stringify("updateContainersByContainerCodesInternal failed"), 500
 							return
 						else
+							if callCustom
+								if csUtilities.updateContainersByContainerCodes?
+									console.log "running customer specific server function updateContainersByContainerCodes"
+									csUtilities.updateContainersByContainerCodes updateInformation, (response) ->
+										console.log response
+								else
+									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
 							for updateInfo, index in updateInformation
 								preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin savedContainers[index].lsType, savedContainers[index].lsKind, "ACAS Container"
 								savedContainer = new preferredEntity.model(savedContainers[index])
@@ -467,14 +483,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 								for key of values
 									updateInformation[index][key] = values[key]
 							callback updateInformation, 200
-							if callCustom
-								if csUtilities.updateContainersByContainerCodes?
-									console.log "running customer specific server function updateContainersByContainerCodes"
-									csUtilities.updateContainersByContainerCodes updateInfo, (response) ->
-										console.log response
-								else
-									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
-#
+
 exports.getContainersByCodeNames = (req, resp) ->
 	req.setTimeout 86400000
 	exports.getContainersByCodeNamesInternal req.body, (json, statusCode) ->
@@ -499,7 +508,6 @@ exports.getContainersByCodeNamesInternal = (codeNamesJSON, callback) ->
 			timeout: 86400000
 			headers: 'content-type': 'application/json'
 		, (error, response, json) =>
-			console.debug "response statusCode: #{response.statusCode}"
 			if !error && json[0] != "<"
 				callback json, response.statusCode
 			else
@@ -660,6 +668,7 @@ exports.updateContainersInternal = (containers, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"containers/jsonArray"
+		console.debug 'incoming updateContainersInternal request: ', containers
 		console.debug "base url: #{baseurl}"
 		request = require 'request'
 		request(
@@ -1076,11 +1085,12 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000
-	exports.moveToLocationInternal req.body, (json, statusCode) ->
+	exports.moveToLocationInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.moveToLocationInternal = (input, callback) ->
+exports.moveToLocationInternal = (input, callCustom, callback) ->
+	callCustom  = callCustom != "0"
 	if global.specRunnerTestmode
 		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
 		resp.json inventoryServiceTestJSON.moveToLocationResponse
@@ -1100,7 +1110,14 @@ exports.moveToLocationInternal = (input, callback) ->
 		, (error, response, json) =>
 			console.debug "response statusCode: #{response.statusCode}"
 			if !error
-				callback json, response.statusCode
+				if callCustom && csUtilities.moveToLocation?
+					console.log "running customer specific server function moveToLocation"
+					csUtilities.moveToLocation input, (customerResponse, statusCode) ->
+						json = _.extend json, customerResponse
+						callback json, statusCode
+				else
+					console.warn "could not find customer specific server function moveToLocation so not running it"
+					callback json, response.statusCode
 			else
 				console.error 'got ajax error trying to get moveToLocation'
 				console.error error
@@ -1521,20 +1538,73 @@ exports.searchContainersInternal = (input, callback) ->
 		)
 
 exports.containerLogs = (req, resp) ->
-	exports.containerLogsInternal req.body, (json, statusCode) ->
+	exports.containerLogsInternal req.body, req.query.callCustom, (json, statusCode) ->
 		resp.statusCode = statusCode
 		resp.json json
 
-exports.containerLogsInternal = (inputs, callback) ->
+exports.containerLogsInternal = (inputs, callCustom, callback) ->
 	validateContainerLogsInput inputs, (inputs, error) ->
 		if error == true
 			statusCode = 400
 			callback inputs, statusCode
 		else
-			exports.addContainerLogs inputs, (json, statusCode) ->
+			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
-exports.addContainerLogs = (inputs, callback) ->
+exports.getContainerLogs = (req, resp) ->
+	exports.getContainerLogsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLogsInternal = (labels, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{JSON.stringify(labels)}'"
+		exports.getContainersByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (getContainersByLabelsResponse, statusCode) =>
+			response = []
+			for getContainer in getContainersByLabelsResponse
+				responseObject = 
+					label: getContainer.label
+					codeName: getContainer.codeName
+					logs: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.logs = container[0].getLogs()
+				response.push responseObject
+			callback response, 200
+
+
+exports.getOrCreateContainer = (container, callback) ->
+	label = container.lsLabels[0].labelText
+	request = require 'request'
+	request.post
+		url: "http://localhost:"+config.all.server.nodeapi.port+"/api/getContainersByLabels?containerType=#{container.lsType}&containerKind=#{container.lsKind}"
+		json: true
+		body: [label]
+	, (error, response, body) =>
+		if !body[0].codeName?
+			request.post
+				url: "http://localhost:"+config.all.server.nodeapi.port+"/api/containers"
+				json: true
+				body: container
+			, (error, response, body) =>
+				callback body
+		else
+			callback body[0].container
+
+exports.getOrCreateContainers = (containers, callback) ->
+	responseArray = []
+	containers.forEach (container) =>
+		exports.getOrCreateContainer container, (response) =>
+			responseArray.push response
+			if responseArray.length == containers.length
+				callback responseArray
+
+
+exports.addContainerLogs = (inputs, callCustom, callback) ->
+	callCustom  = callCustom != "0"
 	codeNames = _.uniq(_.pluck(inputs, "codeName"))
 	exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
 		containerModels = getContainerModels(containers)
@@ -1544,9 +1614,17 @@ exports.addContainerLogs = (inputs, callback) ->
 			containerModel.addNewLogStates(modelInputLogs)
 			containerModel.prepareToSave "acas"
 			containerModel.reformatBeforeSaving()
+			#if containerModel.isNew() or containerModel.get('lsLabels').length > 0 or containerModel.get('lsStates').length > 0
 			containersToSave.push containerModel
 		containers = JSON.stringify(containersToSave)
 		exports.updateContainersInternal containers, (json, statusCode) ->
+			if callCustom
+				if csUtilities.addContainerLogs?
+					console.log "running customer specific server function addContainerLogs"
+					csUtilities.addContainerLogs inputs, (response) ->
+						console.log response
+				else
+					console.warn "could not find customer specific server function addContainerLogs so not running it"
 			callback json, statusCode
 
 getContainerModels = (containers) ->
@@ -1588,3 +1666,148 @@ validateContainerLogInput = (input, callback) ->
 	output = input
 	output.errors = errors
 	callback output, error
+
+exports.getContainerCodeNamesByContainerValue = (req, resp) ->
+	req.setTimeout 86400000
+	exports.getContainerCodeNamesByContainerValueInternal req.body, (json) ->
+		if json.indexOf('failed') > -1
+			resp.statusCode = 500
+		else
+			resp.json json
+
+exports.getContainerCodeNamesByContainerValueInternal = (requestObject, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		callback inventoryServiceTestJSON.getContainerCodeNamesByContainerValueResponse
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/getContainerCodeNamesByContainerValue"
+		request = require 'request'
+		console.debug 'calling service', baseurl
+		request(
+			method: 'POST'
+			url: baseurl
+			body: JSON.stringify requestObject
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				console.debug 'returned success from service', baseurl
+				callback json
+			else
+				console.error 'got ajax error trying to get getContainerCodeNamesByContainerValue'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify "getContainerCodeNamesByContainerValue failed"
+		)
+
+exports.createTube = (req, resp) ->
+	exports.createTubeInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.createTubeInternal = (input, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createTube"
+	if input.createdDate?
+		if typeof(input.createdDate) != "number"
+			console.warn "#{input.createdDate} is typeof #{typeof(input.createdDate)}, created date should be a number"
+			input.createdDate = parseInt input.createdDate
+			if isNaN(input.createdDate)
+				msg = "received #{input.createdDate} when attempting to coerce created date"
+				console.error msg
+				callback msg, 400
+	console.log "baseurl"
+	console.log baseurl
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		input.barcode = input.barcode.toUpperCase()
+		console.warn input.barcode
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify input
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error  && response.statusCode == 200
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.createTube?
+				console.log "running customer specific server function createTube"
+				csUtilities.createTube input, (customerResponse, statusCode) ->
+					json = _.extend json, customerResponse
+					callback json, statusCode
+			else
+				console.warn "could not find customer specific server function createTube so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tube'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)
+
+exports.createTubes = (req, resp) ->
+	exports.createTubesInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.createTubesInternal = (tubes, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/createTubes"
+	_.each(tubes, (tube) ->
+		if tube.createdDate?
+			if typeof(tube.createdDate) != "number"
+				console.warn "#{tube.createdDate} is typeof #{typeof(tube.createdDate)}, created date should be a number"
+				tube.createdDate = parseInt tube.createdDate
+				if isNaN(tube.createdDate)
+					msg = "received #{tube.createdDate} when attempting to coerce created date"
+					console.error msg
+					callback msg, 400
+	)
+
+	console.log "baseurl"
+	console.log baseurl
+	if config.all.client.compoundInventory.enforceUppercaseBarcodes
+		_.each(tubes, (tube) ->
+			tube.barcode = tube.barcode.toUpperCase()
+			console.warn tube.barcode
+		)
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify tubes
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		console.log "error"
+		console.log error
+		console.log "response"
+		console.log response
+		console.log "json"
+		console.log json
+		if !error  && response.statusCode == 200
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.createTube?
+				console.log "running customer specific server function createTubes"
+				csUtilities.createTubes tubes, (customerResponse, statusCode) ->
+#					json = _.extend json, customerResponse
+					callback json, statusCode
+			else
+				console.warn "could not find customer specific server function createTubes so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tubes'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)
