@@ -207,20 +207,77 @@ exports.runRApacheFunctionTest = (request, response)  ->
 	)
 
 exports.getFromACASServer = (baseurl, resp) ->
+	exports.getFromACASServerInternal baseurl, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.end json
+
+exports.getFromACASServerInternal = (baseurl, resp) ->
 	request = require 'request'
 	request(
-			method: 'GET'
-			url: baseurl
-			json: true
-		, (error, response, json) =>
-			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
-			else
-				console.log 'got ajax error'
-				console.log error
-				console.log json
-				console.log response
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			callback resp.statusCode, JSON.stringify json
+		else
+			console.log 'got ajax error'
+			console.log error
+			console.log json
+			callback 500, {error: true, message:error}
 	)
+
+exports.getRestrictedEntityFromACASServer = (baseurl, username, projectStateType, projectStateKind, resp) ->
+	exports.getRestrictedEntityFromACASServerInternal baseurl, username,  projectStateType, projectStateKind, (statusCode, json) ->
+		resp.statusCode = statusCode
+		resp.end JSON.stringify(json)
+
+exports.getRestrictedEntityFromACASServerInternal = (baseurl, username,  projectStateType, projectStateKind, callback) ->
+	csUtilities = require '../public/src/conf/CustomerSpecificServerFunctions.js'
+	userObject={'user':'username':username}
+	csUtilities.getProjectsInternal userObject, (statusCode, userProjects) =>
+		if statusCode == 200
+			request = require 'request'
+			_ = require 'underscore'
+			userProjectCodes = _.pluck userProjects, "code"
+			request(
+				method: 'GET'
+				url: baseurl
+				json: true
+			, (error, response, json) =>
+				if !error && response.statusCode == 200
+					statusCode = 200
+					entityProject = exports.getEntityProject(json, projectStateType, projectStateKind)
+					if entityProject? && entityProject not in userProjectCodes
+						console.debug "user project codes #{userProjectCodes} not in #{json.codeName}'s project code #{entityProject}"
+						statusCode = 401
+						json = {}
+					callback statusCode, json
+				else
+					console.log 'got ajax error'
+					console.log error
+					console.log json
+					console.log response
+					callback 500, {error: true, message: json}
+			)
+		else
+			callback 500, {error: true, message: userProjects}
+
+exports.getEntityProject = (entity, stateType, stateKind) ->
+	if !stateType?
+		stateType = "metadata"
+	if !stateKind?
+		stateKind = "#{entity.lsKind} #{stateType}"
+	project = null
+	if entity.lsStates?
+		metaDataState = _.where entity.lsStates, {lsType: stateType, lsKind: stateKind, "deleted": false, "ignored": false}
+		if metaDataState.length > 0
+			projectValues = _.where metaDataState[0].lsValues, {lsType: "codeValue", lsKind: "project", "deleted": false,"ignored": false}
+			if projectValues.length > 0
+				entityProjectCodes = _.pluck projectValues, "codeValue"
+				if entityProjectCodes.length > 0
+					project = entityProjectCodes[0]
+	return project
 
 
 exports.ensureExists = (path, mask, cb) ->

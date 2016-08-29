@@ -338,7 +338,7 @@ class window.ExperimentBaseController extends BaseEntityController
 							type: 'GET'
 							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 							dataType: 'json'
-							error: (err) ->
+							error: (err) =>
 								alert 'Could not get experiment for code in this URL, creating new one'
 								@completeInitialization()
 							success: (json) =>

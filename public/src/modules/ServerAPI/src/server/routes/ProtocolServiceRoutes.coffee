@@ -35,9 +35,12 @@ exports.protocolByCodename = (req, resp) ->
 		resp.end JSON.stringify stubSavedProtocol
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
+		if req.user?
+			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "protocol metadata", resp
+		else
+			serverUtilityFunctions.getFromACASServer baseurl, req.user.username
 
 exports.protocolById = (req, resp) ->
 

@@ -132,7 +132,7 @@ class window.ProtocolBaseController extends BaseEntityController
 						type: 'GET'
 						url: "/api/protocols/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
-						error: (err) ->
+						error: (err) =>
 							alert 'Could not get protocol for code in this URL, creating new one'
 							@completeInitialization()
 						success: (json) =>
