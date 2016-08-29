@@ -43,15 +43,45 @@ exports.experimentByCodename = (req, resp) ->
 		resp.json expt
 
 	else
+		_ = require 'underscore'
+		if req.user?
+			roleEntries =  _.pluck(req.user.roles, "roleEntry")
+			projectsRoleEntries = _.where roleEntries, {lsType: "Project"}
+			userProjectCodes = _.pluck(projectsRoleEntries, "lsKind")
 		config = require '../conf/compiled/conf.js'
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+req.params.code
 		fullObjectFlag = "with=fullobject"
 		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
-		else
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				if userProjectCodes && json.lsStates?
+					metaDataState = _.where json.lsStates, {lsType: "metadata", lsKind: "experiment metadata", "deleted": false, "ignored": false}
+					if metaDataState.length > 0
+						console.log metaDataState[0].lsValues
+						projectValues = _.where metaDataState[0].lsValues, {lsType: "codeValue", lsKind: "project", "deleted": false,"ignored": false}
+						if projectValues.length > 0
+							experimentProjectCodes = _.pluck projectValues, "codeValue"
+							if _.intersection(userProjectCodes, experimentProjectCodes).length == 0
+								console.debug "user project codes #{userProjectCodes} not in experiment project codes #{experimentProjectCodes}"
+								resp.statusCode = 401
+								json = {}
+				resp.end JSON.stringify json
+			else
+				resp.statusCode = 500
+				resp.end "Could not get from ACAS Server"
+				console.log 'got ajax error'
+				console.log error
+				console.log json
+				console.log response
+		)
+
 
 exports.experimentByName = (req, resp) ->
 	console.log "exports.experiment by name"
