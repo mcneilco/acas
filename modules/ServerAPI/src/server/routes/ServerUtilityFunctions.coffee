@@ -1252,9 +1252,9 @@ class Container extends Backbone.Model
 		rBy = recordedBy
 		rDate = new Date().getTime()
 		@set recordedDate: rDate
-		@set lsLabels: new LabelList @get('lsLabels').filter (label) ->
-     #keep only label where it is new or the value is ignored
-			label.isNew() or label.get("ignored")==true
+#		@set lsLabels: new LabelList @get('lsLabels').filter (label) ->
+#     #keep only label where it is new or the value is ignored
+#			label.isNew() or label.get("ignored")==true
 		@get('lsLabels').each (lab) ->
 			unless lab.get('recordedBy') != ""
 				lab.set recordedBy: rBy
