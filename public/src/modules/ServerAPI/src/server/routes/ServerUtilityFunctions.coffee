@@ -275,7 +275,7 @@ exports.getEntityProject = (entity, stateType, stateKind) ->
 			projectValues = _.where metaDataState[0].lsValues, {lsType: "codeValue", lsKind: "project", "deleted": false,"ignored": false}
 			if projectValues.length > 0
 				entityProjectCodes = _.pluck projectValues, "codeValue"
-				if entityProjectCodes.length > 0
+				if entityProjectCodes.length > 0 && entityProjectCodes[0] != "unassigned"
 					project = entityProjectCodes[0]
 	return project
 
