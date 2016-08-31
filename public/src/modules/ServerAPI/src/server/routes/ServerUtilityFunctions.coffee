@@ -211,7 +211,7 @@ exports.getFromACASServer = (baseurl, resp) ->
 		resp.statusCode = statusCode
 		resp.end json
 
-exports.getFromACASServerInternal = (baseurl, resp) ->
+exports.getFromACASServerInternal = (baseurl, callback) ->
 	request = require 'request'
 	request(
 		method: 'GET'
@@ -219,7 +219,7 @@ exports.getFromACASServerInternal = (baseurl, resp) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			callback resp.statusCode, JSON.stringify json
+			callback response.statusCode, JSON.stringify json
 		else
 			console.log 'got ajax error'
 			console.log error

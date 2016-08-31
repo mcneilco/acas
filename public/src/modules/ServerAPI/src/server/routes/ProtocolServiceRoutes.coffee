@@ -40,7 +40,7 @@ exports.protocolByCodename = (req, resp) ->
 		if req.user?
 			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "protocol metadata", resp
 		else
-			serverUtilityFunctions.getFromACASServer baseurl, req.user.username
+			serverUtilityFunctions.getFromACASServer baseurl, resp
 
 exports.protocolById = (req, resp) ->
 
