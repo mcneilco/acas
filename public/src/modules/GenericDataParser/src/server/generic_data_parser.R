@@ -103,9 +103,11 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
       class = c("Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Text", "Date"),
       isNullable = c(FALSE, FALSE, FALSE, FALSE, FALSE, TRUE, TRUE, TRUE, TRUE, FALSE)
     )
-    
-    if (!is.null(configList$client.include.project) && configList$client.include.project && !useExisting) {
-      expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = FALSE))
+    projectRequired <- !is.null(configList$client.include.project) && configList$client.include.project
+    shouldSaveProject <- !is.null(configList$client.save.project) && configList$client.save.project
+
+    if ((projectRequired || shouldSaveProject) && !useExisting) {
+      expectedDataFormat <- rbind(expectedDataFormat, data.frame(headers = "Project", class= "Text", isNullable = !projectRequired))
     }
     if (length(formatSettings) > 0) {
       expectedDataFormat <- rbind(expectedDataFormat, formatSettings[[as.character(metaData$Format)]]$extraHeaders)
@@ -179,7 +181,15 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   if (!is.null(metaData$Scientist)) {
     validatedMetaData$Scientist <- validateScientist(validatedMetaData$Scientist, configList, testMode) 
   }
-  if ((!is.null(configList$client.include.project) && configList$client.include.project) || ((!is.null(configList$client.save.project) && configList$client.save.project) && (!is.null(metaData$Project) && !is.na(metaData$Project) && metaData$Project != "NA"))) {
+
+  projectRequired <- !is.null(configList$client.include.project) && configList$client.include.project
+  shouldSaveProject <- !is.null(configList$client.save.project) && configList$client.save.project
+  projectRowSupplied <- !is.null(metaData$Project)
+  projectRowSuppliedButEmpty <- projectRowSupplied && (is.na(metaData$Project) | metaData$Project == "NA")
+  if (projectRequired & projectRowSuppliedButEmpty) {
+    stopUser("The Experiment Meta Data row 'Project' cannot be empty")
+  }
+  if (shouldSaveProject & projectRowSupplied & !projectRowSuppliedButEmpty) {
     validatedMetaData$Project <- validateProject(validatedMetaData$Project, configList, username, validatedMetaData$'Protocol Name', errorEnv)
   }
   
