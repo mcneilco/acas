@@ -36,9 +36,12 @@ exports.authCheck = (user, pass, retFun) ->
 		if !error && response.statusCode == 200
 			retFun JSON.stringify json
 		else if !error && response.statusCode == 302
-			console.log 'Auth Successful - checking roles'
-			exports.checkRoles user , (checkRoleResponse) ->
-				retFun checkRoleResponse
+			if response.headers.location.indexOf("login_error")>=0
+				retFun "login_error"
+			else
+				console.log 'Auth Successful - checking roles'
+				exports.checkRoles user , (checkRoleResponse) ->
+					retFun checkRoleResponse
 #			retFun JSON.stringify response.headers.location
 		else
 			console.log 'got connection error trying authenticate a user'

@@ -47,10 +47,14 @@
         if (!error && response.statusCode === 200) {
           return retFun(JSON.stringify(json));
         } else if (!error && response.statusCode === 302) {
-          console.log('Auth Successful - checking roles');
-          return exports.checkRoles(user, function(checkRoleResponse) {
-            return retFun(checkRoleResponse);
-          });
+          if (response.headers.location.indexOf("login_error") >= 0) {
+            return retFun("login_error");
+          } else {
+            console.log('Auth Successful - checking roles');
+            return exports.checkRoles(user, function(checkRoleResponse) {
+              return retFun(checkRoleResponse);
+            });
+          }
         } else {
           console.log('got connection error trying authenticate a user');
           console.log(error);
