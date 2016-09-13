@@ -81,6 +81,7 @@
     };
 
     ModuleLauncherMenuController.prototype.render = function() {
+      var userRoles;
       $(this.el).empty();
       $(this.el).html(this.template(this.model.toJSON()));
       this.$('.bv_menuName').addClass('bv_launch_' + this.model.get('autoLaunchName'));
@@ -98,7 +99,21 @@
         window.conf.leaveACASMessage = "There are no unsaved changes.";
       }
       if (this.model.has('requireUserRoles')) {
-        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, this.model.get('requireUserRoles'))) {
+        userRoles = [];
+        _.each(this.model.get('requireUserRoles'), (function(_this) {
+          return function(role) {
+            var roles;
+            if (role.indexOf(',')) {
+              roles = role.split(',');
+              return _.each(roles, function(r) {
+                return userRoles.push($.trim(r));
+              });
+            } else {
+              return userRoles.push(r);
+            }
+          };
+        })(this));
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, userRoles)) {
           $(this.el).attr('title', "User is not authorized to use this feature");
           this.$('.bv_menuName').hide();
           this.$('.bv_menuName_disabled').show();
