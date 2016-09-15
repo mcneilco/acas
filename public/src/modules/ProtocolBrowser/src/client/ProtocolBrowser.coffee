@@ -206,30 +206,27 @@ class window.ProtocolBrowserController extends Backbone.View
 				@$('.bv_deleteProtocol').hide()
 
 	canEdit: ->
-		if @protocolController.model.getScientist().get('codeValue') is "unassigned"
-			return true
-		else
-			if window.conf.entity?.editingRoles?
-				rolesToTest = []
-				for role in window.conf.entity.editingRoles.split(",")
-					role = $.trim(role)
-					if role is 'entityScientist'
-						if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
-							return true
-					else if role is 'projectAdmin'
-						projectAdminRole =
-							lsType: "Project"
-							lsKind: @protocolController.model.getProjectCode().get('codeValue')
-							roleName: "Administrator"
-						if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
-							return true
-					else
-						rolesToTest.push role
-				if rolesToTest.length is 0
-					return false
-				unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
-					return false
-			return true
+		if window.conf.entity?.editingRoles?
+			rolesToTest = []
+			for role in window.conf.entity.editingRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is @protocolController.model.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: @protocolController.model.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 	canDelete: ->
 		if window.conf.entity?.deletingRoles?

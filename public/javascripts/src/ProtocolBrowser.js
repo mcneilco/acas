@@ -322,41 +322,37 @@
 
     ProtocolBrowserController.prototype.canEdit = function() {
       var i, len, projectAdminRole, ref, ref1, role, rolesToTest;
-      if (this.protocolController.model.getScientist().get('codeValue') === "unassigned") {
-        return true;
-      } else {
-        if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
-          rolesToTest = [];
-          ref1 = window.conf.entity.editingRoles.split(",");
-          for (i = 0, len = ref1.length; i < len; i++) {
-            role = ref1[i];
-            role = $.trim(role);
-            if (role === 'entityScientist') {
-              if (window.AppLaunchParams.loginUserName === this.protocolController.model.getScientist().get('codeValue')) {
-                return true;
-              }
-            } else if (role === 'projectAdmin') {
-              projectAdminRole = {
-                lsType: "Project",
-                lsKind: this.protocolController.model.getProjectCode().get('codeValue'),
-                roleName: "Administrator"
-              };
-              if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
-                return true;
-              }
-            } else {
-              rolesToTest.push(role);
+      if (((ref = window.conf.entity) != null ? ref.editingRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.editingRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          role = $.trim(role);
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === this.protocolController.model.getScientist().get('codeValue')) {
+              return true;
             }
-          }
-          if (rolesToTest.length === 0) {
-            return false;
-          }
-          if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
-            return false;
+          } else if (role === 'projectAdmin') {
+            projectAdminRole = {
+              lsType: "Project",
+              lsKind: this.protocolController.model.getProjectCode().get('codeValue'),
+              roleName: "Administrator"
+            };
+            if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
+              return true;
+            }
+          } else {
+            rolesToTest.push(role);
           }
         }
-        return true;
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
       }
+      return true;
     };
 
     ProtocolBrowserController.prototype.canDelete = function() {
