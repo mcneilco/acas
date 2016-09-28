@@ -53,7 +53,15 @@ class window.ModuleLauncherMenuController extends Backbone.View
 			window.conf.leaveACASMessage = "There are no unsaved changes."
 
 		if @model.has 'requireUserRoles'
-			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles')
+			userRoles = []
+			_.each @model.get('requireUserRoles'), (role) =>
+				if role.indexOf(',')
+					roles = role.split(',')
+					_.each roles, (r) =>
+						userRoles.push $.trim(r)
+				else
+					userRoles.push r
+			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
 				$(@el).attr 'title', "User is not authorized to use this feature"
 				@$('.bv_menuName').hide()
 				@$('.bv_menuName_disabled').show()

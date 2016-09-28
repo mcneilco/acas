@@ -33,12 +33,12 @@ class window.AbstractFormController extends Backbone.View
 
 		_.each errors, (err) =>
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
-				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
-				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-	#				@$('.bv_group_'+err.attribute).tooltip();
-				@$("[data-toggle=tooltip]").tooltip();
-				@$("body").tooltip selector: '.bv_group_'+err.attribute
+#				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
+#				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
+#				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
+#	#				@$('.bv_group_'+err.attribute).tooltip();
+#				@$("[data-toggle=tooltip]").tooltip();
+#				@$("body").tooltip selector: '.bv_group_'+err.attribute
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
@@ -47,10 +47,10 @@ class window.AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
-			$(ee).removeAttr('data-toggle')
-			$(ee).removeAttr('data-placement')
-			$(ee).removeAttr('title')
-			$(ee).removeAttr('data-original-title')
+#			$(ee).removeAttr('data-toggle')
+#			$(ee).removeAttr('data-placement')
+#			$(ee).removeAttr('title')
+#			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
 	isValid: ->
