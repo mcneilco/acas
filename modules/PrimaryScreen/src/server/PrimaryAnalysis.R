@@ -2070,6 +2070,8 @@ runMain <- function(folderToParse, user, dryRun, testMode, experimentId, inputPa
 
     resultTable[is.na(cmpdConc)]$wellType <- "BLANK"
     checkControls(resultTable, normalizationDataFrame)
+    setkeyv(resultTable,c('assayBarcode', 'row', 'well'))
+    setkeyv(instrumentData$assayData,c('assayBarcode', 'rowName', 'wellReference'))
     resultTable[, well:= instrumentData$assayData$wellReference]
     save(resultTable, file=file.path(parsedInputFileLocation, "primaryAnalysis-resultTable.Rda"))
     
