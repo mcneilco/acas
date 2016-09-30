@@ -522,14 +522,6 @@
 			[
 				"digits":8
 				"groupDigits":false
-				"labelPrefix":"PROT"
-				"labelSeparator":"-"
-				"labelTypeAndKind":"id_codeName"
-				"latestNumber":1
-				"thingTypeAndKind":"document_protocol"
-			,
-				"digits":8
-				"groupDigits":false
 				"labelPrefix":"EXPT"
 				"labelSeparator":"-"
 				"labelTypeAndKind":"id_codeName"
