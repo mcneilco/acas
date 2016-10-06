@@ -279,7 +279,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 
 		@
 
-		canViewDeleted: (exp) ->
+	canViewDeleted: (exp) ->
 		if window.conf.entity?.viewDeletedRoles?
 			rolesToTest = []
 			for role in window.conf.entity.viewDeletedRoles.split(",")
