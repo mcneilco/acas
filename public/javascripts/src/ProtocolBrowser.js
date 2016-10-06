@@ -305,12 +305,14 @@
         this.$('.bv_duplicateProtocol').hide();
         return this.$('.bv_createExperiment').show();
       } else {
-        this.$('.bv_duplicateProtocol').show();
-        this.$('.bv_createExperiment').show();
         if (this.canEdit()) {
           this.$('.bv_editProtocol').show();
+          this.$('.bv_duplicateProtocol').show();
+          this.$('.bv_createExperiment').show();
         } else {
           this.$('.bv_editProtocol').hide();
+          this.$('.bv_duplicateProtocol').hide();
+          this.$('.bv_createExperiment').hide();
         }
         if (this.canDelete()) {
           return this.$('.bv_deleteProtocol').show();
