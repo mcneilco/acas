@@ -198,12 +198,17 @@
         this.$(".bv_noMatchesFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(prot) {
-            hideStatusesList;
-            var hideStatusesList, prsc, ref;
-            if (((ref = window.conf.entity) != null ? ref.hideStatuses : void 0) != null) {
-              hideStatusesList = window.conf.entity.hideStatuses;
-            }
-            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(prot.getStatus().get('codeValue')) > -1 && !UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"]))) {
+            var canViewDeleted, prsc;
+            canViewDeleted = _this.canViewDeleted(prot);
+            if (prot.getStatus().get('codeValue') === 'deleted') {
+              if (canViewDeleted) {
+                prsc = new ProtocolRowSummaryController({
+                  model: prot
+                });
+                prsc.on("gotClick", _this.selectedRowChanged);
+                return _this.$("tbody").append(prsc.render().el);
+              }
+            } else {
               prsc = new ProtocolRowSummaryController({
                 model: prot
               });
@@ -219,6 +224,41 @@
         });
       }
       return this;
+    };
+
+    ProtocolSummaryTableController.prototype.canViewDeleted = function(prot) {
+      var i, len, projectAdminRole, ref, ref1, role, rolesToTest;
+      if (((ref = window.conf.entity) != null ? ref.viewDeletedRoles : void 0) != null) {
+        rolesToTest = [];
+        ref1 = window.conf.entity.viewDeletedRoles.split(",");
+        for (i = 0, len = ref1.length; i < len; i++) {
+          role = ref1[i];
+          role = $.trim(role);
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === prot.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else if (role === 'projectAdmin') {
+            projectAdminRole = {
+              lsType: "Project",
+              lsKind: prot.getProjectCode().get('codeValue'),
+              roleName: "Administrator"
+            };
+            if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
+              return true;
+            }
+          } else {
+            rolesToTest.push(role);
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
     };
 
     return ProtocolSummaryTableController;

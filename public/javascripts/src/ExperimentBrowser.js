@@ -383,7 +383,7 @@
     };
 
     ExperimentSummaryTableController.prototype.render = function() {
-      var ref;
+      var i, len, projectAdminRole, ref, ref1, ref2, role, rolesToTest;
       this.template = _.template($('#ExperimentSummaryTableView').html());
       $(this.el).html(this.template);
       if (!((((ref = window.conf.save) != null ? ref.project : void 0) != null) && window.conf.save.project.toLowerCase() === "false")) {
@@ -395,12 +395,17 @@
         $(".bv_noMatchingExperimentsFoundMessage").addClass("hide");
         this.collection.each((function(_this) {
           return function(exp) {
-            var ersc, hideStatusesList, ref1;
-            hideStatusesList = null;
-            if (((ref1 = window.conf.entity) != null ? ref1.hideStatuses : void 0) != null) {
-              hideStatusesList = window.conf.entity.hideStatuses;
-            }
-            if (!((hideStatusesList != null) && hideStatusesList.length > 0 && hideStatusesList.indexOf(exp.getStatus().get('codeValue')) > -1 && !(UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, ["admin"])))) {
+            var canViewDeleted, ersc;
+            canViewDeleted = _this.canViewDeleted(exp);
+            if (exp.getStatus().get('codeValue') === 'deleted') {
+              if (canViewDeleted) {
+                ersc = new ExperimentRowSummaryController({
+                  model: exp
+                });
+                ersc.on("gotClick", _this.selectedRowChanged);
+                return _this.$("tbody").append(ersc.render().el);
+              }
+            } else {
               ersc = new ExperimentRowSummaryController({
                 model: exp
               });
@@ -415,7 +420,41 @@
           }
         });
       }
-      return this;
+      this;
+      ({
+        canViewDeleted: function(exp) {}
+      });
+      if (((ref1 = window.conf.entity) != null ? ref1.viewDeletedRoles : void 0) != null) {
+        rolesToTest = [];
+        ref2 = window.conf.entity.viewDeletedRoles.split(",");
+        for (i = 0, len = ref2.length; i < len; i++) {
+          role = ref2[i];
+          role = $.trim(role);
+          if (role === 'entityScientist') {
+            if (window.AppLaunchParams.loginUserName === exp.getScientist().get('codeValue')) {
+              return true;
+            }
+          } else if (role === 'projectAdmin') {
+            projectAdminRole = {
+              lsType: "Project",
+              lsKind: exp.getProjectCode().get('codeValue'),
+              roleName: "Administrator"
+            };
+            if (UtilityFunctions.prototype.testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])) {
+              return true;
+            }
+          } else {
+            rolesToTest.push(role);
+          }
+        }
+        if (rolesToTest.length === 0) {
+          return false;
+        }
+        if (!UtilityFunctions.prototype.testUserHasRole(window.AppLaunchParams.loginUser, rolesToTest)) {
+          return false;
+        }
+      }
+      return true;
     };
 
     return ExperimentSummaryTableController;

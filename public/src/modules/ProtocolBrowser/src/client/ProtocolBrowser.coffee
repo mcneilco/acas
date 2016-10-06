@@ -119,19 +119,45 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				hideStatusesList
-				if window.conf.entity?.hideStatuses?
-					hideStatusesList = window.conf.entity.hideStatuses
-				#non-admin users can't see protocols with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"])
+				canViewDeleted = @canViewDeleted(prot)
+				if prot.getStatus().get('codeValue') is 'deleted'
+					if canViewDeleted
+						prsc = new ProtocolRowSummaryController
+							model: prot
+						prsc.on "gotClick", @selectedRowChanged
+						@$("tbody").append prsc.render().el
+				else
 					prsc = new ProtocolRowSummaryController
 						model: prot
 					prsc.on "gotClick", @selectedRowChanged
-
 					@$("tbody").append prsc.render().el
+
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
 		@
+
+	canViewDeleted: (prot) ->
+		if window.conf.entity?.viewDeletedRoles?
+			rolesToTest = []
+			for role in window.conf.entity.viewDeletedRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is prot.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: prot.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 class window.ProtocolBrowserController extends Backbone.View
 	#template: _.template($("#ProtocolBrowserView").html())

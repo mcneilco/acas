@@ -261,11 +261,14 @@ class window.ExperimentSummaryTableController extends Backbone.View
 		else
 			$(".bv_noMatchingExperimentsFoundMessage").addClass "hide"
 			@collection.each (exp) =>
-				hideStatusesList = null
-				if window.conf.entity?.hideStatuses?
-					hideStatusesList = window.conf.entity.hideStatuses
-				#non-admin users can't see experiments with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and !(UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]))
+				canViewDeleted = @canViewDeleted(exp)
+				if exp.getStatus().get('codeValue') is 'deleted'
+					if canViewDeleted
+						ersc = new ExperimentRowSummaryController
+							model: exp
+						ersc.on "gotClick", @selectedRowChanged
+						@$("tbody").append ersc.render().el
+				else
 					ersc = new ExperimentRowSummaryController
 						model: exp
 					ersc.on "gotClick", @selectedRowChanged
@@ -276,6 +279,28 @@ class window.ExperimentSummaryTableController extends Backbone.View
 
 		@
 
+		canViewDeleted: (exp) ->
+		if window.conf.entity?.viewDeletedRoles?
+			rolesToTest = []
+			for role in window.conf.entity.viewDeletedRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is exp.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: exp.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 class window.ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())
