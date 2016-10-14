@@ -35,7 +35,7 @@ $(function () {
                 it('should return selected metalot', function() {
                     this.parentListCont.$('.RegSearchResults_ParentView:eq(1) .regPick').attr('checked', true);;
                     var ml = this.parentListCont.getSelectedMetaLot();
-                    expect(ml.get('parent').get('corpName')).toEqual('SGD-0002');
+                    expect(ml.get('parent').get('corpName')).toEqual('CMPD-0002');
                 });
             });
         });

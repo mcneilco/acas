@@ -9,7 +9,7 @@ if(length(args) != 2) {
   configFilePath <- args[1]
   viewName <- args[2]
 }
-#configFilePath <- "public/javascripts/conf/DNSZaius/DNSZaiusConfJSON.js"
+
 readConfigFile <- function(configFilePath) {
   configFilePath <- normalizePath(configFilePath)
   out <- paste(suppressWarnings(system(paste0("node -e '",

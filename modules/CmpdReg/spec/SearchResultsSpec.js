@@ -31,7 +31,7 @@ $(function () {
 				describe('when rendered', function () {
 	                it('should display the corpName', function() {
 	                   this.searchResController.render();
-	                   expect(this.searchResController.$('.corpName').html()).toEqual('SGD-1234-Na');
+	                   expect(this.searchResController.$('.corpName').html()).toEqual('CMPD-1234-Na');
 	                });
 	                it('should show stereo category', function() {
 	                    this.searchResController.render();
@@ -80,7 +80,7 @@ $(function () {
 				describe('when rendered', function () {
 	                it('should display the corpName', function() {
 	                   this.searchResController.render();
-	                   expect(this.searchResController.$('.corpName').html()).toEqual('SGD-2222-K');
+	                   expect(this.searchResController.$('.corpName').html()).toEqual('CMPD-2222-K');
 	                });
 	                it('should show stereo category', function() {
 	                    this.searchResController.render();
@@ -120,7 +120,7 @@ $(function () {
 			describe('when rendered', function () {
                 it('should display resutls', function() {
                    expect(this.searchResListController.$('.corpName').length).toEqual(4);
-                   expect($(this.searchResListController.$('.corpName')[1]).html()).toEqual('SGD-1234-Cl');
+                   expect($(this.searchResListController.$('.corpName')[1]).html()).toEqual('CMPD-1234-Cl');
                 });
 			});
            

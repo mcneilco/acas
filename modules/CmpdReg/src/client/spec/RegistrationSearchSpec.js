@@ -140,11 +140,11 @@ $(function () {
 			it('when initialized with corpName', function () {
 				this.rsController = new RegistrationSearchController({
                     el: "#RegistrationSearchView",
-                    corpName: 'SGD-1111-Cl'
+                    corpName: 'CMPD-1111-Cl'
                 });
                 this.rsController.render();
                 this.rsController.show();
-                expect(this.rsController.$('.corpName').val()).toEqual('SGD-1111-Cl');
+                expect(this.rsController.$('.corpName').val()).toEqual('CMPD-1111-Cl');
             });
         });
 

@@ -14,7 +14,6 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/createAndUpdateExptExptItxs', exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', exports.putExptExptItxs
-	app.post '/api/screeningCampaign/analyzeScreeningCampaign', exports.analyzeScreeningCampaign
 	app.post '/api/experiments/getByCodeNamesArray', exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', exports.postParentExperiment
@@ -37,7 +36,6 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/createAndUpdateExptExptItxs', loginRoutes.ensureAuthenticated, exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', loginRoutes.ensureAuthenticated, exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', loginRoutes.ensureAuthenticated, exports.putExptExptItxs
-	app.post '/api/screeningCampaign/analyzeScreeningCampaign', loginRoutes.ensureAuthenticated, exports.analyzeScreeningCampaign
 	app.post '/api/experiments/getByCodeNamesArray', loginRoutes.ensureAuthenticated, exports.experimentsByCodeNamesArray
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', loginRoutes.ensureAuthenticated, exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', loginRoutes.ensureAuthenticated, exports.postParentExperiment
@@ -598,27 +596,6 @@ exports.createAndUpdateExptExptItxs = (req, resp) ->
 				else
 					resp.json updatedExptExptItxs.concat newExptExptItxs
 
-exports.analyzeScreeningCampaign = (req, resp) ->
-	req.connection.setTimeout 180000000
-
-	resp.writeHead(200, {'Content-Type': 'application/json'});
-
-	if global.specRunnerTestmode
-		serverUtilityFunctions.runRFunction(
-			req,
-			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysisStub.R",
-			"analyzeScreeningCampaign",
-			(rReturn) ->
-				resp.end rReturn
-		)
-	else
-		serverUtilityFunctions.runRFunction(
-			req,
-			"src/r/ScreeningCampaign/ScreeningCampaignDataAnalysis.R",
-			"analyzeScreeningCampaign",
-			(rReturn) ->
-				resp.end rReturn
-		)
 
 exports.experimentsByCodeNamesArray = (req, resp) ->
 	experimentsByCodeNamesArray req.body.data, req.query.option, req.query.testMode, (returnedExpts) ->

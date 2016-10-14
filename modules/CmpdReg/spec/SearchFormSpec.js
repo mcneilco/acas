@@ -80,8 +80,8 @@ $(function () {
                 });
                 it('return a model when requested', function() {
                     runs(function() {
-                        this.searchController.$('.corpNameFrom').val('SGD-0001');
-                        this.searchController.$('.corpNameTo').val('SGD-0005');
+                        this.searchController.$('.corpNameFrom').val('CMPD-0001');
+                        this.searchController.$('.corpNameTo').val('CMPD-0005');
                         this.searchController.$('.aliasContSelect option')[1].selected = true;
                         this.searchController.$('.alias').val('alien');
                         this.searchController.$('.dateFrom').val('10/24/2011');
@@ -94,8 +94,8 @@ $(function () {
                     runs(function() {
                         var sfm = this.searchController.makeSearchFormModel();
                         expect(this.searchController.isValid()).toBeTruthy();
-                        expect(sfm.get('corpNameFrom')).toEqual('SGD-0001');
-                        expect(sfm.get('corpNameTo')).toEqual('SGD-0005');
+                        expect(sfm.get('corpNameFrom')).toEqual('CMPD-0001');
+                        expect(sfm.get('corpNameTo')).toEqual('CMPD-0005');
                         expect(sfm.get('aliasContSelect')).toEqual('exact');
                         expect(sfm.get('alias')).toEqual('alien');
                         expect(sfm.get('dateFrom')).toEqual('10/24/2011');
@@ -128,8 +128,8 @@ $(function () {
                 });
                 it('should strip leading and trailing whitespace from input fields', function() {
                     runs(function() {
-                        this.searchController.$('.corpNameFrom').val(' SGD-0001 ');
-                        this.searchController.$('.corpNameTo').val(' SGD-0005 ');
+                        this.searchController.$('.corpNameFrom').val(' CMPD-0001 ');
+                        this.searchController.$('.corpNameTo').val(' CMPD-0005 ');
                         this.searchController.$('.alias').val(' alien ');
                         this.searchController.$('.dateFrom').val(' 10/24/2011 ');
                         this.searchController.$('.dateTo').val(' 10/28/2011 ');
@@ -139,8 +139,8 @@ $(function () {
                     runs(function() {
                         var sfm = this.searchController.makeSearchFormModel();
                         expect(this.searchController.isValid()).toBeTruthy();
-                        expect(sfm.get('corpNameFrom')).toEqual('SGD-0001');
-                        expect(sfm.get('corpNameTo')).toEqual('SGD-0005');
+                        expect(sfm.get('corpNameFrom')).toEqual('CMPD-0001');
+                        expect(sfm.get('corpNameTo')).toEqual('CMPD-0005');
                         expect(sfm.get('alias')).toEqual('alien');
                         expect(sfm.get('dateFrom')).toEqual('10/24/2011');
                         expect(sfm.get('dateTo')).toEqual('10/28/2011');

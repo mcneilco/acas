@@ -4,7 +4,7 @@ $(function () {
 	window.testJSON = {
         saltForm: {
             id: 1,
-            corpName: "SGD-1234-C14Na",
+            corpName: "CMPD-1234-C14Na",
             chemist:{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
             "isosalts":[
                 {"id":2, "iosotope":{id: 4, "name":"istn1","abbrev":"ista1","massChange":1},"equivalents":1.7,"type":"isotope"},
@@ -22,7 +22,7 @@ $(function () {
 
         lot:  {
             id: 1,
-            corpName: 'SGD-1234-C14Na-02',
+            corpName: 'CMPD-1234-C14Na-02',
             notebookPage: '1234-043',
             chemist:{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
             project:{"code":"project3","id":3,"name":"Project 3","version":0},
@@ -74,7 +74,7 @@ $(function () {
                 "isVirtual":false,
                 "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
                 "project":{"code":"project3","id":3,"name":"Project 3","version":0},
-                "corpName":"SGD-1234-C14Na-1",
+                "corpName":"CMPD-1234-C14Na-1",
                 "asDrawnStruct":null,
                 "lotMolWeight":"",
                 "synthesisDate":"10/24/2011",
@@ -98,7 +98,7 @@ $(function () {
                 "comments":"i like it",
                 "saltForm":{
                     "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
-                    "corpName":"SGD-0001-C14Na",
+                    "corpName":"CMPD-0001-C14Na",
                     "casNumber":"00010000",
                     "id":1,
                     "molStructure":"\n  Marvin  09141115532D          \n\n  2  1  0  0  0  0            999 V2000\n    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  4  0  0  0  0\nM  END\n$$$$\n",
@@ -109,7 +109,7 @@ $(function () {
 	                    "molWeight": 42.42345,
 	                    "molFormula": "C2H6",
                        "molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC",
-                        "corpName":"SGD-0001",
+                        "corpName":"CMPD-0001",
                         "id":1,
                         "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false}
                     }
@@ -145,7 +145,7 @@ $(function () {
                 "isVirtual":false,
                 "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
                 "project":{"code":"project3","id":3,"name":"Project 3","version":0},
-                "corpName":"SGD-1234-C14Na-1",
+                "corpName":"CMPD-1234-C14Na-1",
                 "asDrawnStruct":null,
                 "lotMolWeight":"",
                 "synthesisDate":"10/24/2011",
@@ -174,13 +174,13 @@ $(function () {
                     "molWeight": 42.42345,
                     "molFormula": "C2H6",
                     "molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC",
-                    "corpName":"SGD-0001",
+                    "corpName":"CMPD-0001",
                     "id":1,
                     "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false}
                     },
                 "saltForm":{
                     "chemist":{"id":2, "code": "cchemist", "name": "Corey Chemist","isChemist":true,"isAdmin":false},
-                    "corpName":"SGD-0001-C14Na",
+                    "corpName":"CMPD-0001-C14Na",
                     "casNumber":"00010000",
                     "id":1,
                     "molStructure":"\n  Marvin  09141115532D          \n\n  2  1  0  0  0  0            999 V2000\n    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  4  0  0  0  0\nM  END\n$$$$\n"
@@ -220,7 +220,7 @@ $(function () {
         parents: [
             {
                 id: 1,
-                corpName: 'SGD-0001',
+                corpName: 'CMPD-0001',
                 stereoCategory: {"id":1, "code": "scalemic", "name": "Scalemic"},
                 stereoComment: "comment",
                 commonName: 'comname 1',
@@ -230,7 +230,7 @@ $(function () {
                 saltForms: [
                     {
                     id: 1,
-                    corpName: "SGD-0001-C14Na",
+                    corpName: "CMPD-0001-C14Na",
                     "isosalts":[
                         {"id":1, "isotope":{id: 1, "name":"C14","abbrev":"C14","massChange":2},"equivalents":1,"type":"isotope"},
                         {"id":2, "salt":{id: 2, "name":"Na","abbrev":"Na","molStructure":"mol string 1"},"equivalents":2,"type":"salt"}
@@ -240,7 +240,7 @@ $(function () {
                     },
                     {
                     id: 2,
-                    corpName: "SGD-0001-Na",
+                    corpName: "CMPD-0001-Na",
                     "isosalts":[
                         {"id":3, "salt":{id: 2, "name":"Na","abbrev":"Na","molStructure":"mol string 1"},"equivalents":1,"type":"salt"}
                         ],
@@ -251,7 +251,7 @@ $(function () {
             },
             {
                 id: 2,
-                corpName: 'SGD-0002',
+                corpName: 'CMPD-0002',
                 stereoCategory: {"id":2, "code": "racemic", "name": "Racemic"},
                 stereoComment: "",
                 commonName: 'comname 2',
@@ -259,7 +259,7 @@ $(function () {
                 saltForms: [
                     {
                     id: 3,
-                    corpName: "SGD-0002-Cl",
+                    corpName: "CMPD-0002-Cl",
                     "isosalts":[
                         {"id":4, "salt":{id: 3, "name":"Cl","abbrev":"Cl","molStructure":"mol string 1"},"equivalents":2.5,"type":"salt"}
                         ],
@@ -274,41 +274,41 @@ $(function () {
 	};
     
     window.searchResultJSON =[
-        {"corpName":"SGD-1234-Na",
+        {"corpName":"CMPD-1234-Na",
             "stereoCategoryName":"Racemic",
             "stereoComment":"rac comment",
             "lotIDs":[
-                {"corpName":"SGD-1234-Na-01","lotNumber":1, "registrationDate": "10/24/2011", "synthesisDate": "11/24/2011"},
-                {"corpName":"SGD-1234-Na-02","lotNumber":2, "registrationDate": "10/25/2011", "synthesisDate": "11/25/2011"},
-                {"corpName":"SGD-1234-Na-03","lotNumber":3, "registrationDate": "10/26/2011", "synthesisDate": "11/26/2011"},
-                {"corpName":"SGD-1234-Na-05","lotNumber":5, "registrationDate": "10/27/2011", "synthesisDate": "11/27/2011"}
+                {"corpName":"CMPD-1234-Na-01","lotNumber":1, "registrationDate": "10/24/2011", "synthesisDate": "11/24/2011"},
+                {"corpName":"CMPD-1234-Na-02","lotNumber":2, "registrationDate": "10/25/2011", "synthesisDate": "11/25/2011"},
+                {"corpName":"CMPD-1234-Na-03","lotNumber":3, "registrationDate": "10/26/2011", "synthesisDate": "11/26/2011"},
+                {"corpName":"CMPD-1234-Na-05","lotNumber":5, "registrationDate": "10/27/2011", "synthesisDate": "11/27/2011"}
             ],
             "molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC"
         },
-        {"corpName":"SGD-1234-Cl",
+        {"corpName":"CMPD-1234-Cl",
             "stereoCategoryName":"Racemic",
             "stereoComment":"st comm",
             "lotIDs":[
-                {"corpName":"SGD-1234-Cl-01","lotNumber":1, "registrationDate": "11/1/2011", "synthesisDate": "12/1/2011"},
-                {"corpName":"SGD-1234-Cl-02","lotNumber":2, "registrationDate": "11/2/2011", "synthesisDate": "12/2/2011"},
-                {"corpName":"SGD-1234-Cl-03","lotNumber":3, "registrationDate": "11/3/2011", "synthesisDate": "12/3/2011"}
+                {"corpName":"CMPD-1234-Cl-01","lotNumber":1, "registrationDate": "11/1/2011", "synthesisDate": "12/1/2011"},
+                {"corpName":"CMPD-1234-Cl-02","lotNumber":2, "registrationDate": "11/2/2011", "synthesisDate": "12/2/2011"},
+                {"corpName":"CMPD-1234-Cl-03","lotNumber":3, "registrationDate": "11/3/2011", "synthesisDate": "12/3/2011"}
             ],
             "molStructure":"C1=CC2=CC3=CC4=CC5=CC6=C(C=CC=C6)C=C5C=C4C=C3C=C2C=C1 |c:0,12,14,17,20,23,26,29,t:2,4,6,8,10|"
         },
-        {"corpName":"SGD-1234-C14",
+        {"corpName":"CMPD-1234-C14",
             "stereoCategoryName":"Scalemic",
             "stereoComment":"",
             "lotIDs":[
-                {"corpName":"SGD-1234-C14-01","lotNumber":1, "registrationDate": "11/4/2011", "synthesisDate": "12/4/2011"},
-                {"corpName":"SGD-1234-C14-02","lotNumber":2, "registrationDate": "11/5/2011", "synthesisDate": "12/5/2011"}
+                {"corpName":"CMPD-1234-C14-01","lotNumber":1, "registrationDate": "11/4/2011", "synthesisDate": "12/4/2011"},
+                {"corpName":"CMPD-1234-C14-02","lotNumber":2, "registrationDate": "11/5/2011", "synthesisDate": "12/5/2011"}
             ],
             "molStructure":"N1C=CC2=C1NC1=C2C2=C(N1)NC1=C2C2=C(NC=C2)N1 |c:1,3,7,15,21,t:18|"
         },
-        {"corpName":"SGD-2222-K",
+        {"corpName":"CMPD-2222-K",
             "stereoCategoryName":"See Comment",
             "stereoComment":"lots of centers",
             "lotIDs":[
-                {"corpName":"SGD-2222-K-01","lotNumber":1, "registrationDate": "11/6/2011", "synthesisDate": "12/6/2011"}
+                {"corpName":"CMPD-2222-K-01","lotNumber":1, "registrationDate": "11/6/2011", "synthesisDate": "12/6/2011"}
             ],
             "molStructure":"C1CC2CC3CC4CC5C(CC6CC7CC8CCCC8C7C56)C4C3C2C1"
         }        

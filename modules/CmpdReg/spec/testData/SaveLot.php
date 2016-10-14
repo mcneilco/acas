@@ -7,7 +7,7 @@ if(strpos($_POST['metaLotToSave'], 'forceerror') !== false || strpos($put_vars['
     echo '{"errors":[{"level":"error","message": "Parent with matching sturcture and stereo category exists" }]}';
 } else {
     header("Content-type: application/json;charset=utf-8");
-    echo '{"id":101, "corpName":"SGD-9999-K-3"}';
+    echo '{"id":101, "corpName":"CMPD-9999-K-3"}';
 }
 
 ?>

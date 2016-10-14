@@ -52,7 +52,7 @@ $(function () {
             describe('when salt selected', function() {
                 it(' should return null', function() {
                     $('#SaltFormListControllerView option')[1].selected = true;
-                    expect(this.sfListCont.getSelectedSaltForm().get('corpName')).toEqual('SGD-0001-C14Na');
+                    expect(this.sfListCont.getSelectedSaltForm().get('corpName')).toEqual('CMPD-0001-C14Na');
                 });
             });
         });

@@ -50,7 +50,7 @@ $(function () {
 						expect(this.saltForm.get('isosalts').at(0).get('equivalents')).toEqual(1.7);
 						expect(this.saltForm.get('isosalts').at(1).get('isosalt').get('abbrev')).toEqual('isa1');
 						expect(this.saltForm.get('casNumber')).toEqual('12345');
-                        expect(this.saltForm.get('corpName')).toEqual('SGD-1234-C14Na');
+                        expect(this.saltForm.get('corpName')).toEqual('CMPD-1234-C14Na');
 					});
 				});
                 describe('When values requested', function() {

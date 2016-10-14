@@ -74,7 +74,7 @@ $(function () {
                         });
                     });
                     it('should load the parent model', function() {
-                        expect(this.metaLot.get('parent').get('corpName')).toEqual('SGD-0001');
+                        expect(this.metaLot.get('parent').get('corpName')).toEqual('CMPD-0001');
                         expect(this.metaLot.get('parent').get('molStructure')).toMatch('CCCCCCNC');
                     });
                     it('should load the saltForm model', function() {
@@ -90,9 +90,9 @@ $(function () {
                     it('getModelForSave() should return a composite object', function(){
                         var modelForSave = this.metaLot.getModelForSave();
                         if (window.configuration.metaLot.saltBeforeLot) {
-                            expect(modelForSave.get('lot').get('saltForm').get('parent').get('corpName')).toEqual('SGD-0001');
+                            expect(modelForSave.get('lot').get('saltForm').get('parent').get('corpName')).toEqual('CMPD-0001');
                         } else {
-                            expect(modelForSave.get('lot').get('parent').get('corpName')).toEqual('SGD-0001');
+                            expect(modelForSave.get('lot').get('parent').get('corpName')).toEqual('CMPD-0001');
                         }
                         expect(modelForSave.get('lot').get('notebookPage')).toEqual('1111-223');
                         expect(modelForSave.get('isosalts').at(1).get('equivalents')).toEqual(2);
@@ -298,9 +298,9 @@ $(function () {
                         });
                         it('should show a title with the lot corp_name', function(){
                             if (window.configuration.metaLot.lotCalledBatch) {
-                                expect(this.mlController.$('.formTitle').html()).toEqual('Edit Batch SGD-1234-C14Na-1');
+                                expect(this.mlController.$('.formTitle').html()).toEqual('Edit Batch CMPD-1234-C14Na-1');
                             } else {
-                                expect(this.mlController.$('.formTitle').html()).toEqual('Edit Lot SGD-1234-C14Na-1');
+                                expect(this.mlController.$('.formTitle').html()).toEqual('Edit Lot CMPD-1234-C14Na-1');
                             }
                             });
                         it('create new lot button should message app controller to creaet new lot based on this saltform', function(){
@@ -335,7 +335,7 @@ $(function () {
                     });
                 });
                 describe('when has existing parent and saltform but new lot', function(){
-                    it('should have title like "new lot of SGD-nnbnn-mm"', function(){
+                    it('should have title like "new lot of CMPD-nnbnn-mm"', function(){
                         this.parentJSON = window.testJSON.parent;
                         this.parentJSON.molStructure = window.testJSON.mol.molStructure;
                         this.sfJSON = window.testJSON.saltForm;
@@ -349,9 +349,9 @@ $(function () {
                         this.mlController.render();
 
                         if (window.configuration.metaLot.lotCalledBatch) {
-                            expect(this.mlController.$('.formTitle').html()).toEqual('New batch of SGD-1234-C14Na');
+                            expect(this.mlController.$('.formTitle').html()).toEqual('New batch of CMPD-1234-C14Na');
                         } else {
-                            expect(this.mlController.$('.formTitle').html()).toEqual('New lot of SGD-1234-C14Na');
+                            expect(this.mlController.$('.formTitle').html()).toEqual('New lot of CMPD-1234-C14Na');
                         }
                         });
                 });

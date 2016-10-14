@@ -37,7 +37,7 @@ $(function () {
                         expect(this.regSearchController.$('.asDrawnMolWeight').val()).toEqual('42.35');
                         expect(this.regSearchController.$('.asDrawnMolFormula').val()).toEqual('C2');
                     });
-                    it('should have register new SGD radio enabled', function() {
+                    it('should have register new CMPD radio enabled', function() {
 	                    expect(this.regSearchController.$('[value^="new"]').attr('disabled')).toBeUndefined();
                     });
                     it('should have Virtual checkbox enabled', function() {
@@ -104,10 +104,10 @@ $(function () {
                     this.regSearchController.show();
                 });
                 describe(' with no structure, options are limited', function() {
-                    it('should have register new SGD radio disabled', function() {
+                    it('should have register new CMPD radio disabled', function() {
                         expect(this.regSearchController.$('[value^="new"]').attr('disabled')).toEqual('disabled');
                     });
-                    it('should have register new SGD radio not checked', function() {
+                    it('should have register new CMPD radio not checked', function() {
                         expect(this.regSearchController.$('[value^="new"]').attr('checked')).toBeFalsy();
                     });
                     it('should have Virtual checkbox disabled', function() {

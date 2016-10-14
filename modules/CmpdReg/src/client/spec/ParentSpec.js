@@ -290,7 +290,7 @@ $(function () {
                         }
                         var ml = this.parentController.getSelectedMetaLot();
                             if (window.configuration.metaLot.saltBeforeLot) {
-                                expect(ml.get('saltForm').get('corpName')).toEqual('SGD-0001-C14Na');
+                                expect(ml.get('saltForm').get('corpName')).toEqual('CMPD-0001-C14Na');
                                 expect(ml.get('parent').get('corpName')).toEqual('cName');
                             } else {
                                 expect(ml.get('parent').get('corpName')).toEqual('cName');
