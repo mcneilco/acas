@@ -1,4 +1,4 @@
-FROM mcneilco/racas:compound-inventory
+FROM mcneilco/racas-oss
 
 # RSTUDIO INSTALL
 USER root

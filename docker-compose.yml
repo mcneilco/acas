@@ -2,14 +2,14 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas:1.9.0-release
+    image: mcneilco/acas-oss
     restart: always
     ports:
      - "3000:3000"
      - "3001:3001"
      - "5858:5858"
     environment:
-     - APP_NAME=1.9.0
+     - APP_NAME=ACAS_OPEN
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
      - DOCKER_HOST_IP=localhost
@@ -26,11 +26,11 @@ services:
     env_file:
       - ./conf/docker/acas/environment/acas.env
 # Dev Command
-    command: ["bin/acas.sh", "run", "acas", "dev"]
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
-#    command: ["bin/acas.sh", "run", "acas", "start"]
+    command: ["bin/acas.sh", "run", "acas", "start"]
   rservices:
-    image: mcneilco/racas:1.9.0-release
+    image: mcneilco/racas-oss
     restart: always
     ports:
      - "1080:1080"
