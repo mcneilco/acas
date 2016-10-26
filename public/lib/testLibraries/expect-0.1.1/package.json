@@ -1,0 +1,29 @@
+{
+  "name": "expect",
+  "version": "0.1.1",
+  "description": "Write better assertions",
+  "main": "expect.js",
+  "dependencies": {},
+  "devDependencies": {
+    "mocha": "~1.17.1"
+  },
+  "scripts": {
+    "test": "mocha spec"
+  },
+  "keywords": [
+    "expect",
+    "assert",
+    "test",
+    "spec"
+  ],
+  "author": "Michael Jackson",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mjijackson/expect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mjijackson/expect/issues"
+  },
+  "homepage": "https://github.com/mjijackson/expect"
+}

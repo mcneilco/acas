@@ -15,17 +15,6 @@ window.ModuleMenusConfiguration =
 		# requireUserRoles: [window.conf.roles.acas.userRole]
 	,
 		isHeader: false
-		menuName: "Plate Analysis Protocol Editor"
-		mainControllerClassName: "PrimaryScreenProtocolModuleController"
-		autoLaunchName:"primary_screen_protocol"
-		# requireUserRoles: [window.conf.roles.acas.userRole]
-	,
-		isHeader: false
-		menuName: "Plate Analysis Experiment Editor"
-		mainControllerClassName: "PrimaryScreenExperimentController"
-		autoLaunchName:"primary_screen_experiment"
-	,
-		isHeader: false
 		menuName: "Protocol Editor"
 		mainControllerClassName: "ProtocolBaseController"
 		autoLaunchName:"protocol_base"
@@ -40,25 +29,12 @@ window.ModuleMenusConfiguration =
 		mainControllerClassName: "ProjectController"
 		autoLaunchName:"project"
 	,
-		isHeader: false
-		menuName: "Data Viewer"
-#		mainControllerClassName: "PrimaryScreenExperimentController"
-		autoLaunchName:"dataViewer"
-	,
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"cationic_block"
 	,
 		isHeader: true
 		menuName: "Inventory"
-	,
-		isHeader: false
-		menuName: "Load Containers From SDF"
-		mainControllerClassName: "BulkLoadContainersFromSDFController"
-	,
-		isHeader: false
-		menuName: "Load Sample Transfer Log"
-		mainControllerClassName: "BulkLoadSampleTransfersController"
 	,
 		isHeader: true
 		menuName: "Search and Edit"
@@ -84,21 +60,4 @@ window.ModuleMenusConfiguration =
 		isHeader: false, menuName: "Logging"
 		mainControllerClassName: "LoggingController"
 		requireUserRoles: []
-	,
-		isHeader: true
-		menuName: "Across Experiments"
-	,
-		isHeader: false
-		menuName: "Parent Protocol"
-		mainControllerClassName: "ParentProtocolController"
-		autoLaunchName: "parent_protocol"
-	,
-		isHeader: false
-		menuName: "Parent Experiment"
-		mainControllerClassName: "ParentExperimentModuleController"
-		autoLaunchName: "parent_experiment"
-	,
-		isHeader: false, menuName: "Screening Campaign"
-		mainControllerClassName: "ScreeningCampaignModuleController"
-		autoLaunchName:"screening_campaign"
 	]

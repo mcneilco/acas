@@ -1,0 +1,32 @@
+/*--------------------------------------------------------------------------
+ *  EJS - Embedded JavaScript, version 0.1.0
+ *  Copyright (c) 2007 Edward Benson
+ *  http://www.edwardbenson.com/projects/ejs
+ *  ------------------------------------------------------------------------
+ *
+ *  EJS is freely distributable under the terms of an MIT-style license.
+ *
+ *  EJS is a client-side preprocessing engine written in and for JavaScript.
+ *  If you have used PHP, ASP, JSP, or ERB then you get the idea: code embedded
+ *  in <% // Code here %> tags will be executed, and code embedded in <%= .. %>
+ *  tags will be evaluated and appended to the output.
+ *
+ *  This is essentially a direct JavaScript port of Masatoshi Seki's erb.rb
+ *  from the Ruby Core, though it contains a subset of ERB's functionality.
+ *
+ *  Requirements:
+ *      prototype.js
+ *
+ *  Usage:
+ *      // source should be either a string or a DOM node whose innerHTML
+ *      // contains EJB source.
+ *  	var source = "<% var ejb="EJB"; %><h1>Hello, <%= ejb %>!</h1>";
+ *      var compiler = new EjsCompiler(source);
+ *	    compiler.compile();
+ *	    var output = eval(compiler.out);
+ *      alert(output); // -> "<h1>Hello, EJB!</h1>"
+ *
+ *  For a demo:      see demo.html
+ *  For the license: see license.txt
+ *
+ *--------------------------------------------------------------------------*/
