@@ -1,8 +1,0 @@
-client.deployMode==local
-server.database.name=acas
-server.database.username=acas
-server.database.password=acas
-server.database.host=localhost
-client.service.persistence.host=localhost
-server.service.persistence.filePath=/Users/bbolt/Documents/mcneilco/acas/build/privateUploads
-server.log.path=/tmp

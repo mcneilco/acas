@@ -9,7 +9,7 @@ services:
      - "3001:3001"
      - "5858:5858"
     environment:
-     - APP_NAME=ACAS_OPEN
+     - APP_NAME=ACAS-OPEN
      - PREPARE_MODULE_CONF_JSON=true
      - PREPARE_CONFIG_FILES=true
      - DOCKER_HOST_IP=localhost
@@ -25,6 +25,7 @@ services:
      # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
     env_file:
       - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/cmpdreg/conf/cmpdreg.properties:/home/runner/build/conf/cmpdreg.properties
 # Dev Command
 #    command: ["bin/acas.sh", "run", "acas", "dev"]
 # Start command
@@ -70,14 +71,24 @@ services:
     volumes_from:
      - roo
      - acas
+     - cmpdreg
     env_file:
       - ./conf/docker/acas/environment/acas.env
       - ./conf/docker/roo/environment/roo.env
+      - ./conf/docker/cmpdreg/environment/cmpdreg.env
     command: catalina.sh run
   roo:
-    image: mcneilco/acas-roo-server:1.9.0-release
+    image: mcneilco/acas-roo-server-oss
     volumes:
      - /usr/local/tomcat/webapps/acas
+    command: /bin/true
+  cmpdreg:
+    image: mcneilco/cmpdreg-oss
+    volumes:
+      - /usr/local/tomcat/webapps/cmpdreg
+    # Add license chemaxon license files here
+     - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
+     - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
     command: /bin/true
 volumes:
   dbstore:

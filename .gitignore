@@ -23,5 +23,6 @@ bin/rewrite-map.*
 Dockerfile*
 docker-compose*.yml
 build
+licenses
 #this is for the soft link in .dockerfile (git ignore .git by default)
 .git
