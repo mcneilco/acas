@@ -1,0 +1,150 @@
+<script type="text/template" id="ProjectSimpleSearchView" xmlns="http://www.w3.org/1999/html">
+    <div class="navbar" style="margin-bottom: 0px; ">
+        <div class="navbar-inner" style="border-bottom-left-radius:	0px; border-bottom-right-radius:	0px;">
+            <!-- <form class="navbar-search pull-left"> -->
+            <div class="control-group" style="margin-top: 5px; margin-bottom: 5px;">
+                <div class="input-append">
+                    <input class="bv_projectSearchTerm" style="
+							padding-right: 14px;
+							border-top-left-radius: 15px;
+							border-bottom-left-radius: 15px;
+							" type="text" placeholder="Search for projects">
+                    <button class="btn bv_doSearch add-on" style="
+							border-top-right-radius: 15px;
+							border-bottom-right-radius: 15px;
+							height: 30px;
+							margin-top: 0px;
+							background-color: #fff;
+							border-left: 0px;
+							border-bottom: 1px solid #cccccc;
+							border-right: 1px solid #cccccc;
+							border-top: 1px solid #cccccc;
+              box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset;
+              width: 2.5em; padding-right: 0.8em;transition: border 0.2s linear 0s, box-shadow 0.2s linear 0s;" type="button" disabled>
+                        <i class="icon-search bv_doSearchIcon"></i>
+                        <i class="icon-remove bv_clearSearchIcon hide"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- </form> -->
+        </div>
+    </div>
+
+</script>
+
+<script type="text/template" id="ProjectRowSummaryView" xmlns="http://www.w3.org/1999/html">
+    <td class='bv_projectCode'><%=projectCode%></td>
+    <td class='bv_projectName'><%=projectName%></td>
+    <td class='bv_projectLeaders'><%=projectLeaders%></td>
+    <td class='bv_startDate'><%=startDate%></td>
+    <td class='bv_status'><%=status%></td>
+</script>
+
+<script type="text/template" id="ProjectSummaryTableView" xmlns="http://www.w3.org/1999/html">
+    <table class="table table-bordered table-striped table-hover" style="margin: 0px; padding: 0px; border: 0px; width: 100%; ">
+        <thead style="">
+        <tr>
+            <th style="width: 125px;">Project Code</th>
+            <th style="width: 200px;">Project Name</th>
+            <th style="width: 125px;">Project Leaders</th>
+            <th style="width: 80px;">Date</th>
+            <th >Status</th>
+        </tr>
+        </thead>
+        <tbody style="">
+
+        </tbody>
+    </table>
+</script>
+
+<script type="text/template" id="ProjectBrowserView" xmlns="http://www.w3.org/1999/html">
+
+    <div class="bv_projectSearchController" style="padding-bottom: 0px;"></div>
+    <div class="" style=" border: 1px solid #d4d4d4; border-top: 0px; margin: 0px; padding: 0px; ">
+
+        <div class="bv_searchProjectsStatusIndicator" style="height: 280px;">
+            <table width="100%">
+                <thead>
+                <tr><td style="display: none;">placeholder</td></tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td style="text-align: center; width: 100%; align-content: center; height: 250px;">
+                        <h5 class="bv_noMatchingProjectsFoundMessage hide">No Matching Projects Found</h5>
+                        <h5 class="bv_moreSpecificProjectSearchNeeded hide">A more specific search term is required.</h5>
+                        <h5 class="bv_errorOccurredPerformingSearch hide">An error occurred while searching for the project.</h5>
+
+                        <div class="bv_projectBrowserSearchInstructions">
+                            <i class="icon-search bv_doSearchIcon"></i>
+                            Project Browser
+                        </div>
+                        <div class="hide bv_searchingProjectsMessage" style="margin: auto;">
+                            <h5>Searching for Projects containing text "<i class="bv_exptSearchTerm"></i>"</h5>
+                            <div class="progress progress-striped active " style="width: 90%; margin: auto;">
+                                <div class="bar" style="width: 100%; margin: auto;"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="bv_projectTableController hide" style="margin:0px; padding:10px; overflow: auto; overflow: auto;"></div>
+    </div>
+    <!--
+    <h5>Selected Project Details</h5>
+    -->
+    <div class="well well-small bv_projectControllerContainer hide" style="margin-top: 10px;">
+        <div>
+            <!--<button class="btn btn-danger bv_deleteProject">Delete</button>-->
+            <% if (includeDuplicateAndEdit) { %>
+            <button class="btn bv_duplicateProject pull-right hide" style="margin-left: 0.5em;">Duplicate</button>
+            <button class="btn bv_editProject pull-right">Edit</button>
+            <% } %>
+        </div>
+        <hr />
+        <div class="">
+            <div class="bv_projectController hide"></div>
+        </div>
+    </div>
+
+    <div class="modal hide bv_confirmDeleteProject">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h3>Delete Project</h3>
+        </div>
+        <div class="modal-body">
+            <div class="bv_deleteWarningMessage">
+                <p>Are you sure you would like to delete project: <span class="bv_projectCodeName"></span>?</p>
+            </div>
+            <div class="bv_deletingStatusIndicator hide">
+                <table width="100%"></table>
+                <tr>
+                    <td style="text-align: center; width: 100%">
+                        <h4>Deleting Project</h4>
+                        <div class="progress progress-striped active" style="width: 100%;">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </td>
+                </tr>
+            </div>
+            <div class="bv_projectDeletedSuccessfullyMessage hide">
+                <p>Project <span class="bv_projectCodeName"></span> has successfully been deleted</p>
+            </div>
+            <div class="bv_errorDeletingProjectMessage hide">
+                <p>An error occured deleting Project <span class="bv_projectCodeName"></span>.  Please contact support for additional help.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+		    <span class="bv_deleteButtons">
+		      <a href="#" class="btn btn-primary bv_cancelDelete">Cancel</a>
+		      <a href="#" class="btn btn-danger bv_confirmDeleteProjectButton">Delete Project</a>
+			  </span>
+		    <span class="bv_okayButton hide">
+			    <a href="#" class="btn btn-primary bv_cancelDelete">Okay</a>
+		    </span>
+        </div>
+    </div>
+</script>

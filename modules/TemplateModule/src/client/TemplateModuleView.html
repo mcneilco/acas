@@ -1,0 +1,80 @@
+<script type="text/template" id="ReagentView" xmlns="http://www.w3.org/1999/html">
+    <h4 class="title">Register New</h4>
+
+    <div class="well">compounds here</div>
+
+    <div class="form col-xs-6 pull-left">
+        <div class="form-group">
+            <label>CAS</label>
+            <input class="form-control bv_cas" value="<%=cas%>"/>
+        </div>
+        <div class="form-group bv_group_barcode">
+            <label>Barcode</label>
+            <input class="form-control bv_barcode" value="<%=barcode%>"/>
+        </div>
+        <div class="form-group">
+            <label>Vendor</label>
+            <input class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Hazard Category</label>
+            <select class="form-control bv_hazardCategory">
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Physical State</label>
+            <select class="form-control">
+                <option>1</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Other</label>
+            <input class="form-control" />
+        </div>
+    </div>
+
+    <div class="form col-xs-6 pull-right">
+        <div class="form-group">
+            <label>Name</label>
+            <input class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Item</label>
+            <input class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Chemical Category</label>
+            <select class="form-control">
+                <option>1</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Bottle Size</label>
+            <input class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Density</label>
+            <input class="form-control" />
+        </div>
+        <div class="form-group">
+            <label>Other</label>
+            <input class="form-control" />
+        </div>
+    </div>
+
+    <div class="form">
+        <div class="form-group col-xs-10">
+            <label>Location</label>
+            <input class="form-control locationInput pull-left" placeholder="Scan or browse for location..." />
+        </div>
+        <button type="button" class="btn btn-default locationButton pull-right">Browse</button>
+    </div>
+
+    <div class="col-xs-12">
+        <button type="button" class="btn btn-default">Copy From Existing</button>
+        <button type="button" class="btn btn-default">Me</button>
+        <button type="button" class="btn btn-default pull-right">Register</button>
+        <button type="button" class="btn btn-danger cancelButton pull-right">Cancel</button>
+    </div>
+
+</script>

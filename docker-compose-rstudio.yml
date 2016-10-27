@@ -1,0 +1,8 @@
+version: '2'
+services:
+   rservices:
+     build:
+       context: .
+       dockerfile: Dockerfile-rservices
+     ports:
+        - "8787:8787"

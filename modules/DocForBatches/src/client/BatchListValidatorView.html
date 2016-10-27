@@ -1,0 +1,31 @@
+<script type="text/template" id="BatchNameView">
+	<td style="vertical-align: middle;"><span class="bv_preferredName"></span></td>
+	<td><input type="text" class="input-medium bv_comment" style="margin-bottom: 1px;"/></td>
+	<td style="vertical-align: middle;"><span class='bv_removeBatch'></span></td>
+</script>
+
+
+<script type="text/template" id="BatchListValidatorView">
+	<div class="row">
+		<div class="span2 pasteListContainer" style="width:150px;margin-right:10px;">
+			<textarea class="bv_pasteListArea" style="width:140px;margin-left:10px;"></textarea>
+		</div>
+		<div class="span2 addButtonContainer" style="margin-left: 10px; width:80px;padding-bottom:10px;">
+			<button class="btn bv_addButton">Add <i class="icon-arrow-right"></i></button>
+		</div>
+		<div class="span5 batchListContainer" style="margin-left: 0px;">
+			<table class="table table-bordered table-condensed" style="width: 34em;min-width:350px;">
+				<thead>
+				<th class="bv_batchHeader" style="width: 15em;">Batch</th>
+				<th style="width: 15em;">Link Text</th>
+				<th style="width: 2em;"></th>
+				</thead>
+				<tbody class="batchList"></tbody>
+			</table>
+			<div class="validBatchCountContainer">
+				<span class="validBatchCount">0</span>
+				<span>Valid Batches</span>
+			</div>
+		</div>
+	</div>
+</script>

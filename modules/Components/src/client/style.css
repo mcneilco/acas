@@ -1,0 +1,31 @@
+.bv_outerContainer {
+    /*width: 670px;*/
+    margin-top: 10px;
+}
+
+.bv_fileUploadWrapper .bv_parseFile {
+    width: 670px;
+}
+.bv_fileUploadWrapper .bv_reportFile {
+    width: 630px;
+}
+.bv_fileUploadWrapper .bv_imagesFile {
+    width: 630px;
+}
+
+.bv_notifications {
+    margin-top: 10px;
+}
+
+.bv_moduleTitle {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-bottom: 10px;
+
+}
+
+.bv_resultStatus {
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}

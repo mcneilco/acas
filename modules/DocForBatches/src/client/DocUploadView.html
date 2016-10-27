@@ -1,0 +1,49 @@
+<script type="text/template" id="DocUploadView">
+	<div class="">
+
+		<div class="bv_currentDocContainer">
+			<label class="">
+				<input type="radio" class="bv_currentFileRadio" name="docTypeRadio" value="currentFile"/>
+				Current File
+			</label>
+			<span class="bv_currentFileName"></span>
+		</div>
+		<div class=" bv_group_currentFileName bv_newDocContainer" style="height: 10em; border-color: #F5F5F5 #F5F5F5 #F5F5F5 #F5F5F5; border-style: solid; border-width: 1px;">
+			<h5>New File</h5>
+			<div style="border-top: solid 1px; border-color: #E3E3E3;">
+				<label class="bv_docInputLabel">
+					<input type="radio" class="bv_newFileRadio" name="docTypeRadio" value="file" checked=true/>
+					Upload a File
+				</label>
+			</div>
+			<div class="bv_fileInput"></div>
+		</div>
+
+		<div class="control-group bv_group_url bv_urlDocContainer" style="border-bottom: solid #E3E3E3 1px; height: 4em;">
+			<table>
+				<tr>
+					<td style='height: 3em; vertical-align:middle;'>
+						<label class="" >
+							<input type="radio" class="bv_urlRadio" name="docTypeRadio" value="url" />
+							URL
+						</label>
+					</td><td>
+						<span class="bv_urlInputWrapper" >
+							<input type="text" class="input-large bv_url" />
+						</span>
+					</td>
+				</tr>
+			</table>
+
+
+
+		</div>
+
+		<div class="control-group currentFileName_description bv_descriptionContainer">
+			<label class="">
+				Description:
+				<input type="text" class="input-large bv_description"/>
+			</label>
+		</div>
+	</div>
+</script>
