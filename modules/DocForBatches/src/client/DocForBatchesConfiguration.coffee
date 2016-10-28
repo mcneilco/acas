@@ -1,0 +1,3 @@
+
+window.DocForBatchesConfiguration =
+	lotCalledBatch: true

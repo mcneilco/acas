@@ -1,0 +1,98 @@
+version: '2'
+services:
+  acas:
+#    build: .
+    image: mcneilco/acas-oss:1.9.0
+    restart: always
+    ports:
+     - "3000:3000"
+     - "3001:3001"
+     - "5858:5858"
+    environment:
+     - APP_NAME=ACAS-OPEN
+     - PREPARE_MODULE_CONF_JSON=true
+     - PREPARE_CONFIG_FILES=true
+     - DOCKER_HOST_IP=localhost
+     - NODE_ENV=integration
+    volumes:
+     - filestore:/home/runner/build/privateUploads
+     - logs:/home/runner/logs
+     - /home/runner/build/bin
+     - /home/runner/build/src/r
+     - /home/runner/build/conf/compiled
+    # Add chemaxon marvinjs here
+     - ./chemaxon/marvinjs:/home/runner/build/public/CmpdReg/marvinjs
+     # Please add any dev volumes below this line
+     # - ./:/home/runner/acas
+     # - ./modules/BuildUtilities/:/home/runner/acas/modules/BuildUtilities
+    env_file:
+      - ./conf/docker/acas/environment/acas.env
+# Dev Command
+#    command: ["bin/acas.sh", "run", "acas", "dev"]
+# Start command
+    command: ["bin/acas.sh", "run", "acas", "start"]
+  rservices:
+    image: mcneilco/racas-oss:1.9.0
+    restart: always
+    ports:
+     - "1080:1080"
+    environment:
+     - PREPARE_MODULE_CONF_JSON=false
+     - PREPARE_CONFIG_FILES=false
+    volumes_from:
+     - acas
+    volumes:
+      - filestore:/home/runner/build/privateUploads
+      - logs:/home/runner/logs
+    command: ["bin/acas.sh", "run", "rservices"]
+  db:
+    image: mcneilco/acas-postgres:latest
+    restart: always
+    volumes:
+     - dbstore:/var/lib/postgresql/data
+    env_file:
+      - ./conf/docker/postgres/environment/postgres.env
+      - ./conf/docker/db/environment/db.env
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/cmpdreg/environment/cmpdreg.env
+      - ./conf/docker/seurat/environment/seurat.env
+    ports:
+     - "5432:5432"
+  tomcat:
+    image: mcneilco/tomcat-maven
+    restart: always
+    depends_on:
+     - db
+    ports:
+     - "8080:8080"
+     - "8000:8000"
+    environment:
+     - ACAS_HOME=/home/runner/build
+     - CATALINA_OPTS=-Xms512M -Xmx1024M -XX:MaxPermSize=512m
+     - JAVA_OPTS=-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000
+    volumes_from:
+     - roo
+     - acas
+     - cmpdreg
+    env_file:
+      - ./conf/docker/acas/environment/acas.env
+      - ./conf/docker/roo/environment/roo.env
+      - ./conf/docker/cmpdreg/environment/cmpdreg.env
+    command: catalina.sh run
+  roo:
+    image: mcneilco/acas-roo-server-oss:1.9.0
+    volumes:
+     - /usr/local/tomcat/webapps/acas
+    command: /bin/true
+  cmpdreg:
+    image: mcneilco/cmpdreg-oss:1.9.0
+    volumes:
+     - /usr/local/tomcat/webapps/cmpdreg
+    # Add chemaxon license files here
+     - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
+     - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
+    command: /bin/true
+volumes:
+  dbstore:
+  filestore:
+  logs:

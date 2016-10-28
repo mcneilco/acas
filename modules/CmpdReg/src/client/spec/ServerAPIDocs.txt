@@ -1,0 +1,188 @@
+This documents the client's expected server API
+
+--------------------------------------------------------------------------------
+Service: units
+Purpose: return list of unit options
+URL: serverBaseURL/units
+Example JSON response: testData/units.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: operators
+Purpose: return list of operator options
+URL: serverBaseURL/operators
+Example JSON response: testData/operators.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: physicalStates
+Purpose: return list of physicalState options
+URL: serverBaseURL/physicalStates
+Example JSON response: testData/physicalStates.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: purityMeasuredBys
+Purpose: return list of purityMeasuredBy options
+URL: serverBaseURL/purityMeasuredBys
+Example JSON response: testData/purityMeasuredBys.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: stereoCategories
+Purpose: return list of stereoCategory options
+URL: serverBaseURL/stereoCategories
+Example JSON response: testData/stereoCategories.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: scientists
+Purpose: return list of scientist options
+URL: serverBaseURL/scientists
+Example JSON response: testData/Scientists.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: NA
+PUT: NA
+
+
+--------------------------------------------------------------------------------
+Service: salts
+Purpose: save and fetch salt objects
+URL: serverBaseURL/salts
+Example JSON response: testData/Salt.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: 
+    Example JSON payload: {"name":"Na","abbrev":"Na","molStructure":"\n  Marvin  10231115522D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n"}
+    Validation: molStructure, name and abbreviation must be unique. See example file for error return format
+    Returns on success: {id:1,"name":"Cl","abbrev":"Cl","molStructure":"string containing mol"}
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: isotopes
+Purpose: save and fetch isotope objects
+URL: serverBaseURL/isotopes
+Example JSON response: testData/Isotopes.php
+GET:
+    Does not need to respond to get by id, just get the whole list
+POST: 
+    Example JSON payload: {"name":"C14","abbrev":"C14","massChange":2}
+    Validation: name and abbreviation must be unique. See example file for error return format
+    Returns on success: {id:1,"name":"C14","abbrev":"C14","massChange":2}
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: metalots
+Purpose: fetch metalot objects
+URL: serverBaseURL/metalots
+Example JSON responses: testData/Lot.php
+GET:
+    Respond to get by batch corpName (serverBaseURL/metalots/CMPD-9999-K-3).
+    Notes: Does not need to respond if no id provided (don't want to get all metalots)
+POST: 
+    Notes:
+            Notes: lot will always be new. saltForm and parent may or may not be new. If not new, do nothing to them
+            This example has smiles for parent's moeStructure, but it will be a mol
+    Validation:
+            If there are errors, like dup parent or saltForm, return error messages as in examples in Lot.php
+    Example JSON payload:
+        with numbers filled in and no as-drawn:
+{"lot":{"corpName":"","asDrawnStruct":null,"lotMolWeight":null,"synthesisDate":"10/30/2011","color":"blue","physicalState":{"code":"gel","id":3,"name":"gel","version":0},"notebookPage":"1111-111","amount":"42","amountUnits":{"code":"g","id":2,"name":"g","version":0},"retain":"4","retainUnits":{"code":"mg","id":1,"name":"mg","version":0},"supplier":"jmco","supplierID":"jmco1234","purity":"90","purityMeasuredBy":{"code":"GC","id":3,"name":"GC","version":0},"purityOperator":{"code":">","id":3,"name":">","version":0},"percentEE":"40","comments":"lot comment","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},"isVirtual":false,"registeredBy":{"id":2,"code":"cchemist","name":"Corey Chemist","isChemist":true,"isAdmin":false},"saltForm":{"corpName":"","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},"casNumber":"cas1234","molStructure":"\n  Marvin  10301112362D          \n\n  2  1  0  0  0  0            999 V2000\n   -1.1786    1.1196    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -0.4641    1.5321    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\nM  END\n","parent":{"stereoCategory":{"code":"racemic","id":2,"name":"Racemic","version":0},"stereoComment":"racy","commonName":"cname","molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC","corpName":"","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0}}}},"fileList":[],"isosalts":[{"isosalt":{"name":"C14","abbrev":"C14","massChange":2,"id":1,"ignore":null,"version":0},"equivalents":1,"type":"isotope","isotope":{"name":"C14","abbrev":"C14","massChange":2,"id":1,"ignore":null,"version":0},"salt":null},{"isosalt":{"name":"Na","abbrev":"Na","molStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","formula":"Na","id":1,"ignore":null,"molWeight":22.98976928,"originalStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","saltCdId":21,"version":0},"equivalents":2,"type":"salt","salt":{"name":"Na","abbrev":"Na","molStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","formula":"Na","id":1,"ignore":null,"molWeight":22.98976928,"originalStructure":"\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n","saltCdId":21,"version":0},"isotope":null}]}
+
+        with empty numbers and no isolsalts:
+{"lot":{"corpName":"","asDrawnStruct":"\n  Marvin  10301112372D          \n\n  5  5  0  0  0  0            999 V2000\n   -3.0643   -0.6895    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7787   -0.2770    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.7787    0.5480    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3498    0.5480    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3498   -0.2770    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  5  1  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  2  0  0  0  0\nM  END\n","lotMolWeight":null,"synthesisDate":"10/30/2011","color":"","physicalState":{"code":"solid","id":1,"name":"solid","version":0},"notebookPage":"1111-111","amount":null,"amountUnits":{"code":"mg","id":1,"name":"mg","version":0},"retain":null,"retainUnits":{"code":"mg","id":1,"name":"mg","version":0},"supplier":"","supplierID":"","purity":null,"purityMeasuredBy":{"code":"HPLC","id":1,"name":"HPLC","version":0},"purityOperator":{"code":"=","id":1,"name":"=","version":0},"percentEE":null,"comments":"","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},"isVirtual":false,"registeredBy":{"id":2,"code":"cchemist","name":"Corey Chemist","isChemist":true,"isAdmin":false},"saltForm":{"corpName":"","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},"casNumber":"","molStructure":"\n  Marvin  10301112372D          \n\n  0  0  0  0  0  0            999 V2000\nM  END\n","parent":{"stereoCategory":{"code":"scalemic","id":1,"name":"Scalemic","version":0},"stereoComment":"","commonName":"","molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC","corpName":"","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0}}}},"fileList":[],"isosalts":[]}
+
+PUT: 
+    Notes: lot, parent and saltForm will already be saved. This is just an update
+            parent can only have common name updated, saltForm can only have CAS number changed
+    Example JSON payload:
+{"lot":{"corpName":"CMPD-1234-C14Na-1","asDrawnStruct":null,"lotMolWeight":"","synthesisDate":"10/24/2011","color":"red","physicalState":{"code":"gel","id":3,"name":"gel","version":0},"notebookPage":"1111-223","amount":"42","amountUnits":{"code":"mg","id":1,"name":"mg","version":0},"retain":"2","retainUnits":{"code":"g","id":2,"name":"g","version":0},"supplier":"jmco","supplierID":"jmco1111","purity":"92","purityMeasuredBy":{"code":"NMR","id":2,"name":"NMR","version":0},"purityOperator":{"code":">","id":3,"name":">","version":0},"percentEE":"42","comments":"i like it","chemist":{"code":"cchemist","id":2,"ignore":null,"isAdmin":false,"isChemist":true,"name":"Corey Chemist","version":0},"isVirtual":false,"id":"1","saltForm":{"corpName":"CMPD-0001-C14Na","chemist":null,"casNumber":"00010000","id":1,"molStructure":"\n  Marvin  09141115532D          \n\n  2  1  0  0  0  0            999 V2000\n    0.8250    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n    0.0000    0.0000    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  4  0  0  0  0\nM  END\n$$$$\n","parent":{"stereoCategory":{"code":"scalemic","id":1,"name":"Scalemic","version":0},"stereoComment":"comment","commonName":"comname","molStructure":"CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC","corpName":"CMPD-0001","chemist":{"id":2,"code":"cchemist","name":"Corey Chemist","isChemist":true,"isAdmin":false},"id":1}}},"fileList":[{"description":"smiles","uploaded":true,"name":"sample2.smiles","size":115,"type":"application/octet-stream","url":"uploads/"},{"description":"picture","uploaded":true,"name":"Family.jpg","size":4047,"type":"image/jpeg","url":"uploads/"}],"isosalts":[{"isosalt":{"name":"C14","abbrev":"C14","massChange":2,"id":1},"equivalents":1,"type":"isotope","id":1},{"isosalt":{"name":"Na","abbrev":"Na","molStructure":"mol string 1","id":2},"equivalents":2,"type":"salt","id":2}]}
+
+--------------------------------------------------------------------------------
+Service: search
+Purpose: search for salt forms
+URL: serverBaseURL/search
+Example JSON response: testData/Search.php  NB: this example has smiles for molStructures, but service should return mols
+GET:
+    Notes: Search based on and-ing fields filled in.
+            Returns salt forms of all matching lots, with array of lot nums and ids.
+            If molStructure provided, molStructure search on both saltForm and Parent, then union results
+            If saltForm has molStructure, return that, otherwise return parent's molStructure
+    Validation: Can return error if too many results returned (see example in Search.php). If no results found, just return empty [] as in example
+    Example query parameters:
+        Just alias set. Anybody chemist has id=0:
+searchParams:{"corpNameFrom":"","corpNameTo":"","aliasContSelect":"contains","alias":"alien","dateFrom":"","dateTo":"","searchType":"exact","percentSimilarity":null,"chemist":{"id":0,"code":"anyone","name":"anyone","isChemist":false,"isAdmin":false},"molStructure":""}
+        All filled in, with a chemist selected:
+searchParams:{"corpNameFrom":"CMPD-1111","corpNameTo":"1234","aliasContSelect":"exact","alias":"fred","dateFrom":"10/02/2011","dateTo":"10/29/2011","searchType":"similarity","percentSimilarity":"90","chemist":{"id":3,"code":"bbiologist","name":"Ben Biologist","isChemist":false,"isAdmin":false},"molStructure":"\n  Marvin  10271121062D          \n\n  5  5  0  0  0  0            999 V2000\n   -4.9500   -2.6341    0.0000 N   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6644   -2.2216    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -5.6644   -1.3966    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2355   -1.3966    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -4.2355   -2.2216    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  5  1  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  2  0  0  0  0\nM  END\n"}POST: NA
+PUT: NA
+
+--------------------------------------------------------------------------------
+Service: regSearch
+Purpose: search in preparation for registration
+URL: serverBaseURL/regSearch
+Example JSON response: testData/RegSearch.php NB: this example has smiles for molStructures, but service should return mols
+GET:
+    Notes: Search on either corpName or Structure.
+            Structure search is exact match but allow stereo variants (ignore wedge and wiggles)
+            CorpName search should add CMPD- prefix if not provided. Search parent, saltForm or lot based on format of string
+            If molStructure or parent corpName supplied returns all matching parents, and all salt forms of those parents
+            If a saltForm or lot corpName is supplied, return the single parent and saltForm that matches
+    Validation: Can return emtpy []
+    Example query parameters:
+        Structure provided: searchParams:{"molStructure":"\n  Marvin  10241118492D          \n\n  6  6  0  0  0  0            999 V2000\n   -2.3277   -1.7973    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0421   -2.2098    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -3.0421   -3.0348    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -2.3277   -3.4473    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6132   -3.0348    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n   -1.6132   -2.2098    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0\n  1  2  1  0  0  0  0\n  1  6  2  0  0  0  0\n  2  3  2  0  0  0  0\n  3  4  1  0  0  0  0\n  4  5  2  0  0  0  0\n  5  6  1  0  0  0  0\nM  END\n","corpName":""}
+        corpName provided: searchParams:{"molStructure":null,"corpName":"CMPD-1234"}
+POST: NA
+PUT: NA
+
+
+--------------------------------------------------------------------------------
+Service: sdf
+Purpose: Return SDF given json array that includes a molStructure property with each member
+URL: /exportSDF?mols=
+Example 
+GET:
+    Notes: returns an SDF created from the mols in the query string JSON
+    Validation: each element of the JSON array will have a molStructure property. If it does not, show an error
+    Example query parameters: this example has smiles where it should have mols
+exportSDF?mols=[{%22corpName%22:%22CMPD-1234-Na%22,%22stereoCategoryName%22:%22Racemic%22,%22stereoComment%22:%22%22,%22lotIDs%22:{%22CMPD-1234-Na-1%22:1,%22CMPD-1234-Na-2%22:2,%22CMPD-1234-Na-3%22:3,%22CMPD-1234-Na-5%22:5},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22CMPD-1234-Cl%22,%22stereoCategoryName%22:%22Racemic%22,%22stereoComment%22:%22st%20comm%22,%22lotIDs%22:{%22CMPD-1234-Cl-1%22:1,%22CMPD-1234-Cl-2%22:2,%22CMPD-1234-Cl-3%22:3},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22CMPD-1234-C14%22,%22stereoCategoryName%22:%22Scalemic%22,%22stereoComment%22:%22%22,%22lotIDs%22:{%22CMPD-1234-C14-1%22:1,%22CMPD-1234-C14-2%22:2},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22},{%22corpName%22:%22CMPD-2222-K%22,%22stereoCategoryName%22:%22See%20Comment%22,%22stereoComment%22:%22lots%20of%20centers%22,%22lotIDs%22:{%22CMPD-2222-K-1%22:1},%22mol%22:%22CC[C@H](C)C(CCCCCCNC(C)(C)OC(=O)OC(=O)OC(C)(C)C)[C@@H](CC(=O)C1=C(C(C)C)C(CCC[C@@H](CC2=CC=CC=C2)C(=O)OC)=CC=C1)OC%22}]
+        
+POST: NA
+PUT: NA
+
+
+
+--------------------------------------------------------------------------------
+Service: file_upload.php
+Purpose: accepts and saves files
+URL: 
+Example 
+POST:
+    Post params:
+'file' the file itself
+'description' a description of the file from the user. This can be ignored
+'ie' true For this deployment, always true because multifilepicker is fixed in compatability mode 
+'subdir' the name of the directory under the default directory to put the file in. Create this directory if it does not exist
+
+    Response: [{"name":"Family.jpg","size":4047,"type":"image\/jpeg","url":"uploads\/1111-223\/Family.jpg","description":"family pics","uploaded":true}]
+
+    Notes: 
+    Validation: 
+GET: NA
+PUT: NA
+

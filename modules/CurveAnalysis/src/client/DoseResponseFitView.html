@@ -1,0 +1,63 @@
+<script type="text/template" id="DoseResponseFitView" xmlns="http://www.w3.org/1999/html">
+    <div class="bv_fitOptionWrapper">
+        <div class="form-horizontal" style="margin-bottom:20px;">
+            <span class="control-group bv_group_modelFitType">
+                <!--<span>Model Fit Type</span>-->
+                <label class="control-label">Model Fit Type</label>
+                <div class="controls">
+                    <select class="span6 bv_modelFitType" style="margin-right:10px;width:170px;"></select>
+                </div>
+            </span>
+        </div>
+        <div class=" bv_analysisParameterForm"></div>
+    </div>
+
+    <div class="bv_group_modelFitStatus span8" style="margin-left:301px;">
+        <button class="btn btn-default bv_fitModelButton hide" type="button">Fit Data</button>
+    </div>
+
+    <div class="span11 bv_group_resultsContainer" style="margin-left:10px;margin-top:5px">
+        <div class="well well-small bv_resultsContainer span9 hide" style="margin-bottom:10px;">
+            <div class="bv_modelFitResultsHTML"></div>
+        </div>
+    </div>
+    <!--<div class="bv_uploadDataToFit span10">Upload data first before fitting</div>-->
+
+    <div class='modal bv_fitStatusDropDown hide'>
+        <div class="modal-header">
+            <h3>Fitting Curves</h3>
+        </div>
+        <div class="modal-body">
+            <div>
+                <br />
+                <div class="progress progress-striped active">
+                    <div class="bar" style="width: 100%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</script>
+
+
+<script type="text/template" id="DoseResponseFitWorkflowView" xmlns="http://www.w3.org/1999/html">
+    <h2>Dose Response Fit Module</h2>
+    <div class="tabbable span11">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#DoseResponseFitTab1" class="bv_uploadDataTabLink" data-toggle="tab">Upload Data</a></li>
+            <li><a href="#DoseResponseFitTab2" class="bv_modelFitTabLink" data-toggle="tab">Model Fit</a></li>
+        </ul>
+
+        <div class="tab-content span12" style="overflow:hidden!important;">
+            <div class="tab-pane active bv_dataParser" id="DoseResponseFitTab1"></div>
+            <div class="tab-pane bv_doseResponseAnalysis" id="DoseResponseFitTab2">
+                <div class="bv_uploadDataToFit span10">Data must be uploaded first before fitting.</div>
+            </div>
+        </div>
+        <div class="bv_completeControlContainer hide span9" style="margin-left:17px;">
+            <div class="btn bv_loadAnother pull-right">Load and Fit Another</div>
+        </div>
+    </div>
+</script>
+

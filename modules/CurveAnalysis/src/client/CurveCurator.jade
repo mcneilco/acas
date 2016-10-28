@@ -1,0 +1,21 @@
+extends layout
+block content
+    div(style="width:0;")
+        div#appContainer.container
+
+    script
+        window.AppLaunchParams = !{JSON.stringify(AppLaunchParams)};
+        $(function() {
+            var currentWindowOnload = window.onload;
+
+            window.onload = function() {
+                if (currentWindowOnload) {
+                    currentWindowOnload();
+                }
+                window.servicesHostPrefix = "";
+                window.appController = new CurveCuratorAppController({
+                                el: $('#appContainer')
+                            });
+                window.appController.render();
+            };
+        });
