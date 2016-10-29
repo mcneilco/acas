@@ -1,6 +1,8 @@
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.get '/api/syncLiveDesignProjectsUsers', exports.syncLiveDesignProjectsUsers
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/syncLiveDesignProjectsUsers', loginRoutes.ensureAuthenticated, exports.syncLiveDesignProjectsUsers
-
 
 exports.syncLiveDesignProjectsUsers = (req, resp) ->
 	exports.getGroupsJSON (groupsJSON, acasGroupsAndProjects) ->
@@ -87,23 +89,27 @@ exports.getConfigJSON = (callback) ->
 	callback configJSON
 
 exports.syncLiveDesignProjects = (caughtPythonErrors, pythonErrors, configJSON, projectsJSON, callback) ->
-	exec = require('child_process').exec
-	config = require '../conf/compiled/conf.js'
-	#Call sync_projects.py to update list of projects in LiveDesign
-	command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
-	command += "\'"+(JSON.stringify configJSON)+"\' "+"\'"+(JSON.stringify projectsJSON)+"\'"
-	#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-	#		command += (JSON.stringify data)+"'"
-	console.log "About to call python using command: "+command
-	child = exec command,  (error, stdout, stderr) ->
-		reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-		reportURL = stdout.substr reportURLPos
-		#console.warn "stderr: " + stderr
-		console.log "stdout: " + stdout
-		if error?
-			caughtPythonErrors = true
-			console.error error
-			pythonErrors.push error
+	if exports.validateLiveDesignConfigs(configJSON)
+		exec = require('child_process').exec
+		config = require '../conf/compiled/conf.js'
+		#Call sync_projects.py to update list of projects in LiveDesign
+		command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
+		command += "\'"+(JSON.stringify configJSON)+"\' "+"\'"+(JSON.stringify projectsJSON)+"\'"
+		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+		#		command += (JSON.stringify data)+"'"
+		console.log "About to call python using command: "+command
+		child = exec command,  (error, stdout, stderr) ->
+			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
+			reportURL = stdout.substr reportURLPos
+			#console.warn "stderr: " + stderr
+			console.log "stdout: " + stdout
+			if error?
+				caughtPythonErrors = true
+				console.error error
+				pythonErrors.push error
+			callback caughtPythonErrors, pythonErrors
+	else
+		console.warn "some live design configs are null, skipping sync of live design projects"
 		callback caughtPythonErrors, pythonErrors
 
 exports.syncCmpdRegProjects = (req, acasGroupsAndProjects, callback) ->
@@ -138,22 +144,37 @@ exports.syncCmpdRegProjects = (req, acasGroupsAndProjects, callback) ->
 			console.debug 'CmpdReg projects are up-to-date'
 		callback 'CmpdReg projects are up-to-date'
 
+exports.validateLiveDesignConfigs = (configJSON) ->
+	_ = require "underscore"
+	countNull = _.map configJSON, (configs) ->
+		nulls = _.pick configs, (config) ->
+			_.isNull config
+		return Object.keys(nulls).length
+	countNull = _.reduce countNull, (sum, num) ->
+		sum+num
+	, 0
+	return countNull == 0
+
 exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, groupsJSON, callback) ->
-	exec = require('child_process').exec
-	config = require '../conf/compiled/conf.js'
-	#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
-	command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
-	command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
-	#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-	#		command += (JSON.stringify data)+"'"
-	console.log "About to call python using command: "+command
-	child = exec command,  (error, stdout, stderr) ->
-		reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-		reportURL = stdout.substr reportURLPos
-		#console.warn "stderr: " + stderr
-		console.log "stdout: " + stdout
-		if error?
-			caughtPythonErrors = true
-			console.error error
-			pythonErrors.push error
+	if exports.validateLiveDesignConfigs(configJSON)
+		exec = require('child_process').exec
+		config = require '../conf/compiled/conf.js'
+		#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
+		command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
+		command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
+		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+		#		command += (JSON.stringify data)+"'"
+		console.log "About to call python using command: "+command
+		child = exec command,  (error, stdout, stderr) ->
+			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
+			reportURL = stdout.substr reportURLPos
+			#console.warn "stderr: " + stderr
+			console.log "stdout: " + stdout
+			if error?
+				caughtPythonErrors = true
+				console.error error
+				pythonErrors.push error
+			callback caughtPythonErrors, pythonErrors
+	else
+		console.warn "some live design configs are null, skipping sync of live design roles"
 		callback caughtPythonErrors, pythonErrors

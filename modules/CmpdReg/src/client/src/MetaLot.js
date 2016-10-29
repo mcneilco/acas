@@ -293,6 +293,7 @@ $(function() {
 							    message: err.message
 						    });
 					    });
+					    mlself.saveInProgress = false;
 					    mlself.delegateEvents(); // start listening to events
 				    }
 			    });

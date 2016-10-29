@@ -1,13 +1,18 @@
 scriptPaths = require './RequiredClientScripts.js'
 
+exports.setupAPIRoutes = (app) ->
+	app.get '/toPrint', exports.toPrint
+
 exports.setupRoutes = (app, loginRoutes) ->
 	config = require '../conf/compiled/conf.js'
 	if config.all.client.require.login
+		app.get '/toPrint', loginRoutes.ensureAuthenticated, exports.toPrint
 		app.get '/', loginRoutes.ensureAuthenticated, exports.index
 		app.get '/:moduleName/codeName/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchWithCode
 		app.get '/entity/copy/:moduleName/:code', loginRoutes.ensureAuthenticated, exports.copyAndLaunchWithCode
 		app.get '/:moduleName/createFrom/:code', loginRoutes.ensureAuthenticated, exports.autoLaunchCreateFromOtherEntity
 	else
+	app.get '/toPrint', loginRoutes.ensureAuthenticated, exports.toPrint
 	app.get '/:moduleName/codeName/:code', exports.autoLaunchWithCode
 	app.get '/', exports.index
 
@@ -41,6 +46,45 @@ exports.autoLaunchCreateFromOtherEntity = (req, res) ->
 		copy: false
 		createFromOtherEntity: true
 	exports.index req, res, moduleLaunchParams
+
+exports.toPrint = (req, res, moduleLaunchParams) ->
+#"use strict"
+
+	#TODO: on redirect, pass in moduleName and code. Hardcoded right now.
+	moduleLaunchParams =
+		moduleName: "primary_screen_protocol"
+		code: "PROT-00000001"
+		copy: false
+		createFromOtherEntity: false
+		print: true
+
+	config = require '../conf/compiled/conf.js'
+	global.specRunnerTestmode = if global.stubsMode then true else false
+
+	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
+	if config.all.client.require.login and req.app.settings.port is config.all.client.port
+		loginUserName = req.user.username
+		loginUser = req.user
+	else
+		loginUserName = "nouser"
+		loginUser =
+			id: 0,
+			username: "nouser",
+			email: "nouser@nowhere.com",
+			firstName: "no",
+			lastName: "user"
+
+	return res.render 'toPrint',
+		title: config.all.client.moduleMenus.logoText+" Home"
+		scripts: scriptsToLoad
+		AppLaunchParams:
+			loginUserName: loginUserName
+			loginUser: loginUser
+			testMode: false
+			moduleLaunchParams: if moduleLaunchParams? then moduleLaunchParams else null
+			deployMode: global.deployMode
+			loggingToMongo: config.all.logging.usemongo
+		controller: "PrimaryScreenProtocolModuleController"
 
 exports.index = (req, res, moduleLaunchParams) ->
 	#"use strict"

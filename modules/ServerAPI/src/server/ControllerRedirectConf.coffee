@@ -8,15 +8,21 @@
 				entityName: "protocols"
 				default:
 					deepLink: "protocol_base"
+				study:
+					deepLink: "study_tracker_protocol"
 				"Bio Activity":
 					deepLink: "primary_screen_protocol"
 				"Parent Bio Activity":
 					deepLink: "parent_protocol"
+				study:
+					deepLink: "study_tracker_protocol"
 				relatedFilesRelativePath: "protocols"
 			EXPT:
 				entityName: "experiments"
 				default:
 					deepLink: "experiment_base"
+				study:
+					deepLink: "study_tracker_experiment"
 				"Bio Activity":
 					deepLink: "primary_screen_experiment"
 				"Bio Activity Screen":

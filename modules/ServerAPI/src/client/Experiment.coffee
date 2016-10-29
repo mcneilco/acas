@@ -45,7 +45,7 @@ class window.Experiment extends BaseEntity
 			resp
 
 	copyProtocolAttributes: (protocol) =>
-		#only need to copy protocol's experiment metadata attributes
+#only need to copy protocol's experiment metadata attributes
 		pstates = protocol.get('lsStates')
 		pExptMeta = pstates.getStatesByTypeAndKind "metadata", "experiment metadata"
 		if pExptMeta.length > 0
@@ -53,7 +53,7 @@ class window.Experiment extends BaseEntity
 			if eExptMeta.length > 0
 				dapVal = eExptMeta[0].getValuesByTypeAndKind "clobValue", "data analysis parameters"
 				if dapVal.length > 0
-					#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
+#mark existing data analysis parameters, model fit parameters, and model fit type as ignored
 					if dapVal[0].isNew()
 						eExptMeta[0].get('lsValues').remove dapVal[0]
 					else
@@ -109,11 +109,11 @@ class window.Experiment extends BaseEntity
 			mftu.unset 'lsTransaction'
 			eExptMeta[0].get('lsValues').add mftu
 
-# 		commented because experiment base does not have these values
-#			@getDryRunStatus().set ignored: true
-#			@getDryRunStatus().set codeValue: 'not started'
-#			@getDryRunResultHTML().set ignored: true
-#			@getDryRunResultHTML().set clobValue: ""
+		# 		commented because experiment base does not have these values
+		#			@getDryRunStatus().set ignored: true
+		#			@getDryRunStatus().set codeValue: 'not started'
+		#			@getDryRunResultHTML().set ignored: true
+		#			@getDryRunResultHTML().set clobValue: ""
 
 		@set
 			lsKind: protocol.get('lsKind')
@@ -207,14 +207,14 @@ class window.Experiment extends BaseEntity
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "experiment metadata", "dateValue", "completion date"
 
 	getAttachedFiles: (fileTypes) =>
-		#get list of possible kinds of analytical files
+#get list of possible kinds of analytical files
 		attachFileList = new ExperimentAttachFileList()
 		for type in fileTypes
 			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
 			if analyticalFileValues.length > 0 and type.code != "unassigned"
-				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
-				#add new afm to attach file list
+#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+#add new afm to attach file list
 				for file in analyticalFileValues
 					if file.get('ignored') is false
 						afm = new AttachFile
@@ -342,7 +342,7 @@ class window.ExperimentBaseController extends BaseEntityController
 							type: 'GET'
 							url: "/api/experiments/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 							dataType: 'json'
-							error: (err) ->
+							error: (err) =>
 								alert 'Could not get experiment for code in this URL, creating new one'
 								@completeInitialization()
 							success: (json) =>
@@ -384,7 +384,7 @@ class window.ExperimentBaseController extends BaseEntityController
 		$(@el).html @template(@model.attributes)
 		@model.on 'notUniqueName', =>
 #			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
-			#TODO: redirect user to experiment browser with a list of experiments with same name
+#TODO: redirect user to experiment browser with a list of experiments with same name
 			@$('.bv_experimentSaveFailed').modal('show')
 			@$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
@@ -435,7 +435,7 @@ class window.ExperimentBaseController extends BaseEntityController
 			@model.set subclass: 'experiment'
 		@$('.bv_saving').hide()
 		@render()
-		if @$('.bv_saveFailed').is(":visible")
+		if @$('.bv_saveFailed').is(":visible") or @$('.bv_cancelComplete').is(":visible")
 			@$('.bv_updateComplete').hide()
 			@trigger 'amDirty'
 		else if @$('.bv_cancelComplete').is(":visible")

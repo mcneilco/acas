@@ -174,6 +174,12 @@ $(function () {
         },
 
         setupMetaLotController: function() {
+            if (this.metaLotController != null) {
+                this.metaLotController.remove();
+                this.metaLotController.unbind();
+                this.metaLotController.delegateEvents();
+                this.$('.SearchView').after('<div class="MetaLotView"></div>');
+            }
             this.metaLotController = new MetaLotController({
                 el: this.$('.MetaLotView'),
                 model: this.metaLot,

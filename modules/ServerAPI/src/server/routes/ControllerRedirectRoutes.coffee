@@ -23,7 +23,9 @@ exports.redirectToEditor = (req, resp) ->
 		else
 			prefixKeyIndex +=1
 
-	if queryPrefix != null
+	if req.params.code.substring(0,5) is "STUDY"
+		resp.redirect "/study_tracker_experiment/codeName/#{req.params.code}"
+	else if queryPrefix != null
 		request
 			json: true
 			url: config.all.server.nodeapi.path+"/api/"+controllerRedirectConf[queryPrefix]["entityName"]+"/codename/"+req.params.code #get protocol
@@ -34,7 +36,6 @@ exports.redirectToEditor = (req, resp) ->
 			kind = response.body.lsKind
 			deepLink = controllerRedirectConf[queryPrefix][kind]["deepLink"]
 			resp.redirect "/"+deepLink+"/codeName/"+req.params.code
-
 	else
 		resp.redirect "/#"
 

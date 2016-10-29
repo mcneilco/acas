@@ -2,6 +2,10 @@ path = require 'path'
 
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
+	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
+	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
+	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
+
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderIndex
@@ -169,6 +173,7 @@ exports.registerCmpds = (req, resp) ->
 					body: req.body
 					json: true
 				, (error, response, json) =>
+					console.log json
 					if !error && response.statusCode == 200
 						createSummaryZip fileName, json
 					else

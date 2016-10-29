@@ -1,12 +1,14 @@
+# The next line is used by PrepareConfigFiles to include this file as a route in rapache, do not modify unless you intend to modify rapache routes (it can be anywhere in the files though)
+# ROUTE: /cleanExperimentDelete
+
 require(racas)
-source("public/src/modules/GenericDataParser/src/server/generic_data_parser.R")
+source(file.path(applicationSettings$appHome,"/src/r/GenericDataParser/generic_data_parser.R"))
 require(RCurl)
-experimentName <- "testExperiment"
+experimentName <- GET$experimentName
 
 configList <- racas::applicationSettings
 
-experimentList <- fromJSON(getURL(URLencode(paste0(configList$serverPath, "experiments/experimentname/", experimentName, "/"))))
+experimentList <- fromJSON(getURL(URLencode(paste0(racas::applicationSettings$client.service.persistence.fullpath, "experiments/experimentname/", experimentName, "/"))))
 experiment <- experimentList[[1]]
-deleteSourceFile(experiment, configList)
-deleteAnnotation(experiment, configList)
-deleteExperiment(experiment)
+deleteOldData(experiment, FALSE)
+cat(toJSON(experiment))

@@ -56,7 +56,10 @@ exports.protocolByCodename = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"protocols/codename/"+req.params.code
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		if req.user?
+			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "protocol metadata", resp
+		else
+			serverUtilityFunctions.getFromACASServer baseurl, resp
 
 exports.protocolById = (req, resp) ->
 
@@ -431,7 +434,7 @@ exports.genericProtocolSearch = (req, res) ->
 			res.end JSON.stringify [protocolServiceTestJSON.fullSavedProtocol, protocolServiceTestJSON.fullDeletedProtocol]
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm
+		baseurl = config.all.client.service.persistence.fullpath+"protocols/search?q="+req.params.searchTerm+"&userName="+req.user.username
 		console.log "baseurl"
 		console.log baseurl
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'

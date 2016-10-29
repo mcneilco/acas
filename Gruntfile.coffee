@@ -320,6 +320,32 @@ module.exports = (grunt) ->
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/client",module)}"
 					dest: "#{grunt.config.get('build')}/public/html"
 				]
+			module_client_assets:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/client/assets/**"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						module = replaced.split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/client/assets",module)}"
+					dest: "#{grunt.config.get('build')}/public/assets"
+				]
+			module_server_assets:
+				files: [
+					expand: true
+					flatten: false
+					cwd: "."
+					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/server/assets/**"]
+					rename: (dest, matchedSrcPath, options) ->
+						replaced = matchedSrcPath
+						replaced = replaced.replace(sourcePath+"/modules/", "") for sourcePath in grunt.config.get('sourceDirectories')
+						module = replaced.split("/")[0]
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(module+"/src/server/assets",module)}"
+					dest: "#{grunt.config.get('build')}/src/assets"
+				]
 			module_spec_miscellaneous:
 				files: [
 					expand: true
@@ -633,6 +659,12 @@ module.exports = (grunt) ->
 			copy_cmpdreg_module:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/CmpdReg/src/client/**","#{i}/modules/CmpdReg/src/marvinjs/**", "!#{i}/modules/CmpdReg/src/server"]
 				tasks: "newer:copy:cmpdreg_module"
+			copy_module_client_assets:
+				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/client/assets/**"]
+				tasks: "newer:copy:module_client_assets"
+			copy_module_server_assets:
+				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/server/assets/**"]
+				tasks: "newer:copy:module_server_assets"
 			prepare_module_includes:
 				files:[
 					"#{grunt.config.get("build")}/src/javascripts/BuildUtilities/PrepareModuleIncludes.js"

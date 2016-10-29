@@ -60,7 +60,7 @@ class window.ModuleLauncherMenuController extends Backbone.View
 					_.each roles, (r) =>
 						userRoles.push $.trim(r)
 				else
-					userRoles.push r
+					userRoles.push r			
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
 				$(@el).attr 'title', "User is not authorized to use this feature"
 				@$('.bv_menuName').hide()

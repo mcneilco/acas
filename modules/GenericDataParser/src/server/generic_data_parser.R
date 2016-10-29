@@ -199,7 +199,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   } else {
     duplicateExperimentNamesAllowed <- FALSE
   }
-  
+
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
 validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList) {
@@ -1730,13 +1730,6 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
   
-  protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
-                                                                    recordedBy=recordedBy, 
-                                                                    lsType="name", 
-                                                                    lsKind="protocol name",
-                                                                    labelText=metaData$'Protocol Name'[1],
-                                                                    preferred=TRUE)
-  
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
                              shortDescription="protocol created by generic data parser",  
@@ -1937,7 +1930,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
       metadataState <- metadataState[[1]]
       #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
       protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
-      if(!is.null(protocolProject)) {
+      if(!is.null(protocolProject) && length(protocolProject) != 0) {
         protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
         if(protocolProject != "unassigned") {
           systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
