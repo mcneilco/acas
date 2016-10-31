@@ -46,8 +46,8 @@ exports.cmpdRegIndex = (req, res) ->
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
 	console.log grantedRoles
-	isChemist = (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
-	isAdmin = (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
+	isChemist = !config.all.client.roles.cmpdreg?.chemistRole? || (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
+	isAdmin = !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login

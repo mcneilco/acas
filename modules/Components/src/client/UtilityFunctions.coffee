@@ -5,7 +5,8 @@ class window.UtilityFunctions
 
 	testUserHasRole: (user, roleNames) ->
 		if not user.roles? then return true
-
+		if !roleNames? || roleNames.length == 0
+			return true
 		match = false
 		for roleName in roleNames
 			for role in user.roles
