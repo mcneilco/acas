@@ -332,19 +332,18 @@ client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "h
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
-client.roles.htsAdmin=admin
-client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
-client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
-client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
-client.roles.acas.userRole=ROLE_ACAS-USERS
-client.roles.acas.adminRole=ROLE_ACAS-ADMINS
-#client.roles.loginRole=
-#client.roles.cmpdreg.chemistRole=
-#client.roles.cmpdreg.adminRole=
-#client.roles.acas.userRole=
-#client.roles.acas.adminRole=
+
+#client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
+#client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
+#client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
+#client.roles.acas.userRole=ROLE_ACAS-USERS
+#client.roles.acas.adminRole=ROLE_ACAS-ADMINS
+client.roles.loginRole=
+client.roles.cmpdreg.chemistRole=
+client.roles.cmpdreg.adminRole=
+client.roles.acas.userRole=
+client.roles.acas.adminRole=
 client.browser.enableSearchAll=true
-client.containerInventory.search.maxResult=1000
 
 ## Cmpd Reg Bulk Loader Options
 client.service.cmpdReg.persistence.host=tomcat
@@ -470,10 +469,6 @@ server.support.smtp.auth=false
 server.support.smtp.tls=false
 server.support.smtp.ssl=false
 
-client.roles.containerInventory.admin=${server.support.smtp.username}
-client.compoundInventory.enforceUppercaseBarcodes=true
-client.containerIventory.maxBarcodeLength=40
-
 client.basePath=/
 
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
@@ -490,3 +485,11 @@ flyway.database.password=${server.database.password}
 server.acas.license=/home/runner/build/conf/acas.lic
 
 server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+
+
+# Required configs for which base entity to use
+client.protocol.mainControllerClassName=ProtocolBaseController
+client.experiment.mainControllerClassName=ExperimentBaseController
+
+# Behavior without this config set to true is to give all users access to all projects
+server.project.roles.enable=false

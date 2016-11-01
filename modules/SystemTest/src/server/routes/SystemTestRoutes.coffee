@@ -439,8 +439,8 @@ exports.getOrCreateCmpdRegBobInternal = (callback)->
 						id: bob.id
 						code: bob.username
 						name: bob.firstName + " " + bob.lastName
-						isChemist: (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
-						isAdmin: (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
+						isChemist: !config.all.client.roles.cmpdreg?.chemistRole? || (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
+						isAdmin = !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
 						]
 					json: true
 				request options, (error, response, body) ->
