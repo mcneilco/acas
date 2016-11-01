@@ -490,3 +490,6 @@ server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
 # Required configs for which base entity to use
 client.protocol.mainControllerClassName=ProtocolBaseController
 client.experiment.mainControllerClassName=ExperimentBaseController
+
+# Behavior without this config set to true is to give all users access to all projects
+server.project.roles.enable=false
