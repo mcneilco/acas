@@ -65,3 +65,9 @@ class window.UtilityFunctions
 						controller.$('.tab-pane.active').append '<div class="span12" style="margin-left:0px;"><h3>'+$(tabHeader).html()+'</h3></div>'
 						controller.$('.tab-pane.active').append $(tab).html()
 		controller.$('.nav.nav-tabs').hide()
+
+	roundTwoDecimalPlaces: (num) ->
+		if isNaN(num)
+			return 0
+		else
+			return Math.round((num+0.00001)*100)/100

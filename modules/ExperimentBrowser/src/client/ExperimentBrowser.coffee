@@ -409,6 +409,9 @@ class window.ExperimentBrowserController extends Backbone.View
 				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
+		#hide the Open in Data Viewer button
+		console.log "hiding bv_openInQueryToolWrapper"
+		@experimentController.$('.bv_openInQueryToolWrapper').hide()
 		if experiment.get('lsKind') is "Bio Activity Screen"
 			@experimentController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
 			@experimentController.$('.bv_group_protocolCode').hide()
@@ -551,7 +554,15 @@ class window.ExperimentBrowserController extends Backbone.View
 
 	handleOpenInQueryToolClicked: =>
 		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
-			window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+			experimentKind = @experimentController.model.get('lsKind')
+			if experimentKind is "study"
+				if @experimentController.model.get('lsLabels') not instanceof LabelList
+					@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
+				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+				else
+					code = @experimentController.model.get("codeName")
+			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
 
 	formatOpenInQueryToolButton: =>
 		@$('.bv_viewerOptions').empty()
