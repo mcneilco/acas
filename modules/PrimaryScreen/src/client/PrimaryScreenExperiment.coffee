@@ -9,8 +9,8 @@ class window.PrimaryAnalysisRead extends Backbone.Model
 	validate: (attrs) =>
 		errors = []
 		# Possible issue: this lets letters following the numbers pass, like "12341a"
-		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
-		if (not readPositionIsNumeric or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
+		#		readPositionIsNumeric = not _.isNaN(parseInt(attrs.readPosition)) or not _.isNaN(parseInt(attrs.readPosition.slice(1)))
+		if (_.isNaN(attrs.readPosition) or attrs.readPosition is "" or attrs.readPosition is null or attrs.readPosition is undefined) and attrs.readName.slice(0,5) != "Calc:"
 			errors.push
 				attribute: 'readPosition'
 				message: "Read position must be a number"
@@ -903,7 +903,7 @@ class window.PrimaryAnalysisReadController extends AbstractFormController
 
 	updateModel: =>
 		@model.set
-			readPosition: UtilityFunctions::getTrimmedInput @$('.bv_readPosition')
+			readPosition: parseFloat(UtilityFunctions::getTrimmedInput(@$('.bv_readPosition')))
 		@trigger 'updateState'
 
 	handleReadNameChanged: =>
