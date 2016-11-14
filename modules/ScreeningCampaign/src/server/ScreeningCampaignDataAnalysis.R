@@ -94,7 +94,13 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
     maxPrimaryThreshDT <- primaryThreshDT[, list(SD=max(SD), efficacy=max(efficacy)), by = batchName]
     
     combinedDT <- merge(maxPrimaryThreshDT, maxConfThreshDT, by="batchName")
+    if (nrow(combinedDT)==0) {
+      stopUser("User file error. Please include confirmation data files that overlap batches tested in the primary screen")
+    }
     if (!inputParameters$autoHitSelection || is.null(inputParameters$thresholdType)) {
+	   if (is.null(combinedDT$efficacy.x) || is.null(combinedDT$efficacy.y)) {
+      	stopUser("User file error. Please include confirmation data files that overlap batches tested in the primary screen")
+      }
       maxConfThreshDT[, hit := FALSE]
       xLabel <- "Max Efficacy (Primary Screen)"
       yLabel <- "Max Averaged Efficacy (Confirmation Screen)"
@@ -102,6 +108,9 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
       yValues <- combinedDT$efficacy.y
       threshold <- NA
     } else if (inputParameters$thresholdType == "sd") {
+	   if (is.null(combinedDT$SD.x) || is.null(combinedDT$SD.y)) {
+      	stopUser("User file error. Please include confirmation data files that overlap batches tested in the primary screen")
+      }
       maxConfThreshDT[, hit := SD > inputParameters$hitSDThreshold]
       xLabel <- "Max SD (Primary Screen)"
       yLabel <- "Max Averaged SD (Confirmation Screen)"
@@ -109,6 +118,9 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
       yValues <- combinedDT$SD.y
       threshold <- inputParameters$hitSDThreshold
     } else if (inputParameters$thresholdType == "efficacy") {
+		if (is.null(combinedDT$efficacy.x) || is.null(combinedDT$efficacy.y)) {
+      	stopUser("User file error. Please include confirmation data files that overlap batches tested in the primary screen")
+      }
       maxConfThreshDT[, hit := efficacy > inputParameters$hitEfficacyThreshold]
       xLabel <- "Max Efficacy (Primary Screen)"
       yLabel <- "Max Averaged Efficacy (Confirmation Screen)"
@@ -117,7 +129,7 @@ runAnalyzeScreeningCampaign <- function(experimentCode, user, dryRun, testMode, 
       threshold <- inputParameters$hitEfficacyThreshold
     }
     if (all(is.na(yValues))) {
-      stopUser("Missing data for selected threshold type.")
+      stopUser("Missing data for selected threshold type. Please reload the correct set of files. Please include confirmation data files that overlap batches tested in the primary screen")
     }
     
     # ACASDEV-766: calculate confirmation rate out of set tested
