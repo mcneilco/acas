@@ -10,14 +10,16 @@ runFunction <- function() {
     out <- capture.output(
       {
         setwd(racas::applicationSettings$appHome)
-        myMessenger$logger$debug(getwd())
+        myMessenger$logger$debug(paste0("working directory: ", getwd()))
         postData <- rawToChar(receiveBin())
         postedRequest <- fromJSON(postData)
         rScript <- postedRequest$rScript
         rFunction <- postedRequest$rFunction
         request <- fromJSON(postedRequest$request)
-        source(rScript, local = TRUE)
-        returnValues <- eval(parse(text = paste0(rFunction,"(request)")))
+        myMessenger$logger$debug(paste0("running: source(\"",rScript,"\", local = TRUE)"))
+        myMessenger$capture_output(source(rScript, local = TRUE), continueOnError = FALSE)
+        myMessenger$logger$debug(paste0("running: returnValues <- ",rFunction,"(",paste0(capture.output(dput(request)),collapse = ""),")", collapse = ""))
+        myMessenger$capture_output(returnValues <- eval(parse(text = paste0(rFunction,"(request)"))), stopOnError = TRUE)
       })
     cat(toJSON(returnValues))
   },error = function(ex) {
