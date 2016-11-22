@@ -142,7 +142,7 @@ exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, gro
 	exec = require('child_process').exec
 	config = require '../conf/compiled/conf.js'
 	#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
-	command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
+	command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
 	command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
 	#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
 	#		command += (JSON.stringify data)+"'"
