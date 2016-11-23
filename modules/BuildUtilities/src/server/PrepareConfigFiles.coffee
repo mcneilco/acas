@@ -242,7 +242,9 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 
 	getProperties = (configDir) =>
 		configFiles = glob.sync("#{configDir}/*.properties")
+		configFiles = configFiles.sort()
 		configFiles.unshift "#{configDir}/config.properties.example"
+		console.info "reading configs in this order (latter configs override former configs): #{configFiles}"
 
 		if configFiles.length == 0
 			console.warn "no config files found"
