@@ -11,7 +11,7 @@ runFunction <- function() {
       {
         setwd(racas::applicationSettings$appHome)
         myMessenger$logger$debug(getwd())
-        postData <- rawToChar(receiveBin())
+        postData <- rawToChar(receiveBin(-1))
         postedRequest <- fromJSON(postData)
         rScript <- postedRequest$rScript
         rFunction <- postedRequest$rFunction
