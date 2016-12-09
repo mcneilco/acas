@@ -62,6 +62,9 @@
 			,			
 				typeName: "numericValue"
 				kindName: "live design id"
+			,
+				typeName: "codeValue"
+				kindName: "is restricted"
 			]
 
 		labeltypes:

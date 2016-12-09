@@ -45,7 +45,7 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 		serverUtilityFunctions.runRFunctionOutsideRequest(
 			"",
 			req,
-			"public/src/modules/ServerAPI/src/server/SeuratBatchCheck.R",
+			"src/r/ServerAPI/SeuratBatchCheck.R",
 			"seuratBatchCodeCheck",
 			(rReturn) ->
 				callback rReturn
@@ -57,7 +57,7 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 		req.body.user = "" # to bypass validation function
 		serverUtilityFunctions.runRFunction(
 			req,
-			"public/src/modules/ServerAPI/src/server/AcasCmpdRegBatchCheck.R",
+			"src/r/ServerAPI/AcasCmpdRegBatchCheck.R",
 			"acasCmpdRegBatchCheck",
 		(rReturn) ->
 			callback rReturn
@@ -66,7 +66,7 @@ exports.getPreferredCompoundBatchIDs = (requests, callback) ->
 		req.body.user = "" # to bypass validation function
 		serverUtilityFunctions.runRFunction(
 			req,
-			"public/src/modules/ServerAPI/src/server/AcasGeneBatchCheck.R",
+			"src/r/ServerAPI/AcasGeneBatchCheck.R",
 			"acasGeneCodeCheck",
 		(rReturn) ->
 			callback rReturn
