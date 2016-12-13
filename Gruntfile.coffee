@@ -229,8 +229,8 @@ module.exports = (grunt) ->
 						# console.log "outre:         #{matchedSrcPath.replace((grunt.config.get('sourceDirectories').map (i) -> i+'/').join('|'), "")}"
 						# console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace((grunt.config.get('sourceDirectories').map (i) -> i+'/').join('|'), "")}"
 						replaced = matchedSrcPath
-						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
-						"#{dest.replace(/\/$/, "")}/#{replaced}"
+						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
 			conf:
