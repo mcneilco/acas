@@ -163,6 +163,11 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_group_assayTreeRule').show()
 		else
 			@$('.bv_group_assayTreeRule').hide()
+		if window.conf.protocol?.hideFields? and window.conf.protocol.hideFields != null
+			for field in window.conf.protocol.hideFields.split(",")
+				field = $.trim field
+				console.log field
+				@$('.bv_group_'+field).hide()
 		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
 			$('.bv_closeSaveFailedModal').removeAttr('disabled')

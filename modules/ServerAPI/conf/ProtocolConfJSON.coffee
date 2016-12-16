@@ -62,6 +62,9 @@
 				typeName: "stringValue"
 				kindName: "notebook"
 			,
+				typeName: "stringValue"
+				kindName: "notebook page"
+			,
 				typeName: "clobValue"
 				kindName: "protocol details"
 			,
