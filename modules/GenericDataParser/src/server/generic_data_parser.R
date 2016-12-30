@@ -564,7 +564,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   ### ================== Check batch projects ========================================================
   if (!is.null(projectCode)) {
     # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
-    projectList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+    projectList <- jsonlite::fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")), simplifyDataFrame=TRUE)
     currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
     projectDF <- do.call(rbind, lapply(projectList, as.data.frame)) 
     if (length(currentProjList) > 0) {
