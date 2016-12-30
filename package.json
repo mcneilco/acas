@@ -8,10 +8,10 @@
     "startstubs": "node app.js stubsMode",
     "debug": "node --debug=5858 --nolazy app.js",
     "debugbrk": "node --debug-brk=5858 --nolazy app.js",
-    "dev": "grunt build && (grunt &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devdebugbrk": "grunt build && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devstubs": "grunt build && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts -w src/spec",
-    "postinstall": "grunt build",
+    "dev": "grunt build --conf && (grunt &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "devdebugbrk": "grunt build --conf && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "devstubs": "grunt build --conf && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts -w src/spec",
+    "postinstall": "grunt build --conf",
     "clean": "grunt clean"
   },
   "dependencies": {
