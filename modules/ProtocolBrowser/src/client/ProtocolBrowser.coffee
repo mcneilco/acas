@@ -119,18 +119,44 @@ class window.ProtocolSummaryTableController extends Backbone.View
 		else
 			@$(".bv_noMatchesFoundMessage").addClass "hide"
 			@collection.each (prot) =>
-				if window.conf.entity?.hideStatuses?
-					hideStatusesList = window.conf.entity.hideStatuses
-				#non-admin users can't see protocols with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(prot.getStatus().get 'codeValue') > -1 and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]) or prot.get('codeName') is "PROT-Screen"
+				canViewDeleted = @canViewDeleted(prot)
+				if prot.getStatus().get('codeValue') is 'deleted'
+					if canViewDeleted
+						prsc = new ProtocolRowSummaryController
+							model: prot
+						prsc.on "gotClick", @selectedRowChanged
+						@$("tbody").append prsc.render().el
+				else
 					prsc = new ProtocolRowSummaryController
 						model: prot
 					prsc.on "gotClick", @selectedRowChanged
-
 					@$("tbody").append prsc.render().el
 			@$("table").dataTable oLanguage:
 				sSearch: "Filter results: " #rename summary table's search bar
 		@
+
+	canViewDeleted: (prot) ->
+		if window.conf.entity?.viewDeletedRoles?
+			rolesToTest = []
+			for role in window.conf.entity.viewDeletedRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is prot.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: prot.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 class window.ProtocolBrowserController extends Backbone.View
 	#template: _.template($("#ProtocolBrowserView").html())
@@ -165,8 +191,12 @@ class window.ProtocolBrowserController extends Backbone.View
 		else
 			$(".bv_searchProtocolsStatusIndicator").addClass "hide"
 			@$(".bv_protocolTableController").removeClass "hide"
+			if window.conf.protocol?.mainControllerClassName? and window.conf.protocol.mainControllerClassName is "EnhancedProtocolBaseController"
+				protocolListClass = "EnhancedProtocolList"
+			else
+				protocolListClass = "ProtocolList"
 			@protocolSummaryTable = new ProtocolSummaryTableController
-				collection: new ProtocolList protocols
+				collection: new window[protocolListClass] protocols
 
 			@protocolSummaryTable.on "selectedRowUpdated", @selectedProtocolUpdated
 			$(".bv_protocolTableController").html @protocolSummaryTable.render().el
@@ -183,8 +213,17 @@ class window.ProtocolBrowserController extends Backbone.View
 				model: new PrimaryScreenProtocol protocol.attributes
 				readOnly: true
 			@showMasterView()
+		else if protocol.get('lsKind') is "study"
+			@protocolController = new StudyTrackerProtocolController
+				model: new StudyTrackerProtocol protocol.attributes
+				readOnly: true
+			@showMasterView()
 		else
-			@protocolController = new ProtocolBaseController
+			if window.conf.protocol?.mainControllerClassName? 
+				protControllerClassName = window.conf.protocol.mainControllerClassName
+			else
+				protControllerClassName = "ProtocolBaseController"			
+			@protocolController = new window[protControllerClassName]
 				model: protocol
 				readOnly: true
 			@showMasterView()
@@ -204,8 +243,12 @@ class window.ProtocolBrowserController extends Backbone.View
 			@$('.bv_createExperiment').show()
 			if @canEdit()
 				@$('.bv_editProtocol').show()
+				@$('.bv_duplicateProtocol').show()
+				@$('.bv_createExperiment').show()
 			else
 				@$('.bv_editProtocol').hide()
+				@$('.bv_duplicateProtocol').hide()
+				@$('.bv_createExperiment').hide()
 			if @canDelete()
 				@$('.bv_deleteProtocol').show()
 			else
@@ -321,6 +364,8 @@ class window.ProtocolBrowserController extends Backbone.View
 			window.open("/entity/copy/primary_screen_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else if protocolKind is "Parent Bio Activity"
 			window.open("/entity/copy/parent_protocol/#{@protocolController.model.get("codeName")}",'_blank');
+		else if protocolKind is "study"
+			window.open("/entity/copy/study_tracker_protocol/#{@protocolController.model.get("codeName")}",'_blank');
 		else
 			window.open("/entity/copy/protocol_base/#{@protocolController.model.get("codeName")}",'_blank');
 
@@ -328,8 +373,10 @@ class window.ProtocolBrowserController extends Backbone.View
 		protocolKind = @protocolController.model.get('lsKind')
 		if protocolKind is "Bio Activity"
 			window.open("/primary_screen_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
-		if protocolKind is "Parent Bio Activity"
+		else if protocolKind is "Parent Bio Activity"
 			window.open("/parent_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
+		else if protocolKind is "study"
+			window.open("/study_tracker_experiment/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 		else
 			window.open("/experiment_base/createFrom/#{@protocolController.model.get("codeName")}",'_blank')
 

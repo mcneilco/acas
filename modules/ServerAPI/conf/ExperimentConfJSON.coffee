@@ -79,6 +79,18 @@
 				kindName: "experiment status"
 			,
 				typeName: "codeValue"
+				kindName: "review status"
+			,
+				typeName: "clobValue"
+				kindName: "materials"
+			,				
+				typeName: "clobValue"
+				kindName: "equipment"
+			,				
+				typeName: "clobValue"
+				kindName: "methods"
+			,				
+				typeName: "codeValue"
 				kindName: "analysis status"
 			,
 				typeName: "codeValue"
@@ -187,6 +199,9 @@
 				typeName: "experiment"
 				kindName: "status"
 			,
+				typeName: "experiment"
+				kindName: "review status"
+			,
 				typeName: "analysis"
 				kindName: "status"
 			,
@@ -279,6 +294,27 @@
 				codeOrigin: "ACAS DDICT"
 				code: "deleted"
 				name: "Deleted"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "in progress"
+				name: "In Progress"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "ready for review"
+				name: "Ready for Review"
+				ignored: false
+			,
+				codeType: "experiment"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "reviewed"
+				name: "Reviewed"
 				ignored: false
 			,
 				codeType: "analysis"

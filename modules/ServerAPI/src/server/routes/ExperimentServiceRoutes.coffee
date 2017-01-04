@@ -7,10 +7,10 @@ exports.setupAPIRoutes = (app) ->
 	app.get '/api/experiments/:idOrCode/exptvalues/bystate/:stateType/:stateKind/byvalue/:valueType/:valueKind', exports.experimentValueByStateTypeKindAndValueTypeKind
 	app.post '/api/experiments', exports.postExperiment
 	app.put '/api/experiments/:id', exports.putExperiment
-#	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
 	app.get '/api/experiments/resultViewerURL/:code', exports.resultViewerURLByExperimentCodename
 	app.delete '/api/experiments/:id', exports.deleteExperiment
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', exports.getItxExptExptsByFirstExpt
+	app.get '/api/getItxExptExptsBySecondExpt/:secondExptId', exports.getItxExptExptsBySecondExpt
 	app.post '/api/createAndUpdateExptExptItxs', exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', exports.putExptExptItxs
@@ -18,6 +18,9 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', exports.postParentExperiment
 	app.put '/api/experiments/parentExperiment/:id', exports.putParentExperiment
+	app.get '/api/experiments/genericSearch/:searchTerm', exports.genericExperimentSearch
+	app.get '/api/experiments/:lsType/:lsKind', exports.experimentsByTypeKind
+	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', exports.getExperimentCodeByLabel
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/codename/:code', loginRoutes.ensureAuthenticated, exports.experimentByCodename
@@ -33,6 +36,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/experiments/resultViewerURL/:code', loginRoutes.ensureAuthenticated, exports.resultViewerURLByExperimentCodename
 	app.get '/api/experiments/values/:id', loginRoutes.ensureAuthenticated, exports.experimentValueById
 	app.get '/api/getItxExptExptsByFirstExpt/:firstExptId', loginRoutes.ensureAuthenticated, exports.getItxExptExptsByFirstExpt
+	app.get '/api/getItxExptExptsBySecondExpt/:secondExptId', loginRoutes.ensureAuthenticated, exports.getItxExptExptsBySecondExpt
 	app.post '/api/createAndUpdateExptExptItxs', loginRoutes.ensureAuthenticated, exports.createAndUpdateExptExptItxs
 	app.post '/api/postExptExptItxs', loginRoutes.ensureAuthenticated, exports.postExptExptItxs
 	app.put '/api/putExptExptItxs', loginRoutes.ensureAuthenticated, exports.putExptExptItxs
@@ -40,6 +44,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getExptExptItxsToDisplay/:firstExptId', loginRoutes.ensureAuthenticated, exports.getExptExptItxsToDisplay
 	app.post '/api/experiments/parentExperiment', loginRoutes.ensureAuthenticated, exports.postParentExperiment
 	app.put '/api/experiments/parentExperiment/:id', loginRoutes.ensureAuthenticated, exports.putParentExperiment
+	app.get '/api/experiments/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.experimentsByTypeKind
+	app.post '/api/experiments/getExperimentCodeByLabel/:exptType/:exptKind', loginRoutes.ensureAuthenticated, exports.getExperimentCodeByLabel
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
@@ -70,7 +76,8 @@ exports.experimentByCodename = (req, resp) ->
 		fullObjectFlag = "with=fullobject"
 		if req.query.fullObject
 			baseurl += "?#{fullObjectFlag}"
-			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		if req.user?
+			serverUtilityFunctions.getRestrictedEntityFromACASServer baseurl, req.user.username, "metadata", "experiment metadata", resp
 		else
 			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
@@ -138,9 +145,9 @@ updateExpt = (expt, testMode, callback) ->
 		else
 			config = require '../conf/compiled/conf.js'
 			baseurl = config.all.client.service.persistence.fullpath+"experiments/"+expt.id
-			console.log "expt to update"
-			console.log JSON.stringify expt
 			request = require 'request'
+			console.log "put expt"
+			console.log JSON.stringify expt
 			request(
 				method: 'PUT'
 				url: baseurl
@@ -157,7 +164,7 @@ updateExpt = (expt, testMode, callback) ->
 					console.log 'got ajax error trying to update experiment'
 					console.log error
 					console.log response
-					callback JSON.stringify "saveFailed"
+					callback "saveFailed"
 			)
 
 postExperiment = (exptToSave, testMode, callback) ->
@@ -210,12 +217,10 @@ postExperiment = (exptToSave, testMode, callback) ->
 					checkFilesAndUpdate json
 				else
 					console.log 'got ajax error trying to save experiment - not unique name'
-					console.log "response.body"
-					console.log response.body
 					if response.body[0].message is "not unique experiment name"
-						callback JSON.stringify "saveFailed: " + response.body[0].message
+						callback "saveFailed: " + response.body[0].message
 					else
-						callback JSON.stringify "saveFailed"
+						callback "saveFailed"
 			)
 
 exports.saveNewExpriment = (exptToSave, testMode, callback) ->
@@ -279,10 +284,88 @@ exports.saveNewExpriment = (exptToSave, testMode, callback) ->
 			)
 
 exports.postExperiment = (req, resp) ->
+	#remove the itxs attributes if needed
+	newExptExptItxs = []
+	exptExptItxsToIgnore = []
+	if req.body.exptExptItxsToIgnore?
+		exptExptItxsToIgnore = req.body.exptExptItxsToIgnore
+		delete req.body.exptExptItxsToIgnore
+	if req.body.newExptExptItxs?
+		newExptExptItxs = req.body.newExptExptItxs
+		delete req.body.newExptExptItxs
+		
 	postExperiment req.body, req.query.testMode, (response) =>
-		console.log "file vals"
-		console.log serverUtilityFunctions.getFileValuesFromEntity response, false
-		resp.json response
+		if response.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
+			exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
+			if response.lsKind is "study"
+				_.each exptExptItxsToIgnore, (itx) =>
+					itx.firstExperiment = {id: response.id}
+				newExptExptItxs = JSON.parse newExptExptItxs
+				_.each newExptExptItxs, (itx) =>
+					itx.firstExperiment = {id: response.id}
+			else #is default/expt base
+				_.each exptExptItxsToIgnore, (itx) =>
+					itx.secondExperiment = {id: response.id}
+				newExptExptItxs = JSON.parse newExptExptItxs
+				_.each newExptExptItxs, (itx) =>
+					itx.secondExperiment = {id: response.id}
+			console.log "exptExptItxsToIgnore"
+			console.log exptExptItxsToIgnore
+			console.log "newExptExptItxs"
+			console.log JSON.stringify newExptExptItxs
+			createAndUpdateExptExptItxs JSON.stringify(exptExptItxsToIgnore), JSON.stringify(newExptExptItxs), req.query.testMode, (json) =>
+				console.log "finished createAndUpdateExptExptItxs"
+				console.log exptExptItxsToIgnore
+				console.log newExptExptItxs
+				console.log json
+				if json.indexOf("saveFailed") > -1
+					console.log "error creating and updating expt expt itxs"
+					resp.statusCode = 500
+					resp.json "error creating and updating expt expt itxs"
+				else if response.lsKind is "default"
+					#if study step itx(s) was ignored/created, remove/add the study step(s)
+					#remove study step for ignored itx
+					studyStepItxToIgnore = _.filter exptExptItxsToIgnore, (itx) =>
+						itx.lsType is "has member" and itx.lsKind is "parent_study child"
+					studyStepItxToCreate = _.filter newExptExptItxs, (itx) =>
+						itx.lsType is "has member" and itx.lsKind is "parent_study child"
+					user = response.recordedBy
+					if studyStepItxToIgnore.length is 1 #only expect max of 1 study step itx to be affected
+						studyExptCodeNameToIgnoreStep = _.pluck(studyStepItxToIgnore, 'firstExperiment')[0].codeName
+						studyExptCodeNameToCreateStep = _.pluck(newExptExptItxs, 'firstExperiment')[0].codeName
+						secondExptCodeName = response.codeName
+						ignoreStudyStepInStudyExpt studyExptCodeNameToIgnoreStep, secondExptCodeName, (message1) =>
+							if message1.indexOf 'Failed' > -1
+								resp.statusCode = 500
+								resp.json message1
+							else if newExptExptItxs.length is 1
+								createStudyStepInStudyExpt studyExptCodeNameToCreateStep, secondExptCodeName, user, (message2) =>
+									if message2.indexOf 'Failed' > -1
+										resp.statusCode = 500
+										resp.json message2
+									else
+										resp.json response
+							else
+								resp.json response
+					else if studyStepItxToCreate.length is 1
+						studyExptCodeNameToCreateStep = _.pluck(newExptExptItxs, 'firstExperiment')[0].codeName
+						secondExptCodeName = response.codeName
+						console.log "first expt to create study step"
+						console.log _.pluck(studyStepItxToCreate,'firstExperiment')[0]
+						createStudyStepInStudyExpt studyExptCodeNameToCreateStep, secondExptCodeName, user, (message2) =>
+							console.log "createStudyStepInStudyExpt - done"
+							console.log message2
+							if message2.indexOf('Failed')> -1
+								resp.statusCode = 500
+								resp.json message2
+							else
+								resp.json response
+					else
+						resp.json response
+				else
+					resp.json response
+		else
+			resp.json response
 
 exports.putExperimentInternal = (experiment, testMode, callback) ->
 	exptToSave = experiment
@@ -309,13 +392,91 @@ exports.putExperimentInternal = (experiment, testMode, callback) ->
 
 
 exports.putExperiment = (req, resp) ->
+	console.log "put experiment"
+	
+	#remove the itxs attributes if needed
+	newExptExptItxs = "[]"
+	exptExptItxsToIgnore = "[]"
+	if req.body.exptExptItxsToIgnore?
+		exptExptItxsToIgnore = req.body.exptExptItxsToIgnore
+		delete req.body.exptExptItxsToIgnore
+	if req.body.newExptExptItxs?
+		newExptExptItxs = req.body.newExptExptItxs
+		delete req.body.newExptExptItxs
+
 	exptToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity exptToSave, true
 	filesToSave = fileVals.length
 
 	completeExptUpdate = ->
 		updateExpt exptToSave, req.query.testMode, (updatedExpt) ->
-			resp.json updatedExpt
+			if updatedExpt.codeName? and (JSON.parse(newExptExptItxs).length > 0 or JSON.parse(exptExptItxsToIgnore).length > 0)
+				exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
+				if updatedExpt.lsKind is "study"
+					_.each exptExptItxsToIgnore, (itx) =>
+						itx.firstExperiment = {id: updatedExpt.id}
+					newExptExptItxs = JSON.parse newExptExptItxs
+					_.each newExptExptItxs, (itx) =>
+						itx.firstExperiment = {id: updatedExpt.id}
+				else #is default/expt base
+					_.each exptExptItxsToIgnore, (itx) =>
+						itx.secondExperiment = {id: updatedExpt.id}
+					newExptExptItxs = JSON.parse newExptExptItxs
+					_.each newExptExptItxs, (itx) =>
+						itx.secondExperiment = {id: updatedExpt.id}
+				console.log "exptExptItxsToIgnore"
+				console.log JSON.stringify exptExptItxsToIgnore
+				console.log "newExptExptItxs"
+				console.log JSON.stringify newExptExptItxs
+				createAndUpdateExptExptItxs JSON.stringify(exptExptItxsToIgnore), JSON.stringify(newExptExptItxs), req.query.testMode, (json) =>
+					console.log "finished createAndUpdateExptExptItxs"
+					console.log exptExptItxsToIgnore
+					console.log newExptExptItxs
+					console.log json
+					if json.indexOf("saveFailed") > -1
+						console.log "error creating and updating expt expt itxs"
+						resp.statusCode = 500
+						resp.json "error creating and updating expt expt itxs"
+					else if updatedExpt.lsKind is "default"
+						#if study step itx(s) was ignored/created, remove/add the study step(s)
+						#remove study step for ignored itx
+						studyStepItxToIgnore = _.filter exptExptItxsToIgnore, (itx) =>
+							itx.lsType is "has member" and itx.lsKind is "parent_study child"
+						studyStepItxToCreate = _.filter newExptExptItxs, (itx) =>
+							itx.lsType is "has member" and itx.lsKind is "parent_study child"
+						if studyStepItxToIgnore.length is 1 #only expect max of 1 study step itx to be affected
+							studyExptCodeNameToIgnoreStep = _.pluck(studyStepItxToIgnore, 'firstExperiment')[0].codeName
+							studyExptCodeNameToCreateStep = _.pluck(newExptExptItxs, 'firstExperiment')[0].codeName
+							secondExptCodeName = updatedExpt.codeName
+							user = updatedExpt.recordedBy
+							ignoreStudyStepInStudyExpt studyExptCodeNameToIgnoreStep, secondExptCodeName, (message1) =>
+								if message1.indexOf('Failed') > -1
+									resp.statusCode = 500
+									resp.json message1
+								else if newExptExptItxs.length is 1
+									createStudyStepInStudyExpt studyExptCodeNameToCreateStep, secondExptCodeName, user, (message2) =>
+										if message2.indexOf('Failed') > -1
+											resp.statusCode = 500
+											resp.json message2
+										else
+											resp.json updatedExpt
+								else
+									resp.json updatedExpt
+						else if studyStepItxToCreate.length is 1
+							studyExptCodeNameToCreateStep = _.pluck(newExptExptItxs, 'firstExperiment')[0].codeName
+							secondExptCodeName = updatedExpt.codeName
+							createStudyStepInStudyExpt studyExptCodeNameToCreateStep, secondExptCodeName, user, (message2) =>
+								if message2.indexOf('Failed') > -1
+									resp.statusCode = 500
+									resp.json message2
+								else
+									resp.json updatedExpt
+						else
+							resp.json updatedExpt
+					else
+						resp.json updatedExpt
+			else
+				resp.json updatedExpt
 
 	fileSaveCompleted = (passed) ->
 		if !passed
@@ -516,6 +677,35 @@ exports.getItxExptExptsByFirstExpt = (req, resp) ->
 			resp.statusCode = 500
 		resp.end exptExptItxs
 
+getItxExptExptsBySecondExpt = (secondExptId, callback) ->
+	if global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		callback JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer, experimentServiceTestJSON.fullDeletedExperiment]
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxexperimentexperiments/findBySecondExperiment/"+secondExptId
+		request = require 'request'
+		request(
+			method: 'GET'
+			url: baseurl
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback JSON.stringify json
+			else
+				callback JSON.stringify "Failed: Could not get expt expt itx by second expt from ACAS Server"
+				console.log 'got ajax error'
+				console.log error
+				console.log json
+				console.log response
+		)
+
+exports.getItxExptExptsBySecondExpt = (req, resp) ->
+	getItxExptExptsBySecondExpt req.params.secondExptId, (exptExptItxs) ->
+		if exptExptItxs.indexOf("Failed") > -1
+			resp.statusCode = 500
+		resp.end exptExptItxs
+
 postExptExptItxs = (exptExptItxs, testMode, callback) ->
 	console.log "post expt expt itxs"
 	if testMode or global.specRunnerTestmode
@@ -583,18 +773,169 @@ exports.putExptExptItxs = (req, resp) ->
 			resp.statusCode = 500
 		resp.json updatedExptExptItxs
 
-exports.createAndUpdateExptExptItxs = (req, resp) ->
-	putExptExptItxs req.body.exptExptItxsToIgnore, req.query.testMode, (updatedExptExptItxs) ->
+createAndUpdateExptExptItxs = (exptExptItxsToIgnore, newExptExptItxs, testMode, callback) ->
+	putExptExptItxs exptExptItxsToIgnore, testMode, (updatedExptExptItxs) ->
 		if updatedExptExptItxs.indexOf("saveFailed") > -1
-			resp.statusCode = 500
-			resp.json updatedExptExptItxs
+			callback updatedExptExptItxs
 		else
-			postExptExptItxs req.body.newExptExptItxs, req.query.testMode, (newExptExptItxs) ->
+			postExptExptItxs newExptExptItxs, testMode, (newExptExptItxs) ->
 				if newExptExptItxs.indexOf("saveFailed") > -1
-					resp.statusCode = 500
-					resp.json newExptExptItxs
+					callback newExptExptItxs
 				else
-					resp.json updatedExptExptItxs.concat newExptExptItxs
+					callback updatedExptExptItxs.concat newExptExptItxs
+
+exports.createAndUpdateExptExptItxs = (req, resp) ->
+	createAndUpdateExptExptItxs req.body.exptExptItxsToIgnore, req.body.newExptExptItxs, req.query.testMode, (json) =>
+		if json.indexOf("saveFailed") > -1
+			resp.statusCode = 500
+		resp.json json
+
+ignoreStudyStepInStudyExpt = (firstExptCodeName, secondExptCodeName, callback) ->
+	console.log "ignoreStudyStepInStudyExpt"
+	console.log "firstExptCodeName: " + firstExptCodeName
+	console.log "secondExptCodeName: " + secondExptCodeName
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+firstExptCodeName
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, firstExptJson) =>
+		if !error && response.statusCode == 200
+			#find state to ignore
+			lsStates = _.filter firstExptJson.lsStates, (state) =>
+				!state.ignored and state.lsType is "study tracking" and state.lsKind is "study steps"
+			stepToIgnore = _.filter lsStates, (state) =>
+				filteredVals = _.filter state.lsValues, (val) =>
+					val.lsType is 'codeValue' and val.lsKind is "step experiment" and val.codeValue is secondExptCodeName and !(val.ignored)
+				filteredVals.length > 0
+			if stepToIgnore.length > 0
+				stepToIgnore = stepToIgnore[0]
+				stepToIgnore.ignored = true
+			firstExptJson.lsStates = [stepToIgnore]
+			console.log "ignoreStudyStepInStudyExpt: step to ignore"
+			#put study expt
+			updateExpt firstExptJson, false, (updatedFirstExpt) =>
+				if updatedFirstExpt.codeName?
+					#success, create new step for newly added step expt
+					#get study expt to add the study step
+					callback "success: ignored study step for old expt"
+				else
+					callback "Failed: error ignoring study step for study experiment"
+		else
+			callback "Failed: could not get study experiment to update"
+	)
+
+createStudyStepInStudyExpt = (firstExptCodeName, secondExptCodeName, user, callback) ->
+	console.log "createStudyStepInStudyExpt"
+	console.log "firstExptCodeName: " + firstExptCodeName
+	console.log "secondExptCodeName: " + secondExptCodeName
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"experiments/codename/"+firstExptCodeName
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, firstExptJson) =>
+		if !error && response.statusCode == 200
+			lsStates = _.filter firstExptJson.lsStates, (state) =>
+				!state.ignored and state.lsType is "study tracking" and state.lsKind is "study steps"
+			#find step order, filter for steps with uncategorized as step order
+			uncategorizedStates = _.filter lsStates, (state) =>
+				filteredVals = _.filter state.lsValues, (val) =>
+					val.lsType is 'stringValue' and val.lsKind is "step category" and val.stringValue is "Uncategorized" and !(val.ignored)
+				filteredVals.length > 0
+			console.log "uncategorized states"
+			console.log JSON.stringify uncategorizedStates
+			stepOrder = uncategorizedStates.length
+			if uncategorizedStates.length > 0
+				stepCategoryOrderVal = _.filter uncategorizedStates[0].lsValues, (val) =>
+					val.lsType is 'numericValue' and val.lsKind is 'step category order' and !val.ignored
+				stepCategoryOrder = stepCategoryOrderVal[0].numericValue
+			else
+				#stepCategoryOrder = number of stepCategories
+				#group by stepCategory
+				groupedStepCategory = _.groupBy lsStates, (state) =>
+					stepCategoryOrder = _.filter state.lsValues, (val) =>
+						console.log "val - here"
+						console.log val
+						val.lsKind is 'step category order' and !val.ignored
+					stepCategoryOrder[0].numericValue
+				#find max key of returned object
+				console.log "groupedStepCategory"
+				console.log groupedStepCategory
+				stepCategoryOrder = Number(_.max Object.keys(groupedStepCategory))+1
+				console.log "stepCategory Order: "
+				console.log stepCategoryOrder
+			firstExptJson.lsStates = [
+				"ignored": false,
+				"lsKind": "study steps",
+				"lsType": "study tracking",
+				"lsValues": [
+					{
+						"ignored": false,
+						"lsKind": "step order",
+						"lsType": "numericValue",
+						"numericValue": stepOrder,
+						"recordedBy": user,
+						"recordedDate": new Date().getTime(),
+					},
+					{
+						"ignored": false,
+						"lsKind": "step category order",
+						"lsType": "numericValue",
+						"numericValue": stepCategoryOrder,
+						"recordedBy": user,
+						"recordedDate": new Date().getTime(),
+					},
+					{
+						"ignored": false,
+						"lsKind": "step category",
+						"lsType": "stringValue",
+						"recordedBy": user,
+						"recordedDate": new Date().getTime(),
+						"stringValue": "Uncategorized",
+					},
+					{
+						"ignored": false,
+						"lsKind": "step name",
+						"lsType": "stringValue",
+						"stringValue": secondExptCodeName
+						"recordedBy": user,
+						"recordedDate": new Date().getTime(),
+					},
+					{
+						"ignored": false,
+						"lsKind": "step experiment",
+						"lsType": "codeValue",
+						"codeValue": secondExptCodeName
+						"recordedBy": user,
+						"recordedDate": new Date().getTime(),
+					}
+				]
+				"recordedBy": user,
+				"recordedDate": new Date().getTime()
+			]
+
+			#put study expt
+			console.log "updatedFirstExpt - request"
+			console.log JSON.stringify firstExptJson
+#			console.log JSON.stringify firstExptJson2
+			updateExpt firstExptJson, false, (updatedFirstExpt) =>
+				console.log "updatedFirstExpt - response"
+				console.log JSON.stringify updatedFirstExpt
+				if updatedFirstExpt.codeName?
+					#success, create new step for newly added step expt
+					#get study expt to add the study step
+					callback "success: created new study step for study expt"
+				else
+					callback "Failed: error ignoring study step for study experiment"
+		else
+			callback "Failed: could not get study experiment to update"
+	)
+
 
 
 exports.experimentsByCodeNamesArray = (req, resp) ->
@@ -746,3 +1087,61 @@ bulkPostExperiments = (exptsArray, callback) ->
 exports.putParentExperiment = (req, resp) ->
 	console.log "put parent experiment"
 	exports.putExperiment req, resp
+
+exports.experimentsByTypeKind = (req, resp) ->
+	console.log "experiments by type and kind"
+	if req.query.testMode or global.specRunnerTestmode
+		experimentServiceTestJSON = require '../public/javascripts/spec/testFixtures/ExperimentServiceTestJSON.js'
+		resp.end JSON.stringify [experimentServiceTestJSON.fullExperimentFromServer]
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.params.lsType+"/"+req.params.lsKind
+		console.log baseurl
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getExperimentCodeByLabel = (req, resp) ->
+	if global.specRunnerTestmode
+		results = []
+		for req in req.body.requests
+			res = requestName: req.requestName
+			if req.requestName.indexOf("ambiguous") > -1
+				res.referenceName = ""
+				res.preferredName = ""
+			else if req.requestName.indexOf("STUDY") > -1
+				res.referenceName = "EXPT-00000001"
+				res.preferredName = "STUDY-0000001"
+			else
+				res.referenceName = req.requestName
+				res.preferredName = req.requestName
+			results.push res
+
+		response =
+			error: false
+			errorMessages: []
+			results: results
+
+		resp.json response
+
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"experiments/getCodeNameFromNameRequest?"
+		url = baseurl+"experimentType=#{req.params.exptType}&experimentKind=#{req.params.exptKind}"
+		console.log "getExperimentCodeByLabel url"
+		console.log url
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: url
+			body: req.body
+			json: true
+		, (error, response, json) =>
+			console.log response.statusCode
+			console.log json
+			if !error and !json.error
+				resp.json json
+			else
+				console.log 'got ajax error trying to lookup experiment code by label'
+				resp.statusCode = 500
+				resp.json json.errorMessages
+		)

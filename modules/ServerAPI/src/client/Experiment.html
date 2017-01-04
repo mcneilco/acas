@@ -1,5 +1,8 @@
 <script type="text/template" id="ExperimentBaseView" xmlns="http://www.w3.org/1999/html">
 
+    <div class="span9 bv_openInQueryToolWrapper">
+        <a class="bv_openInQueryToolLink btn pull-right" style="margin-bottom:15px;" target="_blank">Open in <span class="bv_queryToolDisplayName"></span></a>
+    </div>
     <div class="span12">
         <div class="form-horizontal">
             <div class="control-group">
@@ -46,7 +49,7 @@
 
 
         <div class="form-horizontal">
-            <div class="control-group bv_Â¡Code bv_group_protocolCode">
+            <div class="control-group bv_Ã‚Â¡Code bv_group_protocolCode">
                 <label class="control-label ">*Protocol</label>
                 <div class="controls">
                     <select class="bv_protocolCode" style="width:350px;">
@@ -82,37 +85,34 @@
 
     </div>
 
-    <div>
+    <div class="span12">
         <div style="margin-bottom:5px;">Short Description</div>
         <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
     </div>
 
-    <div>
+    <div class="span12">
         <div style="margin-bottom:5px;">Experiment Details</div>
         <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Experiment Details"></textarea>
     </div>
 
-    <div>
+    <div class="span12">
         <div style="margin-bottom:5px;">Comments</div>
         <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Comments"></textarea>
     </div>
 
     <div class="bv_custom_experiment_metadata"  style="width:650px; max-width:650px;margin-bottom:20px;" ></div>
-	<div class="row">
-		<div class="control-group bv_group_attachFile span8" style="margin-bottom:30px;margin-left:30px;">
-			<div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
-			<div class="controls" style="margin-left:0px;">
-				<span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
-				<span style="margin-left:77px;margin-bottom:5px;">File Name</span>
-				<div class="bv_attachFileList" style="width:670px;"></div>
-			</div>
-		</div>
-	</div>
+    <div class="row span12">
+        <div class="control-group bv_group_attachFile span8" style="margin-bottom:30px;margin-left:0px;">
+            <div style="margin-bottom:5px;font-weight:bold;">Attach Files</div>
+            <div class="controls" style="margin-left:0px;">
+                <span class ="bv_group_fileType" style="margin-left:6px;margin-bottom:5px;">File Type</span>
+                <span style="margin-left:77px;margin-bottom:5px;">File Name</span>
+                <div class="bv_attachFileList" style="width:670px;"></div>
+            </div>
+        </div>
+    </div>
     <!-- SAVE AND CANCEL -->
     <div class="span10" style="width:650px;margin-left:0px;">
-        <div class="bv_openInQueryToolWrapper">Click
-            <a class="bv_openInQueryToolLink" style="margin-top:15px;" target="_blank">here</a> to view data in <span class="bv_queryToolDisplayName"></span>.
-        </div>
         <div class="span12" style="margin-left:25px;margin-top:25px;">
             <button type="button" class="btn btn-success bv_save pull-right" style="margin-right:10px;">Save</button>
             <button type="button" class="btn bv_newEntity pull-right" style="margin-right:5px;">Clear Form</button>

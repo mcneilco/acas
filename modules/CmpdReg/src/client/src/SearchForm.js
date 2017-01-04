@@ -5,7 +5,7 @@ $(function() {
 			var errors = new Array();
             var allEmpty = true;
             _.each(attributes, function(att, key) {
-                if( (att != '' && att!=null) && key!='aliasContSelect' && key!='searchType' && key!='percentSimilarity' ) {
+                if( (att != '' && att!=null) && key!='aliasContSelect' && key!='searchType' && key!='percentSimilarity' && key!='maxResults' && key!='loggedInUser' ) {
                     if( key=='chemist') {
                         if( att.get('code')!='anyone') {
                             allEmpty = false;
@@ -41,6 +41,7 @@ $(function() {
 
 		events: {
 			'click .searchButton': 'search',
+			'keyup': 'keyupHandler',
             'click .searchType': 'updatePercentSimilarityDisabled',
 			'click .cancelButton': 'cancel'
 		},
@@ -49,6 +50,12 @@ $(function() {
 			_.bindAll(this, 'search', 'cancel', 'validationError', 'updatePercentSimilarityDisabled','chemistsLoaded');
             this.valid = false;
 			this.marvinLoaded = false;
+			this.exportFormat = "mol";
+			if(window.configuration.marvin) {
+				if (window.configuration.marvin.exportFormat) {
+					this.exportFormat = window.configuration.marvin.exportFormat;
+				}
+			}
 
 		},
 
@@ -64,6 +71,14 @@ $(function() {
             this.$('.dateFrom').datepicker( "option", "dateFormat", "mm/dd/yy" );
             this.$('.dateTo').datepicker( );
             this.$('.dateTo').datepicker( "option", "dateFormat", "mm/dd/yy" );
+
+			this.$('.maxResults').val(100);
+			if(window.configuration.searchForm) {
+				if (window.configuration.searchForm.defaultMaxResults) {
+					this.$('.maxResults').val(window.configuration.searchForm.defaultMaxResults);
+				}
+			}
+
             this.updatePercentSimilarityDisabled();
             this.chemistCodeController =
                 this.setupCodeController('chemist', 'scientists', 'chemist', true);
@@ -112,7 +127,7 @@ $(function() {
 
 		search: function() {
 			var self = this;
-			this.marvinSketcherInstance.exportStructure("mol").then(function(molecule) {
+			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
 					mol = '';
 				else
@@ -196,7 +211,14 @@ $(function() {
                 selectedCode: tcode,
                 showIgnored: showIgnored
 			})
-        }
+        },
+
+	    keyupHandler: function(e) {
+		    console.log( "got keyup");
+		    if(e.which === 13) {// enter key
+			    this.search();
+		    }
+	    }
 
 
 	});

@@ -79,7 +79,6 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags div.bootstrap-tagsinput").not('.dontdisable').css "background-color", "#eeeeee"
 		@$("span.tag.label.label-info span").not('.dontdisable').attr "data-role", ""
 
-
 	enableAllInputs: ->
 		@$('input').removeAttr 'disabled'
 		@$('select').removeAttr 'disabled'

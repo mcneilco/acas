@@ -98,7 +98,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	)
 exports.getUser = (username, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	if config.all.server.roologin.getUserLink? and !global.specRunnerTestmode
+	if config.all.client.require.login
 		request = require 'request'
 		request(
 			headers:

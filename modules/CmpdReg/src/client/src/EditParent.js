@@ -23,6 +23,12 @@ $(function () {
             _.bindAll(this, 'next', 'cancel', 'render', 'validationError');
             this.valid = false;
             this.marvinLoaded = false;
+            this.exportFormat = "mol";
+            if(window.configuration.marvin) {
+                if (window.configuration.marvin.exportFormat) {
+                    this.exportFormat = window.configuration.marvin.exportFormat;
+                }
+            }
             this.hide();
         },
 
@@ -76,7 +82,7 @@ $(function () {
             var mol;
 
             var self = this;
-            this.marvinSketcherInstance.exportStructure("mol").then(function(molecule) {
+            this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
                 if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
                     mol = null;
                 else

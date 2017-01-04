@@ -227,9 +227,10 @@ exports.pickBestLabels = (requestData, csv, callback) ->
 					displayName: requestData.displayName
 					results: formatJSONBestLabel(codeResponse.results, "preferredName")
 			return
-		message = "problem with internal best label request: code type and kind are unknown to system"
-		callback "problem with internal best label request: code type and kind are unknown to system"
-		console.error "problem with internal best label request: code type and kind are unknown to system"
+		else
+			message = "problem with internal best label request: code type and kind are unknown to system"
+			callback "problem with internal best label request: code type and kind are unknown to system"
+			console.error "problem with internal best label request: code type and kind are unknown to system"
 
 ####################################################################
 # ENTITY SEARCH

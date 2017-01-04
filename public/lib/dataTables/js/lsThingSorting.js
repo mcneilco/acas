@@ -168,6 +168,59 @@ jQuery.extend( jQuery.fn.dataTableExt.oSort, {
             return -1;
         }
         return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    },
+
+    /*
+     * batch sorting. Sort batch numbers in batch corpNames correctly.
+     */
+    "thingBatch-pre": function(a) {
+        if (typeof a !== "string") {
+            if (a !== null && a.toString) {
+                a = a.toString();
+            } else {
+                a = '';
+            }
+        }
+        return a.toLowerCase();
+    },
+    "thingBatch-asc": function(x, y) {
+        var splitX = x.split('-');
+        var parentX = splitX[0];
+        var batchX = splitX[1];
+        var splitY = y.split('-');
+        var parentY = splitY[0];
+        var batchY = splitY[1];
+        if (parentX < parentY) {
+            return -1;
+        } else if (parentX > parentY) {
+            return 1;
+        } else {
+            if (Number(batchX) < Number(batchY)) {
+                return -1*Number(batchY)/10000;
+            } else {
+                return Number(batchX)/10000;
+            }
+        }
+    },
+    'thingBatch-desc': function(x, y) {
+        var splitX = x.split('-');
+        var parentX = splitX[0];
+        var batchX = splitX[1];
+        var splitY = y.split('-');
+        var parentY = splitY[0];
+        var batchY = splitY[1];
+        if (parentX < parentY) {
+            return 1;
+        } else if (parentX > parentY) {
+            return -1;
+        } else {
+            if (Number(batchX) < Number(batchY)) {
+                return Number(batchY)/10000;
+            } else {
+                return -1*Number(batchX)/10000;
+            }
+        }
     }
+
 
 } );

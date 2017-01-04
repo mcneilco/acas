@@ -1,5 +1,6 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', exports.thingsByTypeKind
+	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -12,6 +13,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
+	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', loginRoutes.ensureAuthenticated, exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -39,6 +41,56 @@ exports.thingsByTypeKind = (req, resp) ->
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
+getThingByTypeAndKind = (lsType, lsKind, stub, callback) =>
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind
+	console.log "in getThingByTypeAndKind"
+	if stub
+		baseurl += "?with=stub"
+		console.log "baseurl for getting multiple"
+		console.log baseurl
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.log "get json"
+			console.log json
+			callback json
+
+		else
+			console.log error
+			callback "error getting things with type: "+ lsType + " and kind: " + lsKind
+	)
+
+exports.thingsByTypeAndKinds = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.batchList
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		kinds = req.params.lsKindsList.split(";") #lsKindsList = semi-colon delimited list
+		index = 0
+		fetchedThings = []
+		if index >= kinds.length
+			resp.json JSON.stringify fetchedThings
+		else
+			getThingByTypeAndKind req.params.lsType, kinds[0], false, (response) =>
+				if response.indexOf("error") > -1
+					resp.end JSON.stringify response
+				else
+					fetchedThings = response
+					getThingByTypeAndKind req.params.lsType, kinds[1], true, (response2) =>
+						if response2.indexOf("error") > -1
+							resp.end JSON.stringify response2
+						else
+							console.log fetchedThings
+							console.log "response2"
+							console.log response2
+							resp.json fetchedThings.concat response2...
 
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -97,7 +149,7 @@ updateThing = (thing, testMode, callback) ->
 				body: thing
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200 and json.id?
+				if !error && response.statusCode == 200 and json.codeName?
 					callback json
 				else
 					console.log 'got ajax error trying to update lsThing'
@@ -314,7 +366,7 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 			else
 				console.log 'got ajax error trying to lookup lsThing name'
 				console.log error
-				console.log jsonthing
+				console.log json
 				console.log response
 				callback json
 		)

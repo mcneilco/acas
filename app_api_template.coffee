@@ -24,8 +24,8 @@ startApp = ->
 	global.app = express()
 	app.configure ->
 		app.set 'port', config.all.server.nodeapi.port
-#		app.set 'views', __dirname + '/views'
-#		app.set 'view engine', 'jade'
+		app.set 'views', __dirname + '/views'
+		app.set 'view engine', 'jade'
 		app.use express.favicon()
 		app.use express.logger('dev')
 		app.use express.json()
@@ -38,6 +38,8 @@ startApp = ->
 	#We just need the get user service
 	loginRoutes = require './routes/loginRoutes'
 	loginRoutes.setupAPIRoutes(app)
+	indexRoutes = require('./routes/index.js');
+	indexRoutes.setupAPIRoutes(app);
 
 	process.on 'uncaughtException', (err) ->
 		console.error 'Caught api exception: ' + err.stack

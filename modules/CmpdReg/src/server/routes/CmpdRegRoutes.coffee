@@ -1,6 +1,7 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/cmpdReg', exports.postAssignedProperties
 	app.get '/cmpdReg/scientists', exports.getBasicCmpdReg
+	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/cmpdReg', loginRoutes.ensureAuthenticated, exports.cmpdRegIndex
@@ -45,8 +46,8 @@ exports.cmpdRegIndex = (req, res) ->
 	grantedRoles = _.map req.user.roles, (role) ->
 		role.roleEntry.roleName
 	console.log grantedRoles
-	isChemist = (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
-	isAdmin = (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
+	isChemist = !config.all.client.roles.cmpdreg?.chemistRole? || (config.all.client.roles.cmpdreg?.chemistRole? && config.all.client.roles.cmpdreg.chemistRole in grantedRoles)
+	isAdmin = !config.all.client.roles.cmpdreg?.adminRole? || (config.all.client.roles.cmpdreg?.adminRole? && config.all.client.roles.cmpdreg.adminRole in grantedRoles)
 	global.specRunnerTestmode = if global.stubsMode then true else false
 	scriptsToLoad = scriptPaths.requiredScripts.concat(scriptPaths.applicationScripts)
 	if config.all.client.require.login
@@ -314,6 +315,7 @@ exports.getMetaLot = (req, resp) ->
 	endOfUrl = (req.originalUrl).replace /\/cmpdreg\/metalots/, ""
 	cmpdRegCall = config.all.client.service.cmpdReg.persistence.basepath + '/metalots' + endOfUrl
 	console.log cmpdRegCall
+	cmpdRegConfig = require '../public/CmpdReg/client/custom/configuration.json'
 	request(
 		method: 'GET'
 		url: cmpdRegCall
@@ -325,22 +327,33 @@ exports.getMetaLot = (req, resp) ->
 		console.log json
 
 		if !error
-			if json?.lot?.project?.code?
-				projectCode = json.lot.project.code
-				exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
-					if statusCode != 200
-						resp.statusCode = statusCode
-						resp.end JSON.stringify acasProjectsForUsers
-					if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
-						resp.json json
-					else
-						console.log "user does not have permissions to the lot's project"
-						resp.statusCode = 500
-						resp.end JSON.stringify "Lot does not exist"
-			else
-				console.log "could not find lot"
+			if not json.lot?
 				resp.statusCode = 500
 				resp.end JSON.stringify "Could not find lot"
+				return			
+
+			if json?.lot?.project?.code?
+				projectCode = json.lot.project.code
+				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+					exports.getACASProjects req, (statusCode, acasProjectsForUsers) =>
+						if statusCode != 200
+							resp.statusCode = statusCode
+							resp.end JSON.stringify acasProjectsForUsers
+						if _.where(acasProjectsForUsers, {code: projectCode}).length > 0
+							resp.json json
+						else
+							console.log "user does not have permissions to the lot's project"
+							resp.statusCode = 500
+							resp.end JSON.stringify "Lot does not exist"
+				else
+					resp.json json
+			else #no project attr in lot
+				if cmpdRegConfig.metaLot.useProjectRolesToRestrictLotDetails
+					resp.statusCode = 500
+					resp.end JSON.stringify "Could not find lot"
+				else
+					resp.json json
+
 		else
 			console.log 'got ajax error trying to get CmpdReg MetaLot'
 			console.log error

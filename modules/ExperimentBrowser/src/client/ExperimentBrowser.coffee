@@ -103,7 +103,11 @@ class window.ExperimentSearchController extends AbstractFormController
 
 	selectedExperimentUpdated: (experiment) =>
 		@trigger "selectedExperimentUpdated"
-		experimentController = new ExperimentBaseController
+		if window.conf.experiment?.mainControllerClassName?
+			exptControllerClassName = window.conf.experiment.mainControllerClassName
+		else
+			exptControllerClassName = "ExperimentBaseController"
+		experimentController = new window[exptControllerClassName]
 			model: experiment
 			el: $('.bv_experimentBaseController')
 		#protocolFilter: "?protocolKind=FLIPR"
@@ -114,9 +118,13 @@ class window.ExperimentSearchController extends AbstractFormController
 	setupExperimentSummaryTable: (experiments) =>
 		#@$(".bv_searchStatusIndicator").addClass "hide"
 		$(".bv_experimentTableController").removeClass "hide"
+		if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+			experimentListClass = "EnhancedExperimentList"
+		else
+			experimentListClass = "ExperimentList"
 		@experimentSummaryTable = new ExperimentSummaryTableController
 			el: $(".bv_experimentTableController")
-			collection: new ExperimentList experiments
+			collection: new window[experimentListClass] experiments
 
 		@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 
@@ -232,9 +240,18 @@ class window.ExperimentRowSummaryController extends Backbone.View
 		protocolBestName = @model.get('protocol').get('lsLabels').pickBestName()
 		if protocolBestName
 			protocolBestName = @model.get('protocol').get('lsLabels').pickBestName().get('labelText')
+		if @model.get('lsKind') is "study"
+			if @model.get('lsLabels') not instanceof LabelList
+				@model.set 'lsLabels',  new LabelList @model.get('lsLabels')
+			if @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			else
+				code = @model.get("codeName")
+		else
+			code = @model.get("codeName")
 		toDisplay =
 			experimentName: experimentBestName
-			experimentCode: @model.get('codeName')
+			experimentCode: code
 			protocolCode: @model.get('protocol').get("codeName")
 			protocolName: protocolBestName
 			scientist: @model.getScientist().get('codeValue')
@@ -269,11 +286,14 @@ class window.ExperimentSummaryTableController extends Backbone.View
 		else
 			$(".bv_noMatchingExperimentsFoundMessage"+@domSuffix).addClass "hide"
 			@collection.each (exp) =>
-				hideStatusesList = null
-				if window.conf.entity?.hideStatuses?
-					hideStatusesList = window.conf.entity.hideStatuses
-				#non-admin users can't see experiments with statuses in hideStatusesList
-				unless (hideStatusesList? and hideStatusesList.length > 0 and hideStatusesList.indexOf(exp.getStatus().get 'codeValue') > -1 and !(UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, ["admin"]))
+				canViewDeleted = @canViewDeleted(exp)
+				if exp.getStatus().get('codeValue') is 'deleted'
+					if canViewDeleted
+						ersc = new ExperimentRowSummaryController
+							model: exp
+						ersc.on "gotClick", @selectedRowChanged
+						@$("tbody").append ersc.render().el
+				else
 					ersc = new ExperimentRowSummaryController
 						model: exp
 					ersc.on "gotClick", @selectedRowChanged
@@ -284,6 +304,28 @@ class window.ExperimentSummaryTableController extends Backbone.View
 
 		@
 
+	canViewDeleted: (exp) ->
+		if window.conf.entity?.viewDeletedRoles?
+			rolesToTest = []
+			for role in window.conf.entity.viewDeletedRoles.split(",")
+				role = $.trim(role)
+				if role is 'entityScientist'
+					if (window.AppLaunchParams.loginUserName is exp.getScientist().get('codeValue'))
+						return true
+				else if role is 'projectAdmin'
+					projectAdminRole =
+						lsType: "Project"
+						lsKind: exp.getProjectCode().get('codeValue')
+						roleName: "Administrator"
+					if UtilityFunctions::testUserHasRoleTypeKindName(window.AppLaunchParams.loginUser, [projectAdminRole])
+						return true
+				else
+					rolesToTest.push role
+			if rolesToTest.length is 0
+				return false
+			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
+				return false
+		return true
 
 class window.ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())
@@ -322,8 +364,12 @@ class window.ExperimentBrowserController extends Backbone.View
 		else
 			$(".bv_searchExperimentsStatusIndicator").addClass "hide"
 			@$(".bv_experimentTableController").removeClass "hide"
+			if window.conf.experiment?.mainControllerClassName? and window.conf.experiment.mainControllerClassName is "EnhancedExperimentBaseController"
+				experimentListClass = "EnhancedExperimentList"
+			else
+				experimentListClass = "ExperimentList"
 			@experimentSummaryTable = new ExperimentSummaryTableController
-				collection: new ExperimentList experiments
+				collection: new window[experimentListClass] experiments
 
 			@experimentSummaryTable.on "selectedRowUpdated", @selectedExperimentUpdated
 			$(".bv_experimentTableController").html @experimentSummaryTable.render().el
@@ -343,12 +389,29 @@ class window.ExperimentBrowserController extends Backbone.View
 				protocolKindFilter: "?protocolKind=Bio Activity"
 				model: new PrimaryScreenExperiment experiment.attributes
 				readOnly: true
+		else if experiment.get('lsKind') is "study"
+			@experimentController = new StudyTrackerExperimentController
+				protocolKindFilter: "?protocolKind=study"
+				model: new StudyTrackerExperiment experiment.attributes
+				readOnly: true
 		else
-			@experimentController = new ExperimentBaseController
-				model: new Experiment experiment.attributes
+			if window.conf.experiment?.mainControllerClassName?
+				exptControllerClassName = window.conf.experiment.mainControllerClassName
+				if exptControllerClassName is "EnhancedExperimentBaseController"
+					model = new EnhancedExperiment experiment.attributes
+				else
+					model = new Experiment experiment.attributes
+			else
+				exptControllerClassName = "ExperimentBaseController"
+				model = new Experiment experiment.attributes
+			@experimentController = new window[exptControllerClassName]
+				model: model
 				readOnly: true
 
 		$('.bv_experimentBaseController').html @experimentController.render().el
+		#hide the Open in Data Viewer button
+		console.log "hiding bv_openInQueryToolWrapper"
+		@experimentController.$('.bv_openInQueryToolWrapper').hide()
 		if experiment.get('lsKind') is "Bio Activity Screen"
 			@experimentController.$('.bv_experimentNameLabel').html "*Parent Experiment Name"
 			@experimentController.$('.bv_group_protocolCode').hide()
@@ -418,7 +481,16 @@ class window.ExperimentBrowserController extends Backbone.View
 		return true
 
 	handleDeleteExperimentClicked: =>
-		@$(".bv_experimentCodeName").html @experimentController.model.get("codeName")
+		if @experimentController.model.get('lsKind') is "study"
+			if @experimentController.model.get('lsLabels') not instanceof LabelList
+				@experimentController.model.set 'lsLabels',  new LabelList @model.get('lsLabels')
+			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			else
+				code = @experimentController.model.get("codeName")
+		else
+			code = @experimentController.model.get("codeName")
+		@$(".bv_experimentCodeName").html code
 		@$(".bv_deleteButtons").removeClass "hide"
 		@$(".bv_okayButton").addClass "hide"
 		@$(".bv_errorDeletingExperimentMessage").addClass "hide"
@@ -454,18 +526,43 @@ class window.ExperimentBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteExperiment").modal('hide')
 
 	handleEditExperimentClicked: =>
-		window.open("/entity/edit/codeName/#{@experimentController.model.get("codeName")}",'_blank');
+		if @experimentController.model.get('lsKind') is 'study'
+			if @experimentController.model.get('lsLabels') not instanceof LabelList
+				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
+			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			else
+				code = @experimentController.model.get("codeName")
+		else
+			code = @experimentController.model.get("codeName")
+		window.open("/entity/edit/codeName/#{code}",'_blank');
 
 	handleDuplicateExperimentClicked: =>
 		experimentKind = @experimentController.model.get('lsKind')
 		if experimentKind is "Bio Activity"
 			window.open("/entity/copy/primary_screen_experiment/#{@experimentController.model.get("codeName")}",'_blank');
+		else if experimentKind is "study"
+			if @experimentController.model.get('lsLabels') not instanceof LabelList
+				@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
+			if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+				code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+			else
+				code = @experimentController.model.get("codeName")
+			window.open("/entity/copy/study_tracker_experiment/#{code}",'_blank');
 		else
 			window.open("/entity/copy/experiment_base/#{@experimentController.model.get("codeName")}",'_blank');
 
 	handleOpenInQueryToolClicked: =>
 		unless @$('.bv_openInQueryToolButton').hasClass 'dropdown-toggle'
-			window.open("/openExptInQueryTool?experiment=#{@experimentController.model.get("codeName")}",'_blank')
+			experimentKind = @experimentController.model.get('lsKind')
+			if experimentKind is "study"
+				if @experimentController.model.get('lsLabels') not instanceof LabelList
+					@experimentController.model.set 'lsLabels',  new LabelList @experimentController.model.get('lsLabels')
+				if @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id').length > 0
+					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
+				else
+					code = @experimentController.model.get("codeName")
+			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
 
 	formatOpenInQueryToolButton: =>
 		@$('.bv_viewerOptions').empty()

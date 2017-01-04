@@ -1,9 +1,9 @@
 #!/usr/bin/python
 """
-Demonstrate creating a LiveReport
+Create a Live Report in LiveDesign with data from provided ACAS experiment.
 
-Running the examples requires the Python Requests module to be installed. See
-http://docs.python-requests.org/en/latest/user/install/ for installation instructions.
+By:
+Brian Fielder
 
 """
 
@@ -22,18 +22,12 @@ http_client.HTTPConnection.debuglevel = 0
 import ldclient
 from ldclient.client import LDClient as Api
 from ldclient.client import LiveReport
-from ldclient.models import ViewSelection
 from ldclient.models import Project
 
 def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId, ldClientVersion):
 
-   
     lr = LiveReport("Live Report of ACAS Registered data", 
                     "Contains the data just loaded",
-                    "BY_CACHEBUILDER",
-                    False,
-                    False,
-                    view_selection=ViewSelection("=", "Assay Display"),
                     project_id = projectId)
 
     lr = api.create_live_report(lr)
@@ -48,6 +42,7 @@ def make_acas_live_report(api, compound_ids, assays_to_add, database, projectId,
         assay_column_ids = []
         for assay_to_add in assays_to_add:
             assay_tree=api.get_folder_tree_data(projectId, assay_to_add['protocolName'])
+            print assay_tree
             if type(assay_tree) is list:
                 assay_tree=assay_tree[0]
             while assay_tree['name'] != assay_to_add['protocolName'] and len(assay_tree['children']) > 0:
@@ -122,8 +117,9 @@ def main():
     endpoint = args['endpoint']
     username = args['username']
     password = args['password']
-    database = args['database']
-    
+    #database = args['database']
+    database = 'ACAS'
+
     compound_ids=args['input']['compounds']
     assays_to_add=args['input']['assays']
     try:
@@ -159,4 +155,5 @@ if __name__ == '__main__':
     main()
 
     
- 
+
+

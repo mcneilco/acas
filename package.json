@@ -10,9 +10,9 @@
     "debugbrk": "node --debug-brk=5858 --nolazy app.js",
     "dev": "grunt build --conf && (grunt &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
     "devdebugbrk": "grunt build --conf && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devstubs": "grunt build --conf && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "postinstall": "grunt build",
-    "clean": "grunt clean"
+    "devstubs": "grunt build --conf && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts -w src/spec",
+    "postinstall": "grunt build --conf",
+   "clean": "grunt clean"
   },
   "dependencies": {
     "assert": "~1.1.1",
@@ -69,7 +69,8 @@
     "exports-loader": "*",
     "extract-text-webpack-plugin": "*",
     "url-loader": "*",
-    "file-loader": "*"
+    "file-loader": "*",
+    "mochawesome": "*"
   },
   "devDependencies": {
     "gitignore-to-glob": "*",

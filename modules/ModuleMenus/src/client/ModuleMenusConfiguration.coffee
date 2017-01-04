@@ -16,12 +16,12 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false
 		menuName: "Protocol Editor"
-		mainControllerClassName: "ProtocolBaseController"
+		mainControllerClassName: window.conf.protocol.mainControllerClassName
 		autoLaunchName:"protocol_base"
 	,
 		isHeader: false
 		menuName: "Experiment Editor"
-		mainControllerClassName: "ExperimentBaseController"
+		mainControllerClassName: window.conf.experiment.mainControllerClassName
 		autoLaunchName:"experiment_base"
 	,
 		isHeader: false
@@ -32,9 +32,6 @@ window.ModuleMenusConfiguration =
 		isHeader: false, menuName: "Example Thing"
 		mainControllerClassName: "ExampleThingController"
 		autoLaunchName:"cationic_block"
-	,
-		isHeader: true
-		menuName: "Inventory"
 	,
 		isHeader: true
 		menuName: "Search and Edit"
@@ -59,5 +56,11 @@ window.ModuleMenusConfiguration =
 	,
 		isHeader: false, menuName: "Logging"
 		mainControllerClassName: "LoggingController"
+		requireUserRoles: []
+	,
+		isHeader: false
+		menuName: "System Test"
+		mainControllerClassName: "SystemTestController"
+		autoLaunchName:"system_test"
 		requireUserRoles: []
 	]

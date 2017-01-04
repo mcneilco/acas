@@ -78,14 +78,14 @@ class window.BaseEntity extends Backbone.Model
 		status
 
 	getAttachedFiles: (fileTypes) =>
-		#get list of possible kinds of analytical files
+#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
 		for type in fileTypes
 			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
 			if analyticalFileValues.length > 0 and type.code != "unassigned"
-				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
-				#add new afm to attach file list
+#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+#add new afm to attach file list
 				for file in analyticalFileValues
 					if file.get('ignored') is false
 						afm = new AttachFile
@@ -191,20 +191,22 @@ class window.BaseEntity extends Backbone.Model
 		copiedStates = new StateList()
 		origStates = @get('lsStates')
 		origStates.each (st) ->
-			copiedState = new State(_.clone(st.attributes))
-			copiedState.unset 'id'
-			copiedState.unset 'lsTransactions'
-			copiedState.unset 'lsValues'
-			copiedValues = new ValueList()
-			origValues = st.get('lsValues')
-			origValues.each (sv) ->
-				unless sv.attributes.lsType == 'fileValue'
-					copiedVal = new Value(sv.attributes)
-					copiedVal.unset 'id'
-					copiedVal.unset 'lsTransaction'
-					copiedValues.add(copiedVal)
-			copiedState.set lsValues: copiedValues
-			copiedStates.add(copiedState)
+			unless st.get('ignored')
+				copiedState = new State(_.clone(st.attributes))
+				copiedState.unset 'id'
+				copiedState.unset 'lsTransactions'
+				copiedState.unset 'lsValues'
+				copiedValues = new ValueList()
+				origValues = st.get('lsValues')
+				origValues.each (sv) ->
+					unless sv.get('ignored')
+						unless sv.attributes.lsType == 'fileValue'
+							copiedVal = new Value(sv.attributes)
+							copiedVal.unset 'id'
+							copiedVal.unset 'lsTransaction'
+							copiedValues.add(copiedVal)
+				copiedState.set lsValues: copiedValues
+				copiedStates.add(copiedState)
 		copiedEntity.set
 			lsLabels: new LabelList()
 			lsStates: copiedStates
