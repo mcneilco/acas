@@ -334,7 +334,7 @@ exports.getFileValuesFromCollection = (collection, ignoreSaved) ->
 	else
 		return null
 
-controllerRedirect= require '../conf/ControllerRedirectConf.js'
+controllerRedirect= require '../src/javascripts/ServerAPI/ControllerRedirectConf.js'
 exports.getRelativeFolderPathForPrefix = (prefix) ->
 	if controllerRedirect.controllerRedirectConf[prefix]?
 		entityDef = controllerRedirect.controllerRedirectConf[prefix]
