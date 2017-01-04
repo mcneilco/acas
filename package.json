@@ -12,7 +12,7 @@
     "devdebugbrk": "grunt build --conf && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
     "devstubs": "grunt build --conf && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts -w src/spec",
     "postinstall": "grunt build --conf",
-    "clean": "grunt clean"
+   "clean": "grunt clean"
   },
   "dependencies": {
     "assert": "~1.1.1",
