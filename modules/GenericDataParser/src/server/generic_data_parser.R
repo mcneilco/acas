@@ -493,7 +493,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
     requestIds$requests <- lapply(batchIds, function(input) {return(list(requestName=input))})
     response <- fromJSON(postURLcheckStatus(
       paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
-      toJSON(requestIds)))$results
+      jsonlite::toJSON(requestIds, auto_unbox=TRUE, simplifyDataFrame=FALSE, simplifyVector=FALSE)))$results
     preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
     names(preferredIdFrame) <- names(response[[1]])
     preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
