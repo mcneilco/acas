@@ -44,6 +44,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, callb
 
     serverError = error
     exptInfo = body
+    exptInfo.experimentCode = exptCode
     console.log @responseJSON
 
 
