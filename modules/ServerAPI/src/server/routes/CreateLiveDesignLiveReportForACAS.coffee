@@ -21,6 +21,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperiment = (exptCode, callback) ->
 
     serverError = error
     exptInfo = body
+    exptInfo.experimentCode = exptCode
     console.log @responseJSON
 
 
