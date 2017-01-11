@@ -569,7 +569,10 @@ exports.exportSearchResults = (req, resp) ->
 					resp.setHeader('Content-Type', 'plain/text')
 					absFilePath = json.reportFilePath
 					console.log absFilePath
-					relFilePath = absFilePath.split(config.all.server.datafiles.relative_path+path.sep)[1]
+					relPath = config.all.server.datafiles.relative_path
+					if relPath.substr(-1) is '/'
+						relPath = relPath.substring(0, relPath.length-1)
+					relFilePath = absFilePath.split(relPath+path.sep)[1]
 					console.log relFilePath
 					downloadFilePath = config.all.client.datafiles.downloadurl.prefix + relFilePath
 					json.reportFilePath = downloadFilePath
