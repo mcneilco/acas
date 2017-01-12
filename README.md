@@ -19,8 +19,8 @@ This Open Source release includes the Experiment Loader, Dose Response, and Comp
 ### Commercial Third-party (optional) requirements
 * Oracle
 * Compound Registration 
- * Chemaxon jchembase (with valid license)
- * Chemaxon marvinjs (with valid license)
+ * Chemaxon jchembase (with valid license to be obtained at sales [at] chemaxon.com See note in license section of this file)
+ * Chemaxon marvinjs (with valid license to be obtained at sales [at] chemaxon.com See note in license section of this file)
  
 
 ## Docker installation instructions
@@ -171,6 +171,8 @@ docker-compose restart tomcat
 ## License
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
 [License] (./LICENSE)
+
+ChemAxon license note: Subject to possession of valid license, you may use ChemAxon's proprietary software JChemBase and Marvin JS under John McNeil &Co., Inc's application as known as ACAS Compound Registration. Note that it is a restricted license, which is not valid for other (open source) applications. Terms and conditions of such license are covered by ChemAxon standard EULA (available at https://docs.chemaxon.com/display/docs/End+User+License+Agreement+(EULA)+LIC) with the exemption of bullet six (6) of section entitled 'YOU MAY NOT'. Please contact ChemAxon for obtaining the license at sales [at] chemaxon.com.
 
 ## Copyright
 [Copyright (c) 2012-2016 John McNeil & Co. Inc. All rights reserved.] (./COPYRIGHT.txt)
