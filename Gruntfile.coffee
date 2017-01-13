@@ -510,6 +510,10 @@ module.exports = (grunt) ->
 					dest: "#{grunt.config.get('build')}/public/CmpdReg"
 				]
 		execute:
+			prepare_module_conf_json:
+				options:
+					cwd: "#{grunt.config.get("build")}/src/javascripts/BuildUtilities/"
+				src: "#{grunt.config.get("build")}/src/javascripts/BuildUtilities/PrepareModuleConfJSON.js"
 			prepare_module_includes:
 				options:
 					cwd: "#{grunt.config.get("build")}/src/javascripts/BuildUtilities/"
