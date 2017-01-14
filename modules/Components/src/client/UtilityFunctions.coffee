@@ -18,7 +18,7 @@ class window.UtilityFunctions
 	testUserHasRoleTypeKindName: (user, roleInfo) ->
 		#roleInfo = list of objects with role type, kind, and name
 		if not user.roles? then return true
-		if not roleInfo? || roleNames.length == 0 then return true
+		if not roleInfo? || roleInfo.length == 0 then return true
 		match = false
 		for role in roleInfo
 			for userRole in user.roles
