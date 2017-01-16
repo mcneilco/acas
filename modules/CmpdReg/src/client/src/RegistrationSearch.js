@@ -88,6 +88,8 @@ $(function() {
 			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
 					mol = null;
+				else if ( molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1)
+					mol = null;
 				else
 					mol = molecule;
 				regSearch.set({

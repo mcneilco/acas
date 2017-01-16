@@ -130,6 +130,8 @@ $(function() {
 			this.marvinSketcherInstance.exportStructure(this.exportFormat).then(function(molecule) {
 				if ( molecule.indexOf("0  0  0  0  0  0  0  0  0  0999")>-1)
 					mol = '';
+				else if ( molecule.indexOf("M  V30 COUNTS 0 0 0 0 0")>-1)
+					mol = '';
 				else
 					mol = molecule;
 				var sf = self.makeSearchFormModel(mol);
