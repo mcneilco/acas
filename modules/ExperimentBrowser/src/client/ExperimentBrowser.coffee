@@ -562,6 +562,8 @@ class window.ExperimentBrowserController extends Backbone.View
 					code = @experimentController.model.get('lsLabels').getLabelByTypeAndKind('id', 'study id')[0].get('labelText')
 				else
 					code = @experimentController.model.get("codeName")
+			else
+					code = @experimentController.model.get("codeName")
 			window.open("/openExptInQueryTool?experiment=#{code}",'_blank')
 
 	formatOpenInQueryToolButton: =>
