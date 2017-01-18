@@ -491,13 +491,13 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   if (inputFormat == "Gene ID Data") {
     requestIds <- list()
     requestIds$requests <- lapply(batchIds, function(input) {return(list(requestName=input))})
-    response <- fromJSON(postURLcheckStatus(
+    response <- jsonlite::fromJSON(postURLcheckStatus(
       paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
-      jsonlite::toJSON(requestIds, auto_unbox=TRUE, simplifyDataFrame=FALSE, simplifyVector=FALSE)))$results
-    preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
-    names(preferredIdFrame) <- names(response[[1]])
-    preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
-    preferredIdDT <- as.data.table(preferredIdFrame)
+      jsonlite::toJSON(requestIds, auto_unbox=TRUE, simplifyDataFrame=FALSE, simplifyVector=FALSE)),simplifyDataFrame=TRUE)$results
+    #preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
+    #names(preferredIdFrame) <- names(response[[1]])
+    #preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+    preferredIdDT <- as.data.table(response)
     setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
     newBatchIds <- as.data.frame(preferredIdDT)
   } else {
