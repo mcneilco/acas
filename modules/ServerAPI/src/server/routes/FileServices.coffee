@@ -3,7 +3,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 setupRoutes = (app, loginRoutes, requireLogin) ->
 	config = require '../conf/compiled/conf.js'
-	upload = require '../node_modules_customized/jquery-file-upload-middleware'
+	upload = require 'jquery-file-upload-middleware'
 
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path

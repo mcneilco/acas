@@ -108,10 +108,10 @@ class window.LSFileChooserController extends Backbone.View
 		# this is a work around for hiding the delete button after files are uploaded
 		unless @options.hideDelete
 			@$('.delete').show()
-		_.each(data.result, (result) ->
+		_.each(data.result.files, (result) ->
 			self.listOfFileModels.push(new LSFileChooserModel({fileNameOnServer: result.name}))
 		)
-		this.trigger('fileUploader:uploadComplete', data.result[0].name)
+		this.trigger('fileUploader:uploadComplete', data.result.files[0].name)
 		if (@requiresValidation)
 			@$('.dv_validatingProgressBar').show("slide")
 		@delegateEvents()
