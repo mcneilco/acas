@@ -369,6 +369,7 @@ class window.CurveEditorController extends Backbone.View
 		'click .bv_update': 'handleUpdateClicked'
 		'click .bv_approve': 'handleApproveClicked'
 		'click .bv_reject': 'handleRejectClicked'
+		"change .bv_modelFitType": "handleModelFitTypeChanged"
 
 	initialize: =>
 		if @options.locked
@@ -380,7 +381,7 @@ class window.CurveEditorController extends Backbone.View
 			@$el.html @template()
 			if @locked
 				@$('.bv_update').attr 'disabled', 'disabled'
-
+			@setupModelFitTypeSelect()
 			curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
 			curveFitClasses =  curvefitClassesCollection.findWhere({code: @model.get('renderingHint')})
 			if curveFitClasses?
@@ -435,6 +436,72 @@ class window.CurveEditorController extends Backbone.View
 		else
 			@$el.html "No curve selected"
 
+	setupModelFitTypeSelect: =>
+		modelFitType = @model.get('curveAttributes').renderingHint
+		@modelFitTypeList = new PickListList()
+		@modelFitTypeList.url = "/api/codetables/model fit/type"
+		@modelFitTypeListController = new PickListSelectController
+			el: @$('.bv_modelFitType')
+			collection: @modelFitTypeList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Model Fit Type"
+			selectedCode: modelFitType
+
+	handleModelFitTypeChanged: ->
+		console.log @model.get('curveAttributes').renderingHint
+		console.log @$('.bv_modelFitType').val()
+		@model.set 'renderingHint', @$('.bv_modelFitType').val()
+		@model.get('curveAttributes').renderingHint = @model.get('renderingHint')
+		@setupParameterController(@model.get('curveAttributes').renderingHint)
+		if @drapc?
+			@stopListening @drapc.model, 'change'
+			@listenTo @drapc.model, 'change', @handleParametersChanged
+			@handleParametersChanged()
+
+	setupParameterController: (modelFitType) =>
+		curvefitClassesCollection = new Backbone.Collection $.parseJSON window.conf.curvefit.modelfitparameter.classes
+		curveFitClasses =  curvefitClassesCollection.findWhere({code: modelFitType})
+		if curveFitClasses?
+			parametersClass =  curveFitClasses.get 'parametersClass'
+			drapType = window[parametersClass]
+			controllerClass =  curveFitClasses.get 'parametersController'
+			drapcType = window[controllerClass]
+		else
+			drapType = 'unassigned'
+
+		if drapType is "unassigned"
+			@$('.bv_analysisParameterForm').empty()
+			# @$('.bv_fitModelButton').hide()
+		else
+			# @$('.bv_fitModelButton').show()
+			if @options? && @options.initialAnalysisParameters?
+				drap = new drapType @options.initialAnalysisParameters
+			else
+				drap = new drapType()
+			@drapc = new drapcType
+				el: @$('.bv_analysisParameterForm')
+				model: drap
+			@drapc.setFormTitle "Fit Criteria"
+
+			@stopListening @drapc.model, 'change'
+			@listenTo @drapc.model, 'change', @handleParametersChanged
+
+			# @parameterController.on 'amDirty', =>
+			# 	@trigger 'amDirty'
+			# @parameterController.on 'amClean', =>
+			# 	@trigger 'amClean'
+			# @parameterController.on 'valid', @paramsValid
+			# @parameterController.on 'invalid', @paramsInvalid
+			@drapc.render()
+
+	paramsValid: =>
+		# @$('.bv_fitModelButton').removeAttr('disabled')
+		alert "valid"
+
+	paramsInvalid: =>
+		alert "invalid"
+
 	setModel: (model)->
 		if @model?
 			@deleteRsession()
@@ -452,6 +519,7 @@ class window.CurveEditorController extends Backbone.View
 		@model.save({action: 'pointsChanged', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
 
 	handleParametersChanged: =>
+		console.log "HERE"
 		if @drapc.model.isValid()
 			UtilityFunctions::showProgressModal @$('.bv_statusDropDown')
 			@model.save({action: 'parametersChanged', user: window.AppLaunchParams.loginUserName}, {success :@handleUpdateSuccess, error: @handleUpdateError})
