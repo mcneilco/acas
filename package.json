@@ -8,9 +8,9 @@
     "startstubs": "node app.js stubsMode",
     "debug": "node --debug=5858 --nolazy app.js",
     "debugbrk": "node --debug-brk=5858 --nolazy app.js",
-    "dev": "grunt build --conf && (grunt &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devdebugbrk": "grunt build --conf && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devstubs": "grunt build --conf && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts -w src/spec",
+    "dev": "grunt build && (grunt &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "devdebugbrk": "grunt build && (grunt &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "devstubs": "grunt build && (grunt &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts",
     "postinstall": "grunt build",
     "clean": "grunt clean"
   },
@@ -70,7 +70,7 @@
     "extract-text-webpack-plugin": "*",
     "url-loader": "*",
     "file-loader": "*",
-    "mochawesome": "*"
+    "jquery-file-upload-middleware": ">=0.1.7"
   },
   "devDependencies": {
     "gitignore-to-glob": "*",
