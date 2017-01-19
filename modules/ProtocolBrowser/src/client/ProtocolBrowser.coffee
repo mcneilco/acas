@@ -198,7 +198,7 @@ class window.ProtocolBrowserController extends Backbone.View
 			@$('.bv_deleteProtocol').hide()
 			@$('.bv_editProtocol').hide()
 			@$('.bv_duplicateProtocol').hide()
-			@$('.bv_createExperiment').show()
+			@$('.bv_createExperiment').hide()
 		else
 			@$('.bv_duplicateProtocol').show()
 			@$('.bv_createExperiment').show()
