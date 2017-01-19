@@ -10,9 +10,12 @@ myMessenger$logger$debug("getting compounds and result types")
 library(plyr)
 
 tryCatch({
-  qu <- paste0("SELECT DISTINCT aagr.tested_lot FROM 
+  qu <- paste0("SELECT DISTINCT parent.corp_name AS parent_corp_name FROM 
             api_analysis_group_results aagr
                JOIN api_experiment e ON e.id = aagr.experiment_id
+               JOIN compound.lot ON aagr.tested_lot = lot.corp_name
+               JOIN compound.salt_form ON lot.salt_form = salt_form.id
+               JOIN compound.parent ON parent.id = salt_form.parent
                WHERE e.code_name = '", GET$experiment, "'")
   testedLotDF <- query(qu)
   names(testedLotDF) <- tolower(names(testedLotDF))
@@ -30,7 +33,7 @@ tryCatch({
   names(projectDF) <- tolower(names(projectDF))
   headerList <- dlply(lsKindDF, .variables = c("label_text", "ls_kind"), .fun = function(x) {list(protocolName=x$label_text, resultType=x$ls_kind)})
   names(headerList) <- NULL
-  output <- list(compounds = gsub("([^-]+-[^-]+).*", "\\1", x = testedLotDF$tested_lot), 
+  output <- list(compounds = testedLotDF$parent_corp_name, 
                  assays = headerList,
                  project = projectDF$project[1])
   cat(toJSON(output))

@@ -1730,13 +1730,6 @@ createNewProtocol <- function(metaData, lsTransaction, recordedBy) {
                                                                     labelText=metaData$'Protocol Name'[1],
                                                                     preferred=TRUE)
   
-  protocolLabels[[length(protocolLabels)+1]] <- createProtocolLabel(lsTransaction = lsTransaction, 
-                                                                    recordedBy=recordedBy, 
-                                                                    lsType="name", 
-                                                                    lsKind="protocol name",
-                                                                    labelText=metaData$'Protocol Name'[1],
-                                                                    preferred=TRUE)
-  
   # Create the protocol
   protocol <- createProtocol(lsTransaction = lsTransaction,
                              shortDescription="protocol created by generic data parser",  

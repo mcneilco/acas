@@ -1231,19 +1231,18 @@ class window.ProjectController extends AbstractFormController
 	syncRoles: =>
 		@$('.bv_syncingRolesModal').modal
 			backdrop: 'static'
-		@$('.bv_syncingRolesModal').on 'hidden.bs.modal', =>
-			@$('.bv_syncProjectUsersError').modal 'show'
 		$.ajax
 			type: 'GET'
 			url: "/api/syncLiveDesignProjectsUsers"
 			error: (err) =>
 				console.log "should hide modal now"
 				@$('.bv_syncingRolesModal').modal 'hide'
+				@$('.bv_syncProjectUsersError').modal 'show'
 				@$('.bv_syncProjectUsersErrorMessage').html err.responseText
-#				@$('.bv_bv_syncingRolesModal').on 'hide.bs.modal
 				@model.trigger 'saveFailed'
 			success: (json) =>
-				@$('.bv_bv_syncingRolesModal').modal 'hide'
+				@$('.bv_syncingRolesModal').modal 'hide'
+				@$('.bv_syncProjectUsersSuccess').modal 'show'
 				console.log 'successfully synced live design project users'
 
 	validationError: =>
