@@ -69,6 +69,9 @@
 				typeName: "stringValue"
 				kindName: "notebook"
 			,
+				typeName: "stringValue"
+				kindName: "notebook page"
+			,
 				typeName: "clobValue"
 				kindName: "experiment details"
 			,
@@ -128,6 +131,9 @@
 			,
 				typeName: "inlineFileValue"
 				kindName: "image file"
+			,
+				typeName: "fileValue"
+				kindName: "report file"
 			,
 				typeName: "fileValue"
 				kindName: "annotation file"

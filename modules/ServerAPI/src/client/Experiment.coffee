@@ -382,6 +382,10 @@ class window.ExperimentBaseController extends BaseEntityController
 			@readOnly = false
 		$(@el).empty()
 		$(@el).html @template(@model.attributes)
+		if window.conf.experiment?.hideFields? and window.conf.experiment.hideFields != null
+			for field in window.conf.experiment.hideFields.split(",")
+				field = $.trim field
+				@$('.bv_group_'+field).hide()
 		@model.on 'notUniqueName', =>
 #			@$('.bv_exptLink').attr("href", "/api/experiments/experimentName/"+@model.get('lsLabels').pickBestName().get('labelText'))
 #TODO: redirect user to experiment browser with a list of experiments with same name
@@ -513,6 +517,14 @@ class window.ExperimentBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Project"
 			selectedCode: @model.getProjectCode().get('codeValue')
+
+	setupStatusSelect: ->
+		@statusList = new PickListList()
+		@statusList.url = "/api/codetables/experiment/status"
+		@statusListController = new PickListSelectController
+			el: @$('.bv_status')
+			collection: @statusList
+			selectedCode: @model.getStatus().get 'codeValue'
 
 	setupTagList: ->
 		@$('.bv_tags').val ""

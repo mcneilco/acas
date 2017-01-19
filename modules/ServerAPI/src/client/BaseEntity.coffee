@@ -64,6 +64,10 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
+	getNotebookPage: ->
+		metadataKind = @.get('subclass') + " metadata"
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook page"
+
 	getStatus: ->
 		subclass = @.get('subclass')
 		metadataKind = subclass + " metadata"
@@ -215,6 +219,7 @@ class window.BaseEntity extends Backbone.Model
 			version: 0
 		copiedEntity.getStatus().set codeValue: "created"
 		copiedEntity.getNotebook().set stringValue: ""
+		copiedEntity.getNotebookPage().set stringValue: ""
 		copiedEntity.getScientist().set codeValue: "unassigned"
 
 		copiedEntity
@@ -232,6 +237,7 @@ class window.BaseEntityController extends AbstractFormController
 		"keyup .bv_comments": "handleCommentsChanged"
 		"keyup .bv_entityName": "handleNameChanged"
 		"keyup .bv_notebook": "handleNotebookChanged"
+		"keyup .bv_notebookPage": "handleNotebookPageChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"
@@ -273,6 +279,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_details').val(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').val(@model.getComments().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
@@ -455,6 +462,10 @@ class window.BaseEntityController extends AbstractFormController
 	handleNotebookChanged: =>
 		value = UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 		@handleValueChanged "Notebook", value
+
+	handleNotebookPageChanged: =>
+		value = UtilityFunctions::getTrimmedInput @$('.bv_notebookPage')
+		@handleValueChanged "NotebookPage", value
 
 	handleStatusChanged: =>
 		value = @statusListController.getSelectedCode()

@@ -246,9 +246,9 @@ client.protocol.save.project=true
 client.path=
 
 # Query tool settings
-client.service.result.viewer.displayName=Live Design
-client.service.result.viewer.configuredViewers=LiveDesign
-client.service.result.viewer.defaultViewer=LiveDesign
+client.service.result.viewer.displayName=Data Viewer
+client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.liveDesign.baseUrl=
 client.service.result.viewer.liveDesign.username=
 client.service.result.viewer.liveDesign.password=
@@ -418,6 +418,15 @@ server.service.cron.enable=true
 
 #TODO: remove later, support both
 server.service.genericSpecificPreProcessor=false
+
+# Comma-separated list should contain list of names of dom elements (without '.bv_group') to add hide class to
+# Example: client.experiment.hideFields=details,comments
+client.protocol.hideFields=
+client.experiment.hideFields=
+
+# Experiment status after successful SEL upload
+server.sel.experimentStatus=approved
+
 
 # User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
 client.entity.approvalRole=

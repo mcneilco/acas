@@ -1,0 +1,10 @@
+logoDivToken = <div id=Index>
+logoDivValue = <div id="IPageLogo"><div class="nav"><a class="nav" href="../../index.php">Home</a><a class="nav"  href="../../examples/">Examples</a><a class="nav"  href="../../docs/">Docs</a><a class="nav"  href="/download/">Download</a><a class="nav" href="../../info.php">Info</a><a class="nav"  href="../../donate.php">Donate</a></div></div><div id=Index>
+h1Token = <h1 class=CTitle>
+h1Value = <div class="CTitle logo"><div class="nav"><a class="nav" href="../../index.php">Home</a><a class="nav"  href="../../examples/">Examples</a><a class="nav"  href="../../docs/">Docs</a><a class="nav"  href="/download/">Download</a><a class="nav" href="../../info.php">Info</a><a class="nav"  href="../../donate.php">Donate</a></div>
+h1CloseToken = </h1>
+h1CloseValue = </div>
+PIh1Token = <h1 class=CTitle>
+PIh1Value = <div class="CTitle logo"><div class="nav"><a class="nav" href="../../../index.php">Home</a><a class="nav"  href="../../../examples/">Examples</a><a class="nav"  href="../../../docs/">Docs</a><a class="nav"  href="/download/">Download</a><a class="nav" href="../../../info.php">Info</a><a class="nav"  href="../../../donate.php">Donate</a></div>
+PIh1CloseToken = </h1>
+PIh1CloseValue = </div>
