@@ -14,10 +14,16 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		ssl: config.all.client.use.ssl
 		uploadUrl: "/dataFiles"
 
-	app.use '/uploads', upload.fileHandler()
+	app.use '/uploads', (req, res, next) ->
+		if req.isAuthenticated()
+			upload.fileHandler() req, res, next
+		else
+			res.send 401
+
 	upload.on "error", (e) ->
 		console.log "fileUpload: ", e.message
 	upload.on "end", (fileInfo) ->
+		console.log fileInfo
 		app.emit "file-uploaded", fileInfo
 
 
