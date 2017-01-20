@@ -28,15 +28,15 @@ module.exports = (grunt) ->
 			if acas_base == ""
 				acas_base = "."
 			sourceDirectories.push acas_base
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
 		if !grunt.option('baseonly') ||  true
 			acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || ''
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
-		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
-		if acas_shared == ""
-			acas_shared = "acas_shared"
-		sourceDirectories.push acas_shared
 #	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
@@ -716,15 +716,15 @@ module.exports = (grunt) ->
 			if acas_base == ""
 				acas_base = "."
 			sourceDirectories.push acas_base
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared 
 		if !grunt.option('baseonly') ||  true
 			acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || ''
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
-		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
-		if acas_shared == ""
-			acas_shared = "acas_shared"
-		sourceDirectories.push acas_shared
 
 	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
