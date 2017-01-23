@@ -429,7 +429,10 @@ class window.ExperimentBaseController extends BaseEntityController
 			@$('.bv_openInQueryToolWrapper').hide()
 		else
 			@setupExptNameChkbx()
-			@$('.bv_openInQueryToolWrapper').show()
+			if @model.getStatus().get('codeValue') is 'deleted'
+				@$('.bv_openInQueryToolWrapper').hide()
+			else
+				@$('.bv_openInQueryToolWrapper').show()
 			@$('.bv_queryToolDisplayName').html window.conf.service.result.viewer.displayName
 			@$('.bv_openInQueryToolLink').attr 'href', "/openExptInQueryTool?experiment="+@model.get('codeName')
 		@
