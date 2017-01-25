@@ -15,10 +15,11 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		uploadUrl: "/dataFiles"
 
 	app.use '/uploads', (req, res, next) ->
-		if req.isAuthenticated()
-			upload.fileHandler() req, res, next
-		else
-			res.send 401
+		if requireLogin
+			if !req.isAuthenticated()
+				res.send 401
+				return
+		upload.fileHandler() req, res, next
 
 
 	upload.on "error", (e) ->

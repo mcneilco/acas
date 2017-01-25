@@ -418,9 +418,11 @@ class window.ExperimentBrowserController extends Backbone.View
 		$(".bv_experimentBaseController").removeClass("hide")
 		$(".bv_experimentBaseControllerContainer").removeClass("hide")
 		if experiment.getStatus().get('codeValue') is "deleted"
+			@$('.bv_openInQueryTool').hide()
 			@$('.bv_deleteExperiment').hide()
 			@$('.bv_editExperiment').hide() #TODO for future releases, add in hiding duplicateExperiment
 		else
+			@$('.bv_openInQueryTool').show()
 			@formatOpenInQueryToolButton()
 			if @canEdit()
 				@$('.bv_editExperiment').show()

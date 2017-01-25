@@ -28,15 +28,15 @@ module.exports = (grunt) ->
 			if acas_base == ""
 				acas_base = "."
 			sourceDirectories.push acas_base
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared
 		if !grunt.option('baseonly') ||  true
 			acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || ''
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
-		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
-		if acas_shared == ""
-			acas_shared = "acas_shared"
-		sourceDirectories.push acas_shared
 #	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
@@ -229,7 +229,7 @@ module.exports = (grunt) ->
 						# console.log "outre:         #{matchedSrcPath.replace((grunt.config.get('sourceDirectories').map (i) -> i+'/').join('|'), "")}"
 						# console.log "outpath:       #{dest.replace(/\/$/, "")}/#{matchedSrcPath.replace((grunt.config.get('sourceDirectories').map (i) -> i+'/').join('|'), "")}"
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -240,7 +240,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/conf/*"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -251,7 +251,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/Gruntfile.coffee"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -270,7 +270,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/package.json"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -281,7 +281,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/views/*.jade", "#{i}/views/*.jade_template"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -292,7 +292,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/node_modules_customized/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -303,7 +303,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/public/stylesheets/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -413,7 +413,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/public/lib/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -424,7 +424,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/public/img/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath),"") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(sourcePath+"/", "") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
@@ -716,15 +716,15 @@ module.exports = (grunt) ->
 			if acas_base == ""
 				acas_base = "."
 			sourceDirectories.push acas_base
+		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
+		if acas_shared == ""
+			acas_shared = "acas_shared"
+		sourceDirectories.push acas_shared 
 		if !grunt.option('baseonly') ||  true
 			acas_custom =  path.relative '.', grunt.option('acasCustom') || process.env.ACAS_CUSTOM || ''
 			if acas_custom == ""
 				acas_custom = "acas_custom"
 			sourceDirectories.push acas_custom
-		acas_shared =  path.relative '.', grunt.option('acasShared') || process.env.ACAS_SHARED || ''
-		if acas_shared == ""
-			acas_shared = "acas_shared"
-		sourceDirectories.push acas_shared
 
 	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
