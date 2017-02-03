@@ -23,8 +23,8 @@ RUN set -ex \
     gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \
   done
 
-ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 4.4.7
+ENV NPM_CONFIG_LOGLEVEL warn
+ENV NODE_VERSION 6.9.3
 
 RUN curl -SLO "http://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
 	&& curl -SLO "http://nodejs.org/dist/v$NODE_VERSION/SHASUMS256.txt.asc" \
@@ -42,7 +42,7 @@ ENV     ACAS_BASE /home/runner/acas
 ENV     ACAS_CUSTOM /home/runner/acas_custom
 ENV     ACAS_SHARED /home/runner/acas_shared
 ENV     APACHE Redhat
-RUN     npm install -g grunt forever nodemon mocha coffee-script
+RUN     npm install -g gulpjs/gulp.git#4.0 forever nodemon mocha coffee-script
 COPY    package.json $ACAS_BASE/package.json
 RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
@@ -55,7 +55,7 @@ RUN     chown -R runner:runner $ACAS_BASE
 USER    runner
 RUN     mkdir -p $BUILD_PATH/node_modules && \
         cp -r node_modules $BUILD_PATH && \
-        npm install && \
+        npm install --no-configs && \
         mkdir $BUILD_PATH/privateUploads && \
         mkdir /home/runner/logs && \
         mkdir -p $BUILD_PATH/conf/compiled && \
