@@ -18,7 +18,7 @@ class window.LabelList extends Backbone.Collection
 
 	getCurrent: ->
 		@filter (lab) ->
-			!(lab.get 'ignored') && lab.get('labelText') != ""
+			!lab.get('ignored') && (lab.get('labelText') != "")
 
 	getNames: ->
 		_.filter @getCurrent(), (lab) ->

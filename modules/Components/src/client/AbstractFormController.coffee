@@ -4,6 +4,9 @@ class window.AbstractFormController extends Backbone.View
 # 		@errorOwnerName = 'MyControllerName'
 #   	@setBindings()
 
+	formFieldDefinitions: []
+	formFields: []
+
 	show: ->
 		$(@el).show()
 
@@ -77,3 +80,23 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags input").prop "placeholder", "Add tags"
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
+
+	setupFormFields: ->
+		for field in @formFieldDefinitions
+			opts =
+				model: @model.get(field.key)
+				inputClass: field.inputClass
+				formLabel: field.formLabel
+				placeholder: field.placeholder
+				required: field.required
+
+			switch field.fieldType
+				when 'label' then newField = new ACASFormLSLabelFieldController opts
+				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
+
+			@$("."+field.fieldWrapper).append newField.render().el
+			@formFields[field.key] = newField
+
+	setFormModels: ->
+			for valueKey, formField of @formFields
+				formField.setModel @model.get(valueKey)
