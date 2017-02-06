@@ -10,10 +10,9 @@ class window.ModuleLauncher extends Backbone.Model
 		autoLaunchName: null
 
 	requestActivation: ->
-		console.log "request activation"
-		if @get('autoLaunchName') is "dataViewer"
-			console.log @
-			console.log window.AppLaunchParams.moduleLaunchParams
+		if @get('externalLink')?
+			window.open(@get('externalLink'),'_blank');
+		else if @get('autoLaunchName') is "dataViewer"
 			window.open("/dataViewer",'_blank');
 		else
 			@trigger 'activationRequested', @
@@ -60,11 +59,11 @@ class window.ModuleLauncherMenuController extends Backbone.View
 					_.each roles, (r) =>
 						userRoles.push $.trim(r)
 				else
-					userRoles.push r
+					userRoles.push r			
 			if !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, userRoles
 				$(@el).attr 'title', "User is not authorized to use this feature"
 				@$('.bv_menuName').hide()
-				@$('.bv_menuName_disabled').show()
+		#				@$('.bv_menuName_disabled').show()
 
 		@
 
@@ -84,7 +83,10 @@ class window.ModuleLauncherMenuHeaderController extends Backbone.View
 		@model.bind "change", @render
 
 	render: =>
-		$(@el).html(@model.get('menuName'))
+		if (@model.get('requireUserRoles')? and !UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, @model.get('requireUserRoles'))
+			$(@el).hide()
+		else
+			$(@el).html(@model.get('menuName'))
 
 		@
 

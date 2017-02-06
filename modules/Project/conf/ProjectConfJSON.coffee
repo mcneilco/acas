@@ -62,6 +62,9 @@
 			,			
 				typeName: "numericValue"
 				kindName: "live design id"
+			,
+				typeName: "codeValue"
+				kindName: "is restricted"
 			]
 
 		labeltypes:
@@ -103,8 +106,16 @@
 				roleName: "ROLE_ACAS-USERS"
 			,
 				lsType: "System"
+				lsKind: "ACAS"
+				roleName: "ROLE_ACAS-ADMINS"
+			,
+				lsType: "System"
 				lsKind: "CmpdReg"
 				roleName: "ROLE_CMPDREG-USERS"
+			,
+				lsType: "System"
+				lsKind: "CmpdReg"
+				roleName: "ROLE_CMPDREG-ADMINS"
 			]
 
 		labelsequences:

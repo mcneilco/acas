@@ -8,6 +8,9 @@
 {isHeader: false, menuName: "Load From Generic Format", mainControllerClassName: "GenericDataParserController"}
 
 ###
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.post '/api/genericDataParser', exports.parseGenericData
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/genericDataParser', loginRoutes.ensureAuthenticated, exports.parseGenericData
 

@@ -54,6 +54,18 @@ class window.PickListOptionControllerForLsThing extends Backbone.View
 				else
 #Note: if some models in picklist don't have corpName, they will have their display value set to the name of the first option (ie "unassigned")
 					displayValue = @insertFirstOption.get('name')
+			else if @displayName is 'preferredName'
+				unless @model.get('lsLabels') instanceof LabelList
+					@model.set 'lsLabels', new LabelList @model.get('lsLabels')
+				unless @model.get('lsStates') instanceof StateList
+					@model.set 'lsStates', new StateList @model.get('lsStates')
+				name = @model.get('lsLabels').pickBestName()
+				if name?
+					displayValue = name.get('labelText')
+				else if @model.get('name')?
+					displayValue = @model.get('name')
+				else
+					displayValue = @insertFirstOption.get('name')
 			else if @model.get(@displayName)?
 				displayValue = @model.get(@displayName)
 			else

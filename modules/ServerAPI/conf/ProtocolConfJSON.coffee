@@ -56,11 +56,26 @@
 				typeName: "codeValue"
 				kindName: "protocol status"
 			,
+				typeName: "codeValue"
+				kindName: "review status"
+			,
+				typeName: "clobValue"
+				kindName: "materials"
+			,
+				typeName: "clobValue"
+				kindName: "equipment"
+			,
+				typeName: "clobValue"
+				kindName: "methods"
+			,
 				typeName: "clobValue"
 				kindName: "comments"
 			,
 				typeName: "stringValue"
 				kindName: "notebook"
+			,
+				typeName: "stringValue"
+				kindName: "notebook page"
 			,
 				typeName: "clobValue"
 				kindName: "protocol details"
@@ -162,6 +177,9 @@
 				typeName: "protocol"
 				kindName: "status"
 			,
+				typeName: "protocol"
+				kindName: "review status"
+			,
 				typeName: "assay"
 				kindName: "scientist"
 			,
@@ -259,6 +277,27 @@
 				codeOrigin: "ACAS DDICT"
 				code: "deleted"
 				name: "Deleted"
+				ignored: false
+			,
+				codeType: "protocol"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "in progress"
+				name: "In Progress"
+				ignored: false
+			,
+				codeType: "protocol"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "ready for review"
+				name: "Ready for Review"
+				ignored: false
+			,
+				codeType: "protocol"
+				codeKind: "review status"
+				codeOrigin: "ACAS DDICT"
+				code: "reviewed"
+				name: "Reviewed"
 				ignored: false
 			,
 				codeType: "assay"
@@ -426,6 +465,5 @@
 				thingTypeAndKind: "document_protocol"
 				latestNumber:0
 			]
-
 
 ) (if (typeof process is "undefined" or not process.versions) then window.protocolConfJSON = window.protocolConfJSON or {} else exports)

@@ -1,19 +1,21 @@
+exports.setupAPIRoutes = (app, loginRoutes) ->
+	app.get '/api/syncLiveDesignProjectsUsers', exports.syncLiveDesignProjectsUsers
+
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/syncLiveDesignProjectsUsers', loginRoutes.ensureAuthenticated, exports.syncLiveDesignProjectsUsers
-
 
 exports.syncLiveDesignProjectsUsers = (req, resp) ->
 	exports.getGroupsJSON (groupsJSON, acasGroupsAndProjects) ->
 		exports.getProjectsJSON (projectsJSON) ->
 			exports.getConfigJSON (configJSON) ->
-				caughtPythonErrors = false
+				caughtErrors = false
 				pythonErrors = []
-				exports.syncLiveDesignProjects caughtPythonErrors, pythonErrors, configJSON, projectsJSON, (caughtPythonErrors, pythonErrors) ->
-					console.debug caughtPythonErrors
+				exports.syncLiveDesignProjects caughtErrors, pythonErrors, configJSON, projectsJSON, (caughtErrors, pythonErrors) ->
+					console.debug caughtErrors
 					console.debug pythonErrors
-					exports.syncCmpdRegProjects req, acasGroupsAndProjects, (syncCmpdRegProjectsCallback) ->
-						exports.syncLiveDesignRoles caughtPythonErrors, pythonErrors, configJSON, groupsJSON, (caughtPythonErrors, pythonErrors) ->
-							if !caughtPythonErrors
+					exports.syncCmpdRegProjects req, acasGroupsAndProjects, caughtErrors, (syncCmpdRegProjectsCallback, caughtErrors) ->
+						exports.syncLiveDesignRoles caughtErrors, pythonErrors, configJSON, groupsJSON, (caughtErrors, pythonErrors) ->
+							if !caughtErrors
 								resp.statusCode = 200
 								console.log "Successfully synced projects and permissions with LiveDesign and Compound Reg"
 								resp.end "Successfully synced projects and permissions with LiveDesign and Compound Reg"
@@ -86,74 +88,113 @@ exports.getConfigJSON = (callback) ->
 			port: config.all.client.service.result.viewer.liveDesign.database.port
 	callback configJSON
 
-exports.syncLiveDesignProjects = (caughtPythonErrors, pythonErrors, configJSON, projectsJSON, callback) ->
-	exec = require('child_process').exec
-	config = require '../conf/compiled/conf.js'
-	#Call sync_projects.py to update list of projects in LiveDesign
-	command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
-	command += "\'"+(JSON.stringify configJSON)+"\' "+"\'"+(JSON.stringify projectsJSON)+"\'"
-	#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-	#		command += (JSON.stringify data)+"'"
-	console.log "About to call python using command: "+command
-	child = exec command,  (error, stdout, stderr) ->
-		reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-		reportURL = stdout.substr reportURLPos
-		#console.warn "stderr: " + stderr
-		console.log "stdout: " + stdout
-		if error?
-			caughtPythonErrors = true
-			console.error error
-			pythonErrors.push error
-		callback caughtPythonErrors, pythonErrors
+exports.syncLiveDesignProjects = (caughtErrors, pythonErrors, configJSON, projectsJSON, callback) ->
+	if exports.validateLiveDesignConfigs(configJSON)
+		exec = require('child_process').exec
+		config = require '../conf/compiled/conf.js'
+		#Call sync_projects.py to update list of projects in LiveDesign
+		command = "python ./src/python/ServerAPI/syncProjectsUsers/sync_projects.py "
+		command += "\'"+(JSON.stringify configJSON)+"\' "+"\'"+(JSON.stringify projectsJSON)+"\'"
+		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+		#		command += (JSON.stringify data)+"'"
+		console.log "About to call python using command: "+command
+		child = exec command,  (error, stdout, stderr) ->
+			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
+			reportURL = stdout.substr reportURLPos
+			#console.warn "stderr: " + stderr
+			console.log "stdout: " + stdout
+			if error?
+				caughtErrors = true
+				console.error error
+				pythonErrors.push error
+			callback caughtErrors, pythonErrors
+	else
+		console.warn "some live design configs are null, skipping sync of live design projects"
+		callback caughtErrors, pythonErrors
 
-exports.syncCmpdRegProjects = (req, acasGroupsAndProjects, callback) ->
-	cmpdRegRoutes = require '../routes/CmpdRegRoutes.js'
-	_ = require "underscore"
-	#Get or create projects in CmpdReg
-	projectCodes = _.pluck acasGroupsAndProjects.projects, 'code'
-	console.debug 'project codes are:' + JSON.stringify projectCodes
-	cmpdRegRoutes.getProjects req, (projectResponse) ->
-		foundProjects = JSON.parse projectResponse
-		foundProjectCodes = _.pluck foundProjects, 'code'
-		console.debug 'found projects are: '+foundProjectCodes
-		newProjectCodes = _.difference projectCodes, foundProjectCodes
-		newProjects = _.filter acasGroupsAndProjects.projects, (project) ->
-			return project.code in newProjectCodes
-		projectsToUpdate = _.filter acasGroupsAndProjects.projects, (project) ->
-			found = (_.findWhere foundProjects, {code: project.code})?
-			unchanged = (_.findWhere foundProjects, {code: project.code, name: project.name})?
-			return (found and !unchanged)
-		if (newProjects? and newProjects.length > 0) or (projectsToUpdate? and projectsToUpdate.length > 0)
-			if (newProjects? and newProjects.length > 0)
-				console.debug 'saving new projects with JSON: '+ JSON.stringify newProjects
-				cmpdRegRoutes.saveProjects newProjects, (saveProjectsResponse) ->
+exports.syncCmpdRegProjects = (req, acasGroupsAndProjects, caughtErrors, callback) ->
+	config = require '../conf/compiled/conf.js'
+	if config.all.server.project?.sync?.cmpdReg? && config.all.server.project.sync.cmpdReg
+		cmpdRegRoutes = require '../routes/CmpdRegRoutes.js'
+		_ = require "underscore"
+		#Get or create projects in CmpdReg
+		projectCodes = _.pluck acasGroupsAndProjects.projects, 'code'
+		console.debug 'project codes are:' + JSON.stringify projectCodes
+		cmpdRegRoutes.getProjects req, (projectResponse) ->
+			if (projectResponse.indexOf '<html>') > -1
+				console.error "Caught error getting CmpdReg projects"
+				console.error projectResponse
+				caughtErrors = true
+				callback 'ERROR', caughtErrors
+			foundProjects = JSON.parse projectResponse
+			foundProjectCodes = _.pluck foundProjects, 'code'
+			console.debug 'found projects are: '+foundProjectCodes
+			newProjectCodes = _.difference projectCodes, foundProjectCodes
+			newProjects = _.filter acasGroupsAndProjects.projects, (project) ->
+				return project.code in newProjectCodes
+			projectsToUpdate = _.filter acasGroupsAndProjects.projects, (project) ->
+				found = (_.findWhere foundProjects, {code: project.code})?
+				unchanged = (_.findWhere foundProjects, {code: project.code, name: project.name})?
+				return (found and !unchanged)
+			if (newProjects? and newProjects.length > 0) or (projectsToUpdate? and projectsToUpdate.length > 0)
+				if (newProjects? and newProjects.length > 0)
+					console.debug 'saving new projects with JSON: '+ JSON.stringify newProjects
+					cmpdRegRoutes.saveProjects newProjects, (saveProjectsResponse) ->
+						if (saveProjectsResponse.indexOf '<html>') > -1
+							console.error "Caught error saving CmpdReg projects"
+							console.error projectResponse
+							caughtErrors = true
+							callback 'ERROR', caughtErrors
+				else
+					for projectToUpdate in projectsToUpdate
+						oldProject = _.findWhere foundProjects, {code: projectToUpdate.code}
+						projectToUpdate.id = oldProject.id
+						projectToUpdate.version = oldProject.version
+					console.debug 'updating projects with JSON: '+ JSON.stringify projectsToUpdate
+					cmpdRegRoutes.updateProjects projectsToUpdate, (updateProjectsResponse) ->
+						if (updateProjectsResponse.indexOf '<html>') > -1
+							console.error "Caught error updating CmpdReg projects"
+							console.error updateProjectsResponse
+							caughtErrors = true
+							callback 'ERROR', caughtErrors
 			else
-				for projectToUpdate in projectsToUpdate
-					oldProject = _.findWhere foundProjects, {code: projectToUpdate.code}
-					projectToUpdate.id = oldProject.id
-					projectToUpdate.version = oldProject.version
-				console.debug 'updating projects with JSON: '+ JSON.stringify projectsToUpdate
-				cmpdRegRoutes.updateProjects projectsToUpdate, (updateProjectsResponse) ->
-		else
-			console.debug 'CmpdReg projects are up-to-date'
-		callback 'CmpdReg projects are up-to-date'
+				console.debug 'CmpdReg projects are up-to-date'
+			callback 'CmpdReg projects are up-to-date', caughtErrors
+	else
+		console.warn "config server.project.sync.cmpdReg is not set to true, skipping sync of CmpdReg projects"
+		callback 'Skipped sync of CmpdReg projects', caughtErrors
+
+exports.validateLiveDesignConfigs = (configJSON) ->
+	_ = require "underscore"
+	countNull = _.map configJSON, (configs) ->
+		nulls = _.pick configs, (config) ->
+			_.isNull config
+		return Object.keys(nulls).length
+	countNull = _.reduce countNull, (sum, num) ->
+		sum+num
+	, 0
+	return countNull == 0
 
 exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, groupsJSON, callback) ->
-	exec = require('child_process').exec
-	config = require '../conf/compiled/conf.js'
-	#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
-	command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
-	command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
-	#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
-	#		command += (JSON.stringify data)+"'"
-	console.log "About to call python using command: "+command
-	child = exec command,  (error, stdout, stderr) ->
-		reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
-		reportURL = stdout.substr reportURLPos
-		#console.warn "stderr: " + stderr
-		console.log "stdout: " + stdout
-		if error?
-			caughtPythonErrors = true
-			console.error error
-			pythonErrors.push error
+	if exports.validateLiveDesignConfigs(configJSON)
+		exec = require('child_process').exec
+		config = require '../conf/compiled/conf.js'
+		#Call ld_entitlements.py to update list of user-project ACLs in LiveDesign
+		command = "python ./src/python/ServerAPI/syncProjectsUsers/ld_entitlements.py "
+		command += "\'"+(JSON.stringify configJSON.ld_server)+"\' "+"\'"+(JSON.stringify groupsJSON)+"\'"
+		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
+		#		command += (JSON.stringify data)+"'"
+		console.log "About to call python using command: "+command
+		child = exec command,  (error, stdout, stderr) ->
+			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
+			reportURL = stdout.substr reportURLPos
+			#console.warn "stderr: " + stderr
+			console.log "stdout: " + stdout
+			if error?
+				caughtPythonErrors = true
+				console.error error
+				pythonErrors.push error
+			callback caughtPythonErrors, pythonErrors
+	else
+		console.warn "some live design configs are null, skipping sync of live design roles"
 		callback caughtPythonErrors, pythonErrors

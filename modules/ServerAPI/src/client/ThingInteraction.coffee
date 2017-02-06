@@ -93,7 +93,7 @@ class window.LsThingItxList extends Backbone.Collection
 		itxs = @getItxByTypeAndKind(type, kind)
 		orderedItx = []
 		i = 1
-		while i <= itxs.length
+		while i <= itxs.length+1
 			nextItx =  _.filter itxs, (itx) ->
 				order = itx.get('lsStates').getOrCreateValueByTypeAndKind 'metadata', 'composition', 'numericValue', 'order'
 				order.get('numericValue') == i

@@ -1,5 +1,6 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', exports.thingsByTypeKind
+	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -9,9 +10,16 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', exports.genericThingSearch
+	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', exports.getThingThingItxsByFirstThing
+	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', exports.getThingThingItxsBySecondThing
+	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndItxTypeKind
+	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndItxTypeKind
+	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
+	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
+	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', loginRoutes.ensureAuthenticated, exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
@@ -21,6 +29,12 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/validateName', loginRoutes.ensureAuthenticated, exports.validateName
 	app.get '/api/getAssembliesFromComponent/:lsType/:lsKind/:componentCode', loginRoutes.ensureAuthenticated, exports.getAssemblies
 	app.get '/api/genericSearch/things/:searchTerm', loginRoutes.ensureAuthenticated, exports.genericThingSearch
+	app.get '/api/getThingThingItxsByFirstThing/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThing
+	app.get '/api/getThingThingItxsBySecondThing/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThing
+	app.get '/api/getThingThingItxsByFirstThing/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndItxTypeKind
+	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndItxTypeKind
+	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
+	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -39,6 +53,56 @@ exports.thingsByTypeKind = (req, resp) ->
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 
+getThingByTypeAndKind = (lsType, lsKind, stub, callback) =>
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+lsType+"/"+lsKind
+	console.log "in getThingByTypeAndKind"
+	if stub
+		baseurl += "?with=stub"
+		console.log "baseurl for getting multiple"
+		console.log baseurl
+	request = require 'request'
+	request(
+		method: 'GET'
+		url: baseurl
+		json: true
+	, (error, response, json) =>
+		if !error && response.statusCode == 200
+			console.log "get json"
+			console.log json
+			callback json
+
+		else
+			console.log error
+			callback "error getting things with type: "+ lsType + " and kind: " + lsKind
+	)
+
+exports.thingsByTypeAndKinds = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.end JSON.stringify thingServiceTestJSON.batchList
+	else
+		config = require '../conf/compiled/conf.js'
+		serverUtilityFunctions = require './ServerUtilityFunctions.js'
+		kinds = req.params.lsKindsList.split(";") #lsKindsList = semi-colon delimited list
+		index = 0
+		fetchedThings = []
+		if index >= kinds.length
+			resp.json JSON.stringify fetchedThings
+		else
+			getThingByTypeAndKind req.params.lsType, kinds[0], false, (response) =>
+				if response.indexOf("error") > -1
+					resp.end JSON.stringify response
+				else
+					fetchedThings = response
+					getThingByTypeAndKind req.params.lsType, kinds[1], true, (response2) =>
+						if response2.indexOf("error") > -1
+							resp.end JSON.stringify response2
+						else
+							console.log fetchedThings
+							console.log "response2"
+							console.log response2
+							resp.json fetchedThings.concat response2...
 
 exports.thingByCodeName = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
@@ -59,6 +123,15 @@ exports.thingByCodeName = (req, resp) ->
 		else if req.query.stub
 			stub = "with=stub"
 			baseurl += "?#{stub}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+getThing = (req, codeName, callback) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		callback thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+codeName
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -66,17 +139,13 @@ exports.thingByCodeName = (req, resp) ->
 			json: true
 		, (error, response, json) =>
 			if !error && response.statusCode == 200
-				resp.end JSON.stringify json
+				callback json
 			else
-				console.log 'got ajax error'
+				console.log 'got ajax error trying to get lsThing after post/put'
 				console.log error
 				console.log json
 				console.log response
-				resp.statusCode = 500
-				if response? and response.statusCode == 404 and json?[0]? and json[0].errorLevel is "error" and json[0].message.indexOf("not found")>-1
-					resp.end JSON.stringify json
-				else
-					resp.end "Error getting thing by codeName"
+				callback "getting lsThing after post/put failed"
 		)
 
 
@@ -97,7 +166,7 @@ updateThing = (thing, testMode, callback) ->
 				body: thing
 				json: true
 			, (error, response, json) =>
-				if !error && response.statusCode == 200 and json.id?
+				if !error && response.statusCode == 200 and json.codeName?
 					callback json
 				else
 					console.log 'got ajax error trying to update lsThing'
@@ -159,13 +228,13 @@ postThing = (isBatch, req, resp) ->
 				json: true
 			, (error, response, json) =>
 				if !error && response.statusCode == 201
-					checkFilesAndUpdate json
+					getThing req, json.codeName, (thing) ->
+						checkFilesAndUpdate thing
 				else
 					console.log 'got ajax error trying to save lsThing'
 					console.log error
 					console.log json
 					console.log response
-					resp.end JSON.stringify "update lsThing failed"
 			)
 
 exports.postThingParent = (req, resp) ->
@@ -185,7 +254,8 @@ exports.putThing = (req, resp) ->
 
 	completeThingUpdate = ->
 		updateThing thingToSave, req.query.testMode, (updatedThing) ->
-			resp.json updatedThing
+			getThing req, updatedThing.codeName, (thing) ->
+				resp.json thing
 
 	fileSaveCompleted = (passed) ->
 		if !passed
@@ -241,19 +311,15 @@ exports.validateName = (req, resp) ->
 			body: req.body.data
 			json: true
 		, (error, response, json) =>
-			console.log "validate response"
-			console.log response.statusCode
-			console.log response.json
 			if !error && response.statusCode == 202
 				resp.json json
 			else if response.statusCode == 409
 				resp.json "not unique name"
 			else
-				console.log 'got ajax error trying to validate thing name'
+				console.log 'got ajax error trying to save thing parent'
 				console.log error
 				console.log json
 				console.log response
-				resp.json "validate name failed"
 		)
 
 exports.getAssemblies = (req, resp) ->
@@ -314,7 +380,7 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 			else
 				console.log 'got ajax error trying to lookup lsThing name'
 				console.log error
-				console.log jsonthing
+				console.log json
 				console.log response
 				callback json
 		)
@@ -370,3 +436,57 @@ exports.getProjectCodesFromNamesOrCodes = (codeRequest, callback) ->
 		results: results
 
 	callback response
+
+exports.getThingThingItxsByFirstThing = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing?firstthing="+req.params.firstThingId
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingThingItxsBySecondThing = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing?secondthing="+req.params.secondThingId
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingThingItxsByFirstThingAndItxTypeKind = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/#{req.params.lsType}/#{req.params.lsKind}?firstthing=#{req.params.firstThingId}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingThingItxsBySecondThingAndItxTypeKind = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/byfirstthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?firstthing=#{req.params.firstThingId}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)		
