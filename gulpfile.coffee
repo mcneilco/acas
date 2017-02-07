@@ -80,6 +80,11 @@ getTestFixuresPath = (path) ->
   path.dirname += '/testFixtures'
   return path
 
+getServiceTestsPath = (path) ->
+  path = getFirstFolderName(path)
+  path.dirname += '/serviceTests'
+  return path
+
 getPythonPath = (path) ->
   module = path.dirname.split('/')[0]
   if path.basename == 'python' and path.extname == ''
@@ -156,7 +161,7 @@ taskConfigs =
       src: getGlob('modules/**/spec/serviceTests/*.coffee', 'modules/public/conf/serviceTests/*.coffee')
       dest: build + '/src/spec'
       options: _.extend globalCoffeeOptions, {}
-      renameFunction: getFirstFolderName
+      renameFunction: getServiceTestsPath
   ],
   execute: [
         taskName: "npmInstall"
