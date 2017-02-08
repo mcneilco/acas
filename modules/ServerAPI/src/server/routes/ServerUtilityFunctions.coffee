@@ -1357,6 +1357,27 @@ class Container extends Backbone.Model
 					additionalValues: additionalValues
 				response.push responseObject
 		return response
+		
+	getLocationHistory: ->
+		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'
+		response = []
+		if lsStates?
+			lsStates.forEach (lsState) =>
+				additionalValues = lsState.get('lsValues').filter (value) ->
+					(!value.get('ignored')) and
+					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
+					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
+					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
+				responseObject = 
+					codeName: @get('codeName')
+					recordedBy: lsState.get('recordedBy')
+					recordedDate: lsState.get('recordedDate')
+					location: lsState.getValuesByTypeAndKind('stringValue', 'location')[0].get('stringValue')
+					movedBy: lsState.getValuesByTypeAndKind('codeValue', 'moved by')[0]?.get('codeValue')
+					movedDate: lsState.getValuesByTypeAndKind('dateValue', 'moved date')[0]?.get('dateValue')
+					additionalValues: additionalValues
+				response.push responseObject
+		return response
 
 	addNewLogStates: (inputs) ->
 		for input in inputs
@@ -1401,7 +1422,58 @@ class Container extends Backbone.Model
 				recordedDate: input.recordedDate
 				recordedBy: input.recordedBy
 				lsTransaction: input.lsTransaction
+		@
 
+	addNewLocationHistoryStates: (inputs) ->
+		for input in inputs
+			valueList = new ValueList
+			valueList.add new Value
+				lsType: "stringValue"
+				lsKind: "location"
+				stringValue: input.location
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			valueList.add new Value
+				lsType: "codeValue"
+				lsKind: "moved by"
+				codeValue: input.movedBy
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			valueList.add new Value
+				lsType: "dateValue"
+				lsKind: "moved date"
+				dateValue: input.movedDate
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
+			if input.additionalValues?
+				for additionalValue in input.additionalValues
+					valueList.add	new Value
+						lsType : additionalValue.lsType
+						lsKind : additionalValue.lsKind
+						numericValue: additionalValue.numericValue
+						stringValue: additionalValue.stringValue
+						stringValue: additionalValue.stringValue
+						codeValue: additionalValue.codeValue
+						dateValue: additionalValue.dateValue
+						clobValue: additionalValue.clobValue
+						fileValue: additionalValue.fileValue
+						unitKind: additionalValue.unitKind
+						codeType: additionalValue.codeType
+						codeKind: additionalValue.codeKind
+						codeOrigin: additionalValue.codeOrigin
+						recordedDate: input.recordedDate
+						recordedBy: input.recordedBy
+						lsTransaction: input.lsTransaction
+			@get('lsStates').add new State
+				lsType: "metadata"
+				lsKind: "location history"
+				lsValues: valueList
+				recordedDate: input.recordedDate
+				recordedBy: input.recordedBy
+				lsTransaction: input.lsTransaction
 		@
 
 

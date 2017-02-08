@@ -226,6 +226,49 @@ class window.ComboBoxController extends PickListSelectController
 			bsVersion: '2'
 
 
+class window.PickListSelect2Controller extends PickListSelectController
+
+	render: =>
+# convert model objects to array of json objects which have 'id' and 'text' properties
+		mappedData = []
+		for obj in @collection.toJSON()
+			if (not obj.ignored? or (obj.ignored is false) or (@showIgnored? and @showIgnored is true))
+				obj.id = obj.id || obj.code
+				obj.text = obj.text || obj.name
+				mappedData.push(obj)
+
+		$(@el).select2
+			placeholder: ""
+			data: mappedData
+			openOnEnter: false
+			allowClear: true
+			width: "100%"
+
+		@setSelectedCode @selectedCode
+		@rendered = true
+		@
+
+	addOne: (enm) =>
+# override to do nothing
+		return
+
+	getSelectedCode: ->
+		result = $(@el).val()
+		# if result is null then we'll return the "unassigned" instead if it
+		# was inserted as the first option
+		if not result? and  @insertFirstOption.get('code') is "unassigned"
+			result = "unassigned"
+		result
+
+	setSelectedCode: (code) ->
+		if code?
+			@selectedCode = code
+			# Because it is a programmatic change, use 'change.select2' to only
+			# trigger select2 change event
+			# from https://github.com/select2/select2/issues/4159
+			$(@el).val(@selectedCode).trigger("change.select2")
+
+
 class window.AddParameterOptionPanel extends Backbone.Model
 	defaults:
 		parameter: null
@@ -485,3 +528,16 @@ class window.EditablePickListSelectController extends Backbone.View
 #			menuSelected: (invokedOn, selectedMenu) ->
 #				msg = "You selected the menu item '" + selectedMenu.text() + "' on the value '" + invokedOn.text() + "'"
 #				alert msg
+
+class window.EditablePickListSelect2Controller extends EditablePickListSelectController
+	setupEditablePickList: ->
+		parameterNameWithSpaces = @options.parameter.replace /([A-Z])/g,' $1'
+		pascalCaseParameterName = (parameterNameWithSpaces).charAt(0).toUpperCase() + (parameterNameWithSpaces).slice(1)
+		@pickListController = new PickListSelect2Controller #TODO: need to fix addOne function to insert unassigned option as first option
+			el: @$('.bv_parameterSelectList')
+			collection: @collection
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select "+pascalCaseParameterName
+			selectedCode: @options.selectedCode
+

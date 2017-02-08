@@ -572,3 +572,7 @@ exports.addContainerLogs = (request) ->
 
 exports.moveToLocation = (request) ->
 	console.debug "inside base customer specific server function moveToLocation"
+
+exports.throwInTrash = (request, callback) ->
+	callback {"successful":true}, 200
+	console.debug "inside base customer specific server function throwInTrash"

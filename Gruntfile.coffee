@@ -40,7 +40,7 @@ module.exports = (grunt) ->
 #	console.log "setting source directories to: #{JSON.stringify(sourceDirectories)}"
 	grunt.config.set('sourceDirectories', sourceDirectories)
 
-#	grunt.registerTask("buildwebpack", ["webpack:build"]);
+
 
 	grunt.registerTask 'build', 'build task', () =>
 		grunt.config.set('sourceDirectories', sourceDirectories)
@@ -51,8 +51,6 @@ module.exports = (grunt) ->
 		grunt.task.run 'coffee'
 		grunt.task.run 'browserify'
 		grunt.task.run 'execute:prepare_module_includes'
-		if !grunt.option('customonly')
-			grunt.task.run 'webpack:build'
 		if grunt.option('conf')
 			grunt.task.run 'execute:prepare_config_files'
 		grunt.task.run 'execute:prepare_test_JSON'
@@ -541,39 +539,6 @@ module.exports = (grunt) ->
 					result = shell.exec("cd #{options.build} %>/src/r && Rscript install.R", {silent:true})
 					return result.output
 
-
-
-		webpack:
-			options:
-				resolve:
-					modulesDirectories: [path.resolve("#{grunt.config.get("build")}/node_modules")]
-				resolveLoader:
-					root: [path.resolve("#{grunt.config.get("build")}/node_modules")]
-				sourceDirectories: ["{<%= sourceDirectories %>}"]
-			build:
-#				entry: {index: "<%= acas_base %>"+"/moduledyn/PlateRegistration/src/client/index.coffee"}
-				devtool: "sourcemap"
-				entry: (
-					entries = []
-					grunt.config.get('sourceDirectories').map (i,index) ->
-						entry = {index: path.resolve("#{i}/moduledyn/PlateRegistration/src/client/index.coffee")}
-						if fs.existsSync(entry.index)
-							entries.push entry
-					entries[0]
-				)
-
-				output:
-					path: "#{grunt.config.get("build")}/public/compiled",
-					filename: "[name].bundle.js"
-				module:
-					loaders: [
-						{test: /\.coffee$/, loader: "coffee"},
-						{test: /\.(woff|woff2)(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/font-woff'},
-						{test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=application/octet-stream'},
-						{test: /\.eot(\?v=\d+\.\d+\.\d+)?$/, loader: 'file'},
-						{test: /\.svg(\?v=\d+\.\d+\.\d+)?$/, loader: 'url?limit=10000&mimetype=image/svg+xml'}
-					]
-
 		browserify:
 				module_client:
 					src: "#{grunt.config.get("build")}/public/javascripts/src/ExcelApp/ExcelApp.js"
@@ -584,12 +549,6 @@ module.exports = (grunt) ->
 			module_client_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/client/*.coffee"]
 				tasks: ['newer:coffee:module_client', 'newer:browserify:module_client']
-			webpack_build:
-				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/moduledyn/PlateRegistration/src/client/*"]
-				tasks: ['webpack:build']
-			webpack_spec_build:
-				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/moduledyn/PlateRegistration/spec/*.coffee"]
-				tasks: ['webpack:build']
 			module_server_coffee:
 				files: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/modules/**/src/server/*.coffee"]
 				tasks: 'newer:coffee:module_server'
@@ -736,7 +695,6 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks "grunt-execute"
 	grunt.loadNpmTasks "grunt-newer"
 	grunt.loadNpmTasks "grunt-browserify"
-	grunt.loadNpmTasks "grunt-webpack"
 
 	# set the default task to the "watch" task
 	grunt.registerTask "default", ["watch"]
