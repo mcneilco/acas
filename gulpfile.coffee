@@ -381,7 +381,7 @@ gulp.task "watch:#{taskConfigs.others.packageJSON.taskName}", ->
   gulp.watch taskConfigs.others.packageJSON.src, _.clone(globalWatchOptions), gulp.series('copy:packageJSON')
 watchTasks.push "watch:#{taskConfigs.others.packageJSON.taskName}"
 
-# --------- Node watch stop and start tasks
+# --------- App start, watch and restart tasks
 gulp.task 'app', (done) =>
   if node?
     node.kill()
