@@ -27,9 +27,13 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		"keyup input": "handleInputChanged"
 
 	initialize: ->
+		@modelKey = @options.modelKey
+		@thingRef = @options.thingRef
 		@errorSet = false
 		@userInputEvent = false
-		@model.on 'change', @renderModelContent
+
+	getModel: ->
+		@thingRef.get @modelKey
 
 	handleInputChanged: =>
 		@checkEmptyAndRequired()
@@ -40,15 +44,12 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	isEmpty: ->
 		empty = false
-		console.log @model.get('labelText')==""
-		console.log @model.get('ignored')
-		if @model.has 'labelText'
-			if @model.get('labelText')=="" then empty = true
+		if @getModel().has 'labelText'
+			if @getModel().get('labelText')=="" then empty = true
 		else
-			if @model.get('value')=="" or !@model.get('value')? then empty = true
+			if @getModel().get('value')=="" or !@getModel().get('value')? then empty = true
 
-		if @model.get('ignored') then empty = true
-
+		if @getModel().get('ignored') then empty = true
 		return empty
 
 	render: =>
@@ -56,18 +57,13 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		$(@el).html @template()
 		@applyOptions()
 		@checkEmptyAndRequired()
-		@renderModelContent()
 
 		@
 
-	setModel: (mod) ->
-		@model = mod
-		@model.on 'change', @renderModelContent
-		@renderModelContent()
-
 #Subclass to extend
 	renderModelContent: =>
-		@userInputEvent = false
+		@clearError()
+		@checkEmptyAndRequired()
 
 	setError: (message) ->
 		@errorSet = true
@@ -138,7 +134,7 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 
 		if @isValid(value)
 			if value != ""
-				@model.set
+				@getModel().set
 					labelText: value
 					ignored: false
 			else
@@ -155,14 +151,13 @@ class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldControl
 			return true
 
 	setEmptyValue: ->
-		@model.set
+		@getModel().set
 			labelText: ""
 			ignored: true
 
 	renderModelContent: =>
-		unless @errorSet or @userInputEvent
-			@$('input').val @model.get('labelText')
-		@userInputEvent = false
+		@$('input').val @getModel().get('labelText')
+		super()
 
 class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractFieldController
 	###
@@ -177,36 +172,28 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 		@clearError()
 		@userInputEvent = true
 		value = UtilityFunctions::getTrimmedInput(@$('input'))
-		console.log value
 		if value == ""
 			@setEmptyValue()
 		else
 			numVal = parseFloat(value)
-			console.log numVal
 			if isNaN(numVal) or isNaN(Number(value))
 				@setError("number required")
-				console.log "about to set number empty"
 				@setEmptyValue()
 			else
-				console.log "about to set number good"
-				@model.set
+				@getModel().set
 					value: numVal
 					ignored: false
-				console.log @model.get 'value'
-				console.log @model.get 'ignored'
-				debugger
 		super()
 
 
 
 	setEmptyValue: ->
-		@model.set
+		@getModel().set
 			value: null
 			ignored: true
 
 	renderModelContent: =>
-		unless @errorSet or @userInputEvent
-			@$('input').val @model.get('value')
-		@userInputEvent = false
+		@$('input').val @getModel().get('value')
+		super()
 
 
