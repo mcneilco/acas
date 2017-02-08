@@ -74,6 +74,6 @@
     "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
     "gutil": "^1.6.4",
-    "nodemon": "*",
+    "nodemon": "*"
   }
 }

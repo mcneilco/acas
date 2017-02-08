@@ -200,7 +200,6 @@ taskConfigs =
           build + '/public/javascripts/spec/**.js'
         ]
   ],
-
   copy: [
       taskName: "bin"
       src: getGlob('bin/**')
@@ -246,18 +245,18 @@ taskConfigs =
       options: _.extend globalCopyOptions, {}
       renameFunction: getFirstFolderName
     ,
-    #   taskName: "html"
-    #   src: getGlob('modules/**/src/client/*.html')
-    #   dest: build + '/public/html'
-    #   options: _.extend globalCopyOptions, {}
-    #   renameFunction: getFirstFolderName
-    # ,
-    #   taskName: "css"
-    #   src: getGlob('modules/**/src/client/*.css')
-    #   dest: build + '/public/stylesheets'
-    #   options: _.extend globalCopyOptions, {}
-    #   renameFunction: getFirstFolderName
-    # ,
+      taskName: "html"
+      src: getGlob('modules/**/src/client/*.html')
+      dest: build + '/public/html'
+      options: _.extend globalCopyOptions, {}
+      renameFunction: getFirstFolderName
+    ,
+      taskName: "css"
+      src: getGlob('modules/**/src/client/*.css')
+      dest: build + '/public/stylesheets'
+      options: _.extend globalCopyOptions, {}
+      renameFunction: getFirstFolderName
+    ,
       taskName: "serviceTestsR"
       src: getGlob('modules/**/spec/serviceTests/*.{R,r}')
       dest: build + '/src/r/spec'
@@ -286,7 +285,7 @@ taskConfigs =
 watchTasks = []
 createExecuteTask = (options) ->
   taskName = "execute:#{options.taskName}"
-  # watch = options.watch
+  watch = options.watch
   gulp.task taskName, (cb) ->
     spawn = require('child_process').spawn
     command = spawn(options.command, options.args, options.options)
@@ -301,14 +300,14 @@ createExecuteTask = (options) ->
       return
     command.on 'exit', (code) ->
       cb code
-  # unless watch == false
-  #   watchTaskName = "watch:#{taskName}"
-  #   watchOptions = watch?.options ? {}
-  #   gulp.task watchTaskName, ->
-  #     gulp.watch options.src, watchOptions, gulp.series(taskName)
-  #     return
-  #   console.log "adding task #{watchTaskName}"
-  #   watchTasks.push watchTaskName
+  unless watch == false
+    watchTaskName = "watch:#{taskName}"
+    watchOptions = watch?.options ? {}
+    gulp.task watchTaskName, ->
+      gulp.watch options.src, watchOptions, gulp.series(taskName)
+      return
+    console.log "adding task #{watchTaskName}"
+    watchTasks.push watchTaskName
   return taskName
 
 createTask = (options, type) ->
