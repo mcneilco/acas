@@ -8,9 +8,9 @@
     "startstubs": "node app.js stubsMode",
     "debug": "node --debug=5858 --nolazy app.js",
     "debugbrk": "node --debug-brk=5858 --nolazy app.js",
-    "dev": "gulp build && (gulp &) && nodemon --debug=5858 app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devdebugbrk": "gulp build && (gulp &) && nodemon --debug-brk=5858 --nolazy app.js -w app.js -w conf/compiled -w views -w routes -w src/javascripts",
-    "devstubs": "gulp build && (gulp &) && nodemon --debug=5858 --nolazy app.js stubsMode -w app.js -w app_api_template.js -w conf/compiled -w views -w routes -w src/javascripts",
+    "dev": "gulp dev",
+    "devdebugbrk": "gulp dev --debugbrk",
+    "devstubs": "gulp dev --stubsMode",
     "postinstall": "gulp build",
     "clean": "gulp clean"
   },
@@ -73,7 +73,6 @@
     "gulp-replace": "^0.5.4",
     "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
-    "gutil": "^1.6.4",
-    "nodemon": "*"
+    "gutil": "^1.6.4"
   }
 }

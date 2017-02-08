@@ -1,3 +1,5 @@
+# ---------------------------------------------- Requires
+
 gulp = require('gulp')
 gutil = require('gutil')
 coffee = require('gulp-coffee')
@@ -11,39 +13,9 @@ path = require('path')
 run = require('gulp-run')
 gulpif = require('gulp-if')
 _ = require('underscore')
+node = undefined
 
-# ---------------------------------------------- Utility Functions
-
-onError = (err) ->
-  gutil.log err
-  @emit 'end'
-  return
-
-build = argv.buildPath or process.env.BUILD_PATH or ''
-if build == ''
-  build = 'build'
-if argv.sourceDirectories? | process.env.SOURCE_DIRECTORIES?
-  sources = (argv.sourceDirectories or process.env.SOURCE_DIRECTORIES).split(',')
-else
-  sources = []
-  if !argv.customonly or true
-    acas_base = path.relative('.', argv.acasBase or process.env.ACAS_BASE or '')
-    if acas_base == ''
-      acas_base = '.'
-    sources.push acas_base
-  if !argv.baseonly or true
-    acas_custom = path.relative('.', argv.acasCustom or process.env.ACAS_CUSTOM or '')
-    if acas_custom == ''
-      acas_custom = 'acas_custom'
-    sources.push acas_custom
-  acas_shared = path.relative('.', argv.acasShared or process.env.ACAS_SHARED or '')
-  if acas_shared == ''
-    acas_shared = 'acas_shared'
-  sources.push acas_shared
-console.log 'working directory \'' + __dirname + '\''
-console.log 'setting build to: ' + build
-console.log 'setting source directories to: ' + JSON.stringify(sources)
-
+# ---------------------------------------------- Functions
 getGlob = (paths) ->
   args = Array::slice.call(arguments)
   answer = sources.map((i) ->
@@ -94,11 +66,45 @@ getPythonPath = (path) ->
   path.dirname = outputDirname
   return
 
-# ------------------------------------------------- configs
+# ------------------------------------------------- Read Inputs
+
+build = argv.buildPath or process.env.BUILD_PATH or ''
+if build == ''
+  build = 'build'
+if argv.sourceDirectories? | process.env.SOURCE_DIRECTORIES?
+  sources = (argv.sourceDirectories or process.env.SOURCE_DIRECTORIES).split(',')
+else
+  sources = []
+  if !argv.customonly or true
+    acas_base = path.relative('.', argv.acasBase or process.env.ACAS_BASE or '')
+    if acas_base == ''
+      acas_base = '.'
+    sources.push acas_base
+  if !argv.baseonly or true
+    acas_custom = path.relative('.', argv.acasCustom or process.env.ACAS_CUSTOM or '')
+    if acas_custom == ''
+      acas_custom = 'acas_custom'
+    sources.push acas_custom
+  acas_shared = path.relative('.', argv.acasShared or process.env.ACAS_SHARED or '')
+  if acas_shared == ''
+    acas_shared = 'acas_shared'
+  sources.push acas_shared
+startupArgs = []
+if argv.debugbrk
+  startupArgs.push "--debug-brk=5858"
+startupArgs.push "app.js"
+if argv.stubsMode
+  startupArgs.push "stubsMode"
+
+console.log 'working directory \'' + __dirname + '\''
+console.log 'setting build to: ' + build
+console.log 'setting source directories to: ' + JSON.stringify(sources)
+
+# ------------------------------------------------- Setup Configs
 
 globalCoffeeOptions = {sourcemaps:true}
 globalCopyOptions = {}
-globalExecuteOptions = {cwd: build,env: process.env}
+globalExecuteOptions = {cwd: build, env: process.env}
 globalWatchOptions =
   interval: 1000
   debounceDelay: 500
@@ -109,87 +115,87 @@ taskConfigs =
       taskName: "root"
       src: getGlob('*.coffee')
       dest: build
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
     ,
       taskName: "publicConf"
       src: getGlob('public_conf/*.coffee')
       dest: build + '/src/javascripts/ServerAPI'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
     ,
       taskName: "rootConf"
       src: getGlob('conf/*.coffee')
       dest: build + '/conf'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
     ,
       taskName: "conf"
       src: getGlob('modules/**/conf/*.coffee')
       dest: build + '/public/javascripts/conf'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "client"
       src: getGlob('modules/**/src/client/*.coffee')
       dest: build + '/public/javascripts/src'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "routes"
       src: getGlob('modules/**/src/server/routes/*.coffee')
       dest: build + '/routes'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       flatten: true
     ,
       taskName: "server"
       src: getGlob('modules/**/src/server/*.coffee')
       dest: build + '/src/javascripts'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "spec"
       src: getGlob('modules/**/spec/*.coffee')
       dest: build + '/public/javascripts/spec'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "testFixtures"
       src: getGlob('modules/**/spec/testFixtures/*.coffee')
       dest: build + '/public/javascripts/spec'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getTestFixuresPath
     ,
       taskName: "serviceTests"
       src: getGlob('modules/**/spec/serviceTests/*.coffee', 'modules/public/conf/serviceTests/*.coffee')
       dest: build + '/src/spec'
-      options: _.extend globalCoffeeOptions, {}
+      options: _.extend _.clone(globalCoffeeOptions), {}
       renameFunction: getServiceTestsPath
   ],
   execute: [
         taskName: "npmInstall"
         command: 'npm'
         args: [ 'install' ]
-        options: _.extend globalExecuteOptions, cwd: build
+        options: _.extend _.clone(globalExecuteOptions), cwd: build
       ,
         taskName: "prepare_config_files"
         command: 'node'
         args: ['PrepareConfigFiles.js']
-        options: _.extend globalExecuteOptions, cwd: build + '/src/javascripts/BuildUtilities'
+        options: _.extend _.clone(globalExecuteOptions), cwd: build + '/src/javascripts/BuildUtilities'
         src: [
           build + '/conf/*.properties'
           build + '/conf/*.properties.example'
-          build + 'src/r/*'
+          build + '/src/r/*'
           build + '/src/javascripts/BuildUtilities/PrepareConfigFiles.js'
         ]
       ,
         taskName: "prepareTestJSON"
         command: 'node'
         args: ['PrepareTestJSON.js']
-        options: _.extend globalExecuteOptions, cwd: build + '/src/javascripts/BuildUtilities'
+        options: _.extend _.clone(globalExecuteOptions), cwd: build + '/src/javascripts/BuildUtilities'
         src: [ build + '/public/javascripts/spec/testFixtures/*.js' ]
       ,
         taskName: "prepareModuleIncludes"
         command: 'node'
         args: ['PrepareModuleIncludes.js']
-        options: _.extend globalExecuteOptions, cwd: build + '/src/javascripts/BuildUtilities'
+        options: _.extend _.clone(globalExecuteOptions), cwd: build + '/src/javascripts/BuildUtilities'
         src: [
           build + '/src/javascripts/BuildUtilities/PrepareModuleIncludes.js'
           build + '/app_template.js'
@@ -204,86 +210,96 @@ taskConfigs =
       taskName: "bin"
       src: getGlob('bin/**')
       dest: build + '/bin'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "public"
       src: getGlob('public/**')
       dest: build + '/public'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "conf"
       src: getGlob('conf/**', '!conf/*.coffee')
       dest: build + '/conf'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "nodeModulesCustomized"
       src: getGlob('node_modules_customized/**')
       dest: build+"/node_modules_customized"
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
     ,
       taskName: "jade"
       src: getGlob('modules/**/src/client/*.jade*')
       dest: build + '/views'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       flatten: true
     ,
       taskName: "r"
       src: getGlob('modules/**/src/server/r/**')
       dest: build + '/src/r'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getRPath
     ,
       taskName: "python"
       src: getGlob('modules/**/src/server/python/**')
       dest: build + '/src/python'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getPythonPath
     ,
       taskName: "serverR"
       src: getGlob('modules/**/src/server/*.{R,r}')
       dest: build + '/src/r'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "html"
       src: getGlob('modules/**/src/client/*.html')
       dest: build + '/public/html'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "css"
       src: getGlob('modules/**/src/client/*.css')
       dest: build + '/public/stylesheets'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "serviceTestsR"
       src: getGlob('modules/**/spec/serviceTests/*.{R,r}')
       dest: build + '/src/r/spec'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       renameFunction: getFirstFolderName
     ,
       taskName: "routesJS"
       src: getGlob('modules/**/src/server/routes/*.js')
       dest: build + '/routes'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
       flatten: true
     ,
       taskName: "CmpdReg"
       src: getGlob('modules/CmpdReg/src/client/**', 'modules/CmpdReg/src/marvinjs/**')
       dest: build + '/public/CmpdReg'
-      options: _.extend globalCopyOptions, {}
+      options: _.extend _.clone(globalCopyOptions), {}
   ],
   others:
     packageJSON:
       taskName: "packageJSON"
       src: getGlob('*package.json')
       dest: build
+    app:
+      taskName: "app"
+      command: 'node'
+      args: startupArgs
+      options: _.extend _.clone(globalExecuteOptions), cwd: build
+      src: [
+        build + '/conf/compiled/*'
+        build + '/app.js'
+        build + '/views/*'
+        build + '/routes/*'
+        build + '/src/javascripts/**'
+        build + '/spec/javascripts/**'
+      ]
 
-
-# ---------------------------------------------- Gulp Tasks
-watchTasks = []
-createExecuteTask = (options) ->
+createExecuteTask = (options) =>
   taskName = "execute:#{options.taskName}"
   watch = options.watch
   gulp.task taskName, (cb) ->
@@ -306,7 +322,6 @@ createExecuteTask = (options) ->
     gulp.task watchTaskName, ->
       gulp.watch options.src, watchOptions, gulp.series(taskName)
       return
-    console.log "adding task #{watchTaskName}"
     watchTasks.push watchTaskName
   return taskName
 
@@ -334,32 +349,68 @@ createTask = (options, type) ->
     watchTasks.push watchTaskName
   return taskName
 
+
+# ---------------------------------------------- Create Tasks
+watchTasks = []
+
+# --------- Coffee/Watch:Coffee Tasks
 coffeeTasks = (createTask(taskConfig,'coffee') for taskConfig in taskConfigs.coffee)
 gulp.task 'coffee', gulp.parallel coffeeTasks
+
+# --------- Copy/Watch:Copy Tasks
 copyTasks = (createTask(taskConfig,'copy') for taskConfig in taskConfigs.copy)
+
+# --------- Execute/Watch:Execute Tasks
+executeTasks = (createExecuteTask(taskConfig) for taskConfig in taskConfigs.execute)
+
+# --------- If --conf not passed in then remove prepare_config_files from the execute task
+if !argv.conf
+  executeTasks = _.filter executeTasks, (item) -> item != "execute:prepare_config_files"
+
+# --------- Package JSON Copy/Watch Task
 gulp.task "copy:#{taskConfigs.others.packageJSON.taskName}", (done) ->
   gulp.src(taskConfigs.others.packageJSON.src).pipe(jeditor((json) ->
     delete json.scripts.postinstall
     json
-    # must return JSON object.
   )).pipe gulp.dest(taskConfigs.others.packageJSON.dest)
   done()
   return
 copyTasks.push "copy:#{taskConfigs.others.packageJSON.taskName}"
+
 gulp.task "watch:#{taskConfigs.others.packageJSON.taskName}", ->
-  gulp.watch taskConfigs.others.packageJSON.src, globalWatchOptions, gulp.series('copy:packageJSON')
+  gulp.watch taskConfigs.others.packageJSON.src, _.clone(globalWatchOptions), gulp.series('copy:packageJSON')
 watchTasks.push "watch:#{taskConfigs.others.packageJSON.taskName}"
+
+# --------- Node watch stop and start tasks
+gulp.task 'app', (done) =>
+  if node?
+    node.kill()
+  spawn = require('child_process').spawn
+  node = spawn('node', [ 'app.js' ], stdio: 'inherit')
+  node.on 'close', (code) ->
+    if code == 8
+      gulp.log 'Error detected, waiting for changes...'
+    return
+  done()
+  return
+
+gulp.task "watch:#{taskConfigs.others.app.taskName}", ->
+  gulp.watch taskConfigs.others.app.src, _.clone(globalWatchOptions), gulp.series('app')
+
+# --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
 
-
-executeTasks = (createExecuteTask(taskConfig) for taskConfig in taskConfigs.execute)
-if !argv.conf
-  executeTasks = _.filter executeTasks, (item) -> item != "execute:prepare_config_files"
-
+# --------- Execute Task
 gulp.task 'execute', gulp.series executeTasks
 
+# --------- Watch Task
 gulp.task 'watch', gulp.parallel watchTasks
 
+# --------- Build Task
 gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'execute'));
 
-gulp.task 'default', gulp.series('watch')
+# --------- Dev Task
+gulp.task('dev', gulp.series(gulp.parallel('copy','coffee'), gulp.parallel('watch', 'watch:app', 'app')));
+
+# --------- Default Task
+gulp.task 'default', gulp.series('build', 'watch')
