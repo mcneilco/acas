@@ -169,7 +169,10 @@ def main():
     try:
         ld_client_version=float(ldclient.client.SUPPORTED_SERVER_VERSION)
     except:
-        ld_client_version=float(7.3)
+        try:
+            ld_client_version=float(ldclient.api.requester.SUPPORTED_SERVER_VERSION)
+        except:
+            ld_client_version=float(7.3)
     print "LDClient version is:"+str(ld_client_version)
     try:
 #    	projectId = api.get_project_id_by_name(project)
