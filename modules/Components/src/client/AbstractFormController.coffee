@@ -80,6 +80,9 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
 
+
+class window.AbstractThingFormController extends AbstractFormController
+
 	setupFormFields: ->
 		unless @formFields?
 			@formFields = {}
@@ -94,8 +97,7 @@ class window.AbstractFormController extends Backbone.View
 				thingRef: @model
 
 			switch field.fieldType
-				when 'label'
-					newField = new ACASFormLSLabelFieldController opts
+				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 
 			@$("."+field.fieldWrapper).append newField.render().el
