@@ -410,7 +410,7 @@ gulp.task 'watch', gulp.parallel watchTasks
 gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'execute'));
 
 # --------- Dev Task
-gulp.task('dev', gulp.series(gulp.parallel('copy','coffee'), gulp.parallel('watch', 'watch:app', 'app')));
+gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));
 
 # --------- Default Task
 gulp.task 'default', gulp.series('build', 'watch')
