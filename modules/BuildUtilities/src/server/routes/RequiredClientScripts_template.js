@@ -24,7 +24,8 @@ exports.requiredScripts = [
 	'/lib/moment.min.js',
 	'/lib/spin/js/spin.js',
 	'/lib/spin/js/jquery-spin.js',
-	'/lib/handsontable/dist/handsontable.full.js'
+	'/lib/handsontable/dist/handsontable.full.js',
+	'/lib/select2-4.0.3/dist/js/select2.full.js'
 ];
 
 exports.applicationScripts = [

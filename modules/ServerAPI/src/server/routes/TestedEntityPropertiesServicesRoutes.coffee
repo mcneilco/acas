@@ -1,13 +1,14 @@
 exports.setupAPIRoutes = (app) ->
 	app.post '/api/testedEntities/properties', exports.testedEntityPropertiesRoute
 	app.get '/api/:entityType/:entityKind/property/descriptors', exports.entityPropertyDescriptors
-	app.post '/api/:entityType/:entityKind/properties/:format?', exports.entityPropertiesRoute
+	#app.post '/api/:entityType/:entityKind/properties/:format?', exports.entityPropertiesRoute
 	app.post '/api/entityMeta/properties/:format?', exports.entityPropertiesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
 	app.get '/api/:entityType/:entityKind/property/descriptors', loginRoutes.ensureAuthenticated, exports.entityPropertyDescriptors
-	app.post '/api/:entityType/:entityKind/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute
+	#app.post '/api/:entityType/:entityKind/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute
+	app.post '/api/entityMeta/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute
 
 exports.entityPropertiesRoute = (req, resp) ->
 	exports.entityProperties req.body.displayName, req.body.entityCodeList, req.body.propertyNameList, req.params.format, (json) ->

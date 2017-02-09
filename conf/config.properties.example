@@ -502,3 +502,6 @@ client.experiment.mainControllerClassName=ExperimentBaseController
 
 # Behavior without this config set to true is to give all users access to all projects
 server.project.roles.enable=false
+
+#Controls whether to try to sync projects list from ACAS to CmpdReg
+server.project.sync.cmpdReg=true

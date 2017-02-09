@@ -40,10 +40,13 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/searchContainers', exports.searchContainers
 	app.post '/api/containerLogs', exports.containerLogs
 	app.get '/api/containerLogs/:label', exports.getContainerLogs
+	app.post '/api/containerLocationHistory', exports.containerLocationHistory
+	app.get '/api/containerLocationHistory/:label', exports.getContainerLocationHistory
 	app.post '/api/getWellContentByContainerCodes', exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', exports.createTube
 	app.post '/api/createTubes', exports.createTubes
+	app.post '/api/throwInTrash', exports.throwInTrash
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainersInLocation', loginRoutes.ensureAuthenticated, exports.getContainersInLocation
@@ -82,10 +85,13 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/searchContainers', loginRoutes.ensureAuthenticated, exports.searchContainers
 	app.post '/api/containerLogs', loginRoutes.ensureAuthenticated, exports.containerLogs
 	app.get '/api/containerLogs/:label', loginRoutes.ensureAuthenticated, exports.getContainerLogs
+	app.post '/api/containerLocationHistory', loginRoutes.ensureAuthenticated, exports.containerLocationHistory
+	app.get '/api/containerLocationHistory/:label', loginRoutes.ensureAuthenticated, exports.getContainerLocationHistory
 	app.post '/api/getWellContentByContainerCodes', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerCodes
 	app.post '/api/getContainerCodeNamesByContainerValue', loginRoutes.ensureAuthenticated, exports.getContainerCodeNamesByContainerValue
 	app.post '/api/createTube', loginRoutes.ensureAuthenticated, exports.createTube
 	app.post '/api/createTubes', loginRoutes.ensureAuthenticated, exports.createTubes
+	app.post '/api/throwInTrash', loginRoutes.ensureAuthenticated, exports.throwInTrash
 
 exports.getContainersInLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -331,7 +337,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 							definition = _.findWhere(definitions, {'containerCodeName': containerCode})
 							if container.container?
 								container = container.container
-								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
+								containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS LsContainer"
 								if _.isEmpty containerPreferredEntity
 									message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
 									console.error message
@@ -350,7 +356,7 @@ exports.getContainerAndDefinitionContainerByContainerCodeNamesInternal = (contai
 										return
 								container = new containerPreferredEntity.model(container)
 								if definition.definition?
-									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS Container"
+									definitionPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin definition.definition.lsType, definition.definition.lsKind, "ACAS LsContainer"
 									if _.isEmpty definitionPreferredEntity
 										message = "could not find preferred entity for lsType '#{definition.definition.lsType}' and lsKind '#{definition.definition.lsKind}'"
 										console.error message
@@ -431,7 +437,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 							container = container.container
 							console.debug "found container type: #{container.lsType}"
 							console.debug "found container kind: #{container.lsKind}"
-							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
+							preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS LsContainer"
 							if _.isEmpty preferredEntity
 								message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
 								console.error message
@@ -476,7 +482,7 @@ exports.updateContainersByContainerCodesInternal = (updateInformation, callCusto
 								else
 									console.warn "could not find customer specific server function updateContainersByContainerCodes so not running it"
 							for updateInfo, index in updateInformation
-								preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin savedContainers[index].lsType, savedContainers[index].lsKind, "ACAS Container"
+								preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin savedContainers[index].lsType, savedContainers[index].lsKind, "ACAS LsContainer"
 								savedContainer = new preferredEntity.model(savedContainers[index])
 								updateInformation[index].barcode = savedContainer.get('barcode').get("labelText")
 								values =  savedContainer.getValuesByKey(Object.keys(updateInfo))
@@ -1473,7 +1479,7 @@ exports.getDefinitionContainerByNumberOfWellsInternal = (lsType, lsKind, numberO
 		exports.containersByTypeKindInternal lsType, lsKind, null, false, false, (response, statusCode) ->
 			definitions = []
 			for container in response
-				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS Container"
+				containerPreferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.lsType, container.lsKind, "ACAS LsContainer"
 				if _.isEmpty containerPreferredEntity
 					message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
 					console.error message
@@ -1551,6 +1557,20 @@ exports.containerLogsInternal = (inputs, callCustom, callback) ->
 			exports.addContainerLogs inputs, callCustom, (json, statusCode) ->
 				callback json, statusCode
 
+exports.containerLocationHistory = (req, resp) ->
+	exports.containerLocationHistoryInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.containerLocationHistoryInternal = (inputs, callCustom, callback) ->
+	validateContainerLocationHistoryInputs inputs, (inputs, error) ->
+		if error == true
+			statusCode = 400
+			callback inputs, statusCode
+		else
+			exports.addContainerLocationHistory inputs, callCustom, (json, statusCode) ->
+				callback json, statusCode
+
 exports.getContainerLogs = (req, resp) ->
 	exports.getContainerLogsInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
 		resp.statusCode = statusCode
@@ -1575,6 +1595,29 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 				response.push responseObject
 			callback response, 200
 
+exports.getContainerLocationHistory = (req, resp) ->
+	exports.getContainerLocationHistoryInternal [req.params.label], req.query.containerType, req.query.containerKind, req.query.labelType, req.query.labelKind, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.getContainerLocationHistoryInternal = (labels, containerType, containerKind, labelType, labelKind, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerAndDefinitionContainerByContainerLabelInternalResponse
+	else
+		console.debug "incoming getContainerAndDefinitionContainerByContainerLabelInternal request: '#{JSON.stringify(labels)}'"
+		exports.getContainersByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (getContainersByLabelsResponse, statusCode) =>
+			response = []
+			for getContainer in getContainersByLabelsResponse
+				responseObject =
+					label: getContainer.label
+					codeName: getContainer.codeName
+					locationHistory: []
+				if getContainer.container?
+					container = getContainerModels([getContainer])
+					responseObject.locationHistory = container[0].getLocationHistory()
+				response.push responseObject
+			callback response, 200
 
 exports.getOrCreateContainer = (container, callback) ->
 	label = container.lsLabels[0].labelText
@@ -1627,10 +1670,34 @@ exports.addContainerLogs = (inputs, callCustom, callback) ->
 					console.warn "could not find customer specific server function addContainerLogs so not running it"
 			callback json, statusCode
 
+exports.addContainerLocationHistory = (inputs, callCustom, callback) ->
+	callCustom  = callCustom != "0"
+	codeNames = _.uniq(_.pluck(inputs, "codeName"))
+	exports.getContainersByCodeNamesInternal codeNames, (containers, statusCode) =>
+		containerModels = getContainerModels(containers)
+		containersToSave = []
+		for containerModel in containerModels
+			modelInputLogs = _.filter(inputs, (input) -> input.codeName == containerModel.get("codeName"));
+			containerModel.addNewLocationHistoryStates(modelInputLogs)
+			containerModel.prepareToSave "acas"
+			containerModel.reformatBeforeSaving()
+			#if containerModel.isNew() or containerModel.get('lsLabels').length > 0 or containerModel.get('lsStates').length > 0
+			containersToSave.push containerModel
+		containers = JSON.stringify(containersToSave)
+		exports.updateContainersInternal containers, (json, statusCode) ->
+			if callCustom
+				if csUtilities.addContainerLocationHistory?
+					console.log "running customer specific server function addContainerLocationHistory"
+					csUtilities.addContainerLocationHistory inputs, (response) ->
+						console.log response
+				else
+					console.warn "could not find customer specific server function addContainerLocationHistory so not running it"
+			callback json, statusCode
+
 getContainerModels = (containers) ->
 	outputs = []
 	for container in containers
-		preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.container.lsType, container.container.lsKind, "ACAS Container"
+		preferredEntity = preferredEntityCodeService.getSpecificEntityTypeByTypeKindAndCodeOrigin container.container.lsType, container.container.lsKind, "ACAS LsContainer"
 		if _.isEmpty preferredEntity
 			message = "could not find preferred entity for lsType '#{container.lsType}' and lsKind '#{container.lsKind}'"
 			console.error message
@@ -1658,6 +1725,35 @@ validateContainerLogInput = (input, callback) ->
 		errors.push "must have entryType"
 	if input.entryType? && input.entryType == ""
 		errors.push "entryType cannot be \"\""
+	if !input.recordedBy?
+		errors.push "must have recordedBy"
+	if !input.recordedDate?
+		input.recordedDate = new Date().getTime()
+	error = errors.length > 0
+	output = input
+	output.errors = errors
+	callback output, error
+
+validateContainerLocationHistoryInputs = (inputs, callback) ->
+	@err = false
+	output = _.map inputs, (input) =>
+		validateContainerLocationHistoryInput input, (output, error) =>
+			@err = @err || error
+			output
+	callback output, @err
+
+validateContainerLocationHistoryInput = (input, callback) ->
+	errors = []
+	if !input.codeName?
+		errors.push "must have codeName"
+	if !input.location?
+		errors.push "must have location"
+	if !input.movedBy?
+		errors.push "must have movedBy"
+	if !input.movedDate?
+		errors.push "must have movedDate"
+	if input.location? && input.location == ""
+		errors.push "location cannot be \"\""
 	if !input.recordedBy?
 		errors.push "must have recordedBy"
 	if !input.recordedDate?
@@ -1811,3 +1907,42 @@ exports.createTubesInternal = (tubes, callCustom, callback) ->
 			console.log response
 			callback response.body, 500
 	)
+
+
+exports.throwInTrash = (req, resp) ->
+	exports.throwInTrashInternal req.body, req.query.callCustom, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.throwInTrashInternal = (input, callCustom, callback) ->
+	config = require '../conf/compiled/conf.js'
+	baseurl = config.all.client.service.persistence.fullpath + "containers/throwInTrash"
+	console.log baseurl
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: baseurl
+		body: JSON.stringify input
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if !error  && response.statusCode == 204
+# If call custom doesn't equal 0 then call custom
+			callCustom  = callCustom != "0"
+			if callCustom && csUtilities.throwInTrash?
+				console.log "running customer specific server function throwInTrash"
+				csUtilities.throwInTrash input, (customerResponse, statusCode) ->
+#					json = _.extend json, customerResponse
+					callback json, response.statusCode
+			else
+				console.warn "could not find customer specific server function throwInTrash so not running it"
+				callback json, response.statusCode
+		else if response.statusCode == 400
+			callback response.body, response.statusCode
+		else
+			console.log 'got ajax error trying to create tube'
+			console.log error
+			console.log response
+			callback response.body, 500
+	)
+
