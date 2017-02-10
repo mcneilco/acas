@@ -403,6 +403,10 @@ gulp.task 'app', (done) =>
 gulp.task "watch:#{taskConfigs.others.app.taskName}", ->
   gulp.watch taskConfigs.others.app.src, _.clone(globalWatchOptions), gulp.series('app')
 
+# --------- Remove module conf json unless running dev
+unless argv._[0] == "dev"
+  executeTasks = _.filter executeTasks, (item) -> item != "execute:prepareModuleConfJSON"
+
 # --------- Copy Task
 gulp.task 'copy', gulp.parallel copyTasks
 
