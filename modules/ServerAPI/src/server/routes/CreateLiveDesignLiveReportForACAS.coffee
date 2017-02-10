@@ -24,15 +24,17 @@ _ = require 'underscore'
 
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
-  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
+  username = req.session.passport.user.username
+  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (url) ->
 	  resp.redirect url
 
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
+  username = req.session.passport.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
 	  resp.json {url: url}
 
-exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, callback) ->
+exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
   exec = require('child_process').exec
   config = require '../conf/compiled/conf.js'
   request = require 'request'
@@ -45,6 +47,7 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, callb
     serverError = error
     exptInfo = body
     exptInfo.experimentCode = exptCode
+    exptInfo.username = username
     console.log @responseJSON
     #install fresh ldclient
     exports.installLiveDesignPythonClientInternal (statusCode, output) ->
