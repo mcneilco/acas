@@ -83,24 +83,24 @@ class window.AbstractFormController extends Backbone.View
 
 class window.AbstractThingFormController extends AbstractFormController
 
-	setupFormFields: ->
+	setupFormFields: (fieldDefs) ->
 		unless @formFields?
 			@formFields = {}
 
-		for field in @formFieldDefinitions
+		for field in fieldDefs.labels.concat(fieldDefs.values)
 			opts =
 				modelKey: field.key
-				inputClass: field.inputClass
-				formLabel: field.formLabel
-				placeholder: field.placeholder
-				required: field.required
+				inputClass: field.fieldSettings.inputClass
+				formLabel: field.fieldSettings.formLabel
+				placeholder: field.fieldSettings.placeholder
+				required: field.fieldSettings.required
 				thingRef: @model
 
-			switch field.fieldType
+			switch field.fieldSettings.fieldType
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 
-			@$("."+field.fieldWrapper).append newField.render().el
+			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			@formFields[field.key] = newField
 
 	fillFieldsFromModels: ->

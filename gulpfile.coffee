@@ -205,6 +205,12 @@ taskConfigs =
           build + '/public/javascripts/spec/testFixtures/**.js'
           build + '/public/javascripts/spec/**.js'
         ]
+      ,
+        taskName: "prepareModuleConf"
+        command: 'node'
+        args: ['PrepareModuleConfJSON.js']
+        options: _.extend _.clone(globalExecuteOptions), cwd: build + '/src/javascripts/BuildUtilities'
+        src: [ build + '/public/javascripts/conf/**/*.js' ]
   ],
   copy: [
       taskName: "bin"
@@ -410,7 +416,9 @@ gulp.task 'watch', gulp.parallel watchTasks
 gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'execute'));
 
 # --------- Dev Task
-gulp.task('dev', gulp.series(gulp.parallel('copy','coffee'), gulp.parallel('watch', 'watch:app', 'app')));
+gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));
 
 # --------- Default Task
 gulp.task 'default', gulp.series('build', 'watch')
+
+
