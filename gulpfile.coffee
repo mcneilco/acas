@@ -205,6 +205,12 @@ taskConfigs =
           build + '/public/javascripts/spec/testFixtures/**.js'
           build + '/public/javascripts/spec/**.js'
         ]
+      ,
+        taskName: "prepareModuleConfJSON"
+        command: 'node'
+        args: ['PrepareModuleConfJSON.js']
+        options: _.extend _.clone(globalExecuteOptions), cwd: build + '/src/javascripts/BuildUtilities'
+        src: [ build + '/public/javascripts/conf/**/*.js' ]
   ],
   copy: [
       taskName: "bin"
