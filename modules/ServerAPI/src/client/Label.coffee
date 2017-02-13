@@ -212,12 +212,7 @@ class window.StateList extends Backbone.Collection
 		mStates = @getStatesByTypeAndKind sType, sKind
 		mState = mStates[0] #TODO should do something smart if there are more than one
 		unless mState?
-			mState = new State
-				lsType: sType
-				lsKind: sKind
-			@.add mState
-			mState.on 'change', =>
-				@trigger('change')
+			mState = @createStateByTypeAndKind sType, sKind
 		return mState
 
 	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
@@ -227,6 +222,16 @@ class window.StateList extends Backbone.Collection
 		unless descVal?
 			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
 		return descVal
+
+	createStateByTypeAndKind: (sType, sKind) ->
+		mState = new State
+			lsType: sType
+			lsKind: sKind
+		@.add mState
+		mState.on 'change', =>
+			@trigger('change')
+
+		return mState
 
 	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
 		descVal = new Value

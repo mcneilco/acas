@@ -102,7 +102,18 @@ class window.AbstractThingFormController extends AbstractFormController
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			@formFields[field.key] = newField
+		@setupFormTables fieldDefs.stateTables
 
 	fillFieldsFromModels: ->
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
+		for stateKey, formTable of @formTables
+			formTable.renderModelContent()
+
+	setupFormTables: (tableDefs) ->
+		unless @formTables?
+			@formTables = {}
+		for tDef in tableDefs
+			fTable = new ACASFormStateTableController tableDef: tDef, thingRef: @model
+			@$("."+tDef.tableWrapper).append fTable.render().el
+			@formTables[tDef.key] = fTable

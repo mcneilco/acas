@@ -1,7 +1,7 @@
 class window.ACASFormAbstractFieldController extends Backbone.View
 	###
 		Launching controller must:
-		- Initialize the model teh correct object type
+		- Initialize the model the correct object type
 		- Call render then append this controller's new el to the launching controllers DOM
 		- Supply the form's label text as an option formLabel, or call setFormLabel()
 
@@ -194,6 +194,8 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 
 	renderModelContent: =>
 		@$('input').val @getModel().get('value')
+		if @getModel().has 'unitKind'
+			@$('.bv_units').html @getModel().get('unitKind')
 		super()
 
 
