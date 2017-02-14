@@ -23,6 +23,21 @@ body {
     font-weight: bold;
 }
 
+.bv_showModuleMenuControl, .bv_hideModuleMenuControl {
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #BBBBBB ;
+    padding: 2px 5px 5px 5px;
+}
+
+.bv_hideModuleMenuControl {
+    margin-top: 10px;
+    margin-right: 10px;
+}
+
 /*.bv_GenericDataParserController {
 
     background-color: yellow;
