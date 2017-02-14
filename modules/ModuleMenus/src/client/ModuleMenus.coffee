@@ -2,6 +2,11 @@ class window.ModuleMenusController extends Backbone.View
 
 	template: _.template($("#ModuleMenusView").html())
 
+	events: ->
+		'click .bv_headerName': "handleHome"
+		'click .bv_hideModuleMenuControl': "handleHideMenus"
+		'click .bv_showModuleMenuControl': "handleShowMenus"
+
 	window.onbeforeunload = () ->
 		if window.conf.leaveACASMessage == "WARNING: There are unsaved changes."
 			return window.conf.leaveACASMessage
@@ -60,9 +65,17 @@ class window.ModuleMenusController extends Backbone.View
 
 		@
 
-	events: ->
-		'click .bv_headerName': "handleHome"
-
 	handleHome: =>
 		$('.bv_mainModuleWrapper').hide()
 		$('.bv_homePageWrapper').show()
+
+	handleHideMenus: =>
+		console.log "got handleHideMenus"
+		@$('.bv_moduleMenuWellWrapper').hide()
+		@$('.bv_showModuleMenuControl').show()
+
+	handleShowMenus: =>
+		@$('.bv_showModuleMenuControl').hide()
+		@$('.bv_moduleMenuWellWrapper').show()
+
+
