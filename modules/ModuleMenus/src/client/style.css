@@ -33,9 +33,14 @@ body {
     padding: 2px 5px 5px 5px;
 }
 
-.bv_hideModuleMenuControl {
-    margin-top: 10px;
-    margin-right: 10px;
+.bv_toggleModuleMenuControl {
+    padding-top: 8px;
+    margin-right: 5px;
+}
+
+.bv_headerName {
+    font-weight: 200;
+    font-size: 20px;
 }
 
 /*.bv_GenericDataParserController {
