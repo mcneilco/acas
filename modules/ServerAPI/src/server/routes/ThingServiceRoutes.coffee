@@ -46,8 +46,11 @@ exports.thingsByTypeKind = (req, resp) ->
 		serverUtilityFunctions = require './ServerUtilityFunctions.js'
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind
 		stubFlag = "with=stub"
+		codeTableFlag = "with=codetable"
 		if req.query.stub
 			baseurl += "?#{stubFlag}"
+		else if req.query.codetable
+			baseurl += "?#{codeTableFlag}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
