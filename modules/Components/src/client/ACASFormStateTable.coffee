@@ -17,7 +17,6 @@ class window.ACASFormStateTableController extends Backbone.View
 	className: "control-group"
 	template: _.template($("#ACASFormStateTableView").html())
 	rowNumberKind: 'row number'
-	showRuwNumbers: true
 
 	initialize: ->
 		@thingRef = @options.thingRef
@@ -25,9 +24,6 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	getCollection: ->
 		#TODO get states by type and kind
-
-	handleInputChanged: =>
-
 
 	render: =>
 		$(@el).empty()
@@ -39,6 +35,9 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
+		console.dir @getCurrentStates()
+		for state in @getCurrentStates()
+			@renderState state
 
 	applyOptions: ->
 		if @options.tableLabel?
@@ -63,42 +62,37 @@ class window.ACASFormStateTableController extends Backbone.View
 		unless @colDefs?
 			@colDefs = []
 
-		if @showRuwNumbers
-			@tableDef.values.push
-				modelDefaults:
-					type: 'numericValue'
-					kind: @rowNumberKind
-					value: null
-				fieldSettings:
-					fieldType: 'numericValue'
-					formLabel: "Row"
-					required: true
-
 		for val in @tableDef.values
 			@colHeaders.push
 				displayName: val.fieldSettings.formLabel
 				keyName: val.modelDefaults.kind
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
+
 			colOpts = data: val.modelDefaults.kind
 			if val.modelDefaults.type == 'numericValue'
 				colOpts.type = 'numeric'
-			if val.modelDefaults.kind == @rowNumberKind
-				colOpts.readOnly = true
+			else if val.modelDefaults.type == 'dateValue'
+				colOpts.type = 'date'
+				colOpts.dateFormat = 'YYYY-MM-DD'
+				colOpts.correctFormat = true
+#				colOpts.validator: @validateDate
 			@colDefs.push colOpts
 
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
-#			afterInit: @getAllSubjects
-#			afterChange: @handleCellChanged
-			afterCreateRow: @handleRowCreated
-			minSpareRows: 0,
+#			afterInit: @handleAfterInit
+#			afterRender: @handleAfterRender
+#			afterCreateRow: @handleRowCreated
+			afterChange: @handleCellChanged
+			minSpareRows: 1,
+			allowInsertRow: true
+			contextMenu: true
 			startRows: 1,
 			className: "htCenter",
 			colHeaders: _.pluck @colHeaders, 'displayName'
 			colWidths: _.pluck @colHeaders, 'width'
 			allowInsertColumn: false
 			allowRemoveColumn: false
-#			afterRender: @handleAfterRender
 			columns: @colDefs
 			cells: (row, col, prop) =>
 				cellProperties = {}
@@ -106,7 +100,11 @@ class window.ACASFormStateTableController extends Backbone.View
 					cellProperties.readOnly = true
 				return cellProperties;
 
-		@
+
+
+#	handleAfterInit: =>
+#		console.log "after init"
+#		@renderState @getStateForRow(0, false)
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -114,29 +112,29 @@ class window.ACASFormStateTableController extends Backbone.View
 		td.style.color = 'black';
 		cellProperties.readOnly = true;
 
-	getStateForRow: (row) ->
+	getStateForRow: (row, forceNew) ->
 		currentStates = @getCurrentStates()
 		for state in currentStates
 			if @getRowNumberForState(state) == row
-				return state
+				console.log "found state " + state.cid
+				if !forceNew or state.isNew()
+					return state
 
 		#if we get to here without returning, we need a new state
 		newState = @thingRef.get('lsStates').createStateByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 		rowValue = newState.createValueByTypeAndKind 'numericValue', @rowNumberKind
 		rowValue.set numericValue: row
+		for valueDef in @tableDef.values
+			newState.createValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
 		return newState
 
 	getCurrentStates: ->
-		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.StateKind
-
-	handleRowCreated: (index, amount, source) =>
-		for newRow in [index .. index+amount]
-			rowState = @getStateForRow index
-			@renderState rowState
+		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 
 	renderState: (state) ->
+		console.dir state.attributes
 		rowNum = @getRowNumberForState(state)
-		if rowNum? #shoul always be true
+		if rowNum? #should always be true
 			cols = []
 			for valDef in @tableDef.values
 				cellInfo = []
@@ -145,7 +143,6 @@ class window.ACASFormStateTableController extends Backbone.View
 				cellInfo[1] = valDef.modelDefaults.kind
 				cellInfo[2] = value.get valDef.modelDefaults.type
 				cols.push cellInfo
-
 			@hot.setDataAtRowProp cols, "autofill"
 
 	getRowNumberForState: (state) ->
@@ -155,4 +152,41 @@ class window.ACASFormStateTableController extends Backbone.View
 		else
 			return null
 
+	handleCellChanged: (changes, source) =>
+		if changes?
+			for change in changes
+				attr = change[1]
+				changeRow = change[0]
+				state = @getStateForRow changeRow, true
+				valueDefs = _.filter @tableDef.values, (def) ->
+					def.modelDefaults.kind == attr
+				valueDef = valueDefs[0]
+				value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+				if change[3] is undefined or change[3] is null
+					cellContent is null
+				else
+					cellContent = $.trim change[3]
+				switch valueDef.modelDefaults.type
+					when 'stringValue'
+						value.set stringValue: if cellContent? then cellContent else ""
+					when 'numericValue'
+						numVal = parseFloat(cellContent)
+						if isNaN(numVal) or isNaN(Number(numVal))
+							value.set numericValue: null
+						else
+							value.set numericValue: numVal
+					when 'dateValue'
+						if cellContent is ""
+							value.set dateValue: null
+						else
+							datems = new Date(cellContent).getTime()
+							timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
+							datems += timezoneOffset
+							value.set dateValue: datems
 
+				rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
+				rowNumValue.set numericValue: changeRow
+				console.dir state, depth: 3
+
+
+#TODO support codeValue fields
