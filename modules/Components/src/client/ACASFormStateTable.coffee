@@ -35,9 +35,9 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
-		console.dir @getCurrentStates()
-		for state in @getCurrentStates()
-			@renderState state
+#		console.dir @getCurrentStates()
+#		for state in @getCurrentStates()
+#			@renderState state
 
 	applyOptions: ->
 		if @options.tableLabel?
