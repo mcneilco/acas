@@ -220,7 +220,7 @@ exports.runRApacheFunctionTest = (request, response)  ->
 exports.getFromACASServer = (baseurl, resp) ->
 	exports.getFromACASServerInternal baseurl, (statusCode, json) ->
 		resp.statusCode = statusCode
-		resp.end json
+		resp.end JSON.stringify json
 
 exports.getFromACASServerInternal = (baseurl, callback) ->
 	request = require 'request'
