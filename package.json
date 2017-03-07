@@ -58,7 +58,7 @@
     "extract-text-webpack-plugin": "*",
     "url-loader": "*",
     "file-loader": "*",
-    "jquery-file-upload-middleware": ">=0.1.7"
+    "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git"
   },
   "devDependencies": {
     "gitignore-to-glob": "*",
