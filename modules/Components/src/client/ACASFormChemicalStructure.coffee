@@ -18,8 +18,7 @@ class window.ACASFormChemicalStructureExampleController extends Backbone.View
 		mol = @sketcher.getMol()
 		alert mol
 
-	setMol: =>
-		molStr = "\n  Mrv0541 10271122032D          \n\n  1  0  0  0  0  0            999 V2000\n    0.5304    1.0018    0.0000 Na  0  0  0  0  0  0  0  0  0  0  0  0\nM  END\n"
+	setMol: (molStr) =>
 		@sketcher.setMol molStr
 
 class window.ACASFormChemicalStructureController extends Backbone.View
@@ -43,6 +42,7 @@ class window.ACASFormChemicalStructureController extends Backbone.View
 
 	startSketcher: =>
 		@windowObj = @$('.bv_sketcherIFrame')[0].contentWindow
+		@trigger 'sketcherLoaded'
 
 	getMol: ->
 		mol = @windowObj.sketcher.getMolecule();
