@@ -73,6 +73,8 @@
     "gulp-replace": "^0.5.4",
     "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
-    "gutil": "^1.6.4"
+    "gutil": "^1.6.4",
+    "coffee-script": "^1.12.4",
+    "yargs": "^7.0.2"
   }
 }
