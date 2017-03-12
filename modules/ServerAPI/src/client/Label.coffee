@@ -15,7 +15,10 @@ class window.Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
-			@set ignored: true
+			@set
+				ignored: true
+				modifiedBy: window.AppLaunchParams.loginUser.username
+				modifiedDate: new Date().getTime()
 			@set labelText: @previous 'labelText'
 			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
 
@@ -73,7 +76,6 @@ class window.LabelList extends Backbone.Collection
 		nonPreferredName = _.filter @getCurrent(), (lab) ->
 			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
 		nonPreferredName[0]
-
 
 	setName: (label, currentName) ->
 		if currentName?
@@ -143,7 +145,10 @@ class window.Value extends Backbone.Model
 			if @isNew()
 				@.set @get('lsType'), @get('value')
 			else
-				@set ignored: true
+				@set
+					ignored: true
+					modifiedBy: window.AppLaunchParams.loginUser.username
+					modifiedDate: new Date().getTime()
 				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
