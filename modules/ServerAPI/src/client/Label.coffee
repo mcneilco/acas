@@ -19,6 +19,7 @@ class window.Label extends Backbone.Model
 				ignored: true
 				modifiedBy: window.AppLaunchParams.loginUser.username
 				modifiedDate: new Date().getTime()
+				isDirty: true
 			@set labelText: @previous 'labelText'
 			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
 
@@ -149,6 +150,7 @@ class window.Value extends Backbone.Model
 					ignored: true
 					modifiedBy: window.AppLaunchParams.loginUser.username
 					modifiedDate: new Date().getTime()
+					isDirty: true
 				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
