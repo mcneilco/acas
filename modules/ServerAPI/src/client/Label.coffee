@@ -10,6 +10,15 @@ class window.Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
+	initialize: ->
+		@.on "change:labelText": @handleLabelTextChanged
+
+	handleLabelTextChanged: =>
+		unless @isNew()
+			@set ignored: true
+			@set labelText: @previous 'labelText'
+			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+
 	changeLabelText: (options) ->
 		@set labelText: options
 
