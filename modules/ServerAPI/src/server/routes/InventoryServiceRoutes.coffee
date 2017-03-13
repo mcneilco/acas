@@ -29,6 +29,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 	app.post '/api/updateWellContent', exports.updateWellContent
 	app.post '/api/updateWellContentWithObject', exports.updateWellContentWithObject
+	app.post '/api/updateAmountInWell', exports.updateAmountInWell
 	app.post '/api/moveToLocation', exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
@@ -73,6 +74,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
 	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 	app.post '/api/updateWellContentWithObject', loginRoutes.ensureAuthenticated, exports.updateWellContentWithObject
+	app.post '/api/updateAmountInWell', loginRoutes.ensureAuthenticated, exports.updateAmountInWell
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
@@ -1088,6 +1090,44 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 				console.error response
 				callback JSON.stringify("updateWellContent failed"), 500
 		)
+
+exports.updateAmountInWell = (req, resp) ->
+	req.setTimeout 86400000
+	exports.updateAmountInWellInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.updateAmountInWellInternal = (updateAmountInfo, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.log "updateAmountInfo"
+		console.log updateAmountInfo
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateAmountInWell"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: updateAmountInfo
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error & response.statusCode in [200,204]
+				console.log "successfully updated amount in well"
+				console.log json
+				callback "success", response.statusCode
+			else
+				console.error 'got ajax error trying to get updateAmountInWell'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("updateWellContent failed"), 500
+		)
+
+
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000

@@ -4,6 +4,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
+	app.post '/api/things/getThingCodeByLabel/:thingType/:thingKind', exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
@@ -23,6 +24,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
+	app.post '/api/things/getThingCodeByLabel/:thingType/:thingKind', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName
@@ -334,6 +336,14 @@ exports.getAssemblies = (req, resp) ->
 		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/getcomposites/"+req.params.componentCode
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
+exports.getThingCodeByLabel = (req, resp) ->
+	exports.getThingCodesFromNamesOrCodes req.body, (results) =>
+		if typeof response is "string" and results.indexOf("error") > -1
+			resp.statusCode = 500
+			resp.end results
+		else 
+			resp.json results
+	
 exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 	console.log "got to getThingCodesFormNamesOrCodes"
 	if global.specRunnerTestmode
@@ -385,7 +395,7 @@ exports.getThingCodesFromNamesOrCodes = (codeRequest, callback) ->
 				console.log error
 				console.log json
 				console.log response
-				callback json
+				callback "error trying to lookup lsThing name"
 		)
 
 exports.genericThingSearch = (req, resp) ->
