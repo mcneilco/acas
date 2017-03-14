@@ -348,7 +348,7 @@ exports.getPrefixFromEntityCode = (code) ->
 			return pref
 	return null
 
-exports.createLSTransaction = (date, comments, callback) ->
+exports.createLSTransaction2 = (date, options, callback) ->
 	if global.specRunnerTestmode
 		console.log "create lsTransaction stubsMode"
 		callback
@@ -359,34 +359,42 @@ exports.createLSTransaction = (date, comments, callback) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		request = require 'request'
-		request(
+		body = _.extend {recordedDate: date}, options
+		options =
 			method: 'POST'
 			url: config.all.client.service.persistence.fullpath+"lstransactions"
 			json: true
-			body:
-				recordedDate: date
-				comments: comments
-		, (error, response, json) ->
+			body: body
+		request options, (error, response, body) ->
 			if !error && response.statusCode == 201
-				callback json
+				callback body
 			else
 				console.log 'got connection error trying to create an lsTransaction'
 				console.log error
-				console.log json
+				console.log body
 				console.log response
+				console.log options
 				callback null
-		)
+
+exports.createLSTransaction = (date, comments, callback) ->
+	console.debug "create ls transaction called"
+	exports.createLSTransaction2 date, {comments: comments}, (json) ->
+		console.debug "returning with the following json #{json}"
+		callback json
 
 exports.insertTransactionIntoEntity = (transactionid, entity) ->
 	entity.lsTransaction = transactionid
 	if entity.lsLabels?
 		for lab in entity.lsLabels
-			lab.lsTransaction = transactionid
+			if (lab.isDirty? && lab.isDirty) or !lab.id?
+				lab.lsTransaction = transactionid
 	if entity.lsStates?
 		for state in entity.lsStates
-			state.lsTransaction = transactionid
+			if (state.isDirty? && state.isDirty) or !state.id?
+				state.lsTransaction = transactionid
 			for val in state.lsValues
-				val.lsTransaction = transactionid
+				if (val.isDirty? && val.isDirty) or !val.id?
+					val.lsTransaction = transactionid
 
 	entity
 
@@ -1348,7 +1356,7 @@ class Container extends Backbone.Model
 			lsStates.forEach (lsState) =>
 				additionalValues = lsState.get('lsValues').filter (value) ->
 					(!value.get('ignored')) and !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='entry type')) and !((value.get('lsType')=='clobValue') and (value.get('lsKind')=='entry'))
-				responseObject = 
+				responseObject =
 					codeName: @get('codeName')
 					recordedBy: lsState.get('recordedBy')
 					recordedDate: lsState.get('recordedDate')
@@ -1357,7 +1365,7 @@ class Container extends Backbone.Model
 					additionalValues: additionalValues
 				response.push responseObject
 		return response
-		
+
 	getLocationHistory: ->
 		lsStates = @get('lsStates').getStatesByTypeAndKind 'metadata', 'location history'
 		response = []
@@ -1368,7 +1376,7 @@ class Container extends Backbone.Model
 					 !((value.get('lsType')=='stringValue') and (value.get('lsKind')=='location')) and
 					 !((value.get('lsType')=='codeValue') and (value.get('lsKind')=='moved by')) and
 					 !((value.get('lsType')=='dateValue') and (value.get('lsKind')=='moved date'))
-				responseObject = 
+				responseObject =
 					codeName: @get('codeName')
 					recordedBy: lsState.get('recordedBy')
 					recordedDate: lsState.get('recordedDate')

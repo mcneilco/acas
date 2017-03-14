@@ -152,7 +152,15 @@ getThing = (req, codeName, callback) ->
 
 updateThing = (thing, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	serverUtilityFunctions.createLSTransaction thing.recordedDate, "updated experiment", (transaction) ->
+	if thing.transactionOptions?
+		transactionOptions = thing.transactionOptions
+		delete thing.transactionOptions
+	else
+		transactionOptions = {
+			comments: "updated experiment"
+		}
+
+	serverUtilityFunctions.createLSTransaction2 thing.recordedDate, transactionOptions, (transaction) ->
 		thing = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thing
 		if testMode or global.specRunnerTestmode
 			callback thing
@@ -180,7 +188,16 @@ postThing = (isBatch, req, resp) ->
 	console.log "post thing parent"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	thingToSave = req.body
-	serverUtilityFunctions.createLSTransaction thingToSave.recordedDate, "new experiment", (transaction) ->
+	if thingToSave.transactionOptions?
+		transactionOptions = thingToSave.transactionOptions
+		delete thingToSave.transactionOptions
+	else
+		transactionOptions = {
+			comments: "new experiment"
+		}
+	transactionOptions.recordedBy = req.session.passport.user.username
+
+	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
 		thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 		if req.query.testMode or global.specRunnerTestmode
 			unless thingToSave.codeName?
@@ -252,6 +269,8 @@ exports.putThing = (req, resp) ->
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
 
+	if thingToSave.transactionOptions?
+		thingToSave.transactionOptions.recordedBy = req.session.passport.user.username
 	completeThingUpdate = ->
 		updateThing thingToSave, req.query.testMode, (updatedThing) ->
 			getThing req, updatedThing.codeName, (thing) ->
@@ -489,4 +508,4 @@ exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind = (req, resp) ->
 	else
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)		
+		serverUtilityFunctions.getFromACASServer(baseurl, resp)
