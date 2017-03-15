@@ -56,7 +56,7 @@ class window.Thing extends Backbone.Model
 						resp.lsTags = new TagList(resp.lsTags)
 					resp.lsTags.on 'change', =>
 						@trigger 'change'
-				@.set resp
+#				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
 				@createDefaultFirstLsThingItx()
@@ -102,17 +102,18 @@ class window.Thing extends Backbone.Model
 							@setRByAndRDate val
 
 	cleanupItxThingForSave: (itx) ->
-		console.dir itx
 		unless itx.isNew()
-			itx.unset 'version', silent: true
+#			itx.unset 'version', silent: true
 			itx.unset 'lsStates', silent: true
 			if itx.has 'firstLsThing'
 				thing = itx.get 'firstLsThing'
 			else
 				thing = itx.get 'secondLsThing'
-			delete thing['version']
+#			delete thing['version']
 			delete thing['lsLabels']
 			delete thing['lsStates']
+			delete thing['lsTransaction']
+
 
 	setRByAndRDate: (data) ->
 		if @isNew() and @has('recordedBy')
