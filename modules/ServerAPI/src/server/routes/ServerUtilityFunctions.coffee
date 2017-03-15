@@ -2206,7 +2206,7 @@ exports.ContainerPlate = ContainerPlate
 exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
-
+exports.Author = Author
 
 
 AppLaunchParams = loginUser:username:"acas"
