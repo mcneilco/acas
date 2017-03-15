@@ -220,7 +220,7 @@ exports.runRApacheFunctionTest = (request, response)  ->
 exports.getFromACASServer = (baseurl, resp) ->
 	exports.getFromACASServerInternal baseurl, (statusCode, json) ->
 		resp.statusCode = statusCode
-		resp.end json
+		resp.json json
 
 exports.getFromACASServerInternal = (baseurl, callback) ->
 	request = require 'request'
@@ -230,7 +230,7 @@ exports.getFromACASServerInternal = (baseurl, callback) ->
 		json: true
 	, (error, response, json) =>
 		if !error && response.statusCode == 200
-			callback response.statusCode, JSON.stringify json
+			callback response.statusCode, json
 		else
 			console.log 'got ajax error'
 			console.log error
@@ -2206,7 +2206,7 @@ exports.ContainerPlate = ContainerPlate
 exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
-
+exports.Author = Author
 
 
 AppLaunchParams = loginUser:username:"acas"
