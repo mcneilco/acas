@@ -3,8 +3,8 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', exports.thingByCodeName
+	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
-	app.post '/api/things/getThingCodeByLabel/:thingType/:thingKind', exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', exports.batchesByParentCodeName
@@ -23,8 +23,8 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/getMultipleKinds/:lsType/:lsKindsList', loginRoutes.ensureAuthenticated, exports.thingsByTypeAndKinds
 	app.get '/api/things/:lsType/:lsKind/codename/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
 	app.get '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.thingByCodeName
+	app.post '/api/getThingCodeByLabel/:thingType/:thingKind', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind', exports.postThingParent
-	app.post '/api/things/getThingCodeByLabel/:thingType/:thingKind', loginRoutes.ensureAuthenticated, exports.getThingCodeByLabel
 	app.post '/api/things/:lsType/:lsKind/:parentCode', exports.postThingBatch
 	app.put '/api/things/:lsType/:lsKind/:code', loginRoutes.ensureAuthenticated, exports.putThing
 	app.get '/api/batches/:lsKind/parentCodeName/:parentCode', loginRoutes.ensureAuthenticated, exports.batchesByParentCodeName

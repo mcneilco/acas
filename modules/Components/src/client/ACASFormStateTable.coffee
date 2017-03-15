@@ -40,10 +40,10 @@ class window.ACASFormStateTableController extends Backbone.View
 #			@renderState state
 
 	applyOptions: ->
-		if @options.tableLabel?
-			@setTableLabel @options.tableLabel
-		if @options.tableLabelClass?
-			@addFormLabelClass @options.tableLabelClass
+		if @options.tableDef?.tableLabel?
+			@setTableLabel @options.tableDef.tableLabel
+		if @options.tableDef?.tableLabelClass?
+			@addFormLabelClass @options.tableDef.tableLabelClass
 		@tableReadOnly = if @options.tableReadOnly? then @options.tableReadOnly else false
 		@defineColumns()
 
@@ -76,6 +76,8 @@ class window.ACASFormStateTableController extends Backbone.View
 				colOpts.dateFormat = 'YYYY-MM-DD'
 				colOpts.correctFormat = true
 #				colOpts.validator: @validateDate
+			if val.validator?
+				colOpts.validator = val.validator
 			@colDefs.push colOpts
 
 	setupHot: ->
