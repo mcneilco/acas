@@ -5,7 +5,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/entityMeta/properties/:format?', exports.entityPropertiesRoute
 
 exports.setupRoutes = (app, loginRoutes) ->
-	app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
+	# app.post '/api/testedEntities/properties', loginRoutes.ensureAuthenticated, exports.testedEntityProperties
 	app.get '/api/:entityType/:entityKind/property/descriptors', loginRoutes.ensureAuthenticated, exports.entityPropertyDescriptors
 	#app.post '/api/:entityType/:entityKind/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute
 	app.post '/api/entityMeta/properties/:format?', loginRoutes.ensureAuthenticated, exports.entityPropertiesRoute

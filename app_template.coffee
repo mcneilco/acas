@@ -11,6 +11,15 @@ startApp = ->
 	http = require 'http'
 	path = require 'path'
 
+	favicon = require('serve-favicon')
+	logger = require('morgan')
+	methodOverride = require('method-override')
+	session = require('express-session')
+	bodyParser = require('body-parser')
+	multer = require('multer')
+	errorHandler = require('errorhandler')
+	cookieParser = require('cookie-parser')
+
 	# Added for logging support
 	flash = require 'connect-flash'
 	passport = require 'passport'
@@ -59,27 +68,26 @@ startApp = ->
 	loginRoutes = require './routes/loginRoutes'
 
 	global.app = express()
-	app.configure ->
-		app.set 'port', config.all.client.port
-		app.set 'views', __dirname + '/views'
-		app.set 'view engine', 'jade'
-		app.use express.favicon()
-		app.use express.logger('dev')
-		# added for login support
-		app.use express.cookieParser()
-		app.use express.session
-			secret: 'acas needs login'
-			cookie: maxAge: 365 * 24 * 60 * 60 * 1000
-		app.use flash()
-		app.use passport.initialize()
-		app.use passport.session pauseStream:  true
+	app.set 'port', config.all.client.port
+	app.set 'views', __dirname + '/views'
+	app.set 'view engine', 'jade'
+	# app.use favicon(path.join(__dirname, '/public/favicon.ico'))
+	app.use logger('dev')
+	app.use methodOverride()
+
+	# added for login support
+	app.use cookieParser()
+	app.use session
+		secret: 'acas needs login'
+		cookie: maxAge: 365 * 24 * 60 * 60 * 1000
+	app.use flash()
+	app.use passport.initialize()
+	app.use passport.session pauseStream:  true
 #		app.use express.bodyParser()
-		app.use express.json()
-		app.use express.urlencoded()
-		app.use express.methodOverride()
-		app.use express.static path.join(__dirname, 'public')
-		# It's important to start the router after everything else is configured
-		app.use app.router
+	app.use(bodyParser.json({limit: '100mb'}))
+	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
+	app.use(multer())
+	app.use(express.static(path.join(__dirname, 'public')))
 
 	loginRoutes.setupRoutes(app, passport)
 

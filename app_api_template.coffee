@@ -10,6 +10,15 @@ startApp = ->
 	http = require 'http'
 	path = require 'path'
 
+	favicon = require('serve-favicon')
+	logger = require('morgan')
+	methodOverride = require('method-override')
+	session = require('express-session')
+	bodyParser = require('body-parser')
+	multer = require('multer')
+	errorHandler = require('errorhandler')
+	cookieParser = require('cookie-parser')
+
 	# Added for logging support
 	global.deployMode = config.all.client.deployMode
 
@@ -22,18 +31,18 @@ startApp = ->
 			console.log "############ Starting API in stubs mode"
 
 	global.app = express()
-	app.configure ->
-		app.set 'port', config.all.server.nodeapi.port
-		app.set 'views', __dirname + '/views'
-		app.set 'view engine', 'jade'
-		app.use express.favicon()
-		app.use express.logger('dev')
-		app.use express.json()
-		app.use express.urlencoded()
-		app.use express.methodOverride()
-		app.use express.static path.join(__dirname, 'public')
-		# It's important to start the router after everything else is configured
-		app.use app.router
+	app.set 'port', config.all.server.nodeapi.port
+	app.set 'views', __dirname + '/views'
+	app.set 'view engine', 'pug'
+	# app.use(favicon(path.join(__dirname, '/public/favicon.ico')))
+	app.use(logger('dev'))
+	app.use(methodOverride())
+
+	app.use(bodyParser.json({limit: '100mb'}))
+	app.use(bodyParser.urlencoded({limit: '100mb', extended: true,parameterLimit: 1000000}))
+	app.use(multer())
+	app.use express.static path.join(__dirname, 'public')
+
 
 	#We just need the get user service
 	loginRoutes = require './routes/loginRoutes'

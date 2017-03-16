@@ -1,7 +1,7 @@
 path = require 'path'
 
 exports.setupAPIRoutes = (app) ->
-	app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
+	# app.post '/api/cmpdRegBulkLoader', exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', exports.registerCmpds
 	app.get '/api/cmpdRegBulkLoader/getFilesToPurge', exports.getFilesToPurge
 	app.post '/api/cmpdRegBulkLoader/purgeFile', exports.purgeFile
@@ -14,7 +14,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/cmpdRegBulkLoader/readSDF', loginRoutes.ensureAuthenticated, exports.cmpdRegBulkLoaderReadSdf
 	app.post '/api/cmpdRegBulkLoader/saveTemplate', loginRoutes.ensureAuthenticated, exports.saveTemplate
 	app.post '/api/cmpdRegBulkLoader/registerCmpds', loginRoutes.ensureAuthenticated, exports.registerCmpds
-	app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
+	# app.post '/api/cmpdRegBulkLoader', loginRoutes.ensureAuthenticated, exports.postAssignedProperties
 	app.post '/api/cmpdRegBulkLoader/checkFileDependencies', loginRoutes.ensureAuthenticated, exports.checkFileDependencies
 	app.post '/api/cmpdRegBulkLoader/purgeFile', loginRoutes.ensureAuthenticated, exports.purgeFile
 

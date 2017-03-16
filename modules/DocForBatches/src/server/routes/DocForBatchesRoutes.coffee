@@ -4,8 +4,8 @@ Add this line to public/src/modules/ModuleMenus/src/client/ModuleMenusConfigurat
 
 ###
 exports.setupRoutes = (app, loginRoutes) ->
-	app.get '/docForBatches/*', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex
-	app.get '/docForBatches', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex
+	# app.get '/docForBatches/*', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex
+	# app.get '/docForBatches', loginRoutes.ensureAuthenticated, exports.docForBatchesIndex
 	app.get '/api/docForBatches/:id', loginRoutes.ensureAuthenticated, exports.getDocForBatches
 	app.post '/api/docForBatches', loginRoutes.ensureAuthenticated, exports.saveDocForBatches
 

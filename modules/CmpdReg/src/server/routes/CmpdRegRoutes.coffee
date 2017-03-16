@@ -1,5 +1,5 @@
 exports.setupAPIRoutes = (app) ->
-	app.post '/api/cmpdReg', exports.postAssignedProperties
+	# app.post '/api/cmpdReg', exports.postAssignedProperties
 	app.get '/cmpdReg/scientists', exports.getBasicCmpdReg
 	app.get '/cmpdReg/metalots/corpName/[\\S]*', exports.getMetaLot
 
@@ -330,7 +330,7 @@ exports.getMetaLot = (req, resp) ->
 			if not json.lot?
 				resp.statusCode = 500
 				resp.end JSON.stringify "Could not find lot"
-				return			
+				return
 
 			if json?.lot?.project?.code?
 				projectCode = json.lot.project.code
