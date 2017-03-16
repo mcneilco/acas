@@ -398,7 +398,6 @@ exports.insertTransactionIntoEntity = (transactionid, entity) ->
 	entity
 
 exports.insertTransactionIntoBackboneModel = (transactionid, entity) ->
-	ham
 	entity.set 'lsTransaction', transactionid
 	if entity.get('lsLabels')?
 		entity.get('lsLabels').each (lab) ->
