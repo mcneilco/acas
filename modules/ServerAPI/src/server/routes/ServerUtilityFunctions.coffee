@@ -395,8 +395,27 @@ exports.insertTransactionIntoEntity = (transactionid, entity) ->
 			for val in state.lsValues
 				if (val.isDirty? && val.isDirty) or !val.id?
 					val.lsTransaction = transactionid
-
 	entity
+
+exports.insertTransactionIntoBackboneModel = (transactionid, entity) ->
+	entity.set 'lsTransaction', transactionid
+	if entity.get('lsLabels')?
+		entity.get('lsLabels').each (lab) ->
+			if (lab.get('isDirty')? && lab.get('isDirty')) or !lab.get('id')?
+				lab.set 'lsTransaction',transactionid
+	if entity.get('lsStates')?
+		entity.get('lsStates').each (state) ->
+			if (state.get('isDirty')? && state.get('isDirty')) or !state.get('id')?
+				state.set 'lsTransaction', transactionid
+			state.get('lsValues').each (val) ->
+				console.log "HERE"
+				console.log JSON.stringify(val)
+				console.log((val.get('isDirty')? && val.get('isDirty')) or !val.get('id')?)
+				if (val.get('isDirty')? && val.get('isDirty')) or !val.get('id')?
+					val.set 'lsTransaction', transactionid
+	entity
+
+
 
 exports.getStatesByTypeAndKind = (acasEntity, type, kind) ->
 	_ = require 'underscore'
@@ -458,6 +477,19 @@ class Label extends Backbone.Model
 		recordedBy: ""
 		physicallyLabled: false
 		imageFile: null
+
+	initialize: ->
+		@.on "change:labelText": @handleLabelTextChanged
+
+	handleLabelTextChanged: =>
+		unless @isNew()
+			@set
+				ignored: true
+				modifiedBy: AppLaunchParams.loginUser.username
+				modifiedDate: new Date().getTime()
+				isDirty: true
+			@set labelText: @previous 'labelText'
+			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
 
 	changeLabelText: (options) ->
 		@set labelText: options
@@ -578,7 +610,11 @@ class Value extends Backbone.Model
 			if @isNew()
 				@.set @get('lsType'), @get('value')
 			else
-				@set ignored: true
+				@set
+					ignored: true
+					modifiedDate: new Date().getTime()
+					modifiedBy: AppLaunchParams.loginUser.username
+					isDirty: true
 				@trigger 'createNewValue', @get('key'), newVal
 
 class ValueList extends Backbone.Collection
@@ -2192,7 +2228,6 @@ class Vial extends Container
 
 exports.Label = Label
 exports.LabelList = LabelList
-exports.Value = Value
 exports.Value = Value
 exports.ValueList = ValueList
 exports.State = State

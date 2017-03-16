@@ -1,7 +1,7 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', exports.getAuthorByUsername
 	app.get '/api/authorModulePreferences/:userName/:moduleName', exports.getAuthorModulePreferences
-	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateModulePreferences
+	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateAuthorModulePreferences
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', loginRoutes.ensureAuthenticated, exports.getAuthorByUsername
@@ -114,27 +114,40 @@ exports.updateAuthorInternal = (author, callback) ->
 		resp.json authorServiceTestJSON.updateAuthor
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"authors/"
-		console.debug "base url: #{baseurl}"
-		request = require 'request'
-		request(
-			method: 'PUT'
-			url: baseurl
-			body: author
-			json: true
-			headers: 'content-type': 'application/json'
-		, (error, response, json) =>
-			if !error && response.statusCode == 200 && json[0] != "<"
-				callback json, 200
-			else
-				console.error 'got ajax error trying to update author'
-				console.error error
-				console.error json
-				console.error "request #{JSON.stringify(author, null, ' ')}"
-				console.error response
-				callback JSON.stringify("updateAuthor failed"), 500
-		)
+		if author.transactionOptions?
+			transactionOptions = author.transactionOptions
+			delete author.transactionOptions
+		else
+			transactionOptions = {
+				comments: "author update"
+			}
+		lsTransactionRecordedDate = new Date().getTime()
+		serverUtilityFunctions.createLSTransaction2 lsTransactionRecordedDate, transactionOptions, (transaction) ->
+			authorToSave = serverUtilityFunctions.insertTransactionIntoBackboneModel transaction.id, author
+			baseurl = config.all.client.service.persistence.fullpath+"authors/"
+			console.debug "base url: #{baseurl}"
+			request = require 'request'
+			console.log 'transaction!!'
 
+			console.log JSON.stringify(transaction, null, '\t')
+			console.log JSON.stringify(authorToSave, null, '\t')
+			request(
+				method: 'PUT'
+				url: baseurl
+				body: author
+				json: true
+				headers: 'content-type': 'application/json'
+			, (error, response, json) =>
+				if !error && response.statusCode == 200 && json[0] != "<"
+					callback json, 200
+				else
+					console.error 'got ajax error trying to update author'
+					console.error error
+					console.error json
+					console.error "request #{JSON.stringify(author, null, ' ')}"
+					console.error response
+					callback JSON.stringify("updateAuthor failed"), 500
+			)
 
 class Author extends Backbone.Model
 	lsProperties: {}
