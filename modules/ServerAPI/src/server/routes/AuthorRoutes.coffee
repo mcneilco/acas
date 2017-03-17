@@ -114,8 +114,8 @@ exports.updateAuthorInternal = (author, callback) ->
 		resp.json authorServiceTestJSON.updateAuthor
 	else
 		config = require '../conf/compiled/conf.js'
-		if author.transactionOptions?
-			transactionOptions = author.transactionOptions
+		if author.has('transactionOptions')
+			transactionOptions = author.get('transactionOptions')
 			delete author.transactionOptions
 		else
 			transactionOptions = {
