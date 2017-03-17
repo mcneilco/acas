@@ -171,6 +171,15 @@ class window.State extends Backbone.Model
 			val.id == id
 		value
 
+	getLsValues: ->
+		@get('lsValues')
+
+	resetLsValues: (vals) =>
+		@attributes.lsValues.reset(vals)
+
+	setLsValues: (vals) =>
+		@attributes.lsValues.add(vals)
+
 	getValueHistory: (type, kind) ->
 		@get('lsValues').filter (value) ->
 			(value.get('lsType')==type) and (value.get('lsKind')==kind)
