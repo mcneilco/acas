@@ -19,7 +19,6 @@ class window.Thing extends Backbone.Model
 		@set lsTags: new TagList()
 
 	initialize: ->
-		console.log "init thing...."
 		@.set @parse(@.attributes)
 
 	parse: (resp) =>
@@ -85,18 +84,7 @@ class window.Thing extends Backbone.Model
 		if @lsProperties.defaultValues?
 			for dValue in @lsProperties.defaultValues
 				#Adding the new state and value to @
-				if dValue.stateType is "array"
-					console.log "creating new state"
-
-					newValue = @get('lsStates').getOrCreateStateByTypeAndKind dValue.stateType, dValue.stateKind
-					console.log "newValue "
-					console.log newValue
-				else
-					newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-					console.log "creating new value "
-					console.log "newValue"
-					console.log newValue
-
+				newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
 				@listenTo newValue, 'createNewValue', @createNewValue
 				#setting unitType and unitKind in the state, if units are given
 				if dValue.unitKind? and newValue.get('unitKind') is undefined
@@ -194,24 +182,9 @@ class window.Thing extends Backbone.Model
 			for dValue in @lsProperties.defaultValues
 				if @get(dValue.key)?
 					if @get(dValue.key).get('value') is undefined
-						unless dValue.stateType is "array"
-							try
-								lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-								value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-								lsStates[0].get('lsValues').remove value
-							catch error
-								console.log "error"
-								console.log error
-								console.log "dValue.stateType"
-								console.log dValue.stateType
-								console.log "dValue.stateKind"
-								console.log dValue.stateKind
-								console.log "dValue.type"
-								console.log dValue.type
-								console.log "dValue.kind"
-								console.log dValue.kind
-								console.log "@get('lsStates')"
-								console.log @get('lsStates')
+						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+						lsStates[0].get('lsValues').remove value
 					@unset(dValue.key)
 
 		if @attributes.attributes?
