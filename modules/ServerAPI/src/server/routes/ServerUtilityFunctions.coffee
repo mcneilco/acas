@@ -376,6 +376,34 @@ exports.createLSTransaction2 = (date, options, callback) ->
 				console.log options
 				callback null
 
+exports.updateLSTransaction = (transaction, callback) ->
+	if global.specRunnerTestmode
+		console.log "update lsTransaction stubsMode"
+		callback
+			comments: "test transaction"
+			date: 1427414400000
+			id: 1234
+			version: 0
+	else
+		config = require '../conf/compiled/conf.js'
+		request = require 'request'
+		body = transaction
+		options =
+			method: 'PUT'
+			url: config.all.client.service.persistence.fullpath+"lstransactions/#{transaction.id}"
+			json: true
+			body: body
+		request options, (error, response, body) ->
+			if !error && response.statusCode == 200
+				callback body
+			else
+				console.error 'got connection error trying to update an lsTransaction'
+				console.error error
+				console.error body
+				console.error options
+				console.error response.statusCode
+				callback null
+
 exports.createLSTransaction = (date, comments, callback) ->
 	console.debug "create ls transaction called"
 	exports.createLSTransaction2 date, {comments: comments}, (json) ->
