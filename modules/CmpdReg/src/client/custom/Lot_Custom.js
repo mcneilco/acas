@@ -224,6 +224,17 @@ $(function() {
                     name: "Select Method"
                   })
 
+                if (window.configuration.metaLot.showTareWeight) {
+                    this.$('.bv_tareWeightContainer').show();
+			    } else {
+				    this.$('.bv_tareWeightContainer').hide();
+			    }
+                if (window.configuration.metaLot.showTotalAmoundStored) {
+                    this.$('.bv_totalAmountStoredContainer').show();
+			    } else {
+				    this.$('.bv_totalAmountStoredContainer').hide();
+			    }
+
                 this.fileListRenderer = new FileRenderer(this.model.get('fileList'));
                 this.$('.analyticalFiles').append(this.fileListRenderer.el);
                 $(this.el).append(this.fileUploadController.el);
