@@ -24,15 +24,17 @@ _ = require 'underscore'
 
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
-  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
+  username = req.session.passport.user.username
+  exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (url) ->
 	  resp.redirect url
 
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
+  username = req.session.passport.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
 	  resp.json {url: url}
 
-exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, callback) ->
+exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, username, callback) ->
   exec = require('child_process').exec
   config = require '../conf/compiled/conf.js'
   request = require 'request'
@@ -45,9 +47,11 @@ exports.getUrlForNewLiveDesignLiveReportForExperimentInternal = (exptCode, callb
     serverError = error
     exptInfo = body
     exptInfo.experimentCode = exptCode
+    exptInfo.username = username
     console.log @responseJSON
-
-
+    #install fresh ldclient
+    exports.installLiveDesignPythonClientInternal (statusCode, output) ->
+        console.log 'Updated LDClient'
     command = "python ./src/python/ServerAPI/createLiveDesignLiveReportForACAS/create_lr_for_acas.py -e "
     command += "'"+config.all.client.service.result.viewer.liveDesign.baseUrl+"' -u '"+config.all.client.service.result.viewer.liveDesign.username+"' -p '"+config.all.client.service.result.viewer.liveDesign.password+"' -d '"+config.all.client.service.result.viewer.liveDesign.database+"' -i '"
     #		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}

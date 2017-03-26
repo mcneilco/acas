@@ -409,4 +409,5 @@ class Author extends Backbone.Model
 				unless val.get('recordedDate') != null
 					val.set recordedDate: rDate
 
+exports.Author = Author
 AppLaunchParams = loginUser:username:"acas"
