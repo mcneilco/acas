@@ -44,12 +44,13 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 
 	isEmpty: ->
 		empty = false
-		if @getModel().has 'labelText'
-			if @getModel().get('labelText')=="" then empty = true
+		mdl = @getModel()
+		if mdl.has 'labelText'
+			if mdl.get('labelText')=="" then empty = true
 		else
-			if @getModel().get('value')=="" or !@getModel().get('value')? then empty = true
+			if mdl.get('value')=="" or !mdl.get('value')? or mdl.get('value')=="unassigned" then empty = true
 
-		if @getModel().get('ignored') then empty = true
+		if mdl.get('ignored') then empty = true
 		return empty
 
 	render: =>
@@ -198,4 +199,61 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			@$('.bv_units').html @getModel().get('unitKind')
 		super()
 
+class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+	events: ->
+		"change select": "handleInputChanged"
 
+	template: _.template($("#ACASFormLSCodeValueFieldView").html())
+
+	handleInputChanged: =>
+		@clearError()
+		value = @pickListController.getSelectedCode()
+		if value == "" or value=="unassigned"
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		@pickListController.setSelectedCode @getModel().get('value')
+		super()
+
+	setupSelect: ->
+		@pickList = new PickListList()
+		mdl = @getModel()
+		@pickList.url = "/api/codetables/#{mdl.get 'codeType'}/#{mdl.get 'codeKind'}"
+		plOptions =
+			el: @$('select')
+			collection: @pickList
+			selectedCode: mdl.get('value')
+			parameter: @options.modelKey
+			codeType: mdl.get 'codeType'
+			codeKind: mdl.get 'codeKind'
+
+		if @options.insertUnassigned?
+			plOptions.insertFirstOption = new PickList
+				code: "unassigned"
+				name: "Select Category"
+			#			roles: [@htsAdmin]
+
+		@pickListController = new PickListSelectController plOptions
+		@pickListController.render()
+
+
+	render: =>
+		super()
+		@setupSelect()
+
+		@
