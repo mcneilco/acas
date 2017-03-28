@@ -123,9 +123,8 @@ createProject <- function(projectName, authorName, lsTransaction){
 	return(response)
 }
 
-checkOrCreateProject <- function(projectName="Project 1", authorName){
+checkOrCreateProject <- function(projectName="Project 1", authorName, lsTransaction){
 	if (!checkIfProjectExists(projectName)){
-		if (is.null(lsTransaction)) lsTransaction <- createLsTransaction("creating projects")
 		createProject(projectName, authorName, lsTransaction)
 	}
 
@@ -187,26 +186,20 @@ createProjectRoles <- function(projectName){
 }
 
 
-mainFunction <- function(){
-		## get CReg projects
-	cRegBaseURL <- racas::applicationSettings$client.service.cmpdReg.persistence.basepath
-	cRegProjectURL <- paste0(cRegBaseURL,'/projects')
-	responseJSON <- getURL(cRegProjectURL)
-	cRegProjects <- jsonlite::fromJSON(responseJSON,simplifyDataFrame=TRUE)
-	cRegProjectsDT <- as.data.table(cRegProjects, stringsAsFactors=FALSE)
+	## get CReg projects
+cRegBaseURL <- racas::applicationSettings$client.service.cmpdReg.persistence.basepath
+cRegProjectURL <- paste0(cRegBaseURL,'/projects')
+responseJSON <- getURL(cRegProjectURL)
+cRegProjects <- jsonlite::fromJSON(responseJSON,simplifyDataFrame=TRUE)
+cRegProjectsDT <- as.data.table(cRegProjects, stringsAsFactors=FALSE)
 
-	lsTransaction <- NULL
-	authorName <- "jmcneil"
-	lsServerURL <- racas::applicationSettings$client.service.persistence.fullpath
+authorName <- "jmcneil"
+lsServerURL <- racas::applicationSettings$client.service.persistence.fullpath
+lsTransaction <- createLsTransaction("creating projects")
 
+cRegProjectsDT[ , checkOrCreateProject(name, authorName, lsTransaction), by=code]
 
-	cRegProjectsDT[ , checkOrCreateProject(name, authorName), by=code]
-
-	createProjectRoleType('Project')
-	cRegProjectsDT[ , createProjectRoleKind(name), by=code]
-	cRegProjectsDT[ , createProjectRoles(name), by=code]
-}
-
-## uncomment the following line and run the script
-## mainFunction()
+createProjectRoleType('Project')
+cRegProjectsDT[ , createProjectRoleKind(name), by=code]
+cRegProjectsDT[ , createProjectRoles(name), by=code]
 
