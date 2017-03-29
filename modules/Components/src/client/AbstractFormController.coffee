@@ -116,6 +116,12 @@ class window.AbstractThingFormController extends AbstractFormController
 		unless @formTables?
 			@formTables = {}
 		for tDef in tableDefs
-			fTable = new ACASFormStateTableController tableDef: tDef, thingRef: @model
-			@$("."+tDef.tableWrapper).append fTable.render().el
+			tdiv = $("<div>")
+			@$("."+tDef.tableWrapper).append tdiv
+			fTable = new ACASFormStateTableController
+				el: tdiv
+				tableDef: tDef
+				thingRef: @model
+			fTable.render()
 			@formTables[tDef.key] = fTable
+

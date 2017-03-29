@@ -13,8 +13,6 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	###
 
-	tagName: "DIV"
-	className: "control-group"
 	template: _.template($("#ACASFormStateTableView").html())
 	rowNumberKind: 'row number'
 
@@ -35,16 +33,15 @@ class window.ACASFormStateTableController extends Backbone.View
 
 #Subclass to extend
 	renderModelContent: =>
-#		console.dir @getCurrentStates()
-#		for state in @getCurrentStates()
-#			@renderState state
+		for state in @getCurrentStates()
+			@renderState state
 
 	applyOptions: ->
-		if @options.tableLabel?
-			@setTableLabel @options.tableLabel
-		if @options.tableLabelClass?
-			@addFormLabelClass @options.tableLabelClass
-		@tableReadOnly = if @options.tableReadOnly? then @options.tableReadOnly else false
+		if @tableDef.tableLabel?
+			@setTableLabel @tableDef.tableLabel
+		if @tableDef.tableLabelClass?
+			@addFormLabelClass @options.tableDef.tableLabelClass
+		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
 		@defineColumns()
 
 	setTableLabel: (value) ->
@@ -61,6 +58,22 @@ class window.ACASFormStateTableController extends Backbone.View
 			@colHeaders = []
 		unless @colDefs?
 			@colDefs = []
+		unless @pickLists?
+			@pickLists = {}
+
+		makeGetSelectFunction = (modelDef) =>
+			console.log "making functio0n"
+			newFunc = (query, callback) =>
+				console.log "fetching options"
+				$.ajax
+					type: 'GET'
+					url: "/api/codetables/#{modelDef.codeType}/#{modelDef.codeKind}"
+					json: true
+					success: (response) =>
+						@pickLists[modelDef.kind] = new PickListList response
+						names = @pickLists[modelDef.kind].pluck 'name'
+						callback names
+			return newFunc
 
 		for val in @tableDef.values
 			@colHeaders.push
@@ -76,6 +89,10 @@ class window.ACASFormStateTableController extends Backbone.View
 				colOpts.dateFormat = 'YYYY-MM-DD'
 				colOpts.correctFormat = true
 #				colOpts.validator: @validateDate
+			else if val.modelDefaults.type == 'codeValue'
+				colOpts.type = 'autocomplete'
+				colOpts.strict = true
+				colOpts.source = makeGetSelectFunction val.modelDefaults
 			@colDefs.push colOpts
 
 	setupHot: ->
@@ -132,7 +149,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 
 	renderState: (state) ->
-		console.dir state.attributes
+		console.log "in renderState"
 		rowNum = @getRowNumberForState(state)
 		if rowNum? #should always be true
 			cols = []
@@ -183,10 +200,16 @@ class window.ACASFormStateTableController extends Backbone.View
 							timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
 							datems += timezoneOffset
 							value.set dateValue: datems
+					when 'codeValue'
+						if @pickLists[value.get('lsKind')]?
+							code = @pickLists[value.get('lsKind')].findWhere({name: change[3]})
+							valCode = if code? then code.get 'code' else null
+							value.set codeValue: valCode
+						else
+							console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
 
 				rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
 				rowNumValue.set numericValue: changeRow
-				console.dir state, depth: 3
 
 
 #TODO support codeValue fields
