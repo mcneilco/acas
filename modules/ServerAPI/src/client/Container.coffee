@@ -105,16 +105,9 @@ class window.Container extends Backbone.Model
 			for dValue in @lsProperties.defaultValues
 #Adding the new state and value to @
 				if dValue.stateType is "array"
-					console.log "creating new state"
-
 					newValue = @get('lsStates').getOrCreateStateByTypeAndKind dValue.stateType, dValue.stateKind
-					console.log "newValue "
-					console.log newValue
 				else
 					newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
-					console.log "creating new value "
-					console.log "newValue"
-					console.log newValue
 
 				#newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
 				@listenTo newValue, 'createNewValue', @createNewValue
@@ -202,16 +195,6 @@ class window.Container extends Backbone.Model
 							catch error
 								console.log "error"
 								console.log error
-								console.log "dValue.stateType"
-								console.log dValue.stateType
-								console.log "dValue.stateKind"
-								console.log dValue.stateKind
-								console.log "dValue.type"
-								console.log dValue.type
-								console.log "dValue.kind"
-								console.log dValue.kind
-								console.log "@get('lsStates')"
-								console.log @get('lsStates')
 					@unset(dValue.key)
 
 		if @attributes.attributes?

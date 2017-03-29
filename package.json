@@ -56,7 +56,14 @@
     "underscore": ">= 0.0.0",
     "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
-    "winston-mongodb": "*"
+    "winston-mongodb": "*",
+    "style-loader": "*",
+    "bootstrap": "*",
+    "exports-loader": "*",
+    "extract-text-webpack-plugin": "*",
+    "url-loader": "*",
+    "file-loader": "*",
+    "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git"
   },
   "devDependencies": {
     "del": "^2.2.2",
