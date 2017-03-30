@@ -93,6 +93,11 @@ services:
      - ./chemaxon/licenses/marvin4js-license.cxl:/usr/local/tomcat/webapps/ROOT/marvin4js-license.cxl
      - ./chemaxon/licenses/license.cxl:/root/.chemaxon/license.cxl
     command: /bin/true
+  mongo:
+    image: mcneilco/mongo
+    restart: always
+    ports:
+      - "27017:27017"
 volumes:
   dbstore:
   filestore:
