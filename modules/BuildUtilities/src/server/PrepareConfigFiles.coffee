@@ -119,10 +119,13 @@ getApacheCompileOptions = ->
 						if option.match('SUSE')
 							apacheVersion = 'SUSE'
 						else
-							if os.type() == "Darwin"
-								apacheVersion = 'Darwin'
+							if option.match("2.4.*(CentOS)")
+								apacheVersion="Redhat-2.4"
 							else
-								apacheVersion = 'Redhat'
+								if os.type() == "Darwin"
+									apacheVersion = 'Darwin'
+								else
+									apacheVersion = 'Redhat'
 				else
 					option = option.match(/^ -D .*/)
 					if option?
@@ -183,6 +186,10 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 			serverRoot = '\"/etc/httpd\"'
 			modulesDir = 'modules/'
 			typesConfig = '/etc/mime.types'
+		when 'Redhat-2.4'
+			serverRoot = '\"/etc/httpd\"'
+			modulesDir = 'modules/'
+			typesConfig = '/etc/mime.types'
 		when 'SUSE'
 			serverRoot = '\"/usr\"'
 			modulesDir = 'lib64/apache2/'
@@ -195,7 +202,10 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs.push('ServerRoot ' + serverRoot)
 	apacheSpecificConfs.push('LoadModule mime_module ' + modulesDir + "mod_mime.so")
 	apacheSpecificConfs.push('TypesConfig ' + typesConfig)
-	if apacheVersion in ['Redhat', 'Darwin', 'SUSE']
+	if apacheVersion in ['Redhat-2.4']
+		apacheSpecificConfs.push('Include conf.modules.d/*.conf')
+		apacheSpecificConfs.push('DefaultRuntimeDir ' + acasHome + '/bin')
+	if apacheVersion in ['Redhat', 'Darwin', 'SUSE', 'Redhat-2.4']
 		apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
 	if apacheVersion == 'Darwin'
@@ -306,4 +316,3 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 			writeApacheConfFile conf
 
 	getProperties(configDir)
-
