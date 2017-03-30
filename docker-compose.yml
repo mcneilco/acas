@@ -2,7 +2,7 @@ version: '2'
 services:
   acas:
 #    build: .
-    image: mcneilco/acas-oss:1.10.0
+    image: mcneilco/acas-oss:feature-acas.io
     restart: always
     ports:
      - "3000:3000"
