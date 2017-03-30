@@ -204,7 +204,7 @@ getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	apacheSpecificConfs.push('TypesConfig ' + typesConfig)
 	if apacheVersion in ['Redhat-2.4']
 		apacheSpecificConfs.push('Include conf.modules.d/*.conf')
-		apacheSpecificConfs.push('DefaultRuntimeDir=' + acasHome + '/bin')
+		apacheSpecificConfs.push('DefaultRuntimeDir ' + acasHome + '/bin')
 	if apacheVersion in ['Redhat', 'Darwin', 'SUSE', 'Redhat-2.4']
 		apacheSpecificConfs.push('LoadModule log_config_module ' + modulesDir + "mod_log_config.so")
 		apacheSpecificConfs.push('LoadModule logio_module ' + modulesDir + "mod_logio.so")
