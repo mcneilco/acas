@@ -27,13 +27,14 @@ class window.ACASFormStateTableController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@applyOptions()
-		@setupHot()
+		@defineColumnsAndSetupHOT()
 
 		@
 
 #Subclass to extend
 	renderModelContent: =>
 		for state in @getCurrentStates()
+			console.log "rendering state id: "+state.id
 			@renderState state
 
 	applyOptions: ->
@@ -42,7 +43,6 @@ class window.ACASFormStateTableController extends Backbone.View
 		if @tableDef.tableLabelClass?
 			@addFormLabelClass @options.tableDef.tableLabelClass
 		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
-		@defineColumns()
 
 	setTableLabel: (value) ->
 		@$('.bv_tableLabel').html value
@@ -53,27 +53,48 @@ class window.ACASFormStateTableController extends Backbone.View
 	removeTableLabelClass: (value) ->
 		@$('.bv_tableLabel').removeClass value
 
+	defineColumnsAndSetupHOT: ->
+			@fetchPickLists =>
+				@defineColumns()
+				@setupHot()
+
+	fetchPickLists: (callback) =>
+		@pickLists = {}
+		listCount = 0
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' then listCount++
+
+		doneYet = =>
+			listCount--
+			if listCount == 0
+				callback()
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue'
+				if val.fieldSettings.optionURL?
+					url = val.fieldSettings.optionURL
+				else
+					url = "/api/codetables/#{val.modelDefaults.codeType}/#{val.modelDefaults.codeKind}"
+				kind = val.modelDefaults.kind
+
+				$.ajax
+					type: 'GET'
+					url: url
+					json: true
+					self: @
+					kind: kind
+#					success: makeRetFunct()
+					success: (response) ->
+						this.self.pickLists[this.kind] = new PickListList response
+						doneYet()
+
+
 	defineColumns: ->
 		unless @colHeaders?
 			@colHeaders = []
 		unless @colDefs?
 			@colDefs = []
-		unless @pickLists?
-			@pickLists = {}
-
-		makeGetSelectFunction = (modelDef) =>
-			console.log "making functio0n"
-			newFunc = (query, callback) =>
-				console.log "fetching options"
-				$.ajax
-					type: 'GET'
-					url: "/api/codetables/#{modelDef.codeType}/#{modelDef.codeKind}"
-					json: true
-					success: (response) =>
-						@pickLists[modelDef.kind] = new PickListList response
-						names = @pickLists[modelDef.kind].pluck 'name'
-						callback names
-			return newFunc
 
 		for val in @tableDef.values
 			@colHeaders.push
@@ -92,14 +113,12 @@ class window.ACASFormStateTableController extends Backbone.View
 			else if val.modelDefaults.type == 'codeValue'
 				colOpts.type = 'autocomplete'
 				colOpts.strict = true
-				colOpts.source = makeGetSelectFunction val.modelDefaults
+				colOpts.source = @pickLists[val.modelDefaults.kind].pluck 'name'
+
 			@colDefs.push colOpts
 
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
-#			afterInit: @handleAfterInit
-#			afterRender: @handleAfterRender
-#			afterCreateRow: @handleRowCreated
 			afterChange: @handleCellChanged
 			minSpareRows: 1,
 			allowInsertRow: true
@@ -110,18 +129,13 @@ class window.ACASFormStateTableController extends Backbone.View
 			colWidths: _.pluck @colHeaders, 'width'
 			allowInsertColumn: false
 			allowRemoveColumn: false
+			afterRemoveRow: @handleRowRemoved
 			columns: @colDefs
 			cells: (row, col, prop) =>
 				cellProperties = {}
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
-
-
-
-#	handleAfterInit: =>
-#		console.log "after init"
-#		@renderState @getStateForRow(0, false)
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -133,8 +147,7 @@ class window.ACASFormStateTableController extends Backbone.View
 		currentStates = @getCurrentStates()
 		for state in currentStates
 			if @getRowNumberForState(state) == row
-				console.log "found state " + state.cid
-				if !forceNew or state.isNew()
+				unless forceNew
 					return state
 
 		#if we get to here without returning, we need a new state
@@ -149,16 +162,20 @@ class window.ACASFormStateTableController extends Backbone.View
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 
 	renderState: (state) ->
-		console.log "in renderState"
 		rowNum = @getRowNumberForState(state)
 		if rowNum? #should always be true
 			cols = []
 			for valDef in @tableDef.values
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
+				if valDef.modelDefaults.type == 'codeValue'
+					displayVal = @getNameForCode value, value.get 'codeValue'
+				else
+					displayVal = value.get valDef.modelDefaults.type
+
 				cellInfo[0] = rowNum
 				cellInfo[1] = valDef.modelDefaults.kind
-				cellInfo[2] = value.get valDef.modelDefaults.type
+				cellInfo[2] = displayVal
 				cols.push cellInfo
 			@hot.setDataAtRowProp cols, "autofill"
 
@@ -172,44 +189,91 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleCellChanged: (changes, source) =>
 		if changes?
 			for change in changes
-				attr = change[1]
-				changeRow = change[0]
-				state = @getStateForRow changeRow, true
-				valueDefs = _.filter @tableDef.values, (def) ->
-					def.modelDefaults.kind == attr
-				valueDef = valueDefs[0]
-				value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
-				if change[3] is undefined or change[3] is null
-					cellContent is null
-				else
-					cellContent = $.trim change[3]
-				switch valueDef.modelDefaults.type
-					when 'stringValue'
-						value.set stringValue: if cellContent? then cellContent else ""
-					when 'numericValue'
-						numVal = parseFloat(cellContent)
-						if isNaN(numVal) or isNaN(Number(numVal))
-							value.set numericValue: null
-						else
-							value.set numericValue: numVal
-					when 'dateValue'
-						if cellContent is ""
-							value.set dateValue: null
-						else
-							datems = new Date(cellContent).getTime()
-							timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
-							datems += timezoneOffset
-							value.set dateValue: datems
-					when 'codeValue'
-						if @pickLists[value.get('lsKind')]?
-							code = @pickLists[value.get('lsKind')].findWhere({name: change[3]})
-							valCode = if code? then code.get 'code' else null
-							value.set codeValue: valCode
-						else
-							console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+				unless change[2] == change[3] or source == "autofill"
+					console.dir change
+					attr = change[1]
+					changeRow = change[0]
+					state = @getStateForRow changeRow, false
+					#TODO ignore old value if not newconta
+					valueDefs = _.filter @tableDef.values, (def) ->
+						def.modelDefaults.kind == attr
+					valueDef = valueDefs[0]
+					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+					unless value.isNew()
+						value = @cloneValueAndIgnoreOld state, value
+					if change[3] is undefined or change[3] is null
+						cellContent is null
+					else
+						cellContent = $.trim change[3]
+					switch valueDef.modelDefaults.type
+						when 'stringValue'
+							value.set stringValue: if cellContent? then cellContent else ""
+						when 'numericValue'
+							numVal = parseFloat(cellContent)
+							if isNaN(numVal) or isNaN(Number(numVal))
+								value.set numericValue: null
+							else
+								value.set numericValue: numVal
+						when 'dateValue'
+							if cellContent is ""
+								value.set dateValue: null
+							else
+								datems = new Date(cellContent).getTime()
+								timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
+								datems += timezoneOffset
+								value.set dateValue: datems
+						when 'codeValue'
+							@setCodeForName(value, cellContent)
+					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
+					rowNumValue.set numericValue: changeRow
 
-				rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
-				rowNumValue.set numericValue: changeRow
 
+	handleRowRemoved: (index, amount) =>
+		for rowNum in [index..(index+amount-1)]
+			state = @getStateForRow rowNum, false
+			console.log "ignoring row #{rowNum} in state id: #{state.id}"
+			state.set ignored: true
+		nextRow = index+amount
+		nRows = @hot.countRows()
+		if nextRow < nRows
+			for rowNum in [nextRow..(nRows-1)]
+				state = @getStateForRow rowNum, false
+				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+				if rowValues.length == 1
+					rowValues[0].set numericValue: rowNum
 
-#TODO support codeValue fields
+	setCodeForName: (value, nameToLookup) ->
+		if @pickLists[value.get('lsKind')]?
+			code = @pickLists[value.get('lsKind')].findWhere({name: nameToLookup})
+			valCode = if code? then code.get 'code' else null
+			value.set codeValue: valCode
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir @pickLists
+
+	getNameForCode: (value, codeToLookup) ->
+		if @pickLists[value.get('lsKind')]?
+			code = @pickLists[value.get('lsKind')].findWhere({code: codeToLookup})
+			name = if code? then code.get 'name' else "not found"
+			return name
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir @pickLists
+
+	cloneValueAndIgnoreOld: (state, oldValue) =>
+		newValue = state.createValueByTypeAndKind oldValue.get('lsType'), oldValue.get('lsKind')
+		newValue.set
+			unitKind: oldValue.get('unitKind')
+			unitType: oldValue.get('unitType')
+			codeKind: oldValue.get('codeKind')
+			codeType: oldValue.get('codeType')
+			codeOrigin: oldValue.get('codeOrigin')
+
+		oldValue.set
+			ignored: true
+			modifiedBy: window.AppLaunchParams.loginUser.username
+			modifiedDate: new Date().getTime()
+			isDirty: true
+
+		return newValue
+
