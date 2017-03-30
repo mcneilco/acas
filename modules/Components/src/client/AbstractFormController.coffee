@@ -95,10 +95,12 @@ class window.AbstractThingFormController extends AbstractFormController
 				placeholder: field.fieldSettings.placeholder
 				required: field.fieldSettings.required
 				thingRef: @model
+				insertUnassigned: field.fieldSettings.insertUnassigned
 
 			switch field.fieldSettings.fieldType
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
+				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			@formFields[field.key] = newField

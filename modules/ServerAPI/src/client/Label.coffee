@@ -10,6 +10,19 @@ class window.Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
+	initialize: ->
+		@.on "change:labelText": @handleLabelTextChanged
+
+	handleLabelTextChanged: =>
+		unless @isNew()
+			@set
+				ignored: true
+				modifiedBy: window.AppLaunchParams.loginUser.username
+				modifiedDate: new Date().getTime()
+				isDirty: true
+			@set labelText: @previous 'labelText'
+			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+
 	changeLabelText: (options) ->
 		@set labelText: options
 
@@ -64,7 +77,6 @@ class window.LabelList extends Backbone.Collection
 		nonPreferredName = _.filter @getCurrent(), (lab) ->
 			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
 		nonPreferredName[0]
-
 
 	setName: (label, currentName) ->
 		if currentName?
@@ -134,7 +146,11 @@ class window.Value extends Backbone.Model
 			if @isNew()
 				@.set @get('lsType'), @get('value')
 			else
-				@set ignored: true
+				@set
+					ignored: true
+					modifiedBy: window.AppLaunchParams.loginUser.username
+					modifiedDate: new Date().getTime()
+					isDirty: true
 				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection

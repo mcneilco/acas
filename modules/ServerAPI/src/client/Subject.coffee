@@ -25,6 +25,28 @@ class window.Subject extends Backbone.Model
 			@createDefaultStates()
 		resp
 
+	prepareToSave: ->
+		rBy = @get('recordedBy')
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@set modifiedDate: rDate
+		@get('lsStates').each (state) =>
+			@setRByAndRDate state
+			state.get('lsValues').each (val) =>
+				@setRByAndRDate val
+
+	setRByAndRDate: (data) ->
+		if @isNew() and @has('recordedBy')
+			rBy = @get('recordedBy')
+		else
+			rBy = window.AppLaunchParams.loginUser.username
+		if data.isNew()
+			rDate = new Date().getTime()
+			unless data.get('recordedBy') != ""
+				data.set recordedBy: rBy
+			unless data.get('recordedDate') != null
+				data.set recordedDate: rDate
+
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
 			for dValue in @lsProperties.defaultValues

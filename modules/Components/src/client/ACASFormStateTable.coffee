@@ -13,7 +13,6 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	###
 
-	className: "control-group"
 	template: _.template($("#ACASFormStateTableView").html())
 	rowNumberKind: 'row number'
 
@@ -28,23 +27,22 @@ class window.ACASFormStateTableController extends Backbone.View
 		$(@el).empty()
 		$(@el).html @template()
 		@applyOptions()
-		@setupHot()
+		@defineColumnsAndSetupHOT()
 
 		@
 
 #Subclass to extend
 	renderModelContent: =>
-#		console.dir @getCurrentStates()
 		for state in @getCurrentStates()
+			console.log "rendering state id: "+state.id
 			@renderState state
 
 	applyOptions: ->
-		if @options.tableDef?.tableLabel?
-			@setTableLabel @options.tableDef.tableLabel
-		if @options.tableDef?.tableLabelClass?
+		if @tableDef?.tableLabel?
+			@setTableLabel @tableDef.tableLabel
+		if @tableDef?.tableLabelClass?
 			@addFormLabelClass @options.tableDef.tableLabelClass
-		@tableReadOnly = if @options.tableReadOnly? then @options.tableReadOnly else false
-		@defineColumns()
+		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
 
 	setTableLabel: (value) ->
 		@$('.bv_tableLabel').html value
@@ -54,6 +52,43 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	removeTableLabelClass: (value) ->
 		@$('.bv_tableLabel').removeClass value
+
+	defineColumnsAndSetupHOT: ->
+			@fetchPickLists =>
+				@defineColumns()
+				@setupHot()
+
+	fetchPickLists: (callback) =>
+		@pickLists = {}
+		listCount = 0
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue' then listCount++
+
+		doneYet = =>
+			listCount--
+			if listCount == 0
+				callback()
+
+		for val in @tableDef.values
+			if val.modelDefaults.type == 'codeValue'
+				if val.fieldSettings.optionURL?
+					url = val.fieldSettings.optionURL
+				else
+					url = "/api/codetables/#{val.modelDefaults.codeType}/#{val.modelDefaults.codeKind}"
+				kind = val.modelDefaults.kind
+
+				$.ajax
+					type: 'GET'
+					url: url
+					json: true
+					self: @
+					kind: kind
+#					success: makeRetFunct()
+					success: (response) ->
+						this.self.pickLists[this.kind] = new PickListList response
+						doneYet()
+
 
 	defineColumns: ->
 		unless @colHeaders?
@@ -75,15 +110,17 @@ class window.ACASFormStateTableController extends Backbone.View
 				colOpts.dateFormat = 'YYYY-MM-DD'
 				colOpts.correctFormat = true
 #				colOpts.validator: @validateDate
+			else if val.modelDefaults.type == 'codeValue'
+				colOpts.type = 'autocomplete'
+				colOpts.strict = true
+				colOpts.source = @pickLists[val.modelDefaults.kind].pluck 'name'
 			if val.validator?
 				colOpts.validator = val.validator
+
 			@colDefs.push colOpts
 
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
-#			afterInit: @handleAfterInit
-#			afterRender: @handleAfterRender
-#			afterCreateRow: @handleRowCreated
 			afterChange: @handleCellChanged
 			minSpareRows: 1,
 			allowInsertRow: true
@@ -94,6 +131,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			colWidths: _.pluck @colHeaders, 'width'
 			allowInsertColumn: false
 			allowRemoveColumn: false
+			afterRemoveRow: @handleRowRemoved
 			columns: @colDefs
 			search: @tableDef.search
 			cells: (row, col, prop) =>
@@ -101,12 +139,6 @@ class window.ACASFormStateTableController extends Backbone.View
 				if @tableReadOnly
 					cellProperties.readOnly = true
 				return cellProperties;
-
-
-
-#	handleAfterInit: =>
-#		console.log "after init"
-#		@renderState @getStateForRow(0, false)
 
 	readOnlyRenderer: (instance, td, row, col, prop, value, cellProperties) =>
 		Handsontable.renderers.TextRenderer.apply(this, arguments)
@@ -118,11 +150,8 @@ class window.ACASFormStateTableController extends Backbone.View
 		currentStates = @getCurrentStates()
 		for state in currentStates
 			if @getRowNumberForState(state) == row
-				console.log "found state " + state.cid
-				if !forceNew or state.isNew()
+				unless forceNew #TODO: check to see if need "...and !state.isNew()"
 					return state
-				else
-					state.set ignored: true #need to set or else you end up with 2 non-ignored states - #TODO: ask John if this is desired
 
 		#if we get to here without returning, we need a new state
 		newState = @thingRef.get('lsStates').createStateByTypeAndKind @tableDef.stateType, @tableDef.stateKind
@@ -140,16 +169,20 @@ class window.ACASFormStateTableController extends Backbone.View
 		@thingRef.get('lsStates').getStatesByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 
 	renderState: (state) ->
-		console.dir state.attributes
 		rowNum = @getRowNumberForState(state)
 		if rowNum? #should always be true
 			cols = []
 			for valDef in @tableDef.values
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
+				if valDef.modelDefaults.type == 'codeValue'
+					displayVal = @getNameForCode value, value.get 'codeValue'
+				else
+					displayVal = value.get valDef.modelDefaults.type
+
 				cellInfo[0] = rowNum
 				cellInfo[1] = valDef.modelDefaults.kind
-				cellInfo[2] = value.get valDef.modelDefaults.type
+				cellInfo[2] = displayVal
 				cols.push cellInfo
 			@hot.setDataAtRowProp cols, "autofill"
 
@@ -163,14 +196,18 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleCellChanged: (changes, source) =>
 		if changes?
 			for change in changes
-				attr = change[1]
-				changeRow = change[0]
-				unless source is "autofill"
-					state = @getStateForRow changeRow, false #TODO: need a way to configure forceNew option
+				unless change[2] == change[3] or source == "autofill"
+					console.dir change
+					attr = change[1]
+					changeRow = change[0]
+					state = @getStateForRow changeRow, false
+					#TODO ignore old value if not newconta
 					valueDefs = _.filter @tableDef.values, (def) ->
 						def.modelDefaults.kind == attr
 					valueDef = valueDefs[0]
 					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+					unless value.isNew()
+						value = @cloneValueAndIgnoreOld state, value
 					if change[3] is undefined or change[3] is null
 						cellContent is null
 					else
@@ -195,11 +232,58 @@ class window.ACASFormStateTableController extends Backbone.View
 						when 'codeValue'
 							if valueDef.fieldSettings.fieldType is "stringValue"
 								value.set codeValue: if cellContent? then cellContent else ""
-							#TODO: if fieldType is 'codeValue'
-
+							else #fieldType is 'codeValue'
+								@setCodeForName(value, cellContent)
 					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
 					rowNumValue.set numericValue: changeRow
-					console.dir state, depth: 3
 
 
-#TODO support codeValue fields
+	handleRowRemoved: (index, amount) =>
+		for rowNum in [index..(index+amount-1)]
+			state = @getStateForRow rowNum, false
+			console.log "ignoring row #{rowNum} in state id: #{state.id}"
+			state.set ignored: true
+		nextRow = index+amount
+		nRows = @hot.countRows()
+		if nextRow < nRows
+			for rowNum in [nextRow..(nRows-1)]
+				state = @getStateForRow rowNum, false
+				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+				if rowValues.length == 1
+					rowValues[0].set numericValue: rowNum
+
+	setCodeForName: (value, nameToLookup) ->
+		if @pickLists[value.get('lsKind')]?
+			code = @pickLists[value.get('lsKind')].findWhere({name: nameToLookup})
+			valCode = if code? then code.get 'code' else null
+			value.set codeValue: valCode
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir @pickLists
+
+	getNameForCode: (value, codeToLookup) ->
+		if @pickLists[value.get('lsKind')]?
+			code = @pickLists[value.get('lsKind')].findWhere({code: codeToLookup})
+			name = if code? then code.get 'name' else "not found"
+			return name
+		else
+			console.log "can't find entry in pickLists hash for: "+value.get('lsKind')
+			console.dir @pickLists
+
+	cloneValueAndIgnoreOld: (state, oldValue) =>
+		newValue = state.createValueByTypeAndKind oldValue.get('lsType'), oldValue.get('lsKind')
+		newValue.set
+			unitKind: oldValue.get('unitKind')
+			unitType: oldValue.get('unitType')
+			codeKind: oldValue.get('codeKind')
+			codeType: oldValue.get('codeType')
+			codeOrigin: oldValue.get('codeOrigin')
+
+		oldValue.set
+			ignored: true
+			modifiedBy: window.AppLaunchParams.loginUser.username
+			modifiedDate: new Date().getTime()
+			isDirty: true
+
+		return newValue
+

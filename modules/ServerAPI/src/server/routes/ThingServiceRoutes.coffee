@@ -110,12 +110,37 @@ exports.thingsByTypeAndKinds = (req, resp) ->
 							resp.json fetchedThings.concat response2...
 
 exports.thingByCodeName = (req, resp) ->
+	getThing req, req.params.code, (thing) ->
+		resp.json thing
+
+
+#	if req.query.testMode or global.specRunnerTestmode
+#		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+#		resp.json thingTestJSON.thingParent
+#	else
+#		config = require '../conf/compiled/conf.js'
+#		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
+#		if req.query.nestedstub
+#			nestedstub = "with=nestedstub"
+#			baseurl += "?#{nestedstub}"
+#		else if req.query.nestedfull
+#			nestedfull = "with=nestedfull"
+#			baseurl += "?#{nestedfull}"
+#		else if req.query.prettyjson
+#			prettyjson = "with=prettyjson"
+#			baseurl += "?#{prettyjson}"
+#		else if req.query.stub
+#			stub = "with=stub"
+#			baseurl += "?#{stub}"
+#		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+getThing = (req, codeName, callback) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		resp.json thingTestJSON.thingParent
+		callback thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+req.params.code
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+codeName
 		if req.query.nestedstub
 			nestedstub = "with=nestedstub"
 			baseurl += "?#{nestedstub}"
@@ -128,15 +153,6 @@ exports.thingByCodeName = (req, resp) ->
 		else if req.query.stub
 			stub = "with=stub"
 			baseurl += "?#{stub}"
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
-
-getThing = (req, codeName, callback) ->
-	if req.query.testMode or global.specRunnerTestmode
-		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
-		callback thingTestJSON.thingParent
-	else
-		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+codeName
 		request = require 'request'
 		request(
 			method: 'GET'
@@ -146,7 +162,7 @@ getThing = (req, codeName, callback) ->
 			if !error && response.statusCode == 200
 				callback json
 			else
-				console.log 'got ajax error trying to get lsThing after post/put'
+				console.log 'got ajax error trying to get lsThing after get'
 				console.log error
 				console.log json
 				console.log response
@@ -233,6 +249,7 @@ postThing = (isBatch, req, resp) ->
 				json: true
 			, (error, response, json) =>
 				if !error && response.statusCode == 201
+					req.query.nestedfull=true
 					getThing req, json.codeName, (thing) ->
 						checkFilesAndUpdate thing
 				else
@@ -259,6 +276,7 @@ exports.putThing = (req, resp) ->
 
 	completeThingUpdate = ->
 		updateThing thingToSave, req.query.testMode, (updatedThing) ->
+			req.query.nestedfull = true
 			getThing req, updatedThing.codeName, (thing) ->
 				resp.json thing
 
