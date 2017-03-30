@@ -13,7 +13,6 @@ class window.ACASFormStateTableController extends Backbone.View
 
 	###
 
-	tagName: "DIV"
 	className: "control-group"
 	template: _.template($("#ACASFormStateTableView").html())
 	rowNumberKind: 'row number'
@@ -36,8 +35,8 @@ class window.ACASFormStateTableController extends Backbone.View
 #Subclass to extend
 	renderModelContent: =>
 #		console.dir @getCurrentStates()
-#		for state in @getCurrentStates()
-#			@renderState state
+		for state in @getCurrentStates()
+			@renderState state
 
 	applyOptions: ->
 		if @options.tableDef?.tableLabel?
@@ -96,6 +95,7 @@ class window.ACASFormStateTableController extends Backbone.View
 			allowInsertColumn: false
 			allowRemoveColumn: false
 			columns: @colDefs
+			search: @tableDef.search
 			cells: (row, col, prop) =>
 				cellProperties = {}
 				if @tableReadOnly
@@ -121,13 +121,19 @@ class window.ACASFormStateTableController extends Backbone.View
 				console.log "found state " + state.cid
 				if !forceNew or state.isNew()
 					return state
+				else
+					state.set ignored: true #need to set or else you end up with 2 non-ignored states - #TODO: ask John if this is desired
 
 		#if we get to here without returning, we need a new state
 		newState = @thingRef.get('lsStates').createStateByTypeAndKind @tableDef.stateType, @tableDef.stateKind
 		rowValue = newState.createValueByTypeAndKind 'numericValue', @rowNumberKind
 		rowValue.set numericValue: row
 		for valueDef in @tableDef.values
-			newState.createValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+			newValue = newState.createValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+			if valueDef.modelDefaults.unitType?
+				newValue.set unitType: valueDef.modelDefaults.unitType
+			if valueDef.modelDefaults.unitKind?
+				newValue.set unitKind: valueDef.modelDefaults.unitKind
 		return newState
 
 	getCurrentStates: ->
@@ -159,36 +165,41 @@ class window.ACASFormStateTableController extends Backbone.View
 			for change in changes
 				attr = change[1]
 				changeRow = change[0]
-				state = @getStateForRow changeRow, true
-				valueDefs = _.filter @tableDef.values, (def) ->
-					def.modelDefaults.kind == attr
-				valueDef = valueDefs[0]
-				value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
-				if change[3] is undefined or change[3] is null
-					cellContent is null
-				else
-					cellContent = $.trim change[3]
-				switch valueDef.modelDefaults.type
-					when 'stringValue'
-						value.set stringValue: if cellContent? then cellContent else ""
-					when 'numericValue'
-						numVal = parseFloat(cellContent)
-						if isNaN(numVal) or isNaN(Number(numVal))
-							value.set numericValue: null
-						else
-							value.set numericValue: numVal
-					when 'dateValue'
-						if cellContent is ""
-							value.set dateValue: null
-						else
-							datems = new Date(cellContent).getTime()
-							timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
-							datems += timezoneOffset
-							value.set dateValue: datems
+				unless source is "autofill"
+					state = @getStateForRow changeRow, false #TODO: need a way to configure forceNew option
+					valueDefs = _.filter @tableDef.values, (def) ->
+						def.modelDefaults.kind == attr
+					valueDef = valueDefs[0]
+					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
+					if change[3] is undefined or change[3] is null
+						cellContent is null
+					else
+						cellContent = $.trim change[3]
+					switch valueDef.modelDefaults.type
+						when 'stringValue'
+							value.set stringValue: if cellContent? then cellContent else ""
+						when 'numericValue'
+							numVal = parseFloat(cellContent)
+							if isNaN(numVal) or isNaN(Number(numVal))
+								value.set numericValue: null
+							else
+								value.set numericValue: numVal
+						when 'dateValue'
+							if cellContent is ""
+								value.set dateValue: null
+							else
+								datems = new Date(cellContent).getTime()
+								timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
+								datems += timezoneOffset
+								value.set dateValue: datems
+						when 'codeValue'
+							if valueDef.fieldSettings.fieldType is "stringValue"
+								value.set codeValue: if cellContent? then cellContent else ""
+							#TODO: if fieldType is 'codeValue'
 
-				rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
-				rowNumValue.set numericValue: changeRow
-				console.dir state, depth: 3
+					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
+					rowNumValue.set numericValue: changeRow
+					console.dir state, depth: 3
 
 
 #TODO support codeValue fields
