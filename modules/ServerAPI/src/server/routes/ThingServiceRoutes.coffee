@@ -152,36 +152,26 @@ getThing = (req, codeName, callback) ->
 
 updateThing = (thing, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
-	if thing.transactionOptions?
-		transactionOptions = thing.transactionOptions
-		delete thing.transactionOptions
+	if testMode or global.specRunnerTestmode
+		callback thing
 	else
-		transactionOptions = {
-			comments: "updated experiment"
-		}
-
-	serverUtilityFunctions.createLSTransaction2 thing.recordedDate, transactionOptions, (transaction) ->
-		thing = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thing
-		if testMode or global.specRunnerTestmode
-			callback thing
-		else
-			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
-			request = require 'request'
-			request(
-				method: 'PUT'
-				url: baseurl
-				body: thing
-				json: true
-			, (error, response, json) =>
-				if !error && response.statusCode == 200 and json.codeName?
-					callback json
-				else
-					console.log 'got ajax error trying to update lsThing'
-					console.log error
-					console.log response
-					callback "update lsThing failed"
-			)
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+thing.lsType+"/"+thing.lsKind+"/"+thing.codeName+ "?with=nestedfull"
+		request = require 'request'
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: thing
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200 and json.codeName?
+				callback json
+			else
+				console.log 'got ajax error trying to update lsThing'
+				console.log error
+				console.log response
+				callback "update lsThing failed"
+		)
 
 
 postThing = (isBatch, req, resp) ->
@@ -196,7 +186,8 @@ postThing = (isBatch, req, resp) ->
 			comments: "new experiment"
 		}
 	transactionOptions.recordedBy = req.session.passport.user.username
-
+	transactionOptions.status = "PENDING"
+	transactionOptions.type = "NEW"
 	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
 		thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 		if req.query.testMode or global.specRunnerTestmode
@@ -212,7 +203,9 @@ postThing = (isBatch, req, resp) ->
 
 			completeThingUpdate = (thingToUpdate)->
 				updateThing thingToUpdate, req.query.testMode, (updatedThing) ->
-					resp.json updatedThing
+					transaction.status = 'COMPLETED'
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+						resp.json updatedThing
 
 			fileSaveCompleted = (passed) ->
 				if !passed
@@ -226,7 +219,10 @@ postThing = (isBatch, req, resp) ->
 					console.log "updating file"
 					csUtilities.relocateEntityFile fv, prefix, thing.codeName, fileSaveCompleted
 			else
-				resp.json thing
+					transaction.status = 'COMPLETED'
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+						console.log transaction
+						resp.json thing
 
 		if req.query.testMode or global.specRunnerTestmode
 			checkFilesAndUpdate thingToSave
@@ -268,13 +264,23 @@ exports.putThing = (req, resp) ->
 	thingToSave = req.body
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
-
 	if thingToSave.transactionOptions?
 		thingToSave.transactionOptions.recordedBy = req.session.passport.user.username
 	completeThingUpdate = ->
-		updateThing thingToSave, req.query.testMode, (updatedThing) ->
-			getThing req, updatedThing.codeName, (thing) ->
-				resp.json thing
+		if thingToSave.transactionOptions?
+			transactionOptions = thingToSave.transactionOptions
+			delete thingToSave.transactionOptions
+		else
+			transactionOptions = {
+				comments: "updated experiment"
+			}
+		transactionOptions.status = "COMPLETED"
+		transactionOptions.type = "CHANGE"
+		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
+			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
+			updateThing thingToSave, req.query.testMode, (updatedThing) ->
+				getThing req, updatedThing.codeName, (thing) ->
+					resp.json thing
 
 	fileSaveCompleted = (passed) ->
 		if !passed

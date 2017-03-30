@@ -755,28 +755,26 @@ exports.containerByCodeName = (req, resp) ->
 
 
 updateContainer = (container, testMode, callback) ->
-	serverUtilityFunctions.createLSTransaction container.recordedDate, "updated experiment", (transaction) ->
-		container = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, container
-		if testMode or global.specRunnerTestmode
-			callback container
-		else
-			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"containers/"+container.code
-			request = require 'request'
-			request(
-				method: 'PUT'
-				url: baseurl
-				body: container
-				json: true
-				timeout: 86400000
-			, (error, response, json) =>
-				if !error && response.statusCode == 200
-					callback json
-				else
-					console.error 'got ajax error trying to update lsContainer'
-					console.error error
-					console.error response
-			)
+	if testMode or global.specRunnerTestmode
+		callback container
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/"+container.code
+		request = require 'request'
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: container
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.error 'got ajax error trying to update lsContainer'
+				console.error error
+				console.error response
+		)
 
 
 postContainer = (req, resp) ->
@@ -784,7 +782,17 @@ postContainer = (req, resp) ->
 	console.debug "post container"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	containerToSave = req.body
-	serverUtilityFunctions.createLSTransaction containerToSave.recordedDate, "new experiment", (transaction) ->
+	if containerToSave.transactionOptions?
+		transactionOptions = containerToSave.transactionOptions
+		delete containerToSave.transactionOptions
+	else
+		transactionOptions = {
+			comments: "new container"
+		}
+	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.status = "PENDING"
+	transactionOptions.type = "NEW"
+	serverUtilityFunctions.createLSTransaction2 containerToSave.recordedDate, transactionOptions, (transaction) ->
 		containerToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, containerToSave
 		if req.query.testMode or global.specRunnerTestmode
 			unless containerToSave.codeName?
@@ -796,7 +804,9 @@ postContainer = (req, resp) ->
 
 			completeContainerUpdate = (containerToUpdate)->
 				updateContainer containerToUpdate, req.query.testMode, (updatedContainer) ->
-					resp.json updatedContainer
+					transaction.status = 'COMPLETED'
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+						resp.json container
 
 			fileSaveCompleted = (passed) ->
 				if !passed
@@ -810,7 +820,9 @@ postContainer = (req, resp) ->
 					console.debug "updating file"
 					csUtilities.relocateEntityFile fv, prefix, container.codeName, fileSaveCompleted
 			else
-				resp.json container
+				transaction.status = 'COMPLETED'
+				serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+					resp.json container
 
 		if req.query.testMode or global.specRunnerTestmode
 			checkFilesAndUpdate containerToSave
@@ -848,9 +860,22 @@ exports.putContainer = (req, resp) ->
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity containerToSave, true
 	filesToSave = fileVals.length
 
+	if containerToSave.transactionOptions?
+		containerToSave.transactionOptions.recordedBy = req.session.passport.user.username
 	completeContainerUpdate = ->
-		updateContainer containerToSave, req.query.testMode, (updatedContainer) ->
-			resp.json updatedContainer
+		if containerToSave.transactionOptions?
+			transactionOptions = containerToSave.transactionOptions
+			delete containerToSave.transactionOptions
+		else
+			transactionOptions = {
+				comments: "updated experiment"
+			}
+		transactionOptions.status = "COMPLETED"
+		transactionOptions.type = "CHANGE"
+		serverUtilityFunctions.createLSTransaction2 containerToSave.recordedDate, transactionOptions, (transaction) ->
+			containerToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, containerToSave
+			updateContainer containerToSave, req.query.testMode, (updatedContainer) ->
+				resp.json updatedContainer
 
 	fileSaveCompleted = (passed) ->
 		if !passed
@@ -1585,7 +1610,7 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 		exports.getContainersByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (getContainersByLabelsResponse, statusCode) =>
 			response = []
 			for getContainer in getContainersByLabelsResponse
-				responseObject = 
+				responseObject =
 					label: getContainer.label
 					codeName: getContainer.codeName
 					logs: []
@@ -1945,4 +1970,3 @@ exports.throwInTrashInternal = (input, callCustom, callback) ->
 			console.log response
 			callback response.body, 500
 	)
-
