@@ -21,7 +21,7 @@ runFunction <- function() {
         myMessenger$logger$debug(paste0("running: returnValues <- ",rFunction,"(",paste0(capture.output(dput(request)),collapse = ""),")", collapse = ""))
         myMessenger$capture_output(returnValues <- eval(parse(text = paste0(rFunction,"(request)"))), stopOnError = TRUE)
       })
-    cat(toJSON(returnValues))
+    cat(rjson::toJSON(returnValues))
   },error = function(ex) {
     cat(paste0('{"RExecutionError":"',ex$message,'"}'))
     myMessenger$logger$error(ex$message)
