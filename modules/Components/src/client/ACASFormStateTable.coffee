@@ -63,15 +63,19 @@ class window.ACASFormStateTableController extends Backbone.View
 		listCount = 0
 
 		for val in @tableDef.values
-			if val.modelDefaults.type == 'codeValue' then listCount++
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == 'codeValue'
+				listCount++
 
 		doneYet = =>
 			listCount--
 			if listCount == 0
 				callback()
 
+		if listCount == 0
+			callback()
+
 		for val in @tableDef.values
-			if val.modelDefaults.type == 'codeValue'
+			if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == "codeValue"
 				if val.fieldSettings.optionURL?
 					url = val.fieldSettings.optionURL
 				else
@@ -110,7 +114,7 @@ class window.ACASFormStateTableController extends Backbone.View
 				colOpts.dateFormat = 'YYYY-MM-DD'
 				colOpts.correctFormat = true
 #				colOpts.validator: @validateDate
-			else if val.modelDefaults.type == 'codeValue'
+			else if val.modelDefaults.type == 'codeValue' and val.fieldSettings.fieldType == 'codeValue'
 				colOpts.type = 'autocomplete'
 				colOpts.strict = true
 				colOpts.source = @pickLists[val.modelDefaults.kind].pluck 'name'
@@ -176,7 +180,10 @@ class window.ACASFormStateTableController extends Backbone.View
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
 				if valDef.modelDefaults.type == 'codeValue'
-					displayVal = @getNameForCode value, value.get 'codeValue'
+					if valDef.fieldSettings.fieldType == "stringValue"
+						displayVal = value.get 'codeValue'
+					else
+						displayVal = @getNameForCode value, value.get 'codeValue'
 				else
 					displayVal = value.get valDef.modelDefaults.type
 
