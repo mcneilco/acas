@@ -789,7 +789,7 @@ postContainer = (req, resp) ->
 		transactionOptions = {
 			comments: "new container"
 		}
-	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.recordedBy = req.user.username
 	transactionOptions.status = "PENDING"
 	transactionOptions.type = "NEW"
 	serverUtilityFunctions.createLSTransaction2 containerToSave.recordedDate, transactionOptions, (transaction) ->
@@ -861,7 +861,7 @@ exports.putContainer = (req, resp) ->
 	filesToSave = fileVals.length
 
 	if containerToSave.transactionOptions?
-		containerToSave.transactionOptions.recordedBy = req.session.passport.user.username
+		containerToSave.transactionOptions.recordedBy = req.user.username
 	completeContainerUpdate = ->
 		if containerToSave.transactionOptions?
 			transactionOptions = containerToSave.transactionOptions

@@ -185,7 +185,7 @@ postThing = (isBatch, req, resp) ->
 		transactionOptions = {
 			comments: "new experiment"
 		}
-	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.recordedBy = req.user.username
 	transactionOptions.status = "PENDING"
 	transactionOptions.type = "NEW"
 	serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
@@ -265,7 +265,7 @@ exports.putThing = (req, resp) ->
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity thingToSave, true
 	filesToSave = fileVals.length
 	if thingToSave.transactionOptions?
-		thingToSave.transactionOptions.recordedBy = req.session.passport.user.username
+		thingToSave.transactionOptions.recordedBy = req.user.username
 	completeThingUpdate = ->
 		if thingToSave.transactionOptions?
 			transactionOptions = thingToSave.transactionOptions

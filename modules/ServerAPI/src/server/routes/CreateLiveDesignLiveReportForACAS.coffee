@@ -24,13 +24,13 @@ _ = require 'underscore'
 
 exports.redirectToNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
-  username = req.session.passport.user.username
+  username = req.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, username, (url) ->
 	  resp.redirect url
 
 exports.getUrlForNewLiveDesignLiveReportForExperiment = (req, resp) ->
   exptCode = req.params.experimentCode
-  username = req.session.passport.user.username
+  username = req.user.username
   exports.getUrlForNewLiveDesignLiveReportForExperimentInternal exptCode, (url) ->
 	  resp.json {url: url}
 
