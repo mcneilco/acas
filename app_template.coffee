@@ -79,6 +79,8 @@ startApp = ->
 	app.use cookieParser()
 	app.use session
 		secret: 'acas needs login'
+		resave: true
+		saveUninitialized: true
 		cookie: maxAge: 365 * 24 * 60 * 60 * 1000
 	app.use flash()
 	app.use passport.initialize()
@@ -121,7 +123,6 @@ startApp = ->
 	child = new (forever.Monitor)("app_api.js",
 		max: 3
 		silent: false
-		options: options
 		args: options
 	)
 

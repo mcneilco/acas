@@ -92,6 +92,8 @@ else
 startupArgs = []
 if argv.debugbrk
   startupArgs.push "--debug-brk=5858"
+if argv.debug
+  startupArgs.push "--debug=5858"
 startupArgs.push "app.js"
 if argv.stubsMode
   startupArgs.push "stubsMode"
@@ -393,7 +395,7 @@ gulp.task 'app', (done) =>
   if node?
     node.kill()
   spawn = require('child_process').spawn
-  node = spawn('node', [ 'app.js' ], stdio: 'inherit')
+  node = spawn('node', taskConfigs.others.app.args, stdio: 'inherit')
   node.on 'close', (code) ->
     if code == 8
       gulp.log 'Error detected, waiting for changes...'

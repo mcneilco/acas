@@ -13,7 +13,6 @@ startApp = ->
 	favicon = require('serve-favicon')
 	logger = require('morgan')
 	methodOverride = require('method-override')
-	session = require('express-session')
 	bodyParser = require('body-parser')
 	multer = require('multer')
 	errorHandler = require('errorhandler')

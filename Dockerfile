@@ -69,5 +69,6 @@ ENV     ACAS_HOME=$BUILD_PATH
 
 EXPOSE 3000
 EXPOSE 3001
+EXPOSE 5858
 
 CMD     ["/bin/sh","bin/acas.sh", "run"]
