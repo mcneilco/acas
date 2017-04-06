@@ -56,6 +56,15 @@ class window.Protocol extends BaseEntity
 
 		assayPrinciple
 
+	getProjectCode: ->
+		projectCodeValue = @.get('lsStates').getOrCreateValueByTypeAndKind "metadata", "protocol metadata", "codeValue", "project"
+		if projectCodeValue.get('codeValue') is undefined or projectCodeValue.get('codeValue') is ""
+			projectCodeValue.set codeValue: "unassigned"
+			projectCodeValue.set codeType: "project"
+			projectCodeValue.set codeKind: "biology"
+			projectCodeValue.set codeOrigin: "ACAS DDICT"
+
+		projectCodeValue
 
 	validate: (attrs) ->
 		errors = []
@@ -106,6 +115,7 @@ class window.ProtocolBaseController extends BaseEntityController
 			"keyup .bv_protocolName": "handleNameChanged"
 			"keyup .bv_assayTreeRule": "handleAssayTreeRuleChanged"
 			"change .bv_assayStage": "handleAssayStageChanged"
+			"change .bv_projectCode": "handleProjectCodeChanged"
 			"keyup .bv_assayPrinciple": "handleAssayPrincipleChanged"
 			"change .bv_creationDate": "handleCreationDateChanged"
 			"click .bv_creationDateIcon": "handleCreationDateIconClicked"
@@ -125,7 +135,7 @@ class window.ProtocolBaseController extends BaseEntityController
 						type: 'GET'
 						url: "/api/protocols/codename/"+window.AppLaunchParams.moduleLaunchParams.code
 						dataType: 'json'
-						error: (err) ->
+						error: (err) =>
 							alert 'Could not get protocol for code in this URL, creating new one'
 							@completeInitialization()
 						success: (json) =>
@@ -163,12 +173,17 @@ class window.ProtocolBaseController extends BaseEntityController
 			@$('.bv_group_assayTreeRule').show()
 		else
 			@$('.bv_group_assayTreeRule').hide()
+		if window.conf.protocol?.hideFields? and window.conf.protocol.hideFields != null
+			for field in window.conf.protocol.hideFields.split(",")
+				field = $.trim field
+				console.log field
+				@$('.bv_group_'+field).hide()
 		@model.on 'notUniqueName', =>
 			@$('.bv_protocolSaveFailed').modal('show')
 			$('.bv_closeSaveFailedModal').removeAttr('disabled')
 			@$('.bv_saveFailed').show()
-#			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
-#				@$('.bv_saveFailed').hide()
+			#			@$('.bv_protocolSaveFailed').on 'hide.bs.modal', =>
+			#				@$('.bv_saveFailed').hide()
 			$('.bv_protocolSaveFailed').on 'hidden', =>
 				@$('.bv_saveFailed').hide()
 		@model.on 'saveFailed', =>
@@ -178,6 +193,10 @@ class window.ProtocolBaseController extends BaseEntityController
 		@setupTagList()
 		@setUpAssayStageSelect()
 		@setupAttachFileListController()
+		if window.conf.protocol?.save?.project? and !window.conf.protocol.save.project
+			@$('.bv_group_projectCode').hide()
+		else
+			@setupProjectSelect()
 		@render()
 		@listenTo @model, 'sync', @modelSyncCallback
 		@listenTo @model, 'change', @modelChangeCallback
@@ -188,6 +207,8 @@ class window.ProtocolBaseController extends BaseEntityController
 		unless @model?
 			@model = new Protocol()
 		@setUpAssayStageSelect()
+		unless window.conf.protocol?.save?.project? and !window.conf.protocol.save.project
+			@$('.bv_projectCode').val(@model.getProjectCode().get('codeValue'))
 		@$('.bv_creationDate').datepicker();
 		@$('.bv_creationDate').datepicker( "option", "dateFormat", "yy-mm-dd" );
 		if @model.getCreationDate().get('dateValue')?
@@ -225,6 +246,17 @@ class window.ProtocolBaseController extends BaseEntityController
 				code: "unassigned"
 				name: "Select Assay Stage"
 			selectedCode: @model.getAssayStage().get('codeValue')
+
+	setupProjectSelect: ->
+		@projectList = new PickListList()
+		@projectList.url = "/api/projects"
+		@projectListController = new PickListSelectController
+			el: @$('.bv_projectCode')
+			collection: @projectList
+			insertFirstOption: new PickList
+				code: "unassigned"
+				name: "Select Project"
+			selectedCode: @model.getProjectCode().get('codeValue')
 
 	finishSetupAttachFileListController: (attachFileList, fileTypeList) ->
 		if @attachFileListController?
@@ -290,13 +322,16 @@ class window.ProtocolBaseController extends BaseEntityController
 		value = UtilityFunctions::convertYMDDateToMs(UtilityFunctions::getTrimmedInput @$('.bv_creationDate'))
 		@handleValueChanged "CreationDate", value
 
-
 	handleCreationDateIconClicked: =>
 		@$( ".bv_creationDate" ).datepicker( "show" )
 
 	handleAssayStageChanged: =>
 		value = @assayStageListController.getSelectedCode()
 		@handleValueChanged "AssayStage", value
+
+	handleProjectCodeChanged: =>
+		value = @projectListController.getSelectedCode()
+		@handleValueChanged "ProjectCode", value
 
 	handleAssayPrincipleChanged: =>
 		value = UtilityFunctions::getTrimmedInput @$('.bv_assayPrinciple')

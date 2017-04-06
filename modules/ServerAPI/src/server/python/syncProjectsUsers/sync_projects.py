@@ -46,12 +46,12 @@ class SyncProjectsController:
     def add_new_projects(self):
         if len(self.new_projects) > 0:
             print "Adding projects:"
-            add_project_sql = "INSERT INTO syn_project (project_id, active, alternate_id, is_restricted, project_desc, project_name) VALUES(%s, %s, %s, %s, %s, %s) returning *;"
+            add_project_sql = "INSERT INTO syn_project (project_id, active, alternate_id, is_restricted, project_desc, project_name) VALUES(nextval('syn_project_project_id_seq'), %s, %s, %s, %s, %s) returning *;"
         for project in self.new_projects:
             self.lock.acquire()
             cur=self.livedesign_db_conn.cursor()
             #cur.execute("set bytea_output = 'hex'")
-            cur.execute(add_project_sql,(project['id'],project['active'],project['code'],project['is_restricted'],project['project_desc'],project['name']))
+            cur.execute(add_project_sql,(project['active'],project['code'],project['is_restricted'],project['project_desc'],project['name']))
             add_project_results=cur.fetchall()
             self.livedesign_db_conn.commit()
             self.lock.release()

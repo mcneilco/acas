@@ -22,7 +22,7 @@ exports.getProjectStubs = (req, resp) ->
 	csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
 	if !req.user?
 		req.user = {}
-		req.user.username = req.params.username
+		req.user.username = req.query.username
 	if global.specRunnerTestmode
 		projectServiceTestJSON = require '../public/javascripts/spec/testFixtures/projectServiceTestJSON.js'
 		resp.end JSON.stringify projectServiceTestJSON.projectStubs

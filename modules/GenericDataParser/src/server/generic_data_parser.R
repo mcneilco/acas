@@ -199,7 +199,7 @@ validateMetaData <- function(metaData, configList, username, formatSettings = li
   } else {
     duplicateExperimentNamesAllowed <- FALSE
   }
-  
+
   return(list(validatedMetaData=validatedMetaData, duplicateExperimentNamesAllowed=duplicateExperimentNamesAllowed, useExisting=useExisting))
 }
 validateCustomExperimentMetaData <- function(metaData, recordedBy, lsTransaction, dryRun, configList) {
@@ -491,13 +491,13 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   if (inputFormat == "Gene ID Data") {
     requestIds <- list()
     requestIds$requests <- lapply(batchIds, function(input) {return(list(requestName=input))})
-    response <- fromJSON(postURLcheckStatus(
+    response <- jsonlite::fromJSON(postURLcheckStatus(
       paste0(racas::applicationSettings$client.service.persistence.fullpath, "lsthings/getGeneCodeNameFromNameRequest"),
-      toJSON(requestIds)))$results
-    preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
-    names(preferredIdFrame) <- names(response[[1]])
-    preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
-    preferredIdDT <- as.data.table(preferredIdFrame)
+      jsonlite::toJSON(requestIds, auto_unbox=TRUE, simplifyDataFrame=FALSE, simplifyVector=FALSE)),simplifyDataFrame=TRUE)$results
+    #preferredIdFrame <- as.data.frame(do.call("rbind", response), stringsAsFactors=FALSE)
+    #names(preferredIdFrame) <- names(response[[1]])
+    #preferredIdFrame <- as.data.frame(lapply(preferredIdFrame, unlist), stringsAsFactors=FALSE)
+    preferredIdDT <- as.data.table(response)
     setnames(preferredIdDT, c("requestName", "preferredName"), c("Requested.Name", "Preferred.Code"))
     newBatchIds <- as.data.frame(preferredIdDT)
   } else {
@@ -564,7 +564,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
   ### ================== Check batch projects ========================================================
   if (!is.null(projectCode)) {
     # projectList is a list of objects with keys "code" (string), "isRestricted" (boolean), and others not required here
-    projectList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))
+    projectList <- jsonlite::fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")), simplifyDataFrame=FALSE)
     currentProjList <- Filter(function(x) {x$code == projectCode}, projectList)
     projectDF <- do.call(rbind, lapply(projectList, as.data.frame)) 
     if (length(currentProjList) > 0) {
@@ -1930,7 +1930,7 @@ validateProject <- function(projectName, configList, username, protocolName = NU
       metadataState <- metadataState[[1]]
       #protocolProject <- getValuesByTypeAndKind(metadataState, "codeValue_project")
       protocolProject <- metadataState$lsValues[unlist(lapply(metadataState$lsValues, function(x) {x$"lsTypeAndKind"=="codeValue_project" & x$ignored ==FALSE}))]
-      if(!is.null(protocolProject)) {
+      if(!is.null(protocolProject) && length(protocolProject) != 0) {
         protocolProject <- lapply(protocolProject, getElement, "codeValue")[[1]]
         if(protocolProject != "unassigned") {
           systemProjectsList <- fromJSON(getURL(paste0(racas::applicationSettings$server.nodeapi.path, "/api/projects/getAllProjects/stubs")))

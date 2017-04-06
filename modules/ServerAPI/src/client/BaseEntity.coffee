@@ -64,6 +64,10 @@ class window.BaseEntity extends Backbone.Model
 		metadataKind = @.get('subclass') + " metadata"
 		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook"
 
+	getNotebookPage: ->
+		metadataKind = @.get('subclass') + " metadata"
+		@.get('lsStates').getOrCreateValueByTypeAndKind "metadata", metadataKind, "stringValue", "notebook page"
+
 	getStatus: ->
 		subclass = @.get('subclass')
 		metadataKind = subclass + " metadata"
@@ -78,14 +82,14 @@ class window.BaseEntity extends Backbone.Model
 		status
 
 	getAttachedFiles: (fileTypes) =>
-		#get list of possible kinds of analytical files
+#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
 		for type in fileTypes
 			analyticalFileState = @get('lsStates').getOrCreateStateByTypeAndKind "metadata", @get('subclass')+" metadata"
 			analyticalFileValues = analyticalFileState.getValuesByTypeAndKind "fileValue", type.code
 			if analyticalFileValues.length > 0 and type.code != "unassigned"
-				#create new attach file model with fileType set to lsKind and fileValue set to fileValue
-				#add new afm to attach file list
+#create new attach file model with fileType set to lsKind and fileValue set to fileValue
+#add new afm to attach file list
 				for file in analyticalFileValues
 					if file.get('ignored') is false
 						afm = new AttachFile
@@ -191,20 +195,22 @@ class window.BaseEntity extends Backbone.Model
 		copiedStates = new StateList()
 		origStates = @get('lsStates')
 		origStates.each (st) ->
-			copiedState = new State(_.clone(st.attributes))
-			copiedState.unset 'id'
-			copiedState.unset 'lsTransactions'
-			copiedState.unset 'lsValues'
-			copiedValues = new ValueList()
-			origValues = st.get('lsValues')
-			origValues.each (sv) ->
-				unless sv.attributes.lsType == 'fileValue'
-					copiedVal = new Value(sv.attributes)
-					copiedVal.unset 'id'
-					copiedVal.unset 'lsTransaction'
-					copiedValues.add(copiedVal)
-			copiedState.set lsValues: copiedValues
-			copiedStates.add(copiedState)
+			unless st.get('ignored')
+				copiedState = new State(_.clone(st.attributes))
+				copiedState.unset 'id'
+				copiedState.unset 'lsTransactions'
+				copiedState.unset 'lsValues'
+				copiedValues = new ValueList()
+				origValues = st.get('lsValues')
+				origValues.each (sv) ->
+					unless sv.get('ignored')
+						unless sv.attributes.lsType == 'fileValue'
+							copiedVal = new Value(sv.attributes)
+							copiedVal.unset 'id'
+							copiedVal.unset 'lsTransaction'
+							copiedValues.add(copiedVal)
+				copiedState.set lsValues: copiedValues
+				copiedStates.add(copiedState)
 		copiedEntity.set
 			lsLabels: new LabelList()
 			lsStates: copiedStates
@@ -213,6 +219,7 @@ class window.BaseEntity extends Backbone.Model
 			version: 0
 		copiedEntity.getStatus().set codeValue: "created"
 		copiedEntity.getNotebook().set stringValue: ""
+		copiedEntity.getNotebookPage().set stringValue: ""
 		copiedEntity.getScientist().set codeValue: "unassigned"
 
 		copiedEntity
@@ -230,6 +237,7 @@ class window.BaseEntityController extends AbstractFormController
 		"keyup .bv_comments": "handleCommentsChanged"
 		"keyup .bv_entityName": "handleNameChanged"
 		"keyup .bv_notebook": "handleNotebookChanged"
+		"keyup .bv_notebookPage": "handleNotebookPageChanged"
 		"change .bv_status": "handleStatusChanged"
 		"click .bv_save": "handleSaveClicked"
 		"click .bv_newEntity": "handleNewEntityClicked"
@@ -271,6 +279,7 @@ class window.BaseEntityController extends AbstractFormController
 		@$('.bv_details').val(@model.getDetails().get('clobValue'))
 		@$('.bv_comments').val(@model.getComments().get('clobValue'))
 		@$('.bv_notebook').val @model.getNotebook().get('stringValue')
+		@$('.bv_notebookPage').val @model.getNotebookPage().get('stringValue')
 		@$('.bv_status').val(@model.getStatus().get('codeValue'))
 		if @model.isNew()
 			@$('.bv_save').html("Save")
@@ -453,6 +462,10 @@ class window.BaseEntityController extends AbstractFormController
 	handleNotebookChanged: =>
 		value = UtilityFunctions::getTrimmedInput @$('.bv_notebook')
 		@handleValueChanged "Notebook", value
+
+	handleNotebookPageChanged: =>
+		value = UtilityFunctions::getTrimmedInput @$('.bv_notebookPage')
+		@handleValueChanged "NotebookPage", value
 
 	handleStatusChanged: =>
 		value = @statusListController.getSelectedCode()

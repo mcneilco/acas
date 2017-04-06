@@ -60,6 +60,9 @@
 			,
 				typeName: "metadata"
 				kindName: "log"
+			,
+				typeName: "metadata"
+				kindName: "location history"
 			]
 
 		valuetypes:
@@ -125,6 +128,9 @@
 			,
 				typeName: "numericValue"
 				kindName: "amount"
+			,
+				typeName: "codeValue"
+				kindName: "instrument"
 			]
 
 		labeltypes:

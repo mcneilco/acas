@@ -168,7 +168,7 @@ getRApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->
 	confs.push('<Directory ' + acasHome + '>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n</Directory>')
 	confs.push('RewriteEngine On')
 	confs.push("RewriteRule ^/$ #{urlPrefix}://#{config.client.host}:#{config.client.port}/$1 [L,R,NE]")
-	confs.push('REvalOnStartup \'Sys.setenv(acasHome = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
+	confs.push('REvalOnStartup \'Sys.setenv(ACAS_HOME = \"' + acasHome + '\");.libPaths(file.path(\"' + acasHome + '/r_libs\"));require(racas)\'')
 	return confs.join('\n')
 
 getApacheSpecificConfString = (config, apacheCompileOptions, acasHome) ->

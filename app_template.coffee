@@ -1,6 +1,7 @@
 global.logger = require "./routes/Logger"
 require './src/javascripts/Logging/ConsoleLogWinstonOverride'
 csUtilities = require "./src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js"
+systemTest = require "./routes/SystemTestRoutes.js"
 
 startApp = ->
 # Regular system startup
@@ -139,5 +140,9 @@ startApp = ->
 		return
 
 	csUtilities.logUsage("ACAS Node server started", "started", "")
+
+	if config.all.server.systemTest?.runOnStart? && config.all.server.systemTest.runOnStart
+		systemTest.runSystemTestInternal false, (status, output) ->
+			console.log "system test completed"
 
 startApp()

@@ -3,7 +3,7 @@ serverUtilityFunctions = require './ServerUtilityFunctions.js'
 
 setupRoutes = (app, loginRoutes, requireLogin) ->
 	config = require '../conf/compiled/conf.js'
-	upload = require '../node_modules_customized/jquery-file-upload-middleware'
+	upload = require 'jquery-file-upload-middleware'
 
 	dataFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.datafiles.relative_path
 	tempFilesPath = serverUtilityFunctions.makeAbsolutePath config.all.server.tempfiles.relative_path
@@ -14,10 +14,17 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 		ssl: config.all.client.use.ssl
 		uploadUrl: "/dataFiles"
 
-	app.use '/uploads', upload.fileHandler()
+	app.use '/uploads', (req, res, next) ->
+		if requireLogin
+			if !req.isAuthenticated()
+				res.send 401
+				return
+		upload.fileHandler() req, res, next
+
 	upload.on "error", (e) ->
 		console.log "fileUpload: ", e.message
 	upload.on "end", (fileInfo) ->
+		console.log fileInfo
 		app.emit "file-uploaded", fileInfo
 
 

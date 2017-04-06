@@ -241,13 +241,14 @@ server.log.path=/home/runner/logs
 #config for whether project is required
 client.include.project=FALSE
 # config for whether project attribute is saved as part of an experiment
-client.save.project=FALSE
+client.save.project=TRUE
+client.protocol.save.project=true
 client.path=
 
 # Query tool settings
-client.service.result.viewer.displayName=Live Design
-client.service.result.viewer.configuredViewers=LiveDesign
-client.service.result.viewer.defaultViewer=LiveDesign
+client.service.result.viewer.displayName=Data Viewer
+client.service.result.viewer.configuredViewers=DataViewer
+client.service.result.viewer.defaultViewer=DataViewer
 client.service.result.viewer.liveDesign.baseUrl=
 client.service.result.viewer.liveDesign.username=
 client.service.result.viewer.liveDesign.password=
@@ -331,22 +332,21 @@ client.moduleMenus.modules.external=[{"displayName": "Compound Registration", "h
 client.leaveACASMessage=There are no unsaved changes.
 client.scientistCodeOrigin=ACAS authors
 client.molecularTargetCodeOrigin=ACAS DDICT
-client.roles.htsAdmin=admin
-client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
-client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
-client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
-client.roles.acas.userRole=ROLE_ACAS-USERS
-client.roles.acas.adminRole=ROLE_ACAS-ADMINS
-#client.roles.loginRole=
-#client.roles.cmpdreg.chemistRole=
-#client.roles.cmpdreg.adminRole=
-#client.roles.acas.userRole=
-#client.roles.acas.adminRole=
+
+#client.roles.loginRole=ROLE_ACAS-USERS,ROLE_CMPDREG-USERS
+#client.roles.cmpdreg.chemistRole=ROLE_CMPDREG-USERS
+#client.roles.cmpdreg.adminRole=ROLE_CMPDREG-ADMINS
+#client.roles.acas.userRole=ROLE_ACAS-USERS
+#client.roles.acas.adminRole=ROLE_ACAS-ADMINS
+client.roles.loginRole=
+client.roles.cmpdreg.chemistRole=
+client.roles.cmpdreg.adminRole=
+client.roles.acas.userRole=
+client.roles.acas.adminRole=
 client.browser.enableSearchAll=true
-client.containerInventory.search.maxResult=1000
 
 ## Cmpd Reg Bulk Loader Options
-client.service.cmpdReg.persistence.host=${client.cmpdreg.host}
+client.service.cmpdReg.persistence.host=tomcat
 client.service.cmpdReg.persistence.path=cmpdreg/api/v1
 client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
 client.service.cmpdReg.persistence.basepath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/cmpdreg
@@ -398,14 +398,11 @@ client.entity.hideStatuses=["deleted"]
 # client.entity.deletingRoles=entityScientist,projectAdmin,admin
 client.entity.editingRoles=
 client.entity.deletingRoles=
+#client.entity.viewDeletedRoles=projectAdmin,ROLE_ACAS-ADMINS
+client.entity.viewDeletedRoles=
 
 client.protocol.showAssayTreeRule=false
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
-
-## Cmpd Reg Bulk Loader Options
-client.service.cmpdReg.persistence.host=tomcat
-client.service.cmpdReg.persistence.path=cmpdreg/api/v1
-client.service.cmpdReg.persistence.fullpath=http://${client.service.cmpdReg.persistence.host}:${client.service.persistence.port}/${client.service.cmpdReg.persistence.path}/
 
 # If project select is shown separately in the Configuration part of the GUI
 client.cmpdReg.showProjectSelect=true
@@ -419,11 +416,17 @@ server.sel.assayStage=unassigned
 server.service.cron.startOnRestart=true
 server.service.cron.enable=true
 
-# Mark whether using internal plate registration for plate analysis
-server.service.internalPlateRegistration=false
-
 #TODO: remove later, support both
 server.service.genericSpecificPreProcessor=false
+
+# Comma-separated list should contain list of names of dom elements (without '.bv_group') to add hide class to
+# Example: client.experiment.hideFields=details,comments
+client.protocol.hideFields=
+client.experiment.hideFields=
+
+# Experiment status after successful SEL upload
+server.sel.experimentStatus=approved
+
 
 # User role that allows changing protocol and experiment statuses to "Approved" or "Rejected"
 client.entity.approvalRole=
@@ -475,10 +478,6 @@ server.support.smtp.auth=false
 server.support.smtp.tls=false
 server.support.smtp.ssl=false
 
-client.roles.containerInventory.admin=${server.support.smtp.username}
-client.compoundInventory.enforceUppercaseBarcodes=true
-client.containerIventory.maxBarcodeLength=40
-
 client.basePath=/
 
 server.curveCurator.onRejectMakeReportedValuesNonPublic=false
@@ -493,3 +492,16 @@ flyway.database.username=${server.database.username}
 flyway.database.password=${server.database.password}
 
 server.acas.license=/home/runner/build/conf/acas.lic
+
+server.systemTest.runOnStart=${env.RUN_SYSTEM_TEST}
+
+
+# Required configs for which base entity to use
+client.protocol.mainControllerClassName=ProtocolBaseController
+client.experiment.mainControllerClassName=ExperimentBaseController
+
+# Behavior without this config set to true is to give all users access to all projects
+server.project.roles.enable=false
+
+#Controls whether to try to sync projects list from ACAS to CmpdReg
+server.project.sync.cmpdReg=true

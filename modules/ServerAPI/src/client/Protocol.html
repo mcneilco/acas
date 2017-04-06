@@ -32,8 +32,8 @@
         <div class="form-horizontal">
             <div class="control-group bv_group_assayTreeRule hide">
                 <label class="control-label">Assay Tree Rule</label>
-                 <div class="controls">
-                     <input class="bv_assayTreeRule" style="width:335px;" type="text" placeholder="" />
+                <div class="controls">
+                    <input class="bv_assayTreeRule" style="width:335px;" type="text" placeholder="" />
                 </div>
             </div>
 
@@ -52,11 +52,22 @@
                     </div>
                 </div>
             </div>
-
+            <div class="control-group bv_group_projectCode">
+                <label class="control-label bv_projectLabel">Project</label>
+                <div class="controls">
+                    <select class="bv_projectCode" style="width:350px;"></select>
+                </div>
+            </div>
             <div class="control-group bv_group_notebook">
                 <label class="control-label">*Notebook</label>
                 <div class="controls">
                     <input class="bv_notebook" style="width:336px;" type="text" placeholder="" />
+                </div>
+            </div>
+            <div class="control-group bv_group_notebookPage">
+                <label class="control-label">Notebook Page</label>
+                <div class="controls">
+                    <input class="bv_notebookPage" style="width:336px;" type="text" placeholder="" />
                 </div>
             </div>
             <div class="control-group bv_group_tags" style="margin-bottom:10px;">
@@ -81,22 +92,22 @@
 
 
 
-    <div>
+    <div class="bv_group_shortDescription">
         <div class="span10" style="margin-bottom:5px;">Short Description</div>
         <textarea rows="2" class="bv_shortDescription" style="width:650px;resize:none;margin-bottom:20px;" placeholder="Short Description"></textarea>
     </div>
 
-    <div>
+    <div class="bv_group_assayPrinciple">
         <div style="margin-bottom:5px;">Assay Principle</div>
         <textarea rows="7" class="bv_assayPrinciple" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Assay Principle"></textarea>
     </div>
 
-    <div>
+    <div class="bv_group_details">
         <div style="margin-bottom:5px;">Protocol Details</div>
         <textarea rows="7" class="bv_details" style="width:650px; max-width:650px;margin-bottom:20px;" placeholder="Protocol Details"></textarea>
     </div>
 
-    <div>
+    <div class="bv_group_comments">
         <div style="margin-bottom:5px;">Comments</div>
         <textarea rows="7" class="bv_comments" style="width:650px; max-width:650px; margin-bottom:20px;" placeholder="Comments"></textarea>
     </div>
@@ -132,7 +143,7 @@
                 <div class="modal-body" style="padding-left:0px;">
                     <label style="margin-left:30px;">The entered protocol name is already used by another protocol. Please enter in a new protocol name.</label>
                 </div>
-             </div>
+            </div>
         </div>
     </div>
 
@@ -194,4 +205,3 @@
     </div>
 
 </script>
-

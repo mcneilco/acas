@@ -15,7 +15,8 @@ exports.redirectToQueryToolForExperiment = (req, resp) ->
 	if tool is 'LiveDesign'
 #resp.redirect '/api/redirectToNewLiveDesignLiveReportForExperiment/' + req.query.experiment
 		getLdUrl = require './CreateLiveDesignLiveReportForACAS.js'
-		getLdUrl.getUrlForNewLiveDesignLiveReportForExperiment req.query.experiment, (url) ->
+		username = req.session.passport.user.username
+		getLdUrl.getUrlForNewLiveDesignLiveReportForExperimentInternal req.query.experiment, username, (url) ->
 			url = url.replace /(\r\n|\n|\r)/gm,""
 			console.log "redirecting to #{url}"
 			resp.redirect url

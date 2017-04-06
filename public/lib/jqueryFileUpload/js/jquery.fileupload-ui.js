@@ -143,8 +143,8 @@
                     template;
                 if (data.context) {
                     data.context.each(function (index) {
-                        var file = ($.isArray(data.result) &&
-                                data.result[index]) || {error: 'emptyResult'};
+                        var file = ($.isArray(data.result.files) &&
+                                data.result.files[index]) || {error: 'emptyResult'};
                         if (file.error) {
                             that._adjustMaxNumberOfFiles(1);
                         }
@@ -164,8 +164,8 @@
                         );
                     });
                 } else {
-                    if ($.isArray(data.result)) {
-                        $.each(data.result, function (index, file) {
+                    if ($.isArray(data.result.files)) {
+                        $.each(data.result.files, function (index, file) {
                             if (data.maxNumberOfFilesAdjusted && file.error) {
                                 that._adjustMaxNumberOfFiles(1);
                             } else if (!data.maxNumberOfFilesAdjusted &&
@@ -175,7 +175,7 @@
                         });
                         data.maxNumberOfFilesAdjusted = true;
                     }
-                    template = that._renderDownload(data.result)
+                    template = that._renderDownload(data.result.files)
                         .appendTo(that.options.filesContainer);
                     that._forceReflow(template);
                     that._transition(template).done(

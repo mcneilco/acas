@@ -98,7 +98,7 @@ exports.changeAuth = (user, passOld, passNew, passNewAgain, retFun) ->
 	)
 exports.getUser = (username, callback) ->
 	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
-	if config.all.server.roologin.getUserLink? and !global.specRunnerTestmode
+	if config.all.client.require.login
 		request = require 'request'
 		request(
 			headers:
@@ -572,3 +572,7 @@ exports.addContainerLogs = (request) ->
 
 exports.moveToLocation = (request) ->
 	console.debug "inside base customer specific server function moveToLocation"
+
+exports.throwInTrash = (request, callback) ->
+	callback {"successful":true}, 200
+	console.debug "inside base customer specific server function throwInTrash"
