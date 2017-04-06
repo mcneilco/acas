@@ -73,23 +73,8 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
             if type(assay_tree) is list:
                 assay_tree=assay_tree[0]
                 #print json.dumps(assay_tree)
-            while assay_tree['name'] != assay_to_add['protocolName'] and len(assay_tree['children']) > 0:
-    	        if len(assay_tree['children']) == 1:
-    	            assay_tree=assay_tree['children'][0]
-    	        else:
-    	            for child in assay_tree['children']:
-    	                if child['name'] == assay_to_add['protocolName']:
-    	            	    assay_tree=child
-    	            	    break;
-    	        #print json.dumps(assay_tree)
-            if len(assay_tree['children']) == 0:
-                assay_column_ids.extend(assay_tree['addable_column_ids'])
-            else:
-                for assay in assay_tree['children']:
-                    assay_column_ids.extend(assay['addable_column_ids'])
-                    if len(assay['children'])>0:
-                        for sub_assay in assay['children']:
-                            assay_column_ids.extend(sub_assay['addable_column_ids'])
+            assay = findassay(assay_tree, assay_to_add['protocolName'])
+            assay_column_ids = extract_endpoints(assay, [])
     else:
         assays = api.assays()
         assay_hash = {}
@@ -132,7 +117,20 @@ def make_acas_live_report(api, compound_ids, assays_to_add, experiment_code, log
     api.add_rows(lr_id, search_results)
     
     return lr_id
-    
+
+def findassay(assay_tree, assay_name):
+	if 'name' in assay_tree and assay_tree['name'] == assay_name: return assay_tree
+	for sub_tree in assay_tree['children']:
+		item = findassay(sub_tree, assay_name)
+		if item is not None:
+			return item  
+			
+def extract_endpoints(assay, endpoints):
+	if 'addable_column_ids' in assay and len(assay['addable_column_ids']) > 0:
+		endpoints.extend(assay['addable_column_ids'])
+	for sub_assay in assay['children']:
+		extract_endpoints(sub_assay, endpoints)
+	return endpoints       
 
 def main():
     #if len(sys.argv) is not 4:
