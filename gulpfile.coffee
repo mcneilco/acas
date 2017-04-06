@@ -362,6 +362,7 @@ watchTasks = []
 
 # --------- Coffee/Watch:Coffee Tasks
 coffeeTasks = (createTask(taskConfig,'coffee') for taskConfig in taskConfigs.coffee)
+coffeeTasks = _.filter coffeeTasks, (item) -> item != "coffee:publicConf"
 gulp.task 'coffee', gulp.parallel coffeeTasks
 
 # --------- Copy/Watch:Copy Tasks
@@ -418,7 +419,7 @@ gulp.task 'execute', gulp.series executeTasks
 gulp.task 'watch', gulp.parallel watchTasks
 
 # --------- Build Task
-gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'execute'));
+gulp.task('build', gulp.series(gulp.parallel('copy','coffee'), 'coffee:publicConf', 'execute'));
 
 # --------- Dev Task
 gulp.task('dev', gulp.series(gulp.series('build'), gulp.parallel('watch', 'watch:app', 'app')));

@@ -57,6 +57,13 @@
     "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
     "winston-mongodb": "*",
+    "style-loader": "*",
+    "bootstrap": "*",
+    "exports-loader": "*",
+    "extract-text-webpack-plugin": "*",
+    "url-loader": "*",
+    "file-loader": "*",
+    "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
     "yamljs": "*"
   },
   "devDependencies": {
@@ -74,6 +81,8 @@
     "gulp-replace": "^0.5.4",
     "gulp-run": "^1.7.1",
     "gulp-watch": "^4.3.11",
-    "gutil": "^1.6.4"
+    "gutil": "^1.6.4",
+    "coffee-script": "^1.12.4",
+    "yargs": "^7.0.2"
   }
 }
