@@ -60,6 +60,7 @@ class window.SecondThingItx extends ThingItx
 		@set secondLsThing: thing
 
 class window.LsThingItxList extends Backbone.Collection
+	model: "ThingItx"
 	getAllItxByTypeAndKind: (type, kind) -> #returns all itxs of given type/kind, including ignored itxs
 		@filter (itx) ->
 			(itx.get('lsType')==type) and (itx.get('lsKind')==kind)
@@ -78,9 +79,16 @@ class window.LsThingItxList extends Backbone.Collection
 			@trigger('change')
 		return itx
 
+	getOrCreateItxByTypeAndKind: (itxType, itxKind) ->
+		itx = @getItxByTypeAndKind itxType, itxKind
+		if itx.length > 0
+			return itx[0]
+		else
+			return @createItxByTypeAndKind itxType, itxKind
+
 	getItxByItxThingTypeAndKind: (itxType, itxKind, itxThing, itxThingType, itxThingKind) ->
-#function for getting first/second lsThing by it's type and kind
-#example itxThing: firstLsThing, secondLsThing
+		#function for getting first/second lsThing by it's type and kind
+		#example itxThing: firstLsThing, secondLsThing
 		itxArray = @getItxByTypeAndKind(itxType, itxKind)
 		itxByItxThing = _.filter itxArray, (itx) ->
 			if itx.get(itxThing) instanceof Backbone.Model

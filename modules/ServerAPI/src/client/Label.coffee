@@ -10,6 +10,19 @@ class window.Label extends Backbone.Model
 		physicallyLabled: false
 		imageFile: null
 
+	initialize: ->
+		@.on "change:labelText": @handleLabelTextChanged
+
+	handleLabelTextChanged: =>
+		unless @isNew()
+			@set
+				ignored: true
+				modifiedBy: window.AppLaunchParams.loginUser.username
+				modifiedDate: new Date().getTime()
+				isDirty: true
+			@set labelText: @previous 'labelText'
+			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+
 	changeLabelText: (options) ->
 		@set labelText: options
 
@@ -18,11 +31,11 @@ class window.LabelList extends Backbone.Collection
 
 	getCurrent: ->
 		@filter (lab) ->
-			!(lab.get 'ignored')
+			!lab.get('ignored') #&& (lab.get('labelText') != "")
 
 	getNames: ->
 		_.filter @getCurrent(), (lab) ->
-			lab.get('lsType') == "name"
+			lab.get('lsType').toLowerCase() == "name"
 
 	getPreferred: ->
 		_.filter @getCurrent(), (lab) ->
@@ -64,7 +77,6 @@ class window.LabelList extends Backbone.Collection
 		nonPreferredName = _.filter @getCurrent(), (lab) ->
 			(lab.get('preferred') is false) && (lab.get('lsType') == "name")
 		nonPreferredName[0]
-
 
 	setName: (label, currentName) ->
 		if currentName?
@@ -134,7 +146,11 @@ class window.Value extends Backbone.Model
 			if @isNew()
 				@.set @get('lsType'), @get('value')
 			else
-				@set ignored: true
+				@set
+					ignored: true
+					modifiedBy: window.AppLaunchParams.loginUser.username
+					modifiedDate: new Date().getTime()
+					isDirty: true
 				@trigger 'createNewValue', @get('lsKind'), newVal
 
 class window.ValueList extends Backbone.Collection
@@ -221,12 +237,7 @@ class window.StateList extends Backbone.Collection
 		mStates = @getStatesByTypeAndKind sType, sKind
 		mState = mStates[0] #TODO should do something smart if there are more than one
 		unless mState?
-			mState = new State
-				lsType: sType
-				lsKind: sKind
-			@.add mState
-			mState.on 'change', =>
-				@trigger('change')
+			mState = @createStateByTypeAndKind sType, sKind
 		return mState
 
 	getOrCreateValueByTypeAndKind: (sType, sKind, vType, vKind) ->
@@ -236,6 +247,16 @@ class window.StateList extends Backbone.Collection
 		unless descVal?
 			descVal = @createValueByTypeAndKind(sType, sKind, vType, vKind)
 		return descVal
+
+	createStateByTypeAndKind: (sType, sKind) ->
+		mState = new State
+			lsType: sType
+			lsKind: sKind
+		@.add mState
+		mState.on 'change', =>
+			@trigger('change')
+
+		return mState
 
 	createValueByTypeAndKind: (sType, sKind, vType, vKind) ->
 		descVal = new Value

@@ -29,6 +29,7 @@ exports.setupAPIRoutes = (app) ->
 	app.post '/api/getContainerFromLabel', exports.getContainerFromLabel
 	app.post '/api/updateWellContent', exports.updateWellContent
 	app.post '/api/updateWellContentWithObject', exports.updateWellContentWithObject
+	app.post '/api/updateAmountInWell', exports.updateAmountInWell
 	app.post '/api/moveToLocation', exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', exports.getWellContentByContainerLabels
@@ -73,6 +74,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.post '/api/getContainerFromLabel', loginRoutes.ensureAuthenticated, exports.getContainerFromLabel
 	app.post '/api/updateWellContent', loginRoutes.ensureAuthenticated, exports.updateWellContent
 	app.post '/api/updateWellContentWithObject', loginRoutes.ensureAuthenticated, exports.updateWellContentWithObject
+	app.post '/api/updateAmountInWell', loginRoutes.ensureAuthenticated, exports.updateAmountInWell
 	app.post '/api/moveToLocation', loginRoutes.ensureAuthenticated, exports.moveToLocation
 	app.get '/api/getWellContentByContainerLabel/:label', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabel
 	app.post '/api/getWellContentByContainerLabels', loginRoutes.ensureAuthenticated, exports.getWellContentByContainerLabels
@@ -755,28 +757,26 @@ exports.containerByCodeName = (req, resp) ->
 
 
 updateContainer = (container, testMode, callback) ->
-	serverUtilityFunctions.createLSTransaction container.recordedDate, "updated experiment", (transaction) ->
-		container = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, container
-		if testMode or global.specRunnerTestmode
-			callback container
-		else
-			config = require '../conf/compiled/conf.js'
-			baseurl = config.all.client.service.persistence.fullpath+"containers/"+container.code
-			request = require 'request'
-			request(
-				method: 'PUT'
-				url: baseurl
-				body: container
-				json: true
-				timeout: 86400000
-			, (error, response, json) =>
-				if !error && response.statusCode == 200
-					callback json
-				else
-					console.error 'got ajax error trying to update lsContainer'
-					console.error error
-					console.error response
-			)
+	if testMode or global.specRunnerTestmode
+		callback container
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/"+container.code
+		request = require 'request'
+		request(
+			method: 'PUT'
+			url: baseurl
+			body: container
+			json: true
+			timeout: 86400000
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				callback json
+			else
+				console.error 'got ajax error trying to update lsContainer'
+				console.error error
+				console.error response
+		)
 
 
 postContainer = (req, resp) ->
@@ -784,7 +784,17 @@ postContainer = (req, resp) ->
 	console.debug "post container"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	containerToSave = req.body
-	serverUtilityFunctions.createLSTransaction containerToSave.recordedDate, "new experiment", (transaction) ->
+	if containerToSave.transactionOptions?
+		transactionOptions = containerToSave.transactionOptions
+		delete containerToSave.transactionOptions
+	else
+		transactionOptions = {
+			comments: "new container"
+		}
+	transactionOptions.recordedBy = req.session.passport.user.username
+	transactionOptions.status = "PENDING"
+	transactionOptions.type = "NEW"
+	serverUtilityFunctions.createLSTransaction2 containerToSave.recordedDate, transactionOptions, (transaction) ->
 		containerToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, containerToSave
 		if req.query.testMode or global.specRunnerTestmode
 			unless containerToSave.codeName?
@@ -796,7 +806,9 @@ postContainer = (req, resp) ->
 
 			completeContainerUpdate = (containerToUpdate)->
 				updateContainer containerToUpdate, req.query.testMode, (updatedContainer) ->
-					resp.json updatedContainer
+					transaction.status = 'COMPLETED'
+					serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+						resp.json container
 
 			fileSaveCompleted = (passed) ->
 				if !passed
@@ -810,7 +822,9 @@ postContainer = (req, resp) ->
 					console.debug "updating file"
 					csUtilities.relocateEntityFile fv, prefix, container.codeName, fileSaveCompleted
 			else
-				resp.json container
+				transaction.status = 'COMPLETED'
+				serverUtilityFunctions.updateLSTransaction transaction, (transaction) ->
+					resp.json container
 
 		if req.query.testMode or global.specRunnerTestmode
 			checkFilesAndUpdate containerToSave
@@ -848,9 +862,22 @@ exports.putContainer = (req, resp) ->
 	fileVals = serverUtilityFunctions.getFileValuesFromEntity containerToSave, true
 	filesToSave = fileVals.length
 
+	if containerToSave.transactionOptions?
+		containerToSave.transactionOptions.recordedBy = req.session.passport.user.username
 	completeContainerUpdate = ->
-		updateContainer containerToSave, req.query.testMode, (updatedContainer) ->
-			resp.json updatedContainer
+		if containerToSave.transactionOptions?
+			transactionOptions = containerToSave.transactionOptions
+			delete containerToSave.transactionOptions
+		else
+			transactionOptions = {
+				comments: "updated experiment"
+			}
+		transactionOptions.status = "COMPLETED"
+		transactionOptions.type = "CHANGE"
+		serverUtilityFunctions.createLSTransaction2 containerToSave.recordedDate, transactionOptions, (transaction) ->
+			containerToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, containerToSave
+			updateContainer containerToSave, req.query.testMode, (updatedContainer) ->
+				resp.json updatedContainer
 
 	fileSaveCompleted = (passed) ->
 		if !passed
@@ -1088,6 +1115,44 @@ exports.updateWellContentInternal = (wellContent, copyPreviousValues, callCustom
 				console.error response
 				callback JSON.stringify("updateWellContent failed"), 500
 		)
+
+exports.updateAmountInWell = (req, resp) ->
+	req.setTimeout 86400000
+	exports.updateAmountInWellInternal req.body, (json, statusCode) ->
+		resp.statusCode = statusCode
+		resp.json json
+
+exports.updateAmountInWellInternal = (updateAmountInfo, callback) ->
+	if global.specRunnerTestmode
+		inventoryServiceTestJSON = require '../public/javascripts/spec/ServerAPI/testFixtures/InventoryServiceTestJSON.js'
+		resp.json inventoryServiceTestJSON.getContainerCodesByLabelsResponse
+	else
+		console.log "updateAmountInfo"
+		console.log updateAmountInfo
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"containers/updateAmountInWell"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: updateAmountInfo
+			json: true
+			timeout: 86400000
+			headers: 'content-type': 'application/json'
+		, (error, response, json) =>
+			if !error & response.statusCode in [200,204]
+				console.log "successfully updated amount in well"
+				console.log json
+				callback "success", response.statusCode
+			else
+				console.error 'got ajax error trying to get updateAmountInWell'
+				console.error error
+				console.error json
+				console.error response
+				callback JSON.stringify("updateWellContent failed"), 500
+		)
+
+
 
 exports.moveToLocation = (req, resp) ->
 	req.setTimeout 86400000
@@ -1585,7 +1650,7 @@ exports.getContainerLogsInternal = (labels, containerType, containerKind, labelT
 		exports.getContainersByLabelsInternal labels, containerType, containerKind, labelType, labelKind, (getContainersByLabelsResponse, statusCode) =>
 			response = []
 			for getContainer in getContainersByLabelsResponse
-				responseObject = 
+				responseObject =
 					label: getContainer.label
 					codeName: getContainer.codeName
 					logs: []
@@ -1945,4 +2010,3 @@ exports.throwInTrashInternal = (input, callCustom, callback) ->
 			console.log response
 			callback response.body, 500
 	)
-
