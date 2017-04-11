@@ -244,6 +244,7 @@ client.include.project=FALSE
 client.save.project=TRUE
 client.protocol.save.project=true
 client.path=
+client.fullpath=http://${client.host}:${client.port}
 
 # Query tool settings
 client.service.result.viewer.displayName=Data Viewer
