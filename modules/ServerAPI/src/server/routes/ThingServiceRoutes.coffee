@@ -16,6 +16,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndItxTypeKind
 	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
+	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -35,6 +36,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndItxTypeKind
 	app.get '/api/getThingThingItxsByFirstThing/exclude/:lsType/:lsKind/:firstThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsByFirstThingAndExcludeItxTypeKind
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
+	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -515,3 +517,24 @@ exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind = (req, resp) ->
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"/itxLsThingLsThings/bysecondthing/exclude/#{req.params.lsType}/#{req.params.lsKind}?secondthing=#{req.params.secondThingId}"
 		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getThingsByCodeNames = (req, resp) ->
+	if req.query.testMode or global.specRunnerTestmode
+		thingTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
+		resp.json thingTestJSON.thingParent
+	else
+		config = require '../conf/compiled/conf.js'
+		request = require 'request'
+		options =
+			method: 'POST'
+			url: config.all.client.service.persistence.fullpath+"/lsthings/#{req.params.lsType}/#{req.params.lsKind}/codeNames/jsonArray"
+			qs: req.query
+			headers:
+				'content-type': 'application/json'
+			body: req.body
+			json: true
+		request options, (error, response, body) ->
+			if error
+				throw new Error(error)
+			resp.json body
+			return
