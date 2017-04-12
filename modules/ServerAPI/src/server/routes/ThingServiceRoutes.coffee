@@ -343,7 +343,7 @@ exports.putThing = (req, resp) ->
 		serverUtilityFunctions.createLSTransaction2 thingToSave.recordedDate, transactionOptions, (transaction) ->
 			thingToSave = serverUtilityFunctions.insertTransactionIntoEntity transaction.id, thingToSave
 			updateThing thingToSave, req.query.testMode, (updatedThing) ->
-                req.query.nestedfull = true
+				req.query.nestedfull = true
 				getThing req, updatedThing.codeName, (thing) ->
 					resp.json thing
 
