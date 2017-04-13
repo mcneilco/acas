@@ -180,10 +180,12 @@ class window.ACASFormStateTableController extends Backbone.View
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
 				if valDef.modelDefaults.type == 'codeValue'
-					if valDef.fieldSettings.fieldType == "stringValue"
+					if valDef.fieldSettings.fieldType == 'stringValue'
 						displayVal = value.get 'codeValue'
 					else
 						displayVal = @getNameForCode value, value.get 'codeValue'
+				else if valDef.modelDefaults.type == 'dateValue'
+					displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
 				else
 					displayVal = value.get valDef.modelDefaults.type
 
@@ -204,7 +206,6 @@ class window.ACASFormStateTableController extends Backbone.View
 		if changes?
 			for change in changes
 				unless change[2] == change[3] or source == "autofill"
-					console.dir change
 					attr = change[1]
 					changeRow = change[0]
 					state = @getStateForRow changeRow, false

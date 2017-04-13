@@ -21,7 +21,7 @@ class window.Label extends Backbone.Model
 				modifiedDate: new Date().getTime()
 				isDirty: true
 			@set labelText: @previous 'labelText'
-			@trigger 'createNewLabel', @get('lsKind'), @get('labelText')
+			@trigger 'createNewLabel', @get('lsKind'), @get('labelText'), @get('key')
 
 	changeLabelText: (options) ->
 		@set labelText: options

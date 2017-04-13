@@ -56,7 +56,7 @@ class window.Thing extends Backbone.Model
 						resp.lsTags = new TagList(resp.lsTags)
 					resp.lsTags.on 'change', =>
 						@trigger 'change'
-#				@.set resp
+				@.set resp
 				@createDefaultLabels()
 				@createDefaultStates()
 				@createDefaultFirstLsThingItx()
@@ -137,17 +137,22 @@ class window.Thing extends Backbone.Model
 				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
+				newLabel.set key: dLabel.key
 				newLabel.set preferred: dLabel.preferred
 
-	createNewLabel: (lKind, newText) =>
-		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
-		oldLabel = @get(lKind)
-		@unset(lKind)
+	createNewLabel: (lKind, newText, key) =>
+		console.log "new label key: "+key
+		dLabel = _.where(@lsProperties.defaultLabels, {key: key})[0]
+		console.dir dLabel
+		oldLabel = @get(key)
+		console.dir oldLabel.attributes
+		@unset(key)
 		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 		newLabel.set
+			key: key
 			labelText: newText
 			preferred: oldLabel.get 'preferred'
-		@set lKind, newLabel
+		@set key, newLabel
 
 	createDefaultStates: =>
 		if @lsProperties.defaultValues?
