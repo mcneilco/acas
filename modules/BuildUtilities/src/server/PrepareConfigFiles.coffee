@@ -282,6 +282,11 @@ csUtilities.getConfServiceVars sysEnv, (confVars) ->
 					conf.server.enableSpecRunner = true
 				if !conf.server?.file?.server?.path?
 					conf = _.deepExtend conf, server:file:server:path:"#{path.resolve acasHome+"/"+conf.server.datafiles.relative_path}"
+				if conf.client.use.ssl
+					prefix = "https"
+				else
+					prefix = "http"
+				conf = _.deepExtend conf, client:fullpath:"#{prefix}://#{conf.client.external.host}:#{conf.client.port}"
 				conf.server.run = user: do =>
 					if !conf.server.run?
 						console.log "server.run.user is not set"
