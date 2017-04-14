@@ -505,3 +505,8 @@ server.project.roles.enable=false
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
 server.project.sync.cmpdReg=true
+
+server.notification.type=slack
+server.notification.webhook=
+
+client.external.host=${client.host}

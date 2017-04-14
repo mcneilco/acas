@@ -576,3 +576,51 @@ exports.moveToLocation = (request) ->
 exports.throwInTrash = (request, callback) ->
 	callback {"successful":true}, 200
 	console.debug "inside base customer specific server function throwInTrash"
+
+exports.notifySupport = (options, callback) ->
+	config = require "#{ACAS_HOME}/conf/compiled/conf.js"
+	request = require 'request'
+	if config.all.server.notification.type == "slack"
+		if config.all.server.notification?.webhook?
+			request = require('request')
+			if options.level = "error"
+				body = attachments: [
+					{
+						fallback: ":bugcatcher: Caught Error",
+						text: ":bugcatcher: Caught Error",
+						fields: [
+							{
+								title: "Host",
+								value:  "<#{config.all.client.fullpath}|#{config.all.client.host}>",
+								short: true
+							},
+							{
+								title: "Environment",
+								value: config.all.client.deployMode,
+								short: true
+							},
+							{
+								title: "Error Message",
+								value: options.error.message,
+								short: true
+							},
+							{
+								title: "Error Stack",
+								value: options.error.stack,
+								short: false
+							}
+						],
+						color: "#F35A00"
+					}
+				]
+			options =
+				method: 'POST'
+				url: config.all.server.notification.webhook
+				json: true
+				body: body
+			request options, (error, response, body) ->
+				console.error error
+				console.log response
+				callback body
+		else
+			console.warn "to use slack notification specify a server.notification.webhook"
