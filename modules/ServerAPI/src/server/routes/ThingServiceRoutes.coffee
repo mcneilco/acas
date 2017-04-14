@@ -19,6 +19,7 @@ exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', exports.getThingsByCodeNames
+	app.get '/api/thingKinds', exports.getThingKinds
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/things/:lsType/:lsKind', loginRoutes.ensureAuthenticated, exports.thingsByTypeKind
@@ -41,6 +42,7 @@ exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/getThingThingItxsBySecondThing/exclude/:lsType/:lsKind/:secondThingId', loginRoutes.ensureAuthenticated, exports.getThingThingItxsBySecondThingAndExcludeItxTypeKind
 	app.get '/api/getThingCodeTablesByLabelText/:lsType/:lsKind/:labelText', loginRoutes.ensureAuthenticated, exports.getThingsByTypeAndKindAndLabelTypeAndLabelText
 	app.post '/api/things/:lsType/:lsKind/codeNames/jsonArray', loginRoutes.ensureAuthenticated, exports.getThingsByCodeNames
+	app.get '/api/thingKinds', loginRoutes.ensureAuthenticated, exports.getThingKinds
 
 
 exports.thingsByTypeKind = (req, resp) ->
@@ -63,16 +65,17 @@ exports.thingsByTypeKind = (req, resp) ->
 
 serverUtilityFunctions = require './ServerUtilityFunctions.js'
 csUtilities = require '../src/javascripts/ServerAPI/CustomerSpecificServerFunctions.js'
+_ = require 'underscore'
 
 exports.getThingsByTypeAndKindAndLabelTypeAndLabelText = (req, resp) ->
 	if req.query.testMode or global.specRunnerTestmode
 		thingServiceTestJSON = require '../public/javascripts/spec/testFixtures/ThingServiceTestJSON.js'
 		resp.json thingServiceTestJSON.batchList
 	else
-		exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal req.params.lsType, req.params.lsKind, req.query.labelType, req.params.labelText, (codeTables) ->
+		exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal req.params.lsType, req.params.lsKind, req.query.labelType, req.params.labelText, null, (codeTables) ->
 			resp.json codeTables
 
-exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thingKind, labelType, labelText, callback) ->
+exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thingKind, labelType, labelText, format, callback) ->
 	searchJSON =
 		lsType: thingType
 		lsKind: thingKind
@@ -84,8 +87,12 @@ exports.getThingsByTypeAndKindAndLabelTypeAndLabelTextInternal = (thingType, thi
 	baseurl = config.all.client.service.persistence.fullpath+'lsthings/genericInteractionSearch'
 	console.log baseurl
 	request = require 'request'
-	params =
-		with: 'codeTable'
+	if format?
+		params =
+			with: format
+	else
+		params =
+			with: 'codeTable'
 	if labelType?
 		params.labelType = labelType
 	request(
@@ -609,3 +616,17 @@ exports.getThingsByCodeNames = (req, resp) ->
 				throw new Error(error)
 			resp.json body
 			return
+
+exports.getThingKinds = (req, resp) ->
+	config = require '../conf/compiled/conf.js'
+	serverUtilityFunctions = require './ServerUtilityFunctions.js'
+	baseurl = config.all.client.service.persistence.fullpath+"thingkinds"
+	serverUtilityFunctions.getFromACASServerInternal baseurl, (statusCode, kinds) ->
+		codeTables = []
+		_.each kinds, (kind) ->
+			codeTable =
+				id: kind.id
+				code: kind.kindName
+				name: kind.kindName
+			codeTables.push codeTable
+		resp.json codeTables
