@@ -283,7 +283,7 @@ taskConfigs =
       flatten: true
     ,
       taskName: "CmpdReg"
-      src: getGlob('modules/CmpdReg/src/client/**', 'modules/CmpdReg/src/marvinjs/**')
+      src: getGlob('modules/CmpdReg/src/**')
       dest: build + '/public/CmpdReg'
       options: _.extend _.clone(globalCopyOptions), {}
   ],
