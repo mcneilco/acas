@@ -509,3 +509,5 @@ server.project.sync.cmpdReg=true
 
 client.projectEditor.restrictedCheckbox.show=true
 client.projectEditor.isRestricted.default=false
+
+client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
