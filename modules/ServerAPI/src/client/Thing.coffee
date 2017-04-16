@@ -143,9 +143,7 @@ class window.Thing extends Backbone.Model
 	createNewLabel: (lKind, newText, key) =>
 		console.log "new label key: "+key
 		dLabel = _.where(@lsProperties.defaultLabels, {key: key})[0]
-		console.dir dLabel
 		oldLabel = @get(key)
-		console.dir oldLabel.attributes
 		@unset(key)
 		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
 		newLabel.set
@@ -212,6 +210,7 @@ class window.Thing extends Backbone.Model
 			for itx in @lsProperties.defaultSecondLsThingItx
 				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
+
 
 	getAnalyticalFiles: (fileTypes) => #TODO: rename from analytical files to attachFiles or something more generic
 		#get list of possible kinds of analytical files

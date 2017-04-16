@@ -30,7 +30,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@modelKey = @options.modelKey
 		@thingRef = @options.thingRef
 		@errorSet = false
-		@userInputEvent = false
+		@userInputEvent = true
 
 	getModel: ->
 		@thingRef.get @modelKey
@@ -257,3 +257,78 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		@setupSelect()
 
 		@
+
+class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSInteraction
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+	events: ->
+		"change select": "handleInputChanged"
+
+	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
+	@
+
+	applyOptions: ->
+		super()
+		if @options.thingType?
+			@thingType = @options.thingType
+		if @options.thingKind?
+			@thingKind = @options.thingKind
+		if @options.labelType?
+			@labelType = @options.labelType
+
+	handleInputChanged: =>
+		@clearError()
+		if @userInputEvent
+			thingID = @thingSelectController.getSelectedID()
+			if thingID?
+				@getModel().setItxThing id: thingID
+			else
+				@setEmptyValue()
+		super()
+
+	setEmptyValue: ->
+		@getModel().set ignored: true
+		@setItxThing null
+
+	isEmpty: ->
+		empty = true
+		mdl = @getModel()
+		iThing = @getModel().getItxThing()
+		if iThing? and !mdl.get('ignored')
+			if iThing.id?
+				empty = false
+
+		return empty
+
+	renderModelContent: =>
+		@userInputEvent = false
+		console.dir @getModel()
+		if  @getModel().getItxThing().id?
+			labels = new LabelList @getModel().getItxThing().lsLabels
+			labelText = labels.pickBestNonEmptyLabel().get('labelText')
+			@thingSelectController.setSelectedCode
+				code: @getModel().getItxThing().codeName
+				label: labelText
+			super()
+		@userInputEvent = true
+
+	setupSelect: ->
+		@thingSelectController = new ThingLabelComboBoxController
+			el: @$('select')
+			placeholder: @placeholder
+			thingType: @thingType
+			thingKind: @thingKind
+			labelType: @labelType
+		@thingSelectController.render()
+
+	render: =>
+		super()
+		@setupSelect()
+
+		@
+
+
+
