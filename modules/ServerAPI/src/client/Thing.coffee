@@ -68,6 +68,7 @@ class window.Thing extends Backbone.Model
 			@createDefaultSecondLsThingItx()
 		resp
 
+
 	prepareToSave: ->
 		rBy = @get('recordedBy')
 		rDate = new Date().getTime()
@@ -84,22 +85,29 @@ class window.Thing extends Backbone.Model
 				@setRByAndRDate val
 		if @get('firstLsThings')?
 			@get('firstLsThings').each (itx) =>
-				@setRByAndRDate itx
-				@cleanupItxThingForSave itx
-				if itx.has('lsStates')
-					itx.get('lsStates').each (state) =>
-						@setRByAndRDate state
-						state.get('lsValues').each (val) =>
-							@setRByAndRDate val
+				if itx.getItxThing().id?
+					@setRByAndRDate itx
+					@cleanupItxThingForSave itx
+					if itx.has('lsStates')
+						itx.get('lsStates').each (state) =>
+							@setRByAndRDate state
+							state.get('lsValues').each (val) =>
+								@setRByAndRDate val
+				else
+					@get('firstLsThings').remove itx
+
 		if @get('secondLsThings')?
 			@get('secondLsThings').each (itx) =>
-				@setRByAndRDate itx
-				@cleanupItxThingForSave itx
-				if itx.has('lsStates')
-					itx.get('lsStates').each (state) =>
-						@setRByAndRDate state
-						state.get('lsValues').each (val) =>
-							@setRByAndRDate val
+				if itx.getItxThing().id?
+					@setRByAndRDate itx
+					@cleanupItxThingForSave itx
+					if itx.has('lsStates')
+						itx.get('lsStates').each (state) =>
+							@setRByAndRDate state
+							state.get('lsValues').each (val) =>
+								@setRByAndRDate val
+				else
+					@get('secondLsThings').remove itx
 
 	cleanupItxThingForSave: (itx) ->
 		unless itx.isNew()

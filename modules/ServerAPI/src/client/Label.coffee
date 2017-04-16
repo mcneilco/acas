@@ -16,13 +16,15 @@ class window.Label extends Backbone.Model
 	handleLabelTextChanged: =>
 		unless @isNew()
 			console.log "replace old label"
+			newText = @get 'labelText'
 			@set
 				ignored: true
 				modifiedBy: window.AppLaunchParams.loginUser.username
 				modifiedDate: new Date().getTime()
 				isDirty: true
-			@set labelText: @previous 'labelText'
-			@trigger 'createNewLabel', @get('lsKind'), @get('labelText'), @get('key')
+				labelText: @previous 'labelText'
+			, silent: true
+			@trigger 'createNewLabel', @get('lsKind'), newText, @get('key')
 
 	changeLabelText: (options) ->
 		@set labelText: options
