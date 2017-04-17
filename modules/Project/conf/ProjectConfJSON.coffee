@@ -116,6 +116,10 @@
 				lsType: "System"
 				lsKind: "CmpdReg"
 				roleName: "ROLE_CMPDREG-ADMINS"
+			,
+				lsType: "System"
+				lsKind: "ACAS"
+				roleName: "ROLE_ACAS-CROSS-PROJECT-LOADER"
 			]
 
 		labelsequences:

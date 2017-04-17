@@ -149,7 +149,7 @@ class window.Project extends Thing
 			codeType: 'project'
 			codeKind: 'restricted'
 			codeOrigin: 'ACAS DDICT'
-			value: 'true'
+			value: window.conf.projectEditor.isRestricted.default.toString()
 		]
 
 		defaultFirstLsThingItx: [
@@ -917,6 +917,10 @@ class window.ProjectController extends AbstractFormController
 					@checkFormValid()
 
 	setupIsRestrictedCheckbox: ->
+		if window.conf.projectEditor.restrictedCheckbox.show
+			@$('.bv_group_restrictedData').show()
+		else
+			@$('.bv_group_restrictedData').hide()
 		if @model.get('is restricted').get('value') is "false"
 			@$('.bv_restrictedData').removeAttr 'checked'
 		else

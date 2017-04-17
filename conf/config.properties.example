@@ -506,3 +506,8 @@ server.project.roles.enable=false
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
 server.project.sync.cmpdReg=true
+
+client.projectEditor.restrictedCheckbox.show=true
+client.projectEditor.isRestricted.default=false
+
+client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER
