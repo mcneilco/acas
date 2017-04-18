@@ -3,10 +3,12 @@ request = require 'request'
 
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', exports.redirectToEditor
+	app.get '/api/getControllerRedirectConf', exports.getControllerRedirectConf
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/entity/edit/codeName/:code', loginRoutes.ensureAuthenticated, exports.redirectToEditor
 	app.get '/api/labelsequences', loginRoutes.ensureAuthenticated, exports.getLabelSequences
+	app.get '/api/getControllerRedirectConf', loginRoutes.ensureAuthenticated, exports.getControllerRedirectConf
 
 config = require '../conf/compiled/conf.js'
 
@@ -43,3 +45,8 @@ exports.getLabelSequences = (req, resp) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 	baseurl = config.all.client.service.persistence.fullpath+"/labelsequences"
 	serverUtilityFunctions.getFromACASServer(baseurl, resp)
+
+exports.getControllerRedirectConf = (req, resp) ->
+	controllerRedirectConfFile = require '../src/javascripts/ServerAPI/ControllerRedirectConf.js'
+	controllerRedirectConf = controllerRedirectConfFile.controllerRedirectConf
+	resp.json controllerRedirectConf
