@@ -3,20 +3,18 @@ class window.Thing extends Backbone.Model
 	className: "Thing"
 #	urlRoot: "/api/things"
 
-	defaults: () =>
-		#attrs =
-		@set lsType: "thing"
-		@set lsKind: "thing"
-		#		@set lsKind: this.className #TODO figure out instance classname and replace --- here's a hack that does it-ish
-		@set corpName: ""
-		@set recordedBy: window.AppLaunchParams.loginUser.username
-		@set recordedDate: new Date().getTime()
-		@set shortDescription: " "
-		@set lsLabels: new LabelList()
-		@set lsStates: new StateList()
-		@set firstLsThings: new FirstLsThingItxList()
-		@set secondLsThings: new SecondLsThingItxList()
-		@set lsTags: new TagList()
+	defaults: () ->
+		lsType: "thing"
+		lsKind: "thing"
+		corpName: ""
+		recordedBy: window.AppLaunchParams.loginUser.username
+		recordedDate: new Date().getTime()
+		shortDescription: " "
+		lsLabels: new LabelList()
+		lsStates: new StateList()
+		firstLsThings: new FirstLsThingItxList()
+		secondLsThings: new SecondLsThingItxList()
+		lsTags: new TagList()
 
 	initialize: ->
 		@.set @parse(@.attributes)
@@ -130,9 +128,9 @@ class window.Thing extends Backbone.Model
 			rBy = window.AppLaunchParams.loginUser.username
 		if data.isNew()
 			rDate = new Date().getTime()
-			unless data.get('recordedBy') != ""
+			if !data.has ('recordedBy') || data.get('recordedBy') == ""
 				data.set recordedBy: rBy
-			unless data.get('recordedDate') != null
+			if !data.has ('recordedDate') || data.get('recordedDate') == null
 				data.set recordedDate: rDate
 
 	createDefaultLabels: =>
