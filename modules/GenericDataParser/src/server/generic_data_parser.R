@@ -452,7 +452,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL, user=user, configList=configList) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL, user=recordedBy, configList=configList) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -577,12 +577,23 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         rCompoundsDF <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode,]
         rCompounds <- rCompoundsDF$Requested.Name
         if (length(rCompounds) > 0) {
-          userRoles <- unlist(lapply(user$roles, function(role) role$roleEntry$roleName))
-          
-          if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
-            warnUser(paste0("Compounds from the following projects: ", paste(rCompoundsDF$name, collapse = "', '"),
-                            " will be loaded into project '",currentProj$name,"'"))
-          } else {
+          addProjectError <- TRUE
+          shouldCheckRole <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
+          if(shouldCheckRole) {
+            response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", user)))
+            if(response=="") {
+              addError(paste0("Username '",user,"' could not be found in the system"))
+            } else {
+              recordedByUser <- fromJSON(response)
+              userRoles <- unlist(lapply(recordedByUser$roles, function(role) role$roleEntry$roleName))
+              if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
+                addProjectError <- FALSE
+                warnUser(paste0("Compounds from the following projects: ", paste(rCompoundsDF$name, collapse = "', '"),
+                                " will be loaded into project '",currentProj$name,"'"))
+              }
+            }
+          }
+          if(addProjectError) {
             addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"),
                             "' are in a restricted project that does not match the one entered for this experiment."))
           }
@@ -2024,14 +2035,14 @@ validateScientist <- function(scientistName, configList, testMode = FALSE) {
     return("")
   }
   
-  user <- tryCatch({
-    fromJSON(response)
+  username <- tryCatch({
+    fromJSON(response)$username
   }, error = function(e) {
     addError( paste("There was an error in validating the scientist's name:", scientistName))
     return("")
   })
   
-  return(user)
+  return(username)
 }
 
 unzipUploadedImages <- function(imagesFile, experimentFolderLocation = experimentFolderLocation) {
@@ -2720,7 +2731,7 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
     replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat,
     projectCode = validatedMetaData$Project,
-    user = validatedMetaData$user[[1]],
+    user = recordedBy,
     configList = configList)
   
   # Subject and TreatmentGroupData
