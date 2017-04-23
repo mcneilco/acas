@@ -15,7 +15,6 @@ class window.Label extends Backbone.Model
 
 	handleLabelTextChanged: =>
 		unless @isNew()
-			console.log "replace old label"
 			newText = @get 'labelText'
 			@set
 				ignored: true
@@ -180,7 +179,7 @@ class window.Value extends Backbone.Model
 					modifiedBy: window.AppLaunchParams.loginUser.username
 					modifiedDate: new Date().getTime()
 					isDirty: true
-				@trigger 'createNewValue', @get('lsKind'), newVal
+				@trigger 'createNewValue', @get('lsKind'), newVal, @get('key')
 
 class window.ValueList extends Backbone.Collection
 	model: Value

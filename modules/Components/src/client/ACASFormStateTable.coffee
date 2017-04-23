@@ -34,7 +34,6 @@ class window.ACASFormStateTableController extends Backbone.View
 #Subclass to extend
 	renderModelContent: =>
 		for state in @getCurrentStates()
-			console.log "rendering state id: "+state.id
 			@renderState state
 
 	applyOptions: ->
@@ -249,7 +248,6 @@ class window.ACASFormStateTableController extends Backbone.View
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]
 			state = @getStateForRow rowNum, false
-			console.log "ignoring row #{rowNum} in state id: #{state.id}"
 			state.set ignored: true
 		nextRow = index+amount
 		nRows = @hot.countRows()

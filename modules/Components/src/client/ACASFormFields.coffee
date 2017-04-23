@@ -62,6 +62,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@
 
 #Subclass to extend
+	afterRender: ->
+
+
 	renderModelContent: =>
 		@clearError()
 		@checkEmptyAndRequired()
@@ -186,8 +189,6 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 					ignored: false
 		super()
 
-
-
 	setEmptyValue: ->
 		@getModel().set
 			value: null
@@ -305,7 +306,6 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	renderModelContent: =>
 		@userInputEvent = false
-		console.dir @getModel()
 		if  @getModel().getItxThing().id?
 			labels = new LabelList @getModel().getItxThing().lsLabels
 			labelText = labels.pickBestNonEmptyLabel().get('labelText')
@@ -331,4 +331,53 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@
 
 
+class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    - You may include a rows option to set the height of the textarea
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
 
+	template: _.template($("#ACASFormLSHTMLClobValueFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.rows?
+			@rows = @options.rows
+			@$('textarea').attr 'rows', @rows
+
+	afterRender: ->
+		@setupTinyMCE()
+
+	textChanged: (content) ->
+		@clearError()
+		if content == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: content
+				ignored: false
+
+	setEmptyValue: ->
+		@getModel().set
+			value: ""
+			ignored: true
+
+	renderModelContent: =>
+		@editor.setContent @getModel().get('value')
+		super()
+
+	setupTinyMCE: ->
+		mdl = @getModel()
+		cname = mdl.get('lsKind').replace(" ","")+"_"+mdl.cid
+		selector = "."+cname
+		@$('.bv_wysiwygEditor').addClass cname
+		@wysiwygEditor = tinymce.init
+			selector: selector
+			inline: true
+			setup: (editor) =>
+				editor.on 'init', (e) =>
+					@editor = editor
+				editor.on 'change', (e) =>
+					@textChanged editor.getContent()

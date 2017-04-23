@@ -147,7 +147,6 @@ class window.Thing extends Backbone.Model
 				newLabel.set preferred: dLabel.preferred
 
 	createNewLabel: (lKind, newText, key) =>
-		console.log "new label key: "+key
 		dLabel = _.where(@lsProperties.defaultLabels, {key: key})[0]
 		oldLabel = @get(key)
 		@unset(key)
@@ -163,6 +162,7 @@ class window.Thing extends Backbone.Model
 			for dValue in @lsProperties.defaultValues
 				#Adding the new state and value to @
 				newValue = @get('lsStates').getOrCreateValueByTypeAndKind dValue.stateType, dValue.stateKind, dValue.type, dValue.kind
+				newValue.set key: dValue.key
 				@listenTo newValue, 'createNewValue', @createNewValue
 				#setting unitType and unitKind in the state, if units are given
 				if dValue.unitKind? and newValue.get('unitKind') is undefined
@@ -185,9 +185,9 @@ class window.Thing extends Backbone.Model
 				# (ie set "value" to equal value in "stringValue")
 				@get(dValue.key).set("value", newValue.get(dValue.type))
 
-	createNewValue: (vKind, newVal) =>
-		valInfo = _.where(@lsProperties.defaultValues, {key: vKind})[0]
-		@unset(vKind)
+	createNewValue: (vKind, newVal, key) =>
+		valInfo = _.where(@lsProperties.defaultValues, {key: key})[0]
+		@unset(key)
 		newValue = @get('lsStates').getOrCreateValueByTypeAndKind valInfo['stateType'], valInfo['stateKind'], valInfo['type'], valInfo['kind']
 		newValue.set valInfo['type'], newVal
 		newValue.set
@@ -197,7 +197,7 @@ class window.Thing extends Backbone.Model
 			codeType: valInfo['codeType']
 			codeOrigin: valInfo['codeOrigin']
 			value: newVal
-		@set vKind, newValue
+		@set key, newValue
 
 	createDefaultFirstLsThingItx: =>
 		# loop over defaultFirstLsThingItx

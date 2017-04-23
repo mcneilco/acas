@@ -101,6 +101,9 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'htmlClobValue'
+					opts.rows = field.fieldSettings?.rows
+					newField = new ACASFormLSHTMLClobValueFieldController opts
 				when 'thingInteractionSelect'
 					opts.thingType = field.fieldSettings.thingType
 					opts.thingKind = field.fieldSettings.thingKind
@@ -108,6 +111,7 @@ class window.AbstractThingFormController extends AbstractFormController
 					newField = new ACASFormLSThingInteractionFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
+			newField.afterRender()
 			@formFields[field.key] = newField
 		@setupFormTables fieldDefs.stateTables
 
