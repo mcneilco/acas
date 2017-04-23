@@ -560,6 +560,9 @@ class window.ThingLabelComboBoxController extends Backbone.View
 			width: "100%"
 			ajax:
 				url: (params) =>
+					if !params.term?
+						params.term = '%'
+					params.term = encodeURIComponent params.term
 					if @queryUrl?
 						urlStr = @queryUrl + params.term
 					else

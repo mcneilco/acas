@@ -49,7 +49,7 @@
     "passport-local": ">= 0.0.0",
     "properties": "*",
     "properties-parser": "*",
-    "request": "2.12.0",
+    "request": "2.34.0",
     "shelljs": "0.6.0",
     "style-loader": "*",
     "temporary": ">= 0.0.0",
@@ -64,7 +64,9 @@
     "url-loader": "*",
     "file-loader": "*",
     "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
-    "yamljs": "*"
+    "yamljs": "*",
+    "request-promise": "*",
+	"bluebird": "*"
   },
   "devDependencies": {
     "del": "^2.2.2",

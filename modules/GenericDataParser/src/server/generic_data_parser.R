@@ -452,7 +452,7 @@ validateTreatmentGroupData <- function(treatmentGroupData,calculatedResults,temp
   }
   return(NULL) 
 }
-validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL) {
+validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, testMode = FALSE, replaceFakeCorpBatchId="", mainCode, inputFormat, projectCode, errorEnv = NULL, user=recordedBy, configList=configList) {
   # Valides the calculated results (for now, this only validates the mainCode)
   #
   # Args:
@@ -574,16 +574,35 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
         batchProjects <- getProjectForBatch(unique(calculatedResults$batchCode[batchesToCheck]), "Corporate Batch ID")
         batchProjectRestriced <- merge(batchProjects, projectDF, by.x="Project.Code", by.y="code")
         # Compounds in a restricted project may not be entered into another project
-        rCompounds <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode, "Requested.Name"]
+        rCompoundsDF <- batchProjectRestriced[batchProjectRestriced$isRestricted & batchProjectRestriced$Project.Code!=projectCode,]
+        rCompounds <- rCompoundsDF$Requested.Name
         if (length(rCompounds) > 0) {
-          addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"), 
-                          "' are in a restricted project that does not match the one entered for this experiment."))
+          addProjectError <- TRUE
+          shouldCheckRole <- configList$server.project.roles.enable & !is.null(configList$client.roles.crossProjectLoaderRole)
+          if(shouldCheckRole) {
+            response <- getURL(URLencode(paste0(racas::applicationSettings$server.nodeapi.path, racas::applicationSettings$client.service.users.path, "/", user)))
+            if(response=="") {
+              addError(paste0("Username '",user,"' could not be found in the system"))
+            } else {
+              recordedByUser <- fromJSON(response)
+              userRoles <- unlist(lapply(recordedByUser$roles, function(role) role$roleEntry$roleName))
+              if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
+                addProjectError <- FALSE
+                warnUser(paste0("Compounds from the following projects: ", paste(rCompoundsDF$name, collapse = "', '"),
+                                " will be loaded into project '",currentProj$name,"'"))
+              }
+            }
+          }
+          if(addProjectError) {
+            addError(paste0("Compounds '", paste(rCompounds, collapse = "', '"),
+                            "' are in a restricted project that does not match the one entered for this experiment."))
+          }
         }
       }
     }
   }
 
-  
+
   # Return the validated results
   return(calculatedResults)
 }
@@ -2710,8 +2729,10 @@ runMain <- function(pathToGenericDataFormatExcelFile, reportFilePath=NULL,
   # Validate the Calculated Results
   calculatedResults <- validateCalculatedResults(
     calculatedResults, dryRun, curveNames=formatParameters$curveNames, testMode=testMode,
-    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat, 
-    projectCode = validatedMetaData$Project)
+    replaceFakeCorpBatchId=formatParameters$replaceFakeCorpBatchId, mainCode, inputFormat,
+    projectCode = validatedMetaData$Project,
+    user = recordedBy,
+    configList = configList)
   
   # Subject and TreatmentGroupData
   subjectAndTreatmentData <- getSubjectAndTreatmentData(precise, genericDataFileDataFrame, calculatedResults, inputFormat, mainCode, formatParameters, errorEnv)

@@ -1039,13 +1039,13 @@ input.FormInput.supplier, .FormInput.supplierID, .FormInput.percentEE, .FormInpu
 input.FormInput .hasDatepicker, .color {
     width: 160px;
 }
-input.FormInput.amount, .FormInput.retain, .FormInput.purity, .FormInput.solutionAmount {
+input.FormInput.amount, .FormInput.retain, .FormInput.purity, .FormInput.solutionAmount, .FormInput.tareWeight, .FormInput.totalAmountStored {
     width: 108px;
 }
 select.FormInput.purityMeasuredByCode, .FormInput.vendorCode {
     width: 160px;
 }
-select.FormInput.amountUnitsCode, .FormInput.retainUnitsCode, .FormInput.purityOperatorCode, .FormInput.solutionAmountUnitsCode {
+select.FormInput.amountUnitsCode, .FormInput.retainUnitsCode, .FormInput.purityOperatorCode, .FormInput.solutionAmountUnitsCode, .FormInput.tareWeightUnitsCode, .FormInput.totalAmountStoredUnitsCode {
     width: 48px;
 }
 
