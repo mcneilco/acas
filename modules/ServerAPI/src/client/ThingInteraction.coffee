@@ -24,6 +24,7 @@ class window.ThingItx extends Backbone.Model
 		resp
 
 	reformatBeforeSaving: =>
+		delete @getItxThing().version
 
 class window.FirstThingItx extends ThingItx
 	className: "FirstThingItx"
