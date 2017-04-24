@@ -24,20 +24,6 @@ class window.ThingItx extends Backbone.Model
 		resp
 
 	reformatBeforeSaving: =>
-#		if @attributes.attributes?
-#			delete @attributes.attributes
-#		for i of @attributes
-#			if _.isFunction(@attributes[i])
-#				delete @attributes[i]
-#			else if !isNaN(i)
-#				delete @attributes[i]
-#		delete @collection
-#		delete @attributes._changing
-#		delete @attributes._previousAttributes
-#		delete @attributes.cid
-#		delete @attributes.changed
-#		delete @attributes._pending
-#		delete @attributes.collection
 
 class window.FirstThingItx extends ThingItx
 	className: "FirstThingItx"

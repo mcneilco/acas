@@ -67,7 +67,6 @@ class window.LabelList extends Backbone.Collection
 					(if (rd is "") then rd else -1)
 		return bestLabel
 
-
 	pickBestNonEmptyLabel: ->
 		preferred = @getCurrent()
 		if preferred.length > 0

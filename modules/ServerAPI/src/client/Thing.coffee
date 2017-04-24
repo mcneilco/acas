@@ -204,9 +204,7 @@ class window.Thing extends Backbone.Model
 		# add key as attribute of model
 		if @lsProperties.defaultFirstLsThingItx?
 			for itx in @lsProperties.defaultFirstLsThingItx
-				thingItx = @get('firstLsThings').getItxByTypeAndKind itx.itxType, itx.itxKind
-				unless thingItx?
-					thingItx = @get('firstLsThings').createItxByTypeAndKind itx.itxType, itx.itxKind
+				thingItx = @get('firstLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
 
 	createDefaultSecondLsThingItx: =>

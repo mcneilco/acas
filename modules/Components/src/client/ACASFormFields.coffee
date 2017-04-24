@@ -244,10 +244,10 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 			codeKind: mdl.get 'codeKind'
 
 		if @options.insertUnassigned?
-			plOptions.insertFirstOption = new PickList
-				code: "unassigned"
-				name: "Select Category"
-			#			roles: [@htsAdmin]
+			if @options.insertUnassigned
+				plOptions.insertFirstOption = new PickList
+					code: "unassigned"
+					name: "Select Category"
 
 		@pickListController = new PickListSelectController plOptions
 		@pickListController.render()
