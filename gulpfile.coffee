@@ -328,6 +328,8 @@ createExecuteTask = (options) =>
     watchOptions = watch?.options ? {}
     gulp.task watchTaskName, ->
       gulp.watch options.src, watchOptions, gulp.series(taskName)
+        .on('error', console.error)
+
       return
     watchTasks.push watchTaskName
   return taskName
