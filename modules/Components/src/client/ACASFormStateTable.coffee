@@ -43,6 +43,9 @@ class window.ACASFormStateTableController extends Backbone.View
 			@addFormLabelClass @options.tableDef.tableLabelClass
 		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
 
+
+		if @tableDef?.showUnits? == true then @showUnits = true else @showUnits = false
+
 	setTableLabel: (value) ->
 		@$('.bv_tableLabel').html value
 
@@ -100,8 +103,12 @@ class window.ACASFormStateTableController extends Backbone.View
 			@colDefs = []
 
 		for val in @tableDef.values
+			displayName = val.fieldSettings.formLabel
+			if @showUnits
+				if val.modelDefaults.unitKind?
+					displayName += "<br />(#{val.modelDefaults.unitKind})"
 			@colHeaders.push
-				displayName: val.fieldSettings.formLabel
+				displayName: displayName
 				keyName: val.modelDefaults.kind
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
@@ -184,7 +191,8 @@ class window.ACASFormStateTableController extends Backbone.View
 					else
 						displayVal = @getNameForCode value, value.get 'codeValue'
 				else if valDef.modelDefaults.type == 'dateValue'
-					displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
+					if value.get('dateValue')?
+						displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
 				else
 					displayVal = value.get valDef.modelDefaults.type
 
