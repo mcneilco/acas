@@ -288,9 +288,13 @@
 
     AliasRowController.prototype.scrapeForm = function() {
       var formValues;
+	  var typeKind = this.$(".bv_aliasTypeContainer").val().split(':');
+	  var lsType = typeKind[0];
+	  var lsKind = typeKind[1];
       formValues = {
         aliasName: this.$(".bv_aliasKind").val(),
-        lsType: this.$(".bv_aliasTypeContainer").val()
+        lsType: lsType,
+		lsKind: lsKind
       };
       if (formValues.aliasName === "") {
         formValues.aliasName = " ";
@@ -340,7 +344,7 @@
         el: this.$('.bv_aliasTypeContainer'),
         type: "parentaliaskinds",
         collection: cloneOfAliasTypes,
-        selectedCode: this.model.get("lsType"),
+        selectedCode: this.model.get("typeKind"),
         insertFirstOption: optionToInsert
       });
       this.aliasType.handleListReset();
@@ -364,10 +368,16 @@
       deleted: false,
       ignored: false,
       lsKind: "Parent Common Name",
+      typeKind: "",
       preferred: false,
       version: 0,
       sortId: null
     };
+
+	AliasModel.prototype.initialize = function() {
+		var typeKind = this.get('lsType') + ':' + this.get('lsKind');
+		this.set({'typeKind': typeKind});
+	}
 
     AliasModel.prototype.validate = function(attrs, options) {
       var errors;
