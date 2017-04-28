@@ -397,6 +397,11 @@ $(function () {
             this.$('.ParentView').show();
             this.parentController.bind('updateParentBack', this.updateParentBack);
             this.parentController.bind('parentUpdated', this.parentUpdated);
+            this.parentController.bind('clearEditParentErrors', (function(_this) {
+                return function() {
+                    return _this.eNotiList.reset();
+                };
+            })(this));
             this.parentController.render();
             this.$('.ParentView').prepend("<h1 class='formTitle EditParentStepThreeTitle'>Edit Parent Step Three: Update Parent Attributes</h1>");//fiona
         },
