@@ -250,6 +250,7 @@ client.fullpath=http://${client.host}:${client.port}
 client.service.result.viewer.displayName=Data Viewer
 client.service.result.viewer.configuredViewers=DataViewer
 client.service.result.viewer.defaultViewer=DataViewer
+client.service.result.viewer.dataViewer.exptTree.showOnlyMatches=false
 client.service.result.viewer.liveDesign.baseUrl=
 client.service.result.viewer.liveDesign.username=
 client.service.result.viewer.liveDesign.password=
@@ -506,3 +507,8 @@ server.project.roles.enable=false
 
 #Controls whether to try to sync projects list from ACAS to CmpdReg
 server.project.sync.cmpdReg=true
+
+client.projectEditor.restrictedCheckbox.show=true
+client.projectEditor.isRestricted.default=false
+
+client.roles.crossProjectLoaderRole=ROLE_ACAS-CROSS-PROJECT-LOADER

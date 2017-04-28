@@ -325,7 +325,7 @@ class window.ExperimentSummaryTableController extends Backbone.View
 				return false
 			unless UtilityFunctions::testUserHasRole window.AppLaunchParams.loginUser, rolesToTest
 				return false
-		return true
+		return false
 
 class window.ExperimentBrowserController extends Backbone.View
 	#template: _.template($("#ExperimentBrowserView").html())

@@ -185,7 +185,7 @@ exports.syncLiveDesignRoles = (caughtPythonErrors, pythonErrors, configJSON, gro
 		#		data = {"compounds":["V035000","CMPD-0000002"],"assays":[{"protocolName":"Target Y binding","resultType":"curve id"}]}
 		#		command += (JSON.stringify data)+"'"
 		console.log "About to call python using command: "+command
-		child = exec command,  (error, stdout, stderr) ->
+		child = exec command, {maxBuffer: 1024 * 1000}, (error, stdout, stderr) ->
 			reportURLPos = stdout.indexOf config.all.client.service.result.viewer.liveDesign.baseUrl
 			reportURL = stdout.substr reportURLPos
 			#console.warn "stderr: " + stderr
