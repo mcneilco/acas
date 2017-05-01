@@ -160,7 +160,11 @@ exports.thingsByTypeAndKinds = (req, resp) ->
 
 exports.thingByCodeName = (req, resp) ->
 	getThing req, req.params.code, (thing) ->
-		resp.json thing
+		if typeof thing is 'string'
+			resp.statusCode = 500
+			resp.end thing
+		else
+			resp.json thing
 
 
 #	if req.query.testMode or global.specRunnerTestmode
@@ -215,7 +219,7 @@ getThing = (req, codeName, callback) ->
 				console.log error
 				console.log json
 				console.log response
-				callback "getting lsThing after post/put failed"
+				callback "getting lsThing by codeName failed"
 		)
 
 
