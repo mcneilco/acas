@@ -255,14 +255,16 @@ class window.ProjectBrowserController extends Backbone.View
 		@$(".bv_confirmDeleteProject").modal('hide')
 
 	handleEditProjectClicked: =>
-		window.open("/project/codeName/#{@projectController.model.get("codeName")}",'_blank');
+		projectCodeName = encodeURIComponent @projectController.model.get("codeName")
+		window.open("/project/codeName/#{projectCodeName}",'_blank');
 
 	handleDuplicateProjectClicked: =>
 		projectKind = @projectController.model.get('lsKind')
+		projectCodeName = encodeURIComponent @projectController.model.get("codeName")
 		if projectKind is "Bio Activity"
-			window.open("/entity/copy/primary_screen_project/#{@projectController.model.get("codeName")}",'_blank');
+			window.open("/entity/copy/primary_screen_project/#{projectCodeName}",'_blank');
 		else
-			window.open("/entity/copy/project/#{@projectController.model.get("codeName")}",'_blank');
+			window.open("/entity/copy/project/#{projectCodeName}",'_blank');
 
 	destroyProjectSummaryTable: =>
 		if @projectSummaryTable?

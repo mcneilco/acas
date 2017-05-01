@@ -653,7 +653,7 @@ class window.ProjectController extends AbstractFormController
 	getProject: =>
 		$.ajax
 			type: 'GET'
-			url: "/api/things/project/project/codename/"+window.AppLaunchParams.moduleLaunchParams.code
+			url: "/api/things/project/project/codename/"+ encodeURIComponent window.AppLaunchParams.moduleLaunchParams.code
 			dataType: 'json'
 			error: (err) =>
 				alert 'Could not get project for code in this URL, creating new one'
@@ -858,6 +858,7 @@ class window.ProjectController extends AbstractFormController
 			@projectUserListController.undelegateEvents()
 
 		projectCodeName = @model.get 'codeName'
+		projectCodeName = encodeURIComponent projectCodeName
 		$.ajax
 			type: 'GET'
 			url: "/api/projects/getByRoleTypeKindAndName/Project/#{projectCodeName}/User?format=codetable"
@@ -889,6 +890,7 @@ class window.ProjectController extends AbstractFormController
 			@projectAdminListController.undelegateEvents()
 
 		projectCodeName = @model.get 'codeName'
+		projectCodeName = encodeURIComponent projectCodeName
 		$.ajax
 			type: 'GET'
 			url: "/api/projects/getByRoleTypeKindAndName/Project/#{projectCodeName}/Administrator?format=codetable"
@@ -975,7 +977,7 @@ class window.ProjectController extends AbstractFormController
 			#validate codeName
 			$.ajax
 				type: 'GET'
-				url: "/api/things/project/project/codename/"+codeName
+				url: "/api/things/project/project/codename/"+ encodeURIComponent codeName
 				dataType: 'json'
 				error: (err) =>
 					#codename is new
