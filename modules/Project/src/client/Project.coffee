@@ -163,6 +163,12 @@ class window.Project extends Thing
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
 		nameError = true
+		if attrs.codeName?
+			validChars = attrs.codeName.match(/[a-zA-Z0-9 _\-+]/g)
+			unless validChars.length is attrs.codeName.length
+				errors.push
+					attribute: 'projectCode'
+					message: "CodeName can not contain special characters"
 		if bestName?
 			nameError = true
 			if bestName.get('labelText') != "" and bestName.get('labelText') != "unassigned"
