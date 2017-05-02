@@ -162,7 +162,6 @@ def main():
 		project=args['input']['project']
     except:
 		project="Global"
-    project="All Projects"
     try:
     	logged_in_user=args['input']['username']
     except:
