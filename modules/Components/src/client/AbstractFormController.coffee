@@ -106,7 +106,7 @@ class window.AbstractThingFormController extends AbstractFormController
 			@formFields[field.key] = newField
 		@setupFormTables fieldDefs.stateTables
 
-	fillFieldsFromModels: ->
+	fillFieldsFromModels: =>
 		for modelKey, formField of @formFields
 			formField.renderModelContent()
 		for stateKey, formTable of @formTables
