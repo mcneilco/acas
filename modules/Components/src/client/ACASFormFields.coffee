@@ -257,3 +257,33 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		@setupSelect()
 
 		@
+
+class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSStringValueFieldView").html())
+
+	handleInputChanged: =>
+		@clearError()
+		@userInputEvent = true
+		value = UtilityFunctions::getTrimmedInput(@$('input'))
+		if value == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: value
+				ignored: false
+		super()
+
+	setEmptyValue: ->
+		@getModel().set
+			value: null
+			ignored: true
+
+	renderModelContent: =>
+		@$('input').val @getModel().get('value')
+		super()
