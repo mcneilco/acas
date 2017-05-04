@@ -56,7 +56,8 @@
     "underscore": ">= 0.0.0",
     "underscore-deep-extend": ">= 0.0.0",
     "winston": "*",
-    "winston-mongodb": "*"
+    "winston-mongodb": "*",
+    "yamljs": "*"
   },
   "devDependencies": {
     "del": "^2.2.2",

@@ -108,7 +108,8 @@ globalExecuteOptions = {cwd: build, env: process.env}
 globalWatchOptions =
   interval: 1000
   debounceDelay: 500
-  mode: 'poll'
+  usePolling: true
+#  mode: 'poll'
 
 taskConfigs =
   coffee: [
