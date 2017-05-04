@@ -101,6 +101,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'label' then newField = new ACASFormLSLabelFieldController opts
 				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
 				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			@formFields[field.key] = newField
