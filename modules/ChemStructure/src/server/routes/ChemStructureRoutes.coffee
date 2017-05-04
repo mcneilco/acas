@@ -148,17 +148,13 @@ exports.renderMolStructure = (req, resp) ->
 		resp.json {molStructure: req.body[0].molStructure, height: req.body[0].height, width: req.body[0].width, format: req.body[0].format}
 	else
 		molecule = req.body
-		console.log 'incoming req.body'
-		console.log molecule
 		config = require '../conf/compiled/conf.js'
 		baseurl = config.all.client.service.persistence.fullpath+"structure/renderMolStructure"
 		request = require 'request'
-		console.log 'line 136 ---- attempt to hit renderMolStructure -- how to handle reponse'
 		request(
 			method: 'POST'
 			url: baseurl
 			body: molecule
-#			encoding: null
 			json: true
 		, (error, response, output) =>
 			if !error && response.statusCode == 200
@@ -180,6 +176,7 @@ exports.renderMolStructure = (req, resp) ->
 				resp.statusCode = 500
 				resp.end JSON.stringify "render molStructure failed"
 		)
+
 
 exports.renderMolStructureBase64 = (req, resp) ->
 	if global.specRunnerTestmode
@@ -208,3 +205,28 @@ exports.renderMolStructureBase64 = (req, resp) ->
 				resp.statusCode = 500
 				resp.end JSON.stringify "render molStructure failed"
 		)
+
+exports.acasStructureSearch = (req, resp) ->
+	if global.specRunnerTestmode
+		resp.json {queryMol: req.body[0].queryMol, searchType: req.body[0].searchType, maxResults: req.body[0].maxResults, similarity: req.body[0].similarity}
+	else
+		config = require '../conf/compiled/conf.js'
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/structureSearch"
+		request = require 'request'
+		request(
+			method: 'POST'
+			url: baseurl
+			body: req.body.reagentSearchParams
+			json: true
+		, (error, response, json) =>
+			if !error && response.statusCode == 200
+				resp.json json
+			else
+				console.log 'got ajax error trying to search for structures'
+				console.log error
+				console.log json
+				console.log response
+				resp.statusCode = 500
+				resp.end JSON.stringify "ACAS structure search failed"
+		)
+
