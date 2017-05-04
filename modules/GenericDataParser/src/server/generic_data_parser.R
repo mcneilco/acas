@@ -588,7 +588,7 @@ validateCalculatedResults <- function(calculatedResults, dryRun, curveNames, tes
               userRoles <- unlist(lapply(recordedByUser$roles, function(role) role$roleEntry$roleName))
               if(configList$client.roles.crossProjectLoaderRole %in% userRoles) {
                 addProjectError <- FALSE
-                warnUser(paste0("Compounds from the following projects: ", paste(rCompoundsDF$name, collapse = "', '"),
+                warnUser(paste0("Compounds from the following projects: ", paste0("'",unique(rCompoundsDF$name),"'", collapse = ", "),
                                 " will be loaded into project '",currentProj$name,"'"))
               }
             }
