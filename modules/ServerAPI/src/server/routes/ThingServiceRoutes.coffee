@@ -193,7 +193,7 @@ getThing = (req, codeName, callback) ->
 		callback thingTestJSON.thingParent
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+codeName
+		baseurl = config.all.client.service.persistence.fullpath+"lsthings/"+req.params.lsType+"/"+req.params.lsKind+"/"+ encodeURIComponent codeName
 		if req.query.nestedstub
 			nestedstub = "with=nestedstub"
 			baseurl += "?#{nestedstub}"
