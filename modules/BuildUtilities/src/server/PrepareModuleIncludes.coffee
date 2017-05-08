@@ -110,8 +110,13 @@ prepRouteIncludes = (apiMode) ->
 		if apiMode
 			includeStr += '\tif (routeSet_'+routeNum+'.setupAPIRoutes) {\n'
 			includeStr += '\t\trouteSet_'+routeNum+'.setupAPIRoutes(app); }\n'
+			includeStr += '\tif (routeSet_'+routeNum+'.setupChannels) {\n'
+			includeStr += '\trouteSet_'+routeNum+'.setupChannels(io, loginRoutes); }\n'
 		else
-			includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app, loginRoutes);\n'
+			includeStr += '\tif (routeSet_'+routeNum+'.setupRoutes) {\n'
+			includeStr += '\trouteSet_'+routeNum+'.setupRoutes(app, loginRoutes);\n }'
+			includeStr += '\tif (routeSet_'+routeNum+'.setupChannels) {\n'
+			includeStr += '\trouteSet_'+routeNum+'.setupChannels(io, loginRoutes);\n }'
 		routeLines += includeStr
 		routeNum++
 

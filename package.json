@@ -58,6 +58,7 @@
     "winston": "*",
     "winston-mongodb": "*",
     "style-loader": "*",
+    "socket.io": "^1.7.3",
     "bootstrap": "*",
     "exports-loader": "*",
     "extract-text-webpack-plugin": "*",

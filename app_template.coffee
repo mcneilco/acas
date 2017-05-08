@@ -86,10 +86,9 @@ startApp = ->
 	# index routes
 	indexRoutes = require './routes/index.js'
 	indexRoutes.setupRoutes(app, loginRoutes)
-	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 	if not config.all.client.use.ssl
-		http.createServer(app).listen(app.get('port'), ->
+		httpServer = http.createServer(app).listen(app.get('port'), ->
 			console.log("Express server listening on port " + app.get('port'))
 		)
 	else
@@ -101,11 +100,13 @@ startApp = ->
 			cert: fs.readFileSync config.all.server.ssl.cert.file.path
 			ca: fs.readFileSync config.all.server.ssl.cert.authority.file.path
 			passphrase: config.all.server.ssl.cert.passphrase
-		https.createServer(sslOptions, app).listen(app.get('port'), ->
+		httpServer = https.createServer(sslOptions, app).listen(app.get('port'), ->
 			console.log("Express server listening on port " + app.get('port'))
 		)
 		#TODO hack to prevent bug: https://github.com/mikeal/request/issues/418
 		process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+	io = require('socket.io')(httpServer)
+	###TO_BE_REPLACED_BY_PREPAREMODULEINCLUDES###
 
 	options = if stubsMode then ["stubsMode"] else []
 	options.push ['--color']
