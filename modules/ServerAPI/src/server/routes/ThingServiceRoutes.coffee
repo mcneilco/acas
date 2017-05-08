@@ -415,9 +415,12 @@ exports.validateName = (req, resp) ->
 			if !error && response.statusCode == 202
 				resp.json json
 			else if response.statusCode == 409
-				resp.json "not unique name"
+				console.log "not unique name"
+				console.log json
+				resp.statusCode = 409
+				resp.json json
 			else
-				console.log 'got ajax error trying to save thing parent'
+				console.log 'got ajax error trying to save validate thing name'
 				console.log error
 				console.log json
 				console.log response
