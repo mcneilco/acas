@@ -172,7 +172,7 @@ updateExpt = (expt, testMode, callback) ->
 					callback "saveFailed"
 			)
 
-postExperiment = (exptToSave, testMode, callback) ->
+exports.postExperimentInternal = (exptToSave, testMode, callback) ->
 	console.log "posting experiment"
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
 #	exptToSave = req.body
@@ -301,7 +301,7 @@ exports.postExperiment = (req, resp) ->
 		newExptExptItxs = JSON.parse newExptExptItxs
 		delete req.body.newExptExptItxs
 		
-	postExperiment req.body, req.query.testMode, (response) =>
+	exports.postExperimentInternal req.body, req.query.testMode, (response) =>
 		if response.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
 			if response.lsKind is "study"
 				_.each exptExptItxsToIgnore, (itx) =>
@@ -1022,7 +1022,7 @@ exports.postParentExperiment = (req, resp) ->
 
 		#post parent experiment
 		parentExperiment = JSON.parse req.body.parentExperiment
-		postExperiment parentExperiment, req.query.testMode, (saveParentExptResp) =>
+		exports.postExperimentInternal parentExperiment, req.query.testMode, (saveParentExptResp) =>
 			console.log "post experiment response"
 			console.log saveParentExptResp
 			if typeof saveParentExptResp is "string" and saveParentExptResp.indexOf("saveFailed") > -1
