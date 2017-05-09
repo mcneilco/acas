@@ -13,6 +13,8 @@ prepIncludes = ->
 	styleFiles = _.filter styleFiles, (fileName)->
 		!(/_nocompile.css$/.test(fileName))
 	templateFiles = glob.sync "#{ACAS_HOME}/public/html/**/*.html"
+	templateFiles = _.filter templateFiles, (fileName)->
+		!(/_nocompile.html$/.test(fileName))
 
 	includeLines = ""
 	for path in styleFiles
@@ -67,7 +69,11 @@ makeScriptLines = (scripts) ->
 
 
 prepAppScripts = ->
-	appScriptsInJavascripts = makeFileNameHash glob.sync("#{ACAS_HOME}/public/javascripts/src/**/*.js")
+	javascriptFiles = glob.sync("#{ACAS_HOME}/public/javascripts/src/**/*.js")
+	javascriptFiles = _.filter javascriptFiles, (fileName)->
+		!(/_nocompile.js$/.test(fileName))
+
+	appScriptsInJavascripts = makeFileNameHash javascriptFiles
 	templateAppScripts = makeFileNameHash scriptPaths.applicationScripts
 	appScriptsInJavascripts = _.omit appScriptsInJavascripts, _.keys(templateAppScripts)
 	allScripts = appScriptsInJavascripts

@@ -1,7 +1,7 @@
 exports.setupAPIRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', exports.getAuthorByUsername
 	app.get '/api/authorModulePreferences/:userName/:moduleName', exports.getAuthorModulePreferences
-	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateModulePreferences
+	app.put '/api/authorModulePreferences/:userName/:moduleName', exports.updateAuthorModulePreferences
 
 exports.setupRoutes = (app, loginRoutes) ->
 	app.get '/api/authorByUsername/:username', loginRoutes.ensureAuthenticated, exports.getAuthorByUsername
@@ -114,9 +114,21 @@ exports.updateAuthorInternal = (author, callback) ->
 		resp.json authorServiceTestJSON.updateAuthor
 	else
 		config = require '../conf/compiled/conf.js'
+		# if author.has('transactionOptions')
+		# 	transactionOptions = author.get('transactionOptions')
+		# 	delete author.transactionOptions
+		# else
+		# 	transactionOptions = {
+		# 		comments: "author update"
+		# 	}
+		# transactionOptions.status = "COMPLETED"
+		# transactionOptions.type = "CHANGE"
+		# lsTransactionRecordedDate = new Date().getTime()
+		# serverUtilityFunctions.createLSTransaction2 lsTransactionRecordedDate, transactionOptions, (transaction) ->
+		# 	authorToSave = serverUtilityFunctions.insertTransactionIntoBackboneModel transaction.id, author
 		baseurl = config.all.client.service.persistence.fullpath+"authors/"
-		console.debug "base url: #{baseurl}"
 		request = require 'request'
+
 		request(
 			method: 'PUT'
 			url: baseurl
@@ -134,6 +146,22 @@ exports.updateAuthorInternal = (author, callback) ->
 				console.error response
 				callback JSON.stringify("updateAuthor failed"), 500
 		)
+
+exports.createNewAuthorInternal = (author, cb) ->
+	config = require '../conf/compiled/conf.js'
+	request = require 'request'
+	request(
+		method: 'POST'
+		url: config.all.client.service.persistence.fullpath + "authors"
+		body: author
+		json: true
+		timeout: 6000000
+	, (error, response, json) =>
+		if err?
+			cb err, null
+		else
+			cb null, json
+	)
 
 
 class Author extends Backbone.Model

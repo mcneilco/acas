@@ -9,6 +9,8 @@
 
 library(racas)
 library(RCurl)
+library(jsonlite)
+library(rjson)
 library(data.table)
 
 #configList <- racas::applicationSettings

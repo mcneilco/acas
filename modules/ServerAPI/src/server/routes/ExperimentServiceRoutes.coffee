@@ -294,24 +294,23 @@ exports.postExperiment = (req, resp) ->
 	exptExptItxsToIgnore = []
 	if req.body.exptExptItxsToIgnore?
 		exptExptItxsToIgnore = req.body.exptExptItxsToIgnore
+		exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
 		delete req.body.exptExptItxsToIgnore
 	if req.body.newExptExptItxs?
 		newExptExptItxs = req.body.newExptExptItxs
+		newExptExptItxs = JSON.parse newExptExptItxs
 		delete req.body.newExptExptItxs
 		
 	postExperiment req.body, req.query.testMode, (response) =>
 		if response.codeName? and (newExptExptItxs.length > 0 or exptExptItxsToIgnore.length > 0)
-			exptExptItxsToIgnore = JSON.parse exptExptItxsToIgnore
 			if response.lsKind is "study"
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.firstExperiment = {id: response.id}
-				newExptExptItxs = JSON.parse newExptExptItxs
 				_.each newExptExptItxs, (itx) =>
 					itx.firstExperiment = {id: response.id}
 			else #is default/expt base
 				_.each exptExptItxsToIgnore, (itx) =>
 					itx.secondExperiment = {id: response.id}
-				newExptExptItxs = JSON.parse newExptExptItxs
 				_.each newExptExptItxs, (itx) =>
 					itx.secondExperiment = {id: response.id}
 			console.log "exptExptItxsToIgnore"

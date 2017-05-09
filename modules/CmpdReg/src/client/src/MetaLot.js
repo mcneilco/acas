@@ -307,7 +307,7 @@ $(function() {
 		    this.editParentWorkflowController = new EditParentWorkflowController({
 			    el: $(this.el),
 			    corpName: this.model.get('corpName'),
-			    errorNotifList: new ErrorNotificationList(),
+			    errorNotifList: this.options.errorNotifList,
 			    user: this.user,
 			    parentModel: parent
 		    });

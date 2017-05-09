@@ -541,3 +541,46 @@ class window.EditablePickListSelect2Controller extends EditablePickListSelectCon
 				name: "Select "+pascalCaseParameterName
 			selectedCode: @options.selectedCode
 
+class window.ThingLabelComboBoxController extends Backbone.View
+
+	initialize: ->
+		console.dir @options
+		@thingType = @options.thingType
+		@thingKind = @options.thingKind
+		@labelType = if @options.labelType? then @options.labelType else null
+		@placeholder = if @options.placeholder? then @options.placeholder else null
+		@queryUrl = if @options.queryUrl? then @options.queryUrl else null
+
+	render: =>
+		@$el.select2
+			placeholder: @placeholder
+			openOnEnter: false
+			allowClear: true
+			width: "100%"
+			ajax:
+				url: (params) =>
+					if !params.term?
+						params.term = '%'
+					params.term = encodeURIComponent params.term
+					if @queryUrl?
+						urlStr = @queryUrl + params.term
+					else
+						urlStr = "/api/getThingCodeTablesByLabelText/#{@thingType}/#{@thingKind}/#{params.term}"
+					if @labelType?
+						urlStr += "?labelType="+@labelType
+					return urlStr
+				dataType: 'json'
+				delay: 250
+				processResults: (data, params) ->
+					results = for option in data
+						{id: option.code, text: option.name}
+					return {results: results}
+		@
+
+	getSelectedCode: ->
+		result = @$el.val()
+		# if result is null then we'll return the "unassigned" instead if it
+		# was inserted as the first option
+#		if not result? #and  @insertFirstOption.get('code') is "unassigned"
+#			result = "unassigned"
+		result

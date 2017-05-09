@@ -50,6 +50,33 @@ class window.Container extends Backbone.Model
 #			@createDefaultSecondLsThingItx()
 		resp
 
+	prepareToSave: ->
+		rBy = @get('recordedBy')
+		rDate = new Date().getTime()
+		@set recordedDate: rDate
+		@set modifiedDate: rDate
+		@get('lsLabels').each (lab) =>
+			if (lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+				@get('lsLabels').remove lab
+			else
+				@setRByAndRDate lab
+		@get('lsStates').each (state) =>
+			@setRByAndRDate state
+			state.get('lsValues').each (val) =>
+				@setRByAndRDate val
+
+	setRByAndRDate: (data) ->
+		if @isNew() and @has('recordedBy')
+			rBy = @get('recordedBy')
+		else
+			rBy = window.AppLaunchParams.loginUser.username
+		if data.isNew()
+			rDate = new Date().getTime()
+			unless data.get('recordedBy') != ""
+				data.set recordedBy: rBy
+			unless data.get('recordedDate') != null
+				data.set recordedDate: rDate
+
 	createDefaultLabels: =>
 # loop over defaultLabels
 # getorCreateLabel
@@ -57,9 +84,20 @@ class window.Container extends Backbone.Model
 		if @lsProperties.defaultLabels?
 			for dLabel in @lsProperties.defaultLabels
 				newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+				@listenTo newLabel, 'createNewLabel', @createNewLabel
 				@set dLabel.key, newLabel
 				#			if newLabel.get('preferred') is undefined
 				newLabel.set preferred: dLabel.preferred
+
+	createNewLabel: (lKind, newText) =>
+		dLabel = _.where(@lsProperties.defaultLabels, {key: lKind})[0]
+		oldLabel = @get(lKind)
+		@unset(lKind)
+		newLabel = @get('lsLabels').getOrCreateLabelByTypeAndKind dLabel.type, dLabel.kind
+		newLabel.set
+			labelText: newText
+			preferred: oldLabel.get 'preferred'
+		@set lKind, newLabel
 
 
 	createDefaultStates: =>

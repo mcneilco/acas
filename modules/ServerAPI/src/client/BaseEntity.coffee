@@ -227,7 +227,7 @@ class window.BaseEntity extends Backbone.Model
 class window.BaseEntityList extends Backbone.Collection
 	model: BaseEntity
 
-class window.BaseEntityController extends AbstractFormController
+class window.BaseEntityController extends AbstractThingFormController #TODO: check to see if this is ok
 	template: _.template($("#BaseEntityView").html())
 
 	events: ->
