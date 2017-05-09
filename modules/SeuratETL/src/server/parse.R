@@ -57,7 +57,6 @@ readSeuratFile <- function(pathToSeuratFile, file = TRUE) {
 parseSeuratFileToSELContentJSON <- function(pathToSeuratFile) {
   
   library(racas)
-  library(jsonlite)
   errorMessages <- list()
   myMessenger <- messenger(racas = TRUE)$reset()
   # use if to check hasErrors in myMessenger
