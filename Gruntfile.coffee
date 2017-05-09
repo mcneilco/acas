@@ -422,7 +422,7 @@ module.exports = (grunt) ->
 					src: grunt.config.get('sourceDirectories').map (i) -> ["#{i}/public/img/**"]
 					rename: (dest, matchedSrcPath, options) ->
 						replaced = matchedSrcPath
-						replaced = replaced.replace(path.relative(".",sourcePath)+"/public/img","/public/image") for sourcePath in grunt.config.get('sourceDirectories')
+						replaced = replaced.replace(path.relative(".",sourcePath)+"/public/img","/public/img") for sourcePath in grunt.config.get('sourceDirectories')
 						"#{dest.replace(/\/$/, "")}/#{replaced.replace(/^\//, "")}"
 					dest: "#{grunt.config.get('build')}"
 				]
