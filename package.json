@@ -66,7 +66,7 @@
     "jquery-file-upload-middleware": "https://github.com/mcneilco/jquery-file-upload-middleware.git",
     "yamljs": "*",
     "request-promise": "*",
-	"bluebird": "*"
+    "bluebird": "*"
   },
   "devDependencies": {
     "del": "^2.2.2",
