@@ -9,8 +9,6 @@
 
 library(racas)
 library(RCurl)
-library(jsonlite)
-library(rjson)
 library(data.table)
 
 #configList <- racas::applicationSettings
@@ -21,7 +19,7 @@ checkIfProjectExists <- function(projectName=""){
 	projectCurlURL <- paste0(racas::applicationSettings$client.service.persistence.fullpath,"lsthings/project/project?with=stub&labelType=name&labelKind=project name&labelText=")
 	fullProjectURL <- URLencode(paste0(projectCurlURL, projectName))
 	responseJSON <- getURL(fullProjectURL)
-	projects <- fromJSON(responseJSON)
+	projects <- rjson::fromJSON(responseJSON)
 	foundProject <- FALSE
 	if (length(projects) > 0) {
 	  foundProject <- TRUE
