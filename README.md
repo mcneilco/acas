@@ -151,7 +151,7 @@ docker-compose logs --tail=20 -f <service>
 
 e.g. for all containers
 ```
-docker-compose logs --tail=20 -f tomcat 
+docker-compose logs --tail=20 -f 
 ```
 
 e.g. for only tomcat
