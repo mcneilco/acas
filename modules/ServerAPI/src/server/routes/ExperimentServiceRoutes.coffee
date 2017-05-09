@@ -132,9 +132,14 @@ exports.experimentsAll = (req, resp) ->
 		resp.end JSON.stringify experimentServiceTestJSON.fullExperimentFromServer
 	else
 		config = require '../conf/compiled/conf.js'
-		baseurl = config.all.client.service.persistence.fullpath+"experiments"
-		serverUtilityFunctions = require './ServerUtilityFunctions.js'
-		serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		if req.query?.lsType? && req.query?.lsKind?
+			baseurl = config.all.client.service.persistence.fullpath+"experiments/bytypekind/"+req.query.lsType+"/"+req.query.lsKind
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
+		else
+			baseurl = config.all.client.service.persistence.fullpath+"experiments"
+			serverUtilityFunctions = require './ServerUtilityFunctions.js'
+			serverUtilityFunctions.getFromACASServer(baseurl, resp)
 
 updateExpt = (expt, testMode, callback) ->
 	serverUtilityFunctions = require './ServerUtilityFunctions.js'
