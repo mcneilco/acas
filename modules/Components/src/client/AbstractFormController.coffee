@@ -110,11 +110,18 @@ class window.AbstractThingFormController extends AbstractFormController
 					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
+				when 'stringValue' then newField = new ACASFormLSStringValueFieldController opts
 
 			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
 			newField.afterRender()
 			@formFields[field.key] = newField
 		@setupFormTables fieldDefs.stateTables
+
+	fillFieldsFromModels: =>
+		for modelKey, formField of @formFields
+			formField.renderModelContent()
+		for stateKey, formTable of @formTables
+			formTable.renderModelContent()
 
 	setupFormTables: (tableDefs) ->
 		unless @formTables?
@@ -128,10 +135,3 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 			fTable.render()
 			@formTables[tDef.key] = fTable
-
-	fillFieldsFromModels: ->
-		for modelKey, formField of @formFields
-			formField.renderModelContent()
-		for stateKey, formTable of @formTables
-			formTable.renderModelContent()
-

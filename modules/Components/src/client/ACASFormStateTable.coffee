@@ -101,6 +101,9 @@ class window.ACASFormStateTableController extends Backbone.View
 			@colHeaders = []
 		unless @colDefs?
 			@colDefs = []
+		unless @unitKeyValueMap?
+			#keeps track of which values unit keys are for
+			@unitKeyValueMap = {}
 
 		for val in @tableDef.values
 			displayName = val.fieldSettings.formLabel
@@ -129,9 +132,24 @@ class window.ACASFormStateTableController extends Backbone.View
 
 			@colDefs.push colOpts
 
+			if val.fieldSettings.unitColumnKey?
+				@colHeaders.push
+					displayName: val.fieldSettings.unitColumnLabel
+					keyName: val.fieldSettings.unitColumnKey
+					width: if val.fieldSettings.unitColumnWidth? then val.fieldSettings.width else 75
+				colOpts = data: val.fieldSettings.unitColumnKey
+				colOpts.type = 'autocomplete'
+				colOpts.strict = true
+				colOpts.source = ['mg', 'g', 'kg', 'µL', 'mL', 'L']
+
+				@colDefs.push colOpts
+
+				@unitKeyValueMap[val.fieldSettings.unitColumnKey] = val.modelDefaults.kind
+
 	setupHot: ->
 		@hot = new Handsontable @$('.bv_tableWrapper')[0],
 			afterChange: @handleCellChanged
+			afterCreateRow: @handleRowCreated
 			minSpareRows: 1,
 			allowInsertRow: true
 			contextMenu: true
@@ -200,6 +218,15 @@ class window.ACASFormStateTableController extends Backbone.View
 				cellInfo[1] = valDef.modelDefaults.kind
 				cellInfo[2] = displayVal
 				cols.push cellInfo
+
+				if valDef.fieldSettings.unitColumnKey?
+					unitCellInfo = []
+					unitDisplayVal = value.get 'unitKind'
+					unitCellInfo[0] = rowNum
+					unitCellInfo[1] = valDef.fieldSettings.unitColumnKey
+					unitCellInfo[2] = unitDisplayVal
+					cols.push unitCellInfo
+
 			@hot.setDataAtRowProp cols, "autofill"
 
 	getRowNumberForState: (state) ->
@@ -216,55 +243,82 @@ class window.ACASFormStateTableController extends Backbone.View
 					attr = change[1]
 					changeRow = change[0]
 					state = @getStateForRow changeRow, false
-					#TODO ignore old value if not newconta
+					unitsChanged = false
+					if @unitKeyValueMap[attr]?
+						#units column changed
+						attr = @unitKeyValueMap[attr]
+						unitsChanged = true
 					valueDefs = _.filter @tableDef.values, (def) ->
 						def.modelDefaults.kind == attr
 					valueDef = valueDefs[0]
 					value = state.getOrCreateValueByTypeAndKind valueDef.modelDefaults.type, valueDef.modelDefaults.kind
 					unless value.isNew()
+						oldValueAttr = value.get(valueDef.modelDefaults.type)
 						value = @cloneValueAndIgnoreOld state, value
+						if unitsChanged
+							value.set valueDef.modelDefaults.type, oldValueAttr #so the number value gets copied over too
 					if change[3] is undefined or change[3] is null
 						cellContent is null
 					else
 						cellContent = $.trim change[3]
-					switch valueDef.modelDefaults.type
-						when 'stringValue'
-							value.set stringValue: if cellContent? then cellContent else ""
-						when 'numericValue'
-							numVal = parseFloat(cellContent)
-							if isNaN(numVal) or isNaN(Number(numVal))
-								value.set numericValue: null
-							else
-								value.set numericValue: numVal
-						when 'dateValue'
-							if cellContent is ""
-								value.set dateValue: null
-							else
-								datems = new Date(cellContent).getTime()
-								timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
-								datems += timezoneOffset
-								value.set dateValue: datems
-						when 'codeValue'
-							if valueDef.fieldSettings.fieldType is "stringValue"
-								value.set codeValue: if cellContent? then cellContent else ""
-							else #fieldType is 'codeValue'
-								@setCodeForName(value, cellContent)
+					if unitsChanged
+						value.set unitKind: cellContent
+					else
+						switch valueDef.modelDefaults.type
+							when 'stringValue'
+								value.set stringValue: if cellContent? then cellContent else ""
+							when 'numericValue'
+								numVal = parseFloat(cellContent)
+								if isNaN(numVal) or isNaN(Number(numVal))
+									value.set numericValue: null
+								else
+									value.set numericValue: numVal
+							when 'dateValue'
+								if cellContent is ""
+									value.set dateValue: null
+								else
+									datems = new Date(cellContent).getTime()
+									timezoneOffset = new Date().getTimezoneOffset()*60000 #in milliseconds
+									datems += timezoneOffset
+									value.set dateValue: datems
+							when 'codeValue'
+								if valueDef.fieldSettings.fieldType is "stringValue"
+									value.set codeValue: if cellContent? then cellContent else ""
+								else #fieldType is 'codeValue'
+									@setCodeForName(value, cellContent)
 					rowNumValue = state.getOrCreateValueByTypeAndKind 'numericValue', @rowNumberKind
 					rowNumValue.set numericValue: changeRow
+
+	handleRowCreated: (index, amount) =>
+		#TODO: if update handsontable version, can add source input to only do something when row created via context menu
+		nRows = @hot.countRows()
+		#check row numbers for states
+		nextRow = index + amount
+		if nextRow < nRows
+			for rowNum in [index..nRows-amount-2]
+				state = @getStateForRow rowNum, false
+				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
+				if rowValues.length == 1
+					rowValues[0].set numericValue: rowNum + amount
 
 
 	handleRowRemoved: (index, amount) =>
 		for rowNum in [index..(index+amount-1)]
 			state = @getStateForRow rowNum, false
-			state.set ignored: true
+			console.log "ignoring row #{rowNum} in state id: #{state.id}"
+			if state.isNew()
+				state.destroy()
+			else
+				state.set ignored: true
+				@trigger 'removedRow', state
 		nextRow = index+amount
-		nRows = @hot.countRows()
-		if nextRow < nRows
-			for rowNum in [nextRow..(nRows-1)]
+		nRows = @hot.countRows() + amount #to get number of rows before removing
+		if nextRow < nRows-1
+			for rowNum in [nextRow..(nRows-2)]
 				state = @getStateForRow rowNum, false
 				rowValues = state.getValuesByTypeAndKind 'numericValue', @rowNumberKind
 				if rowValues.length == 1
-					rowValues[0].set numericValue: rowNum
+					rowValues[0].set numericValue: rowNum - amount
 
 	setCodeForName: (value, nameToLookup) ->
 		if @pickLists[value.get('lsKind')]?
