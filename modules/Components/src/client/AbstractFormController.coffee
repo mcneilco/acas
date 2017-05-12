@@ -107,6 +107,7 @@ class window.AbstractThingFormController extends AbstractFormController
 				when 'thingInteractionSelect'
 					opts.thingType = field.fieldSettings.thingType
 					opts.thingKind = field.fieldSettings.thingKind
+					opts.queryUrl = field.fieldSettings.queryUrl
 					opts.labelType = field.fieldSettings.labelType
 					newField = new ACASFormLSThingInteractionFieldController opts
 

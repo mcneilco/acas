@@ -273,12 +273,16 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	applyOptions: ->
 		super()
+		console.dir @options
 		if @options.thingType?
 			@thingType = @options.thingType
 		if @options.thingKind?
 			@thingKind = @options.thingKind
 		if @options.labelType?
 			@labelType = @options.labelType
+		if @options.queryUrl?
+			@queryUrl = @options.queryUrl
+
 
 	handleInputChanged: =>
 		@clearError()
@@ -316,12 +320,16 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@userInputEvent = true
 
 	setupSelect: ->
-		@thingSelectController = new ThingLabelComboBoxController
+		opts =
 			el: @$('select')
 			placeholder: @placeholder
-			thingType: @thingType
-			thingKind: @thingKind
 			labelType: @labelType
+		if @queryUrl?
+			opts.queryUrl = @queryUrl
+		else
+			opts.thingType = @thingType
+			opts.thingKind = @thingKind
+		@thingSelectController = new ThingLabelComboBoxController opts
 		@thingSelectController.render()
 
 	render: =>
