@@ -269,7 +269,6 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		"change select": "handleInputChanged"
 
 	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
-	@
 
 	applyOptions: ->
 		super()
