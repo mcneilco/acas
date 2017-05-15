@@ -273,7 +273,6 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 	applyOptions: ->
 		super()
-		console.dir @options
 		if @options.thingType?
 			@thingType = @options.thingType
 		if @options.thingKind?

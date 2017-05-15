@@ -103,9 +103,9 @@ class window.LsThingItxList extends Backbone.Collection
 		orderedItx
 
 	reformatBeforeSaving: =>
-		@each((model) ->
-			model.reformatBeforeSaving()
-		)
+#		@each((model) ->
+#			model.reformatBeforeSaving()
+#		)
 
 class window.FirstLsThingItxList extends LsThingItxList
 	model: FirstThingItx

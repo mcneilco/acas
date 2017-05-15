@@ -6,10 +6,10 @@ class window.Thing extends Backbone.Model
 	defaults: () ->
 		lsType: "thing"
 		lsKind: "thing"
-		corpName: ""
+#		corpName: ""
 		recordedBy: window.AppLaunchParams.loginUser.username
 		recordedDate: new Date().getTime()
-		shortDescription: " "
+#		shortDescription: " "
 		lsLabels: new LabelList()
 		lsStates: new StateList()
 		firstLsThings: new FirstLsThingItxList()
@@ -66,6 +66,63 @@ class window.Thing extends Backbone.Model
 			@createDefaultSecondLsThingItx()
 		resp
 
+	toJSON: (options) ->
+		attsToSave = super(options)
+
+		toDel = attsToSave.lsLabels.filter (lab) ->
+			(lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
+		for lab in toDel
+			attsToSave.lsLabels.remove lab
+
+		if attsToSave.firstLsThings?
+			toDel = attsToSave.firstLsThings.filter (itx) ->
+				!itx.getItxThing().id?
+			for itx in toDel
+				attsToSave.firstLsThings.remove itx
+			if attsToSave.firstLsThings.length == 0
+				delete attsToSave.firstLsThings
+
+		if attsToSave.secondLsThings?
+			toDel = attsToSave.secondLsThings.filter (itx) ->
+				!itx.getItxThing().id?
+			for itx in toDel
+				attsToSave.secondLsThings.remove itx
+			if attsToSave.secondLsThings.length == 0
+				delete attsToSave.secondLsThings
+
+		if @lsProperties.defaultLabels?
+			for dLabel in @lsProperties.defaultLabels
+				delete attsToSave[dLabel.key]
+
+		if @lsProperties.defaultFirstLsThingItx?
+			for itx in @lsProperties.defaultFirstLsThingItx
+				delete attsToSave[itx.key]
+
+		if @lsProperties.defaultSecondLsThingItx?
+			for itx in @lsProperties.defaultSecondLsThingItx
+				delete attsToSave[itx.key]
+
+		if @lsProperties.defaultValues?
+			for dValue in @lsProperties.defaultValues
+				if attsToSave[dValue.key]?
+					val = attsToSave[dValue.key].get('value')
+					if val is undefined or val is "" or val is null
+						lsStates = attsToSave.lsStates.getStatesByTypeAndKind dValue.stateType, dValue.stateKind
+						values = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
+						if values[0]?
+							if values[0].isNew()
+								lsStates[0].get('lsValues').remove values[0]
+					delete attsToSave[dValue.key]
+
+		if attsToSave.attributes?
+			delete attsToSave.attributes
+		for i of attsToSave
+			if _.isFunction(attsToSave[i])
+				delete attsToSave[i]
+			else if !isNaN(i)
+				delete attsToSave[i]
+
+		return attsToSave
 
 	prepareToSave: ->
 		rBy = @get('recordedBy')
@@ -73,39 +130,29 @@ class window.Thing extends Backbone.Model
 		@set recordedDate: rDate
 		@set modifiedDate: rDate
 		@get('lsLabels').each (lab) =>
-			if (lab.get('ignored') || lab.get('labelText')=="") && lab.isNew()
-				@get('lsLabels').remove lab
-			else
-				@setRByAndRDate lab
+			@setRByAndRDate lab
 		@get('lsStates').each (state) =>
 			@setRByAndRDate state
 			state.get('lsValues').each (val) =>
 				@setRByAndRDate val
 		if @get('firstLsThings')?
 			@get('firstLsThings').each (itx) =>
-				if itx.getItxThing().id?
-					@setRByAndRDate itx
-					@cleanupItxThingForSave itx
-					if itx.has('lsStates')
-						itx.get('lsStates').each (state) =>
-							@setRByAndRDate state
-							state.get('lsValues').each (val) =>
-								@setRByAndRDate val
-				else
-					@get('firstLsThings').remove itx
-
+				@setRByAndRDate itx
+				@cleanupItxThingForSave itx
+				if itx.has('lsStates')
+					itx.get('lsStates').each (state) =>
+						@setRByAndRDate state
+						state.get('lsValues').each (val) =>
+							@setRByAndRDate val
 		if @get('secondLsThings')?
 			@get('secondLsThings').each (itx) =>
-				if itx.getItxThing().id?
-					@setRByAndRDate itx
-					@cleanupItxThingForSave itx
-					if itx.has('lsStates')
-						itx.get('lsStates').each (state) =>
-							@setRByAndRDate state
-							state.get('lsValues').each (val) =>
-								@setRByAndRDate val
-				else
-					@get('secondLsThings').remove itx
+				@setRByAndRDate itx
+				@cleanupItxThingForSave itx
+				if itx.has('lsStates')
+					itx.get('lsStates').each (state) =>
+						@setRByAndRDate state
+						state.get('lsValues').each (val) =>
+							@setRByAndRDate val
 
 	cleanupItxThingForSave: (itx) ->
 		unless itx.isNew()
@@ -128,10 +175,12 @@ class window.Thing extends Backbone.Model
 			rBy = window.AppLaunchParams.loginUser.username
 		if data.isNew()
 			rDate = new Date().getTime()
-			if !data.has ('recordedBy') || data.get('recordedBy') == ""
+			if !data.has('recordedBy') || data.get('recordedBy') == ""  || data.get('recordedBy') == null
 				data.set recordedBy: rBy
+			console.log data.get 'recordedBy'
 			if !data.has ('recordedDate') || data.get('recordedDate') == null
 				data.set recordedDate: rDate
+
 
 	createDefaultLabels: =>
 		# loop over defaultLabels
@@ -215,7 +264,6 @@ class window.Thing extends Backbone.Model
 				thingItx = @get('secondLsThings').getOrCreateItxByTypeAndKind itx.itxType, itx.itxKind
 				@set itx.key, thingItx
 
-
 	getAnalyticalFiles: (fileTypes) => #TODO: rename from analytical files to attachFiles or something more generic
 		#get list of possible kinds of analytical files
 		attachFileList = new AttachFileList()
@@ -237,40 +285,11 @@ class window.Thing extends Backbone.Model
 		attachFileList
 
 	reformatBeforeSaving: =>
-		if @lsProperties.defaultLabels?
-			for dLabel in @lsProperties.defaultLabels
-				@unset(dLabel.key)
-
-		if @lsProperties.defaultFirstLsThingItx?
-			for itx in @lsProperties.defaultFirstLsThingItx
-				@unset(itx.key)
-
 		if @get('firstLsThings')? and @get('firstLsThings') instanceof FirstLsThingItxList
 			@get('firstLsThings').reformatBeforeSaving()
-
-		if @lsProperties.defaultSecondLsThingItx?
-			for itx in @lsProperties.defaultSecondLsThingItx
-				@unset(itx.key)
-
 		if @get('secondLsThings')? and @get('secondLsThings') instanceof SecondLsThingItxList
 			@get('secondLsThings').reformatBeforeSaving()
 
-		if @lsProperties.defaultValues?
-			for dValue in @lsProperties.defaultValues
-				if @get(dValue.key)?
-					if @get(dValue.key).get('value') is undefined
-						lsStates = @get('lsStates').getStatesByTypeAndKind dValue.stateType, dValue.stateKind
-						value = lsStates[0].getValuesByTypeAndKind dValue.type, dValue.kind
-						lsStates[0].get('lsValues').remove value
-					@unset(dValue.key)
-
-		if @attributes.attributes?
-			delete @attributes.attributes
-		for i of @attributes
-			if _.isFunction(@attributes[i])
-				delete @attributes[i]
-			else if !isNaN(i)
-				delete @attributes[i]
 
 	deleteInteractions : =>
 		delete @attributes.firstLsThings
