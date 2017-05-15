@@ -30,7 +30,7 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@modelKey = @options.modelKey
 		@thingRef = @options.thingRef
 		@errorSet = false
-		@userInputEvent = false
+		@userInputEvent = true
 
 	getModel: ->
 		@thingRef.get @modelKey
@@ -62,6 +62,9 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 		@
 
 #Subclass to extend
+	afterRender: ->
+
+
 	renderModelContent: =>
 		@clearError()
 		@checkEmptyAndRequired()
@@ -186,8 +189,6 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 					ignored: false
 		super()
 
-
-
 	setEmptyValue: ->
 		@getModel().set
 			value: null
@@ -243,10 +244,10 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 			codeKind: mdl.get 'codeKind'
 
 		if @options.insertUnassigned?
-			plOptions.insertFirstOption = new PickList
-				code: "unassigned"
-				name: "Select Category"
-			#			roles: [@htsAdmin]
+			if @options.insertUnassigned
+				plOptions.insertFirstOption = new PickList
+					code: "unassigned"
+					name: "Select Category"
 
 		@pickListController = new PickListSelectController plOptions
 		@pickListController.render()
@@ -257,6 +258,135 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		@setupSelect()
 
 		@
+
+class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSInteraction
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+	events: ->
+		"change select": "handleInputChanged"
+
+	template: _.template($("#ACASFormLSThingInteractionFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.thingType?
+			@thingType = @options.thingType
+		if @options.thingKind?
+			@thingKind = @options.thingKind
+		if @options.labelType?
+			@labelType = @options.labelType
+		if @options.queryUrl?
+			@queryUrl = @options.queryUrl
+
+
+	handleInputChanged: =>
+		@clearError()
+		if @userInputEvent
+			thingID = @thingSelectController.getSelectedID()
+			if thingID?
+				@getModel().setItxThing id: thingID
+			else
+				@setEmptyValue()
+		super()
+
+	setEmptyValue: ->
+		@getModel().set ignored: true
+		@setItxThing null
+
+	isEmpty: ->
+		empty = true
+		mdl = @getModel()
+		iThing = @getModel().getItxThing()
+		if iThing? and !mdl.get('ignored')
+			if iThing.id?
+				empty = false
+
+		return empty
+
+	renderModelContent: =>
+		@userInputEvent = false
+		if  @getModel().getItxThing().id?
+			labels = new LabelList @getModel().getItxThing().lsLabels
+			labelText = labels.pickBestNonEmptyLabel().get('labelText')
+			@thingSelectController.setSelectedCode
+				code: @getModel().getItxThing().codeName
+				label: labelText
+			super()
+		@userInputEvent = true
+
+	setupSelect: ->
+		opts =
+			el: @$('select')
+			placeholder: @placeholder
+			labelType: @labelType
+		if @queryUrl?
+			opts.queryUrl = @queryUrl
+		else
+			opts.thingType = @thingType
+			opts.thingKind = @thingKind
+		@thingSelectController = new ThingLabelComboBoxController opts
+		@thingSelectController.render()
+
+	render: =>
+		super()
+		@setupSelect()
+
+		@
+
+
+class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
+	###
+		Launching controller must:
+		- Initialize the model with an LSValue
+    - You may include a rows option to set the height of the textarea
+    Do whatever else is required or optional in ACASFormAbstractFieldController
+	###
+
+	template: _.template($("#ACASFormLSHTMLClobValueFieldView").html())
+
+	applyOptions: ->
+		super()
+		if @options.rows?
+			@rows = @options.rows
+			@$('textarea').attr 'rows', @rows
+
+	afterRender: ->
+		@setupTinyMCE()
+
+	textChanged: (content) ->
+		@clearError()
+		if content == ""
+			@setEmptyValue()
+		else
+			@getModel().set
+				value: content
+				ignored: false
+
+	setEmptyValue: ->
+		@getModel().set
+			value: ""
+			ignored: true
+
+	renderModelContent: =>
+		@editor.setContent @getModel().get('value')
+		super()
+
+	setupTinyMCE: ->
+		mdl = @getModel()
+		cname = mdl.get('lsKind').replace(" ","")+"_"+mdl.cid
+		selector = "."+cname
+		@$('.bv_wysiwygEditor').addClass cname
+		@wysiwygEditor = tinymce.init
+			selector: selector
+			inline: true
+			setup: (editor) =>
+				editor.on 'init', (e) =>
+					@editor = editor
+				editor.on 'change', (e) =>
+					@textChanged editor.getContent()
 
 class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
