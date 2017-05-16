@@ -388,6 +388,12 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
 
+	disableInput: ->
+		@editor.getBody().setAttribute('contenteditable', false)
+
+	enableInput: ->
+		@editor.getBody().setAttribute('contenteditable', true)
+
 class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
