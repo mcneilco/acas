@@ -34,7 +34,6 @@ class window.ACASFormStateTableController extends Backbone.View
 #Subclass to extend
 	renderModelContent: =>
 		for state in @getCurrentStates()
-			console.log "rendering state id: "+state.id
 			@renderState state
 
 	applyOptions: ->
@@ -43,6 +42,9 @@ class window.ACASFormStateTableController extends Backbone.View
 		if @tableDef?.tableLabelClass?
 			@addFormLabelClass @options.tableDef.tableLabelClass
 		@tableReadOnly = if @tableDef.tableReadOnly? then @tableDef.tableReadOnly else false
+
+
+		if @tableDef?.showUnits? == true then @showUnits = true else @showUnits = false
 
 	setTableLabel: (value) ->
 		@$('.bv_tableLabel').html value
@@ -104,8 +106,12 @@ class window.ACASFormStateTableController extends Backbone.View
 			@unitKeyValueMap = {}
 
 		for val in @tableDef.values
+			displayName = val.fieldSettings.formLabel
+			if @showUnits
+				if val.modelDefaults.unitKind?
+					displayName += "<br />(#{val.modelDefaults.unitKind})"
 			@colHeaders.push
-				displayName: val.fieldSettings.formLabel
+				displayName: displayName
 				keyName: val.modelDefaults.kind
 				width: if val.fieldSettings.width? then val.fieldSettings.width else 75
 
@@ -198,10 +204,13 @@ class window.ACASFormStateTableController extends Backbone.View
 				cellInfo = []
 				value = state.getOrCreateValueByTypeAndKind valDef.modelDefaults.type, valDef.modelDefaults.kind
 				if valDef.modelDefaults.type == 'codeValue'
-					if valDef.fieldSettings.fieldType == "stringValue"
+					if valDef.fieldSettings.fieldType == 'stringValue'
 						displayVal = value.get 'codeValue'
 					else
 						displayVal = @getNameForCode value, value.get 'codeValue'
+				else if valDef.modelDefaults.type == 'dateValue'
+					if value.get('dateValue')?
+						displayVal = new Date(value.get('dateValue')).toISOString().split('T')[0]
 				else
 					displayVal = value.get valDef.modelDefaults.type
 
@@ -231,7 +240,6 @@ class window.ACASFormStateTableController extends Backbone.View
 		if changes?
 			for change in changes
 				unless change[2] == change[3] or source == "autofill"
-					console.dir change
 					attr = change[1]
 					changeRow = change[0]
 					state = @getStateForRow changeRow, false
