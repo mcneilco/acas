@@ -87,7 +87,13 @@ class window.AbstractThingFormController extends AbstractFormController
 		unless @formFields?
 			@formFields = {}
 
-		for field in fieldDefs.labels.concat(fieldDefs.values).concat(fieldDefs.firstLsThingItxs).concat(fieldDefs.secondLsThingItxs)
+		fDefs = []
+		if fieldDefs.labels? then fDefs = fDefs.concat fieldDefs.labels
+		if fieldDefs.values? then fDefs = fDefs.concat fieldDefs.values
+		if fieldDefs.firstLsThingItxs? then fDefs = fDefs.concat fieldDefs.firstLsThingItxs
+		if fieldDefs.secondLsThingItxs? then fDefs = fDefs.concat fieldDefs.secondLsThingItxs
+
+		for field in fDefs
 			opts =
 				modelKey: field.key
 				inputClass: field.fieldSettings.inputClass

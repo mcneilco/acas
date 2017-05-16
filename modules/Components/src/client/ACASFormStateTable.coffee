@@ -355,3 +355,25 @@ class window.ACASFormStateTableController extends Backbone.View
 
 		return newValue
 
+	disableInput: ->
+		@hot.updateSettings
+			readOnly: true
+			contextMenu: false
+#Other options I decided not to use
+#			disableVisualSelection: true
+#			manualColumnResize: false
+#			manualRowResize: false
+#			comments: false
+
+	enableInput: ->
+		@hot.updateSettings
+			readOnly: false
+			contextMenu: true
+#Other options I decided not to use
+#			disableVisualSelection: false
+#			manualColumnResize: true
+#			manualRowResize: true
+#			comments: true
+
+
+
