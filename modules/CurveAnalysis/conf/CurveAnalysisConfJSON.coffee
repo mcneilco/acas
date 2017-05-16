@@ -226,6 +226,12 @@
 			,
 				kindName: "Slope",
 				typeName: "stringValue"
+			,
+				kindName: "DMax",
+				typeName: "numericValue"
+			,
+				kindName: "DMax",
+				typeName: "stringValue"
 			]
 
 		ddicttypes:
@@ -332,6 +338,13 @@
 				codeOrigin: "ACAS DDICT"
 				code: "4 parameter D-R IC50"
 				name: "IC50"
+				ignored: false
+			,
+				codeType: "model fit"
+				codeKind: "type"
+				codeOrigin: "ACAS DDICT"
+				code: "4 parameter D-R IC50/DMax"
+				name: "IC50 - DMax"
 				ignored: false
 			,
 				codeType: "model fit"
