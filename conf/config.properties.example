@@ -403,6 +403,7 @@ client.entity.deletingRoles=
 client.entity.viewDeletedRoles=
 
 client.protocol.showAssayTreeRule=false
+client.protocol.showCurveDisplayParams=true
 client.experiment.uneditableFileTypes=["source file", "annotation file"]
 
 # If project select is shown separately in the Configuration part of the GUI
