@@ -98,13 +98,28 @@ cd acas-cmpdreg-roo-server
 git checkout 1.10-release
 ```
 
-##### Build
+##### Add chemaxon jar file
+
+
+* Go to [https://www.chemaxon.com](https://www.chemaxon.com)
+* Login and/or Sign-Up
+* Click Download > JChem Suite > JChem
+* Scroll down to Archives and select 16.4.25.0, click Get Archive
+* Download jchem-merged-lib-16.4.25.0.zip
+* Unzip it and rename jchem.jar to jchem-16.4.25.0.jar
+
+##### Add chemaxon jar file to a lib folder in the checkout
+
 ```
 cd ~/Documents/mcneilco/oss/acas-cmpdreg-roo-server
 mkdir lib
 cd lib
-curl -O http://trac.labsynch.com/maven-repository/com/chemaxon/jchem/16.4.25.0/jchem-16.4.25.0.jar
+cp <jchem-16.4.25.0.jar> .
 cd ..
+```
+##### Build
+
+```
 docker build -t mcneilco/cmpdreg-oss:1.10.0 .
 ```
 
