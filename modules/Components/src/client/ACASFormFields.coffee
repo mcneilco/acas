@@ -122,6 +122,11 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 	setPlaceholder: (value) ->
 		@$('input').attr 'placeholder', value
 
+	disableInput: ->
+		@$('input').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('input').removeAttr 'disabled'
 
 class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
@@ -266,6 +271,12 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 		@
 
+	disableInput: ->
+		@$('select').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('select').removeAttr 'disabled'
+
 class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
 		Launching controller must:
@@ -342,6 +353,12 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		@setupSelect()
 
 		@
+
+	disableInput: ->
+		@$('select').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('select').removeAttr 'disabled'
 
 
 class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
