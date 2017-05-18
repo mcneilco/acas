@@ -94,6 +94,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@addControlGroupClass @options.controlGroupClass
 		if @options.placeholder?
 			@setPlaceholder @options.placeholder
+		if @options.firstSelectText?
+			@firstSelectText = @options.firstSelectText
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
@@ -245,9 +247,14 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 		if @options.insertUnassigned?
 			if @options.insertUnassigned
-				plOptions.insertFirstOption = new PickList
-					code: "unassigned"
-					name: "Select Category"
+				if @options.firstSelectText?
+					plOptions.insertFirstOption = new PickList
+						code: "unassigned"
+						name: @options.firstSelectText
+				else
+					plOptions.insertFirstOption = new PickList
+						code: "unassigned"
+						name: "Select Category"
 
 		@pickListController = new PickListSelectController plOptions
 		@pickListController.render()
