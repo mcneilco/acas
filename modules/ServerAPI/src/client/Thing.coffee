@@ -177,7 +177,6 @@ class window.Thing extends Backbone.Model
 			rDate = new Date().getTime()
 			if !data.has('recordedBy') || data.get('recordedBy') == ""  || data.get('recordedBy') == null
 				data.set recordedBy: rBy
-			console.log data.get 'recordedBy'
 			if !data.has ('recordedDate') || data.get('recordedDate') == null
 				data.set recordedDate: rDate
 

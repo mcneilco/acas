@@ -94,6 +94,8 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 			@addControlGroupClass @options.controlGroupClass
 		if @options.placeholder?
 			@setPlaceholder @options.placeholder
+		if @options.firstSelectText?
+			@firstSelectText = @options.firstSelectText
 		@required = if @options.required? then @options.required else false
 
 	setFormLabel: (value) ->
@@ -120,6 +122,11 @@ class window.ACASFormAbstractFieldController extends Backbone.View
 	setPlaceholder: (value) ->
 		@$('input').attr 'placeholder', value
 
+	disableInput: ->
+		@$('input').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('input').removeAttr 'disabled'
 
 class window.ACASFormLSLabelFieldController extends ACASFormAbstractFieldController
 	###
@@ -245,9 +252,14 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 
 		if @options.insertUnassigned?
 			if @options.insertUnassigned
-				plOptions.insertFirstOption = new PickList
-					code: "unassigned"
-					name: "Select Category"
+				if @options.firstSelectText?
+					plOptions.insertFirstOption = new PickList
+						code: "unassigned"
+						name: @options.firstSelectText
+				else
+					plOptions.insertFirstOption = new PickList
+						code: "unassigned"
+						name: "Select Category"
 
 		@pickListController = new PickListSelectController plOptions
 		@pickListController.render()
@@ -258,6 +270,12 @@ class window.ACASFormLSCodeValueFieldController extends ACASFormAbstractFieldCon
 		@setupSelect()
 
 		@
+
+	disableInput: ->
+		@$('select').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('select').removeAttr 'disabled'
 
 class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractFieldController
 	###
@@ -336,6 +354,12 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 
 		@
 
+	disableInput: ->
+		@$('select').attr 'disabled', 'disabled'
+
+	enableInput: ->
+		@$('select').removeAttr 'disabled'
+
 
 class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFieldController
 	###
@@ -387,6 +411,12 @@ class window.ACASFormLSHTMLClobValueFieldController extends ACASFormAbstractFiel
 					@editor = editor
 				editor.on 'change', (e) =>
 					@textChanged editor.getContent()
+
+	disableInput: ->
+		@editor.getBody().setAttribute('contenteditable', false)
+
+	enableInput: ->
+		@editor.getBody().setAttribute('contenteditable', true)
 
 class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldController
 	###

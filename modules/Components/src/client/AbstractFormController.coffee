@@ -141,3 +141,17 @@ class window.AbstractThingFormController extends AbstractFormController
 				thingRef: @model
 			fTable.render()
 			@formTables[tDef.key] = fTable
+
+	disableAllInputs: ->
+		super()
+		for key, tbl of @formTables
+			tbl.disableInput()
+		for key, fld of @formFields
+			fld.disableInput()
+
+	enableAllInputs: ->
+		super()
+		for key, tbl of @formTables
+			tbl.enableInput()
+		for key, fld of @formFields
+			fld.enableInput()
