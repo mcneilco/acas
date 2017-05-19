@@ -22,6 +22,11 @@ This Open Source release includes the Experiment Loader, Dose Response, and Comp
  * Chemaxon jchembase (with valid license to be obtained at sales [at] chemaxon.com See note in license section of this file)
  * Chemaxon marvinjs (with valid license to be obtained at sales [at] chemaxon.com See note in license section of this file)
  
+## ACAS Documentation
+[Public Documentation Table of Contents](https://docs.google.com/document/d/1tPz5VliAhCD0sELDsZlNvt9jcGiNxi7iQQB4NJ1120Y/edit?usp=sharing)
+
+## Release Notes
+[https://github.com/mcneilco/acas/releases](https://github.com/mcneilco/acas/releases)
 
 ## Docker installation instructions
 
@@ -31,9 +36,9 @@ Some of the docker images in the ACAS stack are available in the mcneilco docker
 
 Available Images:
 
-* [ACAS] (https://hub.docker.com/r/mcneilco/acas-oss)
-* [RACAS] (https://hub.docker.com/r/mcneilco/racas-oss)
-* [ACAS-Postgres] (https://hub.docker.com/r/mcneilco/acas-postgres)
+* [ACAS](https://hub.docker.com/r/mcneilco/acas-oss)
+* [RACAS](https://hub.docker.com/r/mcneilco/racas-oss)
+* [ACAS-Postgres](https://hub.docker.com/r/mcneilco/acas-postgres)
 
 Images Built by Developer (instructions below):
 
@@ -42,9 +47,9 @@ Images Built by Developer (instructions below):
 
 ### Requirements
 
-* [Docker] (https://www.docker.com)
- * [Docker for Mac] (https://docs.docker.com/docker-for-mac/)
- * [Docker for Windows] (https://docs.docker.com/docker-for-windows/)
+* [Docker](https://www.docker.com)
+ * [Docker for Mac](https://docs.docker.com/docker-for-mac/)
+ * [Docker for Windows](https://docs.docker.com/docker-for-windows/)
 
 ### Installation
 
@@ -93,13 +98,28 @@ cd acas-cmpdreg-roo-server
 git checkout 1.10-release
 ```
 
-##### Build
+##### Add chemaxon jar file
+
+
+* Go to [https://www.chemaxon.com](https://www.chemaxon.com)
+* Login and/or Sign-Up
+* Click Download > JChem Suite > JChem
+* Scroll down to Archives and select 16.4.25.0, click Get Archive
+* Download jchem-merged-lib-16.4.25.0.zip
+* Unzip it and rename jchem.jar to jchem-16.4.25.0.jar
+
+##### Add chemaxon jar file to a lib folder in the checkout
+
 ```
 cd ~/Documents/mcneilco/oss/acas-cmpdreg-roo-server
 mkdir lib
 cd lib
-curl -O http://trac.labsynch.com/maven-repository/com/chemaxon/jchem/16.4.25.0/jchem-16.4.25.0.jar
+cp <jchem-16.4.25.0.jar> .
 cd ..
+```
+##### Build
+
+```
 docker build -t mcneilco/cmpdreg-oss:1.10.0 .
 ```
 
@@ -151,7 +171,7 @@ docker-compose logs --tail=20 -f <service>
 
 e.g. for all containers
 ```
-docker-compose logs --tail=20 -f tomcat 
+docker-compose logs --tail=20 -f 
 ```
 
 e.g. for only tomcat
