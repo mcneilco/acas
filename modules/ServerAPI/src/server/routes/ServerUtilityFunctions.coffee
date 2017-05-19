@@ -2207,6 +2207,4 @@ exports.ContainerTube = ContainerTube
 exports.AnalysisGroup = AnalysisGroup
 exports.AnalysisGroupList = AnalysisGroupList
 
-
-
 AppLaunchParams = loginUser:username:"acas"
