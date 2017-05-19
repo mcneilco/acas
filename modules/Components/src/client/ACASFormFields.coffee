@@ -201,6 +201,10 @@ class window.ACASFormLSNumericValueFieldController extends ACASFormAbstractField
 			value: null
 			ignored: true
 
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
+
 	renderModelContent: =>
 		@$('input').val @getModel().get('value')
 		if @getModel().has 'unitKind'
@@ -345,7 +349,7 @@ class window.ACASFormLSThingInteractionFieldController extends ACASFormAbstractF
 		else
 			opts.thingType = @thingType
 			opts.thingKind = @thingKind
-		@thingSelectController = new ThingLabelComboBoxController opts
+		@thingSelectController = new ThingLabelComboBoxController opt
 		@thingSelectController.render()
 
 	render: =>
@@ -443,6 +447,10 @@ class window.ACASFormLSStringValueFieldController extends ACASFormAbstractFieldC
 		@getModel().set
 			value: null
 			ignored: true
+
+	setInputValue: (inputValue) ->
+		@$('input').val inputValue
+
 
 	renderModelContent: =>
 		@$('input').val @getModel().get('value')

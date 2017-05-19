@@ -21,6 +21,10 @@ class window.ACASFormChemicalStructureExampleController extends Backbone.View
 	setMol: (molStr) =>
 		@sketcher.setMol molStr
 
+	getChemDoodleJSON: =>
+		mol = @sketcher.getChemDoodleJSON()
+		alert mol
+
 class window.ACASFormChemicalStructureController extends Backbone.View
 	tagName: "DIV"
 	template: _.template($("#ACASFormChemicalStructureControllerView").html())
@@ -52,6 +56,9 @@ class window.ACASFormChemicalStructureController extends Backbone.View
 		molStruct = @windowObj.ChemDoodle.readMOL molStr
 		@windowObj.sketcher.loadMolecule(molStruct);
 
+	getChemDoodleJSON: ->
+		mol = @windowObj.sketcher.getMolecule();
+		@windowObj.ChemDoodle.writeJSON([mol],[])
 
 
 #TODO Why is it making a call to WebHQ outside our server, and make it stop
