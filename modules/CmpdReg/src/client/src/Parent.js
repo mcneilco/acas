@@ -132,10 +132,8 @@ $(function() {
 
             if (this.options.errorNotifList!=null) {
 				var eNoti = this.options.errorNotifList;
-				if (this.model.isNew()) {
-					this.bind('notifyError', eNoti.add);
-					this.bind('clearErrors', eNoti.removeMessagesForOwner);
-				}
+				this.bind('notifyError', eNoti.add);
+				this.bind('clearErrors', eNoti.removeMessagesForOwner);
 			} else {
 				var eNoti = null;
 			}
@@ -344,32 +342,36 @@ $(function() {
 		},
 
 		validateParent: function(){
-			this.$('.bv_saveUpdateParentButton').removeClass('saveUpdateParentButtonOn');
-			this.$('.bv_saveUpdateParentButton').addClass('saveUpdateParentButtonOff');
-			this.$('.bv_cancelUpdateParentButton').removeClass('cancelUpdateParentButtonOn');
-			this.$('.bv_cancelUpdateParentButton').addClass('cancelUpdateParentButtonOff');
-			this.$('.bv_backUpdateParentButton').removeClass('backUpdateParentButtonOn');
-			this.$('.bv_backUpdateParentButton').addClass('backUpdateParentButtonOff');
 			this.updateModel();
-			$.ajax({
-				type: "POST",
-				url: window.configuration.serverConnection.baseServerURL+"validateParent",
-				data: JSON.stringify(this.model),
-				dataType: "json",
-				contentType: 'application/json',
-				success: (function(_this)
-				{
-					return function(ajaxReturn){
-						return _this.validateParentReturn(ajaxReturn);
-					};
-				})(this),
-				error: (function(_this)
-				{
-					return function(error){
-						return _this.handleValidateParentError(error);
-					};
-				})(this)
-			});
+			if (this.isValid()) {
+				this.trigger('clearEditParentErrors');
+				this.$('.bv_saveUpdateParentButton').removeClass('saveUpdateParentButtonOn');
+				this.$('.bv_saveUpdateParentButton').addClass('saveUpdateParentButtonOff');
+				this.$('.bv_cancelUpdateParentButton').removeClass('cancelUpdateParentButtonOn');
+				this.$('.bv_cancelUpdateParentButton').addClass('cancelUpdateParentButtonOff');
+				this.$('.bv_backUpdateParentButton').removeClass('backUpdateParentButtonOn');
+				this.$('.bv_backUpdateParentButton').addClass('backUpdateParentButtonOff');
+				$.ajax({
+					type: "POST",
+					url: window.configuration.serverConnection.baseServerURL+"validateParent",
+					data: JSON.stringify(this.model),
+					dataType: "json",
+					contentType: 'application/json',
+					success: (function(_this)
+					{
+						return function(ajaxReturn){
+							return _this.validateParentReturn(ajaxReturn);
+						};
+					})(this),
+					error: (function(_this)
+					{
+						return function(error){
+							return _this.handleValidateParentError(error);
+						};
+					})(this)
+				});
+			}
+
 		},
 
 		validateParentReturn: function(ajaxReturn){

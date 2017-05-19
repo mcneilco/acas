@@ -21,6 +21,7 @@ setupRoutes = (app, loginRoutes, requireLogin) ->
 				return
 		upload.fileHandler() req, res, next
 
+
 	upload.on "error", (e) ->
 		console.log "fileUpload: ", e.message
 	upload.on "end", (fileInfo) ->

@@ -4,6 +4,8 @@ class window.AbstractFormController extends Backbone.View
 # 		@errorOwnerName = 'MyControllerName'
 #   	@setBindings()
 
+	formFieldDefinitions: []
+
 	show: ->
 		$(@el).show()
 
@@ -33,12 +35,6 @@ class window.AbstractFormController extends Backbone.View
 
 		_.each errors, (err) =>
 			unless @$('.bv_'+err.attribute).attr('disabled') is 'disabled'
-#				@$('.bv_group_'+err.attribute).attr('data-toggle', 'tooltip')
-#				@$('.bv_group_'+err.attribute).attr('data-placement', 'bottom')
-#				@$('.bv_group_'+err.attribute).attr('data-original-title', err.message)
-#	#				@$('.bv_group_'+err.attribute).tooltip();
-#				@$("[data-toggle=tooltip]").tooltip();
-#				@$("body").tooltip selector: '.bv_group_'+err.attribute
 				@$('.bv_group_'+err.attribute).addClass 'input_error error'
 				@trigger 'notifyError',  owner: this.errorOwnerName, errorLevel: 'error', message: err.message
 		@trigger 'invalid'
@@ -47,10 +43,6 @@ class window.AbstractFormController extends Backbone.View
 		errorElms = @$('.input_error')
 		@trigger 'clearErrors', @errorOwnerName
 		_.each errorElms, (ee) =>
-#			$(ee).removeAttr('data-toggle')
-#			$(ee).removeAttr('data-placement')
-#			$(ee).removeAttr('title')
-#			$(ee).removeAttr('data-original-title')
 			$(ee).removeClass 'input_error error'
 
 	isValid: ->
@@ -87,3 +79,48 @@ class window.AbstractFormController extends Backbone.View
 		@$(".bv_group_tags input").prop "placeholder", "Add tags"
 		@$(".bv_group_tags div.bootstrap-tagsinput").css "background-color", "#ffffff"
 		@$(".bv_group_tags input").css "background-color", "transparent"
+
+
+class window.AbstractThingFormController extends AbstractFormController
+
+	setupFormFields: (fieldDefs) ->
+		unless @formFields?
+			@formFields = {}
+
+		for field in fieldDefs.labels.concat(fieldDefs.values)
+			opts =
+				modelKey: field.key
+				inputClass: field.fieldSettings.inputClass
+				formLabel: field.fieldSettings.formLabel
+				placeholder: field.fieldSettings.placeholder
+				required: field.fieldSettings.required
+				thingRef: @model
+				insertUnassigned: field.fieldSettings.insertUnassigned
+
+			switch field.fieldSettings.fieldType
+				when 'label' then newField = new ACASFormLSLabelFieldController opts
+				when 'numericValue' then newField = new ACASFormLSNumericValueFieldController opts
+				when 'codeValue' then newField = new ACASFormLSCodeValueFieldController opts
+
+			@$("."+field.fieldSettings.fieldWrapper).append newField.render().el
+			@formFields[field.key] = newField
+		@setupFormTables fieldDefs.stateTables
+
+	fillFieldsFromModels: ->
+		for modelKey, formField of @formFields
+			formField.renderModelContent()
+		for stateKey, formTable of @formTables
+			formTable.renderModelContent()
+
+	setupFormTables: (tableDefs) ->
+		unless @formTables?
+			@formTables = {}
+		for tDef in tableDefs
+			tdiv = $("<div>")
+			@$("."+tDef.tableWrapper).append tdiv
+			fTable = new ACASFormStateTableController
+				el: tdiv
+				tableDef: tDef
+				thingRef: @model
+			fTable.render()
+			@formTables[tDef.key] = fTable
