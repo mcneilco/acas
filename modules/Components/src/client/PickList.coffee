@@ -228,6 +228,14 @@ class window.ComboBoxController extends PickListSelectController
 
 class window.PickListSelect2Controller extends PickListSelectController
 
+	initialize: =>
+		if @options.width?
+			@width = @options.width
+		else
+			@width = "100%"
+
+		super()
+
 	render: =>
 # convert model objects to array of json objects which have 'id' and 'text' properties
 		mappedData = []
@@ -242,7 +250,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 			data: mappedData
 			openOnEnter: false
 			allowClear: true
-			width: "100%"
+			width: @width
 
 		@setSelectedCode @selectedCode
 		@rendered = true
@@ -256,7 +264,7 @@ class window.PickListSelect2Controller extends PickListSelectController
 		result = $(@el).val()
 		# if result is null then we'll return the "unassigned" instead if it
 		# was inserted as the first option
-		if not result? and  @insertFirstOption.get('code') is "unassigned"
+		if not result? and @insertFirstOption != false and @insertFirstOption.get('code') is "unassigned"
 			result = "unassigned"
 		result
 
