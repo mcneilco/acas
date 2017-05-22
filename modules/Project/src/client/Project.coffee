@@ -163,7 +163,7 @@ class window.Project extends Thing
 		errors = []
 		bestName = attrs.lsLabels.pickBestName()
 		nameError = true
-		if attrs.codeName?
+		if attrs.codeName? and @isNew()
 			validChars = attrs.codeName.match(/[a-zA-Z0-9 _\-+]/g)
 			unless validChars.length is attrs.codeName.length
 				errors.push
