@@ -112,6 +112,8 @@ startApp = ->
 	bundle = require('socket.io-bundle')
 	passportSocketIo = require('passport.socketio')
 	cookieParser = require('cookie-parser')
+#	sharedsession = require("express-socket.io-session")
+#	io.use(sharedsession(express.session))
 
 	io.use(passportSocketIo.authorize({
 		key: 'connect.sid',
